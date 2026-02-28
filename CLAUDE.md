@@ -1,4 +1,4 @@
-# DASHBOARD PROJECT — Project Memory
+# AIIMIN — Project Memory
 
 ## Owner
 Aaditya Upadhyay — B.Tech Data Science, Manipal University Jaipur
@@ -116,3 +116,14 @@ Phase 4 (optional): yearly heatmap, DSA counter, advanced correlations
 - Do not modify auth logic or database schema without explicit instruction.
 - Always use the locked color palette. Never introduce new colors without approval.
 - Component scope per prompt: one component per request, no bundling.
+
+---
+
+## Stack Update — Supabase Migration (2026-02-28)
+- Database: Supabase hosted PostgreSQL (project: yubxgftugxbwtywyhcsv)
+- Supabase URL: https://yubxgftugxbwtywyhcsv.supabase.co
+- Auth: Supabase Auth will replace custom JWT in Phase 2
+- Schema: Run backend/schema.sql in Supabase SQL editor to initialize tables
+- Frontend uses Supabase JS client directly for database operations
+- Backend Express remains for complex logic, file parsing, PDF generation
+- demo-user-id is placeholder until auth is implemented
