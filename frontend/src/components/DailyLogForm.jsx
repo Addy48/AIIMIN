@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import supabase from '../utils/supabase';
 
-const DailyLogForm = () => {
+const DailyLogForm = ({ user }) => {
     const [formData, setFormData] = useState({
         sleepStart: '',
         sleepEnd: '',
@@ -17,8 +17,12 @@ const DailyLogForm = () => {
     });
 
     const [loading, setLoading] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [errorMessage, setErrorMessage] = useState('');
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
+
+    const showToast = (message, type) => {
+        setToast({ show: true, message, type });
+        setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
+    };
 
     const calculateSleepHours = () => {
         if (!formData.sleepStart || !formData.sleepEnd) return 0;
@@ -49,13 +53,13 @@ const DailyLogForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setSuccessMessage('');
-        setErrorMessage('');
 
         try {
             const today = new Date().toISOString().split('T')[0];
+            const userId = user?.id || 'demo-user-id'; // Fallback for testing
+
             const payload = {
-                user_id: 'demo-user-id',
+                user_id: userId,
                 date: today,
                 sleep_start: formData.sleepStart || null,
                 sleep_end: formData.sleepEnd || null,
@@ -71,14 +75,16 @@ const DailyLogForm = () => {
                 journal_entry: formData.journalEntry || null
             };
 
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('daily_logs')
                 .upsert(payload, { onConflict: 'user_id,date' })
                 .select();
 
             if (error) throw error;
 
-            setSuccessMessage('Log saved for today');
+            showToast('Log saved for today', 'success');
+
+            // Optionally clear form or keep it populated for today
             setTimeout(() => {
                 setFormData({
                     sleepStart: '',
@@ -93,11 +99,10 @@ const DailyLogForm = () => {
                     masturbationCount: 0,
                     journalEntry: ''
                 });
-                setSuccessMessage('');
-            }, 3000);
+            }, 500);
         } catch (error) {
             console.error(error);
-            setErrorMessage('Failed to save log. Try again.');
+            showToast('Failed to save log. Try again.', 'error');
         } finally {
             setLoading(false);
         }
@@ -106,189 +111,215 @@ const DailyLogForm = () => {
     const todayDisplay = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
     return (
-        <form onSubmit={handleSubmit} className="w-full bg-gray-900 rounded-2xl p-8 border border-gray-800">
+        <form onSubmit={handleSubmit} className="w-full bg-[var(--bg-card)] rounded-[var(--radius-lg)] p-8 border border-[var(--border)] shadow-[var(--shadow)] relative">
+
             <div className="flex justify-between items-center mb-8">
-                <h3 className="text-xl font-bold text-white">Today's Log</h3>
-                <span className="text-sm text-gray-500">{todayDisplay}</span>
+                <h3 className="text-xl font-bold text-[var(--text-1)] tracking-tight">Today's Log</h3>
+                <span className="text-sm text-[var(--text-2)] font-medium">{todayDisplay}</span>
             </div>
 
             {/* SLEEP SECTION */}
             <div className="mb-0">
-                <div className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Sleep</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-3)] mb-4">Sleep</div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="text-gray-400 text-xs font-medium mb-1.5 block">Bedtime</label>
+                        <label className="text-[var(--text-2)] text-xs font-medium mb-1.5 block">Bedtime</label>
                         <input
                             type="time"
                             name="sleepStart"
                             value={formData.sleepStart}
                             onChange={handleChange}
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200"
+                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] px-4 py-2.5 text-[var(--text-1)] text-sm focus:outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] transition-all duration-200"
                         />
                     </div>
                     <div>
-                        <label className="text-gray-400 text-xs font-medium mb-1.5 block">Wake Time</label>
+                        <label className="text-[var(--text-2)] text-xs font-medium mb-1.5 block">Wake Time</label>
                         <input
                             type="time"
                             name="sleepEnd"
                             value={formData.sleepEnd}
                             onChange={handleChange}
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200"
+                            className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] px-4 py-2.5 text-[var(--text-1)] text-sm focus:outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] transition-all duration-200"
                         />
                     </div>
                 </div>
                 {formData.sleepStart && formData.sleepEnd && (
-                    <div className={`mt-2 text-sm ${sleepHours >= 7 ? 'text-green-400' : (sleepHours >= 5 ? 'text-yellow-400' : 'text-red-400')}`}>
-                        {sleepHours >= 7 && `✓ ${sleepHours} hrs — Good sleep`}
-                        {sleepHours >= 5 && sleepHours < 7 && `⚠ ${sleepHours} hrs — Below target`}
-                        {sleepHours < 5 && `✗ ${sleepHours} hrs — Poor sleep`}
+                    <div className="mt-4">
+                        {sleepHours >= 7 && <span className="inline-flex items-center px-2.5 py-1 rounded-[var(--radius-sm)] text-xs font-medium border border-[#10b98140] bg-[#10b98115] text-[var(--success)] shadow-sm">✓ {sleepHours} hrs — Good sleep</span>}
+                        {sleepHours >= 5 && sleepHours < 7 && <span className="inline-flex items-center px-2.5 py-1 rounded-[var(--radius-sm)] text-xs font-medium border border-[#f59e0b40] bg-[#f59e0b15] text-[var(--warning)] shadow-sm">⚠ {sleepHours} hrs — Below target</span>}
+                        {sleepHours < 5 && <span className="inline-flex items-center px-2.5 py-1 rounded-[var(--radius-sm)] text-xs font-medium border border-[#ef444440] bg-[#ef444415] text-[var(--danger)] shadow-sm">✗ {sleepHours} hrs — Poor sleep</span>}
                     </div>
                 )}
             </div>
 
-            <div className="border-t border-gray-800 mt-6 mb-6"></div>
+            <div className="border-t border-[var(--border)] mt-8 mb-8"></div>
 
             {/* BODY SECTION */}
             <div className="mb-0">
-                <div className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Body</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-3)] mb-4">Body</div>
 
-                <label className="flex items-center gap-3 cursor-pointer mb-3">
-                    <input
-                        type="checkbox"
-                        name="gymDone"
-                        checked={formData.gymDone}
-                        onChange={handleChange}
-                        className="w-4 h-4 accent-orange-500"
-                    />
-                    <span className="text-gray-300 text-sm">Gym today?</span>
-                </label>
+                <div className="grid grid-cols-1 gap-6">
+                    <div className="grid grid-cols-2 gap-4">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                name="gymDone"
+                                checked={formData.gymDone}
+                                onChange={handleChange}
+                                className="w-4 h-4 rounded border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--accent)] focus:ring-[var(--accent)] cursor-pointer"
+                            />
+                            <span className="text-[var(--text-1)] text-sm group-hover:text-[var(--accent)] transition-colors">Gym today?</span>
+                        </label>
 
-                {formData.gymDone && (
-                    <div className="mb-3">
-                        <label className="text-gray-400 text-xs font-medium mb-1.5 block">Duration (min)</label>
-                        <input
-                            type="number"
-                            name="gymDuration"
-                            value={formData.gymDuration}
-                            onChange={handleChange}
-                            placeholder="0"
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200"
-                        />
+                        {formData.gymDone && (
+                            <div className="animate-in fade-in slide-in-from-left-4 duration-300">
+                                <label className="text-[var(--text-2)] text-xs font-medium mb-1.5 block">Duration (min)</label>
+                                <input
+                                    type="number"
+                                    name="gymDuration"
+                                    value={formData.gymDuration}
+                                    onChange={handleChange}
+                                    placeholder="0"
+                                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] px-4 py-2 text-[var(--text-1)] text-sm focus:outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] transition-all duration-200"
+                                />
+                            </div>
+                        )}
                     </div>
-                )}
 
-                <label className="flex items-center gap-3 cursor-pointer mb-3">
-                    <input
-                        type="checkbox"
-                        name="breakfastDone"
-                        checked={formData.breakfastDone}
-                        onChange={handleChange}
-                        className="w-4 h-4 accent-orange-500"
-                    />
-                    <span className="text-gray-300 text-sm">Had breakfast?</span>
-                </label>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                        <input
+                            type="checkbox"
+                            name="breakfastDone"
+                            checked={formData.breakfastDone}
+                            onChange={handleChange}
+                            className="w-4 h-4 rounded border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--accent)] focus:ring-[var(--accent)] cursor-pointer"
+                        />
+                        <span className="text-[var(--text-1)] text-sm group-hover:text-[var(--accent)] transition-colors">Had breakfast?</span>
+                    </label>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="text-gray-400 text-xs font-medium mb-1.5 block">Steps</label>
-                        <input
-                            type="number"
-                            name="steps"
-                            value={formData.steps}
-                            onChange={handleChange}
-                            placeholder="0"
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-gray-400 text-xs font-medium mb-1.5 block">Protein (g)</label>
-                        <input
-                            type="number"
-                            name="proteinGrams"
-                            value={formData.proteinGrams}
-                            onChange={handleChange}
-                            placeholder="0"
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200"
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-[var(--text-2)] text-xs font-medium mb-1.5 block">Steps</label>
+                            <input
+                                type="number"
+                                name="steps"
+                                value={formData.steps}
+                                onChange={handleChange}
+                                placeholder="0"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] px-4 py-2.5 text-[var(--text-1)] text-sm focus:outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] transition-all duration-200"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[var(--text-2)] text-xs font-medium mb-1.5 block">Protein (g)</label>
+                            <input
+                                type="number"
+                                name="proteinGrams"
+                                value={formData.proteinGrams}
+                                onChange={handleChange}
+                                placeholder="0"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] px-4 py-2.5 text-[var(--text-1)] text-sm focus:outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] transition-all duration-200"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="border-t border-gray-800 mt-6 mb-6"></div>
+            <div className="border-t border-[var(--border)] mt-8 mb-8"></div>
 
             {/* FOCUS SECTION */}
             <div className="mb-0">
-                <div className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Focus</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-3)] mb-4">Focus</div>
 
-                <label className="flex items-center gap-3 cursor-pointer mb-3">
-                    <input
-                        type="checkbox"
-                        name="learningDone"
-                        checked={formData.learningDone}
-                        onChange={handleChange}
-                        className="w-4 h-4 accent-orange-500"
-                    />
-                    <span className="text-gray-300 text-sm">Learned something today?</span>
-                </label>
+                <div className="grid grid-cols-1 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                name="learningDone"
+                                checked={formData.learningDone}
+                                onChange={handleChange}
+                                className="w-4 h-4 rounded border-[var(--border)] bg-[var(--bg-secondary)] text-[var(--accent)] focus:ring-[var(--accent)] cursor-pointer"
+                            />
+                            <span className="text-[var(--text-1)] text-sm group-hover:text-[var(--accent)] transition-colors">Learned something?</span>
+                        </label>
 
-                {formData.learningDone && (
-                    <div className="mb-3">
-                        <label className="text-gray-400 text-xs font-medium mb-1.5 block">What did you learn?</label>
-                        <input
-                            type="text"
-                            name="learningTopic"
-                            value={formData.learningTopic}
-                            onChange={handleChange}
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200"
-                        />
+                        {formData.learningDone && (
+                            <div className="animate-in fade-in slide-in-from-left-4 duration-300">
+                                <label className="text-[var(--text-2)] text-xs font-medium mb-1.5 block">Topic</label>
+                                <input
+                                    type="text"
+                                    name="learningTopic"
+                                    value={formData.learningTopic}
+                                    onChange={handleChange}
+                                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] px-4 py-2 text-[var(--text-1)] text-sm focus:outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] transition-all duration-200"
+                                />
+                            </div>
+                        )}
                     </div>
-                )}
 
-                <div>
-                    <label className="text-gray-400 text-xs font-medium mb-1.5 block">Urges count</label>
-                    <input
-                        type="number"
-                        name="masturbationCount"
-                        min="0"
-                        value={formData.masturbationCount}
-                        onChange={handleChange}
-                        placeholder="0"
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200"
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-[var(--text-2)] text-xs font-medium mb-1.5 block">Urges count</label>
+                            <input
+                                type="number"
+                                name="masturbationCount"
+                                min="0"
+                                value={formData.masturbationCount}
+                                onChange={handleChange}
+                                placeholder="0"
+                                className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] px-4 py-2.5 text-[var(--text-1)] text-sm focus:outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] transition-all duration-200"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="border-t border-gray-800 mt-6 mb-6"></div>
+            <div className="border-t border-[var(--border)] mt-8 mb-8"></div>
 
             {/* JOURNAL SECTION */}
             <div className="mb-0">
-                <div className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-3">Journal</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-[var(--text-3)] mb-4">Journal</div>
                 <textarea
                     name="journalEntry"
                     rows="4"
                     value={formData.journalEntry}
                     onChange={handleChange}
-                    placeholder="What happened today? Wins, struggles, thoughts..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200 resize-none"
+                    placeholder="Wins, struggles, thoughts..."
+                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-sm)] px-4 py-3 text-[var(--text-1)] text-sm placeholder-[var(--text-3)] focus:outline-none hover:border-[var(--border-hover)] focus:border-[var(--accent)] transition-all duration-200 resize-none"
                 />
             </div>
 
-            <button
-                type="submit"
-                disabled={loading}
-                className="w-full mt-8 py-3 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm tracking-wide"
-            >
-                {loading ? 'Saving...' : 'Submit'}
-            </button>
+            <div className="mt-8 flex items-center justify-between gap-4">
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-medium rounded-[var(--radius-md)] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+                >
+                    {loading ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Saving...
+                        </>
+                    ) : 'Submit Log'}
+                </button>
+            </div>
 
-            {successMessage && (
-                <div className="flex items-center gap-2 text-green-400 text-sm mt-3">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    {successMessage}
+            {/* Toast Notification */}
+            {toast.show && (
+                <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-[var(--radius-full)] text-sm font-medium flex items-center gap-2 shadow-[var(--shadow)] animate-in fade-in slide-in-from-bottom-4 duration-300 border backdrop-blur-md z-10 ${toast.type === 'success' ? 'bg-[#10b98120] text-[var(--success)] border-[#10b98140]' : 'bg-[#ef444420] text-[var(--danger)] border-[#ef444440]'
+                    }`}>
+                    {toast.type === 'success' ? (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                    ) : (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    )}
+                    {toast.message}
                 </div>
             )}
-
-            {errorMessage && <div className="text-red-400 text-sm mt-3">{errorMessage}</div>}
         </form>
     );
 };
