@@ -1,27 +1,26 @@
 import { useState, useEffect } from 'react';
 
-const useTheme = () => {
+export default function useTheme() {
     const [theme, setTheme] = useState(() => {
-        return localStorage.getItem('theme') || 'dark';
+        return localStorage.getItem('aiimin-theme') || 'dark';
     });
 
     useEffect(() => {
-        const root = window.document.documentElement;
+        const root = document.documentElement;
+        root.setAttribute('data-theme', theme);
         if (theme === 'dark') {
             root.classList.add('dark');
-            root.classList.remove('light');
+            root.style.backgroundColor = '#0e100d';
+            document.body.style.backgroundColor = '#0e100d';
         } else {
-            root.classList.add('light');
             root.classList.remove('dark');
+            root.style.backgroundColor = '#f5f0e8';
+            document.body.style.backgroundColor = '#f5f0e8';
         }
-        localStorage.setItem('theme', theme);
+        localStorage.setItem('aiimin-theme', theme);
     }, [theme]);
 
-    const toggleTheme = () => {
-        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-    };
+    const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
     return { theme, toggleTheme };
-};
-
-export default useTheme;
+}

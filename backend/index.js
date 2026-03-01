@@ -9,6 +9,7 @@ import pomodoroRoutes from './routes/pomodoro.js';
 import moneyRoutes from './routes/money.js';
 import winsRoutes from './routes/wins.js';
 import dashboardRoutes from './routes/dashboard.js';
+import youtubeRoutes from './routes/youtube.js';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/pomodoro-sessions', pomodoroRoutes);
 app.use('/money', moneyRoutes);
 app.use('/wins', winsRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/youtube', youtubeRoutes);
 
 const PORT = process.env.PORT || 5000;
 
