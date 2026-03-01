@@ -1,7 +1,7 @@
 # AIIMIN — Project Memory
 
 ## Owner
-Aaditya Upadhyay — B.Tech Data Science, Manipal University Jaipur
+Aaditya Upadhyay — B.Tech CSE, Manipal University Jaipur
 
 ## Project
 Personal Life Tracker Web Dashboard. Browser-based. Tracks 8 daily metrics,
