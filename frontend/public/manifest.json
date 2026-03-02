@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "AIIMIN",
+  "name": "AIIMIN — Personal Life OS",
+  "description": "A calm, high-clarity personal dashboard for daily accountability and behavioral insights.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,11 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#f5a623",
+  "background_color": "#0e100d",
+  "categories": [
+    "productivity",
+    "lifestyle"
+  ]
 }

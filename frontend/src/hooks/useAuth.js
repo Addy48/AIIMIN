@@ -3,18 +3,21 @@ import supabase from '../utils/supabase';
 
 export const useAuth = () => {
     const [user, setUser] = useState(null);
+    const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
+            setSession(session ?? null);
             setLoading(false);
         });
 
         // Listen to auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
+            setSession(session ?? null);
             setLoading(false);
         });
 
@@ -31,7 +34,39 @@ export const useAuth = () => {
             });
             if (error) throw error;
         } catch (error) {
-            console.error('Error logging in:', error.message);
+            console.error('Error logging in with Google:', error.message);
+            throw error;
+        }
+    };
+
+    const signUpWithEmail = async (email, password, fullName = '') => {
+        try {
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: fullName,
+                    }
+                }
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error signing up:', error.message);
+            throw error;
+        }
+    };
+
+    const signInWithEmail = async (email, password) => {
+        try {
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error signing in:', error.message);
+            throw error;
         }
     };
 
@@ -41,10 +76,11 @@ export const useAuth = () => {
             if (error) throw error;
         } catch (error) {
             console.error('Error logging out:', error.message);
+            throw error;
         }
     };
 
-    return { user, loading, signInWithGoogle, signOut };
+    return { user, session, loading, signInWithGoogle, signUpWithEmail, signInWithEmail, signOut };
 };
 
 export default useAuth;

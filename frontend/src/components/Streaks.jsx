@@ -5,9 +5,11 @@ const Streaks = ({ user }) => {
     const [streaks, setStreaks] = useState({
         gym: 0,
         learning: 0,
-        rc: 0 // Reset Counter (inverse logic: days without resetting)
+        rc: 0, // Reset Counter
+        walking: 0
     });
     const [loading, setLoading] = useState(true);
+    const [hasLogs, setHasLogs] = useState(true);
 
     useEffect(() => {
         if (!user) return;
@@ -18,12 +20,13 @@ const Streaks = ({ user }) => {
                 // Fetch all historical logs ordered by date descending
                 const { data: logs, error } = await supabase
                     .from('daily_logs')
-                    .select('date, gym_done, learning_done, rc_count')
+                    .select('date, gym_done, learning_done, rc_count, steps')
                     .eq('user_id', user.id)
                     .order('date', { ascending: false });
 
                 if (error) throw error;
                 if (!logs || logs.length === 0) {
+                    setHasLogs(false);
                     setLoading(false);
                     return;
                 }
@@ -31,6 +34,7 @@ const Streaks = ({ user }) => {
                 let gymStreak = 0;
                 let learningStreak = 0;
                 let rcStreak = 0;
+                let walkingStreak = 0;
 
                 // Today's Date (ignoring time)
                 const today = new Date();
@@ -48,10 +52,12 @@ const Streaks = ({ user }) => {
                 let currentDateGym = today;
                 let currentDateLearning = today;
                 let currentDateRc = today;
+                let currentDateWalking = today;
 
                 let gymActive = true;
                 let learningActive = true;
                 let rcActive = true;
+                let walkingActive = true;
 
                 for (let i = 0; i < logs.length; i++) {
                     const log = logs[i];
@@ -119,11 +125,26 @@ const Streaks = ({ user }) => {
                         }
                     }
 
+                    // Walking Logic (>10k steps)
+                    if (walkingActive) {
+                        const isTodayLog = logDateObj.getTime() === currentDateWalking.getTime();
+                        const isYesterdayLog = isDifferenceOneDay(log.date, currentDateWalking);
+
+                        if (!isTodayLog && !isYesterdayLog && logDateObj < currentDateWalking) {
+                            walkingActive = false;
+                        } else if (log.steps >= 10000) {
+                            walkingStreak++;
+                            currentDateWalking = logDateObj;
+                        } else if (isYesterdayLog) {
+                            walkingActive = false;
+                        }
+                    }
+
                     // Early exit if all streaks broke
-                    if (!gymActive && !learningActive && !rcActive) break;
+                    if (!gymActive && !learningActive && !rcActive && !walkingActive) break;
                 }
 
-                setStreaks({ gym: gymStreak, learning: learningStreak, rc: rcStreak });
+                setStreaks({ gym: gymStreak, learning: learningStreak, rc: rcStreak, walking: walkingStreak });
             } catch (error) {
                 console.error('Error fetching streaks:', error);
             } finally {
@@ -164,6 +185,22 @@ const Streaks = ({ user }) => {
         return <div className="p-8 text-center text-[var(--text-3)]">Loading streaks...</div>;
     }
 
+    if (!hasLogs) {
+        return (
+            <div className="fade-up" style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                borderRadius: '16px', padding: '40px 24px', textAlign: 'center',
+                boxShadow: 'var(--shadow-sm)', marginTop: '10px'
+            }}>
+                <div style={{ fontSize: '32px', marginBottom: '16px' }}>🌱</div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '8px' }}>No Chains Yet</h3>
+                <p style={{ fontSize: '14px', color: 'var(--text-3)', maxWidth: '280px', margin: '0 auto', lineHeight: 1.5 }}>
+                    Insights unlock after your first session. Begin a focus session today to build your first streak.
+                </p>
+            </div>
+        );
+    }
+
     return (
         <div className="fade-up flex flex-col gap-4">
             <MetricCard
@@ -185,6 +222,13 @@ const Streaks = ({ user }) => {
                 label="No Resets"
                 count={streaks.rc}
                 activeColor="rgba(155,138,245,0.2)"
+                inactiveColor="var(--bg-elevated)"
+            />
+            <MetricCard
+                icon="👟"
+                label="Walking (>10k)"
+                count={streaks.walking}
+                activeColor="rgba(0,190,255,0.2)"
                 inactiveColor="var(--bg-elevated)"
             />
         </div>

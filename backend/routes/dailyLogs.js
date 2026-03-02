@@ -1,9 +1,30 @@
 import express from 'express';
 import supabase from '../supabase.js';
+import pg from 'pg';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+const pool = new pg.Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+// Middleware to mock/extract local user (since it's an MVP)
+const requireAuth = (req, res, next) => {
+    const userId = req.headers['x-user-id'] || req.query.userId || req.body.userId;
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized: missing user id' });
+    }
+    req.userId = userId;
+    next();
+};
+
+/**
+ * Create or update daily log
+ */
+router.post('/', requireAuth, async (req, res) => {
     try {
         const {
             date = new Date().toISOString().split('T')[0],
@@ -20,8 +41,7 @@ router.post('/', async (req, res) => {
             learningTopic,
             journalEntry
         } = req.body;
-
-        const userId = 'demo-user-id'; // Hardcoded until auth is built
+        const userId = req.userId;
 
         const { data, error } = await supabase
             .from('daily_logs')

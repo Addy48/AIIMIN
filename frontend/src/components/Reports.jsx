@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import supabase from '../utils/supabase';
 const Reports = ({ user }) => {
     // Current local date values for defaults
     const d = new Date();
@@ -12,12 +14,92 @@ const Reports = ({ user }) => {
 
     const handleGenerate = async () => {
         setIsGenerating(true);
-        // In a real implementation this would fetch `daily_logs` 
-        // between startDate and endDate, process them into CSV or trigger a browser print
-        setTimeout(() => {
+        try {
+            // Fetch logs for the specified range
+            const { data: logs, error } = await supabase
+                .from('daily_logs')
+                .select('*')
+                .eq('user_id', user.id)
+                .gte('date', startDate)
+                .lte('date', endDate)
+                .order('date', { ascending: true });
+
+            if (error) throw error;
+
+            console.log("Fetched logs for PDF", logs);
+
+            const doc = new jsPDF();
+
+            // Branding & Header
+            doc.setFillColor(245, 166, 35); // Accent color
+            doc.rect(0, 0, 210, 30, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
+            doc.text('AIIMIN Performance Report', 14, 20);
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 40);
+            doc.text(`Reporting Period: ${startDate}  —  ${endDate}`, 14, 47);
+
+            // Summary Stats
+            const totalLogs = logs?.length || 0;
+            const gymDays = logs?.filter(l => l.gym_done).length || 0;
+            const sleepAvg = logs?.reduce((acc, curr) => acc + (Number(curr.sleep_hours) || 0), 0) / (totalLogs || 1);
+
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text('Summary Overview', 14, 65);
+
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "normal");
+            doc.text(`• Total Tracked Days: ${totalLogs}`, 14, 75);
+            doc.text(`• Gym Sessions: ${gymDays}`, 14, 82);
+            doc.text(`• Avg Sleep: ${sleepAvg.toFixed(1)} hrs`, 14, 89);
+
+            // Detailed Table
+            if (logs && logs.length > 0) {
+                const tableData = logs.map(log => [
+                    log.date,
+                    log.gym_done ? 'Yes' : 'No',
+                    log.sleep_hours ? `${log.sleep_hours}h` : '-',
+                    log.steps || '-',
+                    log.masturbation_count || 0
+                ]);
+
+                doc.autoTable({
+                    startY: 105,
+                    head: [['Date', 'Gym', 'Sleep', 'Steps', 'RC']],
+                    body: tableData,
+                    theme: 'striped',
+                    headStyles: { fillColor: [245, 166, 35] },
+                    alternateRowStyles: { fillColor: [250, 247, 242] }
+                });
+            } else {
+                doc.setFontStyle("italic");
+                doc.text('No tracking data found for this period.', 14, 105);
+            }
+
+            // Footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(9);
+                doc.setTextColor(150);
+                doc.text(`AIIMIN Dashboard • Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+            }
+
+            // Save PDF
+            doc.save(`aiimin-report-${startDate}-to-${endDate}.pdf`);
+
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF report.');
+        } finally {
             setIsGenerating(false);
-            alert(`Generated report from ${startDate} to ${endDate}. (PDF generation coming soon)`);
-        }, 1500);
+        }
     };
 
     return (

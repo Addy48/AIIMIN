@@ -1,8 +1,55 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
 
 const Login = () => {
-    const { signInWithGoogle } = useAuth();
+    const { signInWithGoogle, signUpWithEmail, signInWithEmail } = useAuth();
+    const [mode, setMode] = useState('login'); // 'login' or 'signup'
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.documentElement.classList.remove('dark');
+        document.documentElement.style.backgroundColor = '#f5f0e8';
+        document.body.style.backgroundColor = '#f5f0e8';
+    }, []);
+
+    const handleEmailSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+        setLoading(true);
+
+        try {
+            if (mode === 'signup') {
+                await signUpWithEmail(email, password, fullName);
+                // In Supabase, sign up might require email confirmation.
+                // Or it logs in automatically if confirm email is disabled.
+                setError("Account created! (Check your email if confirmation is required.)");
+            } else {
+                await signInWithEmail(email, password);
+            }
+        } catch (err) {
+            setError(err.message || 'An error occurred.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const inputStyle = {
+        width: '100%',
+        padding: '14px 16px',
+        fontSize: '15px',
+        backgroundColor: '#faf7f2',
+        border: '1px solid rgba(0,0,0,0.08)',
+        borderRadius: '12px',
+        color: '#1a1408',
+        outline: 'none',
+        marginBottom: '16px',
+        transition: 'all 0.2s ease',
+    };
 
     return (
         <div style={{
@@ -64,7 +111,90 @@ const Login = () => {
                     AIIMIN
                 </span>
 
-                <div style={{ width: '100%', height: '1px', background: 'rgba(0,0,0,0.06)', marginBottom: '28px' }}></div>
+                {/* Tabs */}
+                <div style={{ display: 'flex', width: '100%', marginBottom: '24px', background: 'rgba(0,0,0,0.03)', borderRadius: '12px', padding: '4px' }}>
+                    <button
+                        onClick={() => { setMode('login'); setError(null); }}
+                        style={{
+                            flex: 1, padding: '10px 0', fontSize: '14px', fontWeight: 600, borderRadius: '8px',
+                            background: mode === 'login' ? '#ffffff' : 'transparent',
+                            color: mode === 'login' ? '#1a1408' : '#a89878',
+                            boxShadow: mode === 'login' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+                            transition: 'all 0.2s ease', cursor: 'pointer', border: 'none'
+                        }}
+                    >
+                        Log In
+                    </button>
+                    <button
+                        onClick={() => { setMode('signup'); setError(null); }}
+                        style={{
+                            flex: 1, padding: '10px 0', fontSize: '14px', fontWeight: 600, borderRadius: '8px',
+                            background: mode === 'signup' ? '#ffffff' : 'transparent',
+                            color: mode === 'signup' ? '#1a1408' : '#a89878',
+                            boxShadow: mode === 'signup' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+                            transition: 'all 0.2s ease', cursor: 'pointer', border: 'none'
+                        }}
+                    >
+                        Sign Up
+                    </button>
+                </div>
+
+                {error && (
+                    <div style={{ width: '100%', padding: '12px 14px', background: 'rgba(224,92,42,0.1)', color: '#e05c2a', borderRadius: '12px', fontSize: '13px', fontWeight: 500, marginBottom: '20px', textAlign: 'center' }}>
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleEmailSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                    {mode === 'signup' && (
+                        <input
+                            type="text"
+                            placeholder="Full Name"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            style={inputStyle}
+                            required
+                        />
+                    )}
+                    <input
+                        type="email"
+                        placeholder="Email Address"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        style={inputStyle}
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        style={inputStyle}
+                        required
+                        minLength={6}
+                    />
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                            width: '100%', height: '52px',
+                            background: 'linear-gradient(135deg, #c27814, #e05c2a)',
+                            color: '#ffffff', border: 'none', borderRadius: '14px',
+                            fontSize: '15px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
+                            opacity: loading ? 0.7 : 1, transition: 'all 0.2s',
+                            boxShadow: '0 4px 12px rgba(224,92,42,0.3)', marginBottom: '20px'
+                        }}
+                    >
+                        {loading ? 'Processing...' : (mode === 'login' ? 'Sign In' : 'Create Account')}
+                    </button>
+                </form>
+
+                <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', color: '#a89878', fontSize: '12px', fontWeight: 500 }}>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }}></div>
+                    OR
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }}></div>
+                </div>
 
                 <button
                     onClick={signInWithGoogle}

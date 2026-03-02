@@ -1,182 +1,328 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../utils/supabase';
+
+/* ─── Integration Health Badge ─── */
+const StatusBadge = ({ status }) => {
+    const config = {
+        connected: { color: '#22c55e', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)', label: 'Connected' },
+        syncing: { color: '#f5a623', bg: 'rgba(245,166,35,0.08)', border: 'rgba(245,166,35,0.2)', label: 'Syncing…' },
+        error: { color: '#eb8c8c', bg: 'rgba(235,140,140,0.08)', border: 'rgba(235,140,140,0.2)', label: 'Error' },
+        disconnected: { color: '#454038', bg: 'rgba(69,64,56,0.08)', border: 'rgba(69,64,56,0.2)', label: 'Not connected' },
+    };
+    const s = config[status] || config.disconnected;
+    return (
+        <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            padding: '4px 10px', borderRadius: '99px',
+            background: s.bg, border: `1px solid ${s.border}`,
+            fontSize: '11px', fontWeight: 700, color: s.color, flexShrink: 0,
+        }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+            {s.label}
+        </div>
+    );
+};
+
+/* ─── Correct calendar grid ─── */
+const getDaysInMonth = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const offset = firstDay === 0 ? 6 : firstDay - 1; // Mon-first
+    const cells = [];
+    for (let i = 0; i < offset; i++) cells.push(null);
+    for (let i = 1; i <= daysInMonth; i++) cells.push(i);
+    return cells;
+};
+
+const CalendarMonthView = () => {
+    const cells = getDaysInMonth();
+    const today = new Date().getDate();
+    const dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const monthLabel = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>{monthLabel}</div>
+
+            {/* Day headers */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center' }}>
+                {dayHeaders.map(d => (
+                    <div key={d} style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 0' }}>{d}</div>
+                ))}
+            </div>
+
+            {/* Day cells */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                {cells.map((day, i) => {
+                    if (day === null) return <div key={`e-${i}`} />;
+                    const isToday = day === today;
+                    const isFuture = day > today;
+                    return (
+                        <div key={i} style={{
+                            aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            borderRadius: '7px', fontSize: '11px',
+                            background: isToday ? 'var(--accent)' : 'transparent',
+                            color: isToday ? '#fff' : isFuture ? 'var(--text-3)' : 'var(--text-2)',
+                            fontWeight: isToday ? 800 : 500,
+                            border: isToday ? 'none' : '1px solid var(--border)',
+                            opacity: isFuture ? 0.4 : 1,
+                            cursor: !isFuture ? 'pointer' : 'default',
+                            transition: 'background 0.12s, opacity 0.12s',
+                        }}
+                            onMouseEnter={e => { if (!isToday && !isFuture) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
+                            onMouseLeave={e => { if (!isToday) e.currentTarget.style.background = 'transparent'; }}
+                        >
+                            {day}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Year countdown */}
+            <div style={{ padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600 }}>Days left in year</span>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-1)' }}>
+                    {Math.ceil((new Date(new Date().getFullYear(), 11, 31) - new Date()) / 86400000)}
+                </span>
+            </div>
+        </div>
+    );
+};
+
+/* ─── Empty state for no events ─── */
+const EmptyEventsState = ({ isConnected, onSync }) => {
+    if (!isConnected) {
+        return (
+            <div style={{
+                padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px',
+                border: '1px dashed var(--border)', borderRadius: '12px', textAlign: 'center',
+            }}>
+                <div style={{ fontSize: '28px' }}>📅</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>Calendar not connected</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-3)', maxWidth: '240px', lineHeight: 1.5 }}>
+                    Connect Google Calendar to view and time-block your schedule here.
+                </div>
+            </div>
+        );
+    }
+    return (
+        <div style={{
+            padding: '28px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+            border: '1px dashed var(--border)', borderRadius: '12px', textAlign: 'center',
+        }}>
+            <div style={{ fontSize: '24px' }}>🗓</div>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>No events scheduled today</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Clear calendar — good day to deep work.</div>
+            <button onClick={onSync} style={{
+                marginTop: '8px', padding: '6px 14px', background: 'var(--accent-dim)',
+                color: 'var(--accent)', border: '1px solid var(--border-accent)',
+                borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+            }}>
+                Refresh
+            </button>
+        </div>
+    );
+};
 
 const CalendarIntegration = ({ user }) => {
-    // Note: To fully implement this, the user's Supabase session needs 
-    // the provider_token from Google OAuth with Calendar scopes.
-
     const [events, setEvents] = useState([]);
     const [isLoadingEvents, setIsLoadingEvents] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
+    const [viewMode, setViewMode] = useState('today');
+    const [lastSync, setLastSync] = useState(null);
+    const [integrationStatus, setIntegrationStatus] = useState('disconnected'); // connected | syncing | error | disconnected
+    const [isConnected, setIsConnected] = useState(false);
 
-    useEffect(() => {
-        handleSync();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     const handleSync = async () => {
         setIsLoadingEvents(true);
         setErrorMsg('');
+        setIntegrationStatus('syncing');
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const providerToken = session?.provider_token;
-
-            if (!providerToken) {
-                setErrorMsg('No Google Calendar access token found. Please sign in again with Calendar scopes enabled.');
-                setEvents([]);
-                return;
-            }
-
-            // Fetch today's events from Google Calendar API
-            const now = new Date();
-            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-            const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString();
-
-            const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(startOfDay)}&timeMax=${encodeURIComponent(endOfDay)}&singleEvents=true&orderBy=startTime`, {
-                headers: {
-                    Authorization: `Bearer ${providerToken}`
-                }
+            const res = await fetch(`${API_URL}/calendar/events`, {
+                headers: { 'x-user-id': user.id }
             });
-
             if (!res.ok) {
-                if (res.status === 401 || res.status === 403) {
-                    throw new Error('Insufficient permissions. You must add the Calendar scope in Supabase Google Provider settings.');
+                if ([401, 403, 500].includes(res.status)) {
+                    setIntegrationStatus('error');
+                    setIsConnected(false);
+                    throw new Error('Google Calendar not connected. Use the Connect button to link your account.');
                 }
-                throw new Error('Error fetching calendar events.');
+                throw new Error('Unable to fetch calendar events. Please try again.');
             }
-
-            const data = await res.json();
-            const formattedEvents = (data.items || []).map(item => {
-                let startTime = item.start.dateTime || item.start.date;
-                let endTime = item.end.dateTime || item.end.date;
-
-                const formatTime = (isoString) => {
-                    const d = new Date(isoString);
-                    // Check if it's an all-day event
-                    if (isoString.length === 10) return 'All Day';
-                    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                };
-
-                // Naive categorization based on title keywords
-                const titleLower = item.summary?.toLowerCase() || '';
-                let type = 'personal';
-                if (titleLower.includes('work') || titleLower.includes('focus') || titleLower.includes('study')) type = 'focus';
-                if (titleLower.includes('meet') || titleLower.includes('call') || titleLower.includes('sync')) type = 'meeting';
-
-                return {
-                    id: item.id,
-                    title: item.summary || 'Busy',
-                    time: `${formatTime(startTime)} - ${formatTime(endTime)}`,
-                    type
-                };
-            });
-
+            const formattedEvents = await res.json();
             setEvents(formattedEvents);
-
+            setLastSync(new Date());
+            setIsConnected(true);
+            setIntegrationStatus('connected');
         } catch (err) {
-            console.error('Calendar sync error:', err);
             setErrorMsg(err.message);
+            setIntegrationStatus('error');
         } finally {
             setIsLoadingEvents(false);
         }
     };
 
-    return (
-        <div className="fade-up flex flex-col gap-6">
+    const handleDisconnect = () => {
+        if (window.confirm('Disconnect Google Calendar? Your existing events state will be cleared.')) {
+            setIsConnected(false);
+            setEvents([]);
+            setLastSync(null);
+            setIntegrationStatus('disconnected');
+        }
+    };
 
-            {/* Header info */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-1)' }}>Today's Schedule</h3>
-                        <button
-                            onClick={handleSync}
-                            className="hover:scale-105"
-                            style={{ background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--border-accent)', padding: '6px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}
-                        >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={isLoadingEvents ? 'animate-spin' : ''}>
-                                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-8.27l5.67-5.67" />
-                            </svg>
-                            Sync Calendar
-                        </button>
+    return (
+        <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+            {/* ── Integration header card ── */}
+            <div style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                borderRadius: '16px', padding: '20px 22px', boxShadow: 'var(--shadow-sm)',
+            }}>
+
+                {/* Top row */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '34px', height: '34px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                            📅
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-1)' }}>Google Calendar</div>
+                            {lastSync && (
+                                <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '2px', fontWeight: 500 }}>
+                                    Last synced {lastSync.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <StatusBadge status={integrationStatus} />
+                </div>
+
+                {/* Action row */}
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {/* View toggle */}
+                    <div style={{ display: 'flex', background: 'var(--bg-elevated)', borderRadius: '8px', padding: '2px', border: '1px solid var(--border)', flex: 1, minWidth: '0' }}>
+                        {['today', 'month'].map(mode => (
+                            <button key={mode} onClick={() => setViewMode(mode)} style={{
+                                flex: 1, padding: '5px 0', fontSize: '12px', fontWeight: 700, border: 'none',
+                                background: viewMode === mode ? 'var(--bg-card)' : 'transparent',
+                                color: viewMode === mode ? 'var(--text-1)' : 'var(--text-3)',
+                                borderRadius: '6px', cursor: 'pointer',
+                                boxShadow: viewMode === mode ? 'var(--shadow-sm)' : 'none',
+                                transition: 'all 0.15s ease',
+                            }}>
+                                {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                            </button>
+                        ))}
                     </div>
 
-                    <p style={{ fontSize: '13px', color: 'var(--text-3)', margin: '0 0 20px 0', lineHeight: 1.5, maxWidth: '80%' }}>
-                        Time block your day to stay focused. Enable Google Calendar scopes (`https://www.googleapis.com/auth/calendar`) in your Supabase Auth settings to sync automatically.
-                    </p>
+                    <button
+                        onClick={handleSync}
+                        disabled={isLoadingEvents}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            padding: '6px 14px', background: 'var(--accent-dim)',
+                            color: 'var(--accent)', border: '1px solid var(--border-accent)',
+                            borderRadius: '8px', fontSize: '12px', fontWeight: 700,
+                            cursor: isLoadingEvents ? 'not-allowed' : 'pointer',
+                            opacity: isLoadingEvents ? 0.7 : 1, transition: 'all 0.2s',
+                        }}
+                    >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                            style={{ animation: isLoadingEvents ? 'spin 0.7s linear infinite' : 'none' }}>
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-8.27" />
+                        </svg>
+                        {isLoadingEvents ? 'Syncing…' : 'Sync'}
+                    </button>
 
-                    {errorMsg && (
-                        <div style={{ padding: '10px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', fontSize: '12px', fontWeight: 600, borderRadius: '8px', border: '1px solid rgba(224,92,92,0.2)' }}>
-                            {errorMsg}
-                        </div>
+                    {isConnected && (
+                        <button onClick={handleDisconnect} style={{
+                            padding: '6px 12px', background: 'transparent', color: 'var(--text-3)',
+                            border: '1px solid var(--border)', borderRadius: '8px',
+                            fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                        }}
+                            onMouseEnter={e => { e.currentTarget.style.color = 'var(--danger)'; e.currentTarget.style.borderColor = 'rgba(235,140,140,0.3)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
+                        >
+                            Disconnect
+                        </button>
                     )}
                 </div>
 
-                {/* Decorative background element */}
-                <svg style={{ position: 'absolute', right: '-20px', bottom: '-20px', width: '120px', height: '120px', opacity: 0.05, zIndex: 0, pointerEvents: 'none' }} viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
+                {/* Error state */}
+                {errorMsg && (
+                    <div style={{
+                        marginTop: '12px', padding: '10px 14px', display: 'flex', alignItems: 'flex-start', gap: '10px',
+                        background: 'rgba(235,140,140,0.08)', color: 'var(--danger)',
+                        fontSize: '12px', fontWeight: 600, borderRadius: '8px',
+                        border: '1px solid rgba(235,140,140,0.18)',
+                    }}>
+                        <span style={{ flexShrink: 0, marginTop: '1px' }}>⚠</span>
+                        <div>
+                            <div style={{ marginBottom: '4px' }}>{errorMsg}</div>
+                            <button onClick={handleSync} style={{
+                                background: 'none', border: 'none', color: 'var(--accent)', fontSize: '11px',
+                                fontWeight: 700, cursor: 'pointer', padding: 0, textDecoration: 'underline',
+                            }}>
+                                Retry sync
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Privacy note */}
+                <div style={{ marginTop: '12px', fontSize: '10px', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                    Event data is read-only and never stored on AIIMIN servers.
+                </div>
             </div>
 
-            {/* Schedule Timeline */}
-            <div style={{ padding: '0 8px' }}>
-                <div style={{ width: '2px', background: 'var(--border)', position: 'absolute', left: '38px', top: '160px', bottom: '0', zIndex: -1 }}></div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-                    {events.length === 0 && !isLoadingEvents && !errorMsg && (
-                        <div style={{ color: 'var(--text-3)', fontSize: '14px', fontStyle: 'italic', paddingLeft: '40px' }}>No events scheduled for today.</div>
-                    )}
-
-                    {events.map((event, index) => {
-                        let dotColor = 'var(--text-3)';
-                        let bg = 'var(--bg-card)';
-                        let border = 'var(--border)';
-
-                        if (event.type === 'focus') {
-                            dotColor = 'var(--warning)';
-                            bg = 'var(--warning-dim)';
-                            border = 'var(--border-accent)';
-                        } else if (event.type === 'meeting') {
-                            dotColor = 'var(--purple)';
-                        } else if (event.type === 'personal') {
-                            dotColor = 'var(--success)';
-                        }
-
-                        return (
-                            <div key={event.id} style={{ display: 'flex', gap: '16px', position: 'relative' }}>
-                                {/* Timeline Dot */}
-                                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--bg-elevated)', border: '2px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, marginTop: '12px', flexShrink: 0 }}>
-                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor }}></div>
-                                </div>
-
-                                {/* Event Card */}
-                                <div style={{ flex: 1, background: bg, border: `1px solid ${border}`, borderRadius: '12px', padding: '16px', transition: 'transform 0.2s', cursor: 'default' }} className="hover:-translate-y-1 hover:shadow-md">
-                                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.05em', marginBottom: '4px' }}>
-                                        {event.time}
-                                    </div>
-                                    <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-1)' }}>
-                                        {event.title}
+            {/* ── Content area ── */}
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px 22px' }}>
+                {viewMode === 'today' ? (
+                    <>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '14px' }}>
+                            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                        </div>
+                        {events.length === 0 ? (
+                            <EmptyEventsState isConnected={isConnected} onSync={handleSync} />
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {events.map((event) => {
+                                    const typeColors = {
+                                        focus: { dot: 'var(--warning)', bg: 'rgba(245,166,35,0.05)', border: 'rgba(245,166,35,0.15)' },
+                                        meeting: { dot: 'var(--purple)', bg: 'rgba(155,138,245,0.05)', border: 'rgba(155,138,245,0.15)' },
+                                        personal: { dot: 'var(--success)', bg: 'rgba(93,184,122,0.05)', border: 'rgba(93,184,122,0.15)' },
+                                    };
+                                    const c = typeColors[event.type] || { dot: 'var(--text-3)', bg: 'var(--bg-elevated)', border: 'var(--border)' };
+                                    return (
+                                        <div key={event.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: c.dot, marginTop: '14px', flexShrink: 0 }} />
+                                            <div style={{ flex: 1, background: c.bg, border: `1px solid ${c.border}`, borderRadius: '10px', padding: '12px 14px' }}>
+                                                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.04em', marginBottom: '3px' }}>{event.time}</div>
+                                                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>{event.title}</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {/* Add slot CTA */}
+                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', opacity: 0.5 }}>
+                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', border: '2px dashed var(--text-3)', flexShrink: 0 }} />
+                                    <div style={{ flex: 1, border: '1px dashed var(--border)', borderRadius: '10px', padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <span style={{ fontSize: '12px', color: 'var(--text-3)', fontWeight: 600 }}>+ Block time slot</span>
                                     </div>
                                 </div>
                             </div>
-                        );
-                    })}
-
-                    <div style={{ display: 'flex', gap: '16px', opacity: 0.5, marginTop: '8px' }}>
-                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--bg-elevated)', border: '2px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, marginTop: '12px', flexShrink: 0 }}></div>
-                        <div style={{ flex: 1, background: 'transparent', border: `1px dashed var(--border)`, borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-3)' }}>+ Add blocked time</span>
-                        </div>
-                    </div>
-
-                </div>
+                        )}
+                    </>
+                ) : (
+                    <CalendarMonthView />
+                )}
             </div>
-
-            <div className="h-8"></div>
         </div>
     );
 };

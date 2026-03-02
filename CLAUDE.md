@@ -11,7 +11,7 @@ manages money, schedules via Google Calendar, measures focus via Pomodoro.
 
 ## Tech Stack
 
-- Frontend: React 18 + Tailwind CSS
+- Frontend: React 19 + Tailwind CSS
 - Backend: Node.js + Express
 - Database: PostgreSQL
 - Hosting: Vercel (frontend) + Railway or Render (backend)

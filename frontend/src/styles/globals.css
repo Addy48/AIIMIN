@@ -29,8 +29,8 @@
     --success-dim: rgba(93, 184, 122, 0.12);
     --warning: #f5a623;
     --warning-dim: rgba(245, 166, 35, 0.12);
-    --danger: #e05c5c;
-    --danger-dim: rgba(224, 92, 92, 0.12);
+    --danger: #eb8c8c;
+    --danger-dim: rgba(235, 140, 140, 0.12);
     --purple: #9b8af5;
     --purple-dim: rgba(155, 138, 245, 0.12);
 
@@ -42,9 +42,9 @@
 
     /* Radii */
     --r-sm: 8px;
-    --r-md: 12px;
+    --r-md: 16px;
     --r-lg: 16px;
-    --r-xl: 20px;
+    --r-xl: 24px;
     --r-full: 9999px;
 
     /* Transitions */
@@ -76,8 +76,8 @@
     --success-dim: rgba(45, 122, 74, 0.1);
     --warning: #c27814;
     --warning-dim: rgba(194, 120, 20, 0.1);
-    --danger: #c0392b;
-    --danger-dim: rgba(192, 57, 43, 0.1);
+    --danger: #d46b6b;
+    --danger-dim: rgba(212, 107, 107, 0.1);
     --purple: #6d4c9e;
     --purple-dim: rgba(109, 76, 158, 0.1);
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
