@@ -14,11 +14,11 @@ const MOODS = [
 ];
 
 const getColorGroup = (n) => {
-    if (n <= 2) return { base: 'rgba(235,140,140,0.15)', active: '#eb8c8c', ring: 'rgba(235,140,140,0.5)' }; // Soft Coral
-    if (n <= 4) return { base: 'rgba(245,166,35,0.15)', active: '#f5a623', ring: 'rgba(245,166,35,0.5)' }; // Warm Yellow
-    if (n <= 6) return { base: 'rgba(93,184,122,0.15)', active: '#5db87a', ring: 'rgba(93,184,122,0.5)' }; // Calm Green
-    if (n <= 8) return { base: 'rgba(0,190,255,0.15)', active: '#00beff', ring: 'rgba(0,190,255,0.5)' }; // Aqua Blue
-    return { base: 'rgba(155,138,245,0.15)', active: '#9b8af5', ring: 'rgba(155,138,245,0.5)' }; // Soft Purple
+    if (n <= 2) return { base: 'var(--danger-dim)', active: 'var(--danger)', ring: 'rgba(239, 68, 68, 0.4)' };
+    if (n <= 4) return { base: 'var(--accent-dim)', active: 'var(--accent)', ring: 'rgba(245, 166, 35, 0.4)' };
+    if (n <= 6) return { base: 'var(--success-dim)', active: 'var(--success)', ring: 'rgba(99, 193, 133, 0.4)' };
+    if (n <= 8) return { base: 'rgba(0,190,255,0.1)', active: '#00beff', ring: 'rgba(0,190,255,0.4)' };
+    return { base: 'rgba(155,138,245,0.1)', active: '#9b8af5', ring: 'rgba(155,138,245,0.4)' };
 };
 
 // Static mock weekly values (Mon → today placeholder)
@@ -50,15 +50,15 @@ const MoodTracker = ({ user, onMoodChange }) => {
 
     return (
         <div style={{
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border-accent)',
-            borderRadius: '16px',
-            padding: '24px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--r-lg)',
+            padding: 'var(--card-px)',
             boxShadow: 'var(--shadow-md)',
         }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-1)' }}>Mood</span>
+                <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>Daily Mood</span>
                 {selectedMood !== null && (
                     <span style={{
                         padding: '3px 12px',

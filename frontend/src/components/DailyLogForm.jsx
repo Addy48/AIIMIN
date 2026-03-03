@@ -329,10 +329,10 @@ const DailyLogForm = ({ user }) => {
             {isDirty && (
                 <div style={{
                     position: 'fixed',
-                    bottom: '30px',
-                    right: '30px',
+                    bottom: '32px',
+                    right: 'max(32px, calc((100vw - var(--max-width)) / 2 + 32px))',
                     zIndex: 9999,
-                    animation: 'slideUp 0.3s ease forwards'
+                    animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
                 }}>
                     <button
                         onClick={handleSubmit}
@@ -341,16 +341,16 @@ const DailyLogForm = ({ user }) => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
-                            padding: '12px 20px',
-                            background: 'var(--bg-elevated)',
+                            padding: '12px 22px',
+                            background: 'var(--bg-card)',
                             border: '1px solid var(--border-accent)',
                             borderRadius: '30px',
-                            boxShadow: '0 8px 30px rgba(0,0,0,0.15), 0 0 0 1px rgba(245,166,35,0.2)',
+                            boxShadow: '0 8px 18px rgba(0,0,0,0.2), 0 0 0 1px rgba(245,166,35,0.15)',
                             color: 'var(--text-1)',
                             fontWeight: 700,
-                            fontSize: '14px',
+                            fontSize: '13px',
                             cursor: 'pointer',
-                            transition: 'all 0.2s',
+                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                             opacity: loading ? 0.7 : 1
                         }}
                         onMouseEnter={e => {

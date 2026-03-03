@@ -7,6 +7,8 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
+    const [username, setUsername] = useState('');
+    const [usernameError, setUsernameError] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -24,10 +26,15 @@ const Login = () => {
 
         try {
             if (mode === 'signup') {
-                await signUpWithEmail(email, password, fullName);
-                // In Supabase, sign up might require email confirmation.
-                // Or it logs in automatically if confirm email is disabled.
-                setError("Account created! (Check your email if confirmation is required.)");
+                // Final validation check
+                const usernameRegex = /^(?=.*[A-Z])(?=.*[0-9])[A-Za-z0-9@+-_]{6,}$/;
+                if (!usernameRegex.test(username)) {
+                    setError("Username does not meet security requirements.");
+                    setLoading(false);
+                    return;
+                }
+                await signUpWithEmail(email, password, fullName, username);
+                setError("Account created! Redirecting...");
             } else {
                 await signInWithEmail(email, password);
             }
@@ -147,18 +154,48 @@ const Login = () => {
 
                 <form onSubmit={handleEmailSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
                     {mode === 'signup' && (
-                        <input
-                            type="text"
-                            placeholder="Full Name"
-                            value={fullName}
-                            onChange={(e) => setFullName(e.target.value)}
-                            style={inputStyle}
-                            required
-                        />
+                        <>
+                            <input
+                                type="text"
+                                placeholder="Full Name"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                style={inputStyle}
+                                required
+                            />
+                            <div style={{ position: 'relative', width: '100%' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Username"
+                                    value={username}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setUsername(val);
+                                        const regex = /^(?=.*[A-Z])(?=.*[0-9])[A-Za-z0-9@+-_]{6,}$/;
+                                        if (val && !regex.test(val)) {
+                                            setUsernameError("Min 6 chars, 1 uppercase, 1 number (@+-_ allowed)");
+                                        } else {
+                                            setUsernameError(null);
+                                        }
+                                    }}
+                                    style={{
+                                        ...inputStyle,
+                                        borderColor: usernameError ? '#e05c2a' : 'rgba(0,0,0,0.08)',
+                                        marginBottom: usernameError ? '4px' : '16px'
+                                    }}
+                                    required
+                                />
+                                {usernameError && (
+                                    <div style={{ fontSize: '10px', color: '#e05c2a', marginBottom: '12px', fontWeight: 600, paddingLeft: '4px' }}>
+                                        {usernameError}
+                                    </div>
+                                )}
+                            </div>
+                        </>
                     )}
                     <input
-                        type="email"
-                        placeholder="Email Address"
+                        type="text"
+                        placeholder="Email or Username"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         style={inputStyle}

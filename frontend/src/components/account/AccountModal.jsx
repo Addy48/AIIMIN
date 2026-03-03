@@ -1,14 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom'; // Added for Portal
 import { useAuth } from '../../hooks/useAuth';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const Section = ({ title, children }) => (
     <div style={{ marginBottom: '24px' }}>
-        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+        <div style={{
+            fontSize: '11px',
+            fontWeight: 800,
+            color: 'var(--text-3)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            marginBottom: '14px',
+            paddingLeft: '4px'
+        }}>
             {title}
         </div>
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
             {children}
         </div>
     </div>
@@ -17,12 +26,12 @@ const Section = ({ title, children }) => (
 const Row = ({ label, children, border = true }) => (
     <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '12px 16px', gap: '10px',
+        padding: '16px 20px', gap: '12px',
         borderBottom: border ? '1px solid var(--border)' : 'none',
         flexWrap: 'wrap',
     }}>
-        <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-1)' }}>{label}</div>
-        <div>{children}</div>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-1)' }}>{label}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{children}</div>
     </div>
 );
 
@@ -33,13 +42,13 @@ const TIMEZONES = [
 
 const StatusDot = ({ connected, error }) => (
     <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: '5px',
-        padding: '2px 8px', borderRadius: '99px', fontSize: '10px', fontWeight: 700,
-        background: error ? 'rgba(235,140,140,0.08)' : connected ? 'rgba(34,197,94,0.08)' : 'var(--bg-elevated)',
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        padding: '4px 10px', borderRadius: '99px', fontSize: '11px', fontWeight: 700,
+        background: error ? 'rgba(235,140,140,0.1)' : connected ? 'rgba(34,197,94,0.1)' : 'var(--bg-elevated)',
         border: `1px solid ${error ? 'rgba(235,140,140,0.2)' : connected ? 'rgba(34,197,94,0.2)' : 'var(--border)'}`,
         color: error ? 'var(--danger)' : connected ? '#22c55e' : 'var(--text-3)',
     }}>
-        <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'currentColor' }} />
+        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'currentColor' }} />
         {error ? 'Error' : connected ? 'Connected' : 'Not connected'}
     </div>
 );
@@ -65,13 +74,26 @@ const AccountModal = ({ isOpen, onClose }) => {
         if (!isOpen || !session) return;
         setLoading(true);
         Promise.all([
-            fetch(`${API_URL}/account/profile`, { headers }).then(r => r.json()),
-            fetch(`${API_URL}/account/integrations`, { headers }).then(r => r.json()),
+            fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed')),
+            fetch(`${API_URL}/account/integrations`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Integrations load failed')),
         ]).then(([p, integ]) => {
             setProfile(p);
             setIntegrations(integ);
+        }).catch(err => {
+            console.error('[AccountModal] fetch error:', err);
         }).finally(() => setLoading(false));
     }, [isOpen, session]);
+
+    // Prevent body scroll when modal is open
+    useEffect(() => {
+        if (isOpen) {
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalStyle;
+            };
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -147,53 +169,83 @@ const AccountModal = ({ isOpen, onClose }) => {
 
     if (!isOpen) return null;
 
-    return (
+    return ReactDOM.createPortal(
         <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000, padding: '20px',
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(10, 12, 10, 0.75)', // Darker backdrop
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000000, // Highest z-index
+            padding: '20px',
+            animation: 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
         }}>
-            <div ref={modalRef} className="fade-up" style={{
-                background: 'var(--bg-primary)', border: '1px solid var(--border)',
-                borderRadius: '24px', width: '100%', maxWidth: '640px',
-                maxHeight: '90vh', overflowY: 'auto',
-                boxShadow: '0 24px 60px rgba(0,0,0,0.3)', padding: '32px',
+            <style>{`
+                @keyframes modalEntry {
+                    0% { transform: scale(0.96) translateY(20px); opacity: 0; }
+                    100% { transform: scale(1) translateY(0); opacity: 1; }
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+                @media (max-width: 800px) {
+                    .settings-grid { grid-template-columns: 1fr; gap: 24px; }
+                }
+            `}</style>
+            <div ref={modalRef} style={{
+                background: 'var(--bg-primary)',
+                border: '1px solid var(--border)',
+                borderRadius: '32px',
+                width: '480px', // Fixed width as requested
+                maxWidth: '90vw',
+                maxHeight: '92vh',
+                overflowY: 'auto',
+                boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',
+                padding: '40px',
+                animation: 'modalEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px' }}>
                     <div>
-                        <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>Account Settings</h2>
-                        <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Manage your profile, integrations and data privacy</p>
+                        <h2 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.02em' }}>Account</h2>
+                        <p style={{ fontSize: '13px', color: 'var(--text-3)', marginTop: '6px', fontWeight: 500 }}>System focus & identity control</p>
                     </div>
                     <button onClick={onClose} style={{
                         background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-2)',
                         width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px'
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
+                        transition: 'all 0.2s ease'
                     }}>×</button>
                 </div>
 
                 {loading ? (
-                    <div style={{ padding: '80px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-                        <div style={{ width: '28px', height: '28px', border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                        <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>Loading preferences...</span>
+                    <div style={{ padding: '100px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                        <div style={{ width: '32px', height: '32px', border: '3.5px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                        <span style={{ fontSize: '13px', color: 'var(--text-3)', fontWeight: 600 }}>Loading state...</span>
                     </div>
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }} className="settings-grid">
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <style>{`
-                                @media (max-width: 600px) {
-                                    .settings-grid { grid-template-columns: 1fr !important; }
-                                }
-                            `}</style>
-                            <Section title="User Profile">
-                                <Row label="Display Name">
+                    <div className="settings-grid" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <Section title="Profile">
+                                <Row label="Name">
                                     <input
                                         value={profile?.full_name || ''}
                                         onChange={e => setProfile(p => ({ ...p, full_name: e.target.value }))}
                                         style={{
-                                            padding: '8px 12px', borderRadius: '8px', fontSize: '12px',
+                                            padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
                                             border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                            color: 'var(--text-1)', width: '100%', outline: 'none',
+                                            color: 'var(--text-1)', width: '200px', outline: 'none',
+                                            fontWeight: 600, transition: 'border-color 0.2s ease'
                                         }}
                                     />
                                 </Row>
@@ -202,111 +254,128 @@ const AccountModal = ({ isOpen, onClose }) => {
                                         value={profile?.timezone || 'Asia/Kolkata'}
                                         onChange={e => setProfile(p => ({ ...p, timezone: e.target.value }))}
                                         style={{
-                                            padding: '8px 12px', borderRadius: '8px', fontSize: '12px',
+                                            padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
                                             border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                            color: 'var(--text-1)', cursor: 'pointer', outline: 'none', width: '100%',
+                                            color: 'var(--text-1)', cursor: 'pointer', outline: 'none', width: '200px',
+                                            fontWeight: 600
                                         }}
                                     >
                                         {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
                                     </select>
                                 </Row>
-                                <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-elevated)', borderTop: '1px solid var(--border)' }}>
+                                <div style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
                                     <button onClick={handleSaveProfile} disabled={saving} style={{
-                                        flex: 1, padding: '10px', background: 'var(--accent)', color: 'white',
-                                        border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 800,
-                                        cursor: 'pointer', opacity: saving ? 0.7 : 1, transition: 'all 0.2s ease',
+                                        flex: 1, padding: '12px', background: 'var(--accent)', color: 'white',
+                                        border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 800,
+                                        cursor: 'pointer', opacity: saving ? 0.7 : 1, transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                                     }}>
-                                        {saving ? 'Saving...' : 'Update Profile'}
+                                        {saving ? 'Saving...' : 'Save Profile Changes'}
                                     </button>
-                                    {saveMsg && <span style={{ fontSize: '12px', color: '#22c55e', fontWeight: 700 }}>{saveMsg}</span>}
+                                    {saveMsg && <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{saveMsg}</span>}
                                 </div>
                             </Section>
 
                             <Section title="Integrations">
-                                <Row label="Identity Provider">
-                                    <div style={{ fontSize: '12px', color: 'var(--text-2)', fontWeight: 600 }}>Google Auth</div>
+                                <Row label="OAuth Connection">
+                                    <div style={{ fontSize: '13px', color: 'var(--text-2)', fontWeight: 700 }}>Google Identity</div>
                                 </Row>
-                                <Row label="Calendar & YT" border={false}>
+                                <Row label="Status" border={false}>
                                     <StatusDot connected={integrations?.google_calendar?.connected} error={integrations?.google_calendar?.error} />
                                 </Row>
-                                <div style={{ padding: '16px', background: 'var(--bg-elevated)', borderTop: '1px solid var(--border)' }}>
+                                <div style={{ padding: '20px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
                                     {!integrations?.google_calendar?.connected ? (
                                         <button onClick={handleConnectGoogle} style={{
-                                            width: '100%', padding: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)',
-                                            borderRadius: '10px', fontSize: '12px', fontWeight: 700, color: 'var(--text-1)', cursor: 'pointer',
+                                            width: '100%', padding: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)',
+                                            borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-1)', cursor: 'pointer',
+                                            transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                                         }}>
-                                            Connect Google Account
+                                            <span style={{ fontSize: '16px' }}>+</span> Connect Google Account
                                         </button>
                                     ) : (
                                         <button onClick={handleDisconnect} style={{
-                                            width: '100%', padding: '10px', background: 'none', border: '1px solid var(--border)',
-                                            borderRadius: '10px', fontSize: '12px', fontWeight: 700, color: 'var(--text-3)', cursor: 'pointer',
+                                            width: '100%', padding: '12px', background: 'none', border: '1px solid var(--border)',
+                                            borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-3)', cursor: 'pointer',
+                                            transition: 'all 0.2s ease'
                                         }}>
                                             Disconnect Services
                                         </button>
                                     )}
                                 </div>
                             </Section>
-                        </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <Section title="Data & Privacy">
-                                <div style={{ padding: '20px' }}>
-                                    <div style={{ fontSize: '13px', color: 'var(--text-1)', fontWeight: 700, marginBottom: '4px' }}>Download Archive</div>
-                                    <div style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '16px' }}>Fetch a copy of all your tracked behavioral metrics in JSON format.</div>
+                            <Section title="Data Strategy">
+                                <div style={{ padding: '24px' }}>
+                                    <div style={{ fontSize: '14px', color: 'var(--text-1)', fontWeight: 800, marginBottom: '6px' }}>Behavioral Archive</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-3)', marginBottom: '20px', lineHeight: 1.5, fontWeight: 500 }}>Download a complete high-fidelity JSON snapshot of your behavioral history.</div>
                                     <button onClick={handleExport} disabled={exporting} style={{
-                                        width: '100%', padding: '10px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                                        borderRadius: '10px', fontSize: '12px', fontWeight: 700, color: 'var(--text-1)', cursor: 'pointer',
+                                        width: '100%', padding: '12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                                        borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-1)', cursor: 'pointer',
+                                        transition: 'all 0.2s ease'
                                     }}>
-                                        {exporting ? 'Preparing Archive...' : 'Export All Data'}
+                                        {exporting ? 'Compiling JSON...' : 'Export All Data'}
                                     </button>
                                 </div>
                             </Section>
 
                             <Section title="Danger Zone">
-                                <div style={{ padding: '20px' }}>
-                                    <div style={{ fontSize: '13px', color: 'var(--danger)', fontWeight: 700, marginBottom: '4px' }}>Delete Account</div>
-                                    <div style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '16px' }}>Permanently remove all logs and settings. This action is irreversible.</div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div style={{ padding: '24px' }}>
+                                    <div style={{ fontSize: '14px', color: 'var(--danger)', fontWeight: 800, marginBottom: '6px' }}>Terminate Account</div>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-3)', marginBottom: '20px', lineHeight: 1.5, fontWeight: 500 }}>Permanently purge all identity and behavior data. This is irreversible.</div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                         <input
                                             value={deleteConfirm}
                                             onChange={e => setDeleteConfirm(e.target.value)}
-                                            placeholder="Type DELETE to confirm"
+                                            placeholder="Type DELETE to purge"
                                             style={{
-                                                padding: '10px', borderRadius: '10px', fontSize: '12px',
-                                                border: '1px solid rgba(235,140,140,0.3)', background: 'var(--bg-elevated)',
+                                                padding: '12px', borderRadius: '12px', fontSize: '13px',
+                                                border: '1px solid rgba(235,140,140,0.4)', background: 'var(--bg-elevated)',
                                                 color: 'var(--text-1)', width: '100%', outline: 'none',
+                                                fontWeight: 800, letterSpacing: '0.05em'
                                             }}
+                                            className="delete-input"
                                         />
                                         <button onClick={handleDelete} disabled={deleting || deleteConfirm !== 'DELETE'} style={{
-                                            width: '100%', padding: '10px', background: deleteConfirm === 'DELETE' ? 'var(--danger)' : 'transparent',
+                                            width: '100%', padding: '14px', background: deleteConfirm === 'DELETE' ? 'var(--danger)' : 'transparent',
                                             border: `1px solid ${deleteConfirm === 'DELETE' ? 'var(--danger)' : 'var(--border)'}`,
-                                            borderRadius: '10px', fontSize: '12px', fontWeight: 800,
+                                            borderRadius: '12px', fontSize: '14px', fontWeight: 900,
                                             color: deleteConfirm === 'DELETE' ? '#fff' : 'var(--text-3)',
-                                            cursor: 'pointer', opacity: (deleting || deleteConfirm !== 'DELETE') ? 0.5 : 1, transition: 'all 0.2s ease',
+                                            cursor: 'pointer', opacity: (deleting || deleteConfirm !== 'DELETE') ? 0.5 : 1, transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                                         }}>
-                                            {deleting ? 'Deleting Account...' : 'Confirm Deletion'}
+                                            {deleting ? 'Purging Identity...' : 'Confirm Destruction'}
                                         </button>
                                     </div>
                                 </div>
                             </Section>
 
-                            <div style={{ marginTop: 'auto', padding: '10px 0' }}>
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '16px', // 16px spacing as requested
+                                marginTop: '16px',
+                                padding: '12px 0 20px'
+                            }}>
                                 <button onClick={signOut} style={{
-                                    width: '100%', padding: '14px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                                    borderRadius: '14px', fontSize: '14px', fontWeight: 800, color: 'var(--text-2)',
-                                    cursor: 'pointer', transition: 'all 0.2s ease',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                    width: '100%', padding: '16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                                    borderRadius: '16px', fontSize: '15px', fontWeight: 900, color: 'var(--text-2)',
+                                    cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                                 }}>
-                                    <span>🚪</span> Sign Out of AIIMIN
+                                    <span style={{ fontSize: '18px' }}>🚪</span> Sign Out of AIIMIN
                                 </button>
+
+                                <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                    AIIMIN OS v1.0.4 — Behavior Shaping System
+                                </p>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body // Portal target
     );
 };
 
 export default AccountModal;
+

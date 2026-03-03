@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 /* ─── Integration Health Badge ─── */
 const StatusBadge = ({ status }) => {
     const config = {
-        connected: { color: '#22c55e', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)', label: 'Connected' },
-        syncing: { color: '#f5a623', bg: 'rgba(245,166,35,0.08)', border: 'rgba(245,166,35,0.2)', label: 'Syncing…' },
-        error: { color: '#eb8c8c', bg: 'rgba(235,140,140,0.08)', border: 'rgba(235,140,140,0.2)', label: 'Error' },
-        disconnected: { color: '#454038', bg: 'rgba(69,64,56,0.08)', border: 'rgba(69,64,56,0.2)', label: 'Not connected' },
+        connected: { color: 'var(--success)', bg: 'var(--success-dim)', border: 'rgba(99, 193, 133, 0.2)', label: 'Connected' },
+        syncing: { color: 'var(--accent)', bg: 'var(--accent-dim)', border: 'rgba(245, 166, 35, 0.2)', label: 'Syncing…' },
+        error: { color: 'var(--danger)', bg: 'var(--danger-dim)', border: 'rgba(239, 68, 68, 0.2)', label: 'Error' },
+        disconnected: { color: 'var(--text-3)', bg: 'var(--bg-elevated)', border: 'var(--border)', label: 'Disconnected' },
     };
     const s = config[status] || config.disconnected;
     return (
@@ -92,35 +92,49 @@ const CalendarMonthView = () => {
 };
 
 /* ─── Empty state for no events ─── */
-const EmptyEventsState = ({ isConnected, onSync }) => {
+const EmptyEventsState = ({ isConnected, onSync, isLoading }) => {
     if (!isConnected) {
         return (
             <div style={{
-                padding: '32px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px',
-                border: '1px dashed var(--border)', borderRadius: '12px', textAlign: 'center',
+                padding: '40px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px',
+                background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', textAlign: 'center',
             }}>
-                <div style={{ fontSize: '28px' }}>📅</div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>Calendar not connected</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-3)', maxWidth: '240px', lineHeight: 1.5 }}>
-                    Connect Google Calendar to view and time-block your schedule here.
+                <div style={{ width: '48px', height: '48px', background: 'var(--bg-elevated)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>📅</div>
+                <div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '4px' }}>Calendar integration inactive</div>
+                    <div style={{ fontSize: '13px', color: 'var(--text-2)', maxWidth: '300px', lineHeight: 1.5, fontWeight: 500 }}>
+                        AIIMIN cannot analyze schedule load without calendar access.
+                    </div>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '8px', width: '100%', maxWidth: '320px' }}>
+                    <button onClick={onSync} style={{
+                        flex: 1, height: '40px', background: 'var(--accent)', color: 'white', border: 'none',
+                        borderRadius: 'var(--r-md)', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
+                    }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                        Connect Google
+                    </button>
                 </div>
             </div>
         );
     }
     return (
         <div style={{
-            padding: '28px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
-            border: '1px dashed var(--border)', borderRadius: '12px', textAlign: 'center',
+            padding: '40px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
+            border: '1px dashed var(--border)', borderRadius: 'var(--r-lg)', textAlign: 'center',
         }}>
             <div style={{ fontSize: '24px' }}>🗓</div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>No events scheduled today</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Clear calendar — good day to deep work.</div>
-            <button onClick={onSync} style={{
-                marginTop: '8px', padding: '6px 14px', background: 'var(--accent-dim)',
-                color: 'var(--accent)', border: '1px solid var(--border-accent)',
-                borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>No events scheduled today</div>
+            <div style={{ fontSize: '12px', color: 'var(--text-3)', fontWeight: 500 }}>Clear calendar — ideal for deep work.</div>
+            <button onClick={onSync} disabled={isLoading} style={{
+                marginTop: '12px', padding: '10px 20px', background: 'var(--bg-elevated)',
+                color: 'var(--text-1)', border: '1px solid var(--border)',
+                borderRadius: 'var(--r-md)', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '8px'
             }}>
-                Refresh
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }}>
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-8.27" />
+                </svg>
+                {isLoading ? 'Syncing…' : 'Retry Sync'}
             </button>
         </div>
     );
@@ -289,7 +303,7 @@ const CalendarIntegration = ({ user }) => {
                             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                         </div>
                         {events.length === 0 ? (
-                            <EmptyEventsState isConnected={isConnected} onSync={handleSync} />
+                            <EmptyEventsState isConnected={isConnected} onSync={handleSync} isLoading={isLoadingEvents} />
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {events.map((event) => {

@@ -1,25 +1,10 @@
 import express from 'express';
 import supabase from '../supabase.js';
-import pg from 'pg';
-import dotenv from 'dotenv';
-dotenv.config();
+import { requireAuth } from '../middleware/auth.js';
+import { BehavioralEngine } from '../utils/BehavioralEngine.js';
+import pool from '../db.js';
 
 const router = express.Router();
-
-const pool = new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
-
-// Middleware to mock/extract local user (since it's an MVP)
-const requireAuth = (req, res, next) => {
-    const userId = req.headers['x-user-id'] || req.query.userId || req.body.userId;
-    if (!userId) {
-        return res.status(401).json({ error: 'Unauthorized: missing user id' });
-    }
-    req.userId = userId;
-    next();
-};
 
 /**
  * Create or update daily log
@@ -67,7 +52,39 @@ router.post('/', requireAuth, async (req, res) => {
 
         if (error) throw error;
 
-        res.status(201).json(data[0]);
+        const savedLog = data[0];
+
+        // ─── Automated Stage Progression ───
+        try {
+            // 1. Get user statistics
+            const stats = await pool.query(
+                `SELECT 
+                    COUNT(*) as total_logs,
+                    COUNT(*) FILTER (WHERE date >= NOW() - INTERVAL '7 days') as recent_logs
+                 FROM daily_logs WHERE user_id = $1`,
+                [userId]
+            );
+
+            // 2. Determine new stage
+            // Note: Simplistic version for this MVP step
+            const totalLogs = parseInt(stats.rows[0].total_logs);
+            const newStage = BehavioralEngine.determineOnboardingStage({
+                totalLogs,
+                consecutiveDays: totalLogs // Simplified
+            });
+
+            // 3. Update if progressive
+            if (newStage > (req.user.onboarding_stage || 0)) {
+                await pool.query(
+                    'UPDATE users SET onboarding_stage = $1 WHERE id = $2',
+                    [newStage, userId]
+                );
+            }
+        } catch (stageErr) {
+            console.error('[Stage Progression Error]', stageErr);
+        }
+
+        res.status(201).json(savedLog);
     } catch (error) {
         console.error('Error saving daily log:', error);
         res.status(500).json({ error: error.message || 'Internal server error' });

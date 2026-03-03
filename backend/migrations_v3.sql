@@ -1,26 +1,9 @@
--- ============================================================
--- AIIMIN V3 Schema — Structural Hardening
--- Run after migrations_v2.sql. All additive.
--- ============================================================
-
--- ─── 1. Calendar Events (canonical local copy) ───────────────
--- Already existed in original schema but without the UNIQUE constraint
--- and without timezone/updated_at. Recreate properly.
-CREATE TABLE IF NOT EXISTS calendar_events (
-  id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
-  google_event_id TEXT NOT NULL,
-  title           TEXT,
-  start_time      TIMESTAMPTZ NOT NULL,
-  end_time        TIMESTAMPTZ NOT NULL,
-  timezone        TEXT,                         -- IANA timezone string from Google
-  all_day         BOOLEAN DEFAULT false,
-  event_type      TEXT DEFAULT 'personal',      -- 'focus' | 'meeting' | 'personal'
-  deleted_at      TIMESTAMPTZ,                  -- soft delete
-  created_at      TIMESTAMPTZ DEFAULT NOW(),
-  updated_at      TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, google_event_id)
-);
+-- Ensure columns exist if table already existed from V1
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS timezone   TEXT;
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS all_day    BOOLEAN DEFAULT false;
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS event_type TEXT DEFAULT 'personal';
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 CREATE INDEX IF NOT EXISTS idx_calendar_events_user_date
   ON calendar_events(user_id, start_time DESC)
   WHERE deleted_at IS NULL;
@@ -55,7 +38,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_user_started
   ON sessions(user_id, started_at DESC)
   WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_sessions_user_date
-  ON sessions(user_id, (started_at::date));
+  ON sessions(user_id, CAST(started_at AT TIME ZONE 'UTC' AS DATE));
 ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can access own sessions" ON sessions;
 CREATE POLICY "Users can access own sessions" ON sessions

@@ -20,10 +20,38 @@ import notificationRoutes from './routes/notifications.js';
 import commitmentRoutes from './routes/commitment.js';
 import driftRoutes from './routes/drift.js';
 import accountRoutes from './routes/account.js';
+import adminRoutes from './routes/admin.js';
 
 dotenv.config();
 
+// ─── STARTUP CHECKS ───────────────────────────────────────────
+const requiredEnvVars = [
+    'SUPABASE_URL',
+    'SUPABASE_SERVICE_ROLE_KEY',
+    'DATABASE_URL',
+    'TOKEN_ENCRYPTION_KEY',
+    'GOOGLE_CLIENT_ID',
+    'GOOGLE_CLIENT_SECRET',
+    'GOOGLE_REDIRECT_URI'
+];
+
+const missingEnvVars = requiredEnvVars.filter(v => !process.env[v]);
+if (missingEnvVars.length > 0) {
+    console.error(`[BOOT ERROR] Missing required environment variables: ${missingEnvVars.join(', ')}`);
+    console.error('[BOOT ERROR] Server refusing to start.');
+    process.exit(1);
+}
+
 const app = express();
+
+// ─── Fast Health Check (Top Level) ────────────────────────────
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        version: '2.1.0',
+        uptime: process.uptime()
+    });
+});
 
 // ─── Correlation ID ──────────────────────────────────────────
 app.use((req, res, next) => {
@@ -41,10 +69,9 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],  // inline styles needed for React
             imgSrc: ["'self'", 'data:', 'https://lh3.googleusercontent.com', 'https://i.ytimg.com'],
             frameSrc: ['https://www.youtube.com'],    // YouTube embeds
-            connectSrc: ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL],
+            connectSrc: ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL, 'http://localhost:5000', 'https://api.aiimin.in'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             objectSrc: ["'none'"],
-            upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null,
         },
     },
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
@@ -87,15 +114,21 @@ const apiLimiter = rateLimit({
     standardHeaders: true, legacyHeaders: false,
     message: { error: 'Too many requests, please try again later.' },
 });
-const oauthLimiter = rateLimit({
-    windowMs: 60_000, max: 30,
-    message: { error: 'Too many OAuth requests.' },
+const signupLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 mins
+    max: 10,
+    message: { error: 'Too many attempts. Protection active.' },
 });
+const oauthLimiter = rateLimit({
+    windowMs: 60_000,
+    max: 20,
+    message: { error: 'Too many OAuth attempts. Please wait.' },
+});
+app.use('/auth/signup', signupLimiter);
 app.use('/google', oauthLimiter);
 app.use('/', apiLimiter);
 
-// ─── Health ───────────────────────────────────────────────────
-app.get('/', (req, res) => res.json({ status: 'ok', version: '2.1.0' }));
+
 
 // ─── Routes ───────────────────────────────────────────────────
 app.use('/auth', authRoutes);
@@ -112,6 +145,7 @@ app.use('/notifications', notificationRoutes);
 app.use('/commitment', commitmentRoutes);
 app.use('/drift', driftRoutes);
 app.use('/account', accountRoutes);
+app.use('/admin', adminRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -129,9 +163,27 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`[BOOT SUCCESS] AIIMIN Backend v2.1.0 cleanly bound to port ${PORT} on 0.0.0.0`);
     logger.info(`AIIMIN Backend v2.1.0 running on port ${PORT}`, {
         env: process.env.NODE_ENV || 'development',
         port: PORT,
     });
+});
+
+server.on('error', (error) => {
+    console.error(`[BOOT ERROR] Server failed to start: ${error.message}`);
+    if (error.syscall !== 'listen') throw error;
+    switch (error.code) {
+        case 'EACCES':
+            console.error(`[BOOT ERROR] Port ${PORT} requires elevated privileges`);
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            console.error(`[BOOT ERROR] Port ${PORT} is already in use`);
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
 });

@@ -27,7 +27,7 @@ const adminSupabase = createClient(
 router.get('/profile', requireAuth, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT id, email, full_name, timezone, avatar_url, created_at FROM users WHERE id = $1',
+            'SELECT id, email, full_name, username, role, onboarding_stage, timezone, avatar_url, created_at FROM users WHERE id = $1',
             [req.userId]
         );
         if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });

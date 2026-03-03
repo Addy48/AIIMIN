@@ -49,7 +49,7 @@ const PomodoroTimer = () => {
 
     const totalDuration = isBreak ? breakDuration * 60 : workDuration * 60;
     const strokeDashoffset = (timeLeft / totalDuration) * 339.3;
-    const accentColor = isBreak ? '#00d97e' : '#f5a623';
+    const accentColor = isBreak ? 'var(--success)' : 'var(--accent)';
 
     const handleDurationEdit = (type, val) => {
         let n = parseInt(val, 10);
@@ -119,8 +119,8 @@ const PomodoroTimer = () => {
     return (
         <div style={{
             background: 'var(--bg-card)', border: '1px solid var(--border)',
-            borderRadius: '20px', padding: '32px', textAlign: 'center',
-            boxShadow: 'var(--shadow-md)', marginBottom: '28px'
+            borderRadius: 'var(--r-lg)', padding: 'var(--card-px)', textAlign: 'center',
+            boxShadow: 'var(--shadow-md)', marginBottom: 'var(--card-gap)'
         }} className="fade-up">
 
             <div style={{
@@ -130,19 +130,20 @@ const PomodoroTimer = () => {
                 {isBreak ? '⚡ Break Time' : '🎯 Focus Session'}
             </div>
 
-            <div style={{ position: 'relative', width: '120px', height: '120px', margin: '16px auto' }}>
-                <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
-                    <circle cx="60" cy="60" r="54" stroke="var(--border-hover)" strokeWidth="6" fill="none" />
+            <div style={{ position: 'relative', width: '130px', height: '130px', margin: '20px auto' }}>
+                <svg width="130" height="130" style={{ transform: 'rotate(-90deg)' }}>
+                    <circle cx="65" cy="65" r="60" stroke="var(--bg-elevated)" strokeWidth="8" fill="none" />
                     <circle
-                        cx="60" cy="60" r="54" stroke={accentColor} strokeWidth="6" fill="none"
-                        strokeDasharray="339.3" strokeDashoffset={isNaN(strokeDashoffset) ? 0 : strokeDashoffset}
+                        cx="65" cy="65" r="60" stroke={accentColor} strokeWidth="8" fill="none"
+                        strokeDasharray="376.8" strokeDashoffset={isNaN(strokeDashoffset) ? 0 : (timeLeft / totalDuration) * 376.8}
+                        strokeLinecap="round"
                         style={{ transition: 'stroke-dashoffset 1s linear' }}
                     />
                 </svg>
                 {!showReflection && (
                     <div style={{
                         position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '28px', fontWeight: 900, color: 'var(--text-1)', letterSpacing: '-1px',
+                        fontSize: '32px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.04em',
                         fontVariantNumeric: 'tabular-nums', lineHeight: 1
                     }}>
                         {formatTime(timeLeft)}

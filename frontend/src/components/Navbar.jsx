@@ -42,14 +42,15 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                 height: '52px', display: 'flex', alignItems: 'center', gap: '12px',
             }}>
                 {/* Wordmark */}
-                <div style={{
+                <Link to="/brand" style={{
                     fontSize: '16px', fontWeight: 900, flexShrink: 0,
                     backgroundImage: 'linear-gradient(135deg, #c27814, #e05c2a)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                     letterSpacing: '-0.5px',
+                    textDecoration: 'none'
                 }}>
                     AIIMIN
-                </div>
+                </Link>
 
                 {/* Nav tabs */}
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '2px' }}>

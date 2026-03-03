@@ -1,56 +1,60 @@
 :root {
-    /* Warm dark base — Productive-inspired, not cold blue-black */
-    --bg-primary: #0e100d;
-    --bg-secondary: #131510;
-    --bg-card: #181b14;
-    --bg-card-hover: #1e2218;
-    --bg-elevated: #232719;
+    /* High-Contrast Production Base */
+    --bg-primary: #0E100D;
+    --bg-secondary: #131512;
+    --bg-card: #1C1E1B;
+    --bg-card-hover: #242723;
+    --bg-elevated: #2A2E29;
 
-    /* Borders — warm tinted */
-    --border: rgba(255, 255, 255, 0.06);
-    --border-hover: rgba(255, 255, 255, 0.12);
-    --border-accent: rgba(245, 166, 35, 0.35);
+    /* High-Contrast Borders */
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.14);
+    --border-accent: rgba(245, 166, 35, 0.4);
 
-    /* Golden accent — Productive-inspired warm yellow */
-    --accent: #f5a623;
-    --accent-hover: #f7b84a;
-    --accent-dim: rgba(245, 166, 35, 0.12);
-    --accent-glow: 0 0 24px rgba(245, 166, 35, 0.25);
-    --gradient-1: linear-gradient(135deg, #f5a623 0%, #f7623a 100%);
-    --gradient-card: linear-gradient(135deg, rgba(245, 166, 35, 0.04) 0%, rgba(247, 98, 58, 0.04) 100%);
+    /* Professional Accent */
+    --accent: #F5A623;
+    --accent-hover: #FFB340;
+    --accent-dim: rgba(245, 166, 35, 0.15);
+    --accent-glow: 0 0 30px rgba(245, 166, 35, 0.2);
 
-    /* Text — warm whites */
-    --text-1: #f0ede6;
-    --text-2: #857f6e;
-    --text-3: #454038;
+    /* V3 Typography Palette */
+    --text-1: #F5F5F5;
+    /* Primary Contrast */
+    --text-2: #B7C1B2;
+    /* Secondary Support */
+    --text-3: #8E9B8A;
+    /* Muted/Tertiary */
 
-    /* Semantic colors */
-    --success: #5db87a;
-    --success-dim: rgba(93, 184, 122, 0.12);
-    --warning: #f5a623;
-    --warning-dim: rgba(245, 166, 35, 0.12);
-    --danger: #eb8c8c;
-    --danger-dim: rgba(235, 140, 140, 0.12);
-    --purple: #9b8af5;
-    --purple-dim: rgba(155, 138, 245, 0.12);
+    /* Semantic Consistency */
+    --success: #63C185;
+    --success-dim: rgba(99, 193, 133, 0.1);
+    --warning: #F5A623;
+    --danger: #EF4444;
+    --danger-dim: rgba(239, 68, 68, 0.1);
 
-    /* Shadows — warm tinted */
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.04);
-    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    --shadow-glow: 0 0 0 1px rgba(245, 166, 35, 0.25), 0 4px 20px rgba(245, 166, 35, 0.15);
+    /* V3 Layout Metrics (12-column foundation) */
+    --max-width: 1200px;
+    --container-px: 32px;
+    --section-gap: 40px;
+    --card-px: 24px;
+    --card-gap: 24px;
 
-    /* Radii */
+    /* Refined Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --shadow-lg: 0 8px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+
+    /* Tokens */
     --r-sm: 8px;
-    --r-md: 16px;
-    --r-lg: 16px;
-    --r-xl: 24px;
+    --r-md: 12px;
+    --r-lg: 20px;
+    --r-xl: 32px;
     --r-full: 9999px;
 
     /* Transitions */
-    --t-fast: 0.12s ease;
-    --t-base: 0.2s ease;
-    --t-slow: 0.35s ease;
+    --t-fast: 0.1s ease;
+    --t-base: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    --t-slow: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Light mode — Atoms app inspired */

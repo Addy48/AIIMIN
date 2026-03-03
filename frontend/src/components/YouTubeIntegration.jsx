@@ -152,7 +152,7 @@ const YouTubePanel = ({ user }) => {
                 {/* Not connected */}
                 {!isConnected && !hasError && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <p style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.55, margin: 0 }}>
+                        <p style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.55, margin: 0, fontWeight: 500 }}>
                             Connect your Google account to play personal focus playlists during sessions.
                         </p>
                         <button
@@ -178,8 +178,8 @@ const YouTubePanel = ({ user }) => {
                             {loading ? 'Connecting…' : 'Connect Google Account'}
                         </button>
                         {/* Privacy note */}
-                        <div style={{ fontSize: '10px', color: 'var(--text-3)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                        <div style={{ fontSize: '11px', color: 'var(--text-2)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500 }}>
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
                             Read-only access. Your watch history is never accessed or stored.
                         </div>
                     </div>

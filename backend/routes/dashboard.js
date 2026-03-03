@@ -9,6 +9,7 @@ import express from 'express';
 import { pool, getIntegrationStatus } from '../lib/googleClient.js';
 import { requireAuth } from '../middleware/auth.js';
 import { cacheMiddleware, cacheInvalidate } from '../lib/cache.js';
+import { BehavioralEngine } from '../utils/BehavioralEngine.js';
 
 const router = express.Router();
 
@@ -25,7 +26,17 @@ router.get('/summary', requireAuth, dashboardCache, async (req, res) => {
         const today = new Date().toISOString().slice(0, 10);
 
         // Run all DB queries in parallel
-        const [logResult, commitResult, weeklyResult, driftResult, notifResult, integResult] = await Promise.all([
+        const [
+            logResult,
+            commitResult,
+            weeklyResult,
+            driftResult,
+            notifResult,
+            integResult,
+            mLogResult,
+            mSessResult,
+            mCommitResult
+        ] = await Promise.all([
             // Today's log
             pool.query(
                 `SELECT dl.*, COALESCE(ps.cycles_completed, 0) AS focus_cycles,
@@ -61,6 +72,21 @@ router.get('/summary', requireAuth, dashboardCache, async (req, res) => {
             ),
             // Integration status
             getIntegrationStatus(userId, 'google').catch(() => ({ connected: false, error: 'Status unavailable' })),
+            // 7-day logs for Momentum
+            pool.query(
+                'SELECT * FROM daily_logs WHERE user_id = $1 AND date > NOW() - INTERVAL \'7 days\' ORDER BY date DESC',
+                [userId]
+            ),
+            // 7-day sessions for Momentum
+            pool.query(
+                'SELECT * FROM sessions WHERE user_id = $1 AND started_at > NOW() - INTERVAL \'7 days\'',
+                [userId]
+            ),
+            // 7-day commitments for Momentum
+            pool.query(
+                'SELECT * FROM daily_commitments WHERE user_id = $1 AND date > NOW() - INTERVAL \'7 days\'',
+                [userId]
+            )
         ]);
 
         const log = logResult.rows[0] || null;
@@ -69,6 +95,13 @@ router.get('/summary', requireAuth, dashboardCache, async (req, res) => {
         const drifts = driftResult.rows;
         const unread = notifResult.rows[0].unread;
         const integ = integResult;
+
+        // ─── Momentum Intelligence ───
+        const momentum = BehavioralEngine.calculateMomentum({
+            logs: mLogResult.rows,
+            sessions: mSessResult.rows,
+            commitments: mCommitResult.rows
+        });
 
         res.json({
             stats_today: log ? {
@@ -102,10 +135,15 @@ router.get('/summary', requireAuth, dashboardCache, async (req, res) => {
                 },
             },
             notifications: { unread },
+            momentum: momentum
         });
     } catch (err) {
-        console.error('[dashboard/summary]', err.message);
-        res.status(500).json({ error: err.message });
+        console.error('[dashboard/summary] Fatal:', err);
+        res.status(500).json({
+            error: err.message || 'Internal logic error',
+            code: err.code,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 });
 
