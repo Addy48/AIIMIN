@@ -79,7 +79,7 @@ const PomodoroTimer = () => {
             }
         }
         return () => clearInterval(interval);
-    }, [isRunning, timeLeft, isBreak, workDuration, breakDuration]);
+    }, [isRunning, timeLeft, isBreak, workDuration, breakDuration, cyclesCompleted]);
 
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60).toString().padStart(2, '0');
