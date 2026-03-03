@@ -116,6 +116,31 @@ const AdminConsole = ({ session }) => {
                 </div>
             )}
 
+            {tab === 'client_errors' && (
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>{clientErrors.length} recent errors</span>
+                        <button onClick={() => setClientErrors([...(window.__AIIMIN_ERROR_LOG || [])].reverse())} style={{
+                            padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--border)',
+                            background: 'var(--bg-elevated)', color: 'var(--text-2)', fontSize: '11px', fontWeight: 600, cursor: 'pointer'
+                        }}>Refresh</button>
+                    </div>
+                    <div style={{ maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {clientErrors.length === 0 ? (
+                            <div style={{ fontSize: '12px', color: 'var(--text-3)', textAlign: 'center', padding: '24px' }}>No client errors logged</div>
+                        ) : clientErrors.map((error, i) => (
+                            <div key={i} style={{
+                                padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: '6px',
+                                fontSize: '11px', fontFamily: 'monospace', color: 'var(--danger)', wordBreak: 'break-all'
+                            }}>
+                                <div style={{ fontWeight: 700, marginBottom: '4px' }}>[{new Date(error.timestamp).toLocaleTimeString()}] {error.message}</div>
+                                {error.stack && <div style={{ fontSize: '9px', opacity: 0.8, marginTop: '4px', whiteSpace: 'pre-wrap' }}>{error.stack}</div>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {tab === 'simulator' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {/* Latency Simulator */}
