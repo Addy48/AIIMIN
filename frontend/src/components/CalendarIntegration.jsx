@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import supabase from '../utils/supabase';
 
 /* ─── Integration Health Badge ─── */
 const StatusBadge = ({ status }) => {
@@ -125,7 +126,7 @@ const CalendarMonthView = () => {
 };
 
 /* ─── Empty state for no events ─── */
-const EmptyEventsState = ({ isConnected, onSync, isLoading }) => {
+const EmptyEventsState = ({ isConnected, onSync, onConnect, isLoading }) => {
     if (!isConnected) {
         return (
             <div style={{
@@ -140,7 +141,7 @@ const EmptyEventsState = ({ isConnected, onSync, isLoading }) => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', marginTop: '8px', width: '100%', maxWidth: '320px' }}>
-                    <button onClick={onSync} style={{
+                    <button onClick={onConnect} style={{
                         flex: 1, height: '40px', background: 'var(--accent)', color: 'white', border: 'none',
                         borderRadius: 'var(--r-md)', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
                     }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -208,6 +209,28 @@ const CalendarIntegration = ({ user }) => {
         } catch (err) {
             setErrorMsg(err.message);
             setIntegrationStatus('error');
+        } finally {
+            setIsLoadingEvents(false);
+        }
+    };
+
+    const handleConnectGoogle = async () => {
+        setIsLoadingEvents(true);
+        setErrorMsg('');
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const res = await fetch(`${API_URL}/google/auth/init`, {
+                headers: { 'Authorization': `Bearer ${session?.access_token}` }
+            });
+            const contentType = res.headers.get("content-type");
+            if (res.ok && contentType && contentType.indexOf("application/json") !== -1) {
+                const { authUrl } = await res.json();
+                window.location.href = authUrl;
+            } else {
+                setErrorMsg('Failed to initiate Google Calendar connection.');
+            }
+        } catch {
+            setErrorMsg('Failed to connect to Google.');
         } finally {
             setIsLoadingEvents(false);
         }
@@ -336,7 +359,7 @@ const CalendarIntegration = ({ user }) => {
                             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                         </div>
                         {events.length === 0 ? (
-                            <EmptyEventsState isConnected={isConnected} onSync={handleSync} isLoading={isLoadingEvents} />
+                            <EmptyEventsState isConnected={isConnected} onSync={handleSync} onConnect={handleConnectGoogle} isLoading={isLoadingEvents} />
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                 {events.map((event) => {

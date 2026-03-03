@@ -159,10 +159,17 @@ const AccountModal = ({ isOpen, onClose }) => {
     };
 
     const handleConnectGoogle = async () => {
-        const res = await fetch(`${API_URL}/google/auth/init`, { headers: getHeaders() });
-        if (res.ok) {
-            const { authUrl } = await res.json();
-            window.location.href = authUrl;
+        try {
+            const res = await fetch(`${API_URL}/google/auth/init`, { headers: getHeaders() });
+            const contentType = res.headers.get("content-type");
+            if (res.ok && contentType && contentType.indexOf("application/json") !== -1) {
+                const { authUrl } = await res.json();
+                window.location.href = authUrl;
+            } else {
+                toast.error('Failed to initiate Google connection');
+            }
+        } catch (e) {
+            toast.error('Failed to connect to Google');
         }
     };
 
@@ -214,8 +221,8 @@ const AccountModal = ({ isOpen, onClose }) => {
                 borderRadius: '32px',
                 width: '480px', // Fixed width as requested
                 maxWidth: '90vw',
-                maxHeight: '92vh',
-                overflowY: 'auto',
+                height: '100%',
+                overflow: 'visible',
                 boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',
                 padding: '40px',
                 animation: 'modalEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
