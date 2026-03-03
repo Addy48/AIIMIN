@@ -12,6 +12,7 @@ import ResetsTracker from '../components/ResetsTracker';
 import RemindersWidget from '../components/RemindersWidget';
 import WinsEngine from '../components/WinsEngine';
 import InsightEngine from '../components/InsightEngine';
+import MomentumBar from '../components/MomentumBar';
 import WeeklyReport from '../components/WeeklyReport';
 import ErrorBoundary from '../components/ErrorBoundary';
 import AdminPanel from '../components/account/AdminPanel';
@@ -605,18 +606,16 @@ const Dashboard = ({ user }) => {
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                                         <ResetsTracker user={user} />
-                                        <ErrorBoundary label="Insight Engine">
-                                            <InsightEngine user={user} />
-                                        </ErrorBoundary>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* S3: Balanced 1fr 1fr grid for Focus & Intelligence */}
+                            {/* S3: Balanced 2x2 grid for Focus, Wins, Momentum, Intelligence */}
                             <div className="fade-up" style={{ marginBottom: '28px' }}>
-                                <SectionLabel>Focus & Intelligence</SectionLabel>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }} className="focus-intelligence-grid">
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }} className="focus-intelligence-grid">
+                                    {/* Top Left: Focus */}
                                     <div>
+                                        <SectionLabel>Focus Engine</SectionLabel>
                                         {onboardingStage >= 1 ? (
                                             <>
                                                 <div ref={pomodoroRef}>
@@ -634,8 +633,10 @@ const Dashboard = ({ user }) => {
                                             </div>
                                         )}
                                     </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                        <SectionLabel>Momentum & Wins</SectionLabel>
+
+                                    {/* Top Right: Wins */}
+                                    <div>
+                                        <SectionLabel>Wins Engine</SectionLabel>
                                         {onboardingStage >= 2 ? (
                                             showWinTracker ? <WinsEngine /> : null
                                         ) : (
@@ -643,6 +644,20 @@ const Dashboard = ({ user }) => {
                                                 <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase' }}>Available at Stage 2</p>
                                             </div>
                                         )}
+                                    </div>
+
+                                    {/* Bottom Left: Momentum */}
+                                    <div>
+                                        <SectionLabel>Momentum</SectionLabel>
+                                        <MomentumBar user={user} />
+                                    </div>
+
+                                    {/* Bottom Right: Intelligence */}
+                                    <div>
+                                        <SectionLabel>Intelligence</SectionLabel>
+                                        <ErrorBoundary label="Insight Engine">
+                                            <InsightEngine user={user} />
+                                        </ErrorBoundary>
                                     </div>
                                 </div>
                                 <style>{`

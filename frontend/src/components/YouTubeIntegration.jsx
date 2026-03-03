@@ -43,7 +43,8 @@ const YouTubePanel = ({ user }) => {
             const res = await fetch(`${API_URL}/google/auth/init`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
-            if (res.ok) {
+            const contentType = res.headers.get("content-type");
+            if (res.ok && contentType && contentType.indexOf("application/json") !== -1) {
                 const { authUrl } = await res.json();
                 window.location.href = authUrl;
             } else {

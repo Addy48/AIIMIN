@@ -16,15 +16,26 @@ function DevOverlayContent() {
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
+        const keysPressed = new Set();
+
         const handleKeyDown = (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+            keysPressed.add(e.key.toLowerCase());
+            if (keysPressed.has('enter') && (keysPressed.has('d') || keysPressed.has('∂'))) {
                 e.preventDefault();
                 setIsOpen(prev => !prev);
             }
         };
 
+        const handleKeyUp = (e) => {
+            keysPressed.delete(e.key.toLowerCase());
+        };
+
         window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        };
     }, []);
 
     return (
