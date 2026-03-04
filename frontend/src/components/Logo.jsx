@@ -1,28 +1,26 @@
 import React from 'react';
 import useTheme from '../hooks/useTheme';
 
-const Logo = ({ size = 28, style = {}, forceColor }) => {
+const Logo = ({ size = 28, style = {} }) => {
     const { theme } = useTheme();
-    const color = forceColor || (theme === 'dark' ? '#F5A623' : '#0A0A0F');
+    const isLight = theme === 'light';
 
     return (
-        <div
+        <img
+            src="/logo-aiimin.png"
+            alt="AIIMIN Logo"
             style={{
                 width: size,
                 height: size,
-                backgroundColor: color,
-                WebkitMaskImage: 'url(/logo-aiimin.png)',
-                WebkitMaskSize: 'contain',
-                WebkitMaskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'center',
-                maskImage: 'url(/logo-aiimin.png)',
-                maskSize: 'contain',
-                maskRepeat: 'no-repeat',
-                maskPosition: 'center',
+                objectFit: 'contain',
                 flexShrink: 0,
+                // If the logo is white-on-dark:
+                // In dark mode: 'screen' drops the dark bg and keeps white lines.
+                // In light mode: 'invert(1)' + 'multiply' makes it black-on-light, dropping the light bg.
+                mixBlendMode: isLight ? 'multiply' : 'screen',
+                filter: isLight ? 'invert(1)' : 'none',
                 ...style
             }}
-            aria-label="AIIMIN Logo"
         />
     );
 };

@@ -215,14 +215,16 @@ const AccountModal = ({ isOpen, onClose }) => {
                     .settings-grid { grid-template-columns: 1fr; gap: 24px; }
                 }
             `}</style>
-            <div ref={modalRef} style={{
+            <div ref={modalRef} className="no-scrollbar" style={{
                 background: 'var(--bg-primary)',
                 border: '1px solid var(--border)',
                 borderRadius: '32px',
                 width: '480px', // Fixed width as requested
                 maxWidth: '90vw',
                 height: '100%',
-                overflow: 'visible',
+                overflowY: 'auto',
+                msOverflowStyle: 'none',
+                scrollbarWidth: 'none',
                 boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',
                 padding: '40px',
                 animation: 'modalEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
@@ -230,6 +232,11 @@ const AccountModal = ({ isOpen, onClose }) => {
                 display: 'flex',
                 flexDirection: 'column'
             }}>
+                <style>{`
+                    .no-scrollbar::-webkit-scrollbar {
+                        display: none;
+                    }
+                `}</style>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '40px' }}>
                     <div>
                         <h2 style={{ fontSize: '26px', fontWeight: 900, color: 'var(--text-1)', margin: 0, letterSpacing: '-0.02em' }}>Account</h2>

@@ -92,8 +92,8 @@ const AdminConsole = ({ session }) => {
                             <div key={i} style={{
                                 display: 'grid', gridTemplateColumns: '60px 50px 1fr 60px 80px',
                                 gap: '8px', alignItems: 'center', padding: '8px 12px',
-                                background: '#FFFFFF', borderRadius: '6px', fontSize: '11px',
-                                fontFamily: 'monospace', color: '#0A0A0F'
+                                background: 'var(--bg-card)', borderRadius: '6px', fontSize: '11px',
+                                fontFamily: 'monospace', color: 'var(--text-1)'
                             }}>
                                 <span style={{ fontWeight: 700, color: log.method === 'GET' ? 'var(--success)' : 'var(--accent)' }}>
                                     {log.method || '—'}
@@ -130,8 +130,8 @@ const AdminConsole = ({ session }) => {
                             <div style={{ fontSize: '12px', color: 'var(--text-3)', textAlign: 'center', padding: '24px' }}>No client errors logged</div>
                         ) : clientErrors.map((error, i) => (
                             <div key={i} style={{
-                                padding: '8px 12px', background: '#FFFFFF', borderRadius: '6px',
-                                fontSize: '11px', fontFamily: 'monospace', color: '#0A0A0F', wordBreak: 'break-all'
+                                padding: '8px 12px', background: 'var(--bg-card)', borderRadius: '6px',
+                                fontSize: '11px', fontFamily: 'monospace', color: 'var(--text-1)', wordBreak: 'break-all'
                             }}>
                                 <div style={{ fontWeight: 700, marginBottom: '4px' }}>[{new Date(error.timestamp).toLocaleTimeString()}] {error.message}</div>
                                 {error.stack && <div style={{ fontSize: '9px', opacity: 0.8, marginTop: '4px', whiteSpace: 'pre-wrap' }}>{error.stack}</div>}
