@@ -221,7 +221,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                 borderRadius: '32px',
                 width: '480px', // Fixed width as requested
                 maxWidth: '90vw',
-                height: '100%',
+                maxHeight: '90vh',
                 overflowY: 'auto',
                 msOverflowStyle: 'none',
                 scrollbarWidth: 'none',

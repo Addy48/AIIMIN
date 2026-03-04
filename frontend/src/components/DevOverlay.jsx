@@ -47,15 +47,15 @@ function DevOverlayContent() {
             transition: '0.25s ease'
         }}>
             <div style={{
-                height: '52px', borderBottom: '1px solid rgba(255,255,255,0.08)',
+                height: '52px', borderBottom: '1px solid var(--border)',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '0 20px', flexShrink: 0
             }}>
-                <span style={{ color: '#fff', fontWeight: 'bold' }}>DEV OVERLAY</span>
+                <span style={{ color: 'var(--text-1)', fontWeight: 'bold' }}>DEV OVERLAY</span>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <span style={{ color: '#666', fontSize: '12px' }}>⌘/Ctrl+⇧D</span>
+                    <span style={{ color: 'var(--text-3)', fontSize: '12px' }}>⌘/Ctrl+⇧D</span>
                     <button onClick={() => setIsOpen(false)} style={{
-                        background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px'
+                        background: 'none', border: 'none', color: 'var(--text-1)', cursor: 'pointer', padding: '4px'
                     }}>✕</button>
                 </div>
             </div>
@@ -82,10 +82,10 @@ function TestDatePanel() {
                     type="date"
                     value={localDate}
                     onChange={(e) => setLocalDate(e.target.value)}
-                    style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px', borderRadius: '4px' }}
+                    style={{ flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-1)', padding: '8px', borderRadius: '4px' }}
                 />
                 <button onClick={() => setTestDate(localDate)} style={{ background: '#f5a623', color: '#000', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>Set</button>
-                <button onClick={() => { setLocalDate(''); setTestDate(null); }} style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>Reset</button>
+                <button onClick={() => { setLocalDate(''); setTestDate(null); }} style={{ background: 'var(--bg-elevated)', color: 'var(--text-1)', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>Reset</button>
             </div>
             {testDate && (
                 <div style={{ marginTop: '10px', color: '#f5a623', fontSize: '12px', background: 'rgba(245, 166, 35, 0.1)', padding: '4px 8px', borderRadius: '4px', display: 'inline-block' }}>
@@ -171,7 +171,7 @@ function SeedDataPanel() {
     return (
         <Panel title="Seed Data Generator">
             <div style={{ display: 'flex', gap: '10px' }}>
-                <button disabled={loading} onClick={generateSeed} style={{ flex: 1, background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', padding: '8px', cursor: 'pointer', borderRadius: '4px' }}>
+                <button disabled={loading} onClick={generateSeed} style={{ flex: 1, background: 'var(--bg-elevated)', color: 'var(--text-1)', border: 'none', padding: '8px', cursor: 'pointer', borderRadius: '4px' }}>
                     Generate 30 Days
                 </button>
                 <button disabled={loading} onClick={clearSeed} style={{ flex: 1, background: 'rgba(255,50,50,0.2)', color: '#ff6b6b', border: 'none', padding: '8px', cursor: 'pointer', borderRadius: '4px' }}>
@@ -219,15 +219,15 @@ function TableViewerPanel() {
 
     return (
         <Panel title="Table Viewer">
-            <select value={selectedTable} onChange={e => setSelectedTable(e.target.value)} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', color: '#fff', padding: '8px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', marginBottom: '10px' }}>
+            <select value={selectedTable} onChange={e => setSelectedTable(e.target.value)} style={{ width: '100%', background: 'var(--bg-elevated)', color: 'var(--text-1)', padding: '8px', border: '1px solid var(--border)', borderRadius: '4px', marginBottom: '10px' }}>
                 {tables.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
             {errorMsg && <div style={{ fontSize: '11px', color: '#ff6b6b', marginBottom: '10px' }}>{errorMsg}</div>}
             <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', fontSize: '10px', color: '#888', borderCollapse: 'collapse' }}>
+                <table style={{ width: '100%', fontSize: '10px', color: 'var(--text-2)', borderCollapse: 'collapse' }}>
                     <tbody>
                         {rows.map((row, i) => (
-                            <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
                                 <td style={{ padding: '6px 4px' }}>{row.id?.substring(0, 8)}</td>
                                 <td style={{ padding: '6px 4px' }}>{row.date || row.created_at?.split('T')[0]}</td>
                                 <td style={{ padding: '6px 4px' }}>
@@ -241,7 +241,7 @@ function TableViewerPanel() {
                         ))}
                     </tbody>
                 </table>
-                {rows.length === 0 && !errorMsg && <div style={{ fontSize: '11px', color: '#666', textAlign: 'center', padding: '10px' }}>No rows</div>}
+                {rows.length === 0 && !errorMsg && <div style={{ fontSize: '11px', color: 'var(--text-3)', textAlign: 'center', padding: '10px' }}>No rows</div>}
             </div>
         </Panel>
     );
@@ -268,7 +268,7 @@ function FeatureFlagsPanel() {
         <Panel title="Feature Flags">
             {flagsList.map(flag => (
                 <div key={flag} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '12px' }}>
-                    <span style={{ color: '#aaa' }}>{flag}</span>
+                    <span style={{ color: 'var(--text-2)' }}>{flag}</span>
                     <button onClick={() => toggle(flag)} style={{
                         background: flags[flag] ? '#a0d0a0' : 'rgba(255,255,255,0.1)',
                         color: flags[flag] ? '#000' : '#888',
@@ -293,18 +293,18 @@ function LiveLoggerPanel() {
     return (
         <Panel title="Live Supabase Ops">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {logs.length === 0 && <span style={{ fontSize: '11px', color: '#666' }}>Waiting for operations...</span>}
+                {logs.length === 0 && <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Waiting for operations...</span>}
                 {logs.map(log => (
-                    <div key={log.id} style={{ background: 'rgba(255,255,255,0.03)', padding: '12px', borderRadius: '6px' }}>
-                        <div style={{ fontSize: '10px', color: '#888', marginBottom: '8px' }}>{new Date(log.timestamp).toLocaleTimeString()}</div>
+                    <div key={log.id} style={{ background: 'var(--bg-card)', padding: '12px', borderRadius: '6px' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--text-2)', marginBottom: '8px' }}>{new Date(log.timestamp).toLocaleTimeString()}</div>
                         <details style={{ marginBottom: '6px' }}>
-                            <summary style={{ fontSize: '11px', color: '#ccc', cursor: 'pointer' }}>Payload</summary>
+                            <summary style={{ fontSize: '11px', color: 'var(--text-1)', cursor: 'pointer' }}>Payload</summary>
                             <pre style={{ fontSize: '10px', color: '#a0d0a0', maxHeight: '150px', overflow: 'auto', whiteSpace: 'pre-wrap', marginTop: '4px' }}>
                                 {JSON.stringify(log.payload, null, 2)}
                             </pre>
                         </details>
                         <details>
-                            <summary style={{ fontSize: '11px', color: '#ccc', cursor: 'pointer' }}>Response</summary>
+                            <summary style={{ fontSize: '11px', color: 'var(--text-1)', cursor: 'pointer' }}>Response</summary>
                             <pre style={{ fontSize: '10px', color: '#a0d0a0', maxHeight: '150px', overflow: 'auto', whiteSpace: 'pre-wrap', marginTop: '4px' }}>
                                 {JSON.stringify(log.response, null, 2)}
                             </pre>
@@ -318,8 +318,8 @@ function LiveLoggerPanel() {
 
 function Panel({ title, children }) {
     return (
-        <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '16px' }}>
-            <h3 style={{ fontSize: '12px', color: '#fff', textTransform: 'uppercase', margin: '0 0 16px 0', letterSpacing: '0.05em' }}>{title}</h3>
+        <div style={{ border: '1px solid var(--border)', borderRadius: '8px', padding: '16px' }}>
+            <h3 style={{ fontSize: '12px', color: 'var(--text-1)', textTransform: 'uppercase', margin: '0 0 16px 0', letterSpacing: '0.05em' }}>{title}</h3>
             {children}
         </div>
     );
