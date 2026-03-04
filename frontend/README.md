@@ -1,70 +1,42 @@
-# Getting Started with Create React App
+# AIIMIN — Behavior-OS Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the interface layer of the **AIIMIN Behavior-Shaping OS**. It is a React-based implementation focusing on high-fidelity visual feedback and spatial UI.
 
-## Available Scripts
+## 🎨 Visual Identity: The Ghost Interface
+The frontend leverages consistent design tokens defined in `src/index.css` and `tailwind.config.js`.
 
-In the project directory, you can run:
+### Key Design Primitives:
+- **Obsidian Dark**: `#050505` (Deep space base)
+- **Fluid Gold**: `#D4AF37` (Accent/Momentum)
+- **Glassmorphism**: 
+  - `.glass-panel`: Standard depth with 8px blur.
+  - `.glass-panel-gold`: Premium depth with gold-tinted borders.
 
-### `npm start`
+## 🏛️ Component Architecture
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 1. Main Dashboard (`src/pages/Dashboard.jsx`)
+The central hub utilizing a tabbed layout system (Overview, Focus, Identity, Growth, habits, Money, Analytics, Settings). State is maintained via `activeTab` with local storage persistence.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 2. Analytical Tier (`src/components/growth/`)
+- `CausalNodeAnalysis.jsx`: Dynamic dependency mapping between habits and outcomes.
+- `PerformanceDeltaHub.jsx`: 30-day trailing vision gap analysis.
 
-### `npm test`
+### 3. Reporting Suite (`src/components/Reports.jsx`)
+Modular PDF generation using `jsPDF`. Integrated with `jspdf-autotable` for high-fidelity data visualization and automated system recommendations.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠️ Development
 
-### `npm run build`
+### Scripts
+- `npm start`: Runs the development server on `localhost:3000`.
+- `npm run build`: Generates the production bundle.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Design System Integration
+To maintain the "Ghost" look, always use the CSS variables:
+```css
+color: var(--text-1);
+background: var(--bg-card);
+border: 1px solid var(--border);
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+*Powered by the Obsidian Gold Design System*

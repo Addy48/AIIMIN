@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from '../../utils/toast';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { apiGet } from '../../utils/api';
 
 /**
  * AdminConsole — God Mode 2.0
@@ -24,17 +23,14 @@ const AdminConsole = ({ session }) => {
         if (!token) return;
         setLogsLoading(true);
         try {
-            const res = await fetch(`${API_URL}/admin/recent-logs`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const data = await apiGet('/admin/recent-logs', { session });
             setLogs((data.logs || []).slice(0, 20));
         } catch (e) {
             toast.error('Failed to fetch logs');
         } finally {
             setLogsLoading(false);
         }
-    }, [token]);
+    }, [session, token]);
 
     useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
@@ -92,8 +88,8 @@ const AdminConsole = ({ session }) => {
                             <div key={i} style={{
                                 display: 'grid', gridTemplateColumns: '60px 50px 1fr 60px 80px',
                                 gap: '8px', alignItems: 'center', padding: '8px 12px',
-                                background: '#FFFFFF', borderRadius: '6px', fontSize: '11px',
-                                fontFamily: 'monospace', color: '#0A0A0F'
+                                background: 'var(--bg-card)', borderRadius: '6px', fontSize: '11px',
+                                fontFamily: 'monospace', color: 'var(--text-1)'
                             }}>
                                 <span style={{ fontWeight: 700, color: log.method === 'GET' ? 'var(--success)' : 'var(--accent)' }}>
                                     {log.method || '—'}
@@ -130,8 +126,8 @@ const AdminConsole = ({ session }) => {
                             <div style={{ fontSize: '12px', color: 'var(--text-3)', textAlign: 'center', padding: '24px' }}>No client errors logged</div>
                         ) : clientErrors.map((error, i) => (
                             <div key={i} style={{
-                                padding: '8px 12px', background: '#FFFFFF', borderRadius: '6px',
-                                fontSize: '11px', fontFamily: 'monospace', color: '#0A0A0F', wordBreak: 'break-all'
+                                padding: '8px 12px', background: 'var(--bg-card)', borderRadius: '6px',
+                                fontSize: '11px', fontFamily: 'monospace', color: 'var(--text-1)', wordBreak: 'break-all'
                             }}>
                                 <div style={{ fontWeight: 700, marginBottom: '4px' }}>[{new Date(error.timestamp).toLocaleTimeString()}] {error.message}</div>
                                 {error.stack && <div style={{ fontSize: '9px', opacity: 0.8, marginTop: '4px', whiteSpace: 'pre-wrap' }}>{error.stack}</div>}
