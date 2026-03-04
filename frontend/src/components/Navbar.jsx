@@ -44,13 +44,7 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     display: 'flex', alignItems: 'center', gap: '8px',
                     textDecoration: 'none', flexShrink: 0,
                 }}>
-                    <Logo size={28} />
-                    <span style={{
-                        fontSize: '16px', fontWeight: 900,
-                        backgroundImage: 'linear-gradient(135deg, #c27814, #e05c2a)',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                        letterSpacing: '-0.5px',
-                    }}>AIIMIN</span>
+                    <Logo size={32} />
                 </Link>
 
                 {/* Nav tabs */}

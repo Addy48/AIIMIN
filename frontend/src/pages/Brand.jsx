@@ -4,168 +4,162 @@ import Logo from '../components/Logo';
 
 const PrincipleCard = ({ icon, title, desc }) => (
     <div style={{
-        background: 'var(--bg-card)', borderRadius: '16px', padding: '28px',
-        border: '1px solid var(--border)', boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        background: 'var(--bg-card)', borderRadius: '24px', padding: '32px',
+        border: '1px solid var(--border)', boxShadow: '0 8px 32px rgba(0,0,0,0.04)',
+        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        display: 'flex', flexDirection: 'column', gap: '16px',
+        position: 'relative', overflow: 'hidden'
     }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.15)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.1)'; }}
+        title="AIIMIN Principle"
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 20px 48px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = 'var(--text-3)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.04)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
     >
-        <div style={{ fontSize: '24px', marginBottom: '12px' }}>{icon}</div>
-        <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '6px', color: 'var(--text-1)' }}>{title}</div>
-        <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.6 }}>{desc}</div>
+        <div style={{ fontSize: '28px', background: 'var(--bg-elevated)', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '16px', flexShrink: 0 }}>
+            {icon}
+        </div>
+        <div>
+            <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', color: 'var(--text-1)', letterSpacing: '-0.02em' }}>{title}</div>
+            <div style={{ fontSize: '14px', color: 'var(--text-3)', lineHeight: 1.7, fontWeight: 500 }}>{desc}</div>
+        </div>
     </div>
-);
-
-const CompetitorRow = ({ name, focus, privacy, behavioral, ritual }) => (
-    <tr style={{ borderBottom: '1px solid var(--border)' }}>
-        <td style={{ padding: '12px 16px', fontWeight: 700, fontSize: '14px', color: 'var(--text-1)' }}>{name}</td>
-        <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'center', color: 'var(--text-2)' }}>{focus}</td>
-        <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'center', color: 'var(--text-2)' }}>{privacy}</td>
-        <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'center', color: 'var(--text-2)' }}>{behavioral}</td>
-        <td style={{ padding: '12px 16px', fontSize: '13px', textAlign: 'center', color: 'var(--text-2)' }}>{ritual}</td>
-    </tr>
 );
 
 const Brand = () => {
     const principles = [
-        { icon: '🎯', title: 'Precision', desc: 'Every interaction is minimal and intentional. No feature bloat, no decorative elements.' },
-        { icon: '🔁', title: 'Feedback Loops', desc: 'Every input produces visible output. Log → Score → Insight → Action → Log.' },
-        { icon: '🧠', title: 'Behavioral Intelligence', desc: 'Surface patterns, not just data. Predict drift before it compounds.' },
-        { icon: '🔒', title: 'Data Sovereignty', desc: 'Your data never leaves your control. Full export, full ownership, no harvesting.' },
-        { icon: '⚡', title: 'Momentum Architecture', desc: 'Systems designed to compound consistency. Streaks, scores, and ritual reinforcement.' },
-        { icon: '🌙', title: 'Deep Mode Philosophy', desc: 'When focus begins, everything else disappears. No sidebar, no notifications.' },
-        { icon: '📊', title: 'Dimensional Analysis', desc: 'Correlate sleep, focus, mood, and spending into unified behavioral intelligence.' },
-        { icon: '🏗️', title: 'Disciplined Growth', desc: 'Ship stable foundations first. Every feature must earn its place through user value.' },
-        { icon: '🌊', title: 'Adaptive Interventions', desc: 'The system evolves with your behavior. It pushes when you have momentum and catches you when you drift.' },
+        { icon: '🎯', title: 'Absolute Precision', desc: 'Every interaction is minimal and intentional. No feature bloat, no decorative elements. Just extreme utility.' },
+        { icon: '��', title: 'Feedback Loops', desc: 'Every input produces immediate, visible output. Log behavior → Score momentum → Extract insight → Take Action.' },
+        { icon: '🧠', title: 'Behavioral Intelligence', desc: 'Surface deep, invisible patterns. We predict your mental drift before it compounds into regression.' },
+        { icon: '🔒', title: 'Data Sovereignty', desc: 'Your behavioral archive never leaves your control. Full export capabilities, full ownership, zero harvesting.' },
+        { icon: '⚡', title: 'Momentum Engineering', desc: 'Systems designed specifically to compound consistency through intelligent streaks, contextual scores, and ritual reinforcement.' },
+        { icon: '🌙', title: 'Deep Mode State', desc: 'When intense focus begins, the noise disappears. No sidebar, no notifications. Just you and the work.' },
+        { icon: '📊', title: 'Dimensional Analysis', desc: 'Correlate sleep cycles, deep focus hours, mood variance, and spending into one unified behavioral intelligence layer.' },
+        { icon: '🏗️', title: 'Disciplined Growth', desc: 'We ship incredibly stable foundations first. Every feature must earn its place through validated user momentum generation.' },
+        { icon: '🌊', title: 'Adaptive Interventions', desc: 'The system evolves alongside your habits. It pushes when you have high momentum and catches you when you inevitably drift.' },
     ];
 
     return (
         <div style={{
             minHeight: '100vh', backgroundColor: 'var(--bg-primary)',
-            color: 'var(--text-1)', padding: '80px 20px',
-            fontFamily: '"Inter", sans-serif'
+            color: 'var(--text-1)', padding: '60px 20px 120px',
+            fontFamily: '"Inter", sans-serif',
+            overflowX: 'hidden'
         }}>
-            <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-                <Link to="/" style={{
-                    color: 'var(--accent)', textDecoration: 'none', fontSize: '14px',
-                    fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '60px'
-                }}>
-                    ← Back to Dashboard
-                </Link>
+            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+                <nav style={{ marginBottom: '80px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Link to="/" style={{
+                        display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none',
+                        color: 'var(--text-1)', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.02em'
+                    }}>
+                        <div style={{ 
+                            width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-elevated)', 
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)',
+                            transition: 'all 0.2s ease', cursor: 'pointer'
+                        }} className="back-btn">
+                            ←
+                        </div>
+                        Back to Dashboard
+                    </Link>
+                </nav>
 
                 {/* Hero */}
-                <header style={{ marginBottom: '80px' }}>
-                    <Logo size={64} style={{ marginBottom: '24px' }} />
-                    <h1 style={{
-                        fontSize: '56px', fontWeight: 900, letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '24px',
-                        backgroundImage: 'linear-gradient(135deg, #c27814, var(--accent))',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                <header style={{ marginBottom: '100px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                    <div style={{ 
+                        padding: '16px', background: 'var(--bg-elevated)', borderRadius: '32px', marginBottom: '40px',
+                        border: '1px solid var(--border)', boxShadow: '0 24px 64px rgba(0,0,0,0.08)'
                     }}>
-                        AIIMIN: The Behavioral OS.
+                        <Logo size={80} style={{ borderRadius: '24px' }} />
+                    </div>
+                    <h1 style={{
+                        fontSize: '72px', fontWeight: 900, letterSpacing: '-2.5px', lineHeight: 1.05, marginBottom: '24px',
+                        color: 'var(--text-1)', maxWidth: '900px'
+                    }}>
+                        The Infrastructure For<br/>
+                        <span style={{ 
+                            backgroundImage: 'linear-gradient(135deg, var(--accent), #c27814)', 
+                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' 
+                        }}>
+                        Human Momentum.
+                        </span>
                     </h1>
-                    <p style={{ fontSize: '20px', color: 'var(--text-2)', lineHeight: 1.6, fontWeight: 500, maxWidth: '600px' }}>
-                        We are building the infrastructure for human momentum. Not a dashboard — a system that shapes behavior through intelligent feedback loops and ritual-based interaction design.
+                    <p style={{ fontSize: '22px', color: 'var(--text-3)', lineHeight: 1.6, fontWeight: 500, maxWidth: '700px' }}>
+                        Not just another dashboard. AIIMIN is a behavioral operating system that shapes reality through intelligent feedback loops, extreme privacy, and ritual-based design.
                     </p>
                 </header>
 
-                {/* Product Philosophy */}
-                <section style={{ marginBottom: '60px' }}>
-                    <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '20px', color: 'var(--text-1)' }}>Product Philosophy</h2>
-                    <p style={{ fontSize: '16px', color: 'var(--text-2)', lineHeight: 1.8, marginBottom: '16px' }}>
-                        AIIMIN operates on a simple thesis: <strong>consistency is the only metric that matters</strong>.
-                        Revenue, health, focus — all downstream effects of behavioral consistency.
-                        We don't optimize for engagement. We optimize for momentum.
-                    </p>
-                    <p style={{ fontSize: '16px', color: 'var(--text-2)', lineHeight: 1.8 }}>
-                        Every surface in AIIMIN is designed to either <em>reinforce a loop</em> or <em>surface an insight</em>.
-                        If it does neither, it gets removed.
-                    </p>
-                </section>
-
-                {/* Design Principles */}
-                <section style={{ marginBottom: '80px' }}>
-                    <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '28px', color: 'var(--text-1)' }}>Design Principles</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                {/* Design Principles Grid */}
+                <section style={{ marginBottom: '120px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: '0.1em', marginBottom: '16px' }}>
+                            Core Thesis
+                        </div>
+                        <h2 style={{ fontSize: '40px', fontWeight: 900, letterSpacing: '-1px', color: 'var(--text-1)', margin: 0 }}>
+                            Nine pillars of momentum.
+                        </h2>
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
                         {principles.map((p, i) => <PrincipleCard key={i} {...p} />)}
                     </div>
                 </section>
 
-                {/* Positioning */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '80px' }}>
+                {/* Strategic Positioning */}
+                <div style={{ 
+                    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '120px',
+                    background: 'var(--bg-card)', padding: '60px', borderRadius: '32px', border: '1px solid var(--border)'
+                }}>
                     <div>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '12px', color: 'var(--text-1)' }}>Current Scope</h3>
-                        <p style={{ fontSize: '14px', color: 'var(--text-3)', lineHeight: 1.7 }}>
-                            Behavior-tracking OS: focus sessions, streak management, mood journaling,
-                            financial tracking, commitment engine, and weekly intelligence reports.
-                            Integrates with Google Calendar and YouTube for contextual awareness.
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-elevated)', padding: '6px 16px', borderRadius: '99px', fontSize: '12px', fontWeight: 800, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '24px', border: '1px solid var(--border)' }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }}/> Current Scope
+                        </div>
+                        <h3 style={{ fontSize: '32px', fontWeight: 900, marginBottom: '20px', color: 'var(--text-1)', letterSpacing: '-1px' }}>Building the Foundation</h3>
+                        <p style={{ fontSize: '16px', color: 'var(--text-3)', lineHeight: 1.8, fontWeight: 500 }}>
+                            A high-performance behavior-tracking OS seamlessly unifying focus sessions, streak management, mood journaling, and financial tracking. Powered by a commitment engine and weekly intelligence reports, it integrates smoothly with Google Calendar and YouTube for perfect contextual awareness.
                         </p>
                     </div>
                     <div>
-                        <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '12px', color: 'var(--text-1)' }}>Future Direction</h3>
-                        <p style={{ fontSize: '14px', color: 'var(--text-3)', lineHeight: 1.7 }}>
-                            Proactive behavioral drift detection. Predict setbacks before they happen.
-                            Contextual interventions based on unique biometric and activity signatures.
-                            Cross-device ritual sync and offline-first architecture.
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-elevated)', padding: '6px 16px', borderRadius: '99px', fontSize: '12px', fontWeight: 800, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '24px', border: '1px solid var(--border)' }}>
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-3)' }}/> Future Horizon
+                        </div>
+                        <h3 style={{ fontSize: '32px', fontWeight: 900, marginBottom: '20px', color: 'var(--text-1)', letterSpacing: '-1px' }}>Proactive Intelligence</h3>
+                        <p style={{ fontSize: '16px', color: 'var(--text-3)', lineHeight: 1.8, fontWeight: 500 }}>
+                            Evolving into proactive behavioral drift detection. AIIMIN will accurately predict setbacks before they happen and issue contextual interventions based on your unique biometric and activity signatures, supported by cross-device ritual sync and a robust offline-first architecture.
                         </p>
                     </div>
                 </div>
 
-                {/* Competitive Landscape */}
-                <section style={{
-                    padding: '40px', background: 'var(--bg-card)', borderRadius: '24px',
-                    border: '1px solid var(--border)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)',
-                    marginBottom: '60px', overflowX: 'auto',
-                }}>
-                    <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '24px', color: 'var(--text-1)' }}>Competitive Landscape</h2>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid var(--border)' }}>
-                                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)' }}>Product</th>
-                                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)' }}>Focus</th>
-                                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)' }}>Privacy</th>
-                                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)' }}>Behavioral</th>
-                                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)' }}>Ritual</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <CompetitorRow name="AIIMIN" focus="✅ Deep" privacy="✅ Full" behavioral="✅ Loops" ritual="✅ Native" />
-                            <CompetitorRow name="Notion" focus="❌" privacy="⚠️ Cloud" behavioral="❌" ritual="❌" />
-                            <CompetitorRow name="Forest" focus="✅ Timer" privacy="✅" behavioral="❌" ritual="⚠️ Gamified" />
-                            <CompetitorRow name="Daylio" focus="❌" privacy="⚠️" behavioral="⚠️ Mood" ritual="❌" />
-                            <CompetitorRow name="Habitica" focus="❌" privacy="⚠️" behavioral="⚠️ Habits" ritual="⚠️ Game" />
-                        </tbody>
-                    </table>
-                </section>
-
                 {/* Architecture Overview */}
-                <section style={{
-                    padding: '40px', background: 'var(--bg-card)', borderRadius: '24px',
-                    border: '1px solid var(--border)', boxShadow: '0 20px 40px rgba(0,0,0,0.05)',
-                    marginBottom: '80px',
-                }}>
-                    <h2 style={{ fontSize: '24px', fontWeight: 800, marginBottom: '24px', color: 'var(--text-1)' }}>Architecture</h2>
+                <section style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-3)', letterSpacing: '0.1em', marginBottom: '32px' }}>
+                        Technical Stack
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
                         {[
-                            { layer: 'Frontend', tech: 'React + CSS Variables', detail: 'Vercel' },
-                            { layer: 'Backend', tech: 'Express + Node.js', detail: 'Railway' },
-                            { layer: 'Database', tech: 'Supabase (Postgres)', detail: 'RLS + Auth' },
+                            { layer: 'Frontend Layer', tech: 'React + CSS Variables', detail: 'Edge-rendered via Vercel for zero-latency UI' },
+                            { layer: 'Compute Engine', tech: 'Express + Node.js Context', detail: 'De-coupled API hosted on Railway for scale' },
+                            { layer: 'Data Sovereignty', tech: 'Supabase Postgres DB', detail: 'Row-level security ensuring strict privacy' },
                         ].map((s, i) => (
-                            <div key={i} style={{ padding: '20px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: '0.06em', marginBottom: '8px' }}>{s.layer}</div>
-                                <div style={{ fontSize: '15px', fontWeight: 700, marginBottom: '4px', color: 'var(--text-1)' }}>{s.tech}</div>
-                                <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{s.detail}</div>
+                            <div key={i} style={{ padding: '32px', background: 'var(--bg-elevated)', borderRadius: '24px', border: '1px solid var(--border)' }}>
+                                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent)', letterSpacing: '0.06em', marginBottom: '12px' }}>{s.layer}</div>
+                                <div style={{ fontSize: '18px', fontWeight: 800, marginBottom: '8px', color: 'var(--text-1)', letterSpacing: '-0.02em' }}>{s.tech}</div>
+                                <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.6, fontWeight: 500 }}>{s.detail}</div>
                             </div>
                         ))}
                     </div>
                 </section>
 
-                <footer style={{ marginTop: '100px', borderTop: '1px solid var(--border)', paddingTop: '40px', textAlign: 'center' }}>
+                <footer style={{ marginTop: '140px', paddingTop: '40px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Logo size={24} style={{ opacity: 0.5, filter: 'grayscale(1)' }}/>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-2)', letterSpacing: '-0.02em' }}>AIIMIN SYSTEM</span>
+                    </div>
                     <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                        AIIMIN Behavioral OS · 2026
+                        Behavioral OS · © 2026
                     </p>
                 </footer>
             </div>
+            <style>{`
+                .back-btn:hover { background: var(--border) !important; transform: translateX(-4px); }
+            `}</style>
         </div>
     );
 };
