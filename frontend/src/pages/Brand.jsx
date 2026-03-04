@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 const PrincipleCard = ({ icon, title, desc }) => (
     <div style={{
@@ -54,6 +55,7 @@ const Brand = () => {
 
                 {/* Hero */}
                 <header style={{ marginBottom: '80px' }}>
+                    <Logo size={64} style={{ marginBottom: '24px' }} forceColor="#e05c2a" />
                     <h1 style={{
                         fontSize: '56px', fontWeight: 900, letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '24px',
                         backgroundImage: 'linear-gradient(135deg, #c27814, #e05c2a)',

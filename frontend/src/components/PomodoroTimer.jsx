@@ -105,6 +105,10 @@ const PomodoroTimer = () => {
         if (type === 'work') {
             setWorkDuration(n);
             if (!isRunning && !isBreak) setTimeLeft(n * 60);
+
+            // Auto rest calculation (5m per 25m = 20%)
+            const calculatedRest = Math.max(1, Math.round(n * 0.2));
+            setBreakDuration(calculatedRest);
         } else {
             setBreakDuration(n);
             if (!isRunning && isBreak) setTimeLeft(n * 60);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
+import Logo from '../components/Logo'; // Added this import
 
 const Login = () => {
     const { signInWithGoogle, signUpWithEmail, signInWithEmail } = useAuth();
@@ -99,7 +100,7 @@ const Login = () => {
                 display: 'flex', flexDirection: 'column', alignItems: 'center'
             }}>
 
-                <img src="/logo-aiimin.png" alt="AIIMIN" width="64" height="64" style={{ borderRadius: '12px', marginBottom: '16px' }} />
+                <Logo size={64} style={{ marginBottom: '16px' }} />
 
                 <span style={{
                     display: 'inline-block', fontSize: '11px', fontWeight: 600,

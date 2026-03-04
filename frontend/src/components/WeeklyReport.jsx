@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from '@react-pdf/renderer';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 
 const styles = StyleSheet.create({
@@ -20,6 +20,7 @@ const ReportPDF = ({ report }) => (
     <Document>
         <Page size="A4" style={styles.page}>
             <View style={styles.header}>
+                <Image src="/logo-aiimin.png" style={{ width: 40, height: 40, marginBottom: 16 }} />
                 <Text style={styles.title}>AIIMIN Weekly Intelligence</Text>
                 <Text style={styles.subtitle}>Generated: {new Date().toLocaleDateString()}</Text>
             </View>

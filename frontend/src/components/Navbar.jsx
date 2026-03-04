@@ -5,6 +5,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import NotificationBell from './notifications/NotificationBell';
 import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
+import Logo from './Logo';
 
 
 const Navbar = ({ user, activeTab, onTabChange }) => {
@@ -43,7 +44,7 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     display: 'flex', alignItems: 'center', gap: '8px',
                     textDecoration: 'none', flexShrink: 0,
                 }}>
-                    <img src="/logo-aiimin.png" alt="AIIMIN" height="28" width="28" style={{ borderRadius: '4px' }} />
+                    <Logo size={28} />
                     <span style={{
                         fontSize: '16px', fontWeight: 900,
                         backgroundImage: 'linear-gradient(135deg, #c27814, #e05c2a)',
