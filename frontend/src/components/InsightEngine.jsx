@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import DumbbellIcon from './icons/DumbbellIcon';
 
 /**
  * InsightEngine — Behavioral pattern recognition
@@ -62,7 +63,7 @@ const InsightEngine = ({ user }) => {
                 const noGymMood = noGymDays.reduce((s, l) => s + l.mood, 0) / noGymDays.length;
                 if (gymMood - noGymMood > 0.3) {
                     results.push({
-                        icon: '💪',
+                        icon: <DumbbellIcon size={16} color="var(--text-2)" />,
                         title: 'Exercise lifts your mood',
                         body: `Gym days: mood ${gymMood.toFixed(1)} avg. Rest days: ${noGymMood.toFixed(1)}. Keep training.`,
                         type: 'positive'
@@ -141,8 +142,8 @@ const InsightEngine = ({ user }) => {
         return (
             <div className="insight-card" style={{ textAlign: 'center', padding: '32px 24px' }}>
                 <div style={{ fontSize: '28px', marginBottom: '12px' }}>🧠</div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '6px' }}>Insights Unlock Soon</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.5 }}>Log at least 5 days for pattern detection.</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '6px' }}>No Insights Yet</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.5 }}>Log a few more days and patterns will surface here automatically.</div>
             </div>
         );
     }

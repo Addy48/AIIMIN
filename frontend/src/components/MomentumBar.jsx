@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import useFeatureFlag from '../hooks/useFeatureFlag';
 
 /**
  * MomentumBar — Daily completion score (0-100)
  *
  * Scoring: sleep(25) + gym(20) + focus(20) + learning(15) + journal(10) + steps(10)
+ * When habits_system_enabled: routine completion blended in at 8% weight
+ * (base score scaled to 92%, routine score contributes up to 8 pts, total still ≤100)
  * Shows: animated bar, consistency %, "+1" animation, yesterday comparison
  */
 const MomentumBar = ({ user, justSaved }) => {
@@ -12,7 +15,9 @@ const MomentumBar = ({ user, justSaved }) => {
     const [yesterdayScore, setYesterdayScore] = useState(0);
     const [consistency, setConsistency] = useState(0);
     const [showIncrement, setShowIncrement] = useState(false);
+    const habitsEnabled = useFeatureFlag('habits_system_enabled');
 
+    // Original formula — DO NOT modify weights
     const calcScore = (log) => {
         if (!log) return 0;
         let s = 0;
@@ -24,6 +29,20 @@ const MomentumBar = ({ user, justSaved }) => {
         // Focus: check if any pomodoro sessions exist today
         if (log.mood) s += 20; // Proxy for engagement
         return Math.min(s, 100);
+    };
+
+    // Routine completion component — blended only when habits_system_enabled
+    // completionRatio: 0.0–1.0 (completed_habits / total_habits)
+    const calcRoutineScore = (completionRatio) => {
+        if (!habitsEnabled || completionRatio == null) return null;
+        return completionRatio; // 0.0–1.0
+    };
+
+    // Blend base score with routine score, preserving 100-point ceiling
+    const blendScore = (base, routineRatio) => {
+        if (routineRatio == null) return base;
+        // Scale base to 92%, routine contributes up to 8 pts
+        return Math.min(100, Math.round(base * 0.92 + routineRatio * 8));
     };
 
     useEffect(() => {
@@ -57,8 +76,30 @@ const MomentumBar = ({ user, justSaved }) => {
                 .gte('date', sevenDaysAgo)
                 .order('date', { ascending: false });
 
-            const todayS = calcScore(todayLog);
-            const yesterdayS = calcScore(yLog);
+            let routineRatio = null;
+            if (habitsEnabled) {
+                // Count today's habit_logs to compute routine completion ratio
+                const { count: doneCount } = await supabase
+                    .from('habit_logs')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .eq('status', 'done')
+                    .gte('completed_at', `${today}T00:00:00+05:30`);
+                const { count: totalCount } = await supabase
+                    .from('habit_logs')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .gte('completed_at', `${today}T00:00:00+05:30`);
+                if (totalCount > 0) {
+                    routineRatio = (doneCount || 0) / totalCount;
+                }
+            }
+
+            const baseToday = calcScore(todayLog);
+            const baseYesterday = calcScore(yLog);
+            const todayS = blendScore(baseToday, calcRoutineScore(routineRatio));
+            const yesterdayS = blendScore(baseYesterday, null); // no routine data for yesterday
+
             setScore(todayS);
             setYesterdayScore(yesterdayS);
 
@@ -69,7 +110,7 @@ const MomentumBar = ({ user, justSaved }) => {
         };
 
         fetchMomentum();
-    }, [user, justSaved]);
+    }, [user, justSaved, habitsEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Show +1 animation when save happens
     useEffect(() => {
