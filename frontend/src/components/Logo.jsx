@@ -7,18 +7,15 @@ const Logo = ({ size = 28, style = {} }) => {
 
     return (
         <img
-            src="/logo-aiimin.png"
+            src="/logo-light.jpg"
             alt="AIIMIN Logo"
             style={{
                 width: size,
                 height: size,
                 objectFit: 'contain',
                 flexShrink: 0,
-                // If the logo is white-on-dark:
-                // In dark mode: 'screen' drops the dark bg and keeps white lines.
-                // In light mode: 'invert(1)' + 'multiply' makes it black-on-light, dropping the light bg.
                 mixBlendMode: isLight ? 'multiply' : 'screen',
-                filter: isLight ? 'invert(1)' : 'none',
+                filter: isLight ? 'none' : 'invert(1) grayscale(1) brightness(2)',
                 ...style
             }}
         />
