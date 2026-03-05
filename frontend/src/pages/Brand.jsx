@@ -62,8 +62,8 @@ const Brand = () => {
                         display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none',
                         color: 'var(--text-1)', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.02em'
                     }}>
-                        <div style={{ 
-                            width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-elevated)', 
+                        <div style={{
+                            width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-elevated)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)',
                             transition: 'all 0.2s ease', cursor: 'pointer'
                         }} className="back-btn">
@@ -71,31 +71,32 @@ const Brand = () => {
                         </div>
                         Back to Dashboard
                     </Link>
-                    
+
                     <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                        <a href="mailto:founders@aiimin.in" style={{ textDecoration: 'none', color: 'var(--text-2)', fontSize: '14px', fontWeight: 600 }}>Contact</a>
+                        <a href="mailto:aaditya.upadhyay05@gmail.com" style={{ textDecoration: 'none', color: 'var(--text-2)', fontSize: '14px', fontWeight: 600 }}>Contact</a>
                         <Link to="/login" style={{ background: 'var(--text-1)', color: 'var(--bg-primary)', padding: '10px 20px', borderRadius: '99px', fontSize: '14px', fontWeight: 700, textDecoration: 'none' }}>Enter System</Link>
                     </div>
                 </nav>
 
                 {/* Hero */}
                 <header style={{ marginBottom: '140px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                    <div style={{ 
+                    <Link to="/" style={{
                         padding: '16px', background: 'var(--bg-elevated)', borderRadius: '32px', marginBottom: '40px',
-                        border: '1px solid var(--border)', boxShadow: '0 24px 64px rgba(0,0,0,0.08)'
+                        border: '1px solid var(--border)', boxShadow: '0 24px 64px rgba(0,0,0,0.08)',
+                        display: 'block', textDecoration: 'none', cursor: 'pointer'
                     }}>
-                        <Logo size={80} style={{ borderRadius: '24px' }} />
-                    </div>
+                        <Logo size={120} style={{ borderRadius: '28px' }} />
+                    </Link>
                     <h1 style={{
                         fontSize: '72px', fontWeight: 900, letterSpacing: '-2.5px', lineHeight: 1.05, marginBottom: '24px',
                         color: 'var(--text-1)', maxWidth: '900px'
                     }}>
-                        The Infrastructure For<br/>
-                        <span style={{ 
-                            backgroundImage: 'linear-gradient(135deg, var(--accent), #c27814)', 
-                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' 
+                        The Infrastructure For<br />
+                        <span style={{
+                            backgroundImage: 'linear-gradient(135deg, var(--accent), #c27814)',
+                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
                         }}>
-                        Human Momentum.
+                            Human Momentum.
                         </span>
                     </h1>
                     <p style={{ fontSize: '22px', color: 'var(--text-3)', lineHeight: 1.6, fontWeight: 500, maxWidth: '700px' }}>
@@ -112,7 +113,7 @@ const Brand = () => {
                                 Modern software optimizes for engagement. We optimize for intent.
                             </h2>
                             <p style={{ fontSize: '16px', color: 'var(--text-3)', lineHeight: 1.7, fontWeight: 500, marginBottom: '24px' }}>
-                                The average professional loses 3.2 hours a day to context switching, low-friction entertainment, and interface traps. 
+                                The average professional loses 3.2 hours a day to context switching, low-friction entertainment, and interface traps.
                                 Current productivity tools are passive—they hold data but don't shape behavior. They act as filing cabinets when what you actually need is an engine.
                             </p>
                             <p style={{ fontSize: '16px', color: 'var(--text-1)', lineHeight: 1.7, fontWeight: 700 }}>
@@ -138,9 +139,9 @@ const Brand = () => {
 
                 {/* Design Principles Grid */}
                 <section style={{ marginBottom: '140px' }}>
-                    <SectionHeading 
-                        pre="Core Thesis" 
-                        title="Nine pillars of momentum." 
+                    <SectionHeading
+                        pre="Core Thesis"
+                        title="Nine pillars of momentum."
                         desc="We don't follow standard UX conventions. We follow psychological principles. Every feature must pass the momentum test."
                     />
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
@@ -150,17 +151,17 @@ const Brand = () => {
 
                 {/* Strategic Positioning */}
                 <section style={{ marginBottom: '140px' }}>
-                    <SectionHeading 
-                        pre="Roadmap" 
-                        title="The trajectory." 
+                    <SectionHeading
+                        pre="Roadmap"
+                        title="The trajectory."
                     />
-                    <div style={{ 
+                    <div style={{
                         display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px',
                         background: 'var(--bg-card)', padding: '60px', borderRadius: '32px', border: '1px solid var(--border)'
                     }}>
                         <div>
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-elevated)', padding: '6px 16px', borderRadius: '99px', fontSize: '12px', fontWeight: 800, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '24px', border: '1px solid var(--border)' }}>
-                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }}/> Phase 1: Foundation
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }} /> Phase 1: Foundation
                             </div>
                             <h3 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '20px', color: 'var(--text-1)', letterSpacing: '-1px' }}>Behavioral Aggregation</h3>
                             <p style={{ fontSize: '16px', color: 'var(--text-3)', lineHeight: 1.8, fontWeight: 500 }}>
@@ -169,7 +170,7 @@ const Brand = () => {
                         </div>
                         <div>
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'var(--bg-elevated)', padding: '6px 16px', borderRadius: '99px', fontSize: '12px', fontWeight: 800, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '24px', border: '1px solid var(--border)' }}>
-                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-3)' }}/> Phase 2: Horizons
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-3)' }} /> Phase 2: Horizons
                             </div>
                             <h3 style={{ fontSize: '28px', fontWeight: 900, marginBottom: '20px', color: 'var(--text-1)', letterSpacing: '-1px' }}>Proactive Intelligence</h3>
                             <p style={{ fontSize: '16px', color: 'var(--text-3)', lineHeight: 1.8, fontWeight: 500 }}>
@@ -201,7 +202,7 @@ const Brand = () => {
 
                 <footer style={{ marginTop: '100px', paddingTop: '40px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Logo size={24} style={{ opacity: 0.5, filter: 'grayscale(1)' }}/>
+                        <Logo size={32} style={{ opacity: 0.8 }} />
                         <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-2)', letterSpacing: '-0.02em' }}>AIIMIN SYSTEM</span>
                     </div>
                     <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>

@@ -1,6 +1,7 @@
 :root {
     /* High-Contrast Production Base */
     --bg-primary: #0E100D;
+    --bg-main: var(--bg-primary);
     --bg-secondary: #131512;
     --bg-card: #1C1E1B;
     --bg-card-hover: #242723;
@@ -69,6 +70,7 @@
 /* Light mode — Atoms app inspired */
 [data-theme="light"] {
     --bg-primary: #f5f0e8;
+    --bg-main: var(--bg-primary);
     --bg-secondary: #faf7f2;
     --bg-card: #ffffff;
     --bg-card-hover: #fdf9f4;
@@ -123,6 +125,23 @@ textarea,
 select,
 button {
     font-family: inherit;
+}
+
+input,
+select,
+textarea {
+    background-color: var(--bg-elevated);
+    color: var(--text-1);
+    border: 1px solid var(--border);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-3);
+}
+
+button {
+    color: var(--text-1);
 }
 
 ::-webkit-scrollbar {

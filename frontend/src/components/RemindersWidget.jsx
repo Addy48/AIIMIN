@@ -6,6 +6,9 @@ const RemindersWidget = ({ user }) => {
     const [mode, setMode] = useState('note'); // 'note' or 'reminder'
     const [text, setText] = useState('');
     const [reminderTime, setReminderTime] = useState('');
+    const [timeHour, setTimeHour] = useState('');
+    const [timeMinute, setTimeMinute] = useState('00');
+    const [timePeriod, setTimePeriod] = useState('AM');
     const [isSaving, setIsSaving] = useState(false);
 
     // Local Draft Autosave
@@ -49,10 +52,14 @@ const RemindersWidget = ({ user }) => {
                 title: text.trim().slice(0, 60),
             };
 
-            if (mode === 'reminder' && reminderTime) {
-                // Build full datetime from today + time input
+            if (mode === 'reminder' && timeHour) {
+                // Convert 12h → 24h for ISO
+                let hour24 = parseInt(timeHour, 10);
+                if (timePeriod === 'AM' && hour24 === 12) hour24 = 0;
+                if (timePeriod === 'PM' && hour24 !== 12) hour24 += 12;
+                const hStr = String(hour24).padStart(2, '0');
                 const today = new Date().toISOString().split('T')[0];
-                noteData.reminder_time = new Date(`${today}T${reminderTime}:00`).toISOString();
+                noteData.reminder_time = new Date(`${today}T${hStr}:${timeMinute}:00`).toISOString();
             }
 
             const { error } = await supabase
@@ -63,6 +70,9 @@ const RemindersWidget = ({ user }) => {
 
             setText('');
             setReminderTime('');
+            setTimeHour('');
+            setTimeMinute('00');
+            setTimePeriod('AM');
             setIsOpen(false);
             localStorage.removeItem('aiimin_draft_note');
         } catch (e) {
@@ -170,17 +180,82 @@ const RemindersWidget = ({ user }) => {
 
                     {mode === 'reminder' && (
                         <div>
-                            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px', display: 'block' }}>When?</label>
-                            <input
-                                type="time"
-                                value={reminderTime}
-                                onChange={(e) => setReminderTime(e.target.value)}
-                                style={{
-                                    width: '100%', padding: '12px 16px', borderRadius: '12px',
-                                    background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-                                    color: 'var(--text-1)', fontSize: '15px', outline: 'none'
-                                }}
-                            />
+                            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '10px', display: 'block', letterSpacing: '0.04em', textTransform: 'uppercase' }}>When?</label>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                                {/* Hour */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-3)', textAlign: 'center', letterSpacing: '0.06em' }}>HOUR</span>
+                                    <select
+                                        value={timeHour}
+                                        onChange={(e) => setTimeHour(e.target.value)}
+                                        style={{
+                                            width: '100%', height: '48px', borderRadius: '10px',
+                                            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                                            color: timeHour ? 'var(--text-1)' : 'var(--text-3)',
+                                            fontSize: '18px', fontWeight: 700, textAlign: 'center',
+                                            cursor: 'pointer', outline: 'none',
+                                            appearance: 'none', WebkitAppearance: 'none',
+                                            paddingLeft: '4px', paddingRight: '4px'
+                                        }}
+                                    >
+                                        <option value="" disabled>--</option>
+                                        {[1,2,3,4,5,6,7,8,9,10,11,12].map(h => (
+                                            <option key={h} value={String(h)}>{String(h).padStart(2,'0')}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Minute */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-3)', textAlign: 'center', letterSpacing: '0.06em' }}>MIN</span>
+                                    <select
+                                        value={timeMinute}
+                                        onChange={(e) => setTimeMinute(e.target.value)}
+                                        style={{
+                                            width: '100%', height: '48px', borderRadius: '10px',
+                                            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                                            color: 'var(--text-1)', fontSize: '18px', fontWeight: 700,
+                                            textAlign: 'center', cursor: 'pointer', outline: 'none',
+                                            appearance: 'none', WebkitAppearance: 'none',
+                                            paddingLeft: '4px', paddingRight: '4px'
+                                        }}
+                                    >
+                                        {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                                            <option key={m} value={m}>{m}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* AM / PM */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-3)', textAlign: 'center', letterSpacing: '0.06em' }}>AM/PM</span>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', height: '48px', justifyContent: 'center' }}>
+                                        {['AM', 'PM'].map(p => (
+                                            <button
+                                                key={p}
+                                                type="button"
+                                                onClick={() => setTimePeriod(p)}
+                                                style={{
+                                                    flex: 1, borderRadius: '8px', border: 'none',
+                                                    background: timePeriod === p ? 'var(--accent)' : 'var(--bg-elevated)',
+                                                    color: timePeriod === p ? '#fff' : 'var(--text-3)',
+                                                    fontWeight: 700, fontSize: '12px', cursor: 'pointer',
+                                                    transition: 'all 0.15s'
+                                                }}
+                                            >
+                                                {p}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Preview line */}
+                            {timeHour && (
+                                <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '13px', color: 'var(--accent)', fontWeight: 600 }}>
+                                    ⏰ {String(timeHour).padStart(2,'0')}:{timeMinute} {timePeriod}
+                                </div>
+                            )}
                         </div>
                     )}
 

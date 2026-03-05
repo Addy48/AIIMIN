@@ -79,14 +79,15 @@ const CalendarHeatmap = ({ year, month }) => {
                             onMouseEnter={() => setTooltip({ dateStr, ...d })}
                             onMouseLeave={() => setTooltip(null)}
                             style={{
-                                aspectRatio: '1', borderRadius: '5px',
+                                aspectRatio: '1', borderRadius: '8px',
                                 background: loading ? 'var(--bg-elevated)' : intensityColor(pct),
                                 border: isToday ? '2px solid var(--accent)' : '1px solid var(--border)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 cursor: hasFocus || pct > 0 ? 'pointer' : 'default',
                                 position: 'relative', transition: 'transform 0.1s ease',
+                                width: '100%', boxSizing: 'border-box'
                             }}
-                            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
+                            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
                             onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
                         >
                             <span style={{
@@ -109,10 +110,17 @@ const CalendarHeatmap = ({ year, month }) => {
             {/* Tooltip */}
             {tooltip && (
                 <div style={{
-                    marginTop: '10px', padding: '10px 12px',
-                    background: 'var(--bg-card)', border: '1px solid var(--border)',
-                    borderRadius: '10px', fontSize: '11px', display: 'grid',
-                    gridTemplateColumns: '1fr 1fr', gap: '6px 16px',
+                    marginTop: '10px',
+                    padding: '10px 12px',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '10px',
+                    fontSize: '11px',
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '6px 16px',
+                    maxWidth: '100%',
+                    boxSizing: 'border-box',
                 }}>
                     <div style={{ gridColumn: '1/-1', fontWeight: 800, color: 'var(--text-1)', marginBottom: '2px', fontSize: '12px' }}>{tooltip.dateStr}</div>
                     {[

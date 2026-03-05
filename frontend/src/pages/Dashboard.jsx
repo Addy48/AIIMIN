@@ -14,6 +14,7 @@ import WinsEngine from '../components/WinsEngine';
 import InsightEngine from '../components/InsightEngine';
 import MomentumBar from '../components/MomentumBar';
 import WeeklyReport from '../components/WeeklyReport';
+import CalendarHeatmap from '../components/calendar/CalendarHeatmap';
 import ErrorBoundary from '../components/ErrorBoundary';
 import AdminPanel from '../components/account/AdminPanel';
 import AdminConsole from '../components/account/AdminConsole';
@@ -78,9 +79,9 @@ const CalendarGrid = () => {
                                 background: isToday
                                     ? 'var(--accent)'
                                     : isPast
-                                        ? (isHov ? 'rgba(245,166,35,0.12)' : 'rgba(245,166,35,0.06)')
+                                        ? (isHov ? 'var(--accent-dim)' : 'var(--bg-elevated)')
                                         : 'transparent',
-                                color: isToday ? '#fff' : isPast ? 'var(--text-1)' : 'var(--text-3)',
+                                color: isToday ? 'var(--text-1)' : isPast ? 'var(--text-1)' : 'var(--text-3)',
                                 fontWeight: isToday ? 800 : isPast ? 600 : 400,
                                 opacity: isFuture ? 0.4 : 1,
                                 transform: isHov && !isToday ? 'scale(1.1)' : 'scale(1)',
@@ -129,7 +130,7 @@ const WeekRows = ({ stat }) => {
                     return (
                         <div key={i} style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            background: 'rgba(245,166,35,0.06)', borderRadius: '6px',
+                            background: 'var(--accent-dim)', borderRadius: '6px',
                             padding: '6px 10px', borderLeft: '2px solid var(--accent)', fontSize: '12px',
                         }}>
                             <span style={{ fontWeight: 700, color: 'var(--text-1)' }}>{day.label}</span>
@@ -141,7 +142,7 @@ const WeekRows = ({ stat }) => {
                     <div key={i} style={{
                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                         borderRadius: '6px', padding: '6px 10px', fontSize: '12px',
-                        background: hasEntry ? 'rgba(245,166,35,0.04)' : 'transparent',
+                        background: hasEntry ? 'var(--bg-elevated)' : 'transparent',
                     }}>
                         <span style={{ fontWeight: hasEntry ? 600 : 400, color: hasEntry ? 'var(--text-1)' : 'var(--text-3)' }}>{day.label}</span>
                         <span style={{ color: hasEntry ? 'var(--text-2)' : 'var(--text-3)', fontSize: '11px', fontWeight: hasEntry ? 600 : 400 }}>{hasEntry ? getEntryValue(stat.type) : '—'}</span>
@@ -155,13 +156,16 @@ const WeekRows = ({ stat }) => {
 /* ─── Expanded Panel ─── */
 const ExpandedStatPanel = ({ stat }) => {
     const [viewMode, setViewMode] = useState('week');
+    const now = new Date();
+    const isFocusStat = stat.id === 'focus';
+
     return (
         <div className="fade-up" style={{
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
             borderRadius: '14px',
             padding: '20px',
-            overflow: 'hidden',
+            minHeight: '260px',
         }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -181,7 +185,12 @@ const ExpandedStatPanel = ({ stat }) => {
                     ))}
                 </div>
             </div>
-            {viewMode === 'week' ? <WeekRows stat={stat} /> : <CalendarGrid />}
+            {viewMode === 'week'
+                ? <WeekRows stat={stat} />
+                : (isFocusStat
+                    ? <CalendarHeatmap year={now.getFullYear()} month={now.getMonth() + 1} />
+                    : <CalendarGrid />)
+            }
         </div>
     );
 };
@@ -266,7 +275,7 @@ const ToggleSwitch = ({ checked, onChange }) => (
         <div style={{
             position: 'absolute', top: '3px', left: checked ? '21px' : '3px',
             width: '16px', height: '16px', borderRadius: '50%',
-            background: '#fff', transition: 'left 0.2s ease',
+            background: 'var(--bg-elevated)', transition: 'left 0.2s ease',
             boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
         }} />
     </button>
@@ -332,7 +341,7 @@ const UpcomingSidebar = () => {
                 const mappedReminders = (reminders || []).map(r => ({
                     label: r.title || r.content?.slice(0, 40) || 'Reminder',
                     time: new Date(r.reminder_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                    color: '#4ade80', // green for reminders
+                    color: 'var(--success)',
                     type: 'reminder',
                 }));
 
@@ -543,7 +552,7 @@ const Dashboard = ({ user }) => {
                                 display: 'inline-flex', alignItems: 'center', gap: '8px',
                                 padding: '6px 14px',
                                 background: 'var(--success-dim)',
-                                border: '1px solid rgba(99, 193, 133, 0.2)',
+                                border: '1px solid var(--border)',
                                 borderRadius: '99px', fontSize: '11px',
                                 color: 'var(--success)', fontWeight: 700, flexShrink: 0,
                                 textTransform: 'uppercase', letterSpacing: '0.04em'
@@ -597,19 +606,6 @@ const Dashboard = ({ user }) => {
                                 <MoodTracker user={user} onMoodChange={() => { }} />
                             </div>
 
-                            {/* S9: Daily Integrity moved above Focus for immediate visibility */}
-                            <div className="fade-up" style={{ marginBottom: '28px' }}>
-                                <SectionLabel>Daily Integrity</SectionLabel>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }} className="integrity-grid">
-                                    <div>
-                                        <DailyLogForm user={user} />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                        <ResetsTracker user={user} />
-                                    </div>
-                                </div>
-                            </div>
-
                             {/* S3: Balanced 2x2 grid for Focus, Wins, Momentum, Intelligence */}
                             <div className="fade-up" style={{ marginBottom: '28px' }}>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }} className="focus-intelligence-grid">
@@ -640,7 +636,7 @@ const Dashboard = ({ user }) => {
                                         {onboardingStage >= 2 ? (
                                             showWinTracker ? <WinsEngine /> : null
                                         ) : (
-                                            <div style={{ padding: '32px', textAlign: 'center', background: 'rgba(245,166,35,0.03)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                                            <div style={{ padding: '32px', textAlign: 'center', background: 'var(--bg-elevated)', borderRadius: '16px', border: '1px solid var(--border)' }}>
                                                 <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase' }}>Available at Stage 2</p>
                                             </div>
                                         )}
@@ -665,6 +661,19 @@ const Dashboard = ({ user }) => {
                                         .focus-intelligence-grid, .integrity-grid { grid-template-columns: 1fr !important; }
                                     }
                                 `}</style>
+                            </div>
+
+                            {/* S9: Daily Integrity moved below Momentum/Focus */}
+                            <div className="fade-up" style={{ marginBottom: '28px' }}>
+                                <SectionLabel>Daily Integrity</SectionLabel>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }} className="integrity-grid">
+                                    <div>
+                                        <DailyLogForm user={user} />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                        <ResetsTracker user={user} />
+                                    </div>
+                                </div>
                             </div>
                         </>
                     )}
@@ -725,7 +734,7 @@ const Dashboard = ({ user }) => {
                                 <p style={{ fontSize: '14px', color: 'var(--text-3)', maxWidth: '300px', margin: '0 auto', lineHeight: 1.5 }}>
                                     AIIMIN requires 7 days of consistency before generating its first behavioral trend report.
                                 </p>
-                                <div style={{ marginTop: '32px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: 'var(--accent)', color: '#fff', borderRadius: '99px', fontSize: '13px', fontWeight: 700 }}>
+                                <div style={{ marginTop: '32px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: 'var(--accent)', color: 'var(--text-1)', borderRadius: '99px', fontSize: '13px', fontWeight: 700 }}>
                                     Current Progress: {onboardingStage * 25}%
                                 </div>
                             </div>
@@ -805,7 +814,7 @@ const Dashboard = ({ user }) => {
                                     description="Permanently removes all data. This cannot be undone."
                                     danger={true}
                                     control={
-                                        <button onClick={handleDeleteAccount} style={{ padding: '6px 14px', background: 'rgba(235,140,140,0.1)', color: 'var(--danger)', border: '1px solid rgba(235,140,140,0.25)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                                        <button onClick={handleDeleteAccount} style={{ padding: '6px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
                                             Delete
                                         </button>
                                     }

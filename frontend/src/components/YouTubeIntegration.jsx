@@ -140,7 +140,9 @@ const YouTubePanel = ({ user }) => {
                             Connect your Google account to play personal focus playlists during sessions.
                         </p>
                         <button
-                            onClick={handleConnectGoogle}
+                            onClick={() => {
+                                window.location.href = `${API_URL}/google/auth/login`;
+                            }}
                             disabled={loading}
                             style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',

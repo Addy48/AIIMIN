@@ -159,18 +159,7 @@ const AccountModal = ({ isOpen, onClose }) => {
     };
 
     const handleConnectGoogle = async () => {
-        try {
-            const res = await fetch(`${API_URL}/google/auth/init`, { headers: getHeaders() });
-            const contentType = res.headers.get("content-type");
-            if (res.ok && contentType && contentType.indexOf("application/json") !== -1) {
-                const { authUrl } = await res.json();
-                window.location.href = authUrl;
-            } else {
-                toast.error('Failed to initiate Google connection');
-            }
-        } catch (e) {
-            toast.error('Failed to connect to Google');
-        }
+        window.location.href = `${API_URL}/google/auth/login`;
     };
 
     const handleDisconnect = async () => {

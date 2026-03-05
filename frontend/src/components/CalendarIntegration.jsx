@@ -80,7 +80,7 @@ const CalendarMonthView = () => {
             {rows.map((row, rowIdx) => (
                 <div key={rowIdx} style={{
                     display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0',
-                    background: rowIdx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)',
+                    background: rowIdx % 2 === 0 ? 'transparent' : 'var(--bg-elevated)',
                     borderRadius: '6px',
                 }}>
                     {row.map((day, colIdx) => {
@@ -93,9 +93,9 @@ const CalendarMonthView = () => {
                                 aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 borderRadius: '7px', fontSize: '11px',
                                 background: isToday ? 'var(--accent)' : 'transparent',
-                                color: isToday ? '#fff' : isFuture ? 'var(--text-3)' : 'var(--text-2)',
+                                color: isToday ? 'var(--text-1)' : isFuture ? 'var(--text-3)' : 'var(--text-2)',
                                 fontWeight: isToday ? 800 : 500,
-                                border: '1px solid rgba(255,255,255,0.04)',
+                                border: '1px solid var(--border)',
                                 opacity: isFuture ? 0.4 : 1,
                                 cursor: !isFuture ? 'pointer' : 'default',
                                 transition: 'background 0.12s',
@@ -216,24 +216,7 @@ const CalendarIntegration = ({ user }) => {
 
     const handleConnectGoogle = async () => {
         setIsLoadingEvents(true);
-        setErrorMsg('');
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const res = await fetch(`${API_URL}/google/auth/init`, {
-                headers: { 'Authorization': `Bearer ${session?.access_token}` }
-            });
-            const contentType = res.headers.get("content-type");
-            if (res.ok && contentType && contentType.indexOf("application/json") !== -1) {
-                const { authUrl } = await res.json();
-                window.location.href = authUrl;
-            } else {
-                setErrorMsg('Failed to initiate Google Calendar connection.');
-            }
-        } catch {
-            setErrorMsg('Failed to connect to Google.');
-        } finally {
-            setIsLoadingEvents(false);
-        }
+        window.location.href = `${API_URL}/google/auth/login`;
     };
 
     const handleDisconnect = () => {

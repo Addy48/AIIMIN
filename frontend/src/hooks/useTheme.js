@@ -6,6 +6,12 @@ export default function useTheme() {
     });
 
     useEffect(() => {
+        const handleThemeChange = (e) => setTheme(e.detail);
+        window.addEventListener('aiimin-theme-change', handleThemeChange);
+        return () => window.removeEventListener('aiimin-theme-change', handleThemeChange);
+    }, []);
+
+    useEffect(() => {
         const root = document.documentElement;
         root.setAttribute('data-theme', theme);
         if (theme === 'dark') {
@@ -20,7 +26,11 @@ export default function useTheme() {
         localStorage.setItem('aiimin-theme', theme);
     }, [theme]);
 
-    const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    const toggleTheme = () => {
+        const nextTheme = theme === 'dark' ? 'light' : 'dark';
+        setTheme(nextTheme);
+        window.dispatchEvent(new CustomEvent('aiimin-theme-change', { detail: nextTheme }));
+    };
 
     return { theme, toggleTheme };
 }
