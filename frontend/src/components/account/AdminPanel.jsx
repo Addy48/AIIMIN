@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import supabase from '../../utils/supabase';
 import toast from '../../utils/toast';
-import { apiGet, apiPost } from '../../utils/api';
-import { useAuth } from '../../hooks/useAuth';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const AdminPanel = ({ user, onClose }) => {
-    const { session } = useAuth();
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
     const [activeSection, setActiveSection] = useState('simulate');
@@ -14,6 +14,14 @@ const AdminPanel = ({ user, onClose }) => {
     const [selectedTable, setSelectedTable] = useState('');
     const [tableData, setTableData] = useState(null);
     const [tableFetching, setTableFetching] = useState(false);
+
+    const getHeaders = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+        };
+    };
 
     const presets = [
         { id: 'high_discipline', name: 'High Discipline', icon: '🔥' },
@@ -26,7 +34,13 @@ const AdminPanel = ({ user, onClose }) => {
         setLoading(true);
         setMessage({ text: 'Generating simulation data...', type: 'info' });
         try {
-            const result = await apiPost('/admin/simulate', { presetId, userId: user.id }, { session });
+            const headers = await getHeaders();
+            const response = await fetch(`${API_URL}/admin/simulate`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ presetId, userId: user.id })
+            });
+            const result = await response.json();
             if (result.success) {
                 setMessage({ text: `✓ ${presetId} simulated (30 days)`, type: 'success' });
                 toast.success(`Seed complete: ${presetId}`);
@@ -43,8 +57,12 @@ const AdminPanel = ({ user, onClose }) => {
     // Fetch table list
     const fetchTables = async () => {
         try {
-            const data = await apiGet('/admin/tables', { session });
-            setTables(data);
+            const headers = await getHeaders();
+            const res = await fetch(`${API_URL}/admin/tables`, { headers });
+            if (res.ok) {
+                const data = await res.json();
+                setTables(data);
+            }
         } catch (err) {
             console.error('Failed to fetch tables:', err);
         }
@@ -55,8 +73,12 @@ const AdminPanel = ({ user, onClose }) => {
         setTableFetching(true);
         setTableData(null);
         try {
-            const data = await apiGet(`/admin/tables/${table}`, { session, params: { limit: 50 } });
-            setTableData(data);
+            const headers = await getHeaders();
+            const res = await fetch(`${API_URL}/admin/tables/${table}?limit=50`, { headers });
+            if (res.ok) {
+                const data = await res.json();
+                setTableData(data);
+            }
         } catch (err) {
             console.error('Failed to fetch table data:', err);
         } finally {
@@ -68,7 +90,13 @@ const AdminPanel = ({ user, onClose }) => {
     const wipeTable = async (table) => {
         if (!window.confirm(`WIPE all rows from "${table}" for your user? This cannot be undone.`)) return;
         try {
-            const result = await apiPost(`/admin/wipe/${table}`, { userId: user.id }, { session });
+            const headers = await getHeaders();
+            const res = await fetch(`${API_URL}/admin/wipe/${table}`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ userId: user.id })
+            });
+            const result = await res.json();
             if (result.success) {
                 setMessage({ text: `Wiped ${result.deleted} rows from ${table}`, type: 'success' });
                 toast.success(`Wiped ${result.deleted} rows from ${table}`);
