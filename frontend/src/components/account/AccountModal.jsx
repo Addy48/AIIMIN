@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom'; // Added for Portal
-import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import toast from '../../utils/toast';
-import supabase from '../../utils/supabase';
-import { apiDelete, apiGet, apiPatch } from '../../utils/api';
-import { useThemeContext } from '../../context/ThemeContext';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const Section = ({ title, children }) => (
     <div style={{ marginBottom: '24px' }}>
@@ -39,93 +36,55 @@ const Row = ({ label, children, border = true }) => (
     </div>
 );
 
-const ChangePassword = () => {
-    const [newPw, setNewPw] = useState('');
-    const [confirmPw, setConfirmPw] = useState('');
-    const [msg, setMsg] = useState('');
-    const [saving, setSaving] = useState(false);
-    const [showNewPw, setShowNewPw] = useState(false);
-    const [showConfirmPw, setShowConfirmPw] = useState(false);
+const TIMEZONES = [
+    'Asia/Kolkata', 'UTC', 'America/New_York', 'America/Chicago',
+    'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney',
+];
 
-    const handleChange = async () => {
-        if (newPw.length < 6) { setMsg('Min 6 characters'); return; }
-        if (newPw !== confirmPw) { setMsg('Passwords do not match'); return; }
-        setSaving(true);
-        setMsg('');
-        const { error } = await supabase.auth.updateUser({ password: newPw });
-        if (error) { setMsg(error.message); }
-        else { setMsg('Password updated ✓'); setNewPw(''); setConfirmPw(''); }
-        setSaving(false);
-        setTimeout(() => setMsg(''), 4000);
-    };
-
-    const inputStyle = {
-        padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-        border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-        color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
-    };
-
-    const eyeBtn = (show, toggle) => (
-        <button type="button" onClick={toggle} tabIndex={-1} style={{
-            position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--text-3)', fontSize: '16px', padding: 0,
-            display: 'flex', alignItems: 'center', lineHeight: 1, userSelect: 'none',
-        }} aria-label={show ? 'Hide' : 'Show'}>
-            {show ? '🙈' : '👁'}
-        </button>
-    );
-
-    return (
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ position: 'relative' }}>
-                <input type={showNewPw ? 'text' : 'password'} placeholder="New password" value={newPw} onChange={e => setNewPw(e.target.value)} style={{ ...inputStyle, paddingRight: '40px' }} />
-                {eyeBtn(showNewPw, () => setShowNewPw(p => !p))}
-            </div>
-            <div style={{ position: 'relative' }}>
-                <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} style={{ ...inputStyle, paddingRight: '40px' }} />
-                {eyeBtn(showConfirmPw, () => setShowConfirmPw(p => !p))}
-            </div>
-            {msg && <div style={{ fontSize: '12px', color: msg.includes('✓') ? '#22c55e' : 'var(--danger)', fontWeight: 700 }}>{msg}</div>}
-            <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} style={{
-                padding: '12px', background: 'var(--accent)', color: 'white', border: 'none',
-                borderRadius: '12px', fontSize: '13px', fontWeight: 800, cursor: 'pointer',
-                opacity: (saving || !newPw || !confirmPw) ? 0.5 : 1
-            }}>{saving ? 'Saving...' : 'Update Password'}</button>
-        </div>
-    );
-};
+const StatusDot = ({ connected, error }) => (
+    <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        padding: '4px 10px', borderRadius: '99px', fontSize: '11px', fontWeight: 700,
+        background: error ? 'rgba(235,140,140,0.1)' : connected ? 'rgba(34,197,94,0.1)' : 'var(--bg-elevated)',
+        border: `1px solid ${error ? 'rgba(235,140,140,0.2)' : connected ? 'rgba(34,197,94,0.2)' : 'var(--border)'}`,
+        color: error ? 'var(--danger)' : connected ? '#22c55e' : 'var(--text-3)',
+    }}>
+        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'currentColor' }} />
+        {error ? 'Error' : connected ? 'Connected' : 'Not connected'}
+    </div>
+);
 
 const AccountModal = ({ isOpen, onClose }) => {
     const { session, signOut } = useAuth();
-    const { theme, setTheme } = useThemeContext();
     const [profile, setProfile] = useState(null);
-    const [draftProfile, setDraftProfile] = useState(null);
-    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [integrations, setIntegrations] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saveMsg, setSaveMsg] = useState('');
     const [exporting, setExporting] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState('');
     const [deleting, setDeleting] = useState(false);
-    const [execWindow, setExecWindow] = useState(() => {
-        return Number(localStorage.getItem('aiimin_execution_window')) || 61;
-    });
     const modalRef = useRef();
+
+    const getHeaders = useCallback(() => ({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`,
+    }), [session?.access_token]);
 
     useEffect(() => {
         if (!isOpen || !session) return;
         setLoading(true);
-        apiGet('/account/profile', { session }).then((p) => {
-            const fallbackName = p?.full_name || p?.username || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'User';
-            const fallbackTimezone = p?.timezone || session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-            const normalizedProfile = { ...p, full_name: fallbackName, username: p?.username || '', timezone: fallbackTimezone };
-            setProfile(normalizedProfile);
-            setDraftProfile(normalizedProfile);
+        const headers = getHeaders();
+        Promise.all([
+            fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed')),
+            fetch(`${API_URL}/account/integrations`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Integrations load failed')),
+        ]).then(([p, integ]) => {
+            setProfile(p);
+            setIntegrations(integ);
         }).catch(err => {
             console.error('[AccountModal] fetch error:', err);
         }).finally(() => setLoading(false));
-    }, [isOpen, session]);
+    }, [isOpen, session, getHeaders]);
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -151,57 +110,76 @@ const AccountModal = ({ isOpen, onClose }) => {
     }, [isOpen, onClose]);
 
     const handleSaveProfile = async () => {
-        if (!draftProfile) return;
         setSaving(true);
         setSaveMsg('');
         try {
-            const savedProfile = await apiPatch('/account/profile', { full_name: draftProfile.full_name, username: draftProfile.username, timezone: draftProfile.timezone }, { session });
-            setProfile(savedProfile);
-            setDraftProfile(savedProfile);
-            setIsEditingProfile(false);
-            setSaveMsg('Saved ✓');
-            toast.success('Profile saved');
-        } catch (err) {
-            setSaveMsg('Failed to save');
-            toast.error(err.response?.data?.error || err.message || 'Profile save failed');
-        }
+            const res = await fetch(`${API_URL}/account/profile`, {
+                method: 'PATCH', headers: getHeaders(),
+                body: JSON.stringify({ full_name: profile.full_name, timezone: profile.timezone }),
+            });
+            if (res.ok) {
+                setSaveMsg('Saved ✓');
+                toast.success('Profile saved');
+            }
+            else {
+                setSaveMsg('Save failed');
+                toast.error('Profile save failed');
+            }
+        } catch { setSaveMsg('Failed to save'); }
         finally { setSaving(false); setTimeout(() => setSaveMsg(''), 3000); }
-    };
-
-    const handleEditProfile = () => {
-        setDraftProfile(profile);
-        setIsEditingProfile(true);
-        setSaveMsg('');
-    };
-
-    const handleCancelEdit = () => {
-        setDraftProfile(profile);
-        setIsEditingProfile(false);
-        setSaveMsg('');
     };
 
     const handleExport = async () => {
         setExporting(true);
         try {
-            const blob = await apiGet('/account/export', { session, responseType: 'blob' });
+            const res = await fetch(`${API_URL}/account/export`, { headers: getHeaders() });
+            const blob = await res.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `aiimin-export-${new Date().toISOString().slice(0, 10)}.json`;
+            a.download = 'aiimin-export.json';
             a.click();
             URL.revokeObjectURL(url);
-            toast.success('Data exported successfully');
-        } catch (err) { toast.error(err.message || 'Export failed'); } finally { setExporting(false); }
+        } catch (err) { toast.error('Export failed'); } finally { setExporting(false); }
     };
 
     const handleDelete = async () => {
         if (deleteConfirm !== 'DELETE') return;
         setDeleting(true);
         try {
-            await apiDelete('/account', { confirm: 'DELETE' }, { session });
-            await signOut();
-            window.location.reload();
+            const res = await fetch(`${API_URL}/account`, {
+                method: 'DELETE', headers: getHeaders(),
+                body: JSON.stringify({ confirm: 'DELETE' }),
+            });
+            if (res.ok) {
+                signOut();
+                window.location.reload();
+            }
         } catch (err) { toast.error('Delete failed'); } finally { setDeleting(false); }
+    };
+
+    const handleConnectGoogle = async () => {
+        try {
+            const res = await fetch(`${API_URL}/google/auth/init`, { headers: getHeaders() });
+            const contentType = res.headers.get("content-type");
+            if (res.ok && contentType && contentType.indexOf("application/json") !== -1) {
+                const { authUrl } = await res.json();
+                window.location.href = authUrl;
+            } else {
+                toast.error('Failed to initiate Google connection');
+            }
+        } catch (e) {
+            toast.error('Failed to connect to Google');
+        }
+    };
+
+    const handleDisconnect = async () => {
+        if (!window.confirm('Disconnect Google?')) return;
+        await fetch(`${API_URL}/google/auth/disconnect`, { method: 'POST', headers: getHeaders() });
+        setIntegrations(prev => ({
+            google_calendar: { connected: false, error: null },
+            youtube: { connected: false, error: null },
+        }));
     };
 
     if (!isOpen) return null;
@@ -232,24 +210,23 @@ const AccountModal = ({ isOpen, onClose }) => {
                     from { transform: rotate(0deg); }
                     to { transform: rotate(360deg); }
                 }
-                .settings-grid { display: block; }
-                .settings-panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr); gap: 24px; align-items: start; }
+                .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
                 @media (max-width: 800px) {
-                    .settings-panel-grid { grid-template-columns: 1fr; }
+                    .settings-grid { grid-template-columns: 1fr; gap: 24px; }
                 }
             `}</style>
             <div ref={modalRef} className="no-scrollbar" style={{
                 background: 'var(--bg-primary)',
                 border: '1px solid var(--border)',
-                borderRadius: '28px',
-                width: 'min(1080px, 94vw)',
-                maxWidth: '94vw',
-                maxHeight: '88vh',
+                borderRadius: '32px',
+                width: '480px', // Fixed width as requested
+                maxWidth: '90vw',
+                maxHeight: '90vh',
                 overflowY: 'auto',
                 msOverflowStyle: 'none',
                 scrollbarWidth: 'none',
                 boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',
-                padding: '34px',
+                padding: '40px',
                 animation: 'modalEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                 position: 'relative',
                 display: 'flex',
@@ -279,288 +256,72 @@ const AccountModal = ({ isOpen, onClose }) => {
                         <span style={{ fontSize: '13px', color: 'var(--text-3)', fontWeight: 600 }}>Loading state...</span>
                     </div>
                 ) : (
-                    <div className="settings-grid">
-                        <div className="settings-panel-grid">
+                    <div className="settings-grid" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <Section title="Profile">
-                                <Row label="Name" border={true}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
-                                            {profile?.full_name || profile?.username || session?.user?.email?.split('@')[0] || 'User'}
-                                        </span>
-                                        {!isEditingProfile && (
-                                            <button
-                                                type="button"
-                                                onClick={handleEditProfile}
-                                                style={{
-                                                    width: '30px', height: '30px', borderRadius: '50%', border: '1px solid var(--border)',
-                                                    background: 'var(--bg-elevated)', color: 'var(--text-2)', cursor: 'pointer',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
-                                                }}
-                                                aria-label="Edit profile"
-                                            >
-                                                ✎
-                                            </button>
-                                        )}
-                                    </div>
-                                </Row>
-                                <Row label="Username" border={true}>
-                                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>
-                                        {profile?.username ? `@${profile.username}` : 'Not set'}
-                                    </span>
-                                </Row>
-                                <Row label="Timezone" border={true}>
-                                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>
-                                        {profile?.timezone || 'Auto-detected'}
-                                    </span>
-                                </Row>
-                                <Row label="Execution Timeline" border={false}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <input 
-                                            type="number" 
-                                            min="1" 
-                                            max="365"
-                                            value={execWindow} 
-                                            onChange={e => {
-                                                const val = Math.max(1, Math.min(365, Number(e.target.value) || 61));
-                                                setExecWindow(val);
-                                                localStorage.setItem('aiimin_execution_window', val.toString());
-                                                window.dispatchEvent(new Event('storage'));
-                                            }}
-                                            style={{
-                                                width: '60px',
-                                                padding: '6px 10px',
-                                                borderRadius: '8px',
-                                                border: '1px solid var(--border)',
-                                                background: 'var(--bg-elevated)',
-                                                color: 'var(--text-1)',
-                                                textAlign: 'center',
-                                                fontWeight: 700,
-                                                fontSize: '13px',
-                                                outline: 'none'
-                                            }}
-                                        />
-                                        <span style={{ fontSize: '12px', color: 'var(--text-3)', fontWeight: 600 }}>Days</span>
-                                    </div>
-                                </Row>
-                                {isEditingProfile && (
-                                    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
-                                        <input
-                                            value={draftProfile?.full_name || ''}
-                                            onChange={e => setDraftProfile(p => ({ ...p, full_name: e.target.value }))}
-                                            placeholder="Full name"
-                                            style={{
-                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                                color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
-                                            }}
-                                        />
-	                                        <input
-	                                            value={draftProfile?.username || ''}
-	                                            onChange={e => setDraftProfile(p => ({ ...p, username: e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 20) }))}
-	                                            placeholder="Username (e.g. AADIYA10)"
-	                                            style={{
-                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                                color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
-                                            }}
-                                        />
-                                        <select
-                                            value={draftProfile?.timezone || 'Asia/Kolkata'}
-                                            onChange={e => setDraftProfile(p => ({ ...p, timezone: e.target.value }))}
-                                            style={{
-                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                                color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600,
-                                                appearance: 'none'
-                                            }}
-                                        >
-                                            <option value={Intl.DateTimeFormat().resolvedOptions().timeZone}>System Default ({Intl.DateTimeFormat().resolvedOptions().timeZone})</option>
-                                            <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
-                                            <option value="America/New_York">America/New_York (EST/EDT)</option>
-                                            <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
-                                            <option value="Europe/London">Europe/London (GMT/BST)</option>
-                                            <option value="Europe/Paris">Europe/Paris (CET/CEST)</option>
-                                            <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-                                            <option value="Australia/Sydney">Australia/Sydney (AEST/AEDT)</option>
-                                        </select>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-                                            <button onClick={handleSaveProfile} disabled={saving} style={{
-                                                flex: 1, padding: '12px', background: 'var(--accent)', color: 'white',
-                                                border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 800,
-                                                cursor: 'pointer', opacity: saving ? 0.7 : 1
-                                            }}>
-                                                {saving ? 'Saving...' : 'Save Changes'}
-                                            </button>
-                                            <button onClick={handleCancelEdit} disabled={saving} style={{
-                                                padding: '12px 14px', background: 'var(--bg-elevated)', color: 'var(--text-2)',
-                                                border: '1px solid var(--border)', borderRadius: '12px', fontSize: '13px', fontWeight: 700,
-                                                cursor: 'pointer'
-                                            }}>
-                                                Cancel
-                                            </button>
-                                            {saveMsg && <span style={{ fontSize: '13px', color: saveMsg.includes('fail') ? 'var(--danger)' : '#22c55e', fontWeight: 700 }}>{saveMsg}</span>}
-                                        </div>
-                                    </div>
-                                )}
-                            </Section>
-
-                            <Section title="Appearance">
-                                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
-                                    {[
-                                        { id: 'light', label: 'Nordic', colors: ['#F0EDE8', '#FAFAF9', '#1E5C3A'], darkText: true },
-                                        { id: 'dark', label: 'Vercel', colors: ['#0A0A0A', '#111111', '#22C55E'] },
-                                        { id: 'notion', label: 'Studio', colors: ['#FFFFFF', '#F7F6F3', '#37352F'], darkText: true },
-                                        { id: 'midnight', label: 'Midnight', colors: ['#0B1120', '#0F172A', '#38BDF8'] },
-                                        { id: 'solarized', label: 'Solar', colors: ['#002B36', '#073642', '#2AA198'] },
-                                        { id: 'cyberpunk', label: 'Neon', colors: ['#09090B', '#18181B', '#F43F5E'] },
-                                        { id: 'monokai', label: 'Monokai', colors: ['#272822', '#3E3D32', '#A6E22E'] },
-                                        { id: 'graphite', label: 'Graphite', colors: ['#151515', '#242424', '#D4AF37'] },
-                                        { id: 'sakura', label: 'Sakura', colors: ['#FFF7F8', '#FCE7EB', '#BE3455'], darkText: true }
-                                    ].map(t => (
-                                        <div 
-                                            key={t.id}
-                                            onClick={() => setTheme(t.id)}
-                                            style={{
-                                                padding: '12px',
-                                                borderRadius: '12px',
-                                                background: t.colors[0],
-                                                border: `2px solid ${theme === t.id ? 'var(--color-accent)' : 'var(--border)'}`,
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '10px',
-                                                transition: 'all 0.2s ease',
-                                                opacity: theme === t.id ? 1 : 0.82,
-                                                boxShadow: theme === t.id ? '0 0 0 2px var(--color-surface)' : 'none'
-                                            }}
-                                        >
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', height: '28px' }}>
-                                                {t.colors.map(color => <span key={color} style={{ background: color, borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)' }} />)}
-                                            </div>
-                                            <span style={{ fontSize: '12px', fontWeight: 800, color: t.darkText ? '#151515' : '#EEE' }}>{t.label}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Section>
-
-                            <Section title="Reports &amp; Analytics">
-                                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.5, fontWeight: 500 }}>
-                                        View your behavioral reports, spending analysis, and quarterly reviews.
-                                    </div>
-                                    <Link
-                                        to="/reports"
-                                        onClick={onClose}
+                                <Row label="Name">
+                                    <input
+                                        value={profile?.full_name || ''}
+                                        onChange={e => setProfile(p => ({ ...p, full_name: e.target.value }))}
                                         style={{
-                                            display: 'flex', alignItems: 'center', gap: '10px',
-                                            padding: '14px 16px',
-                                            background: 'var(--bg-elevated)',
-                                            border: '1px solid var(--border)',
-                                            borderRadius: '12px',
-                                            textDecoration: 'none',
-                                            color: 'var(--text-1)',
-                                            fontWeight: 700,
-                                            fontSize: '14px',
-                                            transition: 'all 0.2s ease',
+                                            padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+                                            border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                            color: 'var(--text-1)', width: '200px', outline: 'none',
+                                            fontWeight: 600, transition: 'border-color 0.2s ease'
+                                        }}
+                                    />
+                                </Row>
+                                <Row label="Timezone" border={false}>
+                                    <select
+                                        value={profile?.timezone || 'Asia/Kolkata'}
+                                        onChange={e => setProfile(p => ({ ...p, timezone: e.target.value }))}
+                                        style={{
+                                            padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+                                            border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                            color: 'var(--text-1)', cursor: 'pointer', outline: 'none', width: '200px',
+                                            fontWeight: 600
                                         }}
                                     >
-                                        <span style={{ fontSize: '18px' }}>📊</span>
-                                        View Reports &amp; Analytics
-                                        <span style={{ marginLeft: 'auto', color: 'var(--text-3)', fontSize: '12px' }}>→</span>
-                                    </Link>
-                                </div>
-                            </Section>
-
-                            <Section title="Change Password">
-                                <ChangePassword />
-                            </Section>
-
-                            <Section title="Preferences & Notifications">
-                                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div>
-                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Daily Summary Email</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Get a morning brief of your goals and schedule.</div>
-                                        </div>
-                                        <div style={{ width: '40px', height: '24px', background: 'var(--color-accent)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-                                            <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%' }} />
-                                        </div>
-                                    </div>
-                                    <div style={{ height: '1px', background: 'var(--border)' }} />
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div>
-                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Push Notifications</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Real-time alerts for habits and meetings.</div>
-                                        </div>
-                                        <div style={{ width: '40px', height: '24px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-                                            <div style={{ position: 'absolute', top: '1px', left: '2px', width: '18px', height: '18px', background: 'var(--text-3)', borderRadius: '50%' }} />
-                                        </div>
-                                    </div>
-                                    <div style={{ height: '1px', background: 'var(--border)' }} />
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div>
-                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>24-Hour Time Format</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Use 24-hour clock (e.g. 14:00) instead of AM/PM.</div>
-                                        </div>
-                                        <div style={{ width: '40px', height: '24px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-                                            <div style={{ position: 'absolute', top: '1px', left: '2px', width: '18px', height: '18px', background: 'var(--text-3)', borderRadius: '50%' }} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </Section>
-
-                            <Section title="Subscription & Billing">
-                                <div style={{ padding: '24px', background: 'var(--bg-elevated)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '20px' }}>
-                                                ✦
-                                            </div>
-                                            <div>
-                                                <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-1)' }}>Free Tier</div>
-                                                <div style={{ fontSize: '13px', color: 'var(--text-3)', marginTop: '2px', fontWeight: 500 }}>Basic access to AIIMIN features.</div>
-                                            </div>
-                                        </div>
-                                        <div style={{ background: 'var(--bg-surface)', padding: '6px 12px', borderRadius: '99px', fontSize: '12px', fontWeight: 800, color: 'var(--color-accent)', border: '1px solid var(--border)' }}>
-                                            Active
-                                        </div>
-                                    </div>
-                                    <button style={{
-                                        width: '100%', padding: '12px', background: 'var(--text-1)', color: 'var(--bg-primary)',
-                                        border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 800, cursor: 'pointer',
-                                        transition: 'all 0.2s ease'
+                                        {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                                    </select>
+                                </Row>
+                                <div style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
+                                    <button onClick={handleSaveProfile} disabled={saving} style={{
+                                        flex: 1, padding: '12px', background: 'var(--accent)', color: 'white',
+                                        border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 800,
+                                        cursor: 'pointer', opacity: saving ? 0.7 : 1, transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                                     }}>
-                                        Upgrade to PRO
+                                        {saving ? 'Saving...' : 'Save Profile Changes'}
                                     </button>
+                                    {saveMsg && <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{saveMsg}</span>}
                                 </div>
                             </Section>
 
-                            <Section title="Connected Accounts">
-                                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--bg-elevated)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{ width: '32px', height: '32px', background: '#fff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                                            </div>
-                                            <div>
-                                                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Google</div>
-                                                <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>Connected</div>
-                                            </div>
-                                        </div>
-                                        <button style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-2)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Disconnect</button>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--bg-surface)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{ width: '32px', height: '32px', background: '#000', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>
-                                            </div>
-                                            <div>
-                                                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Facebook</div>
-                                                <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>Not connected</div>
-                                            </div>
-                                        </div>
-                                        <button style={{ padding: '8px 16px', background: 'var(--text-1)', border: 'none', borderRadius: '8px', color: 'var(--bg-primary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Connect</button>
-                                    </div>
+                            <Section title="Integrations">
+                                <Row label="OAuth Connection">
+                                    <div style={{ fontSize: '13px', color: 'var(--text-2)', fontWeight: 700 }}>Google Identity</div>
+                                </Row>
+                                <Row label="Status" border={false}>
+                                    <StatusDot connected={integrations?.google_calendar?.connected} error={integrations?.google_calendar?.error} />
+                                </Row>
+                                <div style={{ padding: '20px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
+                                    {!integrations?.google_calendar?.connected ? (
+                                        <button onClick={handleConnectGoogle} style={{
+                                            width: '100%', padding: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)',
+                                            borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-1)', cursor: 'pointer',
+                                            transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                                        }}>
+                                            <span style={{ fontSize: '16px' }}>+</span> Connect Google Account
+                                        </button>
+                                    ) : (
+                                        <button onClick={handleDisconnect} style={{
+                                            width: '100%', padding: '12px', background: 'none', border: '1px solid var(--border)',
+                                            borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-3)', cursor: 'pointer',
+                                            transition: 'all 0.2s ease'
+                                        }}>
+                                            Disconnect Services
+                                        </button>
+                                    )}
                                 </div>
                             </Section>
 
@@ -613,8 +374,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 flexDirection: 'column',
                                 gap: '16px', // 16px spacing as requested
                                 marginTop: '16px',
-                                padding: '12px 0 20px',
-                                gridColumn: '1 / -1'
+                                padding: '12px 0 20px'
                             }}>
                                 <button onClick={signOut} style={{
                                     width: '100%', padding: '16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
@@ -627,7 +387,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 </button>
 
                                 <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                    Account settings · Theme saved locally · Secure session active
+                                    AIIMIN OS v1.0.4 — Behavior Shaping System
                                 </p>
                             </div>
                         </div>
@@ -640,3 +400,4 @@ const AccountModal = ({ isOpen, onClose }) => {
 };
 
 export default AccountModal;
+
