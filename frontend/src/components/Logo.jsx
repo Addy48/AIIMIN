@@ -6,22 +6,36 @@ const Logo = ({ size = 28, style = {} }) => {
     const isLight = theme === 'light';
 
     return (
-        <img
-            src="/logo-aiimin.png"
-            alt="AIIMIN Logo"
+        <div
+            className="aiimin-logo-container"
+            aria-label="AIIMIN Logo"
             style={{
                 width: size,
                 height: size,
-                objectFit: 'contain',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'center',
                 flexShrink: 0,
-                // If the logo is white-on-dark:
-                // In dark mode: 'screen' drops the dark bg and keeps white lines.
-                // In light mode: 'invert(1)' + 'multiply' makes it black-on-light, dropping the light bg.
-                mixBlendMode: isLight ? 'multiply' : 'screen',
-                filter: isLight ? 'invert(1)' : 'none',
+                borderRadius: size > 40 ? '16px' : '8px',
                 ...style
             }}
-        />
+        >
+            <img
+                src="/logo-light.jpg"
+                alt="AIIMIN Icon"
+                style={{
+                    width: '105%',
+                    height: '145%',
+                    objectFit: 'cover',
+                    objectPosition: 'top center',
+                    mixBlendMode: isLight ? 'darken' : 'screen',
+                    filter: isLight ? 'contrast(1.02)' : 'invert(1) grayscale(1) brightness(1.7) contrast(1.2)',
+                    // By pushing it slightly up, we perfectly frame the top 'A' symbol
+                    transform: 'translateY(-2%)'
+                }}
+            />
+        </div>
     );
 };
 
