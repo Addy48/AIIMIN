@@ -6,7 +6,7 @@ const RemindersWidget = ({ user }) => {
     const [mode, setMode] = useState('note'); // 'note' or 'reminder'
     const [text, setText] = useState('');
     const [reminderTime, setReminderTime] = useState('');
-    const [timeHour, setTimeHour] = useState('');
+    const [timeHour, setTimeHour] = useState('8');
     const [timeMinute, setTimeMinute] = useState('00');
     const [timePeriod, setTimePeriod] = useState('AM');
     const [isSaving, setIsSaving] = useState(false);
@@ -31,7 +31,8 @@ const RemindersWidget = ({ user }) => {
             }
         }
         localStorage.setItem('aiimin_last_visit', now.toString());
-    }, [text]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         if (text) {
@@ -70,7 +71,7 @@ const RemindersWidget = ({ user }) => {
 
             setText('');
             setReminderTime('');
-            setTimeHour('');
+            setTimeHour('8');
             setTimeMinute('00');
             setTimePeriod('AM');
             setIsOpen(false);
@@ -188,19 +189,12 @@ const RemindersWidget = ({ user }) => {
                                     <select
                                         value={timeHour}
                                         onChange={(e) => setTimeHour(e.target.value)}
-                                        style={{
-                                            width: '100%', height: '48px', borderRadius: '10px',
-                                            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                                            color: timeHour ? 'var(--text-1)' : 'var(--text-3)',
-                                            fontSize: '18px', fontWeight: 700, textAlign: 'center',
-                                            cursor: 'pointer', outline: 'none',
-                                            appearance: 'none', WebkitAppearance: 'none',
-                                            paddingLeft: '4px', paddingRight: '4px'
-                                        }}
+                                        className="reminder-input"
+                                        style={{ color: timeHour ? 'var(--text-1)' : 'var(--text-3)' }}
                                     >
                                         <option value="" disabled>--</option>
-                                        {[1,2,3,4,5,6,7,8,9,10,11,12].map(h => (
-                                            <option key={h} value={String(h)}>{String(h).padStart(2,'0')}</option>
+                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(h => (
+                                            <option key={h} value={String(h)}>{String(h).padStart(2, '0')}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -211,16 +205,10 @@ const RemindersWidget = ({ user }) => {
                                     <select
                                         value={timeMinute}
                                         onChange={(e) => setTimeMinute(e.target.value)}
-                                        style={{
-                                            width: '100%', height: '48px', borderRadius: '10px',
-                                            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                                            color: 'var(--text-1)', fontSize: '18px', fontWeight: 700,
-                                            textAlign: 'center', cursor: 'pointer', outline: 'none',
-                                            appearance: 'none', WebkitAppearance: 'none',
-                                            paddingLeft: '4px', paddingRight: '4px'
-                                        }}
+                                        className="reminder-input"
+                                        style={{ color: 'var(--text-1)' }}
                                     >
-                                        {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                                        {['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'].map(m => (
                                             <option key={m} value={m}>{m}</option>
                                         ))}
                                     </select>
@@ -253,7 +241,7 @@ const RemindersWidget = ({ user }) => {
                             {/* Preview line */}
                             {timeHour && (
                                 <div style={{ marginTop: '10px', textAlign: 'center', fontSize: '13px', color: 'var(--accent)', fontWeight: 600 }}>
-                                    ⏰ {String(timeHour).padStart(2,'0')}:{timeMinute} {timePeriod}
+                                    ⏰ {String(timeHour).padStart(2, '0')}:{timeMinute} {timePeriod}
                                 </div>
                             )}
                         </div>

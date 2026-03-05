@@ -1,27 +1,20 @@
 import React from 'react';
 import useTheme from '../hooks/useTheme';
 
-const Logo = ({ size = 28, style = {} }) => {
+const Logo = ({ style = {} }) => {
     const { theme } = useTheme();
     const isLight = theme === 'light';
 
     const src = isLight ? '/light_cropped_removed.jpeg' : '/dark_cropped_removed.jpeg';
 
     return (
-        <img
-            src={src}
-            alt="AIIMIN"
-            aria-label="AIIMIN Logo"
-            width={size}
-            height={size}
-            style={{
-                display: 'block',
-                flexShrink: 0,
-                borderRadius: size > 48 ? '20px' : '10px',
-                objectFit: 'cover',
-                ...style
-            }}
-        />
+        <div className="logo-container" style={style} aria-label="AIIMIN Logo">
+            <img
+                src={src}
+                alt="AIIMIN"
+                className="logo-image"
+            />
+        </div>
     );
 };
 

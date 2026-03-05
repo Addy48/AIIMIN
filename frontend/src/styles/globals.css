@@ -523,3 +523,52 @@ select:-webkit-autofill {
     -webkit-text-fill-color: #F5F5F5 !important;
     transition: background-color 9999s ease-in-out 0s;
 }
+/* Utility Classes */
+.logo-container {
+    height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+.logo-image {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+    transform: scale(1.15);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    width: 100%;
+    min-height: 150px;
+}
+
+.day-cell {
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    position: relative;
+    border-radius: 8px;
+}
+
+.reminder-input {
+    width: 100%;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-1);
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-left: 4px;
+    padding-right: 4px;
+}

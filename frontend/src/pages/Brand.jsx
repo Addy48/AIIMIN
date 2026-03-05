@@ -85,7 +85,7 @@ const Brand = () => {
                         border: '1px solid var(--border)', boxShadow: '0 24px 64px rgba(0,0,0,0.08)',
                         display: 'block', textDecoration: 'none', cursor: 'pointer'
                     }}>
-                        <Logo size={120} style={{ borderRadius: '28px' }} />
+                        <Logo style={{ height: '120px', borderRadius: '28px', justifyContent: 'center' }} />
                     </Link>
                     <h1 style={{
                         fontSize: '72px', fontWeight: 900, letterSpacing: '-2.5px', lineHeight: 1.05, marginBottom: '24px',
@@ -202,7 +202,7 @@ const Brand = () => {
 
                 <footer style={{ marginTop: '100px', paddingTop: '40px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Logo size={32} style={{ opacity: 0.8 }} />
+                        <Logo style={{ height: '32px', opacity: 0.8 }} />
                         <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-2)', letterSpacing: '-0.02em' }}>AIIMIN SYSTEM</span>
                     </div>
                     <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>

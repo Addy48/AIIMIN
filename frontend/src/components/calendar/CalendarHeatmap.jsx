@@ -53,9 +53,9 @@ const CalendarHeatmap = ({ year, month }) => {
     for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
     return (
-        <div>
+        <div style={{ width: '100%', minHeight: '180px' }}>
             {/* Day headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '3px' }}>
+            <div className="calendar-grid" style={{ gap: '3px', marginBottom: '3px' }}>
                 {DAYS.map(d => (
                     <div key={d} style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-3)', textAlign: 'center', padding: '2px 0', textTransform: 'uppercase' }}>
                         {d}
@@ -64,9 +64,9 @@ const CalendarHeatmap = ({ year, month }) => {
             </div>
 
             {/* Day cells */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
+            <div className="calendar-grid" style={{ gap: '3px' }}>
                 {cells.map((day, i) => {
-                    if (!day) return <div key={`e-${i}`} />;
+                    if (!day) return <div key={`e-${i}`} className="day-cell" />;
                     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                     const d = data[dateStr] || {};
                     const pct = parseFloat(d.commitment_pct || 0);
@@ -76,16 +76,14 @@ const CalendarHeatmap = ({ year, month }) => {
                     return (
                         <div
                             key={dateStr}
+                            className="day-cell"
                             onMouseEnter={() => setTooltip({ dateStr, ...d })}
                             onMouseLeave={() => setTooltip(null)}
                             style={{
-                                aspectRatio: '1', borderRadius: '8px',
                                 background: loading ? 'var(--bg-elevated)' : intensityColor(pct),
                                 border: isToday ? '2px solid var(--accent)' : '1px solid var(--border)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 cursor: hasFocus || pct > 0 ? 'pointer' : 'default',
-                                position: 'relative', transition: 'transform 0.1s ease',
-                                width: '100%', boxSizing: 'border-box'
+                                transition: 'transform 0.1s ease',
                             }}
                             onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
                             onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}

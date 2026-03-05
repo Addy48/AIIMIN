@@ -46,10 +46,8 @@ const CalendarGrid = () => {
     const dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return (
-        <div>
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
+        <div style={{ width: '100%', minHeight: '180px' }}>
+            <div className="calendar-grid" style={{
                 gap: '4px',
                 marginBottom: '8px',
                 textAlign: 'center',
@@ -58,9 +56,9 @@ const CalendarGrid = () => {
                     <div key={i} style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center' }}>{d}</div>
                 ))}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+            <div className="calendar-grid" style={{ gap: '4px' }}>
                 {cells.map((day, i) => {
-                    if (day === null) return <div key={`e-${i}`} />;
+                    if (day === null) return <div key={`e-${i}`} className="day-cell" />;
                     const isToday = day === today;
                     const isPast = day < today;
                     const isFuture = day > today;
@@ -68,12 +66,8 @@ const CalendarGrid = () => {
                     return (
                         <div
                             key={i}
+                            className="day-cell"
                             style={{
-                                aspectRatio: '1',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                borderRadius: '6px',
                                 fontSize: '11px',
                                 cursor: (isPast || isToday) ? 'pointer' : 'default',
                                 background: isToday
