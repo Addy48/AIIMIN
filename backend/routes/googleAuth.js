@@ -61,10 +61,11 @@ const createOAuthClient = () => new google.auth.OAuth2(
 );
 
 const SCOPES = [
-    'openid',
-    'email',
-    'profile',
-    'https://www.googleapis.com/auth/youtube.readonly',
+    'openid', // Google recommended basic authentication
+    'email', // Used to uniquely identify the user across sessions
+    'profile', // Used to display the user's avatar in the navigation bar
+    'https://www.googleapis.com/auth/calendar.readonly', // Required to display the user's schedule in the calendar widget (read-only)
+    'https://www.googleapis.com/auth/youtube.readonly', // Required to track active focus music playlists without harvesting watch history
 ];
 
 /**

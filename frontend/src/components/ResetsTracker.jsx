@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import toast from '../utils/toast';
 
 const RC_MOOD_COLORS = { 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#22c55e', 5: '#6366f1' };
 const RC_MOOD_LABELS = { 1: 'Terrible', 2: 'Low', 3: 'Neutral', 4: 'Good', 5: 'Great' };
@@ -15,12 +16,6 @@ const ResetsTracker = ({ user }) => {
     const [notes, setNotes] = useState('');
 
     const [loading, setLoading] = useState(false);
-    const [toast, setToast] = useState({ show: false, message: '', type: '' });
-
-    const showToast = (message, type) => {
-        setToast({ show: true, message, type });
-        setTimeout(() => setToast({ show: false, message: '', type: '' }), 3000);
-    };
 
     const resetForm = () => {
         setActiveForm(null);
@@ -54,7 +49,7 @@ const ResetsTracker = ({ user }) => {
 
     const handleLog = async () => {
         if (activeForm === 'urge' && !notes.trim()) {
-            showToast('Note is mandatory for Urges', 'error');
+            toast.error('Note is mandatory for Urges');
             return;
         }
 
@@ -90,12 +85,12 @@ const ResetsTracker = ({ user }) => {
             if (error) throw error;
 
             setEntries(newEntries);
-            showToast(`${activeForm === 'reset' ? 'Reset' : 'Urge'} logged`, 'success');
+            toast.success(`${activeForm === 'reset' ? 'Reset' : 'Urge'} logged`);
             resetForm();
 
         } catch (err) {
             console.error(err);
-            showToast('Failed to save log', 'error');
+            toast.error('Failed to save log');
         } finally {
             setLoading(false);
         }
@@ -274,19 +269,6 @@ const ResetsTracker = ({ user }) => {
                             </div>
                         );
                     })}
-                </div>
-            )}
-
-            {toast.show && (
-                <div style={{
-                    marginTop: '14px', padding: '10px 14px', borderRadius: '8px',
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    background: toast.type === 'success' ? 'var(--success-dim)' : 'var(--danger-dim)',
-                    border: `1px solid ${toast.type === 'success' ? 'rgba(0,217,126,0.2)' : 'rgba(255,68,102,0.2)'}`,
-                    color: toast.type === 'success' ? 'var(--success)' : 'var(--danger)',
-                    fontSize: '12px', fontWeight: 600
-                }}>
-                    {toast.message}
                 </div>
             )}
         </div>

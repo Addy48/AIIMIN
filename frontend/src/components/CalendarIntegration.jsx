@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import supabase from '../utils/supabase';
+import MonthlyGrid from './calendar/MonthlyGrid';
+import { redirectToGoogle } from '../utils/authRedirect';
 
 /* ─── Integration Health Badge ─── */
 const StatusBadge = ({ status }) => {
@@ -23,26 +25,15 @@ const StatusBadge = ({ status }) => {
     );
 };
 
-/* ─── Correct calendar grid ─── */
-const getDaysForMonth = (year, month) => {
-    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const offset = firstDay === 0 ? 6 : firstDay - 1; // Mon-first
-    const cells = [];
-    for (let i = 0; i < offset; i++) cells.push(null);
-    for (let i = 1; i <= daysInMonth; i++) cells.push(i);
-    return cells;
-};
-
+/* ─── Mini calendar using canonical MonthlyGrid ─── */
 const CalendarMonthView = () => {
     const now = new Date();
     const [viewYear, setViewYear] = useState(now.getFullYear());
+    // viewMonth is 0-based (JS native), matching MonthlyGrid's expectation
     const [viewMonth, setViewMonth] = useState(now.getMonth());
 
-    const cells = getDaysForMonth(viewYear, viewMonth);
-    const today = now.getDate();
     const isCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
-    const dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const today = now.getDate();
     const monthLabel = new Date(viewYear, viewMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
 
     const prevMonth = () => {
@@ -54,12 +45,6 @@ const CalendarMonthView = () => {
         else setViewMonth(viewMonth + 1);
     };
 
-    // Group cells into weeks (rows of 7) for alternating shading
-    const rows = [];
-    for (let i = 0; i < cells.length; i += 7) {
-        rows.push(cells.slice(i, i + 7));
-    }
-
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {/* Month navigation */}
@@ -69,50 +54,36 @@ const CalendarMonthView = () => {
                 <button onClick={nextMonth} style={{ background: 'none', border: 'none', color: 'var(--text-2)', cursor: 'pointer', fontSize: '16px', padding: '4px 8px' }}>→</button>
             </div>
 
-            {/* Day headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0', textAlign: 'center' }}>
-                {dayHeaders.map(d => (
-                    <div key={d} style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 0' }}>{d}</div>
-                ))}
-            </div>
-
-            {/* Day cells with alternating row shading */}
-            {rows.map((row, rowIdx) => (
-                <div key={rowIdx} style={{
-                    display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '0',
-                    background: rowIdx % 2 === 0 ? 'transparent' : 'var(--bg-elevated)',
-                    borderRadius: '6px',
-                }}>
-                    {row.map((day, colIdx) => {
-                        if (day === null) return <div key={`e-${rowIdx}-${colIdx}`} />;
-                        const isToday = isCurrentMonth && day === today;
-                        const isFuture = isCurrentMonth && day > today;
-                        const isPast = isCurrentMonth && day < today;
-                        return (
-                            <div key={`${rowIdx}-${colIdx}`} style={{
-                                aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            {/* Unified MonthlyGrid — 0-based viewMonth passed directly */}
+            <MonthlyGrid
+                year={viewYear}
+                month={viewMonth}
+                renderDay={(day) => {
+                    const isToday = isCurrentMonth && day === today;
+                    const isFuture = isCurrentMonth && day > today;
+                    return (
+                        <div
+                            key={day}
+                            className={`day-cell ${isFuture ? 'future-day' : ''}`}
+                            style={{
+                                aspectRatio: '1',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 borderRadius: '7px', fontSize: '11px',
                                 background: isToday ? 'var(--accent)' : 'transparent',
-                                color: isToday ? 'var(--text-1)' : isFuture ? 'var(--text-3)' : 'var(--text-2)',
+                                color: isToday ? 'var(--text-1)' : 'var(--text-2)',
                                 fontWeight: isToday ? 800 : 500,
                                 border: '1px solid var(--border)',
-                                opacity: isFuture ? 0.4 : 1,
                                 cursor: !isFuture ? 'pointer' : 'default',
                                 transition: 'background 0.12s',
-                                position: 'relative',
                             }}
-                                title={isToday ? 'Today' : isPast ? `${monthLabel.split(' ')[0]} ${day}` : ''}
-                                onMouseEnter={e => { if (!isToday && !isFuture) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
-                                onMouseLeave={e => { if (!isToday) e.currentTarget.style.background = 'transparent'; }}
-                            >
-                                {day}
-                            </div>
-                        );
-                    })}
-                    {/* Pad row if less than 7 cells */}
-                    {Array.from({ length: 7 - row.length }).map((_, i) => <div key={`pad-${i}`} />)}
-                </div>
-            ))}
+                            onMouseEnter={e => { if (!isToday && !isFuture) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
+                            onMouseLeave={e => { if (!isToday) e.currentTarget.style.background = 'transparent'; }}
+                        >
+                            {day}
+                        </div>
+                    );
+                }}
+            />
 
             {/* Year countdown */}
             <div style={{ padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: '10px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -140,7 +111,12 @@ const EmptyEventsState = ({ isConnected, onSync, onConnect, isLoading }) => {
                         AIIMIN cannot analyze schedule load without calendar access.
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '8px', width: '100%', maxWidth: '320px' }}>
+                <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'var(--bg-card)', borderRadius: '10px', border: '1px solid var(--border)', textAlign: 'left' }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
+                        By connecting your Google account you allow AIIMIN to access your Google Calendar data (read-only) to power productivity features. We do not sell or share Google user data. You can revoke access anytime.
+                    </p>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '4px', width: '100%', maxWidth: '320px' }}>
                     <button onClick={onConnect} style={{
                         flex: 1, height: '40px', background: 'var(--accent)', color: 'white', border: 'none',
                         borderRadius: 'var(--r-md)', fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
@@ -216,7 +192,7 @@ const CalendarIntegration = ({ user }) => {
 
     const handleConnectGoogle = async () => {
         setIsLoadingEvents(true);
-        window.location.href = `${API_URL}/google/auth/login`;
+        redirectToGoogle('login');
     };
 
     const handleDisconnect = () => {

@@ -1,10 +1,15 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Brand from './pages/Brand';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsOfService from './pages/TermsOfService';
+import Privacy from './pages/legal/Privacy';
+import Terms from './pages/legal/Terms';
+import DataDeletion from './pages/legal/DataDeletion';
+import GoogleCompliance from './pages/legal/GoogleCompliance';
+import Security from './pages/legal/Security';
+import About from './pages/legal/About';
+import Contact from './pages/legal/Contact';
 import { useAuth } from './hooks/useAuth';
 import useDevMode from './hooks/useDevMode';
 import DevOverlay from './components/DevOverlay';
@@ -25,6 +30,15 @@ const Footer = () => (
     <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
       Built for behavioral clarity. Designed for control.
     </p>
+    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <Link to="/privacy" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Privacy Policy</Link>
+      <Link to="/terms" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Terms of Service</Link>
+      <Link to="/data-deletion" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Data Deletion</Link>
+      <Link to="/google-api-compliance" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Google API Compliance</Link>
+      <Link to="/security" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Security</Link>
+      <Link to="/about" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>About</Link>
+      <Link to="/contact" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Contact</Link>
+    </div>
   </footer>
 );
 
@@ -33,18 +47,20 @@ function App() {
   const { isDevMode } = useDevMode();
 
   useEffect(() => {
-    if (!loading && !user) {
-      document.documentElement.style.backgroundColor = '#f5f0e8';
-      document.body.style.backgroundColor = '#f5f0e8';
-    }
+    // Background is controlled exclusively via CSS variables + data-theme attribute.
+    // No inline style overrides needed here.
   }, [user, loading]);
 
   if (loading) {
-    document.documentElement.style.backgroundColor = '#f5f0e8';
-    document.body.style.backgroundColor = '#f5f0e8';
     return (
-      <div className="min-h-screen bg-[#f5f0e8] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#e05c2a] border-t-[#c27814] rounded-full animate-spin"></div>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{
+          width: '32px', height: '32px', borderRadius: '50%',
+          border: '3px solid var(--border)',
+          borderTopColor: 'var(--accent)',
+          animation: 'spin 0.8s linear infinite'
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -58,8 +74,13 @@ function App() {
           <Route path="/auth/callback" element={<Navigate to="/" />} />
           <Route path="/" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
           <Route path="/brand" element={<Brand />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/data-deletion" element={<DataDeletion />} />
+          <Route path="/google-api-compliance" element={<GoogleCompliance />} />
+          <Route path="/security" element={<Security />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
         <Footer />
       </div>

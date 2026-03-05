@@ -1,21 +1,18 @@
-import React from 'react';
-import useTheme from '../hooks/useTheme';
+import { ReactComponent as LogoSymbol } from '../assets/logo-symbol.svg';
 
-const Logo = ({ style = {} }) => {
-    const { theme } = useTheme();
-    const isLight = theme === 'light';
-
-    const src = isLight ? '/light_cropped_removed.jpeg' : '/dark_cropped_removed.jpeg';
-
+export default function Logo({ size = 36 }) {
     return (
-        <div className="logo-container" style={style} aria-label="AIIMIN Logo">
-            <img
-                src={src}
-                alt="AIIMIN"
-                className="logo-image"
-            />
-        </div>
-    );
-};
-
-export default Logo;
+        <LogoSymbol
+            role="img"
+            aria-label="AIIMIN"
+            className="aiimin-logo"
+            style={{
+                width: size,
+                height: size,
+                display: "block",
+                transform: "translateY(-2%)",
+                fill: "var(--logo-color)"
+            }}
+        />
+    )
+}
