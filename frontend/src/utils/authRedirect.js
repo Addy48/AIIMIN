@@ -13,6 +13,6 @@ export const redirectToGoogle = (scope = 'login') => {
     if (scope === 'calendar') {
         window.location.href = `${API_URL}/auth/google?scope=calendar`;
     } else {
-        window.location.href = `${API_URL}/google/auth/login`;
+        window.location.href = `${API_URL}/auth/google`;
     }
 };

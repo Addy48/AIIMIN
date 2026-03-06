@@ -57,7 +57,7 @@ const cleanupExpiredStates = async () => {
 const createOAuthClient = () => new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    'https://api.aiimin.in/google/auth/callback'
+    process.env.GOOGLE_CALLBACK_URL || 'https://api.aiimin.in/google/auth/callback'
 );
 
 const SCOPES = [
@@ -87,10 +87,12 @@ const initiateAuth = async (req, res, isLogin = false) => {
             state,
         });
 
-        res.json({ authUrl });
+        // Backend Fix (Express): Redirect immediately instead of returning JSON
+        res.redirect(authUrl);
     } catch (err) {
         console.error('[googleAuth/init]', err.message);
-        res.status(500).json({ error: 'Failed to initiate OAuth', detail: err.message });
+        const frontendUrl = process.env.FRONTEND_URL || 'https://aiimin.in';
+        res.redirect(`${frontendUrl}/auth/callback?status=error&reason=init_failed`);
     }
 };
 
@@ -122,16 +124,17 @@ router.get('/auth/start', async (req, res) => {
     }
 });
 
-// Login Initiation (Public — returns JSON)
-router.get('/auth/login', (req, res) => initiateAuth(req, res, true));
+// Login Initiation - Browser navigates here directly
+router.get('/auth/google', (req, res) => initiateAuth(req, res, true));
 
 // Integration Initiation (Authenticated)
 router.get('/auth/init', requireAuth, (req, res) => initiateAuth(req, res, false));
 
 /**
  * OAuth Callback
+ * Path: GET /google/auth/callback
  */
-router.get('/auth/callback', async (req, res) => {
+router.get('/google/auth/callback', async (req, res) => {
     const { code, state, error: googleError } = req.query;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
