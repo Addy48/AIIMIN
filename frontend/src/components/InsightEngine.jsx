@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import DumbbellIcon from './icons/DumbbellIcon';
 
 /**
  * InsightEngine — Behavioral pattern recognition
@@ -62,7 +63,7 @@ const InsightEngine = ({ user }) => {
                 const noGymMood = noGymDays.reduce((s, l) => s + l.mood, 0) / noGymDays.length;
                 if (gymMood - noGymMood > 0.3) {
                     results.push({
-                        icon: '💪',
+                        icon: <DumbbellIcon size={16} color="var(--text-2)" />,
                         title: 'Exercise lifts your mood',
                         body: `Gym days: mood ${gymMood.toFixed(1)} avg. Rest days: ${noGymMood.toFixed(1)}. Keep training.`,
                         type: 'positive'

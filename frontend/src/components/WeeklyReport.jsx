@@ -110,7 +110,7 @@ const WeeklyReport = ({ user }) => {
             ];
 
             const reinforcements = [
-                gymDays >= 5 && '💪 Crushed the gym this week — 5+ sessions!',
+                gymDays >= 5 && '🏋️ Crushed the gym this week — 5+ sessions!',
                 learnDays >= 5 && '📚 Learning streak — knowledge compounds!',
                 sleepDays >= 5 && '😴 Sleep discipline on point — brain fuel.',
                 logs.length >= 6 && '🔥 Logged 6+ days — you showed up consistently.',

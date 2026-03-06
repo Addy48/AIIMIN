@@ -16,6 +16,8 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
 
     const tabs = [
         { key: 'today', label: 'Today' },
+        { key: 'habits', label: 'Habits' },
+        { key: 'money', label: 'Money' },
         { key: 'sessions', label: 'Sessions' },
         { key: 'insights', label: 'Insights' },
     ];

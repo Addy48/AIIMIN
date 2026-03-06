@@ -67,7 +67,6 @@
     --btn-radius: 8px;
 
     /* Theme Logo Variables */
-    --logo-bg: #1a1a1a;
     --logo-color: #1a1a1a;
 }
 
@@ -105,7 +104,6 @@
     --shadow-glow: 0 0 0 1px rgba(194, 120, 20, 0.2), 0 4px 16px rgba(194, 120, 20, 0.12);
 
     /* Theme Logo Variables (Light) */
-    --logo-bg: #f3efe6;
     --logo-color: #1c1c1c;
 }
 

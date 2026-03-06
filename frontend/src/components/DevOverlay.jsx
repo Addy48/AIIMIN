@@ -248,7 +248,7 @@ function TableViewerPanel() {
 }
 
 function FeatureFlagsPanel() {
-    const flagsList = ['monthly_grid', 'weekly_charts', 'streaks', 'win_tracker', 'money_manager', 'google_calendar', 'youtube_player'];
+    const flagsList = ['monthly_grid', 'weekly_charts', 'streaks', 'win_tracker', 'money_manager', 'google_calendar', 'youtube_player', 'habits_system_enabled'];
     const [flags, setFlags] = useState({});
 
     useEffect(() => {

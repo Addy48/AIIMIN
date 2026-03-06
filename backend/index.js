@@ -25,6 +25,8 @@ import driftRoutes from './routes/drift.js';
 import accountRoutes from './routes/account.js';
 import adminRoutes from './routes/admin.js';
 import healthRoutes from './routes/health.js';
+import habitsRoutes from './routes/habits.js';
+import routinesRoutes, { routineRunsRouter } from './routes/routines.js';
 
 dotenv.config();
 
@@ -47,6 +49,10 @@ if (missingEnvVars.length > 0) {
 }
 
 const app = express();
+
+// ─── Trust Railway's reverse proxy (fixes express-rate-limit ERR_ERL_UNEXPECTED_X_FORWARDED_FOR)
+app.set('trust proxy', 1);
+console.log('[CONFIG] Proxy trust enabled:', app.get('trust proxy'));
 
 // ─── Fast Health Check (Top Level) ────────────────────────────
 app.use('/', healthRoutes);
@@ -96,25 +102,36 @@ app.use(express.json({ limit: '2mb' }));
 // ─── Request logging (Winston via JSON in prod) ───────────────
 app.use(requestLoggerMiddleware);
 
-// ─── Rate limiting ────────────────────────────────────────────
+// ─── Rate limiting (trust proxy must be set before these) ───────────────────
+// General API — 200 req/min per IP
 const apiLimiter = rateLimit({
-    windowMs: 60_000, max: 100,
+    windowMs: 60_000, max: 200,
     standardHeaders: true, legacyHeaders: false,
     message: { error: 'Too many requests, please try again later.' },
 });
+// Auth routes — 50 req/15min (login, token refresh)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, max: 50,
+    standardHeaders: true, legacyHeaders: false,
+    message: { error: 'Too many auth requests. Please wait.' },
+});
+// Signup — tightest limit
 const signupLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 mins
-    max: 10,
+    windowMs: 15 * 60 * 1000, max: 10,
+    standardHeaders: true, legacyHeaders: false,
     message: { error: 'Too many attempts. Protection active.' },
 });
+// OAuth — generous limit so Google redirect loops don't block users
 const oauthLimiter = rateLimit({
-    windowMs: 60_000,
-    max: 20,
+    windowMs: 60_000, max: 60,
+    standardHeaders: true, legacyHeaders: false,
     message: { error: 'Too many OAuth attempts. Please wait.' },
 });
-app.use('/auth/signup', signupLimiter);
-app.use('/google', oauthLimiter);
-app.use('/', apiLimiter);
+
+app.use('/auth/signup', signupLimiter);   // most restrictive first
+app.use('/auth', authLimiter);            // covers /auth/google etc.
+app.use('/google', oauthLimiter);         // OAuth callback
+app.use('/', apiLimiter);                 // catch-all
 
 
 
@@ -134,6 +151,9 @@ app.use('/commitment', commitmentRoutes);
 app.use('/drift', driftRoutes);
 app.use('/account', accountRoutes);
 app.use('/admin', adminRoutes);
+app.use('/habits', habitsRoutes);
+app.use('/routines', routinesRoutes);
+app.use('/routine-runs', routineRunsRouter);
 
 // ─── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {

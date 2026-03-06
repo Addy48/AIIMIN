@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
 import { useAuth } from '../hooks/useAuth';
+import DumbbellIcon from './icons/DumbbellIcon';
 
 const StreakItem = ({ label, count, icon, color }) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
@@ -151,7 +152,7 @@ const WinsEngine = () => {
                 {/* Active Streaks — real computed values */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '24px' }}>
                     <StreakItem label="Focus Mastery" count={focusStreak} icon="🔥" />
-                    <StreakItem label="Gym Commitment" count={gymStreak} icon="💪" />
+                    <StreakItem label="Gym Commitment" count={gymStreak} icon={<DumbbellIcon size={16} color="var(--text-2)" />} />
                     <StreakItem label="Stability Index" count={stabilityStreak} icon="⚖️" color="var(--success)" />
                 </div>
 

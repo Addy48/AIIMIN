@@ -15,6 +15,7 @@ import InsightEngine from '../components/InsightEngine';
 import MomentumBar from '../components/MomentumBar';
 import WeeklyReport from '../components/WeeklyReport';
 import ErrorBoundary from '../components/ErrorBoundary';
+import HabitsPage from '../components/habits/HabitsPage';
 import GoogleCalendarIntegration from '../components/account/GoogleCalendarIntegration';
 import AdminPanel from '../components/account/AdminPanel';
 import AdminConsole from '../components/account/AdminConsole';
@@ -26,6 +27,7 @@ import UpcomingSidebar from '../components/dashboard/UpcomingSidebar';
 import { SettingsSection, SettingsRow } from '../components/dashboard/SettingsSection';
 import ToggleSwitch from '../components/dashboard/ToggleSwitch';
 import useFeatureFlag from '../hooks/useFeatureFlag';
+import DumbbellIcon from '../components/icons/DumbbellIcon';
 import { useAuth } from '../hooks/useAuth';
 import toast from '../utils/toast';
 
@@ -35,7 +37,7 @@ const Dashboard = ({ user }) => {
     const [expandedCard, setExpandedCard] = useState(null);
     const [activeTab, setActiveTab] = useState(() => {
         const saved = localStorage.getItem('aiimin_activeTab');
-        return ['today', 'sessions', 'insights', 'settings'].includes(saved) ? saved : 'today';
+        return ['today', 'habits', 'sessions', 'insights', 'settings'].includes(saved) ? saved : 'today';
     });
 
 
@@ -105,7 +107,6 @@ const Dashboard = ({ user }) => {
 
     const showStreaks = useFeatureFlag('streaks');
     const showWinTracker = useFeatureFlag('win_tracker');
-    const showMoneyManager = useFeatureFlag('money_insights');
     const showGoogleCalendar = useFeatureFlag('calendar_integration');
     const showYouTube = useFeatureFlag('youtube_player');
     const showMonthlyGrid = useFeatureFlag('monthly_grid');
@@ -127,7 +128,7 @@ const Dashboard = ({ user }) => {
     const statsData = [
         { id: 'score', label: 'Score', icon: '🎯', value: '8.2', type: 'score', context: 'Top 10% this month', contextColor: 'var(--success)' },
         { id: 'sleep', label: 'Sleep', icon: '😴', value: '7.1h', type: 'sleep', context: '+0.4h vs avg', contextColor: 'var(--success)' },
-        { id: 'gym', label: 'Gym', icon: '💪', value: '3d', type: 'gym', context: '1 ahead of pace', contextColor: 'var(--accent)' },
+        { id: 'gym', label: 'Gym', icon: <DumbbellIcon size={18} color="var(--text-2)" />, value: '3d', type: 'gym', context: '1 ahead of pace', contextColor: 'var(--accent)' },
         { id: 'focus', label: 'Focus', icon: '🔥', value: '14', type: 'focus', context: 'Peak flow', contextColor: 'var(--success)' },
         { id: 'steps', label: 'Steps', icon: '👟', value: '11k', type: 'steps', context: 'Goal met', contextColor: 'var(--accent)' },
     ];
@@ -295,14 +296,18 @@ const Dashboard = ({ user }) => {
                             </div>
                         </div>
 
-                        {/* ── FINANCIAL HEALTH ── */}
-                        {showMoneyManager && (
-                            <div>
-                                <SectionLabel>Financial Health</SectionLabel>
-                                <MoneyManager user={user} />
-                            </div>
-                        )}
+                    </div>
+                )}
 
+                {/* ── HABITS & ROUTINES ── */}
+                {activeTab === 'habits' && (
+                    <HabitsPage user={user} />
+                )}
+
+                {/* ── MONEY ── */}
+                {activeTab === 'money' && (
+                    <div className="fade-up">
+                        <MoneyManager user={user} />
                     </div>
                 )}
 
@@ -333,23 +338,11 @@ const Dashboard = ({ user }) => {
                                 </div>
 
                                 <div className="fade-up" style={{ animationDelay: '40ms' }}>
-                                    <SectionLabel>Behavioral Insights</SectionLabel>
-                                    <ErrorBoundary label="Insight Engine">
-                                        <InsightEngine user={user} />
-                                    </ErrorBoundary>
-                                </div>
-
-                                <div className="fade-up" style={{ animationDelay: '60ms' }}>
-                                    <SectionLabel>Financial Summary</SectionLabel>
-                                    {showMoneyManager ? <MoneyManager user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Enable Money Manager in feature flags.</div>}
-                                </div>
-
-                                <div className="fade-up" style={{ animationDelay: '80ms' }}>
                                     <SectionLabel>Tracking Chains</SectionLabel>
                                     {showStreaks ? <Streaks user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Enable Streaks in feature flags.</div>}
                                 </div>
 
-                                <div className="fade-up" style={{ animationDelay: '100ms' }}>
+                                <div className="fade-up" style={{ animationDelay: '80ms' }}>
                                     <SectionLabel>Performance Reports</SectionLabel>
                                     {showMonthlyGrid ? <Reports user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Enable Reports in feature flags.</div>}
                                 </div>

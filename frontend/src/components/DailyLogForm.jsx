@@ -5,6 +5,7 @@ import MomentumBar from './MomentumBar';
 import { useDevContext } from '../context/DevContext';
 import { devLogger } from '../utils/devLogger';
 import toast from '../utils/toast';
+import DumbbellIcon from './icons/DumbbellIcon';
 
 /* ─── Theme-aware Toggle Card ─── */
 const ToggleCard = ({ active, onClick, icon, text }) => (
@@ -247,7 +248,7 @@ const DailyLogForm = ({ user }) => {
                     <div>
                         <div className={sectionClasses}>Body</div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <ToggleCard active={formData.gymDone} onClick={() => handleToggle('gymDone')} icon="🏋️" text="Hit the gym today" />
+                            <ToggleCard active={formData.gymDone} onClick={() => handleToggle('gymDone')} icon={<DumbbellIcon size={18} color="var(--text-2)" />} text="Hit the gym today" />
                             {formData.gymDone && (
                                 <div style={{ marginBottom: '10px' }}>
                                     <label style={labelStyle}>Duration (min)</label>

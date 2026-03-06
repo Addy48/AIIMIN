@@ -14,10 +14,18 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        const prevTheme = localStorage.getItem('aiimin-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', 'light');
         document.documentElement.classList.remove('dark');
         document.documentElement.style.backgroundColor = '#f5f0e8';
         document.body.style.backgroundColor = '#f5f0e8';
+        return () => {
+            // Restore user's saved theme when leaving login
+            document.documentElement.setAttribute('data-theme', prevTheme);
+            if (prevTheme === 'dark') document.documentElement.classList.add('dark');
+            document.documentElement.style.removeProperty('background-color');
+            document.body.style.removeProperty('background-color');
+        };
     }, []);
 
     const handleEmailSubmit = async (e) => {

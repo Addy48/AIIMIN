@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import DumbbellIcon from './icons/DumbbellIcon';
 
 const Streaks = ({ user }) => {
     const [streaks, setStreaks] = useState({
@@ -204,7 +205,7 @@ const Streaks = ({ user }) => {
     return (
         <div className="fade-up flex flex-col gap-4">
             <MetricCard
-                icon="💪"
+                icon={<DumbbellIcon size={32} color="var(--text-1)" />}
                 label="Gym & Workout"
                 count={streaks.gym}
                 activeColor="rgba(245,166,35,0.2)"
