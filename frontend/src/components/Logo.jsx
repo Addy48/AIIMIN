@@ -30,8 +30,10 @@ const Logo = ({ size = 28, style = {} }) => {
                     objectFit: 'cover',
                     objectPosition: 'top center',
                     mixBlendMode: isLight ? 'darken' : 'screen',
-                    filter: isLight ? 'contrast(1.02)' : 'invert(1) grayscale(1) brightness(1.7) contrast(1.2)',
-                    // By pushing it slightly up, we perfectly frame the top 'A' symbol
+                    // In light mode: darken blend drops the beige bg.
+                    // In dark mode: invert makes brown white and beige black. Contrast ensures bg is pure black and logo is pure white.
+                    filter: isLight ? 'contrast(1.02)' : 'invert(1) grayscale(1) contrast(5) brightness(1.1)',
+                    opacity: isLight ? 1 : 0.9, // match dark mode text softness
                     transform: 'translateY(-2%)'
                 }}
             />
