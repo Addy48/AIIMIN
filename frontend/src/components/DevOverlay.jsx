@@ -20,7 +20,7 @@ function DevOverlayContent() {
 
         const handleKeyDown = (e) => {
             keysPressed.add(e.key.toLowerCase());
-            if (keysPressed.has('enter') && (keysPressed.has('d') || keysPressed.has('∂'))) {
+            if (keysPressed.has('shift') && (keysPressed.has('d') || keysPressed.has('∂'))) {
                 e.preventDefault();
                 setIsOpen(prev => !prev);
             }
