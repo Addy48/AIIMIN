@@ -21,6 +21,8 @@ import GoogleCalendarIntegration from '../components/account/GoogleCalendarInteg
 import AdminPanel from '../components/account/AdminPanel';
 import AdminConsole from '../components/account/AdminConsole';
 import SessionStats from '../components/SessionStats';
+import DSACounter from '../components/DSACounter';
+import YearlyHeatmap from '../components/YearlyHeatmap';
 import CalendarHeatmap from '../components/calendar/CalendarHeatmap';
 import StatCard from '../components/dashboard/StatCard';
 import ExpandedStatPanel from '../components/dashboard/ExpandedStatPanel';
@@ -320,6 +322,10 @@ const Dashboard = ({ user }) => {
                                 <SessionStats user={user} />
                             </div>
                             <div>
+                                <SectionLabel>DSA Problem Tracker</SectionLabel>
+                                <DSACounter user={user} />
+                            </div>
+                            <div>
                                 <SectionLabel>Schedule & Calendar</SectionLabel>
                                 <PersonalCalendar user={user} />
                             </div>
@@ -346,6 +352,11 @@ const Dashboard = ({ user }) => {
                                 <div className="fade-up" style={{ animationDelay: '80ms' }}>
                                     <SectionLabel>Performance Reports</SectionLabel>
                                     {showMonthlyGrid ? <Reports user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Enable Reports in feature flags.</div>}
+                                </div>
+
+                                <div className="fade-up" style={{ animationDelay: '120ms' }}>
+                                    <SectionLabel>365-Day Contribution Map</SectionLabel>
+                                    <YearlyHeatmap user={user} />
                                 </div>
 
                             </div>
