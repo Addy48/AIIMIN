@@ -16,6 +16,9 @@ export const useAuth = () => {
                 const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/account/profile`, {
                     headers: { 'Authorization': `Bearer ${session.access_token}` }
                 });
+                if (!response.ok) {
+                    throw new Error(`Profile load failed (${response.status})`);
+                }
                 const profile = await response.json();
                 setUser(prev => ({ ...prev, ...profile }));
             } catch (err) {
@@ -26,12 +29,15 @@ export const useAuth = () => {
         // Guarantee the public.users row exists (trigger may have been missed)
         const ensureUserRow = async (authUser) => {
             const meta = authUser.user_metadata || {};
+            const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
             await supabase.from('users').upsert(
                 {
                     id:         authUser.id,
                     email:      authUser.email,
                     full_name:  meta.full_name || meta.name || null,
+                    username:   meta.username || null,
                     avatar_url: meta.avatar_url || meta.picture || null,
+                    timezone:   meta.timezone || browserTimezone,
                 },
                 { onConflict: 'id', ignoreDuplicates: true }
             );
