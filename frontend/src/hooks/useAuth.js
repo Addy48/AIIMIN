@@ -74,13 +74,15 @@ export const useAuth = () => {
 
     const signUpWithEmail = async (email, password, fullName = '', username = '') => {
         try {
+            const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
             const { error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     data: {
                         full_name: fullName,
-                        username: username
+                        username: username,
+                        timezone: browserTimezone
                     }
                 }
             });
