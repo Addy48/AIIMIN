@@ -45,6 +45,7 @@ const Dashboard = ({ user }) => {
     const [notifInsights, setNotifInsights] = useState(() => localStorage.getItem('aiimin_notif_insights') === 'true');
     const [focusTab, setFocusTab] = useState('focus');
     const [intelTab, setIntelTab] = useState('insights');
+    const [moodFromTracker, setMoodFromTracker] = useState(null);
 
     const saveAndSet = (key, setter) => (val) => {
         setter(val);
@@ -224,7 +225,7 @@ const Dashboard = ({ user }) => {
 
                                 <div>
                                     <SectionLabel>Mood Check-in</SectionLabel>
-                                    <MoodTracker user={user} onMoodChange={() => {}} />
+                                    <MoodTracker user={user} onMoodChange={setMoodFromTracker} />
                                 </div>
 
                                 <div>
@@ -280,7 +281,7 @@ const Dashboard = ({ user }) => {
 
                                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
                                     <SectionLabel>Daily Log</SectionLabel>
-                                    <DailyLogForm user={user} />
+                                    <DailyLogForm user={user} externalMood={moodFromTracker} />
                                 </div>
 
                                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>

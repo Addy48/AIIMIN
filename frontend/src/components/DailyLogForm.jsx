@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
 import { upsertRow } from '../services/dbService';
 import TimePicker from './TimePicker';
@@ -49,7 +49,7 @@ const ToggleCard = ({ active, onClick, icon, text }) => (
 
 
 /* ─── DailyLogForm ─── */
-const DailyLogForm = ({ user }) => {
+const DailyLogForm = ({ user, externalMood }) => {
     const [formData, setFormData] = useState({
         sleepStart: '',
         sleepEnd: '',
@@ -63,6 +63,14 @@ const DailyLogForm = ({ user }) => {
         journalEntry: '',
         mood: null,
     });
+
+    // Sync mood from MoodTracker whenever it changes
+    useEffect(() => {
+        if (externalMood !== null && externalMood !== undefined) {
+            setFormData(prev => ({ ...prev, mood: externalMood }));
+            setIsDirty(true);
+        }
+    }, [externalMood]);
 
     const [loading, setLoading] = useState(false);
     const { testDate } = useDevContext();
@@ -107,9 +115,14 @@ const DailyLogForm = ({ user }) => {
         setLoading(true);
 
         try {
+            if (!user?.id) {
+                toast.error('Not logged in — please refresh.');
+                setLoading(false);
+                return;
+            }
             const dateObj = testDate ? new Date(testDate) : new Date();
             const today = dateObj.toISOString().split('T')[0];
-            const userId = user?.id || 'demo-user-id';
+            const userId = user.id;
 
             const payload = {
                 user_id: userId,

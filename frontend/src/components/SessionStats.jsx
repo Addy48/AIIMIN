@@ -21,6 +21,7 @@ const SessionStats = ({ user }) => {
                 const { data: sessions, error } = await supabase
                     .from('pomodoro_sessions')
                     .select('date, duration, cycles_completed, created_at')
+                    .eq('user_id', user.id)
                     .order('date', { ascending: false });
 
                 if (error) throw error;

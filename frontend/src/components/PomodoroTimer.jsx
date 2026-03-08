@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
-import { upsertRow } from '../services/dbService';
+import { upsertRow, insertRow } from '../services/dbService';
 import toast from '../utils/toast';
 
 
@@ -66,10 +66,21 @@ const PomodoroTimer = ({ user }) => {
             }, 1000);
         } else if (isRunning && timeLeft === 0) {
             if (!isBreak) {
-                setCyclesCompleted(prev => prev + 1);
+                const newCycles = cyclesCompleted + 1;
+                setCyclesCompleted(newCycles);
                 setIsRunning(false);
                 setShowCompletion(true);
-                toast.success(`Focus session #${cyclesCompleted + 1} complete!`);
+                toast.success(`Focus session #${newCycles} complete!`);
+                // Record completed session to pomodoro_sessions
+                if (user?.id) {
+                    const today = new Date().toISOString().split('T')[0];
+                    insertRow('pomodoro_sessions', [{
+                        user_id: user.id,
+                        date: today,
+                        cycles_completed: 1,
+                        duration: workDuration,
+                    }]).catch(err => console.error('[Pomodoro] session save failed:', err.message));
+                }
                 setTimeout(() => {
                     setShowCompletion(false);
                     setShowReflection(true);

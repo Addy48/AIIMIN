@@ -37,113 +37,45 @@ const Streaks = ({ user }) => {
                 let rcStreak = 0;
                 let walkingStreak = 0;
 
-                // Today's Date (ignoring time)
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
+                // Use local date string to avoid UTC timezone offset issues
+                const pad = n => String(n).padStart(2, '0');
+                const localToday = new Date();
+                const todayStr = `${localToday.getFullYear()}-${pad(localToday.getMonth() + 1)}-${pad(localToday.getDate())}`;
 
-                // Helper to check if a DB date string is yesterday compared to a given date
-                const isDifferenceOneDay = (date1Str, date2Obj) => {
-                    const d1 = new Date(date1Str);
-                    d1.setHours(0, 0, 0, 0);
-                    const diffTime = Math.abs(date2Obj - d1);
-                    return diffTime === (1000 * 60 * 60 * 24);
+                // Build a map of date → log for O(1) lookup
+                const logMap = {};
+                for (const log of logs) logMap[log.date] = log;
+
+                // Generic streak counter: walks back from today counting consecutive days
+                // where predicate(log) is truthy. A missing log = predicate false.
+                const countStreak = (predicate, allowMissingDays = false) => {
+                    let streak = 0;
+                    const d = new Date(localToday);
+                    while (true) {
+                        const dStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+                        const log = logMap[dStr];
+                        if (log && predicate(log)) {
+                            streak++;
+                        } else if (allowMissingDays && !log) {
+                            // RC: missing day = no reset, keep going
+                        } else {
+                            break;
+                        }
+                        d.setDate(d.getDate() - 1);
+                        // Safety: don't loop more than logs.length days
+                        if (streak > logs.length + 500) break;
+                    }
+                    return streak;
                 };
 
-                // Track continuous days directly
-                let currentDateGym = today;
-                let currentDateLearning = today;
-                let currentDateRc = today;
-                let currentDateWalking = today;
-
-                let gymActive = true;
-                let learningActive = true;
-                let rcActive = true;
-                let walkingActive = true;
-
-                for (let i = 0; i < logs.length; i++) {
-                    const log = logs[i];
-                    const logDateObj = new Date(log.date);
-                    logDateObj.setHours(0, 0, 0, 0);
-
-                    // Skip Future logs (should not exist but just in case)
-                    if (logDateObj > today) continue;
-
-                    // Gym Logic
-                    if (gymActive) {
-                        const isTodayLog = logDateObj.getTime() === currentDateGym.getTime();
-                        const isYesterdayLog = isDifferenceOneDay(log.date, currentDateGym);
-
-                        // If there is a skip in days, stop counting
-                        if (!isTodayLog && !isYesterdayLog && logDateObj < currentDateGym) {
-                            gymActive = false;
-                        } else if (log.gym_done) {
-                            gymStreak++;
-                            currentDateGym = logDateObj;
-                        } else if (isYesterdayLog) {
-                            // yesterday was not logged as done, break streak
-                            gymActive = false;
-                        }
-                    }
-
-                    // Learning Logic
-                    if (learningActive) {
-                        const isTodayLog = logDateObj.getTime() === currentDateLearning.getTime();
-                        const isYesterdayLog = isDifferenceOneDay(log.date, currentDateLearning);
-
-                        if (!isTodayLog && !isYesterdayLog && logDateObj < currentDateLearning) {
-                            learningActive = false;
-                        } else if (log.learning_done) {
-                            learningStreak++;
-                            currentDateLearning = logDateObj;
-                        } else if (isYesterdayLog) {
-                            learningActive = false;
-                        }
-                    }
-
-                    // RC (Reset Counter / Masturbation) Inverse Logic
-                    // Streak increases if you did NOT log an RC (rc_count is 0 or null)
-                    if (rcActive) {
-                        const isTodayLog = logDateObj.getTime() === currentDateRc.getTime();
-                        const isYesterdayLog = isDifferenceOneDay(log.date, currentDateRc);
-                        const hasReset = log.rc_count > 0;
-
-                        if (!isTodayLog && !isYesterdayLog && logDateObj < currentDateRc) {
-                            // If user completely skipped a day, we consider it "No Reset" and streak continues 
-                            // *Wait, usually app logic says if you skipped a day you didn't do it, so we add 1 for the missing day*
-                            // To keep it simple: we only break RC streak if they explicitly logged an RC.
-                            const daysDiff = Math.round(Math.abs(currentDateRc - logDateObj) / (1000 * 60 * 60 * 24));
-                            rcStreak += daysDiff - 1; // Add missing days
-                            currentDateRc = logDateObj;
-                            if (hasReset) rcActive = false; // Broke streak today
-                            else rcStreak++;
-                        } else if (!hasReset) {
-                            rcStreak++;
-                            currentDateRc = logDateObj;
-                        } else if (hasReset) {
-                            // Reset occurred, break RC streak
-                            if (isTodayLog) rcStreak = 0; // if reset today, streak is 0
-                            rcActive = false;
-                        }
-                    }
-
-                    // Walking Logic (>10k steps)
-                    if (walkingActive) {
-                        const isTodayLog = logDateObj.getTime() === currentDateWalking.getTime();
-                        const isYesterdayLog = isDifferenceOneDay(log.date, currentDateWalking);
-
-                        if (!isTodayLog && !isYesterdayLog && logDateObj < currentDateWalking) {
-                            walkingActive = false;
-                        } else if (log.steps >= 10000) {
-                            walkingStreak++;
-                            currentDateWalking = logDateObj;
-                        } else if (isYesterdayLog) {
-                            walkingActive = false;
-                        }
-                    }
-
-                    // Early exit if all streaks broke
-                    if (!gymActive && !learningActive && !rcActive && !walkingActive) break;
-                }
+                gymStreak     = countStreak(l => l.gym_done);
+                learningStreak = countStreak(l => l.learning_done);
+                walkingStreak  = countStreak(l => l.steps >= 10000);
+                // RC streak: count backwards until a day WITH a reset is found
+                // Missing days still count as "no reset"
+                rcStreak       = countStreak(l => !l.rc_count || l.rc_count === 0, true);
+                // Cap RC streak at days since oldest log to avoid inf loop
+                rcStreak = Math.min(rcStreak, logs.length + 365);
 
                 setStreaks({ gym: gymStreak, learning: learningStreak, rc: rcStreak, walking: walkingStreak });
             } catch (error) {
