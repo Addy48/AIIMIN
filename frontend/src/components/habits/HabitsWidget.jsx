@@ -12,8 +12,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../../utils/supabase';
-
-const API_BASE = process.env.REACT_APP_API_URL || '';
+import { API_URL as API_BASE } from '../../utils/api';
 
 // Returns current hour in IST (frontend-side timezone check)
 function getISTHour() {

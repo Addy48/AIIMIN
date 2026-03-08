@@ -7,7 +7,7 @@
  *   redirectToGoogle('login')    → /google/auth/login  (account sign-in)
  *   redirectToGoogle('calendar') → /auth/google?scope=calendar  (calendar connect)
  */
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { API_URL } from './api';
 
 export const redirectToGoogle = (scope = 'login') => {
     if (scope === 'calendar') {

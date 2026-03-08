@@ -1,4 +1,4 @@
-import pool from './db.js';
+import { pool } from './lib/googleClient.js';
 
 const listTables = async () => {
     try {

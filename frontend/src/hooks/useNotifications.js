@@ -7,8 +7,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { API_URL } from '../utils/api';
 
 const authHeaders = (session) => ({
     'Content-Type': 'application/json',

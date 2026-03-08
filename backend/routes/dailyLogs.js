@@ -2,7 +2,7 @@ import express from 'express';
 import supabase from '../supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
-import pool from '../db.js';
+import { pool } from '../lib/googleClient.js';
 
 const router = express.Router();
 
@@ -91,7 +91,7 @@ router.post('/', requireAuth, async (req, res) => {
     }
 });
 
-router.get('/:userId/:date', async (req, res) => {
+router.get('/:userId/:date', requireAuth, async (req, res) => {
     try {
         const { userId, date } = req.params;
         const { data, error } = await supabase

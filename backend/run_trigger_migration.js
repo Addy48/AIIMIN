@@ -1,5 +1,5 @@
 import fs from 'fs';
-import pool from './db.js';
+import { pool } from './lib/googleClient.js';
 
 const runTriggerMigration = async () => {
     try {

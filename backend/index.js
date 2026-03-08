@@ -11,10 +11,6 @@ import { globalErrorHandler } from './middleware/errorHandler.js';
 
 import authRoutes from './routes/auth.js';
 import dailyLogsRoutes from './routes/dailyLogs.js';
-import goalsRoutes from './routes/goals.js';
-import pomodoroRoutes from './routes/pomodoro.js';
-import moneyRoutes from './routes/money.js';
-import winsRoutes from './routes/wins.js';
 import dashboardRoutes from './routes/dashboard.js';
 import youtubeRoutes from './routes/youtube.js';
 import googleAuthRoutes from './routes/googleAuth.js';
@@ -138,10 +134,6 @@ app.use('/', apiLimiter);                 // catch-all
 // ─── Routes ───────────────────────────────────────────────────
 app.use('/auth', authRoutes);
 app.use('/daily-logs', dailyLogsRoutes);
-app.use('/goals', goalsRoutes);
-app.use('/pomodoro-sessions', pomodoroRoutes);
-app.use('/money', moneyRoutes);
-app.use('/wins', winsRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/youtube', youtubeRoutes);
 app.use('/', googleAuthRoutes);

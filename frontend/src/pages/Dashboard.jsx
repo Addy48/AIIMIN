@@ -31,6 +31,7 @@ import ToggleSwitch from '../components/dashboard/ToggleSwitch';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 import DumbbellIcon from '../components/icons/DumbbellIcon';
 import { useAuth } from '../hooks/useAuth';
+import { API_URL } from '../utils/api';
 import toast from '../utils/toast';
 
 
@@ -62,7 +63,6 @@ const Dashboard = ({ user }) => {
     const { session } = useAuth();
 
     const handleExport = useCallback(async () => {
-        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
         const tid = toast.loading('Exporting data...');
         try {
             const res = await fetch(`${API_URL}/account/export`, {
@@ -82,7 +82,6 @@ const Dashboard = ({ user }) => {
     }, [session]);
 
     const handleDeleteAccount = useCallback(async () => {
-        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
         if (!window.confirm('This will PERMANENTLY delete all your data. Type DELETE to confirm.')) return;
         const input = window.prompt('Type DELETE to confirm:');
         if (input !== 'DELETE') return;

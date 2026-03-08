@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
 import { redirectToGoogle } from '../utils/authRedirect';
+import { API_URL } from '../utils/api';
 
 export const useAuth = () => {
     const [user, setUser] = useState(null);
@@ -13,7 +14,7 @@ export const useAuth = () => {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) return;
 
-                const response = await fetch(`${process.env.REACT_APP_API_URL || ''}/account/profile`, {
+                const response = await fetch(`${API_URL}/account/profile`, {
                     headers: { 'Authorization': `Bearer ${session.access_token}` }
                 });
                 if (!response.ok) {
@@ -102,7 +103,7 @@ export const useAuth = () => {
                 email = identifier.toLowerCase();
             } else {
                 // It's a username — resolve via backend
-                const resolveUrl = `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/auth/resolve?identifier=${encodeURIComponent(identifier)}`;
+                const resolveUrl = `${API_URL}/auth/resolve?identifier=${encodeURIComponent(identifier)}`;
                 const resolveResponse = await fetch(resolveUrl);
                 if (!resolveResponse.ok) {
                     const errData = await resolveResponse.json();

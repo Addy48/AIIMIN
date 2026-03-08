@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import MonthlyGrid from './calendar/MonthlyGrid';
 import { redirectToGoogle } from '../utils/authRedirect';
+import { API_URL } from '../utils/api';
 
 /* ─── Integration Health Badge ─── */
 const StatusBadge = ({ status }) => {
@@ -157,8 +158,6 @@ const CalendarIntegration = ({ user }) => {
     const [lastSync, setLastSync] = useState(null);
     const [integrationStatus, setIntegrationStatus] = useState('disconnected'); // connected | syncing | error | disconnected
     const [isConnected, setIsConnected] = useState(false);
-
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     const handleSync = async () => {
         setIsLoadingEvents(true);

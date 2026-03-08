@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from '../../utils/toast';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { API_URL } from '../../utils/api';
 
 /**
  * AdminConsole — God Mode 2.0

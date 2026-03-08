@@ -1,4 +1,4 @@
-import pool from '../db.js';
+import { pool } from '../lib/googleClient.js';
 import logger from '../lib/logger.js';
 
 export const globalErrorHandler = async (err, req, res, next) => {

@@ -3,9 +3,7 @@ import ReactDOM from 'react-dom'; // Added for Portal
 import { useAuth } from '../../hooks/useAuth';
 import toast from '../../utils/toast';
 import { redirectToGoogle } from '../../utils/authRedirect';
-import { getAuthHeaders } from '../../utils/api';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { getAuthHeaders, API_URL } from '../../utils/api';
 
 const Section = ({ title, children }) => (
     <div style={{ marginBottom: '24px' }}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import YouTubePlayer from './YouTubePlayer';
 import supabase from '../utils/supabase';
 import { redirectToGoogle } from '../utils/authRedirect';
+import { API_URL } from '../utils/api';
 
 /* ─── Status badge ─── */
 const IntegrationBadge = ({ connected, error }) => {
@@ -33,8 +34,6 @@ const YouTubePanel = ({ user }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [volume, setVolume] = useState(60);
     const [playerStateCode, setPlayerStateCode] = useState(-1);
-
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
     const handleConnectGoogle = async () => {
         setLoading(true);

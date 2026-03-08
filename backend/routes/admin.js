@@ -1,5 +1,5 @@
 import express from 'express';
-import pool from '../db.js';
+import { pool } from '../lib/googleClient.js';
 import { requireAuth } from '../middleware/auth.js';
 import logger from '../lib/logger.js';
 
