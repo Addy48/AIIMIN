@@ -91,7 +91,7 @@ const PomodoroTimer = ({ user }) => {
             }
         }
         return () => clearInterval(interval);
-    }, [isRunning, timeLeft, isBreak, workDuration, breakDuration, cyclesCompleted]);
+    }, [isRunning, timeLeft, isBreak, workDuration, breakDuration, cyclesCompleted, user?.id]);
 
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60).toString().padStart(2, '0');

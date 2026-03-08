@@ -26,7 +26,7 @@ const Reports = ({ user }) => {
 
             if (error) throw error;
 
-            console.log("Fetched logs for PDF", logs);
+
 
             const doc = new jsPDF();
 

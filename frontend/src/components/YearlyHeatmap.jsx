@@ -92,7 +92,6 @@ const buildYearGrid = (year) => {
     const grid = []; // array of weeks, each week is array of 7 days
 
     let currentWeek = new Array(7).fill(null);
-    let weekIndex = 0;
 
     // Fill leading nulls for days before Jan 1
     const startDate = new Date(jan1);

@@ -5,7 +5,6 @@ import PomodoroTimer from '../components/PomodoroTimer';
 import MoodTracker from '../components/MoodTracker';
 import Streaks from '../components/Streaks';
 import MoneyManager from '../components/MoneyManager';
-import CalendarIntegration from '../components/CalendarIntegration';
 import PersonalCalendar from '../components/PersonalCalendar';
 import Reports from '../components/Reports';
 import YouTubeIntegration from '../components/YouTubeIntegration';
@@ -110,7 +109,6 @@ const Dashboard = ({ user }) => {
 
     const showStreaks = useFeatureFlag('streaks');
     const showWinTracker = useFeatureFlag('win_tracker');
-    const showGoogleCalendar = useFeatureFlag('calendar_integration');
     const showYouTube = useFeatureFlag('youtube_player');
     const showMonthlyGrid = useFeatureFlag('monthly_grid');
 
@@ -239,7 +237,7 @@ const Dashboard = ({ user }) => {
                                                     <button onClick={() => setFocusTab('music')} style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: focusTab === 'music' ? 'var(--bg-card)' : 'transparent', color: focusTab === 'music' ? 'var(--text-1)' : 'var(--text-3)', boxShadow: focusTab === 'music' ? 'var(--shadow-sm)' : 'none' }}>Music</button>
                                                 </div>
                                             )}
-                                            {focusTab === 'focus' && <PomodoroTimer />}
+                                            {focusTab === 'focus' && <PomodoroTimer user={user} />}
                                             {focusTab === 'music' && showYouTube && <YouTubeIntegration user={user} />}
                                         </>
                                     ) : (

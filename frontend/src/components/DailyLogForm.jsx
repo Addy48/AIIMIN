@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../utils/supabase';
 import { upsertRow } from '../services/dbService';
 import TimePicker from './TimePicker';
 import MomentumBar from './MomentumBar';

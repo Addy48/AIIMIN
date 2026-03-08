@@ -40,7 +40,6 @@ const Streaks = ({ user }) => {
                 // Use local date string to avoid UTC timezone offset issues
                 const pad = n => String(n).padStart(2, '0');
                 const localToday = new Date();
-                const todayStr = `${localToday.getFullYear()}-${pad(localToday.getMonth() + 1)}-${pad(localToday.getDate())}`;
 
                 // Build a map of date → log for O(1) lookup
                 const logMap = {};

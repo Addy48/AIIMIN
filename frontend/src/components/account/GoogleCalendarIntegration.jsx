@@ -1,10 +1,7 @@
 import React from 'react';
-import { useAuth } from '../../hooks/useAuth';
 import { redirectToGoogle } from '../../utils/authRedirect';
 
 const GoogleCalendarIntegration = ({ user }) => {
-    const { session } = useAuth();
-
     const isConnected = user?.google_calendar_connected || false;
 
     const connectGoogleCalendar = () => {

@@ -188,13 +188,13 @@ const CalendarItem = ({ item, onToggle, onEdit, onDelete }) => {
 /* ─── Main Personal Calendar ─── */
 const PersonalCalendar = ({ user }) => {
     const now = new Date();
-    const todayStr = `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+
 
     const [viewYear, setViewYear] = useState(now.getFullYear());
     const [viewMonth, setViewMonth] = useState(now.getMonth()); // 0-based
     const [selectedDay, setSelectedDay] = useState(null);
     const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [showPicker, setShowPicker] = useState(false);
     const [pickerYear, setPickerYear] = useState(now.getFullYear());
