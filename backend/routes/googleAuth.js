@@ -163,60 +163,68 @@ router.get('/google/auth/callback', async (req, res) => {
         let userId = stateData.userId;
 
         if (stateData.isLogin) {
-            // Look up user by email directly (avoids listUsers pagination bug)
-            const existing = await pool.query(
-                'SELECT id FROM auth.users WHERE email = $1 LIMIT 1',
-                [email]
-            );
+            // Step 1: Ensure user exists in Supabase Auth
+            // Try to create — if already exists, Supabase returns an error (that's OK)
+            const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+                email,
+                email_confirm: true,
+                user_metadata: { full_name: userInfo.data.name, avatar_url: userInfo.data.picture }
+            });
 
-            let targetUser;
-            if (existing.rows.length > 0) {
-                targetUser = { id: existing.rows[0].id };
+            if (createError) {
+                // User already exists — look up their ID from public.users (pgbouncer-safe)
+                const existing = await pool.query(
+                    'SELECT id FROM public.users WHERE email = $1 LIMIT 1',
+                    [email]
+                );
+                if (existing.rows.length > 0) {
+                    userId = existing.rows[0].id;
+                } else {
+                    // Edge case: user in auth but trigger didn't sync to public.users
+                    // generateLink below works by email, so we can proceed without userId for the redirect
+                    // but we need userId for storing oauth tokens — skip token store in this case
+                    console.warn('[googleAuth] User exists in auth but not in public.users:', email);
+                }
             } else {
-                // Create user if not exists
-                const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-                    email,
-                    email_confirm: true,
-                    user_metadata: { full_name: userInfo.data.name, avatar_url: userInfo.data.picture }
-                });
-                if (createError) throw createError;
-                targetUser = newUser.user;
+                userId = newUser.user.id;
             }
-            userId = targetUser.id;
         }
 
-        // Store tokens securely
-        const accessEnc = encrypt(tokens.access_token);
-        const refreshEnc = tokens.refresh_token ? encrypt(tokens.refresh_token) : null;
+        // Store Google OAuth tokens securely (for Calendar/YouTube integration)
+        if (userId) {
+            const accessEnc = encrypt(tokens.access_token);
+            const refreshEnc = tokens.refresh_token ? encrypt(tokens.refresh_token) : null;
 
-        await pool.query(
-            `INSERT INTO user_oauth_tokens
-               (user_id, provider, access_token_enc, refresh_token_enc, expiry_date, scope, last_refresh_at)
-             VALUES ($1, 'google', $2, $3, $4, $5, NOW())
-             ON CONFLICT (user_id, provider)
-             DO UPDATE SET
-               access_token_enc  = EXCLUDED.access_token_enc,
-               refresh_token_enc = COALESCE(EXCLUDED.refresh_token_enc, user_oauth_tokens.refresh_token_enc),
-               expiry_date       = EXCLUDED.expiry_date,
-               scope             = EXCLUDED.scope,
-               last_refresh_at   = NOW(),
-               updated_at        = NOW()`,
-            [userId, accessEnc, refreshEnc, tokens.expiry_date, (tokens.scope || '')]
-        );
+            await pool.query(
+                `INSERT INTO user_oauth_tokens
+                   (user_id, provider, access_token_enc, refresh_token_enc, expiry_date, scope, last_refresh_at)
+                 VALUES ($1, 'google', $2, $3, $4, $5, NOW())
+                 ON CONFLICT (user_id, provider)
+                 DO UPDATE SET
+                   access_token_enc  = EXCLUDED.access_token_enc,
+                   refresh_token_enc = COALESCE(EXCLUDED.refresh_token_enc, user_oauth_tokens.refresh_token_enc),
+                   expiry_date       = EXCLUDED.expiry_date,
+                   scope             = EXCLUDED.scope,
+                   last_refresh_at   = NOW(),
+                   updated_at        = NOW()`,
+                [userId, accessEnc, refreshEnc, tokens.expiry_date, (tokens.scope || '')]
+            );
+        }
 
         if (stateData.isLogin) {
-            // Generate magic link and extract hashed_token for frontend verification
+            // Generate magic link — redirect to Supabase's own verify endpoint
+            // This handles PKCE server-side, avoiding client-side code_verifier issues
             const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
                 type: 'magiclink',
                 email: email,
+                options: { redirectTo: `${frontendUrl}/auth/callback` }
             });
 
             if (linkError) throw linkError;
 
-            const tokenHash = linkData.properties.hashed_token;
-            return res.redirect(
-                `${frontendUrl}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink`
-            );
+            // Redirect to Supabase verify URL — it creates the session and redirects
+            // back to frontendUrl/auth/callback with tokens in the URL hash
+            return res.redirect(linkData.properties.action_link);
         }
 
         res.redirect(`${frontendUrl}/auth/callback?status=success`);
