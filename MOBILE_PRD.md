@@ -24,6 +24,8 @@
 | Learning toggle | Yes/No + topic field |
 | Reset tracker | Collapsible, private. Count + timestamps |
 | Tasks / Reminders / Todos | Create with title, time, type (task/reminder/todo). Syncs to `calendar_events` table so desktop calendar shows them |
+| Money Quick Log | Tap In/Out, enter amount, auto-timestamp, auto-date, description, auto-categorize, select account. Writes to `money_transactions` |
+| Quick Notes | Fast note capture — one-tap, type, save. Writes to `notes` table, visible in desktop QuickCapture |
 | Quick Win | One-liner daily win entry |
 | Completion ring | Header shows X/8 metrics filled, streak flame |
 | Auto-draft | localStorage saves every 30s, syncs on explicit Save |
@@ -36,7 +38,7 @@
 | Pomodoro timer | Desktop focus tool, not mobile |
 | Journal / long-form text | Desktop only — mobile is for quick capture |
 | Weekly/monthly charts | Unreadable on small screens |
-| Money Manager | Table-heavy, needs desktop |
+| Money Manager (full) | Table-heavy analysis, budgets, recurring, charts — desktop only. Mobile has Quick Log for fast entry |
 | Calendar month view | Complex, desktop only. Mobile adds items to it |
 | Yearly heatmap | 365 cells unreadable |
 | Sleep debt charts | Show number only on mobile, chart on desktop |
@@ -108,13 +110,50 @@ SECTION 4 — TASKS (Core mobile feature)
 │  Items sync to Calendar on desktop  │
 └─────────────────────────────────────┘
 
-SECTION 5 — WIN
+SECTION 5 — MONEY (Quick Log)
+┌─────────────────────────────────────┐
+│  💸 Money                           │
+│                                     │
+│  [  💰 IN  ]    [  💸 OUT  ]  ← tap │
+│                                     │
+│  Amount: ₹ [________]  numpad       │
+│                                     │
+│  What for: [Groceries / Uber / ___] │
+│  ↳ auto-match: 🍛 Food & Dining     │
+│                                     │
+│  Account:                           │
+│  [🏦 SBI] [👛 Paytm] [💵 Cash] tap │
+│                                     │
+│  ⏱ 2:34 PM · Mar 9  (auto-filled)  │
+│                                     │
+│  [ Log ✓ ]                          │
+│                                     │
+│  Recent:                            │
+│  ↓ ₹120  Uber         💳 HDFC  1h  │
+│  ↓ ₹45   Tea + snack  💵 Cash  3h  │
+│  ↑ ₹5000 Freelance    🏦 SBI   5h  │
+└─────────────────────────────────────┘
+
+SECTION 6 — QUICK NOTES
+┌─────────────────────────────────────┐
+│  📝 Quick Note                      │
+│  ┌───────────────────────────────┐  │
+│  │ [Type something quickly...]   │  │
+│  └───────────────────────────────┘  │
+│  [ Save Note ✓ ]                    │
+│                                     │
+│  Today's notes:                     │
+│  • Call Rahul about project    10m  │
+│  • Buy milk on way home        2h  │
+└─────────────────────────────────────┘
+
+SECTION 7 — WIN
 ┌─────────────────────────────────────┐
 │  🏆 Today's Win                     │
 │  [One thing I'm proud of...    ]    │
 └─────────────────────────────────────┘
 
-SECTION 6 — PRIVATE (collapsible)
+SECTION 8 — PRIVATE (collapsible)
 ┌─────────────────────────────────────┐
 │  🔒 Private Log  ▾                  │
 │  (expands on tap, discreet)         │
@@ -140,6 +179,8 @@ SECTION 6 — PRIVATE (collapsible)
 - Mood: large horizontal slider with emoji endpoints
 - Energy: 5-dot tap selector
 - Tasks: keyboard only for title, rest is taps
+- Money: numpad for amount, keyboard for description, rest is taps
+- Notes: keyboard only for note text
 
 ### 5.2 Save is Progressive
 - Auto-draft saves form state to `localStorage` every 30 seconds
@@ -195,9 +236,104 @@ calendar_events:
 
 ---
 
-## 7. Technical Plan
+## 7. Money Quick Log Design
 
-### 7.1 Route & Detection
+### 7.1 Flow
+1. User taps the Money section card
+2. Picks **IN** (income) or **OUT** (expense) — two large toggle buttons
+3. Types amount (₹ numpad, large font)
+4. Types description — "What for?" (e.g. "Uber", "Groceries", "Freelance payment")
+5. **Auto-categorize**: fuzzy-match description against desktop categories:
+   - "Uber" / "Ola" / "Metro" → 🚗 Transport
+   - "Zomato" / "Swiggy" / "Tea" / "Lunch" → 🍛 Food & Dining
+   - "Amazon" / "Flipkart" → 🛍️ Shopping
+   - "Gym" / "Medicine" → 💊 Health
+   - "Netflix" / "Movie" → 🎬 Entertainment
+   - "Electricity" / "Rent" / "WiFi" → 🏠 Utilities
+   - Fallback → 📦 Other (user can override)
+6. Select account — chips showing user's accounts from `accounts` table (fetched on load)
+7. **Time** = `new Date()` auto-filled (display only, no picker needed)
+8. **Date** = today auto-filled
+9. Tap "Log ✓" → writes to `money_transactions`
+10. Recent transactions (today) shown below for reference
+
+### 7.2 Data Model
+Writes to existing `money_transactions` table:
+
+```
+money_transactions:
+  user_id      → auth user
+  date         → today (auto)
+  category     → auto-matched category name
+  description  → user input ("Uber to office")
+  amount       → number entered
+  type         → 'income' or 'expense'
+  account_id   → selected account UUID
+  time_of_day  → current time string ("14:34")
+  source       → 'mobile' (to distinguish from desktop manual entry)
+  currency     → 'INR' (default)
+```
+
+### 7.3 Auto-Category Matching
+Keyword map (case-insensitive, checks if description contains any keyword):
+
+```javascript
+const CATEGORY_KEYWORDS = {
+  'Food & Dining':  ['food', 'zomato', 'swiggy', 'lunch', 'dinner', 'breakfast',
+                     'tea', 'coffee', 'snack', 'restaurant', 'cafe', 'biryani'],
+  'Transport':      ['uber', 'ola', 'metro', 'bus', 'train', 'petrol', 'fuel',
+                     'auto', 'cab', 'rapido', 'parking'],
+  'Shopping':       ['amazon', 'flipkart', 'myntra', 'clothes', 'shoes',
+                     'electronics', 'phone'],
+  'Utilities':      ['electricity', 'rent', 'wifi', 'water', 'gas', 'recharge',
+                     'bill', 'maintenance'],
+  'Health':         ['medicine', 'doctor', 'gym', 'pharmacy', 'hospital',
+                     'supplement', 'protein'],
+  'Entertainment':  ['netflix', 'movie', 'spotify', 'game', 'concert',
+                     'subscription'],
+};
+// Fallback: 'Other'
+```
+
+User can tap the auto-matched category chip to override with a different one.
+
+### 7.4 Desktop Sync
+- Transactions appear instantly in Money Manager (same table)
+- `source: 'mobile'` lets desktop distinguish mobile entries
+- Category analysis, charts, budgets on desktop use these same rows
+- No new table or API needed
+
+---
+
+## 8. Quick Notes Design
+
+### 8.1 Flow
+1. Tap into text field, type note
+2. Tap "Save Note ✓"
+3. Note appears in today's list below
+4. Notes sync to desktop QuickCapture (same `notes` table)
+
+### 8.2 Data Model
+Writes to existing `notes` table:
+
+```
+notes:
+  user_id    → auth user
+  content    → note text
+  type       → 'note' (default)
+  created_at → auto timestamp
+```
+
+### 8.3 Display
+- Today's notes listed with relative time ("10m ago", "2h ago")
+- Tap to mark complete (sets `completed = true`)
+- Desktop QuickCapture already reads from this table
+
+---
+
+## 9. Technical Plan
+
+### 9.1 Route & Detection
 ```
 /m → MobileApp.jsx (single page, no sub-routes)
 
@@ -208,36 +344,41 @@ Auto-redirect logic in App.js:
 Desktop can access /m too (for testing), but mobile never sees desktop.
 ```
 
-### 7.2 Component Structure
+### 9.2 Component Structure
 ```
 src/
   components/
     mobile/
-      MobileApp.jsx          ← main single-page shell
-      MobileSleepSection.jsx  ← sleep inputs + debt number
-      MobileBodySection.jsx   ← gym, breakfast, steps, protein
-      MobileMindSection.jsx   ← mood slider, energy, learning
-      MobileTaskSection.jsx   ← add task + today's list
-      MobileWinSection.jsx    ← one-liner win
-      MobileResetSection.jsx  ← collapsible private tracker
-      MobileHeader.jsx        ← sticky header with ring
-      MobileSaveBar.jsx       ← sticky bottom save
+      MobileApp.jsx           ← main single-page shell
+      MobileSleepSection.jsx   ← sleep inputs + debt number
+      MobileBodySection.jsx    ← gym, breakfast, steps, protein
+      MobileMindSection.jsx    ← mood slider, energy, learning
+      MobileTaskSection.jsx    ← add task + today's list
+      MobileMoneySection.jsx   ← quick money log + recent list
+      MobileNotesSection.jsx   ← quick note capture + today's notes
+      MobileWinSection.jsx     ← one-liner win
+      MobileResetSection.jsx   ← collapsible private tracker
+      MobileHeader.jsx         ← sticky header with ring
+      MobileSaveBar.jsx        ← sticky bottom save
 ```
 
-### 7.3 Data Layer
+### 9.3 Data Layer
 - Same `supabase` client, same `useAuth` hook
 - Daily log: same `upsertRow('daily_logs', payload, 'user_id,date')`
 - Tasks: `insertRow('calendar_events', ...)` / `updateRow('calendar_events', ...)`
+- Money: `insertRow('money_transactions', ...)` — each entry saved independently (not batched with daily log)
+- Notes: `insertRow('notes', ...)` / `updateRow('notes', ...)`
 - Wins: `insertRow('wins', ...)`
+- Accounts + Categories: read-only fetch on mount for Money section chips
 - No new API endpoints needed
 
-### 7.4 PWA Config
+### 9.4 PWA Config
 - Existing `manifest.json` already has `theme_color` and icons
 - Add `"display": "standalone"` if not present
 - Add `"start_url": "/m"` for mobile-specific entry
 - Service worker for offline draft queue (Phase 2)
 
-### 7.5 Offline Strategy (MVP)
+### 9.5 Offline Strategy (MVP)
 ```
 On every field change → save to localStorage('aiimin_mobile_draft')
 On "Save" tap:
@@ -246,11 +387,14 @@ On "Save" tap:
 
 On navigator.onLine event 'online':
   flush aiimin_offline_queue → Supabase
+
+Money + Notes: saved individually on each "Log" / "Save Note" tap.
+If offline, queued same way as daily log.
 ```
 
 ---
 
-## 8. Design Tokens (Mobile-Specific)
+## 10. Design Tokens (Mobile-Specific)
 
 Uses the same CSS variable system. Additional mobile overrides:
 
@@ -266,7 +410,7 @@ Uses the same CSS variable system. Additional mobile overrides:
 
 ---
 
-## 9. Color Palette (Same as Desktop — LOCKED)
+## 11. Color Palette (Same as Desktop — LOCKED)
 
 | Element | Dark | Light |
 |---|---|---|
@@ -281,7 +425,7 @@ Uses the same CSS variable system. Additional mobile overrides:
 
 ---
 
-## 10. Build Order (MVP)
+## 12. Build Order (MVP)
 
 | Phase | What | Depends On |
 |---|---|---|
@@ -291,23 +435,27 @@ Uses the same CSS variable system. Additional mobile overrides:
 | M4 | Save logic (localStorage draft + Supabase upsert) | M1 |
 | M5 | Mind section (mood, energy, learning) | M1 |
 | M6 | Task section (add + list + complete) | M1 |
-| M7 | Win section + Reset section | M1 |
-| M8 | PWA manifest + auto-redirect | M7 |
-| M9 | Offline queue | M4 |
+| M7 | Money Quick Log section | M1 |
+| M8 | Quick Notes section | M1 |
+| M9 | Win section + Reset section | M1 |
+| M10 | PWA manifest + auto-redirect | M9 |
+| M11 | Offline queue | M4 |
 
 ---
 
-## 11. Success Metrics
+## 13. Success Metrics
 
 - Daily log completion rate > 80% (vs current desktop rate)
 - Average time to complete daily log < 120 seconds
 - Task creation → calendar sync works bidirectionally
 - Zero data loss from offline → online sync
+- Money entry: under 10 seconds per transaction
+- Quick notes: under 5 seconds per note
 - Lighthouse mobile score > 90
 
 ---
 
-## 12. Out of Scope (v1)
+## 14. Out of Scope (v1)
 
 - Push notifications (requires service worker + VAPID keys)
 - Biometric auth (native app territory)
@@ -318,7 +466,7 @@ Uses the same CSS variable system. Additional mobile overrides:
 
 ---
 
-## 13. Schema Changes Required
+## 15. Schema Changes Required
 
 ### Already applied:
 ```sql
