@@ -422,8 +422,14 @@ export default function HabitManager({ user }) {
                                                     key={em}
                                                     type="button"
                                                     onClick={() => setEmoji(em)}
-                                                    onMouseEnter={() => setHoveredEmoji(em)}
-                                                    onMouseLeave={() => setHoveredEmoji(null)}
+                                                        onMouseEnter={e => {
+                                                            setHoveredEmoji(em);
+                                                            if (emoji !== em) e.currentTarget.style.background = 'var(--bg-card)';
+                                                        }}
+                                                        onMouseLeave={e => {
+                                                            setHoveredEmoji(null);
+                                                            if (emoji !== em) e.currentTarget.style.background = 'var(--bg-elevated)';
+                                                        }}
                                                     style={{
                                                         width: '40px', height: '40px',
                                                         fontSize: '18px', borderRadius: '8px',
@@ -434,8 +440,6 @@ export default function HabitManager({ user }) {
                                                         transition: 'all 0.12s',
                                                         flexShrink: 0,
                                                     }}
-                                                    onMouseEnter={e => { if (emoji !== em) e.currentTarget.style.background = 'var(--bg-card)'; }}
-                                                    onMouseLeave={e => { if (emoji !== em) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
                                                 >
                                                     {em}
                                                 </button>
