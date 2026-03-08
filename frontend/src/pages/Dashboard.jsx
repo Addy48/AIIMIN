@@ -10,7 +10,7 @@ import PersonalCalendar from '../components/PersonalCalendar';
 import Reports from '../components/Reports';
 import YouTubeIntegration from '../components/YouTubeIntegration';
 import ResetsTracker from '../components/ResetsTracker';
-import RemindersWidget from '../components/RemindersWidget';
+import QuickCapture from '../components/dashboard/QuickCapture';
 import WinsEngine from '../components/WinsEngine';
 import InsightEngine from '../components/InsightEngine';
 import MomentumBar from '../components/MomentumBar';
@@ -26,7 +26,7 @@ import YearlyHeatmap from '../components/YearlyHeatmap';
 import CalendarHeatmap from '../components/calendar/CalendarHeatmap';
 import StatCard from '../components/dashboard/StatCard';
 import ExpandedStatPanel from '../components/dashboard/ExpandedStatPanel';
-import UpcomingSidebar from '../components/dashboard/UpcomingSidebar';
+
 import { SettingsSection, SettingsRow } from '../components/dashboard/SettingsSection';
 import ToggleSwitch from '../components/dashboard/ToggleSwitch';
 import useFeatureFlag from '../hooks/useFeatureFlag';
@@ -113,7 +113,6 @@ const Dashboard = ({ user }) => {
     const showGoogleCalendar = useFeatureFlag('calendar_integration');
     const showYouTube = useFeatureFlag('youtube_player');
     const showMonthlyGrid = useFeatureFlag('monthly_grid');
-    const showNotesSystem = useFeatureFlag('notes_system');
 
     React.useEffect(() => {
         localStorage.setItem('aiimin_activeTab', activeTab);
@@ -292,8 +291,8 @@ const Dashboard = ({ user }) => {
                                 </div>
 
                                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
-                                    <SectionLabel>Upcoming</SectionLabel>
-                                    {showNotesSystem ? <UpcomingSidebar /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Notes system hidden by flag.</div>}
+                                    <SectionLabel>Quick Capture</SectionLabel>
+                                    <QuickCapture user={user} />
                                 </div>
 
                             </div>
@@ -477,7 +476,7 @@ const Dashboard = ({ user }) => {
 
             </main>
 
-            <RemindersWidget user={user} />
+
 
             <style>{`
                 @keyframes ping {

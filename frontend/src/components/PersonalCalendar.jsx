@@ -196,6 +196,9 @@ const PersonalCalendar = ({ user }) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const [showPicker, setShowPicker] = useState(false);
+    const [pickerYear, setPickerYear] = useState(now.getFullYear());
+    const pickerRef = useRef(null);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         title: '', eventType: 'event', startTime: '09:00', endTime: '10:00', allDay: false,
@@ -224,6 +227,15 @@ const PersonalCalendar = ({ user }) => {
     }, [user?.id, viewYear, viewMonth]);
 
     useEffect(() => { fetchItems(); }, [fetchItems]);
+
+    /* ── Close month picker on outside click ── */
+    useEffect(() => {
+        const handler = (e) => {
+            if (pickerRef.current && !pickerRef.current.contains(e.target)) setShowPicker(false);
+        };
+        if (showPicker) document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [showPicker]);
 
     /* ── Calendar math ── */
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -405,14 +417,80 @@ const PersonalCalendar = ({ user }) => {
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px',
                     }}>←</button>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)' }}>{monthLabel}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative' }} ref={pickerRef}>
+                        <button
+                            onClick={() => { setPickerYear(viewYear); setShowPicker(p => !p); }}
+                            style={{
+                                fontSize: '15px', fontWeight: 800, color: 'var(--text-1)',
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', gap: '4px', padding: 0,
+                            }}
+                        >
+                            {monthLabel}
+                            <span style={{ fontSize: '10px', color: 'var(--text-3)', transition: 'transform 0.15s', transform: showPicker ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
+                        </button>
                         {!isCurrentMonth && (
                             <button onClick={goToToday} style={{
                                 padding: '3px 10px', borderRadius: '99px', border: '1px solid var(--border)',
                                 background: 'var(--bg-elevated)', color: 'var(--accent)',
                                 fontSize: '10px', fontWeight: 700, cursor: 'pointer',
                             }}>Today</button>
+                        )}
+
+                        {/* ── Month/Year Picker Dropdown ── */}
+                        {showPicker && (
+                            <div style={{
+                                position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                                marginTop: '8px', zIndex: 50, width: '260px',
+                                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                                borderRadius: '14px', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                                padding: '14px', animation: 'fadeIn 0.12s ease-out',
+                            }}>
+                                {/* Year row */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                                    <button onClick={() => setPickerYear(y => y - 1)} style={{
+                                        width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--border)',
+                                        background: 'var(--bg-elevated)', color: 'var(--text-2)', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px',
+                                    }}>←</button>
+                                    <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-1)' }}>{pickerYear}</span>
+                                    <button onClick={() => setPickerYear(y => y + 1)} style={{
+                                        width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--border)',
+                                        background: 'var(--bg-elevated)', color: 'var(--text-2)', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px',
+                                    }}>→</button>
+                                </div>
+
+                                {/* 4x3 Month grid */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                                    {Array.from({ length: 12 }, (_, m) => {
+                                        const isActive = m === viewMonth && pickerYear === viewYear;
+                                        const isCurrent = m === now.getMonth() && pickerYear === now.getFullYear();
+                                        const label = new Date(2000, m).toLocaleString('default', { month: 'short' });
+                                        return (
+                                            <button
+                                                key={m}
+                                                onClick={() => {
+                                                    setViewYear(pickerYear); setViewMonth(m);
+                                                    setSelectedDay(null); setShowForm(false);
+                                                    setShowPicker(false);
+                                                }}
+                                                style={{
+                                                    padding: '8px 4px', borderRadius: '8px', fontSize: '12px', fontWeight: 700,
+                                                    border: isCurrent && !isActive ? '1px solid rgba(245,166,35,0.3)' : '1px solid transparent',
+                                                    background: isActive ? 'var(--accent)' : 'transparent',
+                                                    color: isActive ? 'white' : isCurrent ? 'var(--accent)' : 'var(--text-2)',
+                                                    cursor: 'pointer', transition: 'all 0.12s',
+                                                }}
+                                                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
+                                                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+                                            >
+                                                {label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         )}
                     </div>
 
@@ -444,7 +522,7 @@ const PersonalCalendar = ({ user }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px' }}>
                     {/* Leading padding */}
                     {Array.from({ length: firstDayOffset }, (_, i) => (
-                        <div key={`pad-${i}`} style={{ aspectRatio: '1' }} />
+                        <div key={`pad-${i}`} style={{ padding: '14px 0' }} />
                     ))}
 
                     {/* Actual days */}
@@ -462,22 +540,22 @@ const PersonalCalendar = ({ user }) => {
                         return (
                             <div
                                 key={day}
-                                onClick={() => !isFuture && handleDayClick(day)}
+                                onClick={() => handleDayClick(day)}
                                 style={{
-                                    aspectRatio: '1', borderRadius: '8px',
+                                    padding: '10px 0', borderRadius: '8px',
                                     display: 'flex', flexDirection: 'column',
                                     alignItems: 'center', justifyContent: 'center', gap: '3px',
-                                    cursor: isFuture ? 'default' : 'pointer',
+                                    cursor: 'pointer',
                                     background: isSelected ? 'var(--accent)' : isToday ? 'rgba(245,166,35,0.12)' : 'transparent',
                                     border: isToday && !isSelected ? '1px solid rgba(245,166,35,0.3)' : '1px solid transparent',
                                     color: isSelected ? 'white' : isFuture ? 'var(--text-3)' : 'var(--text-1)',
                                     fontWeight: isToday || isSelected ? 800 : 500,
                                     fontSize: '12px',
-                                    opacity: isFuture ? 0.4 : 1,
+                                    opacity: isFuture ? 0.65 : 1,
                                     transition: 'all 0.12s',
                                     position: 'relative',
                                 }}
-                                onMouseEnter={e => { if (!isSelected && !isFuture) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
+                                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
                                 onMouseLeave={e => {
                                     if (!isSelected) e.currentTarget.style.background = isToday ? 'rgba(245,166,35,0.12)' : 'transparent';
                                 }}
@@ -485,7 +563,7 @@ const PersonalCalendar = ({ user }) => {
                                 {day}
                                 {/* Item dots */}
                                 {hasItems && (
-                                    <div style={{ display: 'flex', gap: '2px', position: 'absolute', bottom: '4px' }}>
+                                    <div style={{ display: 'flex', gap: '2px', position: 'absolute', bottom: '3px' }}>
                                         {typesPresent.slice(0, 3).map(type => (
                                             <div key={type} style={{
                                                 width: '4px', height: '4px', borderRadius: '50%',
