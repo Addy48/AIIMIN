@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import { upsertRow } from '../services/dbService';
 import toast from '../utils/toast';
 
 
 
-const PomodoroTimer = () => {
+const PomodoroTimer = ({ user }) => {
     const PRESETS = [
         { work: 25, rest: 5 },
         { work: 45, rest: 10 },
@@ -138,12 +139,13 @@ const PomodoroTimer = () => {
                     ? log.journal_entry + '\n\n' + noteText
                     : noteText;
 
-                await supabase
-                    .from('daily_logs')
-                    .upsert({
+                if (user?.id) {
+                    await upsertRow('daily_logs', {
+                        user_id: user.id,
                         date: today,
                         journal_entry: newJournal
-                    }, { onConflict: 'user_id,date' });
+                    }, 'user_id,date');
+                }
 
             } catch (e) { console.error("Could not save session note", e); }
         }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import supabase from '../utils/supabase';
+import { upsertRow } from '../services/dbService';
 import TimePicker from './TimePicker';
 import MomentumBar from './MomentumBar';
 import { useDevContext } from '../context/DevContext';
@@ -127,12 +128,7 @@ const DailyLogForm = ({ user }) => {
                 mood: formData.mood,
             };
 
-            const { data, error } = await supabase
-                .from('daily_logs')
-                .upsert(payload, { onConflict: 'user_id,date' })
-                .select();
-
-            if (error) throw error;
+            const data = await upsertRow('daily_logs', payload, 'user_id,date');
 
             if (process.env.NODE_ENV === 'development') {
                 devLogger.logOperation(payload, data);

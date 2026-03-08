@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import { insertRow } from '../services/dbService';
 
 const RemindersWidget = ({ user }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -63,11 +64,7 @@ const RemindersWidget = ({ user }) => {
                 noteData.reminder_time = new Date(`${today}T${hStr}:${timeMinute}:00`).toISOString();
             }
 
-            const { error } = await supabase
-                .from('notes')
-                .insert([noteData]);
-
-            if (error) throw error;
+            await insertRow('notes', [{ ...noteData, user_id: user?.id }]);
 
             setText('');
             setReminderTime('');
