@@ -6,6 +6,7 @@ import MoodTracker from '../components/MoodTracker';
 import Streaks from '../components/Streaks';
 import MoneyManager from '../components/MoneyManager';
 import CalendarIntegration from '../components/CalendarIntegration';
+import PersonalCalendar from '../components/PersonalCalendar';
 import Reports from '../components/Reports';
 import YouTubeIntegration from '../components/YouTubeIntegration';
 import ResetsTracker from '../components/ResetsTracker';
@@ -45,7 +46,6 @@ const Dashboard = ({ user }) => {
     const [notifInsights, setNotifInsights] = useState(() => localStorage.getItem('aiimin_notif_insights') === 'true');
     const [focusTab, setFocusTab] = useState('focus');
     const [intelTab, setIntelTab] = useState('insights');
-    const [moodFromTracker, setMoodFromTracker] = useState(null);
 
     const saveAndSet = (key, setter) => (val) => {
         setter(val);
@@ -225,7 +225,7 @@ const Dashboard = ({ user }) => {
 
                                 <div>
                                     <SectionLabel>Mood Check-in</SectionLabel>
-                                    <MoodTracker user={user} onMoodChange={setMoodFromTracker} />
+                                    <MoodTracker user={user} onMoodChange={() => {}} />
                                 </div>
 
                                 <div>
@@ -238,7 +238,7 @@ const Dashboard = ({ user }) => {
                                                     <button onClick={() => setFocusTab('music')} style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: focusTab === 'music' ? 'var(--bg-card)' : 'transparent', color: focusTab === 'music' ? 'var(--text-1)' : 'var(--text-3)', boxShadow: focusTab === 'music' ? 'var(--shadow-sm)' : 'none' }}>Music</button>
                                                 </div>
                                             )}
-                                            {focusTab === 'focus' && <PomodoroTimer user={user} />}
+                                            {focusTab === 'focus' && <PomodoroTimer />}
                                             {focusTab === 'music' && showYouTube && <YouTubeIntegration user={user} />}
                                         </>
                                     ) : (
@@ -281,7 +281,7 @@ const Dashboard = ({ user }) => {
 
                                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
                                     <SectionLabel>Daily Log</SectionLabel>
-                                    <DailyLogForm user={user} externalMood={moodFromTracker} />
+                                    <DailyLogForm user={user} />
                                 </div>
 
                                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
@@ -321,7 +321,7 @@ const Dashboard = ({ user }) => {
                             </div>
                             <div>
                                 <SectionLabel>Schedule & Calendar</SectionLabel>
-                                {showGoogleCalendar ? <CalendarIntegration user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Calendar integration hidden.</div>}
+                                <PersonalCalendar user={user} />
                             </div>
                         </div>
                     )}
