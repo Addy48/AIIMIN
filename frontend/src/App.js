@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import AuthCallback from './pages/AuthCallback';
 import Brand from './pages/Brand';
 import Privacy from './pages/legal/Privacy';
 import Terms from './pages/legal/Terms';
@@ -71,7 +72,7 @@ function App() {
         {isDevMode && <DevOverlay />}
         <Routes>
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-          <Route path="/auth/callback" element={<Navigate to="/" />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
           <Route path="/brand" element={<Brand />} />
           <Route path="/privacy" element={<Privacy />} />

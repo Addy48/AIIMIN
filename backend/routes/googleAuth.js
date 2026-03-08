@@ -163,12 +163,16 @@ router.get('/google/auth/callback', async (req, res) => {
         let userId = stateData.userId;
 
         if (stateData.isLogin) {
-            // Flow: Login -> Find or Create Supabase User
-            const { data: user, error: userError } = await supabaseAdmin.auth.admin.listUsers(); // Simple check or use getByEmail
-            // For production, use better lookup. Here we'll search by email.
-            let targetUser = (user.users || []).find(u => u.email === email);
+            // Look up user by email directly (avoids listUsers pagination bug)
+            const existing = await pool.query(
+                'SELECT id FROM auth.users WHERE email = $1 LIMIT 1',
+                [email]
+            );
 
-            if (!targetUser) {
+            let targetUser;
+            if (existing.rows.length > 0) {
+                targetUser = { id: existing.rows[0].id };
+            } else {
                 // Create user if not exists
                 const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
                     email,
@@ -201,21 +205,24 @@ router.get('/google/auth/callback', async (req, res) => {
         );
 
         if (stateData.isLogin) {
-            // Generate Supabase session link for the user
-            const { data: link, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+            // Generate magic link and extract hashed_token for frontend verification
+            const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
                 type: 'magiclink',
                 email: email,
-                options: { redirectTo: `${frontendUrl}/` }
             });
 
             if (linkError) throw linkError;
-            return res.redirect(link.properties.action_link);
+
+            const tokenHash = linkData.properties.hashed_token;
+            return res.redirect(
+                `${frontendUrl}/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink`
+            );
         }
 
         res.redirect(`${frontendUrl}/auth/callback?status=success`);
     } catch (err) {
-        console.error('[googleAuth/callback]', err.message);
-        res.redirect(`${frontendUrl}/auth/callback?status=error&reason=exchange_failed`);
+        console.error('[googleAuth/callback] FULL ERROR:', err);
+        res.redirect(`${frontendUrl}/auth/callback?status=error&reason=${encodeURIComponent(err.message || 'exchange_failed')}`);
     }
 });
 

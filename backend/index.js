@@ -30,11 +30,11 @@ dotenv.config();
 const requiredEnvVars = [
     'SUPABASE_URL',
     'SUPABASE_SERVICE_KEY',
+    'SUPABASE_SERVICE_ROLE_KEY',
     'DATABASE_URL',
     'TOKEN_ENCRYPTION_KEY',
     'GOOGLE_CLIENT_ID',
     'GOOGLE_CLIENT_SECRET',
-    'GOOGLE_REDIRECT_URI'
 ];
 
 const missingEnvVars = requiredEnvVars.filter(v => !process.env[v]);
