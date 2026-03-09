@@ -58,7 +58,7 @@ router.patch('/profile', requireAuth, async (req, res) => {
         const values = [...Object.values(allowed), req.userId];
 
         const result = await pool.query(
-            `UPDATE users SET ${setClauses.join(', ')}, updated_at = NOW()
+            `UPDATE users SET ${setClauses.join(', ')}
              WHERE id = $${values.length} RETURNING id, email, full_name, timezone, avatar_url`,
             values
         );

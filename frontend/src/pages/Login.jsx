@@ -100,7 +100,7 @@ const Login = () => {
                 display: 'flex', flexDirection: 'column', alignItems: 'center'
             }}>
 
-                <Logo size={64} style={{ marginBottom: '16px' }} />
+                <Logo style={{ marginBottom: '16px', height: '64px', justifyContent: 'center' }} />
 
                 <span style={{
                     display: 'inline-block', fontSize: '11px', fontWeight: 600,
