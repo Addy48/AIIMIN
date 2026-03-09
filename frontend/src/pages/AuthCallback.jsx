@@ -11,6 +11,17 @@ const AuthCallback = () => {
         const status = searchParams.get('status');
         const reason = searchParams.get('reason');
 
+        // Supabase native OAuth error format: ?error=server_error&error_description=...
+        const supabaseError = searchParams.get('error');
+        const supabaseDesc = searchParams.get('error_description');
+
+        if (supabaseError) {
+            const msg = supabaseDesc ? decodeURIComponent(supabaseDesc) : supabaseError;
+            setError(msg);
+            setTimeout(() => navigate('/login'), 4000);
+            return;
+        }
+
         // Error from backend redirect
         if (status === 'error') {
             setError(reason || 'Authentication failed');
@@ -76,10 +87,10 @@ const AuthCallback = () => {
                     maxWidth: '400px',
                 }}>
                     <p style={{ color: 'var(--danger)', fontSize: '14px', fontWeight: 600, margin: '0 0 8px' }}>
-                        Authentication Error
+                        Google Sign-In Failed
                     </p>
-                    <p style={{ color: 'var(--text-2)', fontSize: '13px', margin: '0 0 12px' }}>
-                        {error}
+                    <p style={{ color: 'var(--text-2)', fontSize: '12px', margin: '0 0 12px', wordBreak: 'break-word' }}>
+                        {error?.includes('exchange') ? 'Google OAuth misconfiguration — see setup instructions.' : error}
                     </p>
                     <p style={{ color: 'var(--text-3)', fontSize: '11px', margin: 0 }}>
                         Redirecting to login...
