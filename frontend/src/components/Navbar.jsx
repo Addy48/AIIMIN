@@ -44,7 +44,7 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     display: 'flex', alignItems: 'center', gap: '8px',
                     textDecoration: 'none', flexShrink: 0,
                 }}>
-                    <Logo size={32} />
+                    <Logo />
                 </Link>
 
                 {/* Nav tabs */}

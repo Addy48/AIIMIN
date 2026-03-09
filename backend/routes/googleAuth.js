@@ -57,14 +57,13 @@ const cleanupExpiredStates = async () => {
 const createOAuthClient = () => new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
+    'https://api.aiimin.in/google/auth/callback'
 );
 
 const SCOPES = [
     'openid',
     'email',
     'profile',
-    'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/youtube.readonly',
 ];
 
