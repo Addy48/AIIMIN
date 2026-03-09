@@ -273,25 +273,36 @@ const DailyLogForm = ({ user, externalMood }) => {
                                     <input type="number" name="steps" value={formData.steps} onChange={handleChange} placeholder="0" style={inputStyle} />
                                 </div>
                                 <div>
-                                    <label style={labelStyle}>💧 Water (bottles)</label>
-                                    <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-                                        {[0, 1, 2, 3, 4].map(v => (
-                                            <button
-                                                key={v}
-                                                type="button"
-                                                onClick={() => { setFormData(prev => ({ ...prev, waterBottles: v })); setIsDirty(true); }}
-                                                style={{
-                                                    flex: 1, padding: '8px 2px', borderRadius: '8px',
-                                                    border: '1px solid ' + (formData.waterBottles === v ? 'var(--accent)' : 'var(--border)'),
-                                                    background: formData.waterBottles === v ? 'var(--accent-dim)' : 'var(--bg-elevated)',
-                                                    color: formData.waterBottles === v ? 'var(--accent)' : 'var(--text-3)',
-                                                    fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-                                                }}>
-                                                {v === 4 ? '4+' : v}
-                                            </button>
-                                        ))}
+                                    <label style={labelStyle}>💧 Water</label>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setFormData(prev => ({ ...prev, waterBottles: Math.max(0, (prev.waterBottles || 0) - 1) })); setIsDirty(true); }}
+                                            style={{
+                                                width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px',
+                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                                color: 'var(--text-3)', cursor: 'pointer', display: 'flex',
+                                                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                            }}>−</button>
+                                        <div style={{ textAlign: 'center', flex: 1 }}>
+                                            <div style={{ fontSize: '22px', fontWeight: 800, color: formData.waterBottles >= 3 ? 'var(--accent)' : 'var(--text-1)', lineHeight: 1 }}>
+                                                {formData.waterBottles || 0}
+                                            </div>
+                                            <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '2px' }}>
+                                                {formData.waterBottles >= 3 ? '🎯 Goal met' : `× 1.5L · Goal: 3`}
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setFormData(prev => ({ ...prev, waterBottles: (prev.waterBottles || 0) + 1 })); setIsDirty(true); }}
+                                            style={{
+                                                width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px',
+                                                border: '1px solid var(--accent)', background: 'var(--accent-dim)',
+                                                color: 'var(--accent)', cursor: 'pointer', display: 'flex',
+                                                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                                fontWeight: 700,
+                                            }}>+</button>
                                     </div>
-                                    <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '4px' }}>× 1.5L · Goal: 3</div>
                                 </div>
                             </div>
                             {formData.steps > 0 && (
