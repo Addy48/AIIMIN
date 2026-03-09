@@ -19,7 +19,7 @@
 | Feature | Notes |
 |---|---|
 | Sleep logging | Bedtime + wake time + computed hours + debt indicator |
-| Body metrics | Gym toggle + duration, breakfast toggle, steps, protein |
+| Body metrics | Gym toggle + duration, breakfast toggle, steps, water bottles |
 | Mood + Energy | Slider (1-10) + energy dots (1-5) |
 | Learning toggle | Yes/No + topic field |
 | Reset tracker | Collapsible, private. Count + timestamps |
@@ -78,7 +78,8 @@ SECTION 2 — BODY (Morning/Day)
 │  Duration   [30] [45] [60] [90] tap │
 │  Breakfast  [ OFF ●────── ON ]      │
 │  Steps     [───] stepper + presets  │
-│  Protein   [───] stepper + presets  │
+│  Water   [0] [1] [2] [3] [4+] tap  │
+│           × 1.5L bottles · Goal: 3  │
 └─────────────────────────────────────┘
 
 SECTION 3 — MIND (Anytime)
@@ -173,7 +174,8 @@ SECTION 8 — PRIVATE (collapsible)
 
 ### 5.1 No Keyboard Unless Necessary
 - Booleans: full-width toggle switches (large 48dp hit targets)
-- Steps & protein: stepper buttons (+/−) with preset chips (5k, 8k, 10k for steps; 50, 100, 150 for protein)
+- Steps: stepper buttons (+/−) with preset chips (5k, 8k, 10k, 12k)
+- Water: tap chips [0] [1] [2] [3] [4+] — each = one 1.5L bottle, goal is 3
 - Gym duration: tap chips (30 / 45 / 60 / 90 min)
 - Sleep times: native `<input type="time">` (OS time picker)
 - Mood: large horizontal slider with emoji endpoints
@@ -431,7 +433,7 @@ Uses the same CSS variable system. Additional mobile overrides:
 |---|---|---|
 | M1 | MobileApp shell + Header + Save bar | Route setup |
 | M2 | Sleep section | M1 |
-| M3 | Body section (gym, breakfast, steps, protein) | M1 |
+| M3 | Body section (gym, breakfast, steps, water bottles) | M1 |
 | M4 | Save logic (localStorage draft + Supabase upsert) | M1 |
 | M5 | Mind section (mood, energy, learning) | M1 |
 | M6 | Task section (add + list + complete) | M1 |
@@ -472,6 +474,14 @@ Uses the same CSS variable system. Additional mobile overrides:
 ```sql
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS sleep_need_hours NUMERIC(4,2) DEFAULT 8.0;
 ```
+
+### NEW — water bottles column (replaces protein_grams in UI):
+```sql
+ALTER TABLE public.daily_logs
+  ADD COLUMN IF NOT EXISTS water_bottles SMALLINT DEFAULT 0;
+```
+`protein_grams` column is kept in the DB (not dropped) to preserve historical data.
+Frontend stops reading/writing it and uses `water_bottles` instead.
 
 ### calendar_events event_type — extend CHECK if needed:
 The existing `event_type` column is `TEXT DEFAULT 'personal'` with no CHECK constraint, so 'task', 'reminder', 'todo' values already work. No migration needed.

@@ -17,7 +17,7 @@ const valueForMetric = (log, type) => {
         case 'gym': return log.gym_done ? 1 : 0;
         case 'steps': return log.steps || 0;
         case 'focus': return log.pomodoro_minutes || (log.learning_done ? 60 : 0);
-        case 'protein': return log.protein_grams || 0;
+        case 'water': return log.water_bottles || 0;
         case 'mood': return log.mood || 0;
         case 'score': {
             let s = 0;
@@ -49,7 +49,7 @@ const CalendarHeatmap = ({ year, month, type = 'focus' }) => {
 
         supabase
             .from('daily_logs')
-            .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry, pomodoro_minutes, protein_grams')
+            .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry, pomodoro_minutes, water_bottles')
             .eq('user_id', session.user.id)
             .gte('date', startDate)
             .lte('date', endDate)
