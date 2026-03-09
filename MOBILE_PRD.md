@@ -104,9 +104,9 @@ SECTION 4 — TASKS (Core mobile feature)
 │  └───────────────────────────────┘  │
 │                                     │
 │  Today's items:                     │
-│  ☐ DSA practice        2:00 PM     │
-│  ☐ Call dentist         4:30 PM  🔔│
-│  ☑ Morning walk         done       │
+│  ☐ DSA practice        2:00 PM      │
+│  ☐ Call dentist         4:30 PM  🔔 │ 
+│  ☑ Morning walk         done        │
 │                                     │
 │  Items sync to Calendar on desktop  │
 └─────────────────────────────────────┘

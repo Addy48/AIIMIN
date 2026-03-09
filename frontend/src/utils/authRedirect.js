@@ -9,10 +9,7 @@
  */
 import { API_URL } from './api';
 
-export const redirectToGoogle = (scope = 'login') => {
-    if (scope === 'calendar') {
-        window.location.href = `${API_URL}/auth/google?scope=calendar`;
-    } else {
-        window.location.href = `${API_URL}/auth/google`;
-    }
+// Used only for Calendar/YouTube integration (not login — login uses Supabase native OAuth)
+export const redirectToGoogle = (scope = 'calendar') => {
+    window.location.href = `${API_URL}/auth/init`;
 };
