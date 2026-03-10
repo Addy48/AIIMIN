@@ -127,7 +127,7 @@ app.use('/money', moneyRoutes);
 app.use('/wins', winsRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/youtube', youtubeRoutes);
-app.use('/google', googleAuthRoutes);
+app.use('/', googleAuthRoutes);
 app.use('/calendar', calendarRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/commitment', commitmentRoutes);
