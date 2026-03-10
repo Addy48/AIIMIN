@@ -49,7 +49,7 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     textDecoration: 'none', flexShrink: 0,
                 }}>
                     <LogoContainer size={34} />
-                    <span style={{
+                    <span key={theme} style={{
                         fontSize: '15px', fontWeight: 900, letterSpacing: '-0.5px',
                         background: theme === 'dark'
                             ? 'linear-gradient(135deg, #ff8c42 0%, #ffd166 100%)'
