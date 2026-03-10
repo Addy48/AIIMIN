@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // Added for Portal
 import { useAuth } from '../../hooks/useAuth';
 import toast from '../../utils/toast';
-import { redirectToGoogle } from '../../utils/authRedirect';
 import { getAuthHeaders, API_URL } from '../../utils/api';
 
 const Section = ({ title, children }) => (
@@ -54,12 +53,55 @@ const StatusDot = ({ connected, error }) => (
     </div>
 );
 
+const ChangePassword = ({ session }) => {
+    const [newPw, setNewPw] = useState('');
+    const [confirmPw, setConfirmPw] = useState('');
+    const [msg, setMsg] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    const handleChange = async () => {
+        if (newPw.length < 6) { setMsg('Min 6 characters'); return; }
+        if (newPw !== confirmPw) { setMsg('Passwords do not match'); return; }
+        setSaving(true);
+        setMsg('');
+        const { createClient } = await import('@supabase/supabase-js');
+        const client = createClient(
+            process.env.REACT_APP_SUPABASE_URL,
+            process.env.REACT_APP_SUPABASE_ANON_KEY,
+            { global: { headers: { Authorization: `Bearer ${session?.access_token}` } } }
+        );
+        const { error } = await client.auth.updateUser({ password: newPw });
+        if (error) { setMsg(error.message); }
+        else { setMsg('Password updated ✓'); setNewPw(''); setConfirmPw(''); }
+        setSaving(false);
+        setTimeout(() => setMsg(''), 4000);
+    };
+
+    const inputStyle = {
+        padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+        border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+        color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
+    };
+
+    return (
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <input type="password" placeholder="New password" value={newPw} onChange={e => setNewPw(e.target.value)} style={inputStyle} />
+            <input type="password" placeholder="Confirm new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} style={inputStyle} />
+            {msg && <div style={{ fontSize: '12px', color: msg.includes('✓') ? '#22c55e' : 'var(--danger)', fontWeight: 700 }}>{msg}</div>}
+            <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} style={{
+                padding: '12px', background: 'var(--accent)', color: 'white', border: 'none',
+                borderRadius: '12px', fontSize: '13px', fontWeight: 800, cursor: 'pointer',
+                opacity: (saving || !newPw || !confirmPw) ? 0.5 : 1
+            }}>{saving ? 'Saving...' : 'Update Password'}</button>
+        </div>
+    );
+};
+
 const AccountModal = ({ isOpen, onClose }) => {
     const { session, signOut } = useAuth();
     const [profile, setProfile] = useState(null);
     const [draftProfile, setDraftProfile] = useState(null);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const [integrations, setIntegrations] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saveMsg, setSaveMsg] = useState('');
@@ -72,16 +114,13 @@ const AccountModal = ({ isOpen, onClose }) => {
         if (!isOpen || !session) return;
         setLoading(true);
         const headers = getAuthHeaders(session);
-        Promise.all([
-            fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed')),
-            fetch(`${API_URL}/account/integrations`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Integrations load failed')),
-        ]).then(([p, integ]) => {
+        fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed'))
+        .then(p => {
             const fallbackName = p?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || '';
             const fallbackTimezone = p?.timezone || session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
             const normalizedProfile = { ...p, full_name: fallbackName, timezone: fallbackTimezone };
             setProfile(normalizedProfile);
             setDraftProfile(normalizedProfile);
-            setIntegrations(integ);
         }).catch(err => {
             console.error('[AccountModal] fetch error:', err);
         }).finally(() => setLoading(false));
@@ -178,19 +217,6 @@ const AccountModal = ({ isOpen, onClose }) => {
                 window.location.reload();
             }
         } catch (err) { toast.error('Delete failed'); } finally { setDeleting(false); }
-    };
-
-    const handleConnectGoogle = async () => {
-        redirectToGoogle('login');
-    };
-
-    const handleDisconnect = async () => {
-        if (!window.confirm('Disconnect Google?')) return;
-        await fetch(`${API_URL}/google/auth/disconnect`, { method: 'POST', headers: getAuthHeaders(session) });
-        setIntegrations(prev => ({
-            google_calendar: { connected: false, error: null },
-            youtube: { connected: false, error: null },
-        }));
     };
 
     if (!isOpen) return null;
@@ -340,32 +366,8 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 )}
                             </Section>
 
-                            <Section title="Integrations">
-                                <Row label="OAuth Connection">
-                                    <div style={{ fontSize: '13px', color: 'var(--text-2)', fontWeight: 700 }}>Google Identity</div>
-                                </Row>
-                                <Row label="Status" border={false}>
-                                    <StatusDot connected={integrations?.google_calendar?.connected} error={integrations?.google_calendar?.error} />
-                                </Row>
-                                <div style={{ padding: '20px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
-                                    {!integrations?.google_calendar?.connected ? (
-                                        <button onClick={handleConnectGoogle} style={{
-                                            width: '100%', padding: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)',
-                                            borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-1)', cursor: 'pointer',
-                                            transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                                        }}>
-                                            <span style={{ fontSize: '16px' }}>+</span> Connect Google Account
-                                        </button>
-                                    ) : (
-                                        <button onClick={handleDisconnect} style={{
-                                            width: '100%', padding: '12px', background: 'none', border: '1px solid var(--border)',
-                                            borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-3)', cursor: 'pointer',
-                                            transition: 'all 0.2s ease'
-                                        }}>
-                                            Disconnect Services
-                                        </button>
-                                    )}
-                                </div>
+                            <Section title="Change Password">
+                                <ChangePassword session={session} />
                             </Section>
 
                             <Section title="Data Strategy">
