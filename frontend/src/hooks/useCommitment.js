@@ -7,6 +7,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
+import { getAuthHeaders } from '../utils/api';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -16,28 +17,23 @@ export const useCommitment = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const getHeaders = useCallback(() => ({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
-    }), [session?.access_token]);
-
     const fetchToday = useCallback(async () => {
         if (!session) return;
         setLoading(true);
         try {
-            const res = await fetch(`${API_URL}/commitment/today`, { headers: getHeaders() });
+            const res = await fetch(`${API_URL}/commitment/today`, { headers: getAuthHeaders(session) });
             if (res.ok) setCommitment(await res.json());
         } catch (e) {
             setError(e.message);
         } finally {
             setLoading(false);
         }
-    }, [session, getHeaders]);
+    }, [session]);
 
     const updateTargets = async (targets) => {
         const res = await fetch(`${API_URL}/commitment/targets`, {
             method: 'POST',
-            headers: getHeaders(),
+            headers: getAuthHeaders(session),
             body: JSON.stringify({ targets }),
         });
         if (res.ok) {
@@ -49,7 +45,7 @@ export const useCommitment = () => {
     const evaluate = async () => {
         const res = await fetch(`${API_URL}/commitment/evaluate`, {
             method: 'POST',
-            headers: getHeaders(),
+            headers: getAuthHeaders(session),
             body: JSON.stringify({}),
         });
         if (res.ok) {

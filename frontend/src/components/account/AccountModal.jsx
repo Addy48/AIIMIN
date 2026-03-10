@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // Added for Portal
 import { useAuth } from '../../hooks/useAuth';
 import toast from '../../utils/toast';
+import { redirectToGoogle } from '../../utils/authRedirect';
+import { getAuthHeaders } from '../../utils/api';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -66,15 +68,10 @@ const AccountModal = ({ isOpen, onClose }) => {
     const [deleting, setDeleting] = useState(false);
     const modalRef = useRef();
 
-    const getHeaders = useCallback(() => ({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`,
-    }), [session?.access_token]);
-
     useEffect(() => {
         if (!isOpen || !session) return;
         setLoading(true);
-        const headers = getHeaders();
+        const headers = getAuthHeaders(session);
         Promise.all([
             fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed')),
             fetch(`${API_URL}/account/integrations`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Integrations load failed')),
@@ -84,7 +81,7 @@ const AccountModal = ({ isOpen, onClose }) => {
         }).catch(err => {
             console.error('[AccountModal] fetch error:', err);
         }).finally(() => setLoading(false));
-    }, [isOpen, session, getHeaders]);
+    }, [isOpen, session]);
 
     // Prevent body scroll when modal is open
     useEffect(() => {
@@ -114,7 +111,7 @@ const AccountModal = ({ isOpen, onClose }) => {
         setSaveMsg('');
         try {
             const res = await fetch(`${API_URL}/account/profile`, {
-                method: 'PATCH', headers: getHeaders(),
+                method: 'PATCH', headers: getAuthHeaders(session),
                 body: JSON.stringify({ full_name: profile.full_name, timezone: profile.timezone }),
             });
             if (res.ok) {
@@ -132,7 +129,7 @@ const AccountModal = ({ isOpen, onClose }) => {
     const handleExport = async () => {
         setExporting(true);
         try {
-            const res = await fetch(`${API_URL}/account/export`, { headers: getHeaders() });
+            const res = await fetch(`${API_URL}/account/export`, { headers: getAuthHeaders(session) });
             const blob = await res.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -148,7 +145,7 @@ const AccountModal = ({ isOpen, onClose }) => {
         setDeleting(true);
         try {
             const res = await fetch(`${API_URL}/account`, {
-                method: 'DELETE', headers: getHeaders(),
+                method: 'DELETE', headers: getAuthHeaders(session),
                 body: JSON.stringify({ confirm: 'DELETE' }),
             });
             if (res.ok) {
@@ -159,12 +156,12 @@ const AccountModal = ({ isOpen, onClose }) => {
     };
 
     const handleConnectGoogle = async () => {
-        window.location.href = `${API_URL}/google/auth/login`;
+        redirectToGoogle('login');
     };
 
     const handleDisconnect = async () => {
         if (!window.confirm('Disconnect Google?')) return;
-        await fetch(`${API_URL}/google/auth/disconnect`, { method: 'POST', headers: getHeaders() });
+        await fetch(`${API_URL}/google/auth/disconnect`, { method: 'POST', headers: getAuthHeaders(session) });
         setIntegrations(prev => ({
             google_calendar: { connected: false, error: null },
             youtube: { connected: false, error: null },

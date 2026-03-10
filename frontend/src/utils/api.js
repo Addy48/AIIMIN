@@ -18,3 +18,8 @@ api.interceptors.request.use(
 );
 
 export default api;
+
+export const getAuthHeaders = (session) => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${session?.access_token}`,
+});

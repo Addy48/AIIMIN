@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Logo from '../components/Logo';
+import LogoContainer from '../components/LogoContainer';
 
 const PrincipleCard = ({ icon, title, desc }) => (
     <div style={{
@@ -85,7 +85,7 @@ const Brand = () => {
                         border: '1px solid var(--border)', boxShadow: '0 24px 64px rgba(0,0,0,0.08)',
                         display: 'block', textDecoration: 'none', cursor: 'pointer'
                     }}>
-                        <Logo style={{ height: '120px', borderRadius: '28px', justifyContent: 'center' }} />
+                        <LogoContainer size={160} />
                     </Link>
                     <h1 style={{
                         fontSize: '72px', fontWeight: 900, letterSpacing: '-2.5px', lineHeight: 1.05, marginBottom: '24px',
@@ -201,8 +201,8 @@ const Brand = () => {
                 </section>
 
                 <footer style={{ marginTop: '100px', paddingTop: '40px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <Logo style={{ height: '32px', opacity: 0.8 }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', opacity: 0.8 }}>
+                        <LogoContainer size={32} />
                         <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-2)', letterSpacing: '-0.02em' }}>AIIMIN SYSTEM</span>
                     </div>
                     <p style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>

@@ -1,150 +1,123 @@
 /**
  * components/calendar/CalendarHeatmap.jsx
  *
- * Monthly calendar grid where each day cell is color-coded by behavioral intensity.
- * Color = commitment fulfillment %. Tooltip on hover shows behavioral metrics.
+ * Fetches daily_logs for a given month and renders a MetricMonthGrid
+ * heatmap. Supports all tracked metric types via the `type` prop.
  */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import MetricMonthGrid from './MetricMonthGrid';
+import supabase from '../../utils/supabase';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-const intensityColor = (pct) => {
-    if (pct === 0) return 'var(--bg-elevated)';
-    if (pct < 40) return 'rgba(235,140,140,0.35)';  // red — very low
-    if (pct < 60) return 'rgba(251,191,36,0.35)';   // amber — low
-    if (pct < 80) return 'rgba(139,195,74,0.35)';   // light green — moderate
-    return 'rgba(34,197,94,0.40)';                     // green — strong
+/** Extract the numeric value for a given metric from a daily_log row. */
+const valueForMetric = (log, type) => {
+    if (!log) return 0;
+    switch (type) {
+        case 'sleep': return log.sleep_hours ? Math.round(log.sleep_hours * 60) : 0; // minutes
+        case 'gym': return log.gym_done ? 1 : 0;
+        case 'steps': return log.steps || 0;
+        case 'focus': return log.pomodoro_minutes || (log.learning_done ? 60 : 0);
+        case 'protein': return log.protein_grams || 0;
+        case 'mood': return log.mood || 0;
+        case 'score': {
+            let s = 0;
+            if (log.sleep_hours && log.sleep_hours >= 5) s++;
+            if (log.gym_done) s++;
+            if (log.learning_done) s++;
+            if (log.journal_entry?.trim()?.length > 5) s++;
+            if (log.steps >= 5000) s++;
+            if (log.mood) s++;
+            return s;
+        }
+        default: return 0;
+    }
 };
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-const CalendarHeatmap = ({ year, month }) => {
+const CalendarHeatmap = ({ year, month, type = 'focus' }) => {
     const { session } = useAuth();
     const [data, setData] = useState({});
-    const [tooltip, setTooltip] = useState(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!session) return;
         setLoading(true);
-        fetch(`${API_URL}/calendar/heatmap?year=${year}&month=${month}`, {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-        })
-            .then(r => r.ok ? r.json() : [])
-            .then(rows => {
+
+        // Build date range for the requested month (month is 1-based)
+        const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+        const lastDay = new Date(year, month, 0).getDate();
+        const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+        supabase
+            .from('daily_logs')
+            .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry, pomodoro_minutes, protein_grams')
+            .eq('user_id', session.user.id)
+            .gte('date', startDate)
+            .lte('date', endDate)
+            .then(({ data: logs }) => {
+                const logsArr = logs || [];
                 const map = {};
-                rows.forEach(r => { map[r.date] = r; });
+
+                // Build enriched map with behavior metadata
+                logsArr.forEach(log => {
+                    const habitsCompleted = [
+                        log.gym_done,
+                        log.learning_done,
+                        log.journal_entry?.trim()?.length > 5,
+                        log.steps >= 5000,
+                        log.mood >= 1,
+                    ].filter(Boolean).length;
+                    const focusSessions = Math.round((log.pomodoro_minutes || 0) / 25);
+                    map[log.date] = {
+                        value: valueForMetric(log, type),
+                        habitsCompleted,
+                        focusSessions,
+                        mood: log.mood || 0,
+                        focusMinutes: log.pomodoro_minutes || 0,
+                        steps: log.steps || 0,
+                    };
+                });
+
+                // Compute streak lengths (consecutive logged days)
+                const sortedDates = Object.keys(map).sort();
+                let streak = 0;
+                let prevDate = null;
+                const streakLen = {};
+                for (const d of sortedDates) {
+                    if (prevDate) {
+                        const diff = (new Date(d) - new Date(prevDate)) / 86400000;
+                        streak = diff === 1 ? streak + 1 : 1;
+                    } else {
+                        streak = 1;
+                    }
+                    streakLen[d] = streak;
+                    prevDate = d;
+                }
+
+                // Assign behavior signal (priority: Perfect > Peak > Streak > Mood Dip)
+                for (const [d, entry] of Object.entries(map)) {
+                    const { habitsCompleted, focusSessions, mood } = entry;
+                    if (habitsCompleted >= 5) entry.signal = '✓';
+                    else if (focusSessions >= 3 && habitsCompleted >= 3) entry.signal = '★';
+                    else if ((streakLen[d] || 0) >= 5 && focusSessions >= 1) entry.signal = '🔥';
+                    else if (mood > 0 && mood <= 3) entry.signal = '●';
+                }
+
                 setData(map);
             })
             .catch(() => { })
             .finally(() => setLoading(false));
-    }, [session, year, month]);
-
-    // Build grid
-    const firstDay = new Date(year, month - 1, 1);
-    const daysInMonth = new Date(year, month, 0).getDate();
-    // Offset: Mon=0, Tue=1, ..., Sun=6
-    let offset = firstDay.getDay() - 1;
-    if (offset < 0) offset = 6;
-
-    const cells = [];
-    for (let i = 0; i < offset; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+    }, [session, year, month, type]);
 
     return (
-        <div style={{ width: '100%', minHeight: '180px' }}>
-            {/* Day headers */}
-            <div className="calendar-grid" style={{ gap: '3px', marginBottom: '3px' }}>
-                {DAYS.map(d => (
-                    <div key={d} style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-3)', textAlign: 'center', padding: '2px 0', textTransform: 'uppercase' }}>
-                        {d}
-                    </div>
-                ))}
-            </div>
-
-            {/* Day cells */}
-            <div className="calendar-grid" style={{ gap: '3px' }}>
-                {cells.map((day, i) => {
-                    if (!day) return <div key={`e-${i}`} className="day-cell" />;
-                    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const d = data[dateStr] || {};
-                    const pct = parseFloat(d.commitment_pct || 0);
-                    const isToday = dateStr === new Date().toISOString().slice(0, 10);
-                    const hasFocus = d.focus_minutes > 0;
-
-                    return (
-                        <div
-                            key={dateStr}
-                            className="day-cell"
-                            onMouseEnter={() => setTooltip({ dateStr, ...d })}
-                            onMouseLeave={() => setTooltip(null)}
-                            style={{
-                                background: loading ? 'var(--bg-elevated)' : intensityColor(pct),
-                                border: isToday ? '2px solid var(--accent)' : '1px solid var(--border)',
-                                cursor: hasFocus || pct > 0 ? 'pointer' : 'default',
-                                transition: 'transform 0.1s ease',
-                            }}
-                            onMouseDown={e => e.currentTarget.style.transform = 'scale(0.95)'}
-                            onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-                        >
-                            <span style={{
-                                fontSize: '9px', fontWeight: isToday ? 900 : 600,
-                                color: isToday ? 'var(--accent)' : 'var(--text-2)',
-                            }}>
-                                {day}
-                            </span>
-                            {d.session_count > 0 && (
-                                <span style={{
-                                    position: 'absolute', bottom: '2px', right: '2px',
-                                    width: '4px', height: '4px', borderRadius: '50%', background: 'var(--accent)',
-                                }} />
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Tooltip */}
-            {tooltip && (
-                <div style={{
-                    marginTop: '10px',
-                    padding: '10px 12px',
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '10px',
-                    fontSize: '11px',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '6px 16px',
-                    maxWidth: '100%',
-                    boxSizing: 'border-box',
-                }}>
-                    <div style={{ gridColumn: '1/-1', fontWeight: 800, color: 'var(--text-1)', marginBottom: '2px', fontSize: '12px' }}>{tooltip.dateStr}</div>
-                    {[
-                        ['Focus min', tooltip.focus_minutes || 0],
-                        ['Sessions', tooltip.session_count || 0],
-                        ['Commitment', `${Math.round(tooltip.commitment_pct || 0)}%`],
-                        ['Mood avg', tooltip.mood_avg ? `${tooltip.mood_avg}/5` : '—'],
-                    ].map(([label, val]) => (
-                        <div key={label}>
-                            <span style={{ color: 'var(--text-3)' }}>{label}: </span>
-                            <span style={{ color: 'var(--text-1)', fontWeight: 700 }}>{val}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Legend */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '10px', alignItems: 'center' }}>
-                <span style={{ fontSize: '10px', color: 'var(--text-3)' }}>Commitment:</span>
-                {[['< 40%', 'rgba(235,140,140,0.5)'], ['40–60%', 'rgba(251,191,36,0.5)'], ['60–80%', 'rgba(139,195,74,0.5)'], ['≥ 80%', 'rgba(34,197,94,0.6)']].map(([label, bg]) => (
-                    <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: bg }} />
-                        <span style={{ fontSize: '9px', color: 'var(--text-3)' }}>{label}</span>
-                    </div>
-                ))}
-            </div>
+        <div style={{ width: '100%', minHeight: '180px', opacity: loading ? 0.6 : 1, transition: 'opacity 0.2s' }}>
+            <MetricMonthGrid
+                year={year}
+                month={month}
+                data={data}
+                defaultColor="var(--accent)"
+                metricName={type}
+                metricProp={type}
+            />
         </div>
     );
 };
