@@ -19,6 +19,7 @@ import {
     MobileResetSection,
     MobileDSASection,
 } from './MobileSections';
+import MobileIntention from './MobileIntention';
 import { upsertRow, insertRow } from '../../services/dbService';
 import supabase from '../../utils/supabase';
 import toast from '../../utils/toast';
@@ -459,6 +460,9 @@ function MobileApp({ user }) {
                         }}
                     />
                 </div>
+
+                {/* Daily Intention (lightweight mobile version) */}
+                <MobileIntention />
 
                 <MobileTaskSection tasks={tasks} onAdd={handleAddTask} onToggle={handleToggleTask} />
                 <MobileMoneySection user={user} accounts={accounts} />

@@ -22,7 +22,6 @@ import AdminConsole from '../components/account/AdminConsole';
 import SessionStats from '../components/SessionStats';
 import DSACounter from '../components/DSACounter';
 import YearlyHeatmap from '../components/YearlyHeatmap';
-import CalendarHeatmap from '../components/calendar/CalendarHeatmap';
 import SleepAnalytics from '../components/SleepAnalytics';
 import StatCard from '../components/dashboard/StatCard';
 import ExpandedStatPanel from '../components/dashboard/ExpandedStatPanel';
@@ -66,6 +65,7 @@ const Dashboard = ({ user }) => {
     const [showWeeklyReview, setShowWeeklyReview] = useState(false);
     const [recentLogs, setRecentLogs] = useState([]);
     const [pomoCyclesTotal, setPomoCyclesTotal] = useState(0);
+    const [dsaCountTotal, setDsaCountTotal] = useState(0);
     const [txCount, setTxCount] = useState(0);
 
 
@@ -109,6 +109,10 @@ const Dashboard = ({ user }) => {
         supabase.from('money_transactions').select('id').eq('user_id', user.id)
             .gte('date', thirtyDaysAgo)
             .then(({ data }) => { if (data) setTxCount(data.length); });
+
+        supabase.from('dsa_problems').select('id').eq('user_id', user.id)
+            .gte('solved_at', thirtyDaysAgo + 'T00:00:00')
+            .then(({ data }) => { if (data) setDsaCountTotal(data.length); });
     }, [user]);
 
     const saveAndSet = (key, setter) => (val) => {
@@ -352,11 +356,6 @@ const Dashboard = ({ user }) => {
                                     {intelTab === 'wins' && <WinsEngine />}
                                 </div>
 
-                                <div style={{ flex: 1, width: '100%' }}>
-                                    <SectionLabel>Monthly Overview</SectionLabel>
-                                    <CalendarHeatmap year={new Date().getFullYear()} month={new Date().getMonth() + 1} type="score" />
-                                </div>
-
                                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
                                     <SectionLabel>Quick Capture</SectionLabel>
                                     <QuickCapture user={user} />
@@ -407,7 +406,7 @@ const Dashboard = ({ user }) => {
                         <div>
                             <SectionLabel>Aspiration Meters</SectionLabel>
                             <ErrorBoundary label="Aspiration Meters">
-                                <AspirationMeters recentLogs={recentLogs} pomoCycles={pomoCyclesTotal} dsaCount={0} txCount={txCount} />
+                                <AspirationMeters recentLogs={recentLogs} pomoCycles={pomoCyclesTotal} dsaCount={dsaCountTotal} txCount={txCount} />
                             </ErrorBoundary>
                         </div>
 
