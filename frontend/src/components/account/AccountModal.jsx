@@ -35,11 +35,6 @@ const Row = ({ label, children, border = true }) => (
     </div>
 );
 
-const TIMEZONES = [
-    'Asia/Kolkata', 'UTC', 'America/New_York', 'America/Chicago',
-    'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney',
-];
-
 const StatusDot = ({ connected, error }) => (
     <div style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -58,6 +53,8 @@ const ChangePassword = ({ session }) => {
     const [confirmPw, setConfirmPw] = useState('');
     const [msg, setMsg] = useState('');
     const [saving, setSaving] = useState(false);
+    const [showNewPw, setShowNewPw] = useState(false);
+    const [showConfirmPw, setShowConfirmPw] = useState(false);
 
     const handleChange = async () => {
         if (newPw.length < 6) { setMsg('Min 6 characters'); return; }
@@ -83,10 +80,27 @@ const ChangePassword = ({ session }) => {
         color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
     };
 
+    const eyeBtn = (show, toggle) => (
+        <button type="button" onClick={toggle} tabIndex={-1} style={{
+            position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-3)', fontSize: '16px', padding: 0,
+            display: 'flex', alignItems: 'center', lineHeight: 1, userSelect: 'none',
+        }} aria-label={show ? 'Hide' : 'Show'}>
+            {show ? '🙈' : '👁'}
+        </button>
+    );
+
     return (
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <input type="password" placeholder="New password" value={newPw} onChange={e => setNewPw(e.target.value)} style={inputStyle} />
-            <input type="password" placeholder="Confirm new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} style={inputStyle} />
+            <div style={{ position: 'relative' }}>
+                <input type={showNewPw ? 'text' : 'password'} placeholder="New password" value={newPw} onChange={e => setNewPw(e.target.value)} style={{ ...inputStyle, paddingRight: '40px' }} />
+                {eyeBtn(showNewPw, () => setShowNewPw(p => !p))}
+            </div>
+            <div style={{ position: 'relative' }}>
+                <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} style={{ ...inputStyle, paddingRight: '40px' }} />
+                {eyeBtn(showConfirmPw, () => setShowConfirmPw(p => !p))}
+            </div>
             {msg && <div style={{ fontSize: '12px', color: msg.includes('✓') ? '#22c55e' : 'var(--danger)', fontWeight: 700 }}>{msg}</div>}
             <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} style={{
                 padding: '12px', background: 'var(--accent)', color: 'white', border: 'none',
@@ -156,7 +170,7 @@ const AccountModal = ({ isOpen, onClose }) => {
         try {
             const res = await fetch(`${API_URL}/account/profile`, {
                 method: 'PATCH', headers: getAuthHeaders(session),
-                body: JSON.stringify({ full_name: draftProfile.full_name, timezone: draftProfile.timezone }),
+                body: JSON.stringify({ full_name: draftProfile.full_name }),
             });
             if (res.ok) {
                 const savedProfile = await res.json();
@@ -296,7 +310,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                     <div className="settings-grid" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <Section title="Profile">
-                                <Row label="Name">
+                                <Row label="Name" border={false}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
                                             {profile?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'Unnamed'}
@@ -317,11 +331,6 @@ const AccountModal = ({ isOpen, onClose }) => {
                                         )}
                                     </div>
                                 </Row>
-                                <Row label="Timezone" border={false}>
-                                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
-                                        {profile?.timezone || session?.user?.user_metadata?.timezone || 'Asia/Kolkata'}
-                                    </span>
-                                </Row>
                                 {isEditingProfile && (
                                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
                                         <input
@@ -334,17 +343,6 @@ const AccountModal = ({ isOpen, onClose }) => {
                                                 color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
                                             }}
                                         />
-                                        <select
-                                            value={draftProfile?.timezone || 'Asia/Kolkata'}
-                                            onChange={e => setDraftProfile(p => ({ ...p, timezone: e.target.value }))}
-                                            style={{
-                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                                color: 'var(--text-1)', cursor: 'pointer', outline: 'none', width: '100%', fontWeight: 600
-                                            }}
-                                        >
-                                            {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
-                                        </select>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <button onClick={handleSaveProfile} disabled={saving} style={{
                                                 flex: 1, padding: '12px', background: 'var(--accent)', color: 'white',
@@ -432,7 +430,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 </button>
 
                                 <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                    AIIMIN OS v1.0.4 — Behavior Shaping System
+                                    AIIMIN v2.1 · Life OS · March 2026
                                 </p>
                             </div>
                         </div>

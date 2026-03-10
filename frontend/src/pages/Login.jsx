@@ -12,6 +12,7 @@ const Login = () => {
     const [usernameError, setUsernameError] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         const prevTheme = localStorage.getItem('aiimin-theme') || 'dark';
@@ -214,15 +215,33 @@ const Login = () => {
                         style={inputStyle}
                         required
                     />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        style={inputStyle}
-                        required
-                        minLength={6}
-                    />
+                    <div style={{ position: 'relative', width: '100%' }}>
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            style={{ ...inputStyle, paddingRight: '46px' }}
+                            required
+                            minLength={6}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(p => !p)}
+                            tabIndex={-1}
+                            style={{
+                                position: 'absolute', right: '14px', top: '50%',
+                                transform: 'translateY(-62%)',
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                color: 'var(--text-3)', fontSize: '17px', padding: '0',
+                                display: 'flex', alignItems: 'center', lineHeight: 1,
+                                userSelect: 'none',
+                            }}
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                        >
+                            {showPassword ? '🙈' : '👁'}
+                        </button>
+                    </div>
 
                     <button
                         type="submit"

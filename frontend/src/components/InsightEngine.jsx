@@ -142,8 +142,8 @@ const InsightEngine = ({ user }) => {
         return (
             <div className="insight-card" style={{ textAlign: 'center', padding: '32px 24px' }}>
                 <div style={{ fontSize: '28px', marginBottom: '12px' }}>🧠</div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '6px' }}>Insights Unlock Soon</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.5 }}>Log at least 5 days for pattern detection.</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '6px' }}>No Insights Yet</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.5 }}>Log a few more days and patterns will surface here automatically.</div>
             </div>
         );
     }
