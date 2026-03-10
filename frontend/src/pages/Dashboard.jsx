@@ -361,6 +361,11 @@ const Dashboard = ({ user }) => {
                                     <QuickCapture user={user} />
                                 </div>
 
+                                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                                    <SectionLabel>Daily Integrity</SectionLabel>
+                                    <ResetsTracker user={user} />
+                                </div>
+
                             </div>
 
                             {/* Right Column — Daily Interaction */}
@@ -369,11 +374,6 @@ const Dashboard = ({ user }) => {
                                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
                                     <SectionLabel>Daily Log</SectionLabel>
                                     <DailyLogForm user={user} />
-                                </div>
-
-                                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
-                                    <SectionLabel>Daily Integrity</SectionLabel>
-                                    <ResetsTracker user={user} />
                                 </div>
 
                             </div>
