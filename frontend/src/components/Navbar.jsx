@@ -49,13 +49,10 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     textDecoration: 'none', flexShrink: 0,
                 }}>
                     <LogoContainer size={34} />
-                    <span key={theme} style={{
+                    <span style={{
                         fontSize: '15px', fontWeight: 900, letterSpacing: '-0.5px',
-                        background: theme === 'dark'
-                            ? 'linear-gradient(135deg, #ff8c42 0%, #ffd166 100%)'
-                            : 'linear-gradient(135deg, #c27814 0%, #e05c2a 100%)',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
+                        color: theme === 'dark' ? '#ff8c42' : '#c27814',
+                        transition: 'color 0.3s ease',
                     }}>AIIMIN</span>
                 </Link>
 
