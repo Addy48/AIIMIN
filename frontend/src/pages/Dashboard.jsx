@@ -356,14 +356,16 @@ const Dashboard = ({ user }) => {
                                     {intelTab === 'wins' && <WinsEngine />}
                                 </div>
 
-                                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
-                                    <SectionLabel>Quick Capture</SectionLabel>
-                                    <QuickCapture user={user} />
-                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                                        <SectionLabel>Quick Capture</SectionLabel>
+                                        <QuickCapture user={user} />
+                                    </div>
 
-                                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
-                                    <SectionLabel>Daily Integrity</SectionLabel>
-                                    <ResetsTracker user={user} />
+                                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                                        <SectionLabel>Daily Integrity</SectionLabel>
+                                        <ResetsTracker user={user} />
+                                    </div>
                                 </div>
 
                             </div>
