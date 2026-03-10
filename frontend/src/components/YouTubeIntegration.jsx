@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import YouTubePlayer from './YouTubePlayer';
 import supabase from '../utils/supabase';
+import { redirectToGoogle } from '../utils/authRedirect';
 
 /* ─── Status badge ─── */
 const IntegrationBadge = ({ connected, error }) => {
@@ -139,9 +140,14 @@ const YouTubePanel = ({ user }) => {
                         <p style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.55, margin: 0, fontWeight: 500 }}>
                             Connect your Google account to play personal focus playlists during sessions.
                         </p>
+                        <div style={{ padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                            <p style={{ fontSize: '11px', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
+                                By connecting your Google account you allow AIIMIN to access your YouTube playlists data (read-only) to power productivity features. We do not sell or share Google user data. You can revoke access anytime.
+                            </p>
+                        </div>
                         <button
                             onClick={() => {
-                                window.location.href = `${API_URL}/google/auth/login`;
+                                redirectToGoogle('login');
                             }}
                             disabled={loading}
                             style={{

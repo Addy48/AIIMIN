@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import useAuth from '../hooks/useAuth';
-import Logo from '../components/Logo'; // Added this import
+import Logo from '../components/Logo';
 
 const Login = () => {
     const { signInWithGoogle, signUpWithEmail, signInWithEmail } = useAuth();
@@ -50,10 +50,10 @@ const Login = () => {
         width: '100%',
         padding: '14px 16px',
         fontSize: '15px',
-        backgroundColor: '#faf7f2',
-        border: '1px solid rgba(0,0,0,0.08)',
+        backgroundColor: 'var(--bg-secondary)',
+        border: '1px solid var(--border)',
         borderRadius: '12px',
-        color: '#1a1408',
+        color: 'var(--text-1)',
         outline: 'none',
         marginBottom: '16px',
         transition: 'all 0.2s ease',
@@ -62,7 +62,7 @@ const Login = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            backgroundColor: '#f5f0e8',
+            backgroundColor: 'var(--bg-primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -94,17 +94,19 @@ const Login = () => {
             <div style={{
                 zIndex: 1, position: 'relative',
                 maxWidth: '420px', width: 'calc(100% - 40px)',
-                backgroundColor: '#ffffff', border: '1px solid rgba(0,0,0,0.07)',
+                backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
                 borderRadius: '24px', padding: '52px 44px',
                 boxShadow: '0 8px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center'
             }}>
 
-                <Logo style={{ marginBottom: '16px', height: '64px', justifyContent: 'center' }} />
+                <div style={{ marginBottom: '16px' }}>
+                    <Logo size={64} />
+                </div>
 
                 <span style={{
                     display: 'inline-block', fontSize: '11px', fontWeight: 600,
-                    color: '#a89878', textTransform: 'uppercase', letterSpacing: '0.1em',
+                    color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em',
                     marginBottom: '12px', padding: '4px 10px',
                     background: 'rgba(194,120,20,0.08)', borderRadius: '99px'
                 }}>
@@ -113,7 +115,7 @@ const Login = () => {
 
                 <span style={{
                     fontSize: '40px', fontWeight: 900,
-                    background: 'linear-gradient(135deg, #c27814, #e05c2a)',
+                    background: 'var(--gradient-1)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text', letterSpacing: '-2px',
                     display: 'block', marginBottom: '32px'
@@ -127,8 +129,8 @@ const Login = () => {
                         onClick={() => { setMode('login'); setError(null); }}
                         style={{
                             flex: 1, padding: '10px 0', fontSize: '14px', fontWeight: 600, borderRadius: '8px',
-                            background: mode === 'login' ? '#ffffff' : 'transparent',
-                            color: mode === 'login' ? '#1a1408' : '#a89878',
+                            background: mode === 'login' ? 'var(--bg-card)' : 'transparent',
+                            color: mode === 'login' ? 'var(--text-1)' : 'var(--text-3)',
                             boxShadow: mode === 'login' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
                             transition: 'all 0.2s ease', cursor: 'pointer', border: 'none'
                         }}
@@ -139,8 +141,8 @@ const Login = () => {
                         onClick={() => { setMode('signup'); setError(null); }}
                         style={{
                             flex: 1, padding: '10px 0', fontSize: '14px', fontWeight: 600, borderRadius: '8px',
-                            background: mode === 'signup' ? '#ffffff' : 'transparent',
-                            color: mode === 'signup' ? '#1a1408' : '#a89878',
+                            background: mode === 'signup' ? 'var(--bg-card)' : 'transparent',
+                            color: mode === 'signup' ? 'var(--text-1)' : 'var(--text-3)',
                             boxShadow: mode === 'signup' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
                             transition: 'all 0.2s ease', cursor: 'pointer', border: 'none'
                         }}
@@ -150,7 +152,7 @@ const Login = () => {
                 </div>
 
                 {error && (
-                    <div style={{ width: '100%', padding: '12px 14px', background: 'rgba(224,92,42,0.1)', color: '#e05c2a', borderRadius: '12px', fontSize: '13px', fontWeight: 500, marginBottom: '20px', textAlign: 'center' }}>
+                    <div style={{ width: '100%', padding: '12px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', borderRadius: '12px', fontSize: '13px', fontWeight: 500, marginBottom: '20px', textAlign: 'center' }}>
                         {error}
                     </div>
                 )}
@@ -183,13 +185,13 @@ const Login = () => {
                                     }}
                                     style={{
                                         ...inputStyle,
-                                        borderColor: usernameError ? '#e05c2a' : 'rgba(0,0,0,0.08)',
+                                        borderColor: usernameError ? 'var(--danger)' : 'var(--border)',
                                         marginBottom: usernameError ? '4px' : '16px'
                                     }}
                                     required
                                 />
                                 {usernameError && (
-                                    <div style={{ fontSize: '10px', color: '#e05c2a', marginBottom: '12px', fontWeight: 600, paddingLeft: '4px' }}>
+                                    <div style={{ fontSize: '10px', color: 'var(--danger)', marginBottom: '12px', fontWeight: 600, paddingLeft: '4px' }}>
                                         {usernameError}
                                     </div>
                                 )}
@@ -219,8 +221,8 @@ const Login = () => {
                         disabled={loading}
                         style={{
                             width: '100%', height: '52px',
-                            background: 'linear-gradient(135deg, #c27814, #e05c2a)',
-                            color: '#ffffff', border: 'none', borderRadius: '14px',
+                            background: 'var(--gradient-1)',
+                            color: 'white', border: 'none', borderRadius: '14px',
                             fontSize: '15px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
                             opacity: loading ? 0.7 : 1, transition: 'all 0.2s',
                             boxShadow: '0 4px 12px rgba(224,92,42,0.3)', marginBottom: '20px'
@@ -230,29 +232,36 @@ const Login = () => {
                     </button>
                 </form>
 
-                <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', color: '#a89878', fontSize: '12px', fontWeight: 500 }}>
-                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }}></div>
+                <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', color: 'var(--text-3)', fontSize: '12px', fontWeight: 500 }}>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
                     OR
-                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }}></div>
+                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                </div>
+
+                <div style={{ width: '100%', marginBottom: '16px', padding: '12px 16px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: '11px', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
+                        By connecting your Google account you allow AIIMIN to access selected Google services such as your Google Calendar or YouTube data to power productivity features within the application.<br /><br />
+                        AIIMIN only uses this data to provide requested functionality and does not sell or share Google user data. You can revoke access anytime from your Google Account permissions.
+                    </p>
                 </div>
 
                 <button
                     onClick={signInWithGoogle}
                     onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#faf7f2';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
+                        e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
+                        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
                         e.currentTarget.style.transform = 'translateY(-1px)';
                     }}
                     onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = '#ffffff';
+                        e.currentTarget.style.backgroundColor = 'var(--bg-card)';
                         e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
                         e.currentTarget.style.transform = 'none';
                     }}
                     style={{
-                        width: '100%', height: '52px', backgroundColor: '#ffffff',
-                        border: '1px solid rgba(0,0,0,0.12)', borderRadius: '14px',
+                        width: '100%', height: '52px', backgroundColor: 'var(--bg-card)',
+                        border: '1px solid var(--border)', borderRadius: '14px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                        fontSize: '15px', fontWeight: 500, color: '#1a1408',
+                        fontSize: '15px', fontWeight: 500, color: 'var(--text-1)',
                         cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
                         transition: 'all 0.2s'
                     }}
@@ -266,7 +275,7 @@ const Login = () => {
                     Continue with Google
                 </button>
 
-                <div style={{ marginTop: '24px', fontSize: '12px', color: '#a89878', textAlign: 'center', lineHeight: 1.7 }}>
+                <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-3)', textAlign: 'center', lineHeight: 1.7 }}>
                     <div>Your data is private.</div>
                     <div>Only you have access to this dashboard.</div>
                 </div>

@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import supabase from '../utils/supabase';
+import { useAuth } from '../hooks/useAuth';
 
 const StreakItem = ({ label, count, icon, color }) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
@@ -20,21 +22,111 @@ const RecordItem = ({ label, value }) => (
     </div>
 );
 
+const calcDayScore = (log) => {
+    if (!log) return 0;
+    let s = 0;
+    if (log.sleep_hours && log.sleep_hours >= 5) s++;
+    if (log.gym_done) s++;
+    if (log.learning_done) s++;
+    if (log.journal_entry && log.journal_entry.trim().length > 5) s++;
+    if (log.steps && log.steps >= 5000) s++;
+    if (log.mood) s++;
+    return s;
+};
+
 const WinsEngine = () => {
+    const { user } = useAuth();
+    const [winsData, setWinsData] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // Mock data for analytical reinforcement
-    const momentumScore = 88;
-    const records = [
-        { label: 'Longest Focus', value: '12 Days' },
-        { label: 'Best Week', value: '94%' },
-        { label: 'Avg Mood', value: '8.4' }
-    ];
+    useEffect(() => {
+        if (!user) return;
+        const fetchData = async () => {
+            setLoading(true);
+            const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
 
-    const timeline = [
-        { title: '3 commitments hit', meta: 'Today, 09:12' },
-        { title: 'Mood +2 delta', meta: 'Yesterday' },
-        { title: 'GYM session completed', meta: 'Yesterday' }
+            const { data: logs } = await supabase
+                .from('daily_logs')
+                .select('date, sleep_hours, gym_done, learning_done, journal_entry, steps, mood')
+                .eq('user_id', user.id)
+                .gte('date', thirtyDaysAgo)
+                .order('date', { ascending: false });
+
+            if (!logs || logs.length === 0) {
+                setWinsData(null);
+                setLoading(false);
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const todayLog = logs.find(l => l.date === today);
+            const momentumScore = todayLog ? Math.round((calcDayScore(todayLog) / 6) * 100) : 0;
+
+            const sorted = [...logs].sort((a, b) => b.date.localeCompare(a.date));
+            let gymStreak = 0, focusStreak = 0, stabilityStreak = 0;
+            for (const log of sorted) { if (log.gym_done) gymStreak++; else break; }
+            for (const log of sorted) { if (log.learning_done) focusStreak++; else break; }
+            for (const log of sorted) { if (log.mood && log.mood >= 3) stabilityStreak++; else break; }
+
+            const weeklyScores = [];
+            for (let i = 0; i < 4; i++) {
+                const slice = sorted.slice(i * 7, (i + 1) * 7);
+                if (slice.length > 0) {
+                    const avg = slice.reduce((s, l) => s + calcDayScore(l), 0) / slice.length;
+                    weeklyScores.push(Math.round((avg / 6) * 100));
+                }
+            }
+            const bestWeek = weeklyScores.length > 0 ? Math.max(...weeklyScores) : 0;
+
+            const moodLogs = logs.filter(l => l.mood);
+            const avgMood = moodLogs.length > 0
+                ? (moodLogs.reduce((s, l) => s + l.mood, 0) / moodLogs.length).toFixed(1)
+                : null;
+
+            const timeline = sorted.slice(0, 7).flatMap(log => {
+                const wins = [];
+                const dateStr = new Date(log.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                if (log.gym_done) wins.push({ title: 'Gym session completed', meta: dateStr });
+                if (log.learning_done) wins.push({ title: 'Learning goal met', meta: dateStr });
+                if (log.mood && log.mood >= 4) wins.push({ title: `High mood day (${log.mood}/5)`, meta: dateStr });
+                return wins;
+            }).slice(0, 5);
+
+            setWinsData({ momentumScore, gymStreak, focusStreak, stabilityStreak, bestWeek, avgMood, timeline });
+            setLoading(false);
+        };
+        fetchData();
+    }, [user]);
+
+    if (loading) {
+        return (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: '24px' }} className="fade-up">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="skeleton skeleton-text" style={{ width: '60%', height: '16px' }} />
+                    <div className="skeleton skeleton-text" style={{ width: '80%' }} />
+                    <div className="skeleton skeleton-text" style={{ width: '40%' }} />
+                </div>
+            </div>
+        );
+    }
+
+    if (!winsData) {
+        return (
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: '32px', textAlign: 'center' }} className="fade-up">
+                <div style={{ fontSize: '28px', marginBottom: '12px' }}>🏆</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '8px' }}>No wins tracked yet</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Start logging daily entries to build your win history and streaks.</div>
+            </div>
+        );
+    }
+
+    const { momentumScore, gymStreak, focusStreak, stabilityStreak, bestWeek, avgMood, timeline } = winsData;
+
+    const records = [
+        { label: 'Gym Streak', value: gymStreak > 0 ? `${gymStreak} Day${gymStreak !== 1 ? 's' : ''}` : '—' },
+        { label: 'Best Week', value: bestWeek > 0 ? `${bestWeek}%` : '—' },
+        { label: 'Avg Mood', value: avgMood ? `${avgMood}/5` : '—' },
     ];
 
     return (
@@ -56,11 +148,11 @@ const WinsEngine = () => {
                     </div>
                 </div>
 
-                {/* Active Streaks */}
+                {/* Active Streaks — real computed values */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '24px' }}>
-                    <StreakItem label="Focus Mastery" count="8" icon="🔥" />
-                    <StreakItem label="Gym Commitment" count="3" icon="💪" />
-                    <StreakItem label="Stability Index" count="14" icon="⚖️" color="var(--success)" />
+                    <StreakItem label="Focus Mastery" count={focusStreak} icon="🔥" />
+                    <StreakItem label="Gym Commitment" count={gymStreak} icon="💪" />
+                    <StreakItem label="Stability Index" count={stabilityStreak} icon="⚖️" color="var(--success)" />
                 </div>
 
                 {/* Personal Records Grid */}
@@ -84,15 +176,19 @@ const WinsEngine = () => {
                 </button>
                 {isExpanded && (
                     <div style={{ padding: '0 24px 24px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }} className="fade-up">
-                        {timeline.map((win, i) => (
-                            <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', marginTop: '5px' }} />
-                                <div>
-                                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-1)' }}>{win.title}</div>
-                                    <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 600 }}>{win.meta}</div>
+                        {timeline.length === 0 ? (
+                            <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>No notable wins logged in the last 7 days.</div>
+                        ) : (
+                            timeline.map((win, i) => (
+                                <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', marginTop: '5px', flexShrink: 0 }} />
+                                    <div>
+                                        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-1)' }}>{win.title}</div>
+                                        <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 600 }}>{win.meta}</div>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 )}
             </div>

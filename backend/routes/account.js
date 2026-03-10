@@ -11,6 +11,7 @@ import express from 'express';
 import { pool, getIntegrationStatus } from '../lib/googleClient.js';
 import { requireAuth } from '../middleware/auth.js';
 import { createClient } from '@supabase/supabase-js';
+import { decrypt } from '../lib/crypto.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -195,6 +196,20 @@ router.delete('/', requireAuth, async (req, res) => {
         }
 
         const userId = req.userId;
+
+        // Revoke Google OAuth Token to meet API compliance rules
+        try {
+            const tokenRes = await pool.query("SELECT access_token_enc FROM user_oauth_tokens WHERE user_id = $1 AND provider = 'google'", [userId]);
+            if (tokenRes.rows.length > 0 && tokenRes.rows[0].access_token_enc) {
+                const token = decrypt(tokenRes.rows[0].access_token_enc);
+                await fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, {
+                    method: 'POST',
+                    headers: { 'Content-type': 'application/x-www-form-urlencoded' }
+                });
+            }
+        } catch (revokeErr) {
+            console.error('[account/delete] Google token revoke error:', revokeErr.message);
+        }
 
         // All table deletes cascade from users(id), so just delete the user record + auth entry
         await pool.query('DELETE FROM users WHERE id = $1', [userId]);

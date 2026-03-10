@@ -5,7 +5,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import NotificationBell from './notifications/NotificationBell';
 import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
-import Logo from './Logo';
+import LogoContainer from './LogoContainer';
 
 
 const Navbar = ({ user, activeTab, onTabChange }) => {
@@ -44,7 +44,7 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     display: 'flex', alignItems: 'center', gap: '8px',
                     textDecoration: 'none', flexShrink: 0,
                 }}>
-                    <Logo />
+                    <LogoContainer size={34} />
                 </Link>
 
                 {/* Nav tabs */}

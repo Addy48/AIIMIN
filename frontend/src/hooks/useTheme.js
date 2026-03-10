@@ -16,13 +16,12 @@ export default function useTheme() {
         root.setAttribute('data-theme', theme);
         if (theme === 'dark') {
             root.classList.add('dark');
-            root.style.backgroundColor = '#0e100d';
-            document.body.style.backgroundColor = '#0e100d';
         } else {
             root.classList.remove('dark');
-            root.style.backgroundColor = '#f5f0e8';
-            document.body.style.backgroundColor = '#f5f0e8';
         }
+        // Remove any previously injected inline background — CSS vars handle it.
+        root.style.removeProperty('background-color');
+        document.body.style.removeProperty('background-color');
         localStorage.setItem('aiimin-theme', theme);
     }, [theme]);
 

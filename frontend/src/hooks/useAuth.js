@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import { redirectToGoogle } from '../utils/authRedirect';
 
 export const useAuth = () => {
     const [user, setUser] = useState(null);
@@ -47,16 +48,8 @@ export const useAuth = () => {
         return () => subscription.unsubscribe();
     }, []);
 
-    const signInWithGoogle = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/google/auth/login`);
-            if (!response.ok) throw new Error('Failed to initiate Google login');
-            const { authUrl } = await response.json();
-            window.location.href = authUrl;
-        } catch (error) {
-            console.error('Error logging in with Google:', error.message);
-            throw error;
-        }
+    const signInWithGoogle = () => {
+        redirectToGoogle('login');
     };
 
     const signUpWithEmail = async (email, password, fullName = '', username = '') => {
