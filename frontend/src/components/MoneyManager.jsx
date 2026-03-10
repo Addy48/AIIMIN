@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../utils/supabase';
-import { insertRow, updateRow } from '../services/dbService';
+import { insertRow, updateRow, upsertRow } from '../services/dbService';
 import toast from '../utils/toast';
+import { MONEY_XP, MONEY_XP_CAP, getRank } from '../utils/xpEngine';
 
 const EXPENSE_CATS = [
     { name: 'Food & Dining',  icon: '🍛', color: '#ff6b35' },
@@ -88,6 +89,28 @@ const MoneyManager = ({ user }) => {
 
     useEffect(() => { if (user) fetchAll(); }, [user, fetchAll]);
 
+    // Award XP for logging money transactions (capped at 3/day)
+    const awardMoneyXP = async (userId) => {
+        try {
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            // Check how many tx were logged today
+            const { count } = await supabase.from('money_transactions')
+                .select('id', { count: 'exact', head: true })
+                .eq('user_id', userId).eq('date', todayStr);
+            if ((count || 0) > MONEY_XP_CAP) return; // already past cap
+
+            const { data: xp } = await supabase.from('user_xp')
+                .select('total_xp, current_rank').eq('user_id', userId).maybeSingle();
+            if (!xp) return;
+            const newTotal = (xp.total_xp || 0) + MONEY_XP;
+            const newRank = getRank(newTotal);
+            await upsertRow('user_xp', {
+                user_id: userId, total_xp: newTotal, current_rank: newRank.rank,
+                power_level: newTotal, updated_at: new Date().toISOString(),
+            }, 'user_id');
+        } catch { /* silent — XP is non-critical */ }
+    };
+
     const handleAddTransaction = async (e) => {
         e.preventDefault();
         if (!txAmount || isNaN(txAmount)) return;
@@ -125,6 +148,7 @@ const MoneyManager = ({ user }) => {
                     }]);
             }
             toast.success('Transfer logged');
+            awardMoneyXP(user.id);
         } else {
             const catName = txType === 'income'
                 ? (txCustomCat.trim() || 'Income')
@@ -143,6 +167,8 @@ const MoneyManager = ({ user }) => {
                 }]);
                 if (data?.[0]) setTransactions(prev => [data[0], ...prev]);
                 toast.success('Transaction logged');
+                // Award Money XP (capped per day)
+                awardMoneyXP(user.id);
             } catch (err) {
                 toast.error('Failed to log: ' + err.message);
                 setSaving(false);

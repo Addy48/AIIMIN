@@ -1094,7 +1094,93 @@ CREATE OR REPLACE VIEW public.behavioral_daily_summary AS
 
 
 -- ============================================================
--- SECTION 15: VERIFICATION QUERIES
+-- SECTION 15: GAMIFICATION (XP, Achievements, Brain Fog)
+-- ============================================================
+
+-- 15a. User XP state (one row per user)
+CREATE TABLE IF NOT EXISTS public.user_xp (
+    id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id          UUID REFERENCES public.users(id) ON DELETE CASCADE UNIQUE,
+    total_xp         INTEGER DEFAULT 0,
+    current_rank     INTEGER DEFAULT 1 CHECK (current_rank BETWEEN 1 AND 10),
+    power_level      INTEGER DEFAULT 0,
+    longest_streak   INTEGER DEFAULT 0,
+    clean_streak     INTEGER DEFAULT 0,
+    last_xp_date     DATE,
+    created_at       TIMESTAMPTZ DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.user_xp ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "user_xp_own" ON public.user_xp;
+CREATE POLICY "user_xp_own" ON public.user_xp
+    FOR ALL TO authenticated
+    USING ((SELECT auth.uid()) = user_id)
+    WITH CHECK ((SELECT auth.uid()) = user_id);
+CREATE INDEX IF NOT EXISTS idx_user_xp_user ON public.user_xp(user_id);
+REVOKE ALL ON public.user_xp FROM PUBLIC;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_xp TO authenticated;
+GRANT ALL ON public.user_xp TO service_role;
+
+-- 15b. Daily XP log (history + charts)
+CREATE TABLE IF NOT EXISTS public.xp_log (
+    id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id      UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    date         DATE NOT NULL,
+    xp_earned    INTEGER NOT NULL,
+    breakdown    JSONB,
+    multiplier   NUMERIC(4,2) DEFAULT 1.0,
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, date)
+);
+
+ALTER TABLE public.xp_log ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "xp_log_own" ON public.xp_log;
+CREATE POLICY "xp_log_own" ON public.xp_log
+    FOR ALL TO authenticated
+    USING ((SELECT auth.uid()) = user_id)
+    WITH CHECK ((SELECT auth.uid()) = user_id);
+CREATE INDEX IF NOT EXISTS idx_xp_log_user_date ON public.xp_log(user_id, date DESC);
+REVOKE ALL ON public.xp_log FROM PUBLIC;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.xp_log TO authenticated;
+GRANT ALL ON public.xp_log TO service_role;
+
+-- 15c. Achievements (unlocked badges)
+CREATE TABLE IF NOT EXISTS public.achievements (
+    id             UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id        UUID REFERENCES public.users(id) ON DELETE CASCADE,
+    achievement_id TEXT NOT NULL,
+    xp_granted     INTEGER DEFAULT 0,
+    unlocked_at    TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id, achievement_id)
+);
+
+ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "achievements_own" ON public.achievements;
+CREATE POLICY "achievements_own" ON public.achievements
+    FOR ALL TO authenticated
+    USING ((SELECT auth.uid()) = user_id)
+    WITH CHECK ((SELECT auth.uid()) = user_id);
+CREATE INDEX IF NOT EXISTS idx_achievements_user ON public.achievements(user_id);
+REVOKE ALL ON public.achievements FROM PUBLIC;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.achievements TO authenticated;
+GRANT ALL ON public.achievements TO service_role;
+
+-- 15d. Add brain_fog and headache columns to daily_logs
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='daily_logs' AND column_name='brain_fog') THEN
+        ALTER TABLE public.daily_logs ADD COLUMN brain_fog SMALLINT CHECK (brain_fog BETWEEN 1 AND 3);
+        -- 1=foggy, 2=okay, 3=sharp
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='daily_logs' AND column_name='headache') THEN
+        ALTER TABLE public.daily_logs ADD COLUMN headache BOOLEAN DEFAULT false;
+    END IF;
+END $$;
+
+
+-- ============================================================
+-- SECTION 16: VERIFICATION QUERIES
 -- Run these to confirm columns exist after schema execution.
 -- ============================================================
 

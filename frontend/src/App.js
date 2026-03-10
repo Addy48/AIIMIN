@@ -13,8 +13,6 @@ import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
 import MobileApp from './components/mobile/MobileApp';
 import { useAuth } from './hooks/useAuth';
-import useDevMode from './hooks/useDevMode';
-import DevOverlay from './components/DevOverlay';
 import './App.css';
 
 const Footer = () => (
@@ -46,7 +44,6 @@ const Footer = () => (
 
 function App() {
   const { user, loading } = useAuth();
-  const { isDevMode } = useDevMode();
 
   useEffect(() => {
     // Background is controlled exclusively via CSS variables + data-theme attribute.
@@ -69,18 +66,17 @@ function App() {
 
   return (
     <BrowserRouter>
-      <AppContent user={user} isDevMode={isDevMode} loading={loading} />
+      <AppContent user={user} loading={loading} />
     </BrowserRouter>
   );
 }
 
-function AppContent({ user, isDevMode }) {
+function AppContent({ user }) {
   const location = useLocation();
   const isMobile = location.pathname === '/m';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      {isDevMode && <DevOverlay />}
       <Routes>
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
