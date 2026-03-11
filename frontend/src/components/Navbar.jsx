@@ -15,13 +15,13 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
     const [showAccount, setShowAccount] = useState(false);
 
     const tabs = [
-        { key: 'today',     label: 'Today' },
-        { key: 'focus',     label: 'Focus' },
-        { key: 'identity',  label: 'Identity' },
-        { key: 'growth',    label: 'Growth' },
-        { key: 'habits',    label: 'Habits' },
-        { key: 'money',     label: 'Money' },
-        { key: 'analytics', label: 'Analytics' },
+        { key: 'today',     label: 'Today',     icon: '●' },
+        { key: 'focus',     label: 'Focus',     icon: '◆' },
+        { key: 'identity',  label: 'Identity',  icon: '◎' },
+        { key: 'growth',    label: 'Growth',    icon: '▲' },
+        { key: 'habits',    label: 'Habits',    icon: '☰' },
+        { key: 'money',     label: 'Money',     icon: '$' },
+        { key: 'analytics', label: 'Analytics', icon: '◇' },
     ];
 
     const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
@@ -36,7 +36,10 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
         <nav style={{
             position: 'fixed', top: 0, left: 0, right: 0, height: '52px', zIndex: 99999,
             backgroundColor: theme === 'light' ? 'rgba(245,240,232,0.95)' : 'rgba(14,16,13,0.94)',
-            borderBottom: '1px solid var(--border)',
+            borderBottom: 'none',
+            boxShadow: theme === 'light'
+                ? '0 1px 3px rgba(0,0,0,0.04), 0 1px 0 rgba(0,0,0,0.03)'
+                : '0 1px 3px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.03)',
             backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         }}>
             <div style={{
@@ -64,18 +67,28 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     </span>
                 </div>
 
-                {/* Nav tabs */}
-                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '2px' }}>
-                    {tabs.map(({ key, label }) => (
+                {/* Nav tabs — Arc/Linear underline style */}
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '4px', position: 'relative' }}>
+                    {tabs.map(({ key, label, icon }) => (
                         <button key={key} onClick={() => onTabChange(key)} style={{
-                            padding: '5px 14px', borderRadius: '99px',
+                            padding: '6px 14px', paddingBottom: '14px',
                             fontSize: '12px', fontWeight: activeTab === key ? 700 : 500,
-                            cursor: 'pointer', transition: 'all 0.15s ease', border: 'none',
-                            background: activeTab === key ? 'var(--accent-dim)' : 'transparent',
-                            color: activeTab === key ? 'var(--accent)' : 'var(--text-2)',
-                            outline: activeTab === key ? '1px solid var(--border-accent)' : '1px solid transparent',
+                            cursor: 'pointer', transition: 'all 0.2s ease', border: 'none',
+                            background: 'transparent',
+                            color: activeTab === key ? 'var(--accent)' : 'var(--text-3)',
+                            position: 'relative', display: 'flex', alignItems: 'center', gap: '5px',
+                            letterSpacing: '0.01em',
                         }}>
+                            <span style={{ fontSize: '8px', opacity: activeTab === key ? 1 : 0.5 }}>{icon}</span>
                             {label}
+                            {/* Animated underline indicator */}
+                            <span style={{
+                                position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)',
+                                height: '2px', borderRadius: '1px',
+                                width: activeTab === key ? '60%' : '0%',
+                                background: 'var(--accent)',
+                                transition: 'width 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                            }} />
                         </button>
                     ))}
                 </div>
@@ -131,9 +144,10 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                             onClick={() => setShowAccount(true)}
                             title="Account settings"
                             style={{
-                                width: '28px', height: '28px', borderRadius: '50%',
-                                cursor: 'pointer', border: 'none', padding: 0, overflow: 'hidden',
-                                fontSize: '11px', fontWeight: 700, color: 'white', flexShrink: 0,
+                                width: '32px', height: '32px', borderRadius: '50%',
+                                cursor: 'pointer', border: '2px solid transparent', padding: 0, overflow: 'hidden',
+                                fontSize: '12px', fontWeight: 700, color: 'white', flexShrink: 0,
+                                transition: 'border-color 0.2s ease',
                                 background: !user?.user_metadata?.avatar_url
                                     ? 'linear-gradient(135deg, #c27814, #e05c2a)' : 'none',
                             }}

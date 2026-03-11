@@ -24,7 +24,6 @@ const PomodoroTimer = ({ user }) => {
     const [showReflection, setShowReflection] = useState(false);
     const [sessionMood, setSessionMood] = useState(null);
     const [sessionNote, setSessionNote] = useState('');
-    const [deepMode, setDeepMode] = useState(false);
     const [showCompletion, setShowCompletion] = useState(false);
 
     // Sync active state for UpcomingSidebar
@@ -42,23 +41,6 @@ const PomodoroTimer = ({ user }) => {
         setBreakDuration(PRESETS[index].rest);
         if (!isBreak) setTimeLeft(PRESETS[index].work * 60);
     };
-
-    // S8: Deep Mode — ESC key exit + scroll lock + grayscale
-    useEffect(() => {
-        if (!deepMode) return;
-        document.body.style.overflow = 'hidden';
-        const root = document.getElementById('root');
-        if (root) root.style.filter = 'grayscale(1)';
-
-        const handleEsc = (e) => { if (e.key === 'Escape') setDeepMode(false); };
-        document.addEventListener('keydown', handleEsc);
-
-        return () => {
-            document.body.style.overflow = '';
-            if (root) root.style.filter = '';
-            document.removeEventListener('keydown', handleEsc);
-        };
-    }, [deepMode]);
 
     // Dynamic tab title during timer
     useEffect(() => {
@@ -217,7 +199,7 @@ const PomodoroTimer = ({ user }) => {
             background: 'var(--bg-card)', border: '1px solid var(--border)',
             borderRadius: 'var(--r-lg)', padding: 'var(--card-px)', textAlign: 'center',
             boxShadow: 'var(--shadow-md)', marginBottom: 'var(--card-gap)',
-            position: 'relative', zIndex: deepMode ? 9999 : 'auto',
+            position: 'relative',
         }} className={`fade-up ${isRunning ? 'glow-pulse' : ''}`}>
 
             <div style={{
@@ -407,19 +389,6 @@ const PomodoroTimer = ({ user }) => {
                 🔥 {cyclesCompleted} cycles completed today
             </div>
 
-            {/* Deep Mode Toggle */}
-            <button
-                onClick={() => setDeepMode(!deepMode)}
-                style={{
-                    marginTop: '12px', padding: '6px 14px', borderRadius: '99px',
-                    border: '1px solid var(--border)', background: deepMode ? 'var(--accent-dim)' : 'var(--bg-elevated)',
-                    color: deepMode ? 'var(--accent)' : 'var(--text-3)',
-                    fontSize: '11px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
-                }}
-            >
-                {deepMode ? '✦ Deep Mode On' : '◇ Deep Mode'}
-            </button>
-
             {/* Completion Overlay */}
             {showCompletion && (
                 <div className="completion-burst" style={{
@@ -432,70 +401,6 @@ const PomodoroTimer = ({ user }) => {
                     <div style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: 600, marginTop: '4px' }}>
                         #{cyclesCompleted} today
                     </div>
-                </div>
-            )}
-
-            {/* S8: Deep Mode Full Overlay (no blur — grayscale + opaque bg) */}
-            {deepMode && (
-                <div style={{
-                    position: 'fixed', inset: 0, zIndex: 99999,
-                    background: 'rgba(10, 10, 15, 0.95)',
-                    display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center',
-                    gap: '24px',
-                }}>
-                    {/* Timer ring */}
-                    <div style={{ position: 'relative', width: '180px', height: '180px' }}>
-                        <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
-                            <circle cx="90" cy="90" r="82" stroke="rgba(255,255,255,0.06)" strokeWidth="8" fill="none" />
-                            <circle
-                                cx="90" cy="90" r="82" stroke={accentColor} strokeWidth="8" fill="none"
-                                strokeDasharray="515" strokeDashoffset={isNaN(strokeDashoffset) ? 0 : (timeLeft / totalDuration) * 515}
-                                strokeLinecap="round"
-                                style={{ transition: 'stroke-dashoffset 1s linear' }}
-                            />
-                        </svg>
-                        <div style={{
-                            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '42px', fontWeight: 800, color: '#fff', letterSpacing: '-0.04em',
-                            fontVariantNumeric: 'tabular-nums',
-                        }}>
-                            {formatTime(timeLeft)}
-                        </div>
-                    </div>
-
-                    {/* Controls */}
-                    <div style={{ display: 'flex', gap: '16px' }}>
-                        <button onClick={() => { if (!isRunning) requestNotificationPermission(); setIsRunning(!isRunning); }} style={{
-                            padding: '12px 32px', borderRadius: '24px', border: 'none',
-                            background: isRunning ? 'rgba(255,255,255,0.1)' : accentColor,
-                            color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
-                        }}>
-                            {isRunning ? '⏸ Pause' : '▶ Begin'}
-                        </button>
-                        <button onClick={handleReset} style={{
-                            padding: '12px 24px', borderRadius: '24px',
-                            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                            color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-                        }}>
-                            ↺ Reset
-                        </button>
-                    </div>
-
-                    {/* Session counter */}
-                    <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
-                        Deep Session #{cyclesCompleted + 1}
-                    </div>
-
-                    {/* ESC hint + exit */}
-                    <button onClick={() => setDeepMode(false)} style={{
-                        position: 'absolute', top: '32px', right: '32px',
-                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                        color: 'rgba(255,255,255,0.4)', borderRadius: '8px',
-                        padding: '6px 14px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                    }}>
-                        ESC to exit
-                    </button>
                 </div>
             )}
 

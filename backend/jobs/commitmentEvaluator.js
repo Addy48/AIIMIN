@@ -117,6 +117,32 @@ const evaluateUser = async (client, userId, timezone) => {
         );
     }
 
+    // Streak milestone notifications (7, 14, 30, 60, 100 days)
+    const streakResult = await client.query(
+        'SELECT longest_streak FROM user_xp WHERE user_id = $1',
+        [userId]
+    );
+    if (streakResult.rows.length > 0) {
+        const streak = streakResult.rows[0].longest_streak || 0;
+        const milestones = [7, 14, 30, 60, 100];
+        if (milestones.includes(streak)) {
+            const streakTitle = `🔥 ${streak}-day streak!`;
+            const streakBody = `${streak} consecutive days logged. Keep going!`;
+            await client.query(
+                `INSERT INTO notifications (user_id, type, title, body, action_url)
+                 SELECT $1, 'streak_milestone', $2, $3, '/'
+                 WHERE NOT EXISTS (
+                   SELECT 1 FROM notifications
+                   WHERE user_id = $1
+                     AND type = 'streak_milestone'
+                     AND title = $2
+                     AND created_at > NOW() - INTERVAL '7 days'
+                 )`,
+                [userId, streakTitle, streakBody]
+            );
+        }
+    }
+
     // Track in internal_metrics
     await client.query(
         `INSERT INTO internal_metrics (user_id, metric_name, value, meta, recorded_at)

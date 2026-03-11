@@ -283,24 +283,6 @@ const Dashboard = ({ user }) => {
                         <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', lineHeight: 1.2, margin: 0 }}>
                             {getGreeting()}, {firstName}
                         </h1>
-                        <p style={{ fontSize: '13px', color: 'var(--text-3)', marginTop: '4px', fontWeight: 500 }}>
-                            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                        </p>
-                    </div>
-                    <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '8px',
-                        padding: '6px 14px',
-                        background: 'var(--success-dim)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '99px', fontSize: '11px',
-                        color: 'var(--success)', fontWeight: 700, flexShrink: 0,
-                        textTransform: 'uppercase', letterSpacing: '0.04em'
-                    }}>
-                        <span style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '8px', height: '8px' }}>
-                            <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--success)', opacity: 0.35, animation: 'ping 1.8s ease-out infinite' }} />
-                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success)' }} />
-                        </span>
-                        Tracking active
                     </div>
                 </div>
 
