@@ -208,14 +208,19 @@ const AccountModal = ({ isOpen, onClose }) => {
         setExporting(true);
         try {
             const res = await fetch(`${API_URL}/account/export`, { headers: getAuthHeaders(session) });
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `Export failed (${res.status})`);
+            }
             const blob = await res.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'aiimin-export.json';
+            a.download = `aiimin-export-${new Date().toISOString().slice(0, 10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
-        } catch (err) { toast.error('Export failed'); } finally { setExporting(false); }
+            toast.success('Data exported successfully');
+        } catch (err) { toast.error(err.message || 'Export failed'); } finally { setExporting(false); }
     };
 
     const handleDelete = async () => {

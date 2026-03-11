@@ -262,7 +262,7 @@ const Dashboard = ({ user }) => {
     );
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', paddingTop: '52px', color: 'var(--text-1)' }}>
+        <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', paddingTop: '56px', color: 'var(--text-1)' }}>
             <Navbar user={user} activeTab={activeTab} onTabChange={setActiveTab} />
 
             <main style={{
@@ -278,12 +278,17 @@ const Dashboard = ({ user }) => {
                 <DesktopXPBar user={user} />
 
                 {/* ── ZONE 1: HEADER ── */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                    <div>
-                        <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em', lineHeight: 1.2, margin: 0 }}>
-                            {getGreeting()}, {firstName}
-                        </h1>
-                    </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                    <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1.2, margin: 0 }}>
+                        {getGreeting()}, {firstName}
+                    </h1>
+                    <span style={{
+                        fontSize: '11px', fontWeight: 600, color: 'var(--text-3)',
+                        padding: '4px 12px', borderRadius: '99px',
+                        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                    }}>
+                        {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                    </span>
                 </div>
 
                 {/* ── TODAY ── */}
