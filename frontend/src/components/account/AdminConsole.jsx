@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from '../../utils/toast';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import { apiGet } from '../../utils/api';
 
 /**
  * AdminConsole — God Mode 2.0
@@ -24,17 +23,14 @@ const AdminConsole = ({ session }) => {
         if (!token) return;
         setLogsLoading(true);
         try {
-            const res = await fetch(`${API_URL}/admin/recent-logs`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const data = await apiGet('/admin/recent-logs', { session });
             setLogs((data.logs || []).slice(0, 20));
         } catch (e) {
             toast.error('Failed to fetch logs');
         } finally {
             setLogsLoading(false);
         }
-    }, [token]);
+    }, [session, token]);
 
     useEffect(() => { fetchLogs(); }, [fetchLogs]);
 

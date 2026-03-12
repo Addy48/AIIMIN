@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
 import { useAuth } from '../hooks/useAuth';
+import DumbbellIcon from './icons/DumbbellIcon';
 
 const StreakItem = ({ label, count, icon, color }) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
@@ -24,14 +25,11 @@ const RecordItem = ({ label, value }) => (
 
 const calcDayScore = (log) => {
     if (!log) return 0;
-    let s = 0;
-    if (log.sleep_hours && log.sleep_hours >= 5) s++;
-    if (log.gym_done) s++;
-    if (log.learning_done) s++;
-    if (log.journal_entry && log.journal_entry.trim().length > 5) s++;
-    if (log.steps && log.steps >= 5000) s++;
-    if (log.mood) s++;
-    return s;
+    let score = 0;
+    if (log.gym_done) score += 35;
+    if (log.learning_done) score += 35;
+    if (log.pomodoro_minutes >= 25 || log.learning_done) score += 30;
+    return score;
 };
 
 const WinsEngine = () => {
@@ -48,7 +46,7 @@ const WinsEngine = () => {
 
             const { data: logs } = await supabase
                 .from('daily_logs')
-                .select('date, sleep_hours, gym_done, learning_done, journal_entry, steps, mood')
+                .select('date, sleep_hours, gym_done, learning_done, journal_entry, steps, mood, pomodoro_minutes')
                 .eq('user_id', user.id)
                 .gte('date', thirtyDaysAgo)
                 .order('date', { ascending: false });
@@ -61,7 +59,7 @@ const WinsEngine = () => {
 
             const today = new Date().toISOString().split('T')[0];
             const todayLog = logs.find(l => l.date === today);
-            const momentumScore = todayLog ? Math.round((calcDayScore(todayLog) / 6) * 100) : 0;
+            const momentumScore = todayLog ? calcDayScore(todayLog) : 0;
 
             const sorted = [...logs].sort((a, b) => b.date.localeCompare(a.date));
             let gymStreak = 0, focusStreak = 0, stabilityStreak = 0;
@@ -74,7 +72,7 @@ const WinsEngine = () => {
                 const slice = sorted.slice(i * 7, (i + 1) * 7);
                 if (slice.length > 0) {
                     const avg = slice.reduce((s, l) => s + calcDayScore(l), 0) / slice.length;
-                    weeklyScores.push(Math.round((avg / 6) * 100));
+                    weeklyScores.push(Math.round(avg));
                 }
             }
             const bestWeek = weeklyScores.length > 0 ? Math.max(...weeklyScores) : 0;
@@ -134,7 +132,7 @@ const WinsEngine = () => {
             <div style={{ padding: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                     <div>
-                        <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>Wins Engine</h3>
+                        <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>Momentum Engine</h3>
                         <p style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600, marginTop: '2px' }}>Behavioral Reinforcement System</p>
                     </div>
                     {/* Momentum Circle (0-100) */}
@@ -151,7 +149,7 @@ const WinsEngine = () => {
                 {/* Active Streaks — real computed values */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '24px' }}>
                     <StreakItem label="Focus Mastery" count={focusStreak} icon="🔥" />
-                    <StreakItem label="Gym Commitment" count={gymStreak} icon="💪" />
+                    <StreakItem label="Gym Commitment" count={gymStreak} icon={<DumbbellIcon size={16} color="var(--text-2)" />} />
                     <StreakItem label="Stability Index" count={stabilityStreak} icon="⚖️" color="var(--success)" />
                 </div>
 
