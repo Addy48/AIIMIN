@@ -7,18 +7,12 @@
  *   redirectToGoogle('login')    → /google/auth/login  (account sign-in)
  *   redirectToGoogle('calendar') → /auth/google?scope=calendar  (calendar connect)
  */
-import { apiGet } from './api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-// Used only for Calendar/YouTube integration (not login — login uses Supabase native OAuth)
-export const redirectToGoogle = async () => {
-    try {
-        const { authUrl } = await apiGet('/google/auth/init');
-        if (authUrl) {
-            window.location.href = authUrl;
-        } else {
-            console.error('Failed to get authUrl from server');
-        }
-    } catch (err) {
-        console.error('Error initiating Google OAuth:', err);
+export const redirectToGoogle = (scope = 'login') => {
+    if (scope === 'calendar') {
+        window.location.href = `${API_URL}/auth/google?scope=calendar`;
+    } else {
+        window.location.href = `${API_URL}/auth/google`;
     }
 };
