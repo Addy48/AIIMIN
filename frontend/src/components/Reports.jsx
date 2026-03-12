@@ -1,163 +1,164 @@
 import React, { useState } from 'react';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import supabase from '../utils/supabase';
-const Reports = ({ user }) => {
-    // Current local date values for defaults
-    const d = new Date();
-    const today = d.toLocaleDateString('en-CA');
-    const firstDay = new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString('en-CA');
+import toast from '../utils/toast';
+import { useAuth } from '../hooks/useAuth';
+import { REPORT_MODES, PAGE_TITLES, drawHeader, addFooter, getDateRange } from './reports/ReportPdfUtils';
+import { SECTION_RENDERERS } from './reports/ReportSections';
+import ReportPreviewModal from './reports/ReportPreviewModal';
+import { useLHSData } from '../hooks/useLHSData';
 
-    const [startDate, setStartDate] = useState(firstDay);
+/**
+ * Reports Component — Orchestrates report generation across Quick, Standard, and Deep tiers.
+ * PDF rendering is delegated to modular section renderers in reports/ReportSections.js.
+ */
+const Reports = ({ user }) => {
+    const { session } = useAuth();
+    const today = new Date().toLocaleDateString('en-CA');
+    const [rangeMode, setRangeMode] = useState('week');
+    const [reportMode, setReportMode] = useState('standard');
+    const [startDate, setStartDate] = useState(() => getDateRange('week').start);
     const [endDate, setEndDate] = useState(today);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [previewCtx, setPreviewCtx] = useState(null);
+
+    const { lhsData, reportData } = useLHSData(session);
+
+    const usageDays = user?.created_at ? Math.max(0, Math.floor((new Date() - new Date(user.created_at)) / (1000 * 60 * 60 * 24))) : 0;
+    const hasSufficientData = usageDays >= 15;
+
+    const handleRangeSelect = (mode) => {
+        setRangeMode(mode);
+        if (mode !== 'custom') {
+            const { start, end } = getDateRange(mode);
+            setStartDate(start);
+            setEndDate(end);
+        }
+    };
 
     const handleGenerate = async () => {
         setIsGenerating(true);
         try {
-            // Fetch logs for the specified range
-            const { data: logs, error } = await supabase
-                .from('daily_logs')
-                .select('*')
-                .eq('user_id', user.id)
-                .gte('date', startDate)
-                .lte('date', endDate)
-                .order('date', { ascending: true });
-
-            if (error) throw error;
-
-            console.log("Fetched logs for PDF", logs);
-
-            const doc = new jsPDF();
-
-            // Branding & Header
-            doc.setFillColor(245, 166, 35); // Accent color
-            doc.rect(0, 0, 210, 30, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
-            doc.setFont("helvetica", "bold");
-            doc.text('AIIMIN Performance Report', 14, 20);
-
-            doc.setTextColor(80, 80, 80);
-            doc.setFontSize(11);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 40);
-            doc.text(`Reporting Period: ${startDate}  —  ${endDate}`, 14, 47);
-
-            // Summary Stats
-            const totalLogs = logs?.length || 0;
-            const gymDays = logs?.filter(l => l.gym_done).length || 0;
-            const sleepAvg = logs?.reduce((acc, curr) => acc + (Number(curr.sleep_hours) || 0), 0) / (totalLogs || 1);
-
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.text('Summary Overview', 14, 65);
-
-            doc.setFontSize(11);
-            doc.setFont("helvetica", "normal");
-            doc.text(`• Total Tracked Days: ${totalLogs}`, 14, 75);
-            doc.text(`• Gym Sessions: ${gymDays}`, 14, 82);
-            doc.text(`• Avg Sleep: ${sleepAvg.toFixed(1)} hrs`, 14, 89);
-
-            // Detailed Table
-            if (logs && logs.length > 0) {
-                const tableData = logs.map(log => [
-                    log.date,
-                    log.gym_done ? 'Yes' : 'No',
-                    log.sleep_hours ? `${log.sleep_hours}h` : '-',
-                    log.steps || '-',
-                    log.masturbation_count || 0
-                ]);
-
-                doc.autoTable({
-                    startY: 105,
-                    head: [['Date', 'Gym', 'Sleep', 'Steps', 'RC']],
-                    body: tableData,
-                    theme: 'striped',
-                    headStyles: { fillColor: [245, 166, 35] },
-                    alternateRowStyles: { fillColor: [250, 247, 242] }
-                });
-            } else {
-                doc.setFontStyle("italic");
-                doc.text('No tracking data found for this period.', 14, 105);
+            if (!lhsData || !reportData) {
+                throw new Error("No data available from the global context to generate reports.");
             }
 
-            // Footer
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(9);
-                doc.setTextColor(150);
-                doc.text(`AIIMIN Dashboard • Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
-            }
+            const ctx = {
+                report: {
+                    ...reportData,
+                    behaviorClusters: reportData.archetypes,
+                    financialPosture: { spend: 0, income: 0, spendDrift: { drift: 0 } }
+                },
+                lhs: {
+                    ...lhsData,
+                    globalScore: Math.round((lhsData.systemScores?.physical + lhsData.systemScores?.cognitive + lhsData.systemScores?.discipline + lhsData.systemScores?.financial + lhsData.systemScores?.emotional) / 5) || 0
+                },
+                forecast: reportData.trendAnalysis?.forecast,
+                drivers: reportData.behaviorDrivers,
+                momentum: { behaviors: [], topBehavior: 'Consistent Routine' }
+            };
 
-            // Save PDF
-            doc.save(`aiimin-report-${startDate}-to-${endDate}.pdf`);
-
+            setPreviewCtx(ctx);
         } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert('Failed to generate PDF report.');
+            console.error('Report generation failed:', error);
+            toast.error(`Report generation failed: ${error.message}`);
         } finally {
             setIsGenerating(false);
         }
     };
 
+    const downloadPdf = () => {
+        if (!previewCtx) return;
+        const doc = new jsPDF();
+        const sections = REPORT_MODES[reportMode].sections;
+
+        sections.forEach((sectionKey, index) => {
+            if (index > 0) doc.addPage();
+            drawHeader(doc, PAGE_TITLES[sectionKey], `${REPORT_MODES[reportMode].label} • ${startDate} → ${endDate}`);
+            const renderer = SECTION_RENDERERS[sectionKey];
+            if (renderer) renderer(doc, previewCtx);
+        });
+
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let page = 1; page <= totalPages; page++) addFooter(doc, page, totalPages);
+
+        doc.save(`AIIMIN_${REPORT_MODES[reportMode].label.replace(/\s+/g, '_')}_${startDate}.pdf`);
+        toast.success(`${REPORT_MODES[reportMode].label} generated`);
+    };
+
+    const rangeBtnStyle = (mode) => ({
+        flex: 1, padding: '10px 8px', borderRadius: '8px', border: '1px solid var(--border)',
+        fontSize: '13px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+        background: rangeMode === mode ? 'var(--accent-dim)' : 'var(--bg-card)',
+        color: rangeMode === mode ? 'var(--accent)' : 'var(--text-2)',
+    });
+
+    const modeBtnStyle = (mode) => ({
+        flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border)',
+        background: reportMode === mode ? 'linear-gradient(135deg, rgba(212,175,55,0.18), rgba(224,92,42,0.12))' : 'var(--bg-card)',
+        color: reportMode === mode ? 'var(--text-1)' : 'var(--text-2)',
+        cursor: 'pointer', textAlign: 'left',
+    });
+
     return (
         <div className="fade-up flex flex-col gap-6">
+            <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--r-lg)', padding: '32px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap' }}>
+                    <div style={{ maxWidth: '420px' }}>
+                        <div style={{ fontSize: '42px', marginBottom: '12px' }}>📊</div>
+                        <h3 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 10px', color: 'var(--text-1)' }}>Advanced Reporting</h3>
+                        <p style={{ fontSize: '14px', color: 'var(--text-3)', margin: 0, lineHeight: 1.6 }}>
+                            Generate Quick, Standard, or Deep Analysis reports from the Life-System analytics engines, including radar diagnostics, trend projections, and behavior impact tables.
+                        </p>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '10px', flex: 1, minWidth: '280px' }}>
+                        {Object.entries(REPORT_MODES).map(([key, mode]) => (
+                            <button key={key} onClick={() => setReportMode(key)} style={modeBtnStyle(key)}>
+                                <div style={{ fontSize: '13px', fontWeight: 800 }}>{mode.label}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-3)', marginTop: '4px' }}>{mode.subtitle}</div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
-            <div style={{ background: 'var(--bg-card)', borderRadius: '16px', padding: '32px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>📉</div>
-                <h3 style={{ fontSize: '20px', fontWeight: 800, margin: '0 0 8px 0', color: 'var(--text-1)' }}>Performance Reports</h3>
-                <p style={{ fontSize: '14px', color: 'var(--text-3)', margin: '0 0 32px 0', maxWidth: '300px', marginInline: 'auto', lineHeight: 1.5 }}>
-                    Generate a detailed breakdown of your habits, focus cycles, and financial ledger for accountability.
-                </p>
-
-                <div style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '16px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'stretch' }}>
-
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                        <div style={{ flex: 1, textAlign: 'left' }}>
-                            <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-3)', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase' }}>Start Date</label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: '14px', fontFamily: 'inherit' }}
-                            />
-                        </div>
-                        <div style={{ flex: 1, textAlign: 'left' }}>
-                            <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-3)', fontWeight: 600, marginBottom: '6px', textTransform: 'uppercase' }}>End Date</label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-1)', fontSize: '14px', fontFamily: 'inherit' }}
-                            />
-                        </div>
+                <div style={{ marginTop: '24px', background: 'var(--bg-elevated)', borderRadius: '12px', padding: '16px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => handleRangeSelect('week')} style={rangeBtnStyle('week')}>This Week</button>
+                        <button onClick={() => handleRangeSelect('month')} style={rangeBtnStyle('month')}>This Month</button>
+                        <button onClick={() => handleRangeSelect('custom')} style={rangeBtnStyle('custom')}>Custom</button>
                     </div>
 
-                    <button
-                        onClick={handleGenerate}
-                        disabled={isGenerating}
-                        className="hover:scale-[1.02]"
-                        style={{ width: '100%', padding: '14px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, var(--accent) 0%, #e05c2a 100%)', color: 'white', fontWeight: 700, fontSize: '15px', cursor: isGenerating ? 'not-allowed' : 'pointer', opacity: isGenerating ? 0.7 : 1, transition: 'all 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(194,120,20,0.2)' }}
-                    >
-                        {isGenerating ? (
-                            <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                            </svg>
-                        ) : (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                <polyline points="7 10 12 15 17 10" />
-                                <line x1="12" y1="15" x2="12" y2="3" />
-                            </svg>
-                        )}
-                        {isGenerating ? 'Compiling Data...' : 'Download PDF Report'}
-                    </button>
+                    {rangeMode === 'custom' && (
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-1)' }} />
+                            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-1)' }} />
+                        </div>
+                    )}
 
+                    <div style={{ fontSize: '12px', color: 'var(--text-3)', fontWeight: 600 }}>
+                        {REPORT_MODES[reportMode].label} • {startDate} to {endDate}
+                    </div>
+
+                    {!hasSufficientData && (
+                        <div style={{ padding: '12px', borderRadius: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', fontSize: '12px', color: 'var(--text-3)', textAlign: 'center' }}>
+                            <span style={{ color: 'var(--accent)', fontWeight: 700 }}>Insufficient Data: </span>
+                            Detailed reporting requires at least 15 days of system usage to establish behavioral baselines. 
+                            (Currently at {usageDays} {usageDays === 1 ? 'day' : 'days'})
+                        </div>
+                    )}
+
+                    <button onClick={handleGenerate} disabled={isGenerating || !hasSufficientData} style={{
+                        width: '100%', padding: '14px', borderRadius: '10px', border: 'none',
+                        background: 'linear-gradient(135deg, var(--accent) 0%, #e05c2a 100%)',
+                        color: '#fff', fontWeight: 800, fontSize: '15px',
+                        cursor: (isGenerating || !hasSufficientData) ? 'not-allowed' : 'pointer',
+                        opacity: (isGenerating || !hasSufficientData) ? 0.7 : 1,
+                    }}>
+                        {isGenerating ? 'Generating Report...' : `Generate ${REPORT_MODES[reportMode].label}`}
+                    </button>
+                    {previewCtx && <ReportPreviewModal ctx={previewCtx} onClose={() => setPreviewCtx(null)} onDownload={downloadPdf} />}
                 </div>
             </div>
-
         </div>
     );
 };

@@ -110,7 +110,7 @@ const WeeklyReport = ({ user }) => {
             ];
 
             const reinforcements = [
-                gymDays >= 5 && '💪 Crushed the gym this week — 5+ sessions!',
+                gymDays >= 5 && '🏋️ Crushed the gym this week — 5+ sessions!',
                 learnDays >= 5 && '📚 Learning streak — knowledge compounds!',
                 sleepDays >= 5 && '😴 Sleep discipline on point — brain fuel.',
                 logs.length >= 6 && '🔥 Logged 6+ days — you showed up consistently.',
@@ -152,20 +152,18 @@ const WeeklyReport = ({ user }) => {
                 <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     📊 Weekly Intelligence
                 </div>
-                {showPdfExport && (
-                    <PDFDownloadLink
-                        document={<ReportPDF report={report} />}
-                        fileName={`aiimin-weekly-report-${new Date().toISOString().split('T')[0]}.pdf`}
-                        style={{
-                            background: 'none', border: 'none', color: 'var(--accent)',
-                            fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                            padding: '2px 8px', borderRadius: '4px',
-                            textDecoration: 'none'
-                        }}
-                    >
-                        {({ loading }) => loading ? 'Preparing...' : 'PDF Export'}
-                    </PDFDownloadLink>
-                )}
+                <PDFDownloadLink
+                    document={<ReportPDF report={report} />}
+                    fileName={`aiimin-weekly-report-${new Date().toISOString().split('T')[0]}.pdf`}
+                    style={{
+                        background: 'none', border: 'none', color: 'var(--accent)',
+                        fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                        padding: '2px 8px', borderRadius: '4px',
+                        textDecoration: 'none'
+                    }}
+                >
+                    {({ loading }) => loading ? 'Preparing...' : 'PDF Export'}
+                </PDFDownloadLink>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '20px' }}>
