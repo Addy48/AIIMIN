@@ -7,7 +7,13 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
-import { apiDelete, apiGet, apiPatch, apiPost } from '../utils/api';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+const authHeaders = (session) => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${session?.access_token}`,
+});
 
 export const useNotifications = () => {
     const { session } = useAuth();
@@ -19,8 +25,11 @@ export const useNotifications = () => {
     const fetchCount = useCallback(async () => {
         if (!session) return;
         try {
-            const { unread } = await apiGet('/notifications/count', { session });
-            setUnreadCount(unread);
+            const res = await fetch(`${API_URL}/notifications/count`, { headers: authHeaders(session) });
+            if (res.ok) {
+                const { unread } = await res.json();
+                setUnreadCount(unread);
+            }
         } catch { /* silent */ }
     }, [session]);
 
@@ -28,9 +37,12 @@ export const useNotifications = () => {
         if (!session) return;
         setLoading(true);
         try {
-            const data = await apiGet('/notifications', { session, params: { limit: 30 } });
-            setNotifications(data);
-            setUnreadCount(data.filter(n => !n.read_at).length);
+            const res = await fetch(`${API_URL}/notifications?limit=30`, { headers: authHeaders(session) });
+            if (res.ok) {
+                const data = await res.json();
+                setNotifications(data);
+                setUnreadCount(data.filter(n => !n.read_at).length);
+            }
         } catch { /* silent */ } finally {
             setLoading(false);
         }
@@ -39,7 +51,9 @@ export const useNotifications = () => {
     const markRead = useCallback(async (id) => {
         if (!session) return;
         try {
-            await apiPatch(`/notifications/${id}/read`, {}, { session });
+            await fetch(`${API_URL}/notifications/${id}/read`, {
+                method: 'PATCH', headers: authHeaders(session),
+            });
             setNotifications(prev =>
                 prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n)
             );
@@ -50,7 +64,9 @@ export const useNotifications = () => {
     const markAllRead = useCallback(async () => {
         if (!session) return;
         try {
-            await apiPost('/notifications/mark-all-read', {}, { session });
+            await fetch(`${API_URL}/notifications/mark-all-read`, {
+                method: 'POST', headers: authHeaders(session),
+            });
             setNotifications(prev => prev.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
             setUnreadCount(0);
         } catch { /* silent */ }
@@ -59,7 +75,9 @@ export const useNotifications = () => {
     const dismiss = useCallback(async (id) => {
         if (!session) return;
         try {
-            await apiDelete(`/notifications/${id}`, null, { session });
+            await fetch(`${API_URL}/notifications/${id}`, {
+                method: 'DELETE', headers: authHeaders(session),
+            });
             setNotifications(prev => prev.filter(n => n.id !== id));
             setUnreadCount(prev => {
                 const wasUnread = notifications.find(n => n.id === id && !n.read_at);
