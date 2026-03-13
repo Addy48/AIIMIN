@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import { upsertRow, insertRow } from '../services/dbService';
 import toast from '../utils/toast';
 
 
 
-const PomodoroTimer = () => {
+const PomodoroTimer = ({ user }) => {
     const PRESETS = [
         { work: 25, rest: 5 },
         { work: 45, rest: 10 },
@@ -65,10 +66,21 @@ const PomodoroTimer = () => {
             }, 1000);
         } else if (isRunning && timeLeft === 0) {
             if (!isBreak) {
-                setCyclesCompleted(prev => prev + 1);
+                const newCycles = cyclesCompleted + 1;
+                setCyclesCompleted(newCycles);
                 setIsRunning(false);
                 setShowCompletion(true);
-                toast.success(`Focus session #${cyclesCompleted + 1} complete!`);
+                toast.success(`Focus session #${newCycles} complete!`);
+                // Record completed session to pomodoro_sessions
+                if (user?.id) {
+                    const today = new Date().toISOString().split('T')[0];
+                    insertRow('pomodoro_sessions', [{
+                        user_id: user.id,
+                        date: today,
+                        cycles_completed: 1,
+                        duration: workDuration,
+                    }]).catch(err => console.error('[Pomodoro] session save failed:', err.message));
+                }
                 setTimeout(() => {
                     setShowCompletion(false);
                     setShowReflection(true);
@@ -138,12 +150,13 @@ const PomodoroTimer = () => {
                     ? log.journal_entry + '\n\n' + noteText
                     : noteText;
 
-                await supabase
-                    .from('daily_logs')
-                    .upsert({
+                if (user?.id) {
+                    await upsertRow('daily_logs', {
+                        user_id: user.id,
                         date: today,
                         journal_entry: newJournal
-                    }, { onConflict: 'user_id,date' });
+                    }, 'user_id,date');
+                }
 
             } catch (e) { console.error("Could not save session note", e); }
         }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../utils/supabase';
+import { insertRow, updateRow } from '../services/dbService';
 import toast from '../utils/toast';
 
 const EXPENSE_CATS = [
@@ -105,18 +106,16 @@ const MoneyManager = ({ user }) => {
             const toAcct = accounts.find(a => a.id === txToAccountId);
             const fromAcct = accounts.find(a => a.id === txAccountId);
 
-            const { data: outTx } = await supabase.from('money_transactions')
-                .insert([{
+            const outTx = await insertRow('money_transactions', [{
                     user_id: user.id, date: dateStr, category: 'Transfer',
                     amount: -amt, source: 'manual', currency: 'INR',
                     type: 'transfer_out', account_id: txAccountId,
                     description: txNote.trim() || ('\u2192 ' + (toAcct?.name || '')),
                     time_of_day: hourIST,
-                }]).select();
+                }]);
 
             if (outTx?.[0]) {
-                await supabase.from('money_transactions')
-                    .insert([{
+                await insertRow('money_transactions', [{
                         user_id: user.id, date: dateStr, category: 'Transfer',
                         amount: amt, source: 'manual', currency: 'INR',
                         type: 'transfer_in', account_id: txToAccountId,
@@ -134,17 +133,21 @@ const MoneyManager = ({ user }) => {
             if (txType === 'expense') finalAmount = -Math.abs(finalAmount);
             else finalAmount = Math.abs(finalAmount);
 
-            const { data, error } = await supabase.from('money_transactions')
-                .insert([{
+            try {
+                const data = await insertRow('money_transactions', [{
                     user_id: user.id, date: dateStr, category: catName,
                     description: txNote.trim() || null, amount: finalAmount,
                     source: 'manual', currency: 'INR',
                     type: txType, account_id: txAccountId || null,
                     time_of_day: hourIST,
-                }]).select();
-            if (error) { toast.error('Failed to log'); setSaving(false); return; }
-            if (data?.[0]) setTransactions(prev => [data[0], ...prev]);
-            toast.success('Transaction logged');
+                }]);
+                if (data?.[0]) setTransactions(prev => [data[0], ...prev]);
+                toast.success('Transaction logged');
+            } catch (err) {
+                toast.error('Failed to log: ' + err.message);
+                setSaving(false);
+                return;
+            }
         }
         setTxAmount(''); setTxCategory(''); setTxCustomCat(''); setTxNote('');
         setSaving(false);
@@ -155,16 +158,20 @@ const MoneyManager = ({ user }) => {
         e.preventDefault();
         if (!acctName.trim()) return;
         setSaving(true);
-        const { data, error } = await supabase.from('accounts').insert([{
-            user_id: user.id, name: acctName.trim(), type: acctType,
-            balance: parseFloat(acctBalance) || 0,
-            icon: ACCOUNT_ICONS[acctType] || '🏦',
-            is_default: accounts.length === 0,
-        }]).select();
-        if (!error && data?.[0]) {
-            setAccounts(prev => [...prev, data[0]]);
-            resetAccountForm();
-            toast.success('Account added');
+        try {
+            const data = await insertRow('accounts', [{
+                user_id: user.id, name: acctName.trim(), type: acctType,
+                balance: parseFloat(acctBalance) || 0,
+                icon: ACCOUNT_ICONS[acctType] || '🏦',
+                is_default: accounts.length === 0,
+            }]);
+            if (data?.[0]) {
+                setAccounts(prev => [...prev, data[0]]);
+                resetAccountForm();
+                toast.success('Account added');
+            }
+        } catch (err) {
+            toast.error('Failed to add account: ' + err.message);
         }
         setSaving(false);
     };
@@ -177,23 +184,25 @@ const MoneyManager = ({ user }) => {
         e.preventDefault();
         if (!lendPerson.trim() || !lendAmount) return;
         setSaving(true);
-        const { data, error } = await supabase.from('money_lent').insert([{
-            user_id: user.id, person_name: lendPerson.trim(),
-            amount: parseFloat(lendAmount), direction: lendDirection,
-            reason: lendReason.trim() || null,
-        }]).select();
-        if (!error && data?.[0]) {
-            setLentItems(prev => [data[0], ...prev]);
-            setLendPerson(''); setLendAmount(''); setLendReason(''); setShowLendForm(false);
-            toast.success((lendDirection === 'lent' ? 'Lent' : 'Borrowed') + ' recorded');
+        try {
+            const data = await insertRow('money_lent', [{
+                user_id: user.id, person_name: lendPerson.trim(),
+                amount: parseFloat(lendAmount), direction: lendDirection,
+                reason: lendReason.trim() || null,
+            }]);
+            if (data?.[0]) {
+                setLentItems(prev => [data[0], ...prev]);
+                setLendPerson(''); setLendAmount(''); setLendReason(''); setShowLendForm(false);
+                toast.success((lendDirection === 'lent' ? 'Lent' : 'Borrowed') + ' recorded');
+            }
+        } catch (err) {
+            toast.error('Failed to record: ' + err.message);
         }
         setSaving(false);
     };
 
     const handleSettleLend = async (id) => {
-        await supabase.from('money_lent')
-            .update({ status: 'settled', date_settled: new Date().toLocaleDateString('en-CA') })
-            .eq('id', id).eq('user_id', user.id);
+        await updateRow('money_lent', { status: 'settled', date_settled: new Date().toLocaleDateString('en-CA') }, 'id', id, 'user_id', user.id);
         setLentItems(prev => prev.filter(l => l.id !== id));
         toast.success('Settled');
     };
