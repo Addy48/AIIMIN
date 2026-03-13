@@ -7,6 +7,8 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../../utils/supabase';
+import { insertRow, updateRow } from '../../services/dbService';
+import toast from '../../utils/toast';
 
 // ─── Emoji picker options ──────────────────────────────────────────────────────
 const EMOJI_OPTIONS = [
@@ -113,27 +115,28 @@ export default function HabitManager({ user }) {
         }
 
         setSaving(true);
-        const { data, error } = await supabase
-            .from('habits')
-            .insert([{
+        try {
+            const data = await insertRow('habits', [{
                 user_id:   user.id,
                 name:      name.trim(),
                 emoji,
                 frequency: frequency,
                 category,
-            }])
-            .select();
-        if (!error && data?.[0]) {
-            // If routine selected, add habit to that routine
-            if (selectedRoutine && data[0].id) {
-                await supabase.from('routine_habits').insert([{
-                    routine_id: selectedRoutine,
-                    habit_id:   data[0].id,
-                    position:   999, // append at end
-                }]);
+            }]);
+            if (data?.[0]) {
+                // If routine selected, add habit to that routine
+                if (selectedRoutine && data[0].id) {
+                    await insertRow('routine_habits', [{
+                        routine_id: selectedRoutine,
+                        habit_id:   data[0].id,
+                        position:   999, // append at end
+                    }]);
+                }
+                setHabits(prev => [...prev, data[0]]);
+                resetForm();
             }
-            setHabits(prev => [...prev, data[0]]);
-            resetForm();
+        } catch (err) {
+            toast.error('Failed to save habit: ' + err.message);
         }
         setSaving(false);
     };
@@ -145,11 +148,7 @@ export default function HabitManager({ user }) {
     };
 
     const handleArchive = async (id) => {
-        await supabase
-            .from('habits')
-            .update({ status: 'archived' })
-            .eq('id', id)
-            .eq('user_id', user.id);
+        await updateRow('habits', { status: 'archived' }, 'id', id, 'user_id', user.id);
         setHabits(prev => prev.filter(h => h.id !== id));
     };
 

@@ -23,11 +23,25 @@ export const useAuth = () => {
             }
         };
 
+        // Guarantee the public.users row exists (trigger may have been missed)
+        const ensureUserRow = async (authUser) => {
+            const meta = authUser.user_metadata || {};
+            await supabase.from('users').upsert(
+                {
+                    id:         authUser.id,
+                    email:      authUser.email,
+                    full_name:  meta.full_name || meta.name || null,
+                    avatar_url: meta.avatar_url || meta.picture || null,
+                },
+                { onConflict: 'id', ignoreDuplicates: true }
+            );
+        };
+
         // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 setUser(session.user);
-                fetchProfile(session.user.id);
+                ensureUserRow(session.user).then(() => fetchProfile(session.user.id));
             }
             setSession(session ?? null);
             setLoading(false);
@@ -37,7 +51,7 @@ export const useAuth = () => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session) {
                 setUser(session.user);
-                fetchProfile(session.user.id);
+                ensureUserRow(session.user).then(() => fetchProfile(session.user.id));
             } else {
                 setUser(null);
             }

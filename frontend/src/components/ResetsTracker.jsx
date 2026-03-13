@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
+import { upsertRow } from '../services/dbService';
 import toast from '../utils/toast';
 
 const RC_MOOD_COLORS = { 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#22c55e', 5: '#6366f1' };
@@ -78,11 +79,7 @@ const ResetsTracker = ({ user }) => {
                 rc_entries: JSON.stringify(newEntries)
             };
 
-            const { error } = await supabase
-                .from('daily_logs')
-                .upsert(payload, { onConflict: 'user_id,date' });
-
-            if (error) throw error;
+            await upsertRow('daily_logs', payload, 'user_id,date');
 
             setEntries(newEntries);
             toast.success(`${activeForm === 'reset' ? 'Reset' : 'Urge'} logged`);
