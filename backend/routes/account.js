@@ -27,11 +27,38 @@ const adminSupabase = createClient(
  */
 router.get('/profile', requireAuth, async (req, res) => {
     try {
-        const result = await pool.query(
+        let result = await pool.query(
             'SELECT id, email, full_name, username, role, onboarding_stage, timezone, avatar_url, created_at FROM users WHERE id = $1',
             [req.userId]
         );
-        if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+
+        if (result.rows.length === 0) {
+            const meta = req.user?.user_metadata || {};
+            await pool.query(
+                `INSERT INTO users (id, email, full_name, username, avatar_url, timezone)
+                 VALUES ($1, $2, $3, $4, $5, $6)
+                 ON CONFLICT (id) DO UPDATE SET
+                    email = EXCLUDED.email,
+                    full_name = COALESCE(users.full_name, EXCLUDED.full_name),
+                    username = COALESCE(users.username, EXCLUDED.username),
+                    avatar_url = COALESCE(users.avatar_url, EXCLUDED.avatar_url),
+                    timezone = COALESCE(users.timezone, EXCLUDED.timezone)`,
+                [
+                    req.userId,
+                    req.user?.email,
+                    meta.full_name || meta.name || null,
+                    meta.username || null,
+                    meta.avatar_url || meta.picture || null,
+                    meta.timezone || 'Asia/Kolkata'
+                ]
+            );
+
+            result = await pool.query(
+                'SELECT id, email, full_name, username, role, onboarding_stage, timezone, avatar_url, created_at FROM users WHERE id = $1',
+                [req.userId]
+            );
+        }
+
         res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -55,20 +82,35 @@ router.patch('/profile', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'No valid fields to update' });
         }
 
-        const setClauses = Object.keys(allowed).map((k, i) => `${k} = $${i + 1}`);
-        const values = [...Object.values(allowed), req.userId];
-
+        const meta = req.user?.user_metadata || {};
         const result = await pool.query(
-            `UPDATE users SET ${setClauses.join(', ')}
-             WHERE id = $${values.length} RETURNING id, email, full_name, timezone, avatar_url`,
-            values
+            `INSERT INTO users (id, email, full_name, username, avatar_url, timezone)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             ON CONFLICT (id) DO UPDATE SET
+                full_name = COALESCE(EXCLUDED.full_name, users.full_name),
+                timezone = COALESCE(EXCLUDED.timezone, users.timezone),
+                avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
+                email = COALESCE(EXCLUDED.email, users.email)
+             RETURNING id, email, full_name, timezone, avatar_url`,
+            [
+                req.userId,
+                req.user?.email,
+                allowed.full_name ?? meta.full_name ?? meta.name ?? null,
+                meta.username || null,
+                allowed.avatar_url ?? meta.avatar_url ?? meta.picture ?? null,
+                allowed.timezone ?? meta.timezone ?? 'Asia/Kolkata'
+            ]
         );
 
         // S12: Also persist to Supabase auth metadata so name survives session refresh
-        if (allowed.full_name !== undefined) {
+        if (allowed.full_name !== undefined || allowed.timezone !== undefined) {
             try {
                 await adminSupabase.auth.admin.updateUserById(req.userId, {
-                    user_metadata: { full_name: allowed.full_name }
+                    user_metadata: {
+                        ...(meta || {}),
+                        ...(allowed.full_name !== undefined ? { full_name: allowed.full_name } : {}),
+                        ...(allowed.timezone !== undefined ? { timezone: allowed.timezone } : {})
+                    }
                 });
             } catch (metaErr) {
                 console.error('[account/profile] Auth metadata update failed:', metaErr.message);
