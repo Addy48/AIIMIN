@@ -4,12 +4,12 @@ import supabase from '../utils/supabase';
 /* ─── Metric configs ─── */
 const METRIC_OPTIONS = [
     { key: 'combined', label: 'Combined Score' },
-    { key: 'sleep',    label: 'Sleep' },
-    { key: 'gym',      label: 'Gym' },
-    { key: 'steps',    label: 'Steps' },
-    { key: 'mood',     label: 'Mood' },
+    { key: 'sleep', label: 'Sleep' },
+    { key: 'gym', label: 'Gym' },
+    { key: 'steps', label: 'Steps' },
+    { key: 'mood', label: 'Mood' },
     { key: 'learning', label: 'Learning' },
-    { key: 'focus',    label: 'Focus' },
+    { key: 'focus', label: 'Focus' },
 ];
 
 /* Score a day's log for a given metric — returns 0..4 intensity */
@@ -66,16 +66,17 @@ const scoreDay = (log, metric) => {
     }
 };
 
-/* ─── Color schemes per intensity ─── */
+/* ─── Color schemes per intensity (Obsidian Gold palette) ─── */
 const getColor = (intensity, metric) => {
     const schemes = {
-        combined: ['var(--bg-elevated)', '#0e4429', '#006d32', '#26a641', '#39d353'],
-        sleep:    ['var(--bg-elevated)', '#1a2744', '#1e3a5f', '#2563eb', '#60a5fa'],
-        gym:      ['var(--bg-elevated)', '#4a2c0a', '#78400d', '#f59e0b', '#fbbf24'],
-        steps:    ['var(--bg-elevated)', '#1a3a2a', '#166534', '#22c55e', '#4ade80'],
-        mood:     ['var(--bg-elevated)', '#3b1a5e', '#581c87', '#a855f7', '#c084fc'],
-        learning: ['var(--bg-elevated)', '#2a1a0a', '#6d3a0a', '#f97316', '#fb923c'],
-        focus:    ['var(--bg-elevated)', '#4a1a1a', '#991b1b', '#ef4444', '#f87171'],
+        // Combined: empty grey → dim gold → mid gold → warm gold → bright gold
+        combined: ['var(--bg-elevated)', 'rgba(212,175,55,0.2)', 'rgba(212,175,55,0.45)', 'rgba(212,175,55,0.72)', '#D4AF37'],
+        sleep: ['var(--bg-elevated)', '#1a2744', '#1e3a5f', '#2563eb', '#60a5fa'],
+        gym: ['var(--bg-elevated)', 'rgba(212,175,55,0.15)', 'rgba(212,175,55,0.35)', 'rgba(212,175,55,0.6)', '#D4AF37'],
+        steps: ['var(--bg-elevated)', '#1a3a2a', '#166534', '#22c55e', '#4ade80'],
+        mood: ['var(--bg-elevated)', '#3b1a5e', '#581c87', '#a855f7', '#c084fc'],
+        learning: ['var(--bg-elevated)', 'rgba(212,175,55,0.12)', 'rgba(229,171,55,0.3)', 'rgba(229,193,74,0.55)', '#E5C14A'],
+        focus: ['var(--bg-elevated)', '#4a1a1a', '#991b1b', '#ef4444', '#f87171'],
     };
     const colors = schemes[metric] || schemes.combined;
     return colors[Math.min(intensity, 4)];
@@ -194,9 +195,8 @@ const YearlyHeatmap = ({ user }) => {
     const labelWidth = 30;
 
     return (
-        <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border)',
-            borderRadius: '16px', padding: '20px 22px', boxShadow: 'var(--shadow-sm)',
+        <div className="glass-panel" style={{
+            borderRadius: '16px', padding: '20px 22px',
         }}>
             {/* ── Header row ── */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>

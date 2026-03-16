@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
 const CHALLENGES = [
-    { id: 'sleep_fortress',  name: '7-Day Sleep Fortress',   emoji: '🌙', duration: 7,  color: '#8b5cf6', desc: 'Sleep 7h+ every single day this week',      check: logs => logs.filter(l => (l.sleep_hours || 0) >= 7).length },
-    { id: 'step_warrior',    name: '10K Step Warrior',        emoji: '🏃', duration: 7,  color: '#ef4444', desc: '10,000 steps every day for 7 days',          check: logs => logs.filter(l => (l.steps || 0) >= 10000).length },
-    { id: 'learn_streak',    name: 'Learn Every Day',         emoji: '📚', duration: 14, color: '#3b82f6', desc: 'Learn something every day for 14 days',      check: logs => logs.filter(l => l.learning_done).length },
-    { id: 'gym_beast',       name: 'Gym Beast Week',          emoji: '💪', duration: 7,  color: '#f97316', desc: '5 gym sessions in 7 days',                  check: logs => logs.filter(l => l.gym_done).length, threshold: 5 },
-    { id: 'hydration',       name: 'Hydration Week',          emoji: '💧', duration: 7,  color: '#06b6d4', desc: 'Drink 4+ bottles every day for 7 days',     check: logs => logs.filter(l => (l.water_bottles || 0) >= 4).length },
-    { id: 'journal_week',    name: 'Journal Every Day',       emoji: '📝', duration: 7,  color: '#10b981', desc: 'Write a journal entry every day for 7 days', check: logs => logs.filter(l => l.journal_entry?.trim()).length },
-    { id: 'no_excuses',      name: 'No Excuses Week',         emoji: '🔥', duration: 7,  color: '#fbbf24', desc: 'Log all 8 metrics every day for 7 days',    check: logs => logs.filter(l => [l.sleep_start, (l.steps || 0) > 0, l.mood > 0, l.learning_done, l.journal_entry?.trim(), l.gym_done !== undefined].filter(Boolean).length >= 6).length },
-    { id: 'clean_week',      name: 'Clean 7 Days',            emoji: '🛡️', duration: 7,  color: '#a855f7', desc: '7 days with no resets logged',               check: logs => logs.filter(l => !(l.rc_count > 0)).length },
-    { id: 'breakfast_habit', name: 'Breakfast Habit',         emoji: '🍳', duration: 14, color: '#84cc16', desc: 'Have breakfast 14 days in a row',            check: logs => logs.filter(l => l.breakfast_done).length },
-    { id: 'mood_mastery',    name: 'Mood 7+ Challenge',       emoji: '😊', duration: 7,  color: '#fb923c', desc: 'Maintain mood 7+ for 7 days straight',      check: logs => logs.filter(l => (l.mood || 0) >= 7).length },
-    { id: 'big30',           name: '30-Day Streak',           emoji: '⚡', duration: 30, color: '#f59e0b', desc: 'Log every single day for 30 days',           check: logs => logs.filter(l => (l.mood || 0) > 0 || l.gym_done || l.breakfast_done).length },
-    { id: 'gym_5x_4w',       name: '5× Gym for 4 Weeks',     emoji: '🏋️', duration: 28, color: '#e11d48', desc: '20 gym sessions in 28 days',                check: logs => logs.filter(l => l.gym_done).length, threshold: 20 },
+    { id: 'sleep_fortress', name: '7-Day Sleep Fortress', emoji: '🌙', duration: 7, color: '#8b5cf6', desc: 'Sleep 7h+ every single day this week', check: logs => logs.filter(l => (l.sleep_hours || 0) >= 7).length },
+    { id: 'step_warrior', name: '10K Step Warrior', emoji: '🏃', duration: 7, color: '#ef4444', desc: '10,000 steps every day for 7 days', check: logs => logs.filter(l => (l.steps || 0) >= 10000).length },
+    { id: 'learn_streak', name: 'Learn Every Day', emoji: '📚', duration: 14, color: '#3b82f6', desc: 'Learn something every day for 14 days', check: logs => logs.filter(l => l.learning_done).length },
+    { id: 'gym_beast', name: 'Gym Beast Week', emoji: '💪', duration: 7, color: '#f97316', desc: '5 gym sessions in 7 days', check: logs => logs.filter(l => l.gym_done).length, threshold: 5 },
+    { id: 'hydration', name: 'Hydration Week', emoji: '💧', duration: 7, color: '#06b6d4', desc: 'Drink 4+ bottles every day for 7 days', check: logs => logs.filter(l => (l.water_bottles || 0) >= 4).length },
+    { id: 'journal_week', name: 'Journal Every Day', emoji: '📝', duration: 7, color: '#10b981', desc: 'Write a journal entry every day for 7 days', check: logs => logs.filter(l => l.journal_entry?.trim()).length },
+    { id: 'no_excuses', name: 'No Excuses Week', emoji: '🔥', duration: 7, color: '#fbbf24', desc: 'Log all 8 metrics every day for 7 days', check: logs => logs.filter(l => [l.sleep_start, (l.steps || 0) > 0, l.mood > 0, l.learning_done, l.journal_entry?.trim(), l.gym_done !== undefined].filter(Boolean).length >= 6).length },
+    { id: 'clean_week', name: 'Clean 7 Days', emoji: '🛡️', duration: 7, color: '#a855f7', desc: '7 days with no resets logged', check: logs => logs.filter(l => !(l.rc_count > 0)).length },
+    { id: 'breakfast_habit', name: 'Breakfast Habit', emoji: '🍳', duration: 14, color: '#84cc16', desc: 'Have breakfast 14 days in a row', check: logs => logs.filter(l => l.breakfast_done).length },
+    { id: 'mood_mastery', name: 'Mood 7+ Challenge', emoji: '😊', duration: 7, color: '#fb923c', desc: 'Maintain mood 7+ for 7 days straight', check: logs => logs.filter(l => (l.mood || 0) >= 7).length },
+    { id: 'big30', name: '30-Day Streak', emoji: '⚡', duration: 30, color: '#f59e0b', desc: 'Log every single day for 30 days', check: logs => logs.filter(l => (l.mood || 0) > 0 || l.gym_done || l.breakfast_done).length },
+    { id: 'gym_5x_4w', name: '5× Gym for 4 Weeks', emoji: '🏋️', duration: 28, color: '#e11d48', desc: '20 gym sessions in 28 days', check: logs => logs.filter(l => l.gym_done).length, threshold: 20 },
 ];
 
 const STORAGE_KEY = 'aiimin_side_quest';
@@ -25,7 +25,7 @@ const SideQuests = ({ recentLogs = [] }) => {
         try {
             const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
             if (stored) setActive(stored);
-        } catch {}
+        } catch { }
     }, []);
 
     const startQuest = (c) => {
@@ -64,7 +64,7 @@ const SideQuests = ({ recentLogs = [] }) => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
                                 <span style={{ fontSize: '22px' }}>{active.emoji}</span>
                                 <span style={{ fontSize: '16px', fontWeight: 800, color: active.color }}>{active.name}</span>
-                                {isComplete && <span style={{ fontSize: '12px', color: '#ffd700', fontWeight: 700, background: 'rgba(255,215,0,0.12)', padding: '2px 8px', borderRadius: '99px', border: '1px solid rgba(255,215,0,0.3)' }}>✓ COMPLETE!</span>}
+                                {isComplete && <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 700, background: 'var(--accent-dim)', padding: '2px 8px', borderRadius: '99px', border: '1px solid var(--border-accent)' }}>✓ COMPLETE!</span>}
                             </div>
                             <div style={{ fontSize: '12px', color: 'var(--text-2)' }}>{active.desc}</div>
                         </div>

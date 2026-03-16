@@ -196,25 +196,23 @@ const PomodoroTimer = ({ user }) => {
 
     return (
         <div style={{
-            background: 'var(--bg-card)', border: '1px solid var(--border)',
-            borderRadius: 'var(--r-lg)', padding: 'var(--card-px)', textAlign: 'center',
-            boxShadow: 'var(--shadow-md)', marginBottom: 'var(--card-gap)',
-            position: 'relative',
+            textAlign: 'center',
+            position: 'relative', height: '100%', display: 'flex', flexDirection: 'column'
         }} className={`fade-up ${isRunning ? 'glow-pulse' : ''}`}>
 
             <div style={{
-                fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em',
-                color: accentColor, marginBottom: '8px'
+                fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em',
+                color: accentColor, marginBottom: '0px'
             }}>
                 {isBreak ? '⚡ Break Time' : '🎯 Focus Session'}
             </div>
 
-            <div style={{ position: 'relative', width: '130px', height: '130px', margin: '20px auto' }}>
-                <svg width="130" height="130" style={{ transform: 'rotate(-90deg)' }}>
-                    <circle cx="65" cy="65" r="60" stroke="var(--bg-elevated)" strokeWidth="8" fill="none" />
+            <div style={{ position: 'relative', width: '140px', height: '140px', margin: 'auto' }}>
+                <svg width="140" height="140" style={{ transform: 'rotate(-90deg)' }}>
+                    <circle cx="70" cy="70" r="64" stroke="var(--bg-elevated)" strokeWidth="6" fill="none" />
                     <circle
-                        cx="65" cy="65" r="60" stroke={accentColor} strokeWidth="8" fill="none"
-                        strokeDasharray="376.8" strokeDashoffset={isNaN(strokeDashoffset) ? 0 : (timeLeft / totalDuration) * 376.8}
+                        cx="70" cy="70" r="64" stroke={accentColor} strokeWidth="6" fill="none"
+                        strokeDasharray="402.1" strokeDashoffset={isNaN(strokeDashoffset) ? 0 : (timeLeft / totalDuration) * 402.1}
                         strokeLinecap="round"
                         style={{ transition: 'stroke-dashoffset 1s linear' }}
                     />
@@ -278,16 +276,16 @@ const PomodoroTimer = ({ user }) => {
                     </div>
                 </div>
             ) : (
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: 'auto' }}>
                     <button
                         onClick={() => { if (!isRunning) requestNotificationPermission(); setIsRunning(!isRunning); }}
                         onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = '#f7b84a'; }}
                         onMouseLeave={(e) => { if (!isRunning) e.currentTarget.style.background = '#f5a623'; }}
                         style={{
-                            padding: '0 24px', height: '48px', borderRadius: '24px', border: isRunning ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                            padding: '0 26px', height: '44px', borderRadius: '22px', border: isRunning ? '1px solid rgba(255,255,255,0.15)' : 'none',
                             background: isRunning ? 'rgba(255,255,255,0.08)' : '#f5a623', color: 'white',
-                            fontSize: '15px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            boxShadow: isRunning ? 'none' : '0 4px 14px rgba(245,166,35,0.4)',
+                            fontSize: '14px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: isRunning ? 'none' : '0 4px 12px rgba(245,166,35,0.3)',
                         }}
                     >
                         {isRunning ? '⏸ Pause' : '▶ Begin'}
@@ -307,11 +305,11 @@ const PomodoroTimer = ({ user }) => {
             )}
 
             {/* S7: Preset Duration Pills */}
-            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>
+            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
                     Duration
                 </div>
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '6px' }}>
                     {PRESETS.map((p, i) => (
                         <button
                             key={i}
@@ -385,7 +383,7 @@ const PomodoroTimer = ({ user }) => {
                 )}
             </div>
 
-            <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--text-3)' }}>
+            <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--text-3)' }}>
                 🔥 {cyclesCompleted} cycles completed today
             </div>
 

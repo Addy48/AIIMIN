@@ -64,14 +64,14 @@ const SpotifyPlayer = () => {
     const embedSrc = `https://open.spotify.com/embed/playlist/${activeId}?utm_source=generator&theme=0`;
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', height: '100%' }}>
 
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '18px' }}>🎵</span>
                     <div>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>
                             {active.emoji} {active.name}
                         </div>
                         <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{active.desc}</div>
@@ -90,7 +90,7 @@ const SpotifyPlayer = () => {
             </div>
 
             {/* Playlist grid — 2×2 */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
                 {PLAYLISTS.map(p => {
                     const isActive = p.id === activeId;
                     return (
@@ -98,8 +98,8 @@ const SpotifyPlayer = () => {
                             key={p.id}
                             onClick={() => select(p.id)}
                             style={{
-                                padding: '12px 14px',
-                                borderRadius: '12px',
+                                padding: '10px 12px',
+                                borderRadius: '10px',
                                 border: isActive ? `1.5px solid ${p.accent}` : '1px solid var(--border)',
                                 background: isActive ? p.grad : 'var(--bg-elevated)',
                                 cursor: 'pointer',
@@ -118,14 +118,14 @@ const SpotifyPlayer = () => {
                                     animation: 'pulse 2s ease-in-out infinite',
                                 }} />
                             )}
-                            <div style={{ fontSize: '20px', marginBottom: '5px' }}>{p.emoji}</div>
+                            <div style={{ fontSize: '16px', marginBottom: '2px' }}>{p.emoji}</div>
                             <div style={{
-                                fontSize: '12px', fontWeight: 700,
+                                fontSize: '11px', fontWeight: 700,
                                 color: isActive ? p.accent : 'var(--text-1)',
                             }}>
                                 {p.name}
                             </div>
-                            <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '2px' }}>
+                            <div style={{ fontSize: '9px', color: 'var(--text-3)', marginTop: '0px' }}>
                                 {p.desc}
                             </div>
                         </button>
@@ -161,17 +161,17 @@ const SpotifyPlayer = () => {
                 </form>
             )}
 
-            {/* Spotify embed — full compact player */}
-            <div style={{ borderRadius: '14px', overflow: 'hidden', background: '#121212', lineHeight: 0 }}>
+            {/* Spotify embed — compact player */}
+            <div style={{ borderRadius: '10px', overflow: 'hidden', background: '#121212', lineHeight: 0, marginTop: 'auto', flex: 1, display: 'flex' }}>
                 <iframe
                     key={activeId}
                     src={embedSrc}
                     width="100%"
-                    height="352"
+                    height="100%"
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
                     title="Spotify focus playlist"
-                    style={{ display: 'block', border: 'none', margin: '-1px' }}
+                    style={{ border: 'none', margin: '-1px' }}
                 />
             </div>
 

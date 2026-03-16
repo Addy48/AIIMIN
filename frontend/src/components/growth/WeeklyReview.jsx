@@ -19,10 +19,10 @@ const WeeklyReview = ({ user, onClose }) => {
             .then(({ data }) => { if (data) setWeekLogs(data); setLoading(false); });
     }, [user]);
 
-    const gymDays    = weekLogs.filter(l => l.gym_done).length;
-    const learnDays  = weekLogs.filter(l => l.learning_done).length;
+    const gymDays = weekLogs.filter(l => l.gym_done).length;
+    const learnDays = weekLogs.filter(l => l.learning_done).length;
 
-    const totalXP    = weekLogs.reduce((s, l) => s + ((l.gym_done ? 60 : 0) + ((l.sleep_hours || 0) >= 7 ? 50 : 0) + (l.learning_done ? 50 : 0) + (l.journal_entry?.trim() ? 35 : 0)), 0);
+    const totalXP = weekLogs.reduce((s, l) => s + ((l.gym_done ? 60 : 0) + ((l.sleep_hours || 0) >= 7 ? 50 : 0) + (l.learning_done ? 50 : 0) + (l.journal_entry?.trim() ? 35 : 0)), 0);
 
     const bestDay = weekLogs.reduce((best, l) => {
         const m = [l.gym_done, l.breakfast_done, (l.sleep_hours || 0) >= 7, (l.steps || 0) >= 5000, l.learning_done].filter(Boolean).length;
@@ -61,8 +61,8 @@ const WeeklyReview = ({ user, onClose }) => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '22px' }}>
                         {[
                             { label: 'Logged', value: weekLogs.length + 'd', icon: '📅' },
-                            { label: 'Est. XP',  value: '+' + totalXP, icon: '⚡' },
-                            { label: 'Gym',      value: gymDays + 'x', icon: '💪' },
+                            { label: 'Est. XP', value: '+' + totalXP, icon: '⚡' },
+                            { label: 'Gym', value: gymDays + 'x', icon: '💪' },
                             { label: 'Learning', value: learnDays + 'd', icon: '📚' },
                         ].map(s => (
                             <div key={s.label} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '10px', padding: '14px 8px', textAlign: 'center' }}>
@@ -75,10 +75,10 @@ const WeeklyReview = ({ user, onClose }) => {
                 )}
 
                 {bestDay.date && (
-                    <div style={{ padding: '12px 16px', background: 'rgba(255,215,0,0.08)', border: '1px solid rgba(255,215,0,0.2)', borderRadius: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ padding: '12px 16px', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', borderRadius: '10px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <span style={{ fontSize: '18px' }}>⭐</span>
                         <div>
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: '#ffd700' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)' }}>
                                 Best Day: {new Date(bestDay.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                             </div>
                             <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>{bestDay.score}/5 key metrics hit</div>
@@ -91,7 +91,7 @@ const WeeklyReview = ({ user, onClose }) => {
                     <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', marginBottom: '10px' }}>Rate your week:</div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                         {[1, 2, 3, 4, 5].map(n => (
-                            <button key={n} onClick={() => setRating(n)} style={{ flex: 1, padding: '10px', borderRadius: '8px', fontSize: '20px', border: rating >= n ? '1px solid #ffd700' : '1px solid var(--border)', background: rating >= n ? 'rgba(255,215,0,0.12)' : 'var(--bg-elevated)', cursor: 'pointer', transition: 'all 0.15s' }}>
+                            <button key={n} onClick={() => setRating(n)} style={{ flex: 1, padding: '10px', borderRadius: '8px', fontSize: '20px', border: rating >= n ? '1px solid var(--accent)' : '1px solid var(--border)', background: rating >= n ? 'var(--accent-dim)' : 'var(--bg-elevated)', cursor: 'pointer', transition: 'all 0.15s' }}>
                                 ⭐
                             </button>
                         ))}

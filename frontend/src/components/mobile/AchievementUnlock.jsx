@@ -20,17 +20,17 @@ const AchievementUnlock = ({ achievement, onDismiss }) => {
             {/* Glow ring */}
             <div style={{
                 width: '120px', height: '120px', borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(255,215,0,0.3), transparent 70%)',
+                background: 'radial-gradient(circle, var(--accent-dim), transparent 70%)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 animation: 'achPulse 2s ease-in-out infinite',
-                boxShadow: '0 0 60px rgba(255,215,0,0.4)',
+                boxShadow: 'var(--shadow-gold)',
             }}>
                 <span style={{ fontSize: '56px' }}>{achievement.icon}</span>
             </div>
 
             <div style={{
                 marginTop: '24px', fontSize: '12px', fontWeight: 800,
-                color: '#ffd700', letterSpacing: '0.2em', textTransform: 'uppercase',
+                color: 'var(--accent)', letterSpacing: '0.2em', textTransform: 'uppercase',
             }}>ACHIEVEMENT UNLOCKED</div>
 
             <div style={{
@@ -58,8 +58,8 @@ const AchievementUnlock = ({ achievement, onDismiss }) => {
                     to { opacity: 1; }
                 }
                 @keyframes achPulse {
-                    0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(255,215,0,0.4); }
-                    50% { transform: scale(1.08); box-shadow: 0 0 80px rgba(255,215,0,0.6); }
+                    0%, 100% { transform: scale(1); box-shadow: var(--shadow-gold); }
+                    50% { transform: scale(1.08); box-shadow: var(--accent-glow); }
                 }
             `}</style>
         </div>

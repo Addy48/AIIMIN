@@ -237,32 +237,39 @@ const Dashboard = ({ user }) => {
     // Snapshot in xpEngine shape for DailyQuests
     const desktopLogSnapshot = {
         sleep_start: s.sleep_start || null,
-        sleep_end:   s.sleep_end   || null,
+        sleep_end: s.sleep_end || null,
         sleep_hours: s.sleep_hours || 0,
-        gym_done:    s.gym_done    || false,
+        gym_done: s.gym_done || false,
         gym_duration: s.gym_duration || 0,
         breakfast_done: s.breakfast_done || false,
-        steps:       s.steps       || 0,
+        steps: s.steps || 0,
         water_bottles: s.water_bottles || 0,
-        mood:        s.mood        || null,
+        mood: s.mood || null,
         energy_level: s.energy_level || null,
         learning_done: s.learning_done || false,
         journal_entry: s.journal_entry || null,
-        brain_fog:   s.brain_fog   || 0,
-        win_logged:  false,
-        rc_count:    s.rc_count || 0,
+        brain_fog: s.brain_fog || 0,
+        win_logged: false,
+        rc_count: s.rc_count || 0,
     };
     const todayStr = new Date().toLocaleDateString('en-CA');
 
     const SectionLabel = ({ children }) => (
-        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             {children}
-            <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+            <div style={{ flex: 1, height: '1px', background: 'var(--gold-border)', opacity: 0.5 }} />
         </div>
     );
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', paddingTop: '56px', color: 'var(--text-1)' }}>
+        <div style={{
+            minHeight: '100vh',
+            backgroundColor: 'var(--bg-primary)',
+            /* Ambient mesh gradient */
+            backgroundImage: 'radial-gradient(ellipse 80% 50% at 10% 20%, rgba(212,175,55,0.04) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 90% 80%, rgba(212,175,55,0.03) 0%, transparent 60%)',
+            paddingTop: '80px', /* offset for floating pill nav */
+            color: 'var(--text-1)',
+        }}>
             <Navbar user={user} activeTab={activeTab} onTabChange={setActiveTab} />
 
             <main style={{
@@ -279,13 +286,25 @@ const Dashboard = ({ user }) => {
 
                 {/* ── ZONE 1: HEADER ── */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                    <h1 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.03em', lineHeight: 1.2, margin: 0 }}>
-                        {getGreeting()}, {firstName}
+                    <h1 style={{
+                        fontSize: '28px',
+                        fontWeight: 800,
+                        color: 'var(--text-1)',
+                        letterSpacing: '-0.02em',
+                        lineHeight: 1.2,
+                        margin: 0,
+                        fontFamily: "'Inter', -apple-system, sans-serif",
+                    }}>
+                        {getGreeting()}, <span style={{ color: 'var(--accent)' }}>{firstName}</span>
                     </h1>
                     <span style={{
                         fontSize: '11px', fontWeight: 600, color: 'var(--text-3)',
-                        padding: '4px 12px', borderRadius: '99px',
-                        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                        padding: '5px 14px', borderRadius: '99px',
+                        background: 'var(--glass-bg)',
+                        border: '1px solid var(--glass-border-gold)',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)',
+                        fontFamily: "'Jost', sans-serif",
                     }}>
                         {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                     </span>
@@ -327,7 +346,7 @@ const Dashboard = ({ user }) => {
 
                                 <div>
                                     <SectionLabel>Mood Check-in</SectionLabel>
-                                    <MoodTracker user={user} onMoodChange={() => {}} />
+                                    <MoodTracker user={user} onMoodChange={() => { }} />
                                 </div>
 
                                 <div>
@@ -344,12 +363,12 @@ const Dashboard = ({ user }) => {
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, minHeight: 0 }}>
-                                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                                    <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
                                         <SectionLabel>Quick Capture</SectionLabel>
                                         <QuickCapture user={user} />
                                     </div>
 
-                                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                    <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: 'var(--card-px)', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         <SectionLabel>Daily Integrity</SectionLabel>
                                         <ResetsTracker user={user} />
                                     </div>
@@ -360,7 +379,7 @@ const Dashboard = ({ user }) => {
                             {/* Right Column — Daily Interaction */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-                                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                                <div className="glass-panel-gold" style={{ borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
                                     <SectionLabel>Daily Log</SectionLabel>
                                     <DailyLogForm user={user} />
                                 </div>
@@ -471,14 +490,16 @@ const Dashboard = ({ user }) => {
                     <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
                         {/* Pomodoro + Spotify side-by-side */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '24px', alignItems: 'start' }}>
-                            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
-                                <SectionLabel>⏰ Focus Timer</SectionLabel>
-                                <PomodoroTimer user={user} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'stretch' }}>
+                            <div style={{ height: '390px' }}>
+                                <div className="glass-panel-gold" style={{ borderRadius: 'var(--r-lg)', padding: '24px 20px', height: '100%' }}>
+                                    <PomodoroTimer user={user} />
+                                </div>
                             </div>
-                            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
-                                <SectionLabel>🎵 Focus Music</SectionLabel>
-                                <SpotifyPlayer />
+                            <div style={{ height: '390px' }}>
+                                <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: '24px 20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                    <SpotifyPlayer />
+                                </div>
                             </div>
                         </div>
 
@@ -557,104 +578,104 @@ const Dashboard = ({ user }) => {
 
                 {/* ── SETTINGS ── */}
                 {activeTab === 'settings' && (
-                        <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-                            <SettingsSection title="System Controls">
-                                <SettingsRow
-                                    icon="🔔"
-                                    label="Daily Reminders"
-                                    description="Morning check-in prompts and evening reflection nudges"
-                                    control={<ToggleSwitch checked={notifReminders} onChange={saveAndSet('aiimin_notif_reminders', setNotifReminders)} />}
-                                />
-                                <SettingsRow
-                                    icon="📊"
-                                    label="Weekly Insight Digest"
-                                    description="Summary of behavioral patterns delivered Sunday evening"
-                                    control={<ToggleSwitch checked={notifInsights} onChange={saveAndSet('aiimin_notif_insights', setNotifInsights)} />}
-                                />
+                        <SettingsSection title="System Controls">
+                            <SettingsRow
+                                icon="🔔"
+                                label="Daily Reminders"
+                                description="Morning check-in prompts and evening reflection nudges"
+                                control={<ToggleSwitch checked={notifReminders} onChange={saveAndSet('aiimin_notif_reminders', setNotifReminders)} />}
+                            />
+                            <SettingsRow
+                                icon="📊"
+                                label="Weekly Insight Digest"
+                                description="Summary of behavioral patterns delivered Sunday evening"
+                                control={<ToggleSwitch checked={notifInsights} onChange={saveAndSet('aiimin_notif_insights', setNotifInsights)} />}
+                            />
+                        </SettingsSection>
+
+                        {/* S1: Admin tools inline — no floating modal */}
+                        {isAdmin && (
+                            <SettingsSection title="Admin Tools">
+                                <div style={{ borderBottom: '1px solid var(--border)' }}>
+                                    <AdminPanel user={user} onClose={() => { }} />
+                                </div>
+                                <AdminConsole session={session} />
                             </SettingsSection>
+                        )}
 
-                            {/* S1: Admin tools inline — no floating modal */}
-                            {isAdmin && (
-                                <SettingsSection title="Admin Tools">
-                                    <div style={{ borderBottom: '1px solid var(--border)' }}>
-                                        <AdminPanel user={user} onClose={() => { }} />
-                                    </div>
-                                    <AdminConsole session={session} />
-                                </SettingsSection>
-                            )}
+                        <SettingsSection title="Integrations">
+                            <SettingsRow
+                                icon="📅"
+                                label="Google Calendar"
+                                description="Sync events for time-blocking and session scheduling"
+                                control={
+                                    <GoogleCalendarIntegration user={user} />
+                                }
+                            />
+                            <SettingsRow
+                                icon="🎵"
+                                label="Spotify Focus Music"
+                                description="Embedded playlists for deep work — no login required"
+                                control={
+                                    <button onClick={() => setActiveTab('focus')} style={{ fontSize: '11px', color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', padding: '4px 10px', borderRadius: '99px', fontWeight: 600, cursor: 'pointer' }}>Open →</button>
+                                }
+                            />
+                        </SettingsSection>
 
-                            <SettingsSection title="Integrations">
-                                <SettingsRow
-                                    icon="📅"
-                                    label="Google Calendar"
-                                    description="Sync events for time-blocking and session scheduling"
-                                    control={
-                                        <GoogleCalendarIntegration user={user} />
-                                    }
-                                />
-                                <SettingsRow
-                                    icon="🎵"
-                                    label="Spotify Focus Music"
-                                    description="Embedded playlists for deep work — no login required"
-                                    control={
-                                        <button onClick={() => setActiveTab('focus')} style={{ fontSize: '11px', color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', padding: '4px 10px', borderRadius: '99px', fontWeight: 600, cursor: 'pointer' }}>Open →</button>
-                                    }
-                                />
-                            </SettingsSection>
+                        <SettingsSection title="Data & Privacy">
+                            <SettingsRow
+                                icon="📥"
+                                label="Export Your Data"
+                                description="Download all logs, mood entries, and session data as JSON"
+                                control={
+                                    <button onClick={handleExport} style={{ padding: '6px 14px', background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--border-accent)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                                        Export
+                                    </button>
+                                }
+                            />
+                            <SettingsRow
+                                icon="🔒"
+                                label="Privacy & Data Policy"
+                                description="How AIIMIN stores and handles your information"
+                                control={
+                                    <a href="/privacy" style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>Read →</a>
+                                }
+                            />
+                            <SettingsRow
+                                icon="🗑"
+                                label="Delete Account & Data"
+                                description="Permanently removes all data. This cannot be undone."
+                                danger={true}
+                                control={
+                                    <button onClick={handleDeleteAccount} style={{ padding: '6px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                                        Delete
+                                    </button>
+                                }
+                            />
+                        </SettingsSection>
 
-                            <SettingsSection title="Data & Privacy">
-                                <SettingsRow
-                                    icon="📥"
-                                    label="Export Your Data"
-                                    description="Download all logs, mood entries, and session data as JSON"
-                                    control={
-                                        <button onClick={handleExport} style={{ padding: '6px 14px', background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--border-accent)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
-                                            Export
-                                        </button>
-                                    }
-                                />
-                                <SettingsRow
-                                    icon="🔒"
-                                    label="Privacy & Data Policy"
-                                    description="How AIIMIN stores and handles your information"
-                                    control={
-                                        <a href="/privacy" style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>Read →</a>
-                                    }
-                                />
-                                <SettingsRow
-                                    icon="🗑"
-                                    label="Delete Account & Data"
-                                    description="Permanently removes all data. This cannot be undone."
-                                    danger={true}
-                                    control={
-                                        <button onClick={handleDeleteAccount} style={{ padding: '6px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
-                                            Delete
-                                        </button>
-                                    }
-                                />
-                            </SettingsSection>
+                        <SettingsSection title="Legal">
+                            <SettingsRow
+                                label="Privacy Policy"
+                                description="Last updated March 2026"
+                                control={<a href="/privacy" style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>View →</a>}
+                            />
+                            <SettingsRow
+                                label="Terms of Service"
+                                description="User agreement and acceptable use policy"
+                                control={<a href="/terms" style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>View →</a>}
+                            />
+                            <SettingsRow
+                                label="App Version"
+                                description="AIIMIN Life OS · Build 2026.03.11"
+                                control={<span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600 }}>v2.1.0</span>}
+                            />
+                        </SettingsSection>
 
-                            <SettingsSection title="Legal">
-                                <SettingsRow
-                                    label="Privacy Policy"
-                                    description="Last updated March 2026"
-                                    control={<a href="/privacy" style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>View →</a>}
-                                />
-                                <SettingsRow
-                                    label="Terms of Service"
-                                    description="User agreement and acceptable use policy"
-                                    control={<a href="/terms" style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>View →</a>}
-                                />
-                                <SettingsRow
-                                    label="App Version"
-                                    description="AIIMIN Life OS · Build 2026.03.11"
-                                    control={<span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600 }}>v2.1.0</span>}
-                                />
-                            </SettingsSection>
-
-                        </div>
-                    )}
+                    </div>
+                )}
 
             </main>
 
@@ -679,6 +700,7 @@ const Dashboard = ({ user }) => {
                 }
                 @media (max-width: 768px) {
                     .metrics-row { grid-template-columns: repeat(2, 1fr) !important; }
+                    div[style*='paddingTop: 80px'] { padding-top: 72px !important; }
                 }
             `}</style>
         </div>
