@@ -59,6 +59,8 @@ const StatusDot = ({ connected, error }) => (
 const AccountModal = ({ isOpen, onClose }) => {
     const { session, signOut } = useAuth();
     const [profile, setProfile] = useState(null);
+    const [draftProfile, setDraftProfile] = useState(null);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [integrations, setIntegrations] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -76,7 +78,11 @@ const AccountModal = ({ isOpen, onClose }) => {
             fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed')),
             fetch(`${API_URL}/account/integrations`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Integrations load failed')),
         ]).then(([p, integ]) => {
-            setProfile(p);
+            const fallbackName = p?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || '';
+            const fallbackTimezone = p?.timezone || session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+            const normalizedProfile = { ...p, full_name: fallbackName, timezone: fallbackTimezone };
+            setProfile(normalizedProfile);
+            setDraftProfile(normalizedProfile);
             setIntegrations(integ);
         }).catch(err => {
             console.error('[AccountModal] fetch error:', err);
@@ -107,23 +113,44 @@ const AccountModal = ({ isOpen, onClose }) => {
     }, [isOpen, onClose]);
 
     const handleSaveProfile = async () => {
+        if (!draftProfile) return;
         setSaving(true);
         setSaveMsg('');
         try {
             const res = await fetch(`${API_URL}/account/profile`, {
                 method: 'PATCH', headers: getAuthHeaders(session),
-                body: JSON.stringify({ full_name: profile.full_name, timezone: profile.timezone }),
+                body: JSON.stringify({ full_name: draftProfile.full_name, timezone: draftProfile.timezone }),
             });
             if (res.ok) {
+                const savedProfile = await res.json();
+                setProfile(savedProfile);
+                setDraftProfile(savedProfile);
+                setIsEditingProfile(false);
                 setSaveMsg('Saved ✓');
                 toast.success('Profile saved');
             }
             else {
+                const body = await res.json().catch(() => ({}));
                 setSaveMsg('Save failed');
-                toast.error('Profile save failed');
+                toast.error(body.error || 'Profile save failed');
             }
-        } catch { setSaveMsg('Failed to save'); }
+        } catch (err) {
+            setSaveMsg('Failed to save');
+            toast.error(err.message || 'Profile save failed');
+        }
         finally { setSaving(false); setTimeout(() => setSaveMsg(''), 3000); }
+    };
+
+    const handleEditProfile = () => {
+        setDraftProfile(profile);
+        setIsEditingProfile(true);
+        setSaveMsg('');
+    };
+
+    const handleCancelEdit = () => {
+        setDraftProfile(profile);
+        setIsEditingProfile(false);
+        setSaveMsg('');
     };
 
     const handleExport = async () => {
@@ -246,41 +273,73 @@ const AccountModal = ({ isOpen, onClose }) => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <Section title="Profile">
                                 <Row label="Name">
-                                    <input
-                                        value={profile?.full_name || ''}
-                                        onChange={e => setProfile(p => ({ ...p, full_name: e.target.value }))}
-                                        style={{
-                                            padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-                                            border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                            color: 'var(--text-1)', width: '200px', outline: 'none',
-                                            fontWeight: 600, transition: 'border-color 0.2s ease'
-                                        }}
-                                    />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
+                                            {profile?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'Unnamed'}
+                                        </span>
+                                        {!isEditingProfile && (
+                                            <button
+                                                type="button"
+                                                onClick={handleEditProfile}
+                                                style={{
+                                                    width: '30px', height: '30px', borderRadius: '50%', border: '1px solid var(--border)',
+                                                    background: 'var(--bg-elevated)', color: 'var(--text-2)', cursor: 'pointer',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px'
+                                                }}
+                                                aria-label="Edit profile"
+                                            >
+                                                ✎
+                                            </button>
+                                        )}
+                                    </div>
                                 </Row>
                                 <Row label="Timezone" border={false}>
-                                    <select
-                                        value={profile?.timezone || 'Asia/Kolkata'}
-                                        onChange={e => setProfile(p => ({ ...p, timezone: e.target.value }))}
-                                        style={{
-                                            padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-                                            border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                            color: 'var(--text-1)', cursor: 'pointer', outline: 'none', width: '200px',
-                                            fontWeight: 600
-                                        }}
-                                    >
-                                        {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
-                                    </select>
+                                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
+                                        {profile?.timezone || session?.user?.user_metadata?.timezone || 'Asia/Kolkata'}
+                                    </span>
                                 </Row>
-                                <div style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
-                                    <button onClick={handleSaveProfile} disabled={saving} style={{
-                                        flex: 1, padding: '12px', background: 'var(--accent)', color: 'white',
-                                        border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 800,
-                                        cursor: 'pointer', opacity: saving ? 0.7 : 1, transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                                    }}>
-                                        {saving ? 'Saving...' : 'Save Profile Changes'}
-                                    </button>
-                                    {saveMsg && <span style={{ fontSize: '13px', color: '#22c55e', fontWeight: 700 }}>{saveMsg}</span>}
-                                </div>
+                                {isEditingProfile && (
+                                    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
+                                        <input
+                                            value={draftProfile?.full_name || ''}
+                                            onChange={e => setDraftProfile(p => ({ ...p, full_name: e.target.value }))}
+                                            placeholder="Full name"
+                                            style={{
+                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                                color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
+                                            }}
+                                        />
+                                        <select
+                                            value={draftProfile?.timezone || 'Asia/Kolkata'}
+                                            onChange={e => setDraftProfile(p => ({ ...p, timezone: e.target.value }))}
+                                            style={{
+                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                                color: 'var(--text-1)', cursor: 'pointer', outline: 'none', width: '100%', fontWeight: 600
+                                            }}
+                                        >
+                                            {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
+                                        </select>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <button onClick={handleSaveProfile} disabled={saving} style={{
+                                                flex: 1, padding: '12px', background: 'var(--accent)', color: 'white',
+                                                border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 800,
+                                                cursor: 'pointer', opacity: saving ? 0.7 : 1
+                                            }}>
+                                                {saving ? 'Saving...' : 'Save Changes'}
+                                            </button>
+                                            <button onClick={handleCancelEdit} disabled={saving} style={{
+                                                padding: '12px 14px', background: 'var(--bg-elevated)', color: 'var(--text-2)',
+                                                border: '1px solid var(--border)', borderRadius: '12px', fontSize: '13px', fontWeight: 700,
+                                                cursor: 'pointer'
+                                            }}>
+                                                Cancel
+                                            </button>
+                                            {saveMsg && <span style={{ fontSize: '13px', color: saveMsg.includes('fail') ? 'var(--danger)' : '#22c55e', fontWeight: 700 }}>{saveMsg}</span>}
+                                        </div>
+                                    </div>
+                                )}
                             </Section>
 
                             <Section title="Integrations">
