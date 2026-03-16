@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import YouTubePlayer from './YouTubePlayer';
-import supabase from '../utils/supabase';
 import { redirectToGoogle } from '../utils/authRedirect';
-import { API_URL } from '../utils/api';
+import { apiGet } from '../utils/api';
 
 /* ─── Status badge ─── */
 const IntegrationBadge = ({ connected, error }) => {
@@ -39,17 +38,7 @@ const YouTubePanel = ({ user }) => {
         setLoading(true);
         setHasError(false);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const res = await fetch(`${API_URL}/google/auth/init`, {
-                headers: { 'Authorization': `Bearer ${session?.access_token}` }
-            });
-            const contentType = res.headers.get("content-type");
-            if (res.ok && contentType && contentType.indexOf("application/json") !== -1) {
-                const { authUrl } = await res.json();
-                window.location.href = authUrl;
-            } else {
-                setHasError(true);
-            }
+            redirectToGoogle('calendar');
         } catch {
             setHasError(true);
         } finally {
@@ -59,20 +48,12 @@ const YouTubePanel = ({ user }) => {
 
     const fetchPlaylists = async () => {
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const res = await fetch(`${API_URL}/youtube/playlists`, {
-                headers: { 'Authorization': `Bearer ${session?.access_token}` }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setPlaylists(data);
-                setIsConnected(true);
-                setHasError(false);
-                const saved = localStorage.getItem('aiimin_yt_playlist');
-                if (saved) setActivePlaylist(saved);
-            } else {
-                setHasError(true);
-            }
+            const data = await apiGet('/youtube/playlists');
+            setPlaylists(data);
+            setIsConnected(true);
+            setHasError(false);
+            const saved = localStorage.getItem('aiimin_yt_playlist');
+            if (saved) setActivePlaylist(saved);
         } catch {
             setHasError(true);
         }

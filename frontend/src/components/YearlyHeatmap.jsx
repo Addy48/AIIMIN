@@ -82,44 +82,34 @@ const getColor = (intensity, metric) => {
     return colors[Math.min(intensity, 4)];
 };
 
-/* ─── Build 365-day grid structure (Sun → Sat columns, 53 weeks) ─── */
-const buildYearGrid = (year) => {
-    const jan1 = new Date(year, 0, 1);
-    const dec31 = new Date(year, 11, 31);
-    const dayOfYear = Math.ceil((dec31 - jan1) / 86400000) + 1;
+/* ─── Build trailing 365-day grid structure ─── */
+const buildTrailingYearGrid = (endDate = new Date()) => {
+    const grid = [];
+    const start = new Date(endDate);
+    start.setDate(start.getDate() - 364);
+    start.setDate(start.getDate() - start.getDay()); // Roll back to Sunday
 
-    // We need to start from the Sunday before Jan 1
-    const startDayOfWeek = jan1.getDay(); // 0 = Sunday
-    const grid = []; // array of weeks, each week is array of 7 days
+    let currentWeek = [];
+    let current = new Date(start);
 
-    let currentWeek = new Array(7).fill(null);
-
-    // Fill leading nulls for days before Jan 1
-    const startDate = new Date(jan1);
-    startDate.setDate(startDate.getDate() - startDayOfWeek);
-
-    for (let i = 0; i < startDayOfWeek; i++) {
-        currentWeek[i] = null; // pad
-    }
-
-    for (let d = 0; d < dayOfYear; d++) {
-        const date = new Date(year, 0, 1 + d);
-        const dayOfWeek = date.getDay(); // 0 = Sunday
-
-        if (dayOfWeek === 0 && d > 0) {
-            grid.push(currentWeek);
-            currentWeek = new Array(7).fill(null);
+    while (current <= endDate || current.getDay() !== 0) {
+        if (current > endDate) {
+            currentWeek.push(null);
+        } else {
+            currentWeek.push({
+                date: `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`,
+                day: current.getDate(),
+                month: current.getMonth()
+            });
         }
 
-        currentWeek[dayOfWeek] = {
-            date: `${year}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
-            day: date.getDate(),
-            month: date.getMonth(),
-        };
+        if (currentWeek.length === 7) {
+            grid.push(currentWeek);
+            currentWeek = [];
+        }
+        current.setDate(current.getDate() + 1);
+        if (current > endDate && currentWeek.length === 0) break;
     }
-
-    // Push final partial week
-    grid.push(currentWeek);
     return grid;
 };
 
@@ -129,40 +119,51 @@ const DAY_LABELS = ['Sun', '', 'Tue', '', 'Thu', '', 'Sat'];
 /* ─── Main Component ─── */
 const YearlyHeatmap = ({ user }) => {
     const now = new Date();
-    const [year, setYear] = useState(now.getFullYear());
+    const [offsetDays, setOffsetDays] = useState(0); // For navigating chunks of time back
     const [metric, setMetric] = useState('combined');
     const [logsMap, setLogsMap] = useState({});
     const [loading, setLoading] = useState(false);
     const [hoveredDay, setHoveredDay] = useState(null);
 
-    /* Fetch full year of logs */
+    const endDate = useMemo(() => {
+        const d = new Date(now);
+        d.setDate(d.getDate() - offsetDays);
+        return d;
+    }, [now, offsetDays]);
+
+    const startDate = useMemo(() => {
+        const d = new Date(endDate);
+        d.setDate(d.getDate() - 364);
+        return d;
+    }, [endDate]);
+
+    /* Fetch full 365 days of logs */
     useEffect(() => {
         if (!user?.id) return;
         setLoading(true);
 
-        const startDate = `${year}-01-01`;
-        const endDate = `${year}-12-31`;
+        const startStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+        const endStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
 
         supabase.from('daily_logs')
             .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry, pomodoro_minutes, water_bottles, breakfast_done')
             .eq('user_id', user.id)
-            .gte('date', startDate)
-            .lte('date', endDate)
+            .gte('date', startStr)
+            .lte('date', endStr)
             .then(({ data }) => {
                 const map = {};
                 (data || []).forEach(log => { map[log.date] = log; });
                 setLogsMap(map);
                 setLoading(false);
             });
-    }, [user?.id, year]);
+    }, [user?.id, startDate, endDate]);
 
-    const grid = useMemo(() => buildYearGrid(year), [year]);
+    const grid = useMemo(() => buildTrailingYearGrid(endDate), [endDate]);
 
     /* Stats */
     const totalLogged = Object.keys(logsMap).length;
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    const dayOfYear = Math.ceil((now - new Date(now.getFullYear(), 0, 1)) / 86400000);
-    const consistency = dayOfYear > 0 ? Math.round((totalLogged / dayOfYear) * 100) : 0;
+    const consistency = Math.round((totalLogged / 365) * 100);
 
     /* Current streak */
     let streak = 0;
@@ -214,20 +215,22 @@ const YearlyHeatmap = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Year selector */}
+                {/* Navigation */}
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                    <button onClick={() => setYear(y => y - 1)} style={{
+                    <button onClick={() => setOffsetDays(d => d + 365)} style={{
                         width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--border)',
                         background: 'var(--bg-elevated)', color: 'var(--text-2)', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px',
                     }}>←</button>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-1)', minWidth: '40px', textAlign: 'center' }}>{year}</span>
-                    <button onClick={() => setYear(y => y + 1)} disabled={year >= now.getFullYear()} style={{
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-1)', minWidth: '40px', textAlign: 'center' }}>
+                        {offsetDays === 0 ? '365d' : `Past`}
+                    </span>
+                    <button onClick={() => setOffsetDays(d => Math.max(0, d - 365))} disabled={offsetDays === 0} style={{
                         width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--border)',
-                        background: 'var(--bg-elevated)', color: year >= now.getFullYear() ? 'var(--text-3)' : 'var(--text-2)',
-                        cursor: year >= now.getFullYear() ? 'default' : 'pointer',
+                        background: 'var(--bg-elevated)', color: offsetDays === 0 ? 'var(--text-3)' : 'var(--text-2)',
+                        cursor: offsetDays === 0 ? 'default' : 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px',
-                        opacity: year >= now.getFullYear() ? 0.4 : 1,
+                        opacity: offsetDays === 0 ? 0.4 : 1,
                     }}>→</button>
                 </div>
             </div>
@@ -292,7 +295,7 @@ const YearlyHeatmap = ({ user }) => {
 
                                             const log = logsMap[day.date];
                                             const intensity = scoreDay(log, metric);
-                                            const isFuture = year === now.getFullYear() && new Date(day.date) > now;
+                                            const isFuture = new Date(day.date) > now;
                                             const isToday = day.date === todayStr;
 
                                             return (

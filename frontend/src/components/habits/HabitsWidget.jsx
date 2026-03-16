@@ -12,7 +12,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../../utils/supabase';
-import { API_URL as API_BASE } from '../../utils/api';
+import { apiPost } from '../../utils/api';
 
 // Returns current hour in IST (frontend-side timezone check)
 function getISTHour() {
@@ -88,16 +88,7 @@ export default function HabitsWidget({ user }) {
     const handleStartRun = async (routineId) => {
         setLoading(true);
         try {
-            const token = (await supabase.auth.getSession())?.data?.session?.access_token;
-            const res = await fetch(`${API_BASE}/routines/${routineId}/run`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
+            const data = await apiPost(`/routines/${routineId}/run`);
             setActiveRun(data);
             setCheckedIds(new Set());
             setSkippedIds(new Set());
@@ -121,15 +112,7 @@ export default function HabitsWidget({ user }) {
         }
 
         try {
-            const token = (await supabase.auth.getSession())?.data?.session?.access_token;
-            await fetch(`${API_BASE}/routine-runs/${activeRun.run.id}/check`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ habit_id: habitId, status }),
-            });
+            await apiPost(`/routine-runs/${activeRun.run.id}/check`, { habit_id: habitId, status });
         } catch (err) {
             // Revert optimistic update on failure
             if (status === 'done') {
@@ -145,11 +128,7 @@ export default function HabitsWidget({ user }) {
     const handleCompleteRun = async () => {
         setCompleting(true);
         try {
-            const token = (await supabase.auth.getSession())?.data?.session?.access_token;
-            await fetch(`${API_BASE}/routine-runs/${activeRun.run.id}/complete`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            await apiPost(`/routine-runs/${activeRun.run.id}/complete`);
             // Show summary
             setSummaryData({
                 routineName: routines.find(r => r.id === activeRun.run.routine_id)?.name || 'Routine',
