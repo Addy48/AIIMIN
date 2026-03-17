@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../utils/supabase';
-import { insertRow, updateRow, deleteRow } from '../services/dbService';
+import { insertRow, updateRow } from '../services/dbService';
 import toast from '../utils/toast';
 
 /* ─── Platform config ─── */

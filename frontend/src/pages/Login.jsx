@@ -1,296 +1,971 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Shield, Check, X } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
+import Numpad from '../components/common/Numpad';
 import Logo from '../components/Logo';
+import { apiGet } from '../utils/api';
+
+/**
+ * AIIMIN Identity Portal v3
+ * - Clean geometric background (no colored glow blobs)
+ * - Multi-stage sign-up wizard (Name/Gmail -> Username Selection -> PIN -> PIN Verify)
+ * - usernames are stored and displayed in uppercase
+ * - username + PIN and Gmail + PIN both resolve through Supabase Auth
+ * - Zero remembered or pre-filled logins (blank fields always)
+ */
+
+/* ── Subtle grid-line background ── */
+const GridBg = ({ isDark }) => (
+  <div style={{
+    position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden',
+    backgroundImage: isDark
+      ? 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)'
+      : 'linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px)',
+    backgroundSize: '48px 48px',
+  }} />
+);
 
 const Login = () => {
-    const { signInWithGoogle, signUpWithEmail, signInWithEmail } = useAuth();
-    const [mode, setMode] = useState('login'); // 'login' or 'signup'
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [fullName, setFullName] = useState('');
-    const [username, setUsername] = useState('');
-    const [usernameError, setUsernameError] = useState(null);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
+  const { signInWithUsername, signUpWithUsername, signInWithGoogle } = useAuth();
+  const navigate = useNavigate();
+  const isDark = false;
 
-    useEffect(() => {
-        const prevTheme = localStorage.getItem('aiimin-theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.classList.remove('dark');
-        document.documentElement.style.backgroundColor = '#f5f0e8';
-        document.body.style.backgroundColor = '#f5f0e8';
-        return () => {
-            // Restore user's saved theme when leaving login
-            document.documentElement.setAttribute('data-theme', prevTheme);
-            if (prevTheme === 'dark') document.documentElement.classList.add('dark');
-            document.documentElement.style.removeProperty('background-color');
-            document.body.style.removeProperty('background-color');
-        };
-    }, []);
+  const [mode, setMode]             = useState('login'); // 'login' or 'signup' or 'forgot'
+  const [step, setStep]             = useState(1);       // login: 1=id, 2=pin; signup: 1=name, 2=username, 3=pin, 4=pinVerify; forgot: 1=email
+  const [identifier, setIdentifier] = useState('');      // Email or Username for Login
+  const [fullName, setFullName]     = useState('');
+  const [email, setEmail]           = useState('');
+  const [usernameVal, setUsernameVal] = useState('');
+  const [pin, setPin]               = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [error, setError]           = useState(null);
+  const [loading, setLoading]       = useState(false);
+  const [loadingText, setLoadingText] = useState('Verifying...');
+  const [shake, setShake]           = useState(false);
 
-    const handleEmailSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-        setLoading(true);
+  React.useEffect(() => {
+    let timer;
+    if (loading) {
+      timer = setTimeout(() => {
+        setLoadingText('Waking up secure servers (may take ~50s)...');
+      }, 3500);
+    } else {
+      setLoadingText('Verifying...');
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
 
-        try {
-            if (mode === 'signup') {
-                // Final validation check
-                const usernameRegex = /^(?=.*[A-Z])(?=.*[0-9])[A-Za-z0-9@+-_]{6,}$/;
-                if (!usernameRegex.test(username)) {
-                    setError("Username does not meet security requirements.");
-                    setLoading(false);
-                    return;
-                }
-                await signUpWithEmail(email, password, fullName, username);
-                setError("Account created! Redirecting...");
-            } else {
-                await signInWithEmail(email, password);
-            }
-        } catch (err) {
-            setError(err.message || 'An error occurred.');
-        } finally {
-            setLoading(false);
+  // Clear inputs when changing mode
+  const toggleMode = () => {
+    setMode(prev => prev === 'login' ? 'signup' : 'login');
+    setStep(1);
+    setIdentifier('');
+    setFullName('');
+    setEmail('');
+    setUsernameVal('');
+    setPin('');
+    setConfirmPin('');
+    setForgotIdentifier('');
+    setError(null);
+  };
+
+  const handleNext = (e) => {
+    if (e) e.preventDefault();
+    setError(null);
+
+    if (mode === 'login') {
+      if (!identifier.trim()) { setError('Identifier required.'); return; }
+      setStep(2);
+    } else if (mode === 'forgot') {
+      if (!forgotIdentifier.trim()) { setError('Username or Email required.'); return; }
+      setStep(2);
+      // Simulate sending email since we don't have a backend endpoint implemented yet
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500);
+    } else {
+      if (!fullName.trim()) { setError('Full name required.'); return; }
+      if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        setError('Enter a valid Gmail address or leave it blank.');
+        return;
+      }
+      setStep(2);
+    }
+  };
+
+  const handleBack = () => {
+    setError(null);
+    if (mode === 'login') {
+      setStep(1);
+      setPin('');
+    } else if (mode === 'forgot') {
+      if (step === 2) {
+        setMode('login');
+        setStep(2);
+      } else {
+        setMode('login');
+        setStep(2);
+      }
+    } else {
+      if (step > 1) {
+        if (step === 2) {
+          setStep(1);
+        } else if (step === 3) {
+          setStep(2);
+          setPin('');
+        } else if (step === 4) {
+          setStep(3);
+          setConfirmPin('');
         }
-    };
+      }
+    }
+  };
 
-    const inputStyle = {
-        width: '100%',
-        padding: '14px 16px',
-        fontSize: '15px',
-        backgroundColor: 'var(--bg-secondary)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        color: 'var(--text-1)',
-        outline: 'none',
-        marginBottom: '16px',
-        transition: 'all 0.2s ease',
-    };
+  const triggerShake = useCallback(() => {
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  }, []);
 
-    return (
-        <div style={{
-            minHeight: '100vh',
-            backgroundColor: 'var(--bg-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-            fontFamily: 'inherit'
-        }}>
+  const handlePinEntry = (digit) => {
+    if (loading) return;
+    if (mode === 'login') {
+      if (pin.length < 6) {
+        const newPin = pin + digit;
+        setPin(newPin);
+        if (newPin.length === 6) handleSubmitLogin(newPin);
+      }
+    } else {
+      // Signup Mode
+      if (step === 3) {
+        if (pin.length < 6) {
+          const newPin = pin + digit;
+          setPin(newPin);
+          if (newPin.length === 6) {
+            setStep(4);
+          }
+        }
+      } else if (step === 4) {
+        if (confirmPin.length < 6) {
+          const newConfirm = confirmPin + digit;
+          setConfirmPin(newConfirm);
+          if (newConfirm.length === 6) handleSubmitSignup(newConfirm);
+        }
+      }
+    }
+  };
 
-            {/* Background decoration */}
-            <div style={{
-                position: 'absolute', pointerEvents: 'none', zIndex: 0,
-                width: '500px', height: '500px', borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(194,120,20,0.08) 0%, transparent 70%)',
-                top: '-150px', right: '-150px', filter: 'blur(60px)'
-            }}></div>
-            <div style={{
-                position: 'absolute', pointerEvents: 'none', zIndex: 0,
-                width: '400px', height: '400px', borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(224,92,42,0.06) 0%, transparent 70%)',
-                bottom: '-100px', left: '-100px', filter: 'blur(50px)'
-            }}></div>
+  const handlePinDelete = () => {
+    if (loading) return;
+    if (mode === 'login') {
+      setPin(prev => prev.slice(0, -1));
+    } else {
+      if (step === 3) {
+        setPin(prev => prev.slice(0, -1));
+      } else if (step === 4) {
+        setConfirmPin(prev => prev.slice(0, -1));
+      }
+    }
+  };
 
-            {/* Subtle decorative circles */}
-            <div style={{ position: 'absolute', borderRadius: '50%', border: '1px solid rgba(194,120,20,0.08)', pointerEvents: 'none', width: '300px', height: '300px', top: '10%', right: '5%' }}></div>
-            <div style={{ position: 'absolute', borderRadius: '50%', border: '1px solid rgba(194,120,20,0.08)', pointerEvents: 'none', width: '200px', height: '200px', top: '30%', right: '15%' }}></div>
-            <div style={{ position: 'absolute', borderRadius: '50%', border: '1px solid rgba(194,120,20,0.08)', pointerEvents: 'none', width: '150px', height: '150px', top: '20%', right: '20%' }}></div>
+  const handlePinClear = () => {
+    if (loading) return;
+    if (mode === 'login') {
+      setPin('');
+    } else {
+      if (step === 3) {
+        setPin('');
+      } else if (step === 4) {
+        setConfirmPin('');
+      }
+    }
+  };
 
-            {/* Center card */}
-            <div style={{
-                zIndex: 1, position: 'relative',
-                maxWidth: '420px', width: 'calc(100% - 40px)',
-                backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
-                borderRadius: '24px', padding: '52px 44px',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center'
+  const handleSubmitLogin = async (finalPin, loginId = identifier) => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInWithUsername(loginId.trim(), finalPin);
+      // Explicitly navigate for immediate feedback
+      navigate('/overview');
+    } catch (err) {
+      setError(err.message || 'Verification failure. Try again.');
+      setPin('');
+      triggerShake();
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitSignup = async (finalConfirmPin) => {
+    if (pin !== finalConfirmPin) {
+      setError('PINs do not match. Re-verify.');
+      setConfirmPin('');
+      triggerShake();
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+    try {
+      const registeredPin = pin;
+      const registeredUsername = usernameVal.toUpperCase();
+      const authEmail = email.trim() || `${registeredUsername.toLowerCase()}@aiimin.com`;
+
+      await signUpWithUsername(registeredUsername, registeredPin, fullName.trim(), authEmail);
+      
+      // signUpWithUsername already calls signInWithPassword and populates the session!
+      // The AuthContext will detect the user and the router will auto-redirect to /overview.
+      // We do not need to manually call handleSubmitLogin here.
+    } catch (err) {
+      setError(err.message || 'Signup failed. Try again.');
+      setConfirmPin('');
+      setStep(3); // Send them back to enter PIN
+      setPin('');
+      triggerShake();
+      setLoading(false);
+    }
+  };
+
+  // Username validation constraints checks
+  const isUsernameValid = usernameVal.length >= 3 && usernameVal.length <= 20 && /^[A-Z0-9_.-]+$/.test(usernameVal);
+
+  const handleUsernameNext = async (e) => {
+    if (e) e.preventDefault();
+    if (!isUsernameValid) {
+      setError('Username does not meet the strict requirements.');
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(usernameVal.trim())}`, { auth: false });
+      if (data && data.email) {
+        setError('Username is already taken.');
+      } else {
+        setStep(3);
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        setStep(3);
+      } else {
+        setError(err.message || 'Error checking username availability. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUsernameChange = (e) => {
+    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '');
+    if (val.length <= 20) {
+      setUsernameVal(val);
+    }
+  };
+
+  /* ── Shared input style ── */
+  const inputStyle = {
+    width: '100%', height: '52px', boxSizing: 'border-box',
+    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'}`,
+    borderRadius: '12px',
+    color: isDark ? '#EDEDED' : '#111111',
+    padding: '0 18px',
+    fontSize: '15px',
+    outline: 'none',
+    fontFamily: 'var(--font-sans)',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
+  };
+
+  const labelStyle = {
+    display: 'block',
+    fontSize: '12px',
+    fontWeight: 600,
+    color: 'var(--text-2)',
+    marginBottom: '8px',
+    fontFamily: 'var(--font-sans)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em'
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#f6f3ec',
+      color: '#1f201d',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '24px', position: 'relative', overflow: 'hidden',
+    }}>
+      <GridBg isDark={false} />
+
+      <div style={{ width: '100%', maxWidth: '380px', display: 'flex', flexDirection: 'column', gap: '32px', zIndex: 1 }}>
+
+        {/* ── Branding ── */}
+        <div style={{ textAlign: 'center' }}>
+          <motion.div
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '14px', marginBottom: '28px' }}
+          >
+            <Logo size={52} />
+            <span style={{
+              fontSize: '18px', fontWeight: 800, letterSpacing: '0.25em',
+              color: isDark ? '#FFFFFF' : '#111111',
+              textTransform: 'uppercase', fontFamily: 'var(--font-sans)',
             }}>
+              AIIMIN
+            </span>
+          </motion.div>
 
-                <div style={{ marginBottom: '16px' }}>
-                    <Logo size={64} />
-                </div>
+          <motion.h1
+            initial={{ y: 8, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.15, duration: 0.4 }}
+            style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 8px', color: isDark ? '#EDEDED' : '#111111' }}
+          >
+            {mode === 'login' ? (
+            step === 1 ? 'Welcome back' : 'Enter your PIN'
+            ) : (
+              step === 1 ? 'Create account' :
+              step === 2 ? 'Choose Username' :
+              step === 3 ? 'Set up PIN' : 'Verify PIN'
+            )}
+          </motion.h1>
 
-                <span style={{
-                    display: 'inline-block', fontSize: '11px', fontWeight: 600,
-                    color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em',
-                    marginBottom: '12px', padding: '4px 10px',
-                    background: 'rgba(194,120,20,0.08)', borderRadius: '99px'
-                }}>
-                    Personal Life OS
-                </span>
+          <motion.p
+            initial={{ y: 8, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            style={{ fontSize: '14px', color: 'var(--text-3)', margin: 0, lineHeight: '1.5' }}
+          >
+            {mode === 'login' ? (
+              step === 1 ? 'Use Google, Gmail + PIN, or username + PIN' : `Verifying identity for ${identifier}`
+            ) : (
+              step === 1 ? 'Add Gmail for email login, or leave it blank for username-only' :
+              step === 2 ? 'Usernames are saved in uppercase automatically' :
+              step === 3 ? 'Choose a secure 6-digit PIN' : 'Confirm your 6-digit PIN'
+            )}
+          </motion.p>
+        </div>
 
-                <span style={{
-                    fontSize: '40px', fontWeight: 900,
-                    background: 'var(--gradient-1)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text', letterSpacing: '-2px',
-                    display: 'block', marginBottom: '32px'
-                }}>
-                    AIIMIN
-                </span>
-
-                {/* Tabs */}
-                <div style={{ display: 'flex', width: '100%', marginBottom: '24px', background: 'rgba(0,0,0,0.03)', borderRadius: '12px', padding: '4px' }}>
-                    <button
-                        onClick={() => { setMode('login'); setError(null); }}
-                        style={{
-                            flex: 1, padding: '10px 0', fontSize: '14px', fontWeight: 600, borderRadius: '8px',
-                            background: mode === 'login' ? 'var(--bg-card)' : 'transparent',
-                            color: mode === 'login' ? 'var(--text-1)' : 'var(--text-3)',
-                            boxShadow: mode === 'login' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
-                            transition: 'all 0.2s ease', cursor: 'pointer', border: 'none'
-                        }}
-                    >
-                        Log In
-                    </button>
-                    <button
-                        onClick={() => { setMode('signup'); setError(null); }}
-                        style={{
-                            flex: 1, padding: '10px 0', fontSize: '14px', fontWeight: 600, borderRadius: '8px',
-                            background: mode === 'signup' ? 'var(--bg-card)' : 'transparent',
-                            color: mode === 'signup' ? 'var(--text-1)' : 'var(--text-3)',
-                            boxShadow: mode === 'signup' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
-                            transition: 'all 0.2s ease', cursor: 'pointer', border: 'none'
-                        }}
-                    >
-                        Sign Up
-                    </button>
-                </div>
-
-                {error && (
-                    <div style={{ width: '100%', padding: '12px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', borderRadius: '12px', fontSize: '13px', fontWeight: 500, marginBottom: '20px', textAlign: 'center' }}>
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleEmailSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-                    {mode === 'signup' && (
-                        <>
-                            <input
-                                type="text"
-                                placeholder="Full Name"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                style={inputStyle}
-                                required
-                            />
-                            <div style={{ position: 'relative', width: '100%' }}>
-                                <input
-                                    type="text"
-                                    placeholder="Username"
-                                    value={username}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setUsername(val);
-                                        const regex = /^(?=.*[A-Z])(?=.*[0-9])[A-Za-z0-9@+-_]{6,}$/;
-                                        if (val && !regex.test(val)) {
-                                            setUsernameError("Min 6 chars, 1 uppercase, 1 number (@+-_ allowed)");
-                                        } else {
-                                            setUsernameError(null);
-                                        }
-                                    }}
-                                    style={{
-                                        ...inputStyle,
-                                        borderColor: usernameError ? 'var(--danger)' : 'var(--border)',
-                                        marginBottom: usernameError ? '4px' : '16px'
-                                    }}
-                                    required
-                                />
-                                {usernameError && (
-                                    <div style={{ fontSize: '10px', color: 'var(--danger)', marginBottom: '12px', fontWeight: 600, paddingLeft: '4px' }}>
-                                        {usernameError}
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
-                    <input
-                        type="text"
-                        placeholder="Email or Username"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        style={inputStyle}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        style={inputStyle}
-                        required
-                        minLength={6}
-                    />
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            width: '100%', height: '52px',
-                            background: 'var(--gradient-1)',
-                            color: 'white', border: 'none', borderRadius: '14px',
-                            fontSize: '15px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.7 : 1, transition: 'all 0.2s',
-                            boxShadow: '0 4px 12px rgba(224,92,42,0.3)', marginBottom: '20px'
-                        }}
-                    >
-                        {loading ? 'Processing...' : (mode === 'login' ? 'Sign In' : 'Create Account')}
-                    </button>
-                </form>
-
-                <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', color: 'var(--text-3)', fontSize: '12px', fontWeight: 500 }}>
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
-                    OR
-                    <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
-                </div>
-
-                <div style={{ width: '100%', marginBottom: '16px', padding: '12px 16px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                    <p style={{ fontSize: '11px', color: 'var(--text-3)', lineHeight: 1.5, margin: 0 }}>
-                        By connecting your Google account you allow AIIMIN to access selected Google services such as your Google Calendar or YouTube data to power productivity features within the application.<br /><br />
-                        AIIMIN only uses this data to provide requested functionality and does not sell or share Google user data. You can revoke access anytime from your Google Account permissions.
-                    </p>
-                </div>
-
-                <button
-                    onClick={signInWithGoogle}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-secondary)';
-                        e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-card)';
-                        e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.08)';
-                        e.currentTarget.style.transform = 'none';
-                    }}
+        {/* ── Steps ── */}
+        <AnimatePresence mode="wait">
+          {mode === 'forgot' ? (
+            /* ==================== FORGOT FLOW ==================== */
+            step === 1 ? (
+              <motion.div
+                key="forgot-step1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={handleBack}
                     style={{
-                        width: '100%', height: '52px', backgroundColor: 'var(--bg-card)',
-                        border: '1px solid var(--border)', borderRadius: '14px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-                        fontSize: '15px', fontWeight: 500, color: 'var(--text-1)',
-                        cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                        transition: 'all 0.2s'
+                      alignSelf: 'flex-start',
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      background: 'rgba(0,0,0,0.04)',
+                      border: '1px solid rgba(0,0,0,0.08)',
+                      borderRadius: '99px', padding: '6px 14px',
+                      fontSize: '12px', fontWeight: 600, color: 'var(--text-2)',
+                      cursor: 'pointer', fontFamily: 'var(--font-sans)', marginBottom: '8px', width: 'fit-content'
                     }}
-                >
-                    <svg style={{ width: '20px', height: '20px' }} viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
+                  >
+                    <ArrowLeft size={13} /> Back
+                  </button>
+                  <div>
+                    <label style={labelStyle}>Username or Account Email</label>
+                    <input
+                      type="text" required value={forgotIdentifier} autoFocus
+                      onChange={e => setForgotIdentifier(e.target.value)}
+                      placeholder="Enter username or email"
+                      style={inputStyle}
+                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
+                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+                  {error && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      style={{ color: 'var(--color-danger)', fontSize: '13px', fontWeight: 500 }}>
+                      {error}
+                    </motion.div>
+                  )}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                    type="submit"
+                    style={{
+                      height: '52px', marginTop: '4px',
+                      background: isDark ? '#EDEDED' : '#111111',
+                      color: isDark ? '#111111' : '#FFFFFF',
+                      border: 'none', borderRadius: '12px',
+                      fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)', transition: 'opacity 0.2s',
+                    }}
+                  >
+                    Send Recovery Email →
+                  </motion.button>
+                </form>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="forgot-step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}
+              >
+                {loading ? (
+                  <div style={{ padding: '24px', textAlign: 'center' }}>
+                    <div className="aiimin-spinner" />
+                    <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
+                      {loadingText}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check size={32} color="#22C55E" />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 700 }}>Check your inbox</h3>
+                      <p style={{ margin: 0, color: 'var(--text-3)', fontSize: '14px', lineHeight: '1.5' }}>
+                        If an account exists for that identifier, we've sent an email with a secure link to reset your PIN.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => { setMode('login'); setStep(1); }}
+                      style={{
+                        height: '44px', padding: '0 24px',
+                        background: 'transparent',
+                        color: '#111111',
+                        border: '1px solid rgba(0,0,0,0.12)',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      Return to Login
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            )
+          ) : mode === 'login' ? (
+            /* ==================== LOGIN FLOW ==================== */
+            step === 1 ? (
+              <motion.div
+                key="login-step1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={labelStyle}>Username or Gmail</label>
+                    <input
+                      type="text" required value={identifier} autoFocus
+                      onChange={e => {
+                        const val = e.target.value.trim();
+                        setIdentifier(val.includes('@') ? val.toLowerCase() : val.toUpperCase());
+                      }}
+                      autoCapitalize="none"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck="false"
+                      placeholder="USERNAME or name@gmail.com"
+                      style={{
+                        ...inputStyle,
+                        textTransform: identifier.includes('@') ? 'none' : 'uppercase'
+                      }}
+                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
+                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+
+                  {error && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      style={{ color: 'var(--color-danger)', fontSize: '13px', fontWeight: 500 }}>
+                      {error}
+                    </motion.div>
+                  )}
+
+                  <motion.button
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                    type="submit"
+                    style={{
+                      height: '52px', marginTop: '4px',
+                      background: isDark ? '#EDEDED' : '#111111',
+                      color: isDark ? '#111111' : '#FFFFFF',
+                      border: 'none', borderRadius: '12px',
+                      fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)', transition: 'opacity 0.2s',
+                    }}
+                  >
+                    Continue →
+                  </motion.button>
+
+                  <div style={{ textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={toggleMode}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                    >
+                      New here? <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Create account</span>
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={signInWithGoogle}
+                    style={{
+                      height: '48px',
+                      background: 'rgba(255,255,255,0.45)',
+                      color: '#111111',
+                      border: '1px solid rgba(0,0,0,0.12)',
+                      borderRadius: '12px',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)'
+                    }}
+                  >
                     Continue with Google
+                  </button>
+
+                  {/* Divider */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }} />
+                    <span style={{ fontSize: '11px', color: '#aaa', fontWeight: 600, fontFamily: 'var(--font-sans)' }}>OR</span>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }} />
+                  </div>
+
+
+                </form>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="login-step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}
+              >
+                <button
+                  onClick={handleBack}
+                  style={{
+                    alignSelf: 'flex-start',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                    borderRadius: '99px', padding: '6px 14px',
+                    fontSize: '12px', fontWeight: 600, color: 'var(--text-2)',
+                    cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  <ArrowLeft size={13} /> Back
                 </button>
 
-                <div style={{ marginTop: '24px', fontSize: '12px', color: 'var(--text-3)', textAlign: 'center', lineHeight: 1.7 }}>
-                    <div>Your data is private.</div>
-                    <div>Only you have access to this dashboard.</div>
+                {/* PIN dots */}
+                <motion.div
+                  animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : { x: 0 }}
+                  transition={{ duration: 0.45 }}
+                  style={{ display: 'flex', gap: '16px' }}
+                >
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{
+                        scale: i < pin.length ? 1.25 : 1,
+                        background: i < pin.length
+                          ? (shake ? '#EF4444' : 'var(--accent)')
+                          : 'transparent',
+                      }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        width: '14px', height: '14px', borderRadius: '50%',
+                        border: `2px solid ${i < pin.length ? (shake ? '#EF4444' : 'var(--accent)') : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')}`,
+                      }}
+                    />
+                  ))}
+                </motion.div>
+
+                {loading ? (
+                  <div style={{ padding: '24px', textAlign: 'center' }}>
+                    <div className="aiimin-spinner" />
+                    <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
+                      {loadingText}
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <Numpad
+                      onEntry={handlePinEntry}
+                      onDelete={handlePinDelete}
+                      onClear={handlePinClear}
+                      maxLength={6}
+                      currentLength={pin.length}
+                      isDark={false}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('forgot');
+                        setStep(1);
+                        setError(null);
+                      }}
+                      style={{
+                        background: 'none', border: 'none', color: 'var(--text-3)',
+                        fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                        textDecoration: 'underline', marginTop: '8px'
+                      }}
+                    >
+                      Forgot PIN / Username?
+                    </button>
+                  </>
+                )}
+
+                {error && (
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                    style={{ color: '#EF4444', fontSize: '13px', fontWeight: 500, textAlign: 'center' }}>
+                    {error}
+                  </motion.div>
+                )}
+              </motion.div>
+            )
+          ) : (
+            /* ==================== SIGNUP FLOW ==================== */
+            step === 1 ? (
+              /* Signup Stage 1: Gmail & Full Name */
+              <motion.div
+                key="signup-step1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div>
+                    <label style={labelStyle}>Full Name</label>
+                    <input
+                      type="text" required value={fullName} autoFocus
+                      onChange={e => setFullName(e.target.value)}
+                      placeholder="e.g. Aaditya Upadhyay"
+                      style={inputStyle}
+                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
+                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={labelStyle}>Gmail address optional</label>
+                    <input
+                      type="email" value={email}
+                      onChange={e => setEmail(e.target.value.trim().toLowerCase())}
+                      placeholder="name@gmail.com"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      autoCorrect="off"
+                      spellCheck="false"
+                      style={inputStyle}
+                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
+                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+
+                  {error && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      style={{ color: 'var(--color-danger)', fontSize: '13px', fontWeight: 500 }}>
+                      {error}
+                    </motion.div>
+                  )}
+
+                  <motion.button
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                    type="submit"
+                    style={{
+                      height: '52px', marginTop: '4px',
+                      background: isDark ? '#EDEDED' : '#111111',
+                      color: isDark ? '#111111' : '#FFFFFF',
+                      border: 'none', borderRadius: '12px',
+                      fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)', transition: 'opacity 0.2s',
+                    }}
+                  >
+                    Continue to Username →
+                  </motion.button>
+
+                  <div style={{ textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={toggleMode}
+                      style={{ background: 'none', border: 'none', color: 'var(--text-3)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                    >
+                      Already have an account? <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign in</span>
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            ) : step === 2 ? (
+              /* Signup Stage 2: Username selection with validation visualizer */
+              <motion.div
+                key="signup-step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <form onSubmit={handleUsernameNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    style={{
+                      alignSelf: 'flex-start',
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      background: 'rgba(0,0,0,0.04)',
+                      border: '1px solid rgba(0,0,0,0.08)',
+                      borderRadius: '99px', padding: '6px 14px',
+                      fontSize: '12px', fontWeight: 600, color: 'var(--text-2)',
+                      cursor: 'pointer', fontFamily: 'var(--font-sans)', marginBottom: '8px', width: 'fit-content'
+                    }}
+                  >
+                    <ArrowLeft size={13} /> Back
+                  </button>
+
+                  <div>
+                    <label style={labelStyle}>Create Username</label>
+                    <input
+                      type="text" required value={usernameVal} autoFocus
+                      onChange={handleUsernameChange}
+                      placeholder="e.g. AADIYA10"
+                      style={{ ...inputStyle, textTransform: 'uppercase', fontStyle: 'normal', letterSpacing: '0.05em' }}
+                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
+                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+
+                  {/* Visual constraint rules checklist */}
+                  <div style={{
+                    padding: '16px', background: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.06)', borderRadius: '12px',
+                    display: 'flex', flexDirection: 'column', gap: '10px'
+                  }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-3)', borderBottom: '1px solid rgba(0,0,0,0.06)', paddingBottom: '6px' }}>
+                      Username Constraints
+                    </div>
+                    {/* Character limit */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: (usernameVal.length >= 3 && usernameVal.length <= 20) ? '#16a34a' : 'var(--text-2)' }}>
+                        {(usernameVal.length >= 3 && usernameVal.length <= 20) ? <Check size={13} /> : <X size={13} style={{ color: '#ef4444' }} />}
+                        <span>Between 3 and 20 characters</span>
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: (usernameVal.length >= 3 && usernameVal.length <= 20) ? '#16a34a' : 'var(--text-3)' }}>
+                        {usernameVal.length} / 20
+                      </span>
+                    </div>
+
+                    {/* Character types */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: /^[A-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? '#16a34a' : '#ef4444' }}>
+                        {/^[A-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? <Check size={13} /> : <X size={13} />}
+                        <span>Letters, numbers, _, ., - only</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      style={{ color: 'var(--color-danger)', fontSize: '13px', fontWeight: 500 }}>
+                      {error}
+                    </motion.div>
+                  )}
+
+                  <motion.button
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                    type="submit"
+                    disabled={!isUsernameValid}
+                    style={{
+                      height: '52px', marginTop: '4px',
+                      background: isUsernameValid ? '#111111' : 'rgba(0,0,0,0.1)',
+                      color: isUsernameValid ? '#FFFFFF' : 'rgba(0,0,0,0.3)',
+                      border: 'none', borderRadius: '12px',
+                      fontSize: '15px', fontWeight: 700, cursor: isUsernameValid ? 'pointer' : 'not-allowed',
+                      fontFamily: 'var(--font-sans)', transition: 'all 0.2s',
+                    }}
+                  >
+                    Continue to PIN Registration →
+                  </motion.button>
+                </form>
+              </motion.div>
+            ) : step === 3 ? (
+              /* Signup Stage 3: PIN registration */
+              <motion.div
+                key="signup-step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}
+              >
+                <button
+                  onClick={handleBack}
+                  style={{
+                    alignSelf: 'flex-start',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    background: 'rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    borderRadius: '99px', padding: '6px 14px',
+                    fontSize: '12px', fontWeight: 600, color: 'var(--text-2)',
+                    cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  <ArrowLeft size={13} /> Back
+                </button>
+
+                {/* PIN dots */}
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{
+                        scale: i < pin.length ? 1.25 : 1,
+                        background: i < pin.length ? 'var(--accent)' : 'transparent',
+                      }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        width: '14px', height: '14px', borderRadius: '50%',
+                        border: `2px solid ${i < pin.length ? 'var(--accent)' : 'rgba(0,0,0,0.2)'}`,
+                      }}
+                    />
+                  ))}
                 </div>
 
-            </div>
+                <Numpad
+                  onEntry={handlePinEntry}
+                  onDelete={handlePinDelete}
+                  onClear={handlePinClear}
+                  maxLength={6}
+                  currentLength={pin.length}
+                  isDark={false}
+                />
+
+                {error && (
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                    style={{ color: '#EF4444', fontSize: '13px', fontWeight: 500, textAlign: 'center' }}>
+                    {error}
+                  </motion.div>
+                )}
+              </motion.div>
+            ) : (
+              /* Signup Stage 4: PIN verification */
+              <motion.div
+                key="signup-step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px' }}
+              >
+                <button
+                  onClick={handleBack}
+                  style={{
+                    alignSelf: 'flex-start',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    background: 'rgba(0,0,0,0.04)',
+                    border: '1px solid rgba(0,0,0,0.08)',
+                    borderRadius: '99px', padding: '6px 14px',
+                    fontSize: '12px', fontWeight: 600, color: 'var(--text-2)',
+                    cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                  }}
+                >
+                  <ArrowLeft size={13} /> Back
+                </button>
+
+                {/* PIN dots with shake animation for mismatches */}
+                <motion.div
+                  animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : { x: 0 }}
+                  transition={{ duration: 0.45 }}
+                  style={{ display: 'flex', gap: '16px' }}
+                >
+                  {[...Array(6)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{
+                        scale: i < confirmPin.length ? 1.25 : 1,
+                        background: i < confirmPin.length
+                          ? (shake ? '#EF4444' : 'var(--accent)')
+                          : 'transparent',
+                      }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        width: '14px', height: '14px', borderRadius: '50%',
+                        border: `2px solid ${i < confirmPin.length ? (shake ? '#EF4444' : 'var(--accent)') : 'rgba(0,0,0,0.2)'}`,
+                      }}
+                    />
+                  ))}
+                </motion.div>
+
+                {loading ? (
+                  <div style={{ padding: '24px', textAlign: 'center' }}>
+                    <div className="aiimin-spinner" />
+                    <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
+                      {loadingText === 'Verifying...' ? 'Registering and setting up OS...' : loadingText}
+                    </p>
+                  </div>
+                ) : (
+                  <Numpad
+                    onEntry={handlePinEntry}
+                    onDelete={handlePinDelete}
+                    onClear={handlePinClear}
+                    maxLength={6}
+                    currentLength={confirmPin.length}
+                    isDark={false}
+                  />
+                )}
+
+                {error && (
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+                    style={{ color: '#EF4444', fontSize: '13px', fontWeight: 500, textAlign: 'center' }}>
+                    {error}
+                  </motion.div>
+                )}
+              </motion.div>
+            )
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Footer */}
+      <div style={{ position: 'fixed', bottom: '24px', textAlign: 'center', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: 'var(--text-3)' }}>
+          <Shield size={12} />
+          <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Secure Access Protocol
+          </span>
         </div>
-    );
+      </div>
+
+      <style>{`
+        .aiimin-spinner {
+          width: 28px; height: 28px; margin: 0 auto;
+          border: 2.5px solid var(--border);
+          border-top-color: var(--accent);
+          border-radius: 50%;
+          animation: aiimin-spin 0.7s linear infinite;
+        }
+        @keyframes aiimin-spin { to { transform: rotate(360deg); } }
+      `}</style>
+    </div>
+  );
 };
 
 export default Login;
