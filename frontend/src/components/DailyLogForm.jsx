@@ -233,10 +233,13 @@ const DailyLogForm = ({ user, externalMood }) => {
 
                     {/* SLEEP SECTION */}
                     <div>
-                        <div className={`${sectionClasses} mt-0`}>Sleep</div>
+                        <div className={`${sectionClasses} mt-0`}>Last Night's Sleep</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 500, marginBottom: '10px', marginTop: '-4px' }}>
+                            When did you fall asleep and wake up this morning?
+                        </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                            <TimePicker label="Bedtime" placeholder="Select bedtime" value={formData.sleepStart} onChange={(val) => handleTimeChange('sleepStart', val)} />
-                            <TimePicker label="Wake Time" placeholder="Select wake time" value={formData.sleepEnd} onChange={(val) => handleTimeChange('sleepEnd', val)} />
+                            <TimePicker label="Fell Asleep" placeholder="e.g. 11:00 PM" value={formData.sleepStart} onChange={(val) => handleTimeChange('sleepStart', val)} />
+                            <TimePicker label="Woke Up" placeholder="e.g. 7:00 AM" value={formData.sleepEnd} onChange={(val) => handleTimeChange('sleepEnd', val)} />
                         </div>
                         {formData.sleepStart && formData.sleepEnd && (
                             <div style={{
