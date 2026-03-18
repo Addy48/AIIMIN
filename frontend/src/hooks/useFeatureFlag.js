@@ -1,12 +1,13 @@
 export default function useFeatureFlag(flagKey) {
     try {
         const stored = localStorage.getItem('aiimin_dev_flags');
-        if (!stored) return true; // all features ON by default
+        if (!stored) return false;
 
         const flags = JSON.parse(stored);
-        // If key not explicitly set, default to ON
-        return flags[flagKey] !== false;
+        return Boolean(flags[flagKey]);
     } catch (e) {
-        return true;
+        // Fallback safely if localStorage is corrupted or parsed fails
+        localStorage.setItem('aiimin_dev_flags', '{}');
+        return false;
     }
 }

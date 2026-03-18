@@ -2,10 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { upsertRow } from '../services/dbService';
 import TimePicker from './TimePicker';
 import MomentumBar from './MomentumBar';
+import { useDevContext } from '../context/DevContext';
+import { devLogger } from '../utils/devLogger';
 import toast from '../utils/toast';
 import DumbbellIcon from './icons/DumbbellIcon';
-import ToggleCard from './dailylog/ToggleCard';
-import FloatingSaveButton from './dailylog/FloatingSaveButton';
+
+/* ─── Theme-aware Toggle Card ─── */
+const ToggleCard = ({ active, onClick, icon, text }) => (
+    <div
+        onClick={onClick}
+        style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '14px 16px', borderRadius: '10px',
+            border: active ? '1px solid rgba(245,166,35,0.25)' : '1px solid var(--border)',
+            background: active ? 'rgba(245,166,35,0.08)' : 'var(--bg-elevated)',
+            cursor: 'pointer', marginBottom: '10px', transition: 'all 0.2s',
+        }}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: 'var(--text-1)' }}>
+            <span style={{ fontSize: '18px' }}>{icon}</span>
+            <span>{text}</span>
+        </div>
+        <div style={{
+            width: '44px', height: '24px', borderRadius: '12px',
+            background: active ? '#f5a623' : 'var(--border-hover)',
+            position: 'relative', transition: 'background 0.2s', cursor: 'pointer',
+        }}>
+            <div style={{
+                position: 'absolute', width: '18px', height: '18px', borderRadius: '50%',
+                background: 'white', top: '3px', left: active ? '23px' : '3px',
+                transition: 'left 0.2s, transform 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transform: active ? 'rotate(45deg)' : 'rotate(0deg)',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+            }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={active ? '#f5a623' : 'var(--text-3)'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'stroke 0.2s' }}>
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </div>
+        </div>
+    </div>
+);
+
 
 
 /* ─── DailyLogForm ─── */
@@ -17,7 +56,7 @@ const DailyLogForm = ({ user, externalMood }) => {
         gymDuration: 0,
         breakfastDone: false,
         steps: 0,
-        waterBottles: 0,
+        proteinGrams: 0,
         learningDone: false,
         learningTopic: '',
         journalEntry: '',
@@ -33,6 +72,7 @@ const DailyLogForm = ({ user, externalMood }) => {
     }, [externalMood]);
 
     const [loading, setLoading] = useState(false);
+    const { testDate } = useDevContext();
 
     const [isDirty, setIsDirty] = useState(false);
     const [justSaved, setJustSaved] = useState(false);
@@ -79,7 +119,7 @@ const DailyLogForm = ({ user, externalMood }) => {
                 setLoading(false);
                 return;
             }
-            const dateObj = new Date();
+            const dateObj = testDate ? new Date(testDate) : new Date();
             const today = dateObj.toISOString().split('T')[0];
             const userId = user.id;
 
@@ -93,14 +133,18 @@ const DailyLogForm = ({ user, externalMood }) => {
                 gym_duration: typeof formData.gymDuration === 'number' ? formData.gymDuration : null,
                 breakfast_done: formData.breakfastDone || false,
                 steps: typeof formData.steps === 'number' ? formData.steps : 0,
-                water_bottles: typeof formData.waterBottles === 'number' ? formData.waterBottles : 0,
+                protein_grams: typeof formData.proteinGrams === 'number' ? formData.proteinGrams : 0,
                 learning_done: formData.learningDone || false,
                 learning_topic: formData.learningTopic || null,
                 journal_entry: formData.journalEntry || null,
                 mood: formData.mood,
             };
 
-            await upsertRow('daily_logs', payload, 'user_id,date');
+            const data = await upsertRow('daily_logs', payload, 'user_id,date');
+
+            if (process.env.NODE_ENV === 'development') {
+                devLogger.logOperation(payload, data);
+            }
 
             toast.success(`Log saved at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
             setJustSaved(true);
@@ -112,7 +156,7 @@ const DailyLogForm = ({ user, externalMood }) => {
                 setFormData({
                     sleepStart: '', sleepEnd: '',
                     gymDone: false, gymDuration: 0,
-                    breakfastDone: false, steps: 0, waterBottles: 0,
+                    breakfastDone: false, steps: 0, proteinGrams: 0,
                     learningDone: false, learningTopic: '',
                     journalEntry: '', mood: null,
                 });
@@ -125,7 +169,7 @@ const DailyLogForm = ({ user, externalMood }) => {
         }
     };
 
-    const displayDateObj = new Date();
+    const displayDateObj = testDate ? new Date(testDate) : new Date();
     const todayDisplay = displayDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
     const inputStyle = {
@@ -177,24 +221,10 @@ const DailyLogForm = ({ user, externalMood }) => {
 
                 {/* Form Header */}
                 <div style={{ padding: '24px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-1)' }}>Today's Log</h3>
-                        <div style={{ padding: '3px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '12px', color: 'var(--text-3)', fontWeight: 500 }}>
-                            {todayDisplay}
-                        </div>
+                    <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-1)' }}>Today's Log</h3>
+                    <div style={{ padding: '3px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '12px', color: 'var(--text-3)', fontWeight: 500 }}>
+                        {todayDisplay}
                     </div>
-                    <button type="button" onClick={() => {
-                        setFormData({
-                            sleepStart: '', sleepEnd: '',
-                            gymDone: false, gymDuration: 0,
-                            breakfastDone: false, steps: 0, waterBottles: 0,
-                            learningDone: false, learningTopic: '',
-                            journalEntry: '', mood: null,
-                        });
-                        setIsDirty(false);
-                    }} style={{ background: 'transparent', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
-                        ✕
-                    </button>
                 </div>
 
                 {/* Form Body */}
@@ -243,36 +273,8 @@ const DailyLogForm = ({ user, externalMood }) => {
                                     <input type="number" name="steps" value={formData.steps} onChange={handleChange} placeholder="0" style={inputStyle} />
                                 </div>
                                 <div>
-                                    <label style={labelStyle}>💧 Water</label>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-                                        <button
-                                            type="button"
-                                            onClick={() => { setFormData(prev => ({ ...prev, waterBottles: Math.max(0, (prev.waterBottles || 0) - 1) })); setIsDirty(true); }}
-                                            style={{
-                                                width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px',
-                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                                color: 'var(--text-3)', cursor: 'pointer', display: 'flex',
-                                                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                                            }}>−</button>
-                                        <div style={{ textAlign: 'center', flex: 1 }}>
-                                            <div style={{ fontSize: '22px', fontWeight: 800, color: formData.waterBottles >= 3 ? 'var(--accent)' : 'var(--text-1)', lineHeight: 1 }}>
-                                                {formData.waterBottles || 0}
-                                            </div>
-                                            <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '2px' }}>
-                                                {formData.waterBottles >= 3 ? '🎯 Goal met' : `× 1.5L · Goal: 3`}
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => { setFormData(prev => ({ ...prev, waterBottles: (prev.waterBottles || 0) + 1 })); setIsDirty(true); }}
-                                            style={{
-                                                width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px',
-                                                border: '1px solid var(--accent)', background: 'var(--accent-dim)',
-                                                color: 'var(--accent)', cursor: 'pointer', display: 'flex',
-                                                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                                                fontWeight: 700,
-                                            }}>+</button>
-                                    </div>
+                                    <label style={labelStyle}>Protein (g)</label>
+                                    <input type="number" name="proteinGrams" value={formData.proteinGrams} onChange={handleChange} placeholder="0" style={inputStyle} />
                                 </div>
                             </div>
                             {formData.steps > 0 && (
@@ -367,7 +369,54 @@ const DailyLogForm = ({ user, externalMood }) => {
             </form>
 
             {/* Floating Sticky Save Button */}
-            <FloatingSaveButton isDirty={isDirty} loading={loading} onSave={handleSubmit} />
+            {isDirty && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: '32px',
+                    right: 'max(32px, calc((100vw - var(--max-width)) / 2 + 32px))',
+                    zIndex: 9999,
+                    animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                }}>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '12px 22px',
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--border-accent)',
+                            borderRadius: '30px',
+                            boxShadow: '0 8px 18px rgba(0,0,0,0.2), 0 0 0 1px rgba(245,166,35,0.15)',
+                            color: 'var(--text-1)',
+                            fontWeight: 700,
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                            opacity: loading ? 0.7 : 1
+                        }}
+                        onMouseEnter={e => {
+                            if (!loading) e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={e => {
+                            if (!loading) e.currentTarget.style.transform = 'none';
+                        }}
+                    >
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div className="animate-ping" style={{ position: 'absolute', width: '8px', height: '8px', borderRadius: '50%', background: '#f5a623', opacity: 0.7 }}></div>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f5a623', position: 'relative' }}></div>
+                        </div>
+                        {loading ? 'Saving...' : 'Save Log'}
+                    </button>
+                    <style>{`
+                        @keyframes slideUp {
+                            from { transform: translateY(20px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                    `}</style>
+                </div>
+            )}
         </div>
     );
 };

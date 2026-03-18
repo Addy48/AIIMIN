@@ -1,70 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw, Settings, Zap, Coffee } from 'lucide-react';
 import supabase from '../utils/supabase';
 import { upsertRow, insertRow } from '../services/dbService';
 import toast from '../utils/toast';
-import { playSound, sendNotification, requestNotificationPermission } from '../utils/soundEngine';
-import { POMODORO_XP, getRank } from '../utils/xpEngine';
-import PomodoroReflection from './pomodoro/PomodoroReflection';
-
-const PomodoroTimer = ({ user, onClose }) => {
 
 
+
+const PomodoroTimer = ({ user }) => {
     const PRESETS = [
-        { work: 15, rest: 5, label: 'Quick' },
-        { work: 25, rest: 5, label: 'Standard' },
-        { work: 45, rest: 10, label: 'Deep Work' },
-        { work: 60, rest: 15, label: 'Flow' },
+        { work: 25, rest: 5 },
+        { work: 45, rest: 10 },
+        { work: 90, rest: 20 },
     ];
-    
     const [selectedPreset, setSelectedPreset] = useState(0);
-    const [showConfig, setShowConfig] = useState(true); // Default to true so user can see timing
-
-    const [workDuration, setWorkDuration] = useState(() => {
-        const stored = localStorage.getItem('aiimin_pomodoro_work');
-        return stored ? parseInt(stored, 10) : PRESETS[0].work;
-    });
-    const [breakDuration, setBreakDuration] = useState(() => {
-        const stored = localStorage.getItem('aiimin_pomodoro_break');
-        return stored ? parseInt(stored, 10) : PRESETS[0].rest;
-    });
-    const [timeLeft, setTimeLeft] = useState(() => {
-        const stored = localStorage.getItem('aiimin_pomodoro_work');
-        return (stored ? parseInt(stored, 10) : PRESETS[0].work) * 60;
-    });
+    const [showCustom, setShowCustom] = useState(false);
+    const [workDuration, setWorkDuration] = useState(PRESETS[0].work);
+    const [breakDuration, setBreakDuration] = useState(PRESETS[0].rest);
+    const [timeLeft, setTimeLeft] = useState(PRESETS[0].work * 60);
     const [isRunning, setIsRunning] = useState(false);
     const [isBreak, setIsBreak] = useState(false);
     const [cyclesCompleted, setCyclesCompleted] = useState(0);
     const [showReflection, setShowReflection] = useState(false);
     const [sessionMood, setSessionMood] = useState(null);
     const [sessionNote, setSessionNote] = useState('');
+    const [deepMode, setDeepMode] = useState(false);
     const [showCompletion, setShowCompletion] = useState(false);
 
+    // Sync active state for UpcomingSidebar
     useEffect(() => {
         localStorage.setItem('aiimin_pomodoro_active', isRunning ? 'true' : 'false');
         window.dispatchEvent(new Event('aiimin_pomodoro_toggled'));
-        return () => localStorage.removeItem('aiimin_pomodoro_active');
+        return () => localStorage.removeItem('aiimin_pomodoro_active'); // Clear on unmount
     }, [isRunning]);
 
     const handlePresetSelect = (index) => {
         if (isRunning) return;
         setSelectedPreset(index);
+        setShowCustom(false);
         setWorkDuration(PRESETS[index].work);
         setBreakDuration(PRESETS[index].rest);
         if (!isBreak) setTimeLeft(PRESETS[index].work * 60);
     };
 
+    // S8: Deep Mode — ESC key exit + scroll lock + grayscale
     useEffect(() => {
-        if (isRunning) {
-            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-            const s = (timeLeft % 60).toString().padStart(2, '0');
-            document.title = `${isBreak ? '☕' : '🔥'} ${m}:${s} — AIIMIN`;
-        } else if (!isRunning && timeLeft === 0) {
-            document.title = isBreak ? '⏰ Break over!' : '🎯 Session done!';
-        }
-        return () => { if (!isRunning) document.title = 'AIIMIN'; };
-    }, [isRunning, timeLeft, isBreak]);
+        if (!deepMode) return;
+        document.body.style.overflow = 'hidden';
+        const root = document.getElementById('root');
+        if (root) root.style.filter = 'grayscale(1)';
+
+        const handleEsc = (e) => { if (e.key === 'Escape') setDeepMode(false); };
+        document.addEventListener('keydown', handleEsc);
+
+        return () => {
+            document.body.style.overflow = '';
+            if (root) root.style.filter = '';
+            document.removeEventListener('keydown', handleEsc);
+        };
+    }, [deepMode]);
 
     useEffect(() => {
         let interval;
@@ -78,10 +70,8 @@ const PomodoroTimer = ({ user, onClose }) => {
                 setCyclesCompleted(newCycles);
                 setIsRunning(false);
                 setShowCompletion(true);
-                playSound('chime');
-                sendNotification('Focus session complete! 🎯', `Session #${newCycles} done — ${workDuration} min of deep work.`);
                 toast.success(`Focus session #${newCycles} complete!`);
-                
+                // Record completed session to pomodoro_sessions
                 if (user?.id) {
                     const today = new Date().toISOString().split('T')[0];
                     insertRow('pomodoro_sessions', [{
@@ -90,39 +80,18 @@ const PomodoroTimer = ({ user, onClose }) => {
                         cycles_completed: 1,
                         duration: workDuration,
                     }]).catch(err => console.error('[Pomodoro] session save failed:', err.message));
-
-                    (async () => {
-                        try {
-                            const { data: xp } = await supabase.from('user_xp')
-                                .select('total_xp, current_rank').eq('user_id', user.id).maybeSingle();
-                            if (xp) {
-                                const newTotal = (xp.total_xp || 0) + POMODORO_XP;
-                                const newRank = getRank(newTotal);
-                                await upsertRow('user_xp', {
-                                    user_id: user.id,
-                                    total_xp: newTotal,
-                                    current_rank: newRank.rank,
-                                    power_level: newTotal,
-                                    updated_at: new Date().toISOString(),
-                                }, 'user_id');
-                                toast.success(`⚡ +${POMODORO_XP} XP — Focus session`);
-                            }
-                        } catch { /* silent */ }
-                    })();
                 }
                 setTimeout(() => {
                     setShowCompletion(false);
                     setShowReflection(true);
                 }, 1500);
             } else {
-                playSound('bell');
-                sendNotification('Break over! ⚡', 'Time to get back to work.');
                 setIsBreak(false);
                 setTimeLeft(workDuration * 60);
             }
         }
         return () => clearInterval(interval);
-    }, [isRunning, timeLeft, isBreak, workDuration, cyclesCompleted, user?.id]);
+    }, [isRunning, timeLeft, isBreak, workDuration, breakDuration, cyclesCompleted, user?.id]);
 
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -137,7 +106,8 @@ const PomodoroTimer = ({ user, onClose }) => {
     };
 
     const totalDuration = isBreak ? breakDuration * 60 : workDuration * 60;
-    const accentColor = isBreak ? 'var(--color-success)' : 'var(--color-rust)';
+    const strokeDashoffset = (timeLeft / totalDuration) * 339.3;
+    const accentColor = isBreak ? 'var(--success)' : 'var(--accent)';
 
     const handleDurationEdit = (type, val) => {
         let n = parseInt(val, 10);
@@ -146,16 +116,19 @@ const PomodoroTimer = ({ user, onClose }) => {
 
         if (type === 'work') {
             setWorkDuration(n);
-            localStorage.setItem('aiimin_pomodoro_work', n.toString());
             if (!isRunning && !isBreak) setTimeLeft(n * 60);
+
+            // Auto rest calculation (5m per 25m = 20%)
+            const calculatedRest = Math.max(1, Math.round(n * 0.2));
+            setBreakDuration(calculatedRest);
         } else {
             setBreakDuration(n);
-            localStorage.setItem('aiimin_pomodoro_break', n.toString());
             if (!isRunning && isBreak) setTimeLeft(n * 60);
         }
     };
 
     const handleSaveReflection = async () => {
+        // Continue to break
         setShowReflection(false);
         setIsBreak(true);
         setTimeLeft(breakDuration * 60);
@@ -165,232 +138,329 @@ const PomodoroTimer = ({ user, onClose }) => {
             try {
                 const today = new Date().toISOString().split('T')[0];
                 const noteText = `[Session Reflection]: Mood: ${sessionMood || 'N/A'}. Note: ${sessionNote.trim() || 'None'}`;
-                const { data: log } = await supabase.from('daily_logs').select('journal_entry').eq('date', today).single();
-                const newJournal = log && log.journal_entry ? log.journal_entry + '\n\n' + noteText : noteText;
+
+                // Fetch existing log
+                const { data: log } = await supabase
+                    .from('daily_logs')
+                    .select('journal_entry')
+                    .eq('date', today)
+                    .single();
+
+                const newJournal = log && log.journal_entry
+                    ? log.journal_entry + '\n\n' + noteText
+                    : noteText;
+
                 if (user?.id) {
-                    await upsertRow('daily_logs', { user_id: user.id, date: today, journal_entry: newJournal }, 'user_id,date');
+                    await upsertRow('daily_logs', {
+                        user_id: user.id,
+                        date: today,
+                        journal_entry: newJournal
+                    }, 'user_id,date');
                 }
+
             } catch (e) { console.error("Could not save session note", e); }
         }
+
         setSessionMood(null);
         setSessionNote('');
     };
 
+    const handleSkipReflection = () => {
+        setShowReflection(false);
+        setSessionMood(null);
+        setSessionNote('');
+        setIsBreak(true);
+        setTimeLeft(breakDuration * 60);
+        setIsRunning(true);
+    };
+
     return (
         <div style={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '24px',
-            position: 'relative',
-            overflow: 'hidden'
-        }}>
+            background: 'var(--bg-card)', border: '1px solid var(--border)',
+            borderRadius: 'var(--r-lg)', padding: 'var(--card-px)', textAlign: 'center',
+            boxShadow: 'var(--shadow-md)', marginBottom: 'var(--card-gap)',
+            position: 'relative', zIndex: deepMode ? 9999 : 'auto',
+        }} className={`fade-up ${isRunning ? 'glow-pulse' : ''}`}>
 
+            <div style={{
+                fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em',
+                color: accentColor, marginBottom: '8px'
+            }}>
+                {isBreak ? '⚡ Break Time' : '🎯 Focus Session'}
+            </div>
 
-            <AnimatePresence mode="wait">
-                {showReflection ? (
-                    <motion.div 
-                        key="reflection"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        style={{ width: '100%', zHeight: 20 }}
-                    >
-                        <PomodoroReflection
-                            sessionMood={sessionMood} setSessionMood={setSessionMood}
-                            sessionNote={sessionNote} setSessionNote={setSessionNote}
-                            onSave={handleSaveReflection} onSkip={() => { setShowReflection(false); setIsBreak(true); setTimeLeft(breakDuration * 60); setIsRunning(true); }}
-                        />
-                    </motion.div>
-                ) : (
-                    <motion.div 
-                        key="timer"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        style={{ textAlign: 'center', width: '100%' }}
-                    >
-                        <div style={{ 
-                            fontSize: '11px', 
-                            fontWeight: 800, 
-                            textTransform: 'uppercase', 
-                            letterSpacing: '0.2em',
-                            color: accentColor, 
-                            marginBottom: '16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px'
-                        }}>
-                            {isBreak ? <><Coffee size={12} /> Break Time</> : <><Zap size={12} /> Deep Work</>}
-                        </div>
-
-                        <div style={{ position: 'relative', width: '180px', height: '180px', margin: '0 auto 32px' }}>
-                            <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
-                                <circle cx="90" cy="90" r="84" stroke="var(--color-border)" strokeWidth="6" fill="none" />
-                                <motion.circle
-                                    cx="90" cy="90" r="84" 
-                                    stroke={accentColor} 
-                                    strokeWidth="6" 
-                                    fill="none"
-                                    strokeDasharray="527.7" 
-                                    strokeDashoffset={(timeLeft / totalDuration) * 527.7}
-                                    strokeLinecap="round"
-                                    style={{ transition: 'stroke-dashoffset 1s linear' }}
-                                />
-                            </svg>
-                            <div style={{
-                                position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '42px', fontWeight: 900, color: 'var(--color-text-1)', letterSpacing: '-0.05em',
-                                fontVariantNumeric: 'tabular-nums', lineHeight: 1, fontFamily: 'var(--font-mono)'
-                            }}>
-                                {formatTime(timeLeft)}
-                                <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)', letterSpacing: '0.1em', marginTop: '4px' }}>
-                                    {isBreak ? 'REMAINING' : 'FOCUSING'}
-                                </div>
-                            </div>
-                        </div>
-
-
-                        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '32px' }}>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => { if (!isRunning) requestNotificationPermission(); setIsRunning(!isRunning); }}
-                                style={{
-                                    width: '64px', height: '64px', borderRadius: '24px', border: 'none',
-                                    background: isRunning ? 'var(--color-elevated)' : accentColor,
-                                    color: isRunning ? 'var(--color-text-1)' : '#ffffff',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    cursor: 'pointer', transition: 'all 0.2s',
-                                    boxShadow: isRunning ? 'none' : '0 8px 24px var(--color-accent-glow)',
-                                }}
-                            >
-                                {isRunning ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
-                            </motion.button>
-                            <motion.button
-                                whileHover={{ scale: 1.05, background: 'var(--color-elevated)' }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={handleReset}
-                                style={{
-                                    width: '64px', height: '64px', borderRadius: '24px', 
-                                    background: 'var(--color-surface)',
-                                    border: '1px solid var(--color-border)',
-                                    color: 'var(--color-text-2)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    cursor: 'pointer', transition: 'all 0.2s'
-                                }}
-                            >
-                                <RotateCcw size={20} />
-                            </motion.button>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setShowConfig(!showConfig)}
-                                style={{
-                                    width: '64px', height: '64px', borderRadius: '24px', 
-                                    background: showConfig ? 'var(--color-elevated)' : 'var(--color-surface)',
-                                    border: '1px solid var(--color-border)',
-                                    borderColor: showConfig ? accentColor : 'var(--color-border)',
-                                    color: showConfig ? accentColor : 'var(--color-text-3)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    cursor: 'pointer', transition: 'all 0.2s'
-                                }}
-                            >
-                                <Settings size={20} />
-                            </motion.button>
-                        </div>
-
-                        <AnimatePresence>
-                            {showConfig && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    style={{ overflow: 'hidden' }}
-                                >
-                                    <div style={{ 
-                                        padding: '20px', 
-                                        background: 'var(--color-surface)', 
-                                        borderRadius: '24px', 
-                                        border: '1px solid var(--color-border)',
-                                        marginBottom: '24px'
-                                    }}>
-
-                                        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-                                            {PRESETS.map((p, i) => (
-                                                <motion.button
-                                                    key={i}
-                                                    whileHover={isRunning ? {} : { scale: 1.05 }}
-                                                    whileTap={isRunning ? {} : { scale: 0.95 }}
-                                                    onClick={() => handlePresetSelect(i)}
-                                                    disabled={isRunning}
-                                                    style={{
-                                                        flex: 1, padding: '16px 8px', borderRadius: '32px', fontSize: '16px', fontWeight: 800,
-                                                        border: selectedPreset === i ? 'none' : '1px solid var(--color-border)',
-                                                        background: selectedPreset === i ? accentColor : 'var(--color-surface)',
-                                                        color: selectedPreset === i ? '#ffffff' : 'var(--color-text-2)',
-                                                        cursor: isRunning ? 'not-allowed' : 'pointer',
-                                                        transition: 'all 0.2s',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        boxShadow: selectedPreset === i ? '0 4px 12px var(--color-accent-glow)' : 'none',
-                                                    }}
-                                                >
-                                                    {p.work}m
-                                                </motion.button>
-                                            ))}
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: '6px' }}>Work</div>
-                                                <input 
-                                                    type="number" value={workDuration}
-                                                    onChange={e => handleDurationEdit('work', e.target.value)}
-                                                    disabled={isRunning}
-                                                    style={{ width: '100%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '8px', color: 'var(--color-text-1)', textAlign: 'center', fontWeight: 700, outline: 'none' }}
-                                                />
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: '6px' }}>Rest</div>
-                                                <input 
-                                                    type="number" value={breakDuration}
-                                                    onChange={e => handleDurationEdit('rest', e.target.value)}
-                                                    disabled={isRunning}
-                                                    style={{ width: '100%', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '8px', color: 'var(--color-text-1)', textAlign: 'center', fontWeight: 700, outline: 'none' }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        <div style={{ fontSize: '12px', color: 'var(--color-text-3)', fontWeight: 600 }}>
-                            🔥 {cyclesCompleted} cycles today • <span style={{ color: 'var(--color-accent)' }}>Mastery +{(cyclesCompleted * 10)}</span>
-                        </div>
-                    </motion.div>
+            <div style={{ position: 'relative', width: '130px', height: '130px', margin: '20px auto' }}>
+                <svg width="130" height="130" style={{ transform: 'rotate(-90deg)' }}>
+                    <circle cx="65" cy="65" r="60" stroke="var(--bg-elevated)" strokeWidth="8" fill="none" />
+                    <circle
+                        cx="65" cy="65" r="60" stroke={accentColor} strokeWidth="8" fill="none"
+                        strokeDasharray="376.8" strokeDashoffset={isNaN(strokeDashoffset) ? 0 : (timeLeft / totalDuration) * 376.8}
+                        strokeLinecap="round"
+                        style={{ transition: 'stroke-dashoffset 1s linear' }}
+                    />
+                </svg>
+                {!showReflection && (
+                    <div style={{
+                        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '32px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.04em',
+                        fontVariantNumeric: 'tabular-nums', lineHeight: 1
+                    }}>
+                        {formatTime(timeLeft)}
+                    </div>
                 )}
-            </AnimatePresence>
+            </div>
 
-            {showCompletion && (
-                <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    style={{
-                        position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'center', 
-                        background: 'var(--glass-bg)',
-                        border: '1px solid var(--color-border)',
-                        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-                        zIndex: 100, borderRadius: '24px'
-                    }}
-                >
-                    <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} style={{ fontSize: '64px', marginBottom: '16px' }}>🎯</motion.div>
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-text-1)' }}>Session Complete</div>
-                    <div style={{ color: 'var(--color-text-2)', marginTop: '8px', fontWeight: 600 }}>Rest for {breakDuration} minutes</div>
-                </motion.div>
+            {showReflection ? (
+                <div className="fade-up" style={{
+                    marginTop: '16px', padding: '20px', background: 'var(--bg-elevated)',
+                    border: '1px solid var(--border-accent)', borderRadius: '16px',
+                    boxShadow: 'var(--shadow-md)', textAlign: 'left'
+                }}>
+                    <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '12px' }}>
+                        Great focus! Quick reflection:
+                    </h4>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                        {['😔', '😕', '😐', '🙂', '🔥'].map((emoji, i) => (
+                            <button
+                                key={i}
+                                onClick={() => setSessionMood(emoji)}
+                                style={{
+                                    flex: 1, height: '36px', borderRadius: '8px', border: '1px solid var(--border)',
+                                    background: sessionMood === emoji ? 'var(--accent-dim)' : 'var(--bg-card)',
+                                    borderColor: sessionMood === emoji ? 'var(--accent)' : 'var(--border)',
+                                    fontSize: '18px', cursor: 'pointer', transition: 'all 0.2s'
+                                }}
+                            >
+                                {emoji}
+                            </button>
+                        ))}
+                    </div>
+                    <textarea
+                        placeholder="Key insight or struggle... (optional)"
+                        value={sessionNote}
+                        onChange={(e) => setSessionNote(e.target.value)}
+                        style={{
+                            width: '100%', height: '60px', borderRadius: '8px', padding: '10px',
+                            background: 'var(--bg-card)', border: '1px solid var(--border)',
+                            color: 'var(--text-1)', fontSize: '13px', resize: 'none', outline: 'none',
+                            marginBottom: '16px'
+                        }}
+                    />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={handleSkipReflection} style={{
+                            flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-card)',
+                            border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: '13px', fontWeight: 700, cursor: 'pointer'
+                        }}>Skip</button>
+                        <button onClick={handleSaveReflection} style={{
+                            flex: 2, padding: '10px', borderRadius: '8px', background: 'var(--accent)',
+                            border: 'none', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer'
+                        }}>Save & Take Break</button>
+                    </div>
+                </div>
+            ) : (
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
+                    <button
+                        onClick={() => setIsRunning(!isRunning)}
+                        onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = '#f7b84a'; }}
+                        onMouseLeave={(e) => { if (!isRunning) e.currentTarget.style.background = '#f5a623'; }}
+                        style={{
+                            padding: '0 24px', height: '48px', borderRadius: '24px', border: isRunning ? '1px solid rgba(255,255,255,0.15)' : 'none',
+                            background: isRunning ? 'rgba(255,255,255,0.08)' : '#f5a623', color: 'white',
+                            fontSize: '15px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: isRunning ? 'none' : '0 4px 14px rgba(245,166,35,0.4)',
+                        }}
+                    >
+                        {isRunning ? '⏸ Pause' : '▶ Begin'}
+                    </button>
+                    <button
+                        onClick={handleReset}
+                        className="hover:bg-[rgba(255,255,255,0.1)]"
+                        style={{
+                            width: '80px', height: '48px', borderRadius: '24px', background: 'var(--bg-elevated)',
+                            border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: '13px',
+                            fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+                        }}
+                    >
+                        ↺ Reset
+                    </button>
+                </div>
             )}
+
+            {/* S7: Preset Duration Pills */}
+            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px' }}>
+                    Duration
+                </div>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '8px' }}>
+                    {PRESETS.map((p, i) => (
+                        <button
+                            key={i}
+                            onClick={() => handlePresetSelect(i)}
+                            disabled={isRunning}
+                            style={{
+                                padding: '8px 18px', borderRadius: '99px', fontSize: '13px', fontWeight: 700,
+                                cursor: isRunning ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                                border: selectedPreset === i && !showCustom ? '1px solid var(--accent)' : '1px solid var(--border)',
+                                background: selectedPreset === i && !showCustom ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                                color: selectedPreset === i && !showCustom ? 'var(--accent)' : 'var(--text-2)',
+                                opacity: isRunning ? 0.5 : 1,
+                            }}
+                        >
+                            {p.work} min
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => { if (!isRunning) setShowCustom(!showCustom); }}
+                        disabled={isRunning}
+                        style={{
+                            padding: '8px 14px', borderRadius: '99px', fontSize: '12px', fontWeight: 600,
+                            cursor: isRunning ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                            border: showCustom ? '1px solid var(--accent)' : '1px solid var(--border)',
+                            background: showCustom ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                            color: showCustom ? 'var(--accent)' : 'var(--text-3)',
+                            opacity: isRunning ? 0.5 : 1,
+                        }}
+                    >
+                        ⚙ Custom
+                    </button>
+                </div>
+
+                {/* Auto rest suggestion */}
+                {!showCustom && (
+                    <div style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 500 }}>
+                        Rest: {PRESETS[selectedPreset].rest} min
+                    </div>
+                )}
+
+                {/* Custom duration inputs */}
+                {showCustom && (
+                    <div className="fade-up" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-2)' }}>
+                            Focus
+                            <input
+                                type="number" value={workDuration} min={1} max={120}
+                                onChange={(e) => handleDurationEdit('work', e.target.value)}
+                                style={{
+                                    width: '52px', textAlign: 'center', background: 'var(--bg-elevated)',
+                                    border: '1px solid var(--border-accent)', borderRadius: '6px',
+                                    color: 'var(--accent)', fontSize: '14px', fontWeight: 700, padding: '4px'
+                                }}
+                            />
+                            min
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-2)' }}>
+                            Rest
+                            <input
+                                type="number" value={breakDuration} min={1} max={30}
+                                onChange={(e) => handleDurationEdit('break', e.target.value)}
+                                style={{
+                                    width: '52px', textAlign: 'center', background: 'var(--bg-elevated)',
+                                    border: '1px solid var(--border-accent)', borderRadius: '6px',
+                                    color: 'var(--accent)', fontSize: '14px', fontWeight: 700, padding: '4px'
+                                }}
+                            />
+                            min
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--text-3)' }}>
+                🔥 {cyclesCompleted} cycles completed today
+            </div>
+
+            {/* Deep Mode Toggle */}
+            <button
+                onClick={() => setDeepMode(!deepMode)}
+                style={{
+                    marginTop: '12px', padding: '6px 14px', borderRadius: '99px',
+                    border: '1px solid var(--border)', background: deepMode ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                    color: deepMode ? 'var(--accent)' : 'var(--text-3)',
+                    fontSize: '11px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
+                }}
+            >
+                {deepMode ? '✦ Deep Mode On' : '◇ Deep Mode'}
+            </button>
+
+            {/* Completion Overlay */}
+            {showCompletion && (
+                <div className="completion-burst" style={{
+                    position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', background: 'var(--bg-card)',
+                    borderRadius: 'var(--r-lg)', zIndex: 10,
+                }}>
+                    <div className="check-pop" style={{ fontSize: '48px', marginBottom: '12px' }}>✓</div>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-1)' }}>Session Complete</div>
+                    <div style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: 600, marginTop: '4px' }}>
+                        #{cyclesCompleted} today
+                    </div>
+                </div>
+            )}
+
+            {/* S8: Deep Mode Full Overlay (no blur — grayscale + opaque bg) */}
+            {deepMode && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 99999,
+                    background: 'rgba(10, 10, 15, 0.95)',
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    gap: '24px',
+                }}>
+                    {/* Timer ring */}
+                    <div style={{ position: 'relative', width: '180px', height: '180px' }}>
+                        <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
+                            <circle cx="90" cy="90" r="82" stroke="rgba(255,255,255,0.06)" strokeWidth="8" fill="none" />
+                            <circle
+                                cx="90" cy="90" r="82" stroke={accentColor} strokeWidth="8" fill="none"
+                                strokeDasharray="515" strokeDashoffset={isNaN(strokeDashoffset) ? 0 : (timeLeft / totalDuration) * 515}
+                                strokeLinecap="round"
+                                style={{ transition: 'stroke-dashoffset 1s linear' }}
+                            />
+                        </svg>
+                        <div style={{
+                            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '42px', fontWeight: 800, color: '#fff', letterSpacing: '-0.04em',
+                            fontVariantNumeric: 'tabular-nums',
+                        }}>
+                            {formatTime(timeLeft)}
+                        </div>
+                    </div>
+
+                    {/* Controls */}
+                    <div style={{ display: 'flex', gap: '16px' }}>
+                        <button onClick={() => setIsRunning(!isRunning)} style={{
+                            padding: '12px 32px', borderRadius: '24px', border: 'none',
+                            background: isRunning ? 'rgba(255,255,255,0.1)' : accentColor,
+                            color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
+                        }}>
+                            {isRunning ? '⏸ Pause' : '▶ Begin'}
+                        </button>
+                        <button onClick={handleReset} style={{
+                            padding: '12px 24px', borderRadius: '24px',
+                            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+                        }}>
+                            ↺ Reset
+                        </button>
+                    </div>
+
+                    {/* Session counter */}
+                    <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>
+                        Deep Session #{cyclesCompleted + 1}
+                    </div>
+
+                    {/* ESC hint + exit */}
+                    <button onClick={() => setDeepMode(false)} style={{
+                        position: 'absolute', top: '32px', right: '32px',
+                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'rgba(255,255,255,0.4)', borderRadius: '8px',
+                        padding: '6px 14px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                    }}>
+                        ESC to exit
+                    </button>
+                </div>
+            )}
+
         </div>
     );
 };

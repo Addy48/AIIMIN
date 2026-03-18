@@ -37,18 +37,16 @@ export const METRIC_SCALES = {
             { label: '>10h', color: 'rgba(235,140,140,0.4)' }
         ]
     },
-    water: {
+    protein: {
         getColor: (v) => {
             if (v === 0) return 'var(--bg-elevated)';
-            if (v === 1) return 'rgba(59,130,246,0.25)';
-            if (v === 2) return 'rgba(59,130,246,0.5)';
-            return 'rgba(59,130,246,0.85)';
+            const pct = Math.min(v / 160, 1);
+            return `rgba(var(--accent-rgb), ${Math.max(0.15, pct)})`;
         },
         legend: [
-            { label: '0', color: 'var(--bg-elevated)' },
-            { label: '1 bottle', color: 'rgba(59,130,246,0.25)' },
-            { label: '2 bottles', color: 'rgba(59,130,246,0.5)' },
-            { label: '3+', color: 'rgba(59,130,246,0.85)' }
+            { label: '0g', color: 'var(--bg-elevated)' },
+            { label: '80g', color: 'rgba(var(--accent-rgb), 0.5)' },
+            { label: '160g+', color: 'var(--accent)' }
         ]
     },
     mood: {

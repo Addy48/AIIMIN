@@ -1,43 +1,56 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
+import supabase from '../utils/supabase';
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { session } = useAuth();
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const status = searchParams.get('status');
-        const reason = searchParams.get('reason');
-        const supabaseError = searchParams.get('error');
-        const supabaseDesc = searchParams.get('error_description');
+        const handleCallback = async () => {
+            const tokenHash = searchParams.get('token_hash');
+            const type = searchParams.get('type');
+            const status = searchParams.get('status');
+            const reason = searchParams.get('reason');
 
-        if (supabaseError) {
-            const msg = supabaseDesc ? decodeURIComponent(supabaseDesc) : supabaseError;
-            setError(msg);
-            setTimeout(() => navigate('/login'), 4000);
-            return;
-        }
+            // Error from backend redirect
+            if (status === 'error') {
+                setError(reason || 'Authentication failed');
+                setTimeout(() => navigate('/login'), 3000);
+                return;
+            }
 
-        if (status === 'error') {
-            setError(reason || 'Authentication failed');
-            setTimeout(() => navigate('/login'), 3000);
-            return;
-        }
+            // Integration success (non-login OAuth like calendar/youtube connect)
+            if (status === 'success') {
+                navigate('/');
+                return;
+            }
 
-        if (status === 'success') {
-            navigate('/', { replace: true });
-            return;
-        }
+            // Login flow: verify the magic link token
+            if (tokenHash && type) {
+                const { error: verifyError } = await supabase.auth.verifyOtp({
+                    token_hash: tokenHash,
+                    type: type,
+                });
+
+                if (verifyError) {
+                    setError(verifyError.message);
+                    setTimeout(() => navigate('/login'), 3000);
+                    return;
+                }
+
+                // Session established — onAuthStateChange in useAuth will pick it up
+                navigate('/');
+                return;
+            }
+
+            // Fallback: no recognized params, go home
+            navigate('/');
+        };
+
+        handleCallback();
     }, [searchParams, navigate]);
-
-    useEffect(() => {
-        if (session) {
-            navigate('/overview', { replace: true });
-        }
-    }, [session, navigate]);
 
     if (error) {
         return (
@@ -60,10 +73,10 @@ const AuthCallback = () => {
                     maxWidth: '400px',
                 }}>
                     <p style={{ color: 'var(--danger)', fontSize: '14px', fontWeight: 600, margin: '0 0 8px' }}>
-                        Google Sign-In Failed
+                        Authentication Error
                     </p>
-                    <p style={{ color: 'var(--text-2)', fontSize: '12px', margin: '0 0 12px', wordBreak: 'break-word' }}>
-                        {error?.includes('exchange') ? 'Google OAuth misconfiguration — see setup instructions.' : error}
+                    <p style={{ color: 'var(--text-2)', fontSize: '13px', margin: '0 0 12px' }}>
+                        {error}
                     </p>
                     <p style={{ color: 'var(--text-3)', fontSize: '11px', margin: 0 }}>
                         Redirecting to login...
