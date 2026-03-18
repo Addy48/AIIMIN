@@ -7,8 +7,6 @@ if (!supabaseUrl || !supabaseKey) {
     console.error('Missing Supabase URL or Anon Key. Please check the environment variables.');
 }
 
-// Prevent createClient from throwing by passing placeholders if missing
-const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseKey || 'placeholder');
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default supabase;
-export { supabase };
