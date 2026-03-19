@@ -126,7 +126,7 @@ function SeedDataPanel() {
                     gym_duration: Math.floor(Math.random() * 45) + 30,
                     breakfast_done: Math.random() > 0.14,
                     steps: Math.floor(Math.random() * 9000) + 3000,
-                    protein_grams: Math.floor(Math.random() * 120) + 60,
+                    water_bottles: Math.floor(Math.random() * 4) + 1,
                     learning_done: Math.random() > 0.42,
                     mood_before: Math.floor(Math.random() * 5) + 1,
                     mood_after: Math.floor(Math.random() * 5) + 1,

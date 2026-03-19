@@ -124,7 +124,8 @@ CREATE TABLE IF NOT EXISTS public.daily_logs (
     gym_duration       INTEGER,
     breakfast_done     BOOLEAN DEFAULT false,
     steps              INTEGER DEFAULT 0,
-    protein_grams      INTEGER DEFAULT 0,
+    protein_grams      INTEGER DEFAULT 0,  -- kept for historical data, UI now uses water_bottles
+    water_bottles      SMALLINT DEFAULT 0,
     -- Learning & journal
     learning_done      BOOLEAN DEFAULT false,
     learning_topic     TEXT,
@@ -897,6 +898,7 @@ ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS deleted_at         TIMEST
 ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS focus_score        INTEGER DEFAULT 0;
 ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS routines_completed INTEGER DEFAULT 0;
 ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS habits_completed   INTEGER DEFAULT 0;
+ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS water_bottles      SMALLINT DEFAULT 0;
 
 ALTER TABLE public.goals ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 
