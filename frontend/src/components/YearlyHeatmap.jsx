@@ -55,7 +55,7 @@ const scoreDay = (log, metric) => {
             if (log.steps >= 5000) s++;
             if (log.mood) s++;
             if (log.breakfast_done) s++;
-            if (log.protein_grams >= 50) s++;
+            if (log.water_bottles >= 2) s++;
             // 0-8 score → 0-4 intensity
             if (s >= 7) return 4;
             if (s >= 5) return 3;
@@ -143,7 +143,7 @@ const YearlyHeatmap = ({ user }) => {
         const endDate = `${year}-12-31`;
 
         supabase.from('daily_logs')
-            .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry, pomodoro_minutes, protein_grams, breakfast_done')
+            .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry, pomodoro_minutes, water_bottles, breakfast_done')
             .eq('user_id', user.id)
             .gte('date', startDate)
             .lte('date', endDate)

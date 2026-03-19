@@ -56,7 +56,7 @@ const DailyLogForm = ({ user, externalMood }) => {
         gymDuration: 0,
         breakfastDone: false,
         steps: 0,
-        proteinGrams: 0,
+        waterBottles: 0,
         learningDone: false,
         learningTopic: '',
         journalEntry: '',
@@ -133,7 +133,7 @@ const DailyLogForm = ({ user, externalMood }) => {
                 gym_duration: typeof formData.gymDuration === 'number' ? formData.gymDuration : null,
                 breakfast_done: formData.breakfastDone || false,
                 steps: typeof formData.steps === 'number' ? formData.steps : 0,
-                protein_grams: typeof formData.proteinGrams === 'number' ? formData.proteinGrams : 0,
+                water_bottles: typeof formData.waterBottles === 'number' ? formData.waterBottles : 0,
                 learning_done: formData.learningDone || false,
                 learning_topic: formData.learningTopic || null,
                 journal_entry: formData.journalEntry || null,
@@ -156,7 +156,7 @@ const DailyLogForm = ({ user, externalMood }) => {
                 setFormData({
                     sleepStart: '', sleepEnd: '',
                     gymDone: false, gymDuration: 0,
-                    breakfastDone: false, steps: 0, proteinGrams: 0,
+                    breakfastDone: false, steps: 0, waterBottles: 0,
                     learningDone: false, learningTopic: '',
                     journalEntry: '', mood: null,
                 });
@@ -273,8 +273,25 @@ const DailyLogForm = ({ user, externalMood }) => {
                                     <input type="number" name="steps" value={formData.steps} onChange={handleChange} placeholder="0" style={inputStyle} />
                                 </div>
                                 <div>
-                                    <label style={labelStyle}>Protein (g)</label>
-                                    <input type="number" name="proteinGrams" value={formData.proteinGrams} onChange={handleChange} placeholder="0" style={inputStyle} />
+                                    <label style={labelStyle}>💧 Water (bottles)</label>
+                                    <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                                        {[0, 1, 2, 3, 4].map(v => (
+                                            <button
+                                                key={v}
+                                                type="button"
+                                                onClick={() => { setFormData(prev => ({ ...prev, waterBottles: v })); setIsDirty(true); }}
+                                                style={{
+                                                    flex: 1, padding: '8px 2px', borderRadius: '8px',
+                                                    border: '1px solid ' + (formData.waterBottles === v ? 'var(--accent)' : 'var(--border)'),
+                                                    background: formData.waterBottles === v ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                                                    color: formData.waterBottles === v ? 'var(--accent)' : 'var(--text-3)',
+                                                    fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                                                }}>
+                                                {v === 4 ? '4+' : v}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '4px' }}>× 1.5L · Goal: 3</div>
                                 </div>
                             </div>
                             {formData.steps > 0 && (
