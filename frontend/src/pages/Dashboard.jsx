@@ -23,6 +23,7 @@ import SessionStats from '../components/SessionStats';
 import DSACounter from '../components/DSACounter';
 import YearlyHeatmap from '../components/YearlyHeatmap';
 import CalendarHeatmap from '../components/calendar/CalendarHeatmap';
+import SleepAnalytics from '../components/SleepAnalytics';
 import StatCard from '../components/dashboard/StatCard';
 import ExpandedStatPanel from '../components/dashboard/ExpandedStatPanel';
 
@@ -341,16 +342,23 @@ const Dashboard = ({ user }) => {
                                 </div>
 
                                 <div className="fade-up" style={{ animationDelay: '40ms' }}>
+                                    <SectionLabel>Sleep Intelligence</SectionLabel>
+                                    <ErrorBoundary label="Sleep Analytics">
+                                        <SleepAnalytics user={user} />
+                                    </ErrorBoundary>
+                                </div>
+
+                                <div className="fade-up" style={{ animationDelay: '80ms' }}>
                                     <SectionLabel>Tracking Chains</SectionLabel>
                                     {showStreaks ? <Streaks user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Enable Streaks in feature flags.</div>}
                                 </div>
 
-                                <div className="fade-up" style={{ animationDelay: '80ms' }}>
+                                <div className="fade-up" style={{ animationDelay: '120ms' }}>
                                     <SectionLabel>Performance Reports</SectionLabel>
                                     {showMonthlyGrid ? <Reports user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Enable Reports in feature flags.</div>}
                                 </div>
 
-                                <div className="fade-up" style={{ animationDelay: '120ms' }}>
+                                <div className="fade-up" style={{ animationDelay: '160ms' }}>
                                     <SectionLabel>365-Day Contribution Map</SectionLabel>
                                     <YearlyHeatmap user={user} />
                                 </div>
