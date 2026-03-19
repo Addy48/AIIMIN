@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS public.users (
                          CHECK (role IN ('user', 'admin', 'super_admin')),
     onboarding_stage INTEGER DEFAULT 0
                          CHECK (onboarding_stage BETWEEN 0 AND 4),
+    sleep_need_hours NUMERIC(4,2) DEFAULT 8.0,
     created_at       TIMESTAMPTZ DEFAULT NOW(),
     updated_at       TIMESTAMPTZ DEFAULT NOW()
 );
@@ -881,6 +882,7 @@ ALTER TABLE public.users ADD COLUMN IF NOT EXISTS updated_at       TIMESTAMPTZ D
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS role             TEXT DEFAULT 'user';
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS username         TEXT;
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS onboarding_stage INTEGER DEFAULT 0;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS sleep_need_hours NUMERIC(4,2) DEFAULT 8.0;
 
 ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS rc_count        INTEGER DEFAULT 0;
 ALTER TABLE public.daily_logs ADD COLUMN IF NOT EXISTS rc_entries      JSONB DEFAULT '[]';
