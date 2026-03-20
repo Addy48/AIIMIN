@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
@@ -11,6 +11,7 @@ import GoogleCompliance from './pages/legal/GoogleCompliance';
 import Security from './pages/legal/Security';
 import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
+import MobileApp from './components/mobile/MobileApp';
 import { useAuth } from './hooks/useAuth';
 import useDevMode from './hooks/useDevMode';
 import DevOverlay from './components/DevOverlay';
@@ -68,24 +69,34 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {isDevMode && <DevOverlay />}
-        <Routes>
-          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
-          <Route path="/brand" element={<Brand />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/data-deletion" element={<DataDeletion />} />
-          <Route path="/google-api-compliance" element={<GoogleCompliance />} />
-          <Route path="/security" element={<Security />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-        </Routes>
-        <Footer />
-      </div>
+      <AppContent user={user} isDevMode={isDevMode} loading={loading} />
     </BrowserRouter>
+  );
+}
+
+function AppContent({ user, isDevMode }) {
+  const location = useLocation();
+  const isMobile = location.pathname === '/m';
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {isDevMode && <DevOverlay />}
+      <Routes>
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/" element={user ? <Dashboard user={user} /> : <Navigate to="/login" />} />
+        <Route path="/m" element={user ? <MobileApp user={user} /> : <Navigate to="/login" />} />
+        <Route path="/brand" element={<Brand />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/data-deletion" element={<DataDeletion />} />
+        <Route path="/google-api-compliance" element={<GoogleCompliance />} />
+        <Route path="/security" element={<Security />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+      {!isMobile && <Footer />}
+    </div>
   );
 }
 
