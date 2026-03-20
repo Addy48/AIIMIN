@@ -78,8 +78,8 @@ SECTION 2 — BODY (Morning/Day)
 │  Duration   [30] [45] [60] [90] tap │
 │  Breakfast  [ OFF ●────── ON ]      │
 │  Steps     [───] stepper + presets  │
-│  Water   [0] [1] [2] [3] [4+] tap  │
-│           × 1.5L bottles · Goal: 3  │
+│  Water   [−]    3    [+]  tap         │
+│           × 1.5L bottles · Goal: 3   │
 └─────────────────────────────────────┘
 
 SECTION 3 — MIND (Anytime)
@@ -104,9 +104,9 @@ SECTION 4 — TASKS (Core mobile feature)
 │  └───────────────────────────────┘  │
 │                                     │
 │  Today's items:                     │
-│  ☐ DSA practice        2:00 PM     │
-│  ☐ Call dentist         4:30 PM  🔔│
-│  ☑ Morning walk         done       │
+│  ☐ DSA practice        2:00 PM      │
+│  ☐ Call dentist         4:30 PM  🔔 │ 
+│  ☑ Morning walk         done        │
 │                                     │
 │  Items sync to Calendar on desktop  │
 └─────────────────────────────────────┘

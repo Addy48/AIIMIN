@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
-import { redirectToGoogle } from '../utils/authRedirect';
 import { API_URL } from '../utils/api';
 
 export const useAuth = () => {
@@ -69,8 +68,14 @@ export const useAuth = () => {
         return () => subscription.unsubscribe();
     }, []);
 
-    const signInWithGoogle = () => {
-        redirectToGoogle('login');
+    const signInWithGoogle = async () => {
+        await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+                scopes: 'openid email profile',
+            },
+        });
     };
 
     const signUpWithEmail = async (email, password, fullName = '', username = '') => {
