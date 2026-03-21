@@ -15,11 +15,13 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
     const [showAccount, setShowAccount] = useState(false);
 
     const tabs = [
-        { key: 'today', label: 'Today' },
-        { key: 'habits', label: 'Habits' },
-        { key: 'money', label: 'Money' },
-        { key: 'sessions', label: 'Sessions' },
-        { key: 'insights', label: 'Insights' },
+        { key: 'today',     label: 'Today' },
+        { key: 'focus',     label: 'Focus' },
+        { key: 'identity',  label: 'Identity' },
+        { key: 'growth',    label: 'Growth' },
+        { key: 'habits',    label: 'Habits' },
+        { key: 'money',     label: 'Money' },
+        { key: 'analytics', label: 'Analytics' },
     ];
 
     const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'U';

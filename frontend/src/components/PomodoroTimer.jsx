@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import supabase from '../utils/supabase';
 import { upsertRow, insertRow } from '../services/dbService';
 import toast from '../utils/toast';
+import { playSound, sendNotification, requestNotificationPermission } from '../utils/soundEngine';
+import { POMODORO_XP, getRank } from '../utils/xpEngine';
 
 
 
@@ -58,6 +60,18 @@ const PomodoroTimer = ({ user }) => {
         };
     }, [deepMode]);
 
+    // Dynamic tab title during timer
+    useEffect(() => {
+        if (isRunning) {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            document.title = `${isBreak ? '☕' : '🔥'} ${m}:${s} — AIIMIN`;
+        } else if (!isRunning && timeLeft === 0) {
+            document.title = isBreak ? '⏰ Break over! — AIIMIN' : '🎯 Session done! — AIIMIN';
+        }
+        return () => { if (!isRunning) document.title = 'AIIMIN'; };
+    }, [isRunning, timeLeft, isBreak]);
+
     useEffect(() => {
         let interval;
         if (isRunning && timeLeft > 0) {
@@ -70,6 +84,8 @@ const PomodoroTimer = ({ user }) => {
                 setCyclesCompleted(newCycles);
                 setIsRunning(false);
                 setShowCompletion(true);
+                playSound('chime');
+                sendNotification('Focus session complete! 🎯', `Session #${newCycles} done — ${workDuration} min of deep work.`);
                 toast.success(`Focus session #${newCycles} complete!`);
                 // Record completed session to pomodoro_sessions
                 if (user?.id) {
@@ -80,12 +96,34 @@ const PomodoroTimer = ({ user }) => {
                         cycles_completed: 1,
                         duration: workDuration,
                     }]).catch(err => console.error('[Pomodoro] session save failed:', err.message));
+
+                    // Award Pomodoro XP
+                    (async () => {
+                        try {
+                            const { data: xp } = await supabase.from('user_xp')
+                                .select('total_xp, current_rank').eq('user_id', user.id).maybeSingle();
+                            if (xp) {
+                                const newTotal = (xp.total_xp || 0) + POMODORO_XP;
+                                const newRank = getRank(newTotal);
+                                await upsertRow('user_xp', {
+                                    user_id: user.id,
+                                    total_xp: newTotal,
+                                    current_rank: newRank.rank,
+                                    power_level: newTotal,
+                                    updated_at: new Date().toISOString(),
+                                }, 'user_id');
+                                toast.success(`⚡ +${POMODORO_XP} XP — Focus session`);
+                            }
+                        } catch { /* silent */ }
+                    })();
                 }
                 setTimeout(() => {
                     setShowCompletion(false);
                     setShowReflection(true);
                 }, 1500);
             } else {
+                playSound('bell');
+                sendNotification('Break over! ⚡', 'Time to get back to work.');
                 setIsBreak(false);
                 setTimeLeft(workDuration * 60);
             }
@@ -260,7 +298,7 @@ const PomodoroTimer = ({ user }) => {
             ) : (
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '24px' }}>
                     <button
-                        onClick={() => setIsRunning(!isRunning)}
+                        onClick={() => { if (!isRunning) requestNotificationPermission(); setIsRunning(!isRunning); }}
                         onMouseEnter={(e) => { if (!isRunning) e.currentTarget.style.background = '#f7b84a'; }}
                         onMouseLeave={(e) => { if (!isRunning) e.currentTarget.style.background = '#f5a623'; }}
                         style={{
@@ -428,7 +466,7 @@ const PomodoroTimer = ({ user }) => {
 
                     {/* Controls */}
                     <div style={{ display: 'flex', gap: '16px' }}>
-                        <button onClick={() => setIsRunning(!isRunning)} style={{
+                        <button onClick={() => { if (!isRunning) requestNotificationPermission(); setIsRunning(!isRunning); }} style={{
                             padding: '12px 32px', borderRadius: '24px', border: 'none',
                             background: isRunning ? 'rgba(255,255,255,0.1)' : accentColor,
                             color: '#fff', fontSize: '15px', fontWeight: 800, cursor: 'pointer',

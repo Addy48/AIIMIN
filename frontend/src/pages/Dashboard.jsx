@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import DailyLogForm from '../components/DailyLogForm';
 import PomodoroTimer from '../components/PomodoroTimer';
@@ -7,7 +7,7 @@ import Streaks from '../components/Streaks';
 import MoneyManager from '../components/MoneyManager';
 import PersonalCalendar from '../components/PersonalCalendar';
 import Reports from '../components/Reports';
-import YouTubeIntegration from '../components/YouTubeIntegration';
+import SpotifyPlayer from '../components/SpotifyPlayer';
 import ResetsTracker from '../components/ResetsTracker';
 import QuickCapture from '../components/dashboard/QuickCapture';
 import WinsEngine from '../components/WinsEngine';
@@ -26,13 +26,32 @@ import CalendarHeatmap from '../components/calendar/CalendarHeatmap';
 import SleepAnalytics from '../components/SleepAnalytics';
 import StatCard from '../components/dashboard/StatCard';
 import ExpandedStatPanel from '../components/dashboard/ExpandedStatPanel';
+import DesktopXPBar from '../components/dashboard/DesktopXPBar';
+import DailyQuests from '../components/mobile/DailyQuests';
+import AchievementsGallery from '../components/mobile/AchievementsGallery';
+import DailyQuote from '../components/dashboard/DailyQuote';
+
+// Tier 2 — Identity Layer
+import IdentityStack from '../components/identity/IdentityStack';
+import AspirationMeters from '../components/identity/AspirationMeters';
+import MirrorVision from '../components/identity/MirrorVision';
+import PhaseTagger from '../components/identity/PhaseTagger';
+// Tier 3 — Growth Engine
+import SideQuests from '../components/growth/SideQuests';
+import DailyIntention from '../components/growth/DailyIntention';
+import PastSelfCard from '../components/growth/PastSelfCard';
+import WeeklyReview from '../components/growth/WeeklyReview';
+import OneBetterNudge from '../components/growth/OneBetterNudge';
+// Tier 4 — Legacy
+import LifeChronicle from '../components/legacy/LifeChronicle';
+import HabitDNA from '../components/legacy/HabitDNA';
 
 import { SettingsSection, SettingsRow } from '../components/dashboard/SettingsSection';
 import ToggleSwitch from '../components/dashboard/ToggleSwitch';
-import useFeatureFlag from '../hooks/useFeatureFlag';
 import DumbbellIcon from '../components/icons/DumbbellIcon';
 import { useAuth } from '../hooks/useAuth';
 import { API_URL } from '../utils/api';
+import supabase from '../utils/supabase';
 import toast from '../utils/toast';
 
 
@@ -41,14 +60,56 @@ const Dashboard = ({ user }) => {
     const [expandedCard, setExpandedCard] = useState(null);
     const [activeTab, setActiveTab] = useState(() => {
         const saved = localStorage.getItem('aiimin_activeTab');
-        return ['today', 'habits', 'sessions', 'insights', 'settings'].includes(saved) ? saved : 'today';
+        return ['today', 'focus', 'identity', 'growth', 'habits', 'money', 'analytics', 'settings'].includes(saved) ? saved : 'today';
     });
+
+    const [showWeeklyReview, setShowWeeklyReview] = useState(false);
+    const [recentLogs, setRecentLogs] = useState([]);
+    const [pomoCyclesTotal, setPomoCyclesTotal] = useState(0);
+    const [txCount, setTxCount] = useState(0);
 
 
     const [notifReminders, setNotifReminders] = useState(() => localStorage.getItem('aiimin_notif_reminders') === 'true');
     const [notifInsights, setNotifInsights] = useState(() => localStorage.getItem('aiimin_notif_insights') === 'true');
-    const [focusTab, setFocusTab] = useState('focus');
     const [intelTab, setIntelTab] = useState('insights');
+
+    // ── Real stats from DB ───────────────────────────────────────
+    const [todayStats, setTodayStats] = useState(null);
+    const [weekGymDays, setWeekGymDays] = useState(null);
+    const [focusSessions, setFocusSessions] = useState(null);
+
+    useEffect(() => {
+        if (!user) return;
+        const today = new Date().toLocaleDateString('en-CA');
+        const weekAgo = new Date(Date.now() - 6 * 86400000).toLocaleDateString('en-CA');
+
+        supabase.from('daily_logs').select('sleep_start, sleep_end, sleep_hours, steps, mood, energy_level, gym_done, gym_duration, breakfast_done, learning_done, learning_topic, journal_entry, water_bottles, brain_fog, headache')
+            .eq('user_id', user.id).eq('date', today).maybeSingle()
+            .then(({ data }) => setTodayStats(data || {}));
+
+        supabase.from('daily_logs').select('gym_done').eq('user_id', user.id).gte('date', weekAgo)
+            .then(({ data }) => { if (data) setWeekGymDays(data.filter(d => d.gym_done).length); });
+
+        supabase.from('pomodoro_sessions').select('id').eq('user_id', user.id)
+            .gte('started_at', today + 'T00:00:00').lte('started_at', today + 'T23:59:59')
+            .then(({ data }) => { if (data) setFocusSessions(data.length); });
+
+        // Tier 2/3/4 — historical data
+        const sixtyDaysAgo = new Date(Date.now() - 60 * 86400000).toLocaleDateString('en-CA');
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toLocaleDateString('en-CA');
+
+        supabase.from('daily_logs').select('*').eq('user_id', user.id)
+            .gte('date', sixtyDaysAgo).order('date', { ascending: false })
+            .then(({ data }) => { if (data) setRecentLogs(data); });
+
+        supabase.from('pomodoro_sessions').select('id').eq('user_id', user.id)
+            .gte('started_at', thirtyDaysAgo + 'T00:00:00')
+            .then(({ data }) => { if (data) setPomoCyclesTotal(data.length); });
+
+        supabase.from('money_transactions').select('id').eq('user_id', user.id)
+            .gte('date', thirtyDaysAgo)
+            .then(({ data }) => { if (data) setTxCount(data.length); });
+    }, [user]);
 
     const saveAndSet = (key, setter) => (val) => {
         setter(val);
@@ -57,9 +118,6 @@ const Dashboard = ({ user }) => {
 
     const devEmail = process.env.REACT_APP_DEV_EMAIL;
     const isAdmin = !!(devEmail && user?.email === devEmail);
-    const rawOnboardingStage = user?.onboarding_stage || 0;
-    // Admin bypasses all onboarding gates
-    const onboardingStage = isAdmin ? 99 : rawOnboardingStage;
 
     const { session } = useAuth();
 
@@ -107,10 +165,7 @@ const Dashboard = ({ user }) => {
         }
     }, [session]);
 
-    const showStreaks = useFeatureFlag('streaks');
-    const showWinTracker = useFeatureFlag('win_tracker');
-    const showYouTube = useFeatureFlag('youtube_player');
-    const showMonthlyGrid = useFeatureFlag('monthly_grid');
+
 
     React.useEffect(() => {
         localStorage.setItem('aiimin_activeTab', activeTab);
@@ -125,13 +180,75 @@ const Dashboard = ({ user }) => {
 
     const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
 
+    const s = todayStats || {};
+    const completedToday = [
+        s.sleep_hours > 0,
+        s.gym_done,
+        s.breakfast_done,
+        (s.steps || 0) >= 1000,
+        (s.water_bottles || 0) >= 2,
+        (s.mood || 0) > 0,
+        s.learning_done,
+        s.journal_entry?.trim?.(),
+    ].filter(Boolean).length;
+
     const statsData = [
-        { id: 'score', label: 'Score', icon: '🎯', value: '8.2', type: 'score', context: 'Top 10% this month', contextColor: 'var(--success)' },
-        { id: 'sleep', label: 'Sleep', icon: '😴', value: '7.1h', type: 'sleep', context: '+0.4h vs avg', contextColor: 'var(--success)' },
-        { id: 'gym', label: 'Gym', icon: <DumbbellIcon size={18} color="var(--text-2)" />, value: '3d', type: 'gym', context: '1 ahead of pace', contextColor: 'var(--accent)' },
-        { id: 'focus', label: 'Focus', icon: '🔥', value: '14', type: 'focus', context: 'Peak flow', contextColor: 'var(--success)' },
-        { id: 'steps', label: 'Steps', icon: '👟', value: '11k', type: 'steps', context: 'Goal met', contextColor: 'var(--accent)' },
+        {
+            id: 'score', label: 'Score', icon: '🎯',
+            value: todayStats ? `${completedToday}/8` : '—',
+            type: 'score',
+            context: completedToday >= 8 ? 'Perfect day! 🔥' : completedToday >= 6 ? 'On track' : completedToday > 0 ? 'Keep logging' : 'Start today',
+            contextColor: completedToday >= 6 ? 'var(--success)' : 'var(--accent)',
+        },
+        {
+            id: 'sleep', label: 'Sleep', icon: '😴',
+            value: s.sleep_hours ? `${s.sleep_hours}h` : '—',
+            type: 'sleep',
+            context: s.sleep_hours >= 7 ? 'Well rested ✓' : s.sleep_hours > 0 ? 'Sleep debt ⚠️' : 'Log tonight',
+            contextColor: s.sleep_hours >= 7 ? 'var(--success)' : 'var(--accent)',
+        },
+        {
+            id: 'gym', label: 'Gym', icon: <DumbbellIcon size={18} color="var(--text-2)" />,
+            value: weekGymDays !== null ? `${weekGymDays}d` : '—',
+            type: 'gym',
+            context: weekGymDays >= 5 ? 'Beast mode 🔥' : weekGymDays >= 3 ? 'Consistent' : weekGymDays >= 1 ? 'Keep going' : 'Not yet this week',
+            contextColor: weekGymDays >= 3 ? 'var(--success)' : 'var(--accent)',
+        },
+        {
+            id: 'focus', label: 'Focus', icon: '🎯',
+            value: focusSessions !== null ? String(focusSessions) : '—',
+            type: 'focus',
+            context: focusSessions >= 4 ? 'Deep work day ⚡' : focusSessions >= 1 ? `${focusSessions} session${focusSessions > 1 ? 's' : ''} done` : 'No sessions yet',
+            contextColor: focusSessions >= 3 ? 'var(--success)' : 'var(--accent)',
+        },
+        {
+            id: 'steps', label: 'Steps', icon: '👟',
+            value: s.steps ? s.steps >= 1000 ? `${(s.steps / 1000).toFixed(1)}k` : String(s.steps) : '—',
+            type: 'steps',
+            context: s.steps >= 10000 ? 'Goal met ✓' : s.steps >= 5000 ? 'Halfway there' : s.steps > 0 ? 'Keep moving' : 'Log steps',
+            contextColor: s.steps >= 10000 ? 'var(--success)' : 'var(--accent)',
+        },
     ];
+
+    // Snapshot in xpEngine shape for DailyQuests
+    const desktopLogSnapshot = {
+        sleep_start: s.sleep_start || null,
+        sleep_end:   s.sleep_end   || null,
+        sleep_hours: s.sleep_hours || 0,
+        gym_done:    s.gym_done    || false,
+        gym_duration: s.gym_duration || 0,
+        breakfast_done: s.breakfast_done || false,
+        steps:       s.steps       || 0,
+        water_bottles: s.water_bottles || 0,
+        mood:        s.mood        || null,
+        energy_level: s.energy_level || null,
+        learning_done: s.learning_done || false,
+        journal_entry: s.journal_entry || null,
+        brain_fog:   s.brain_fog   || 0,
+        win_logged:  false,
+        rc_count:    s.rc_count || 0,
+    };
+    const todayStr = new Date().toLocaleDateString('en-CA');
 
     const SectionLabel = ({ children }) => (
         <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -152,6 +269,9 @@ const Dashboard = ({ user }) => {
                 flexDirection: 'column',
                 gap: 'var(--section-gap)',
             }}>
+
+                {/* ── XP BAR ── */}
+                <DesktopXPBar user={user} />
 
                 {/* ── ZONE 1: HEADER ── */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
@@ -187,34 +307,26 @@ const Dashboard = ({ user }) => {
                         {/* ── MOMENTUM BAR ── */}
                         <MomentumBar user={user} />
 
+                        {/* ── DAILY QUESTS ── */}
+                        <DailyQuests dateStr={todayStr} logData={desktopLogSnapshot} />
+
+                        {/* ── DAILY QUOTE ── */}
+                        <DailyQuote logSnapshot={desktopLogSnapshot} />
+
                         {/* ── ZONE 2: METRICS ROW ── */}
-                        {onboardingStage >= 3 ? (
-                            <div>
-                                <SectionLabel>Today's Overview</SectionLabel>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }} className="metrics-row">
-                                    {statsData.map((stat, i) => {
-                                        if (stat.id === 'score' && onboardingStage < 4) return null;
-                                        return <StatCard key={stat.id} stat={stat} index={i} expandedCard={expandedCard} setExpandedCard={setExpandedCard} />;
-                                    })}
+                        <div>
+                            <SectionLabel>Today's Overview</SectionLabel>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }} className="metrics-row">
+                                {statsData.map((stat, i) => (
+                                    <StatCard key={stat.id} stat={stat} index={i} expandedCard={expandedCard} setExpandedCard={setExpandedCard} />
+                                ))}
+                            </div>
+                            {expandedCard && (
+                                <div style={{ marginTop: '10px' }}>
+                                    <ExpandedStatPanel stat={statsData.find(sc => sc.id === expandedCard)} user={user} />
                                 </div>
-                                {expandedCard && (
-                                    <div style={{ marginTop: '10px' }}>
-                                        <ExpandedStatPanel stat={statsData.find(s => s.id === expandedCard)} user={user} />
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div style={{
-                                padding: '32px', background: 'var(--bg-card)', borderRadius: '16px', border: '1px dashed var(--border)',
-                                textAlign: 'center',
-                            }}>
-                                <div style={{ fontSize: '24px', marginBottom: '12px' }}>🔒</div>
-                                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Intelligence Locked</div>
-                                <p style={{ fontSize: '12px', color: 'var(--text-3)', maxWidth: '240px', margin: '8px auto' }}>
-                                    Complete {3 - onboardingStage} more logs to unlock your behavioral overview.
-                                </p>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {/* ── ZONE 3: MAIN GRID (2fr | 1fr) ── */}
                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', alignItems: 'stretch' }} className="main-grid">
@@ -228,26 +340,6 @@ const Dashboard = ({ user }) => {
                                 </div>
 
                                 <div>
-                                    <SectionLabel>Focus Engine</SectionLabel>
-                                    {onboardingStage >= 1 ? (
-                                        <>
-                                            {showYouTube && (
-                                                <div style={{ display: 'flex', gap: '4px', marginBottom: '14px', background: 'var(--bg-elevated)', borderRadius: '8px', padding: '4px' }}>
-                                                    <button onClick={() => setFocusTab('focus')} style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: focusTab === 'focus' ? 'var(--bg-card)' : 'transparent', color: focusTab === 'focus' ? 'var(--text-1)' : 'var(--text-3)', boxShadow: focusTab === 'focus' ? 'var(--shadow-sm)' : 'none' }}>Focus</button>
-                                                    <button onClick={() => setFocusTab('music')} style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: focusTab === 'music' ? 'var(--bg-card)' : 'transparent', color: focusTab === 'music' ? 'var(--text-1)' : 'var(--text-3)', boxShadow: focusTab === 'music' ? 'var(--shadow-sm)' : 'none' }}>Music</button>
-                                                </div>
-                                            )}
-                                            {focusTab === 'focus' && <PomodoroTimer user={user} />}
-                                            {focusTab === 'music' && showYouTube && <YouTubeIntegration user={user} />}
-                                        </>
-                                    ) : (
-                                        <div style={{ padding: '40px 20px', textAlign: 'center', background: 'var(--bg-elevated)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                                            <p style={{ fontSize: '12px', color: 'var(--text-3)' }}>Complete your first log to unlock the Focus Timer.</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div>
                                     <div style={{ display: 'flex', gap: '4px', marginBottom: '14px', background: 'var(--bg-elevated)', borderRadius: '8px', padding: '4px' }}>
                                         <button onClick={() => setIntelTab('insights')} style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: intelTab === 'insights' ? 'var(--bg-card)' : 'transparent', color: intelTab === 'insights' ? 'var(--text-1)' : 'var(--text-3)', boxShadow: intelTab === 'insights' ? 'var(--shadow-sm)' : 'none' }}>Insights</button>
                                         <button onClick={() => setIntelTab('wins')} style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: intelTab === 'wins' ? 'var(--bg-card)' : 'transparent', color: intelTab === 'wins' ? 'var(--text-1)' : 'var(--text-3)', boxShadow: intelTab === 'wins' ? 'var(--shadow-sm)' : 'none' }}>Wins</button>
@@ -257,20 +349,17 @@ const Dashboard = ({ user }) => {
                                             <InsightEngine user={user} />
                                         </ErrorBoundary>
                                     )}
-                                    {intelTab === 'wins' && (
-                                        onboardingStage >= 2 ? (
-                                            showWinTracker ? <WinsEngine /> : <div style={{ fontSize: '12px', color: 'var(--text-3)', padding: '16px' }}>Enable Wins in feature flags.</div>
-                                        ) : (
-                                            <div style={{ padding: '32px', textAlign: 'center', background: 'var(--bg-elevated)', borderRadius: '16px', border: '1px solid var(--border)' }}>
-                                                <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase' }}>Available at Stage 2</p>
-                                            </div>
-                                        )
-                                    )}
+                                    {intelTab === 'wins' && <WinsEngine />}
                                 </div>
 
                                 <div style={{ flex: 1, width: '100%' }}>
                                     <SectionLabel>Monthly Overview</SectionLabel>
                                     <CalendarHeatmap year={new Date().getFullYear()} month={new Date().getMonth() + 1} type="score" />
+                                </div>
+
+                                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                                    <SectionLabel>Quick Capture</SectionLabel>
+                                    <QuickCapture user={user} />
                                 </div>
 
                             </div>
@@ -288,11 +377,6 @@ const Dashboard = ({ user }) => {
                                     <ResetsTracker user={user} />
                                 </div>
 
-                                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
-                                    <SectionLabel>Quick Capture</SectionLabel>
-                                    <QuickCapture user={user} />
-                                </div>
-
                             </div>
                         </div>
 
@@ -304,6 +388,89 @@ const Dashboard = ({ user }) => {
                     <HabitsPage user={user} />
                 )}
 
+                {/* ── IDENTITY ── */}
+                {activeTab === 'identity' && (
+                    <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+
+                        <div>
+                            <SectionLabel>Current Phase</SectionLabel>
+                            <PhaseTagger />
+                        </div>
+
+                        <div>
+                            <SectionLabel>Identity Stack</SectionLabel>
+                            <ErrorBoundary label="Identity Stack">
+                                <IdentityStack />
+                            </ErrorBoundary>
+                        </div>
+
+                        <div>
+                            <SectionLabel>Aspiration Meters</SectionLabel>
+                            <ErrorBoundary label="Aspiration Meters">
+                                <AspirationMeters recentLogs={recentLogs} pomoCycles={pomoCyclesTotal} dsaCount={0} txCount={txCount} />
+                            </ErrorBoundary>
+                        </div>
+
+                        <div>
+                            <SectionLabel>Mirror vs Vision</SectionLabel>
+                            <ErrorBoundary label="Mirror Vision">
+                                <MirrorVision recentLogs={recentLogs} />
+                            </ErrorBoundary>
+                        </div>
+
+                    </div>
+                )}
+
+                {/* ── GROWTH ── */}
+                {activeTab === 'growth' && (
+                    <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+
+                        <div>
+                            <SectionLabel>Daily Intention</SectionLabel>
+                            <DailyIntention />
+                        </div>
+
+                        {recentLogs.length > 0 && (
+                            <div>
+                                <SectionLabel>1% Better Today</SectionLabel>
+                                <OneBetterNudge recentLogs={recentLogs} />
+                            </div>
+                        )}
+
+                        <div>
+                            <SectionLabel>Side Quest</SectionLabel>
+                            <ErrorBoundary label="Side Quests">
+                                <SideQuests recentLogs={recentLogs} />
+                            </ErrorBoundary>
+                        </div>
+
+                        <div>
+                            <SectionLabel>You vs 30 Days Ago</SectionLabel>
+                            <ErrorBoundary label="Past Self Card">
+                                <PastSelfCard recentLogs={recentLogs} />
+                            </ErrorBoundary>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '8px' }}>
+                            <button
+                                onClick={() => setShowWeeklyReview(true)}
+                                style={{
+                                    padding: '13px 36px', background: 'var(--accent)', color: '#fff',
+                                    border: 'none', borderRadius: '12px', fontWeight: 800,
+                                    fontSize: '14px', cursor: 'pointer', letterSpacing: '-0.01em',
+                                    boxShadow: '0 4px 20px rgba(245,166,35,0.3)',
+                                    transition: 'transform 0.15s, box-shadow 0.15s',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 28px rgba(245,166,35,0.4)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(245,166,35,0.3)'; }}
+                            >
+                                📋 Weekly Review
+                            </button>
+                        </div>
+
+                    </div>
+                )}
+
                 {/* ── MONEY ── */}
                 {activeTab === 'money' && (
                     <div className="fade-up">
@@ -311,72 +478,94 @@ const Dashboard = ({ user }) => {
                     </div>
                 )}
 
-                {/* ── SESSIONS ── */}
-                {activeTab === 'sessions' && (
-                        <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                            <div>
-                                <SectionLabel>Session Performance</SectionLabel>
-                                <SessionStats user={user} />
+                {/* ⚡ FOCUS ── */}
+                {activeTab === 'focus' && (
+                    <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+
+                        {/* Pomodoro + Spotify side-by-side */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '24px', alignItems: 'start' }}>
+                            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                                <SectionLabel>⏰ Focus Timer</SectionLabel>
+                                <PomodoroTimer user={user} />
                             </div>
-                            <div>
-                                <SectionLabel>DSA Problem Tracker</SectionLabel>
-                                <DSACounter user={user} />
-                            </div>
-                            <div>
-                                <SectionLabel>Schedule & Calendar</SectionLabel>
-                                <PersonalCalendar user={user} />
+                            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                                <SectionLabel>🎵 Focus Music</SectionLabel>
+                                <SpotifyPlayer />
                             </div>
                         </div>
-                    )}
 
-                {/* ── INSIGHTS ── */}
-                {activeTab === 'insights' && (
-                        onboardingStage >= 3 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+                        <div>
+                            <SectionLabel>Session Performance</SectionLabel>
+                            <SessionStats user={user} />
+                        </div>
 
-                                <div className="fade-up">
-                                    <SectionLabel>Weekly Intelligence</SectionLabel>
-                                    <ErrorBoundary label="Weekly Report">
-                                        <WeeklyReport user={user} />
-                                    </ErrorBoundary>
-                                </div>
+                        <div>
+                            <SectionLabel>Schedule & Calendar</SectionLabel>
+                            <PersonalCalendar user={user} />
+                        </div>
 
-                                <div className="fade-up" style={{ animationDelay: '40ms' }}>
-                                    <SectionLabel>Sleep Intelligence</SectionLabel>
-                                    <ErrorBoundary label="Sleep Analytics">
-                                        <SleepAnalytics user={user} />
-                                    </ErrorBoundary>
-                                </div>
+                    </div>
+                )}
 
-                                <div className="fade-up" style={{ animationDelay: '80ms' }}>
-                                    <SectionLabel>Tracking Chains</SectionLabel>
-                                    {showStreaks ? <Streaks user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Enable Streaks in feature flags.</div>}
-                                </div>
+                {/* ── ANALYTICS ── */}
+                {activeTab === 'analytics' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
-                                <div className="fade-up" style={{ animationDelay: '120ms' }}>
-                                    <SectionLabel>Performance Reports</SectionLabel>
-                                    {showMonthlyGrid ? <Reports user={user} /> : <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>Enable Reports in feature flags.</div>}
-                                </div>
+                        <div className="fade-up">
+                            <SectionLabel>DSA Problem Tracker</SectionLabel>
+                            <DSACounter user={user} />
+                        </div>
 
-                                <div className="fade-up" style={{ animationDelay: '160ms' }}>
-                                    <SectionLabel>365-Day Contribution Map</SectionLabel>
-                                    <YearlyHeatmap user={user} />
-                                </div>
+                        <div className="fade-up" style={{ animationDelay: '40ms' }}>
+                            <SectionLabel>Weekly Intelligence</SectionLabel>
+                            <ErrorBoundary label="Weekly Report">
+                                <WeeklyReport user={user} />
+                            </ErrorBoundary>
+                        </div>
 
-                            </div>
-                        ) : (
-                            <div style={{ padding: '100px 40px', textAlign: 'center' }}>
-                                <div style={{ fontSize: '32px', marginBottom: '20px' }}>📊</div>
-                                <h2 style={{ fontSize: '20px', marginBottom: '12px', fontWeight: 800 }}>Establishing Baseline</h2>
-                                <p style={{ fontSize: '14px', color: 'var(--text-3)', maxWidth: '300px', margin: '0 auto', lineHeight: 1.5 }}>
-                                    AIIMIN requires 7 days of consistency before generating its first behavioral trend report.
-                                </p>
-                                <div style={{ marginTop: '32px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: 'var(--accent)', color: 'var(--text-1)', borderRadius: '99px', fontSize: '13px', fontWeight: 700 }}>
-                                    Current Progress: {onboardingStage * 25}%
-                                </div>
-                            </div>
-                        )
-                    )}
+                        <div className="fade-up" style={{ animationDelay: '80ms' }}>
+                            <SectionLabel>Sleep Intelligence</SectionLabel>
+                            <ErrorBoundary label="Sleep Analytics">
+                                <SleepAnalytics user={user} />
+                            </ErrorBoundary>
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: '120ms' }}>
+                            <SectionLabel>Tracking Chains</SectionLabel>
+                            <Streaks user={user} />
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: '160ms' }}>
+                            <SectionLabel>Performance Reports</SectionLabel>
+                            <Reports user={user} />
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: '200ms' }}>
+                            <SectionLabel>365-Day Contribution Map</SectionLabel>
+                            <YearlyHeatmap user={user} />
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: '240ms' }}>
+                            <SectionLabel>Achievements</SectionLabel>
+                            <AchievementsGallery user={user} />
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: '280ms' }}>
+                            <SectionLabel>Life Chronicle</SectionLabel>
+                            <ErrorBoundary label="Life Chronicle">
+                                <LifeChronicle user={user} />
+                            </ErrorBoundary>
+                        </div>
+
+                        <div className="fade-up" style={{ animationDelay: '320ms' }}>
+                            <SectionLabel>Habit DNA — Correlation Engine</SectionLabel>
+                            <ErrorBoundary label="Habit DNA">
+                                <HabitDNA recentLogs={recentLogs} />
+                            </ErrorBoundary>
+                        </div>
+
+                    </div>
+                )}
 
                 {/* ── SETTINGS ── */}
                 {activeTab === 'settings' && (
@@ -417,11 +606,11 @@ const Dashboard = ({ user }) => {
                                     }
                                 />
                                 <SettingsRow
-                                    icon="▶️"
-                                    label="YouTube (Focus Music)"
-                                    description="Play personal playlists during focus sessions"
+                                    icon="🎵"
+                                    label="Spotify Focus Music"
+                                    description="Embedded playlists for deep work — no login required"
                                     control={
-                                        <button onClick={() => setActiveTab('sessions')} style={{ fontSize: '11px', color: 'var(--text-3)', background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '4px 10px', borderRadius: '99px', fontWeight: 600, cursor: 'pointer' }}>Manage →</button>
+                                        <button onClick={() => setActiveTab('focus')} style={{ fontSize: '11px', color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid var(--border-accent)', padding: '4px 10px', borderRadius: '99px', fontWeight: 600, cursor: 'pointer' }}>Open →</button>
                                     }
                                 />
                             </SettingsSection>
@@ -480,6 +669,11 @@ const Dashboard = ({ user }) => {
                     )}
 
             </main>
+
+            {/* ── WEEKLY REVIEW MODAL ── */}
+            {showWeeklyReview && (
+                <WeeklyReview user={user} onClose={() => setShowWeeklyReview(false)} />
+            )}
 
 
 
