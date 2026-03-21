@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+const SLEEP_TAGS = ['😰 Stress', '☕ Caffeine', '📱 Screen', '🏋️ Gym fatigue', '🌙 Late night', '🔊 Noise', '🤒 Sickness', '💊 Meds'];
 
 const MobileSleepSection = ({ data, onChange, complete }) => {
     const sleepHours = (() => {
@@ -12,6 +14,11 @@ const MobileSleepSection = ({ data, onChange, complete }) => {
     const debt = sleepHours > 0 ? (8 - sleepHours) : 0;
     const barPct = sleepHours > 0 ? Math.min((sleepHours / 10) * 100, 100) : 0;
     const barColor = sleepHours >= 7 ? 'var(--success)' : sleepHours >= 6 ? 'var(--accent)' : 'var(--danger)';
+    const tags = data.sleepTags || [];
+    const toggleTag = (tag) => {
+        const next = tags.includes(tag) ? tags.filter(t => t !== tag) : [...tags, tag];
+        onChange('sleepTags', next);
+    };
 
     return (
         <SectionCard icon="🌙" title="SLEEP" complete={complete}>
@@ -28,17 +35,38 @@ const MobileSleepSection = ({ data, onChange, complete }) => {
                 </div>
             </div>
             {sleepHours > 0 && (
-                <div style={{ marginTop: '12px', background: 'var(--bg-elevated)', borderRadius: '10px', padding: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '18px', fontWeight: 800, color: barColor }}>{sleepHours}h</span>
-                        <span style={{ fontSize: '12px', fontWeight: 600, color: debt > 0 ? 'var(--danger)' : 'var(--success)' }}>
-                            {debt > 0 ? `Debt: +${debt.toFixed(1)}h` : '✓ Well rested'}
-                        </span>
+                <>
+                    <div style={{ marginTop: '12px', background: 'var(--bg-elevated)', borderRadius: '10px', padding: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '18px', fontWeight: 800, color: barColor }}>{sleepHours}h</span>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: debt > 0 ? 'var(--danger)' : 'var(--success)' }}>
+                                {debt > 0 ? `Debt: +${debt.toFixed(1)}h` : '✓ Well rested'}
+                            </span>
+                        </div>
+                        <div style={{ height: '6px', borderRadius: '3px', background: 'var(--border)' }}>
+                            <div style={{ height: '100%', borderRadius: '3px', background: barColor, width: `${barPct}%`, transition: 'width 0.3s' }} />
+                        </div>
                     </div>
-                    <div style={{ height: '6px', borderRadius: '3px', background: 'var(--border)' }}>
-                        <div style={{ height: '100%', borderRadius: '3px', background: barColor, width: `${barPct}%`, transition: 'width 0.3s' }} />
-                    </div>
-                </div>
+                    {sleepHours < 7 && (
+                        <div style={{ marginTop: '10px' }}>
+                            <label style={labelSt}>Why was sleep poor?</label>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                {SLEEP_TAGS.map(tag => (
+                                    <button key={tag} type="button" onClick={() => toggleTag(tag)}
+                                        style={{
+                                            padding: '6px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
+                                            border: tags.includes(tag) ? '1.5px solid var(--accent)' : '1px solid var(--border)',
+                                            background: tags.includes(tag) ? 'rgba(255,107,53,0.15)' : 'var(--bg-elevated)',
+                                            color: tags.includes(tag) ? 'var(--accent)' : 'var(--text-2)',
+                                            cursor: 'pointer', transition: 'all 0.15s',
+                                        }}>
+                                        {tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </SectionCard>
     );
@@ -46,7 +74,24 @@ const MobileSleepSection = ({ data, onChange, complete }) => {
 
 const MobileBodySection = ({ data, onChange, complete }) => (
     <SectionCard icon="💪" title="BODY" complete={complete}>
-        <ToggleRow label="Gym" active={data.gymDone} onToggle={() => onChange('gymDone', !data.gymDone)} />
+        {/* Gym — Yes / No */}
+        <div style={{ marginBottom: '8px' }}>
+            <label style={labelSt}>Gym</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+                <button type="button" onClick={() => onChange('gymDone', true)} style={{
+                    flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
+                    border: data.gymDone ? '1.5px solid var(--success)' : '1px solid var(--border)',
+                    background: data.gymDone ? 'rgba(16,185,129,0.12)' : 'var(--bg-elevated)',
+                    color: data.gymDone ? 'var(--success)' : 'var(--text-3)', cursor: 'pointer',
+                }}>✓ Yes</button>
+                <button type="button" onClick={() => { onChange('gymDone', false); onChange('gymDuration', 0); }} style={{
+                    flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
+                    border: data.gymDone === false ? '1.5px solid var(--danger)' : '1px solid var(--border)',
+                    background: data.gymDone === false ? 'rgba(239,68,68,0.08)' : 'var(--bg-elevated)',
+                    color: data.gymDone === false ? 'var(--danger)' : 'var(--text-3)', cursor: 'pointer',
+                }}>✗ No</button>
+            </div>
+        </div>
         {data.gymDone && (
             <div style={{ marginBottom: '12px' }}>
                 <label style={labelSt}>Duration</label>
@@ -58,13 +103,32 @@ const MobileBodySection = ({ data, onChange, complete }) => (
                 </div>
             </div>
         )}
-        <ToggleRow label="Breakfast" active={data.breakfastDone} onToggle={() => onChange('breakfastDone', !data.breakfastDone)} icon="🍳" />
+
+        {/* Breakfast — Yes / No */}
+        <div style={{ marginBottom: '8px' }}>
+            <label style={labelSt}>🍳 Breakfast</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+                <button type="button" onClick={() => onChange('breakfastDone', true)} style={{
+                    flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
+                    border: data.breakfastDone ? '1.5px solid var(--success)' : '1px solid var(--border)',
+                    background: data.breakfastDone ? 'rgba(16,185,129,0.12)' : 'var(--bg-elevated)',
+                    color: data.breakfastDone ? 'var(--success)' : 'var(--text-3)', cursor: 'pointer',
+                }}>✓ Yes</button>
+                <button type="button" onClick={() => onChange('breakfastDone', false)} style={{
+                    flex: 1, padding: '10px', borderRadius: '10px', fontSize: '13px', fontWeight: 700,
+                    border: data.breakfastDone === false ? '1.5px solid var(--danger)' : '1px solid var(--border)',
+                    background: data.breakfastDone === false ? 'rgba(239,68,68,0.08)' : 'var(--bg-elevated)',
+                    color: data.breakfastDone === false ? 'var(--danger)' : 'var(--text-3)', cursor: 'pointer',
+                }}>✗ No</button>
+            </div>
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '4px' }}>
             <div>
                 <label style={labelSt}>Steps</label>
-                <input type="number" inputMode="numeric" value={data.steps || ''} placeholder="0"
-                    onChange={e => onChange('steps', e.target.value ? Number(e.target.value) : 0)}
-                    style={numInput} />
+                <input type="text" inputMode="numeric" value={data.steps || ''} placeholder="0"
+                    onChange={e => { const v = e.target.value.replace(/\D/g, ''); onChange('steps', v ? Number(v) : 0); }}
+                    style={{ ...numInput, MozAppearance: 'textfield', WebkitAppearance: 'none' }} />
                 <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
                     {[5000, 8000, 10000, 12000].map(v => (
                         <MiniChip key={v} label={`${v / 1000}k`} onClick={() => onChange('steps', v)} active={data.steps === v} />
@@ -135,6 +199,29 @@ const MobileMindSection = ({ data, onChange, complete }) => (
                     style={{ ...numInput, width: '100%', marginTop: '6px', fontSize: '13px' }} />
             </div>
         )}
+
+        {/* Brain Clarity */}
+        <div style={{ marginTop: '14px' }}>
+            <label style={labelSt}>Brain Clarity</label>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                {[{ v: 1, label: '🌫️ Foggy', color: '#ef4444' }, { v: 2, label: '😐 Okay', color: '#f59e0b' }, { v: 3, label: '⚡ Sharp', color: '#10b981' }].map(opt => (
+                    <button key={opt.v} type="button" onClick={() => onChange('brainFog', opt.v)}
+                        style={{
+                            flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none',
+                            background: data.brainFog === opt.v ? opt.color + '20' : 'var(--bg-elevated)',
+                            color: data.brainFog === opt.v ? opt.color : 'var(--text-3)',
+                            fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                            outline: data.brainFog === opt.v ? `2px solid ${opt.color}` : '2px solid transparent',
+                            transition: 'all 0.15s',
+                        }}>{opt.label}</button>
+                ))}
+            </div>
+        </div>
+
+        {/* Headache */}
+        <div style={{ marginTop: '10px' }}>
+            <ToggleRow label="Headache today?" active={data.headache} onToggle={() => onChange('headache', !data.headache)} icon="🤕" />
+        </div>
     </SectionCard>
 );
 
@@ -201,42 +288,73 @@ const MobileMoneySection = ({ user, accounts }) => {
     const [amount, setAmount] = useState('');
     const [desc, setDesc] = useState('');
     const [category, setCategory] = useState('');
+    const [descFocused, setDescFocused] = useState(false);
     const [accountId, setAccountId] = useState('');
     const [recent, setRecent] = useState([]);
     const [saving, setSaving] = useState(false);
 
     const CATS = [
-        { name: 'Food & Dining', icon: '🍛', color: '#ff6b35' },
-        { name: 'Transport', icon: '🚗', color: '#3b82f6' },
-        { name: 'Shopping', icon: '🛍️', color: '#a855f7' },
-        { name: 'Utilities', icon: '🏠', color: '#f59e0b' },
-        { name: 'Health', icon: '💊', color: '#10b981' },
-        { name: 'Entertainment', icon: '🎬', color: '#ec4899' },
-        { name: 'Other', icon: '📦', color: '#6b7280' },
+        { name: 'Food', icon: '🍜', color: '#ff6b35' },
+        { name: 'Drinks', icon: '☕', color: '#c2841a' },
+        { name: 'Snacks', icon: '🍪', color: '#f59e0b' },
+        { name: 'Shopping', icon: '🛒', color: '#8b5cf6' },
+        { name: 'Outfit', icon: '🧥', color: '#a855f7' },
+        { name: 'Household', icon: '🪑', color: '#6b7280' },
+        { name: 'Body Care', icon: '☃️', color: '#06b6d4' },
+        { name: 'Education', icon: '📙', color: '#10b981' },
+        { name: 'Subscriptions', icon: '🎥', color: '#ec4899' },
+        { name: 'Transport', icon: '🚖', color: '#3b82f6' },
+        { name: 'Health', icon: '🧘🏼', color: '#22c55e' },
+        { name: 'Misc', icon: '🌐', color: '#94a3b8' },
+        { name: 'Earning', icon: '🏅', color: '#f5a623' },
     ];
 
     const KEYWORDS = {
-        'Food & Dining': ['food', 'zomato', 'swiggy', 'lunch', 'dinner', 'breakfast', 'tea', 'coffee', 'snack', 'restaurant', 'cafe', 'biryani', 'pizza', 'burger', 'dominos', 'mcdonalds', 'kfc', 'mess', 'canteen', 'maggi', 'juice'],
-        'Transport': ['uber', 'ola', 'metro', 'bus', 'train', 'petrol', 'fuel', 'auto', 'cab', 'rapido', 'parking', 'toll', 'diesel', 'rickshaw', 'taxi'],
-        'Shopping': ['amazon', 'flipkart', 'myntra', 'clothes', 'shoes', 'electronics', 'phone', 'meesho', 'charger', 'headphones'],
-        'Utilities': ['electricity', 'rent', 'wifi', 'water', 'gas', 'recharge', 'bill', 'maintenance', 'jio', 'airtel'],
-        'Health': ['medicine', 'doctor', 'gym', 'pharmacy', 'hospital', 'supplement', 'protein', 'apollo', 'test'],
-        'Entertainment': ['netflix', 'movie', 'spotify', 'game', 'concert', 'subscription', 'hotstar', 'prime'],
+        'Food': ['pizza', 'burger', 'roll', 'chowmein', 'noodles', 'maggi', 'momos', 'sandwich', 'sub', 'puff', 'vada pav', 'samosa', 'kachori', 'shawarma', 'manchurian', 'wings', 'chilly potato', 'fries', 'french fries', 'fried rice', 'omlette', 'bread pakoda', 'dahi', 'chole', 'lunch', 'dinner', 'breakfast', 'party', 'food', 'mcdonalds', 'mcd', 'swiggy', 'zomato', 'train food'],
+        'Drinks': ['tea', 'chai', 'lassi', 'pepsi', 'coke', 'dew', 'juice', 'shake', 'coffee', '7up', 'slice', 'fizz', 'sting', 'mirinda', 'monster', 'lemonata', 'sugarcane', 'litchi', 'lemon water', 'milk', 'oreo shake', 'mango shake', 'ice tea', 'hot chocolate', 'cold coffee', 'cold drink', 'sprite', 'bisleri', 'nimbu', 'buttermilk', 'thums up'],
+        'Snacks': ['chips', 'chocolate', 'ice cream', 'biscuit', 'oreo', 'kitkat', 'dairy milk', 'popcorn', 'chewing gum', 'protein bar', 'proteinbar', 'cookie', 'rumbles', 'hide&seek', 'hide and seek', 'marie', 'snack', 'mathri', 'namkeen', 'food supplies'],
+        'Shopping': ['blinkit', 'zepto', 'instamart', 'insta mart', 'amazon', 'flipkart', 'myntra', 'meesho'],
+        'Outfit': ['jersey', 'hoodie', 'tshirt', 'shirt', 'trousers', 'jeans', 'shorts', 'gym shirt', 'gym trousers', 'clothes', 'shoes', 'sneakers', 'slippers', 'af1', 'footwear', 'shoe bag', 'watch', 'g-shock', 'h&m', 'outfit', 'dress', 'jacket', 'kurta'],
+        'Household': ['earphones', 'headphones', 'speaker', 'jbl', 'sennheiser', 'charger', 'cable', 'pillow', 'hanger', 'wiper', 'bat', 'posters', 'handwash', 'toiletries', 'frame', 'water bottle', 'bottle'],
+        'Body Care': ['serum', 'sunscreen', 'moisturizer', 'face wash', 'facewash', 'shampoo', 'haircut', 'hair cut', 'perfume', 'deodorant', 'rollon', 'scrubber', 'hairband', 'toothbrush', 'brush', 'tongue cleaner', 'skincare', 'lip balm', 'lotion', 'conditioner', 'hair oil', 'face mask'],
+        'Education': ['print', 'pen', 'pencil', 'copy', 'cutter', 'sheets', 'file', 'lab', 'aws', 'course', 'study', 'book', 'notebook', 'pages', 'pbl', 'os lab'],
+        'Subscriptions': ['netflix', 'spotify', 'youtube', 'yt premium', 'amazon prime', 'apple one', 'hotstar', 'prime video', 'gpt', 'chatgpt', 'subscription', 'gpgo'],
+        'Transport': ['auto', 'bus', 'train', 'bike', 'taxi', 'cab', 'rickshaw', 'rapido', 'uber', 'ola', 'petrol', 'fuel', 'toll', 'metro', 'ticket', 'nptel'],
+        'Health': ['medicine', 'medicines', 'ors', '1mg', 'hospital', 'doctor', 'pharmacy', 'apollo', 'tablet', 'clinic', 'azithromycin', 'cofsils', 'strip'],
+        'Misc': ['recharge', 'screen guard', 'ipad cover', 'cleaning kit', 'table clock', 'tumbler', 'fevikwik', 'dream cricket', 'paytm gold', 'trip', 'tennis ball', 'dust cleaner', 'apple pencil', 'keyboard', 'mouse'],
+        'Earning': ['dscout', 'attapoll', 'neevo', 'testerwork', 'pulse lab', 'pulselab', 'user interview', 'userq', 'cashkaro', 'freelance', 'gemini insider', 'payment received', 'bounty', 'income'],
     };
+
+    const ITEM_PRIORITY = [
+        'Food', 'Drinks', 'Snacks', 'Outfit', 'Household', 'Body Care',
+        'Education', 'Subscriptions', 'Transport', 'Health', 'Misc', 'Earning',
+    ];
+
+    const PLATFORM_PRIORITY = ['Shopping'];
 
     const matchCategory = (text) => {
         const lower = text.toLowerCase();
-        for (const [cat, words] of Object.entries(KEYWORDS)) {
+        // Item-level signals always win; platform names are a fallback.
+        for (const cat of ITEM_PRIORITY) {
+            const words = KEYWORDS[cat] || [];
             if (words.some(w => lower.includes(w))) return cat;
         }
-        return 'Other';
+        for (const cat of PLATFORM_PRIORITY) {
+            const words = KEYWORDS[cat] || [];
+            if (words.some(w => lower.includes(w))) return cat;
+        }
+        return '';
     };
 
     const handleDescChange = (val) => {
         setDesc(val);
-        if (val.length >= 2 && !category) {
+        if (val.length < 2) {
+            if (!val.trim()) setCategory('');
+            return;
+        }
+        if (!category) {
             const matched = matchCategory(val);
-            if (matched !== 'Other') setCategory(matched);
+            if (matched) setCategory(matched);
         }
     };
 
@@ -252,7 +370,7 @@ const MobileMoneySection = ({ user, accounts }) => {
             if (txType === 'expense') finalAmount = -Math.abs(finalAmount);
             else finalAmount = Math.abs(finalAmount);
 
-            const catName = txType === 'income' ? 'Income' : (category || 'Other');
+            const catName = txType === 'income' ? 'Earning' : (category || 'Misc');
 
             const data = await insertRow('money_transactions', {
                 user_id: user.id, date: dateStr, category: catName,
@@ -267,7 +385,7 @@ const MobileMoneySection = ({ user, accounts }) => {
                 const { default: toast } = await import('../../utils/toast');
                 toast.success('Logged ✓');
             }
-            setAmount(''); setDesc(''); setCategory('');
+            setAmount(''); setDesc(''); setCategory(''); setDescFocused(false);
         } catch (err) {
             const { default: toast } = await import('../../utils/toast');
             toast.error('Failed: ' + err.message);
@@ -328,11 +446,13 @@ const MobileMoneySection = ({ user, accounts }) => {
             {/* Description */}
             <div style={{ marginBottom: '10px' }}>
                 <label style={labelSt}>What for?</label>
-                <input type="text" value={desc} placeholder="e.g. Uber, Groceries..."
+                <input type="text" value={desc} placeholder="e.g. chai, fried rice, blinkit chips"
                     onChange={e => handleDescChange(e.target.value)}
+                    onFocus={() => setDescFocused(true)}
+                    onBlur={() => setTimeout(() => setDescFocused(false), 100)}
                     style={{ ...numInput, width: '100%', fontSize: '14px' }} />
-                {category && (
-                    <div style={{ marginTop: '6px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                {(descFocused || desc.length > 0 || category) && (
+                    <div style={{ marginTop: '6px', display: 'flex', gap: '6px', overflowX: 'auto', flexWrap: 'nowrap', paddingBottom: '4px' }}>
                         {CATS.map(c => (
                             <button key={c.name} type="button" onClick={() => setCategory(c.name)}
                                 style={{
@@ -341,8 +461,9 @@ const MobileMoneySection = ({ user, accounts }) => {
                                     background: category === c.name ? c.color + '22' : 'var(--bg-elevated)',
                                     color: category === c.name ? c.color : 'var(--text-3)',
                                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px',
+                                    whiteSpace: 'nowrap', flex: '0 0 auto',
                                 }}>
-                                {c.icon} {c.name.split(' ')[0]}
+                                {c.icon} {c.name}
                             </button>
                         ))}
                     </div>
@@ -522,6 +643,10 @@ const MobileResetSection = ({ user }) => {
                 user_id: user.id, date: today,
                 rc_count: newCount, rc_entries: JSON.stringify(newEntries),
             }, 'user_id,date');
+            // Reset clean streak when logging a reset
+            await upsertRow('user_xp', {
+                user_id: user.id, clean_streak: 0, updated_at: new Date().toISOString(),
+            }, 'user_id');
             setEntries(newEntries);
             setCount(newCount);
         } catch (err) {
@@ -554,6 +679,126 @@ const MobileResetSection = ({ user }) => {
                     )}
                 </div>
             )}
+        </div>
+    );
+};
+
+
+/* ─── DSA Problem Counter ─── */
+
+const DSA_PLATFORMS = { leetcode: '🟡', codeforces: '🔵', gfg: '🟢', codechef: '🟤', hackerrank: '🟩', other: '🟣' };
+const DSA_DIFF = { easy: '#10b981', medium: '#f5a623', hard: '#ef4444' };
+
+const MobileDSASection = ({ user }) => {
+    const [problems, setProblems] = useState([]);
+    const [adding, setAdding] = useState(false);
+    const [title, setTitle] = useState('');
+    const [platform, setPlatform] = useState('leetcode');
+    const [difficulty, setDifficulty] = useState('medium');
+
+    useEffect(() => {
+        if (!user) return;
+        (async () => {
+            const { default: supabase } = await import('../../utils/supabase');
+            const { data } = await supabase.from('dsa_problems')
+                .select('*').eq('user_id', user.id).is('deleted_at', null)
+                .order('solved_at', { ascending: false }).limit(30);
+            if (data) setProblems(data);
+        })();
+    }, [user]);
+
+    const handleAdd = async () => {
+        if (!title.trim()) return;
+        try {
+            const { insertRow } = await import('../../services/dbService');
+            const row = await insertRow('dsa_problems', {
+                user_id: user.id, title: title.trim(), platform, difficulty,
+            });
+            if (row?.[0]) setProblems(prev => [row[0], ...prev]);
+            setTitle(''); setAdding(false);
+        } catch {
+            const { default: toast } = await import('../../utils/toast');
+            toast.error('Failed to log problem');
+        }
+    };
+
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const todayCount = problems.filter(p => p.solved_at?.startsWith(todayStr)).length;
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekCount = problems.filter(p => new Date(p.solved_at) >= weekAgo).length;
+    const byDiff = { easy: 0, medium: 0, hard: 0 };
+    problems.forEach(p => { if (byDiff[p.difficulty] !== undefined) byDiff[p.difficulty]++; });
+
+    return (
+        <div style={{
+            background: 'var(--bg-card)', borderRadius: '14px', padding: '16px',
+            border: '1px solid var(--border)', margin: '0 16px',
+        }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🧩 DSA TRACKER</span>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)' }}>{problems.length} total</span>
+            </div>
+
+            {/* Stats row */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                <div style={{ flex: 1, background: 'var(--bg-elevated)', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--accent)' }}>{todayCount}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 600 }}>Today</div>
+                </div>
+                <div style={{ flex: 1, background: 'var(--bg-elevated)', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-1)' }}>{weekCount}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 600 }}>This Week</div>
+                </div>
+                {Object.entries(byDiff).map(([d, c]) => (
+                    <div key={d} style={{ flex: 1, background: 'var(--bg-elevated)', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '18px', fontWeight: 800, color: DSA_DIFF[d] }}>{c}</div>
+                        <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 600, textTransform: 'capitalize' }}>{d}</div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Add form */}
+            {adding ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input type="text" placeholder="Problem name" value={title} onChange={e => setTitle(e.target.value)} autoFocus
+                        onKeyDown={e => { if (e.key === 'Enter' && title.trim()) handleAdd(); }}
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-elevated)', color: 'var(--text-1)', fontSize: '13px', fontWeight: 600 }} />
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        {Object.entries(DSA_PLATFORMS).map(([k, icon]) => (
+                            <button key={k} type="button" onClick={() => setPlatform(k)}
+                                style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, border: platform === k ? '1px solid var(--accent)' : '1px solid var(--border)', background: platform === k ? 'rgba(255,107,53,0.1)' : 'transparent', color: platform === k ? 'var(--accent)' : 'var(--text-3)', cursor: 'pointer' }}>
+                                {icon} {k}
+                            </button>
+                        ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                        {Object.entries(DSA_DIFF).map(([d, color]) => (
+                            <button key={d} type="button" onClick={() => setDifficulty(d)}
+                                style={{ flex: 1, padding: '6px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, border: difficulty === d ? `1px solid ${color}` : '1px solid var(--border)', background: difficulty === d ? `${color}15` : 'transparent', color: difficulty === d ? color : 'var(--text-3)', cursor: 'pointer', textTransform: 'capitalize' }}>
+                                {d}
+                            </button>
+                        ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                        <button type="button" onClick={handleAdd} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}>Save</button>
+                        <button type="button" onClick={() => { setAdding(false); setTitle(''); }} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-3)', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}>Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                <button type="button" onClick={() => setAdding(true)} style={{
+                    width: '100%', padding: '10px', borderRadius: '8px', border: '1px dashed var(--border)',
+                    background: 'transparent', color: 'var(--text-3)', fontWeight: 600, fontSize: '12px', cursor: 'pointer',
+                }}>+ Log Problem</button>
+            )}
+
+            {/* Recent problems */}
+            {problems.slice(0, 5).map(p => (
+                <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0', borderTop: '1px solid var(--border)', marginTop: '6px' }}>
+                    <span>{DSA_PLATFORMS[p.platform] || '🟣'}</span>
+                    <span style={{ flex: 1, fontSize: '12px', fontWeight: 600, color: 'var(--text-1)' }}>{p.title}</span>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: DSA_DIFF[p.difficulty] || 'var(--text-3)', textTransform: 'uppercase' }}>{p.difficulty}</span>
+                </div>
+            ))}
         </div>
     );
 };
@@ -661,4 +906,5 @@ export {
     MobileNotesSection,
     MobileWinSection,
     MobileResetSection,
+    MobileDSASection,
 };

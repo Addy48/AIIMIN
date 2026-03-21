@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { upsertRow } from '../services/dbService';
 import TimePicker from './TimePicker';
 import MomentumBar from './MomentumBar';
-import { useDevContext } from '../context/DevContext';
-import { devLogger } from '../utils/devLogger';
 import toast from '../utils/toast';
 import DumbbellIcon from './icons/DumbbellIcon';
 
@@ -72,7 +70,6 @@ const DailyLogForm = ({ user, externalMood }) => {
     }, [externalMood]);
 
     const [loading, setLoading] = useState(false);
-    const { testDate } = useDevContext();
 
     const [isDirty, setIsDirty] = useState(false);
     const [justSaved, setJustSaved] = useState(false);
@@ -119,7 +116,7 @@ const DailyLogForm = ({ user, externalMood }) => {
                 setLoading(false);
                 return;
             }
-            const dateObj = testDate ? new Date(testDate) : new Date();
+            const dateObj = new Date();
             const today = dateObj.toISOString().split('T')[0];
             const userId = user.id;
 
@@ -140,11 +137,7 @@ const DailyLogForm = ({ user, externalMood }) => {
                 mood: formData.mood,
             };
 
-            const data = await upsertRow('daily_logs', payload, 'user_id,date');
-
-            if (process.env.NODE_ENV === 'development') {
-                devLogger.logOperation(payload, data);
-            }
+            await upsertRow('daily_logs', payload, 'user_id,date');
 
             toast.success(`Log saved at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
             setJustSaved(true);
@@ -169,7 +162,7 @@ const DailyLogForm = ({ user, externalMood }) => {
         }
     };
 
-    const displayDateObj = testDate ? new Date(testDate) : new Date();
+    const displayDateObj = new Date();
     const todayDisplay = displayDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
     const inputStyle = {
