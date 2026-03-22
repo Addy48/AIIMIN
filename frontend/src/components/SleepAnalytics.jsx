@@ -1,94 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import supabase from '../utils/supabase';
-
-/* ─── Helpers ─── */
-const fmt = n => Number(n).toFixed(1);
-
-const timeToMinutes = (t) => {
-    if (!t) return null;
-    const [h, m] = t.split(':').map(Number);
-    return h * 60 + m;
-};
-
-const minutesToTime = (mins) => {
-    const h = Math.floor(((mins % 1440) + 1440) % 1440 / 60);
-    const m = Math.round(((mins % 1440) + 1440) % 1440 % 60);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
-};
-
-/* Circular mean for times (handles midnight wraparound) */
-const circularMeanMinutes = (minutes) => {
-    if (!minutes.length) return 0;
-    const radians = minutes.map(m => (m / 1440) * 2 * Math.PI);
-    const sinSum = radians.reduce((a, r) => a + Math.sin(r), 0) / radians.length;
-    const cosSum = radians.reduce((a, r) => a + Math.cos(r), 0) / radians.length;
-    let mean = Math.atan2(sinSum, cosSum) / (2 * Math.PI) * 1440;
-    if (mean < 0) mean += 1440;
-    return Math.round(mean);
-};
-
-/* Circular deviation (in minutes) from a mean */
-const circularDeviation = (minutes, mean) => {
-    if (!minutes.length) return 0;
-    const diffs = minutes.map(m => {
-        let d = Math.abs(m - mean);
-        if (d > 720) d = 1440 - d;
-        return d * d;
-    });
-    return Math.sqrt(diffs.reduce((a, b) => a + b, 0) / diffs.length);
-};
-
-/* ─── Mini Bar Chart (pure CSS) ─── */
-const MiniBar = ({ value, max, color, height = 28 }) => {
-    const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-    return (
-        <div style={{
-            width: '100%', height: `${height}px`, borderRadius: '4px',
-            background: 'var(--bg-elevated)', overflow: 'hidden',
-        }}>
-            <div style={{
-                width: `${pct}%`, height: '100%', borderRadius: '4px',
-                background: color, transition: 'width 0.4s ease',
-                minWidth: pct > 0 ? '2px' : '0',
-            }} />
-        </div>
-    );
-};
-
-/* ─── Sparkline (SVG) ─── */
-const Sparkline = ({ data, color, height = 40, width = '100%' }) => {
-    if (!data.length) return null;
-    const max = Math.max(...data, 1);
-    const min = Math.min(...data, 0);
-    const range = max - min || 1;
-    const svgW = 200;
-    const points = data.map((v, i) => {
-        const x = (i / (data.length - 1 || 1)) * svgW;
-        const y = height - ((v - min) / range) * (height - 4) - 2;
-        return `${x},${y}`;
-    }).join(' ');
-
-    return (
-        <svg viewBox={`0 0 ${svgW} ${height}`} style={{ width, height, display: 'block' }} preserveAspectRatio="none">
-            <polyline
-                points={points}
-                fill="none"
-                stroke={color}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-            {/* Endpoint dot */}
-            {data.length > 0 && (() => {
-                const lastX = svgW;
-                const lastY = height - ((data[data.length - 1] - min) / range) * (height - 4) - 2;
-                return <circle cx={lastX} cy={lastY} r="3" fill={color} />;
-            })()}
-        </svg>
-    );
-};
+import { fmt, timeToMinutes, minutesToTime, circularMeanMinutes, circularDeviation } from './sleep/SleepHelpers';
+import { MiniBar, Sparkline } from './sleep/SleepCharts';
+import { RadialBarChart, RadialBar, LineChart, Line, XAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 /* ─── SleepAnalytics ─── */
 const SleepAnalytics = ({ user }) => {
@@ -159,7 +73,6 @@ const SleepAnalytics = ({ user }) => {
         const waketimeDev = waketimes.length ? circularDeviation(waketimes, avgWaketime) : 0;
 
         // Consistency score: 100 = perfect, 0 = very irregular
-        // 30min dev = 100, 120min dev = 0
         const consistencyScore = Math.max(0, Math.min(100,
             100 - ((bedtimeDev + waketimeDev) / 2 - 15) * (100 / 105)
         ));
@@ -167,10 +80,9 @@ const SleepAnalytics = ({ user }) => {
         // ── Chronotype ──
         let chronotype = 'Intermediate';
         if (avgBedtime !== null) {
-            // Bedtime after midnight (0-180 = 12:00 AM to 3:00 AM) or before midnight (1320-1440 = 10PM-12AM)
             const bedHour = avgBedtime >= 720 ? avgBedtime : avgBedtime + 1440; // normalize
-            if (bedHour >= 1440 + 60) chronotype = 'Night Owl'; // after 1 AM
-            else if (bedHour <= 1380) chronotype = 'Early Bird'; // before 11 PM
+            if (bedHour >= 1440 + 60) chronotype = 'Night Owl';
+            else if (bedHour <= 1380) chronotype = 'Early Bird';
         }
 
         // ── Sleep quality distribution ──
@@ -228,9 +140,7 @@ const SleepAnalytics = ({ user }) => {
             }}>
                 <div style={{ fontSize: '28px', marginBottom: '12px' }}>🌙</div>
                 <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>No Sleep Data Yet</div>
-                <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '6px' }}>
-                    Log your first sleep entry in Today's Log to see analytics.
-                </p>
+                <p style={{ fontSize: '12px', color: 'var(--text-3)', margin: 0 }}>Log sleep to generate analytics.</p>
             </div>
         );
     }
@@ -259,7 +169,6 @@ const SleepAnalytics = ({ user }) => {
                     </div>
                 </div>
 
-                {/* Period toggle */}
                 <div style={{
                     display: 'flex', gap: '2px', padding: '3px', borderRadius: '8px',
                     background: 'var(--bg-elevated)',
@@ -292,9 +201,6 @@ const SleepAnalytics = ({ user }) => {
                     <div style={{ fontSize: '22px', fontWeight: 900, color: a.avgHours >= sleepNeed ? 'var(--success)' : 'var(--text-1)' }}>
                         {fmt(a.avgHours)}h
                     </div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '3px' }}>
-                        target: {fmt(sleepNeed)}h
-                    </div>
                 </div>
 
                 {/* Sleep Debt */}
@@ -304,9 +210,6 @@ const SleepAnalytics = ({ user }) => {
                     </div>
                     <div style={{ fontSize: '22px', fontWeight: 900, color: debtColor }}>
                         {a.currentDebt === 0 ? '0' : `${fmt(a.currentDebt)}h`}
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '3px' }}>
-                        {a.currentDebt === 0 ? 'all clear' : `~${a.paybackNights} nights to clear`}
                     </div>
                 </div>
 
@@ -318,60 +221,59 @@ const SleepAnalytics = ({ user }) => {
                     <div style={{ fontSize: '22px', fontWeight: 900, color: consistColor }}>
                         {a.consistencyScore}%
                     </div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '3px' }}>
-                        ±{a.bedtimeDev}min bedtime var
-                    </div>
                 </div>
 
                 {/* Mood Correlation */}
                 <div style={{ padding: '16px 20px', background: 'var(--bg-card)' }}>
                     <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
-                        Sleep → Mood
+                        Mood Corr
                     </div>
                     <div style={{ fontSize: '22px', fontWeight: 900, color: a.moodCorrelation !== null && a.moodCorrelation > 0.3 ? 'var(--success)' : 'var(--text-2)' }}>
                         {a.moodCorrelation !== null ? (a.moodCorrelation > 0 ? '+' : '') + a.moodCorrelation : '—'}
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '3px' }}>
-                        {a.moodCorrelation !== null
-                            ? a.moodCorrelation > 0.5 ? 'strong link' : a.moodCorrelation > 0.2 ? 'moderate link' : 'weak link'
-                            : 'need more data'
-                        }
                     </div>
                 </div>
             </div>
 
             {/* ── Visual Section ── */}
-            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
 
-                {/* Sleep Hours Trend */}
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                            Hours Trend
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>
-                            last {a.sleepTrend.length} nights
-                        </div>
+                {/* Sleep Score Gauge */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ width: '100px', height: '100px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <RadialBarChart innerRadius="70%" outerRadius="100%" data={[{ name: 'Score', value: a.consistencyScore, fill: consistColor }]} startAngle={180} endAngle={0}>
+                                <RadialBar minAngle={15} background clockWise dataKey="value" cornerRadius={10} />
+                            </RadialBarChart>
+                        </ResponsiveContainer>
                     </div>
-                    <div style={{ position: 'relative' }}>
-                        <Sparkline data={a.sleepTrend} color="var(--accent)" height={48} />
-                        {/* Target line indicator */}
-                        <div style={{
-                            position: 'absolute', right: 0, top: 0,
-                            fontSize: '9px', color: 'var(--text-3)', fontWeight: 600,
-                        }}>
-                            {fmt(a.sleepTrend[a.sleepTrend.length - 1])}h
-                        </div>
+                    <div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Overall Sleep Score</div>
+                        <div style={{ fontSize: '32px', fontWeight: 900, color: consistColor }}>{a.consistencyScore}<span style={{ fontSize: '16px', color: 'var(--text-3)' }}>/100</span></div>
                     </div>
                 </div>
 
-                {/* Debt Trend */}
+                {/* 7-day consistency heatmap */}
+                <div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '12px' }}>7-Day Consistency</div>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                        {a.sleepTrend.slice(-7).map((score, i) => (
+                            <div key={i} style={{ flex: 1, height: '24px', borderRadius: '4px', background: score >= (sleepNeed - 0.5) ? 'var(--success)' : score >= (sleepNeed - 2) ? 'var(--warning)' : 'var(--danger)', opacity: 0.8 }} />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Debt Recovery Projection Line */}
                 {a.currentDebt > 0 && (
-                    <div>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
-                            Debt Accumulation
-                        </div>
-                        <Sparkline data={a.debtTrend} color={debtColor} height={36} />
+                    <div style={{ height: '120px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>Debt Recovery Projection</div>
+                        <ResponsiveContainer>
+                            <LineChart data={[{ day: 'Now', debt: a.currentDebt }, ...Array.from({ length: Math.min(a.paybackNights || 1, 14) }, (_, i) => ({ day: `+${i + 1}d`, debt: Math.max(0, a.currentDebt - ((i + 1) * 0.6)) }))]}>
+                                <Line type="monotone" dataKey="debt" stroke="var(--success)" strokeWidth={2} dot={{ r: 3, fill: 'var(--bg-card)', stroke: 'var(--success)', strokeWidth: 2 }} />
+                                <XAxis dataKey="day" hide />
+                                <ReferenceLine y={0} stroke="var(--border)" strokeDasharray="3 3" />
+                                <Tooltip contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px' }} />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </div>
                 )}
 

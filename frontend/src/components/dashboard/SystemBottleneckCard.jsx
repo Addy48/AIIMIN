@@ -1,6 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const SystemBottleneckCard = ({ scores = { physical: 82, cognitive: 76, discipline: 69, financial: 74, emotional: 61 } }) => {
+const SystemBottleneckCard = ({ scores = null, drift = [] }) => {
+    const navigate = useNavigate();
+
+    if (!scores) return null;
+
     let weakest = 'emotional';
     let minScore = 100;
 
@@ -13,25 +18,35 @@ const SystemBottleneckCard = ({ scores = { physical: 82, cognitive: 76, discipli
         }
     }
 
+    const severeDrift = drift.filter(d => ['severe', 'critical'].includes(d.severity));
+    const title = severeDrift.length > 0 ? "System Drift Detected" : "System Bottleneck Detected";
+    const highlightColor = severeDrift.length > 0 ? "var(--danger)" : "var(--gold)";
+    const bgDim = severeDrift.length > 0 ? "var(--danger-dim)" : "rgba(212,175,55,0.05)";
+    const borderDim = severeDrift.length > 0 ? "rgba(255,68,102,0.2)" : "rgba(212,175,55,0.2)";
+
     return (
         <div style={{
-            background: 'var(--danger-dim)', border: '1px solid rgba(255,68,102,0.2)',
+            background: bgDim, border: `1px solid ${borderDim}`,
             borderRadius: 'var(--r-lg)', padding: '16px 20px',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             marginBottom: '16px'
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255,68,102,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
-                    ⚠️
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: borderDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                    {severeDrift.length > 0 ? '🚨' : '⚠️'}
                 </div>
                 <div>
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--danger)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>System Bottleneck Detected</div>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: highlightColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{title}</div>
                     <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', marginTop: '2px' }}>
-                        Weakest System: <span style={{ color: 'var(--danger)' }}>{names[weakest]} ({minScore})</span>
+                        {severeDrift.length > 0 ? (
+                            <span><span style={{ color: 'var(--danger)' }}>{severeDrift[0].metric.replace('_', ' ')}</span> is dropping rapidly ({severeDrift[0].drift})</span>
+                        ) : (
+                            <span>Weakest System: <span style={{ color: 'var(--gold)' }}>{names[weakest]} ({minScore})</span></span>
+                        )}
                     </div>
                 </div>
             </div>
-            <button style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--bg-card)', border: '1px solid var(--danger)', color: 'var(--danger)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>
+            <button onClick={() => navigate('/insights')} style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--bg-card)', border: `1px solid ${highlightColor}`, color: highlightColor, fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>
                 View Diagnostics →
             </button>
         </div>

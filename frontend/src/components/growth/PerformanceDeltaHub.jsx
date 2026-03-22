@@ -67,7 +67,7 @@ const PerformanceDeltaHub = ({ recentLogs = [] }) => {
                                     </span>
                                 )}
                                 {r.isMomentum && !r.isLeakage && (
-                                    <span style={{ color: '#047857', background: 'rgba(16,185,129,0.1)', padding: '5px 12px', borderRadius: '99px', border: '1px solid rgba(16,185,129,0.2)' }}>
+                                    <span style={{ color: '#ffffff', background: '#22C55E', padding: '5px 12px', borderRadius: '99px', border: '1px solid #16a34a', boxShadow: '0 0 8px rgba(34,197,94,0.5)', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
                                         ▲ Momentum {r.diff > 0 ? `(+${Math.round(r.diff)}%)` : ''}
                                     </span>
                                 )}

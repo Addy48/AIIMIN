@@ -109,22 +109,15 @@ export function AuthProvider({ children }) {
 
     const signInWithEmail = async (identifier, password) => {
         let authEmail = identifier;
-        let authPassword = password;
-        const identLower = identifier.toLowerCase();
 
-        if (identLower === 'au48') {
-            authEmail = 'AU48@gmail.com';
-            if (password === 'au4803' || password === 'AU4803') {
-                authPassword = 'AU4803';
-            }
-        } else if (identifier.includes('@')) {
+        if (identifier.includes('@')) {
             authEmail = identifier.toLowerCase();
         } else {
             const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
             authEmail = data.email;
         }
 
-        const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+        const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password });
         if (error) {
             console.error('Error signing in:', error.message);
             throw error;

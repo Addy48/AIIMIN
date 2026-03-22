@@ -5,7 +5,7 @@ import Logo from '../components/Logo';
 const Login = () => {
     const { signUpWithEmail, signInWithEmail } = useAuth();
     const [mode, setMode] = useState('login'); // 'login' or 'signup'
-    const [email, setEmail] = useState('AU48');
+    const [email, setEmail] = useState('AU4803');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const [username, setUsername] = useState('');
@@ -37,7 +37,7 @@ const Login = () => {
         try {
             if (mode === 'signup') {
                 // Final validation check
-                const usernameRegex = /^(?=.*[A-Z])(?=.*[0-9])[A-Za-z0-9@+-_]{6,}$/;
+                const usernameRegex = /^[A-Za-z0-9@+-_]{3,}$/;
                 if (!usernameRegex.test(username)) {
                     setError("Username does not meet security requirements.");
                     setLoading(false);
@@ -185,9 +185,9 @@ const Login = () => {
                                     onChange={(e) => {
                                         const val = e.target.value;
                                         setUsername(val);
-                                        const regex = /^(?=.*[A-Z])(?=.*[0-9])[A-Za-z0-9@+-_]{6,}$/;
+                                        const regex = /^[A-Za-z0-9@+-_]{3,}$/;
                                         if (val && !regex.test(val)) {
-                                            setUsernameError("Min 6 chars, 1 uppercase, 1 number (@+-_ allowed)");
+                                            setUsernameError("Min 3 chars (@+-_ allowed)");
                                         } else {
                                             setUsernameError(null);
                                         }
@@ -223,7 +223,7 @@ const Login = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             style={{ ...inputStyle, paddingRight: '46px' }}
                             required
-                            minLength={6}
+                            minLength={3}
                         />
                         <button
                             type="button"

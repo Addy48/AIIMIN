@@ -1,51 +1,15 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
-const CausalNodeAnalysis = ({ recentLogs = [] }) => {
-    // Basic correlation logic: Compare average achievement of target when source habit is done vs not.
-    const correlations = useMemo(() => {
-        if (recentLogs.length < 5) return [];
-
-        const pairs = [
-            { sourceKey: 'gym_done', targetKey: 'mood', sourceLabel: 'Gym Commitment', targetLabel: 'Mood Baseline' },
-            { sourceKey: 'learning_done', targetKey: 'energy_level', sourceLabel: 'Deep Learning', targetLabel: 'Energy Engine' },
-            { sourceKey: 'breakfast_done', targetKey: 'mood', sourceLabel: 'Fueling Protocol', targetLabel: 'Subjective Ease' },
-            { sourceKey: 'learning_done', targetKey: 'sleep_hours', sourceLabel: 'Cognitive Exhaustion', targetLabel: 'Sleep Depth' },
-            { sourceKey: 'gym_done', targetKey: 'energy_level', sourceLabel: 'Somatic Output', targetLabel: 'Vitality Score' },
-        ];
-
-        return pairs.map(p => {
-            const withHabit = recentLogs.filter(l => l[p.sourceKey]);
-            const withoutHabit = recentLogs.filter(l => !l[p.sourceKey]);
-
-            if (withHabit.length === 0 || withoutHabit.length === 0) {
-                // Fallback to static but realistic if not enough variance
-                return { source: p.sourceLabel, target: p.targetLabel, impact: Math.floor(Math.random() * 20) + 40, trend: 'up' };
-            }
-
-            const avgWith = withHabit.reduce((s, l) => s + (Number(l[p.targetKey]) || 0), 0) / withHabit.length;
-            const avgWithout = withoutHabit.reduce((s, l) => s + (Number(l[p.targetKey]) || 0), 0) / withoutHabit.length;
-            const avgOverall = recentLogs.reduce((s, l) => s + (Number(l[p.targetKey]) || 0), 0) / recentLogs.length;
-
-            let impact = avgOverall > 0 ? ((avgWith - avgWithout) / avgOverall) * 100 : 0;
-            impact = Math.min(Math.max(impact, -100), 100); // Clamp to [-100, 100]
-
-            return {
-                source: p.sourceLabel,
-                target: p.targetLabel,
-                impact: Math.round(impact),
-                trend: impact >= 0 ? 'up' : 'down'
-            };
-        }).sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact));
-    }, [recentLogs]);
-
-    if (!recentLogs.length || correlations.length === 0) {
+const CausalNodeAnalysis = ({ behaviorDrivers = [] }) => {
+    if (!behaviorDrivers || !Array.isArray(behaviorDrivers) || behaviorDrivers.length === 0) {
         return (
-            <div style={{ padding: '32px', background: 'var(--bg-elevated)', borderRadius: '14px', border: '1px solid var(--border)', textAlign: 'center' }}>
+            <div style={{ padding: '32px', background: 'var(--bg-card)', borderRadius: '14px', border: '1px solid var(--border)', textAlign: 'center' }}>
                 <div style={{ fontSize: '24px', marginBottom: '10px' }}>🧬</div>
-                <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>Insufficient data to map causal nodes...</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>Insufficient behavioral data</div>
             </div>
         );
     }
+    const driversList = behaviorDrivers;
 
     return (
         <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '14px', overflow: 'hidden' }}>
@@ -60,7 +24,7 @@ const CausalNodeAnalysis = ({ recentLogs = [] }) => {
             </div>
 
             <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                {correlations.map((c, i) => (
+                {driversList.slice(0, 5).map((c, i) => (
                     <div key={i} style={{
                         display: 'grid',
                         gridTemplateColumns: 'minmax(100px, 1fr) auto minmax(100px, 1fr)',
@@ -74,8 +38,8 @@ const CausalNodeAnalysis = ({ recentLogs = [] }) => {
                     }}>
                         {/* Source Node */}
                         <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Habit</div>
-                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>{c.source}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Driver</div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>{c.driver.replace('_', ' ')}</div>
                         </div>
 
                         {/* Connection Line & Impact */}
@@ -91,7 +55,7 @@ const CausalNodeAnalysis = ({ recentLogs = [] }) => {
                                 marginBottom: '-8px',
                                 zIndex: 1
                             }}>
-                                {c.impact >= 0 ? '+' : ''}{c.impact}%
+                                {c.impact >= 0 ? '+' : ''}{Math.round(c.impact)}%
                             </div>
                             <div style={{
                                 width: '100%',
@@ -101,8 +65,8 @@ const CausalNodeAnalysis = ({ recentLogs = [] }) => {
                             }}>
                                 <div style={{
                                     position: 'absolute',
-                                    right: c.trend === 'up' ? '0' : 'auto',
-                                    left: c.trend === 'down' ? '0' : 'auto',
+                                    right: c.impact >= 0 ? '0' : 'auto',
+                                    left: c.impact < 0 ? '0' : 'auto',
                                     top: '-3px',
                                     width: '7px',
                                     height: '7px',
@@ -115,15 +79,15 @@ const CausalNodeAnalysis = ({ recentLogs = [] }) => {
 
                         {/* Target Node */}
                         <div style={{ textAlign: 'left' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Driver</div>
-                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>{c.target}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impact on</div>
+                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>{c.target.replace('_', ' ')}</div>
                         </div>
                     </div>
                 ))}
             </div>
 
             <div style={{ padding: '12px 24px', background: 'var(--bg-elevated)', borderTop: '1px solid var(--border)', fontSize: '10px', color: 'var(--text-3)', fontStyle: 'italic' }}>
-                * Impact scores calculate the % improvement in outcomes (Drivers) when corresponding Habits are maintained.
+                * Impact scores objectively calculated from your last 120 days of analytics pipeline data.
             </div>
         </div>
     );
