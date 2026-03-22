@@ -34,9 +34,13 @@ const Settings = () => {
     }, [session, isUsingMock, mockData]);
 
     const handleDeleteAccount = useCallback(async () => {
-        if (!window.confirm('This will PERMANENTLY delete all your data. Type DELETE to confirm.')) return;
-        const input = window.prompt('Type DELETE to confirm:');
-        if (input !== 'DELETE') return;
+        if (!window.confirm('This will PERMANENTLY delete all your data. Proceed to second confirmation?')) return;
+        const confirmText = `delete ${user.email}`;
+        const input = window.prompt(`Type "${confirmText}" to confirm:`);
+        if (input !== confirmText) {
+            toast.error('Deletion cancelled. Input did not match exactly.');
+            return;
+        }
         const tid = toast.loading('Deleting account...');
         try {
             await apiDelete('/account', { confirm: 'DELETE' }, { session });
@@ -45,7 +49,7 @@ const Settings = () => {
         } catch (err) {
             toast.update(tid, 'Delete failed', 'error');
         }
-    }, [session]);
+    }, [session, user]);
 
     if (!user) return null;
 

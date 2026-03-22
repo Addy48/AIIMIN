@@ -14,6 +14,7 @@ const Insights = () => {
     const { lhsData, reportData, loading: lhsLoading } = useLHSData(session);
     const [recentLogs, setRecentLogs] = useState([]);
     const [logsLoading, setLogsLoading] = useState(true);
+    const [showReview, setShowReview] = useState(true);
 
     useEffect(() => {
         if (!user) return;
@@ -45,7 +46,13 @@ const Insights = () => {
     return (
         <div>
             <h1 className="text-section" style={{ marginBottom: 'var(--space-6)' }}>Insights</h1>
-            <InsightsSection lhsData={lhsData} reportData={reportData} recentLogs={recentLogs} />
+            <InsightsSection
+                lhsData={lhsData}
+                reportData={reportData}
+                recentLogs={recentLogs}
+                showReview={showReview}
+                onDismissReview={() => setShowReview(false)}
+            />
         </div>
     );
 };

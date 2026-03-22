@@ -206,7 +206,7 @@ export function ReflectionSection({ user, recentLogs, pomoCyclesTotal, dsaCountT
     );
 }
 
-export function InsightsSection({ lhsData, reportData, recentLogs }) {
+export function InsightsSection({ lhsData, reportData, recentLogs, showReview, onDismissReview }) {
     return (
         <div id="sys-insights" style={{ scrollMarginTop: '100px' }}>
             <SectionLabel icon="🔭">Insights</SectionLabel>
@@ -252,17 +252,21 @@ export function InsightsSection({ lhsData, reportData, recentLogs }) {
                         <CausalNodeAnalysis behaviorDrivers={reportData?.behaviorDrivers} />
                     </ErrorBoundary>
                 </div>
-                <ErrorBoundary label="Weekly Life Review">
-                    <WeeklyLifeReview reviewOverride={reportData?.actionPlan ? {
-                        diagnosis: reportData.systemDiagnostics?.map((item) => item.summary || item.metric) || [],
-                        currentWeek: {
-                            avgSleep: lhsData?.baseMetrics?.sleepScore ? (lhsData.baseMetrics.sleepScore / 20) : 0,
-                            avgFocus: lhsData?.baseMetrics?.focusScore ? (lhsData.baseMetrics.focusScore / 25) : 0,
-                            avgSteps: recentLogs.length ? recentLogs.reduce((sum, log) => sum + Number(log.steps || 0), 0) / recentLogs.length : 0,
-                        },
-                        previousWeek: { avgSleep: 0, avgFocus: 0, avgSteps: 0 },
-                    } : null} />
-                </ErrorBoundary>
+                {showReview && (
+                    <ErrorBoundary label="Weekly Life Review">
+                        <WeeklyLifeReview
+                            onDismiss={onDismissReview}
+                            reviewOverride={reportData?.actionPlan ? {
+                                diagnosis: reportData.systemDiagnostics?.map((item) => item.summary || item.metric) || [],
+                                currentWeek: {
+                                    avgSleep: lhsData?.baseMetrics?.sleepScore ? (lhsData.baseMetrics.sleepScore / 20) : 0,
+                                    avgFocus: lhsData?.baseMetrics?.focusScore ? (lhsData.baseMetrics.focusScore / 25) : 0,
+                                    avgSteps: recentLogs.length ? recentLogs.reduce((sum, log) => sum + Number(log.steps || 0), 0) / recentLogs.length : 0,
+                                },
+                                previousWeek: { avgSleep: 0, avgFocus: 0, avgSteps: 0 },
+                            } : null} />
+                    </ErrorBoundary>
+                )}
             </div>
         </div>
     );
