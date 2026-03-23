@@ -75,6 +75,35 @@ function AppContent({ user }) {
   const location = useLocation();
   const isMobile = location.pathname === '/m';
 
+  useEffect(() => {
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (!viewportMeta) return;
+
+    const defaultViewport = 'width=device-width, initial-scale=1, viewport-fit=cover';
+    const mobileLockedViewport = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+
+    viewportMeta.setAttribute('content', isMobile ? mobileLockedViewport : defaultViewport);
+
+    // Block iOS gesture zoom (pinch + double-tap)
+    if (isMobile) {
+      const blockGesture = (e) => e.preventDefault();
+      const blockPinch = (e) => { if (e.touches && e.touches.length > 1) e.preventDefault(); };
+      document.addEventListener('gesturestart', blockGesture, { passive: false });
+      document.addEventListener('gesturechange', blockGesture, { passive: false });
+      document.addEventListener('touchmove', blockPinch, { passive: false });
+      return () => {
+        viewportMeta.setAttribute('content', defaultViewport);
+        document.removeEventListener('gesturestart', blockGesture);
+        document.removeEventListener('gesturechange', blockGesture);
+        document.removeEventListener('touchmove', blockPinch);
+      };
+    }
+
+    return () => {
+      viewportMeta.setAttribute('content', defaultViewport);
+    };
+  }, [isMobile]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Routes>
