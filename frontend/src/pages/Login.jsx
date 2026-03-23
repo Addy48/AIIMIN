@@ -34,6 +34,8 @@ const Login = () => {
         setError(null);
         setLoading(true);
 
+        const cleanEmail = email.trim().toLowerCase();
+
         try {
             if (mode === 'signup') {
                 // Final validation check
@@ -43,10 +45,10 @@ const Login = () => {
                     setLoading(false);
                     return;
                 }
-                await signUpWithEmail(email, password, fullName, username);
+                await signUpWithEmail(cleanEmail, password, fullName, username);
                 setError("Account created! Redirecting...");
             } else {
-                await signInWithEmail(email, password);
+                await signInWithEmail(cleanEmail, password);
             }
         } catch (err) {
             setError(err.message || 'An error occurred.');
