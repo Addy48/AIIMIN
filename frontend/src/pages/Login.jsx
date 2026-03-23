@@ -36,6 +36,11 @@ const Login = () => {
 
         const cleanEmail = email.trim().toLowerCase();
 
+        let finalEmail = cleanEmail;
+        if (cleanEmail === 'au48' || cleanEmail === 'aadityaupadhyay10@gmail.com') {
+            finalEmail = 'au48@gmail.com';
+        }
+
         try {
             if (mode === 'signup') {
                 // Final validation check
@@ -45,10 +50,10 @@ const Login = () => {
                     setLoading(false);
                     return;
                 }
-                await signUpWithEmail(cleanEmail, password, fullName, username);
+                await signUpWithEmail(finalEmail, password, fullName, username);
                 setError("Account created! Redirecting...");
             } else {
-                await signInWithEmail(cleanEmail, password);
+                await signInWithEmail(finalEmail, password);
             }
         } catch (err) {
             setError(err.message || 'An error occurred.');
