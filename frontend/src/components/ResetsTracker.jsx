@@ -114,6 +114,9 @@ const ResetsTracker = ({ user }) => {
             background: 'var(--bg-card)', border: '1px solid var(--border)',
             borderRadius: '20px', padding: '24px 28px',
             boxShadow: 'var(--shadow-md)',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
             animation: 'slideUp 0.3s ease forwards'
         }}>
             <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '16px' }}>Resets & Urges</h3>
