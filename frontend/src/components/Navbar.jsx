@@ -49,7 +49,24 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     textDecoration: 'none', flexShrink: 0,
                 }}>
                     <LogoContainer size={34} />
+                    <span style={{
+                        fontSize: '15px', fontWeight: 900, letterSpacing: '-0.5px',
+                        background: 'var(--gradient-1)',
+                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                    }}>AIIMIN</span>
                 </Link>
+
+                {/* Live date badge */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0,
+                    padding: '3px 9px', borderRadius: '99px',
+                    background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                    fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.03em',
+                }}>
+                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, opacity: 0.9 }} />
+                    {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                </div>
 
                 {/* Nav tabs */}
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '2px' }}>
@@ -69,14 +86,37 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
 
                 {/* Right controls */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {/* Theme toggle */}
-                    <button onClick={toggleTheme} style={{
-                        width: '30px', height: '30px', borderRadius: '8px', flexShrink: 0,
-                        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                        fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        transition: 'all 0.15s ease', color: 'var(--text-2)',
-                    }}>
-                        {theme === 'dark' ? '☀' : '☾'}
+                    {/* Theme toggle — sliding pill */}
+                    <button
+                        onClick={toggleTheme}
+                        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                        style={{
+                            position: 'relative', width: '52px', height: '26px',
+                            borderRadius: '99px', flexShrink: 0, cursor: 'pointer',
+                            border: '1px solid var(--border)', padding: 0, overflow: 'hidden',
+                            background: theme === 'dark' ? '#1c2440' : '#fff3de',
+                            transition: 'background 0.35s ease',
+                        }}
+                    >
+                        <span style={{
+                            position: 'absolute', left: '6px', top: '50%', transform: 'translateY(-50%)',
+                            fontSize: '12px', zIndex: 1, transition: 'opacity 0.2s',
+                            opacity: theme === 'dark' ? 1 : 0, pointerEvents: 'none',
+                        }}>🌙</span>
+                        <span style={{
+                            position: 'absolute', right: '5px', top: '50%', transform: 'translateY(-50%)',
+                            fontSize: '12px', zIndex: 1, transition: 'opacity 0.2s',
+                            opacity: theme === 'dark' ? 0 : 1, pointerEvents: 'none',
+                        }}>☀️</span>
+                        <div style={{
+                            position: 'absolute', top: '3px',
+                            left: theme === 'dark' ? '3px' : '25px',
+                            width: '18px', height: '18px', borderRadius: '50%',
+                            background: theme === 'dark' ? '#5b82c4' : '#ffb347',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                            transition: 'left 0.3s cubic-bezier(0.16,1,0.3,1), background 0.3s ease',
+                            zIndex: 2,
+                        }} />
                     </button>
 
                     {/* Notification Bell */}
