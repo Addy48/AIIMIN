@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // Added for Portal
 import { useAuth } from '../../hooks/useAuth';
 import toast from '../../utils/toast';
-import { redirectToGoogle } from '../../utils/authRedirect';
 import { getAuthHeaders, API_URL } from '../../utils/api';
 
 const Section = ({ title, children }) => (
@@ -36,11 +35,6 @@ const Row = ({ label, children, border = true }) => (
     </div>
 );
 
-const TIMEZONES = [
-    'Asia/Kolkata', 'UTC', 'America/New_York', 'America/Chicago',
-    'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney',
-];
-
 const StatusDot = ({ connected, error }) => (
     <div style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -54,12 +48,74 @@ const StatusDot = ({ connected, error }) => (
     </div>
 );
 
+const ChangePassword = ({ session }) => {
+    const [newPw, setNewPw] = useState('');
+    const [confirmPw, setConfirmPw] = useState('');
+    const [msg, setMsg] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [showNewPw, setShowNewPw] = useState(false);
+    const [showConfirmPw, setShowConfirmPw] = useState(false);
+
+    const handleChange = async () => {
+        if (newPw.length < 6) { setMsg('Min 6 characters'); return; }
+        if (newPw !== confirmPw) { setMsg('Passwords do not match'); return; }
+        setSaving(true);
+        setMsg('');
+        const { createClient } = await import('@supabase/supabase-js');
+        const client = createClient(
+            process.env.REACT_APP_SUPABASE_URL,
+            process.env.REACT_APP_SUPABASE_ANON_KEY,
+            { global: { headers: { Authorization: `Bearer ${session?.access_token}` } } }
+        );
+        const { error } = await client.auth.updateUser({ password: newPw });
+        if (error) { setMsg(error.message); }
+        else { setMsg('Password updated ✓'); setNewPw(''); setConfirmPw(''); }
+        setSaving(false);
+        setTimeout(() => setMsg(''), 4000);
+    };
+
+    const inputStyle = {
+        padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+        border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+        color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
+    };
+
+    const eyeBtn = (show, toggle) => (
+        <button type="button" onClick={toggle} tabIndex={-1} style={{
+            position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-3)', fontSize: '16px', padding: 0,
+            display: 'flex', alignItems: 'center', lineHeight: 1, userSelect: 'none',
+        }} aria-label={show ? 'Hide' : 'Show'}>
+            {show ? '🙈' : '👁'}
+        </button>
+    );
+
+    return (
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ position: 'relative' }}>
+                <input type={showNewPw ? 'text' : 'password'} placeholder="New password" value={newPw} onChange={e => setNewPw(e.target.value)} style={{ ...inputStyle, paddingRight: '40px' }} />
+                {eyeBtn(showNewPw, () => setShowNewPw(p => !p))}
+            </div>
+            <div style={{ position: 'relative' }}>
+                <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} style={{ ...inputStyle, paddingRight: '40px' }} />
+                {eyeBtn(showConfirmPw, () => setShowConfirmPw(p => !p))}
+            </div>
+            {msg && <div style={{ fontSize: '12px', color: msg.includes('✓') ? '#22c55e' : 'var(--danger)', fontWeight: 700 }}>{msg}</div>}
+            <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} style={{
+                padding: '12px', background: 'var(--accent)', color: 'white', border: 'none',
+                borderRadius: '12px', fontSize: '13px', fontWeight: 800, cursor: 'pointer',
+                opacity: (saving || !newPw || !confirmPw) ? 0.5 : 1
+            }}>{saving ? 'Saving...' : 'Update Password'}</button>
+        </div>
+    );
+};
+
 const AccountModal = ({ isOpen, onClose }) => {
     const { session, signOut } = useAuth();
     const [profile, setProfile] = useState(null);
     const [draftProfile, setDraftProfile] = useState(null);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const [integrations, setIntegrations] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saveMsg, setSaveMsg] = useState('');
@@ -72,16 +128,13 @@ const AccountModal = ({ isOpen, onClose }) => {
         if (!isOpen || !session) return;
         setLoading(true);
         const headers = getAuthHeaders(session);
-        Promise.all([
-            fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed')),
-            fetch(`${API_URL}/account/integrations`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Integrations load failed')),
-        ]).then(([p, integ]) => {
+        fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed'))
+        .then(p => {
             const fallbackName = p?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || '';
             const fallbackTimezone = p?.timezone || session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
             const normalizedProfile = { ...p, full_name: fallbackName, timezone: fallbackTimezone };
             setProfile(normalizedProfile);
             setDraftProfile(normalizedProfile);
-            setIntegrations(integ);
         }).catch(err => {
             console.error('[AccountModal] fetch error:', err);
         }).finally(() => setLoading(false));
@@ -117,7 +170,7 @@ const AccountModal = ({ isOpen, onClose }) => {
         try {
             const res = await fetch(`${API_URL}/account/profile`, {
                 method: 'PATCH', headers: getAuthHeaders(session),
-                body: JSON.stringify({ full_name: draftProfile.full_name, timezone: draftProfile.timezone }),
+                body: JSON.stringify({ full_name: draftProfile.full_name }),
             });
             if (res.ok) {
                 const savedProfile = await res.json();
@@ -178,19 +231,6 @@ const AccountModal = ({ isOpen, onClose }) => {
                 window.location.reload();
             }
         } catch (err) { toast.error('Delete failed'); } finally { setDeleting(false); }
-    };
-
-    const handleConnectGoogle = async () => {
-        redirectToGoogle('login');
-    };
-
-    const handleDisconnect = async () => {
-        if (!window.confirm('Disconnect Google?')) return;
-        await fetch(`${API_URL}/google/auth/disconnect`, { method: 'POST', headers: getAuthHeaders(session) });
-        setIntegrations(prev => ({
-            google_calendar: { connected: false, error: null },
-            youtube: { connected: false, error: null },
-        }));
     };
 
     if (!isOpen) return null;
@@ -270,7 +310,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                     <div className="settings-grid" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <Section title="Profile">
-                                <Row label="Name">
+                                <Row label="Name" border={false}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
                                             {profile?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'Unnamed'}
@@ -291,11 +331,6 @@ const AccountModal = ({ isOpen, onClose }) => {
                                         )}
                                     </div>
                                 </Row>
-                                <Row label="Timezone" border={false}>
-                                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
-                                        {profile?.timezone || session?.user?.user_metadata?.timezone || 'Asia/Kolkata'}
-                                    </span>
-                                </Row>
                                 {isEditingProfile && (
                                     <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
                                         <input
@@ -308,17 +343,6 @@ const AccountModal = ({ isOpen, onClose }) => {
                                                 color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
                                             }}
                                         />
-                                        <select
-                                            value={draftProfile?.timezone || 'Asia/Kolkata'}
-                                            onChange={e => setDraftProfile(p => ({ ...p, timezone: e.target.value }))}
-                                            style={{
-                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                                color: 'var(--text-1)', cursor: 'pointer', outline: 'none', width: '100%', fontWeight: 600
-                                            }}
-                                        >
-                                            {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
-                                        </select>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <button onClick={handleSaveProfile} disabled={saving} style={{
                                                 flex: 1, padding: '12px', background: 'var(--accent)', color: 'white',
@@ -340,32 +364,8 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 )}
                             </Section>
 
-                            <Section title="Integrations">
-                                <Row label="OAuth Connection">
-                                    <div style={{ fontSize: '13px', color: 'var(--text-2)', fontWeight: 700 }}>Google Identity</div>
-                                </Row>
-                                <Row label="Status" border={false}>
-                                    <StatusDot connected={integrations?.google_calendar?.connected} error={integrations?.google_calendar?.error} />
-                                </Row>
-                                <div style={{ padding: '20px', background: 'rgba(0,0,0,0.1)', borderTop: '1px solid var(--border)' }}>
-                                    {!integrations?.google_calendar?.connected ? (
-                                        <button onClick={handleConnectGoogle} style={{
-                                            width: '100%', padding: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)',
-                                            borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-1)', cursor: 'pointer',
-                                            transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                                        }}>
-                                            <span style={{ fontSize: '16px' }}>+</span> Connect Google Account
-                                        </button>
-                                    ) : (
-                                        <button onClick={handleDisconnect} style={{
-                                            width: '100%', padding: '12px', background: 'none', border: '1px solid var(--border)',
-                                            borderRadius: '12px', fontSize: '13px', fontWeight: 800, color: 'var(--text-3)', cursor: 'pointer',
-                                            transition: 'all 0.2s ease'
-                                        }}>
-                                            Disconnect Services
-                                        </button>
-                                    )}
-                                </div>
+                            <Section title="Change Password">
+                                <ChangePassword session={session} />
                             </Section>
 
                             <Section title="Data Strategy">
@@ -430,7 +430,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 </button>
 
                                 <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                    AIIMIN OS v1.0.4 — Behavior Shaping System
+                                    AIIMIN v2.1 · Life OS · March 2026
                                 </p>
                             </div>
                         </div>

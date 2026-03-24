@@ -127,7 +127,7 @@ const Streaks = ({ user }) => {
                 <div style={{ fontSize: '32px', marginBottom: '16px' }}>🌱</div>
                 <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '8px' }}>No Chains Yet</h3>
                 <p style={{ fontSize: '14px', color: 'var(--text-3)', maxWidth: '280px', margin: '0 auto', lineHeight: 1.5 }}>
-                    Insights unlock after your first session. Begin a focus session today to build your first streak.
+                    Begin a focus session today to build your first streak.
                 </p>
             </div>
         );

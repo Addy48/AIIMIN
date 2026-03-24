@@ -661,8 +661,8 @@ const Dashboard = ({ user }) => {
                                 />
                                 <SettingsRow
                                     label="App Version"
-                                    description="AIIMIN Dashboard · Build 2026.03"
-                                    control={<span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600 }}>v2.0.0</span>}
+                                    description="AIIMIN Life OS · Build 2026.03.11"
+                                    control={<span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600 }}>v2.1.0</span>}
                                 />
                             </SettingsSection>
 
