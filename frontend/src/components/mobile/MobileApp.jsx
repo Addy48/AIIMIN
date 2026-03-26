@@ -482,14 +482,15 @@ function MobileApp({ user }) {
             {xpToast && (
                 <div style={{
                     position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
-                    background: 'linear-gradient(135deg, #ff6b35, #ff8f65)', color: '#fff',
+                    background: 'linear-gradient(135deg, var(--accent), var(--gold))', color: '#fff',
                     padding: '12px 20px', borderRadius: '12px', zIndex: 9998,
-                    boxShadow: '0 8px 32px rgba(255,107,53,0.4)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
                     animation: 'xpToastIn 0.4s ease-out',
                     textAlign: 'center', maxWidth: '340px',
+                    border: '1px solid rgba(255,255,255,0.2)',
                 }}>
-                    <div style={{ fontWeight: 800, fontSize: '18px' }}>⚡ +{xpToast.xp} XP</div>
-                    <div style={{ fontSize: '11px', opacity: 0.9, marginTop: '2px' }}>{xpToast.parts}{xpToast.multi}</div>
+                    <div style={{ fontWeight: 800, fontSize: '18px', letterSpacing: '0.02em' }}>⚡ +{xpToast.xp} XP</div>
+                    <div style={{ fontSize: '11px', opacity: 0.9, marginTop: '2px', fontWeight: 600 }}>{xpToast.parts}{xpToast.multi}</div>
                 </div>
             )}
 
