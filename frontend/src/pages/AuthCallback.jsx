@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import supabase from '../utils/supabase';
+import useAuth from '../hooks/useAuth';
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { session } = useAuth();
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const status = searchParams.get('status');
         const reason = searchParams.get('reason');
-
-        // Supabase native OAuth error format: ?error=server_error&error_description=...
         const supabaseError = searchParams.get('error');
         const supabaseDesc = searchParams.get('error_description');
 
@@ -22,49 +21,23 @@ const AuthCallback = () => {
             return;
         }
 
-        // Error from backend redirect
         if (status === 'error') {
             setError(reason || 'Authentication failed');
             setTimeout(() => navigate('/login'), 3000);
             return;
         }
 
-        // Integration success (non-login OAuth like calendar/youtube connect)
         if (status === 'success') {
-            navigate('/');
+            navigate('/', { replace: true });
             return;
         }
-
-        // Login flow: Supabase verify endpoint redirects here with tokens in URL hash
-        // e.g. /auth/callback#access_token=xxx&refresh_token=xxx&...
-        // The Supabase JS client auto-detects and processes these hash fragments.
-        // We just need to wait for the session to be established.
-
-        // Listen for auth state change (fires when Supabase processes the hash)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                navigate('/');
-            }
-        });
-
-        // Also check if session is already set (hash may have been processed before this effect ran)
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                navigate('/');
-            }
-        });
-
-        // Timeout fallback — if nothing happens in 10s, go to login
-        const timeout = setTimeout(() => {
-            setError('Login timed out. Please try again.');
-            setTimeout(() => navigate('/login'), 2000);
-        }, 10000);
-
-        return () => {
-            subscription.unsubscribe();
-            clearTimeout(timeout);
-        };
     }, [searchParams, navigate]);
+
+    useEffect(() => {
+        if (session) {
+            navigate('/overview', { replace: true });
+        }
+    }, [session, navigate]);
 
     if (error) {
         return (

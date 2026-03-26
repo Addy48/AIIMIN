@@ -3,11 +3,11 @@ import supabase from '../../utils/supabase';
 import { ACHIEVEMENT_DEFS } from '../../utils/xpEngine';
 
 const TIERS = [
-    { tier: 1, name: 'Diamond',  color: '#b8e0ff', glow: 'rgba(184,224,255,0.3)', bg: 'linear-gradient(135deg,#0d1b2a,#1a2c42)', label: '💎 Diamond' },
-    { tier: 2, name: 'Platinum', color: '#e5e4e2', glow: 'rgba(229,228,226,0.25)', bg: 'linear-gradient(135deg,#1a1a1e,#2a2a30)', label: '⬡ Platinum' },
-    { tier: 3, name: 'Gold',     color: '#ffd700', glow: 'rgba(255,215,0,0.25)',   bg: 'linear-gradient(135deg,#1e1800,#2e2500)', label: '🥇 Gold' },
-    { tier: 4, name: 'Silver',   color: '#c0c0c0', glow: 'rgba(192,192,192,0.2)',  bg: 'linear-gradient(135deg,#181818,#222228)', label: '🥈 Silver' },
-    { tier: 5, name: 'Bronze',   color: '#cd7f32', glow: 'rgba(205,127,50,0.2)',   bg: 'linear-gradient(135deg,#1a0e00,#261400)', label: '🥉 Bronze' },
+    { tier: 1, name: 'Diamond', color: 'var(--tier-diamond)', bg: 'var(--tier-diamond-bg)', label: '💎 Diamond' },
+    { tier: 2, name: 'Platinum', color: 'var(--tier-platinum)', bg: 'var(--tier-platinum-bg)', label: '⬡ Platinum' },
+    { tier: 3, name: 'Gold', color: 'var(--tier-gold)', bg: 'var(--tier-gold-bg)', label: '🥇 Gold' },
+    { tier: 4, name: 'Silver', color: 'var(--tier-silver)', bg: 'var(--tier-silver-bg)', label: '🥈 Silver' },
+    { tier: 5, name: 'Bronze', color: 'var(--tier-bronze)', bg: 'var(--tier-bronze-bg)', label: '🥉 Bronze' },
 ];
 
 const AchievementsGallery = ({ user, compact = false }) => {
@@ -45,8 +45,8 @@ const AchievementsGallery = ({ user, compact = false }) => {
                 </div>
                 <div style={{
                     fontSize: '12px', fontWeight: 800,
-                    color: '#ffd700', background: 'rgba(255,215,0,0.1)',
-                    border: '1px solid rgba(255,215,0,0.2)',
+                    color: 'var(--accent)', background: 'var(--accent-dim)',
+                    border: '1px solid var(--border-accent)',
                     padding: '4px 10px', borderRadius: '99px',
                 }}>
                     {Math.round((totalUnlocked / totalBadges) * 100)}% Complete
@@ -58,7 +58,7 @@ const AchievementsGallery = ({ user, compact = false }) => {
                 <div style={{
                     height: '100%', borderRadius: '3px', transition: 'width 0.6s ease',
                     width: `${(totalUnlocked / totalBadges) * 100}%`,
-                    background: 'linear-gradient(90deg, #cd7f32, #c0c0c0, #ffd700, #e5e4e2, #b8e0ff)',
+                    background: 'linear-gradient(90deg, var(--tier-bronze), var(--tier-silver), var(--tier-gold), var(--tier-platinum), var(--tier-diamond))',
                 }} />
             </div>
 
@@ -71,7 +71,7 @@ const AchievementsGallery = ({ user, compact = false }) => {
                 return (
                     <div key={tierInfo.tier} style={{
                         borderRadius: '12px', overflow: 'hidden',
-                        border: `1px solid ${tierUnlocked === badges.length && badges.length > 0 ? tierInfo.color + '55' : 'var(--border)'}`,
+                        border: `1px solid ${tierUnlocked === badges.length && badges.length > 0 ? 'var(--border-accent)' : 'var(--border)'}`,
                     }}>
                         {/* Tier header */}
                         <button
@@ -90,9 +90,9 @@ const AchievementsGallery = ({ user, compact = false }) => {
                                 <span style={{
                                     fontSize: '10px', fontWeight: 700,
                                     color: tierUnlocked > 0 ? tierInfo.color : 'var(--text-3)',
-                                    background: tierUnlocked > 0 ? `${tierInfo.color}18` : 'transparent',
+                                    background: tierUnlocked > 0 ? 'var(--accent-dim)' : 'transparent',
                                     padding: '2px 7px', borderRadius: '99px',
-                                    border: tierUnlocked > 0 ? `1px solid ${tierInfo.color}33` : '1px solid transparent',
+                                    border: tierUnlocked > 0 ? `1px solid var(--border-accent)` : '1px solid transparent',
                                 }}>
                                     {tierUnlocked}/{badges.length}
                                 </span>
@@ -128,10 +128,10 @@ const AchievementsGallery = ({ user, compact = false }) => {
                                                 display: 'flex', flexDirection: 'column', alignItems: 'center',
                                                 padding: '10px 4px', borderRadius: '10px',
                                                 background: isUnlocked ? tierInfo.bg : 'var(--bg-elevated)',
-                                                border: isUnlocked ? `1px solid ${tierInfo.color}44` : '1px solid var(--border)',
+                                                border: isUnlocked ? `1px solid var(--border-accent)` : '1px solid var(--border)',
                                                 opacity: isUnlocked ? 1 : 0.45,
                                                 transition: 'all 0.25s',
-                                                boxShadow: isUnlocked ? `0 0 10px ${tierInfo.glow}` : 'none',
+                                                boxShadow: isUnlocked ? `0 0 10px var(--accent-dim)` : 'none',
                                                 cursor: 'default',
                                             }}
                                         >
@@ -149,7 +149,7 @@ const AchievementsGallery = ({ user, compact = false }) => {
                                                 {ach.name}
                                             </span>
                                             {isUnlocked ? (
-                                                <span style={{ fontSize: '7px', color: '#ffd700', marginTop: '2px', fontWeight: 700 }}>
+                                                <span style={{ fontSize: '7px', color: 'var(--accent)', marginTop: '2px', fontWeight: 700 }}>
                                                     +{ach.xp.toLocaleString()} XP
                                                 </span>
                                             ) : (

@@ -23,10 +23,10 @@ function pickContext(logSnapshot) {
 }
 
 const CONTEXT_LABEL = {
-    after_reset:   { label: 'Comeback', color: '#f59e0b' },
-    milestone_30:  { label: '30-Day Milestone', color: '#10b981' },
-    clean_streak_7:{ label: 'discipline', color: '#8b5cf6' },
-    perfect_day:   { label: 'Perfect Day', color: '#ffd700' },
+    after_reset: { label: 'Comeback', color: '#f59e0b' },
+    milestone_30: { label: '30-Day Milestone', color: '#10b981' },
+    clean_streak_7: { label: 'discipline', color: '#8b5cf6' },
+    perfect_day: { label: 'Perfect Day', color: 'var(--accent)' },
     morning_empty: { label: 'Today', color: 'var(--accent)' },
 };
 
