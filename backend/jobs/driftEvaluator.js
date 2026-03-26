@@ -167,6 +167,21 @@ const evaluateUser = async (client, userId, timezone) => {
         }), INSIGHT_VERSION]
     );
 
+    // Emit weekly_summary_ready notification
+    const daysLogged = recent7.length;
+    const fulfillmentStr = avgFulfillment ? `${Math.round(avgFulfillment)}% fulfillment` : 'N/A';
+    await client.query(
+        `INSERT INTO notifications (user_id, type, title, body, action_url)
+         SELECT $1, 'weekly_summary_ready', $2, $3, '/analytics'
+         WHERE NOT EXISTS (
+           SELECT 1 FROM notifications
+           WHERE user_id = $1
+             AND type = 'weekly_summary_ready'
+             AND created_at > NOW() - INTERVAL '6 days'
+         )`,
+        [userId, '📊 Weekly summary ready', `${fulfillmentStr}, ${daysLogged}/7 days logged.`]
+    );
+
     return { detected: detected.length, weekStart };
 };
 

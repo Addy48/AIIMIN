@@ -171,7 +171,7 @@ const SpotifyPlayer = () => {
                     allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                     loading="lazy"
                     title="Spotify focus playlist"
-                    style={{ display: 'block', border: 'none', borderRadius: '14px' }}
+                    style={{ display: 'block', border: 'none', margin: '-1px' }}
                 />
             </div>
 
