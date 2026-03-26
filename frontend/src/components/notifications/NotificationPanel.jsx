@@ -12,6 +12,10 @@ const typeIcon = (type) => {
         case 'commitment_miss': return '🎯';
         case 'weekly_summary': return '📊';
         case 'integration_error': return '⚠';
+        case 'streak_milestone': return '🔥';
+        case 'xp_level_up': return '⚡';
+        case 'weekly_summary_ready': return '📊';
+        case 'goal_progress': return '🎯';
         default: return '💬';
     }
 };
