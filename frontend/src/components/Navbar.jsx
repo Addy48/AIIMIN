@@ -1,254 +1,261 @@
-import React, { useState, useRef } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import useTheme from '../hooks/useTheme';
 import { useNotifications } from '../hooks/useNotifications';
-import { useThemeContext } from '../context/ThemeContext';
 import NotificationBell from './notifications/NotificationBell';
+import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
-import Logo from './Logo';
+import LogoContainer from './LogoContainer';
 
+const Navbar = ({ user, activeTab, onTabChange }) => {
+    const { theme, toggleTheme } = useTheme();
+    const { notifications, unreadCount, loading: notifLoading, fetchAll, markRead, markAllRead, dismiss } = useNotifications();
+    const [notifOpen, setNotifOpen] = useState(false);
+    const [showAccount, setShowAccount] = useState(false);
+    const tabRefs = useRef({});
 
+    const tabs = [
+        { key: 'today', label: 'Today' },
+        { key: 'focus', label: 'Focus' },
+        { key: 'identity', label: 'Identity' },
+        { key: 'growth', label: 'Growth' },
+        { key: 'habits', label: 'Habits' },
+        { key: 'money', label: 'Money' },
+        { key: 'analytics', label: 'Analytics' },
+    ];
 
-/* ── Slim nav — 6 primary links ───────────────────────────── */
-const NAV_LINKS = [
-  { to: '/overview',    label: 'Today' },
-  { to: '/habits',      label: 'Habits' },
-  { to: '/goals',       label: 'Goals' },
-  { to: '/journal',     label: 'Journal' },
-  { to: '/finance',     label: 'Finance' },
-  { to: '/family',      label: 'Family' },
-  { to: '/calendar',    label: 'Calendar' },
-  { to: '/placements',  label: 'Placement' },
-  { to: '/sports',      label: 'Sports', hideFromGuest: true },
-  { to: '/discipline',  label: 'Discipline', hideFromGuest: true },
-  { to: '/focus',       label: 'Focus' },
-];
+    const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
-const Navbar = ({ user }) => {
-  const { notifications, unreadCount, loading, fetchAll, markRead, markAllRead, dismiss } = useNotifications();
-  const { theme, toggleTheme } = useThemeContext();
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [showAccount, setShowAccount] = useState(false);
-  const bellRef = useRef(null);
+    const handleOpenNotif = () => {
+        if (!notifOpen) fetchAll();
+        setNotifOpen(o => !o);
+    };
 
-  const userInitial = (user?.full_name?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
-  const isDark = theme === 'dark';
-  const borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+    /* ── Active tab underline ── */
+    const [indicatorStyle, setIndicatorStyle] = useState({});
+    useEffect(() => {
+        const el = tabRefs.current[activeTab];
+        if (el) {
+            const parent = el.parentElement;
+            const parentRect = parent.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            setIndicatorStyle({
+                width: `${elRect.width - 12}px`,
+                left: `${elRect.left - parentRect.left + 6}px`,
+            });
+        }
+    }, [activeTab]);
 
-  const handleOpenNotif = () => {
-    if (!notifOpen) fetchAll();
-    setNotifOpen(o => !o);
-  };
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       RENDER — Floating pill system status bar
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    return (
+        <>
+            {/* ── Floating Pill Nav ── */}
+            <nav style={{
+                position: 'fixed',
+                top: '14px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 99999,
+                width: 'calc(100% - 48px)',
+                maxWidth: '1340px',
+                height: '52px',
+                background: 'var(--nav-bg)',
+                backdropFilter: 'blur(24px) saturate(1.6)',
+                WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+                border: '1px solid var(--nav-border)',
+                borderRadius: '26px',
+                boxShadow: '0 2px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 16px',
+                gap: '12px',
+            }}>
 
-  return (
-    <>
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0,
-        height: 'var(--nav-height)',
-        background: isDark ? 'rgba(10,10,10,0.85)' : 'rgba(240,237,232,0.85)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${borderColor}`,
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 24px',
-        zIndex: 1000,
-      }}>
+                {/* ── LEFT: Logo + AI Health Orb ── */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                    <Link to="/brand" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+                        <LogoContainer size={26} />
+                        <span style={{
+                            fontSize: '14px',
+                            fontWeight: 800,
+                            letterSpacing: '-0.3px',
+                            color: 'var(--accent)',
+                            fontFamily: "'Jost', sans-serif",
+                        }}>AIIMIN</span>
+                    </Link>
 
-        {/* LEFT: Brand */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Link to="/identity" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <Logo size={28} />
-            </Link>
-            <Link to="/overview" aria-label="AIIMIN today" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <span style={{
-                fontSize: '25px',
-                fontWeight: 400,
-                letterSpacing: '-0.065em',
-                color: isDark ? '#F2EBDA' : '#1f201d',
-                fontFamily: 'var(--font-serif)',
-                lineHeight: 1,
-              }}>
-                AIIMIN
-              </span>
-            </Link>
-          </div>
-        </div>
+                    {/* AI Health Orb — slow pulse */}
+                    <div
+                        className="orb-pulse"
+                        title="AI Sync Active"
+                        style={{
+                            width: '7px',
+                            height: '7px',
+                            borderRadius: '50%',
+                            background: 'var(--accent)',
+                            boxShadow: '0 0 6px var(--accent)',
+                            flexShrink: 0,
+                        }}
+                    />
 
-        {/* CENTER: Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {NAV_LINKS.filter(link => !(user?.isGuest && link.hideFromGuest)).map(({ to, label }) => (
-            <NavLink
-              key={`${to}-${label}`}
-              to={to}
-              style={({ isActive }) => ({
-                fontSize: '12px',
-                fontWeight: isActive ? 600 : 400,
-                fontFamily: 'var(--font-sans)',
-                color: isActive
-                  ? (isDark ? '#EDEDED' : 'var(--color-accent)')
-                  : (isDark ? '#71717A' : '#6B6B6B'),
-                textDecoration: 'none',
-                padding: '6px 11px',
-                borderRadius: '9px',
-                background: isActive
-                  ? (isDark ? 'rgba(255,255,255,0.07)' : 'rgba(30,92,58,0.06)')
-                  : 'transparent',
-                transition: 'all 180ms',
-                whiteSpace: 'nowrap',
-              })}
-            >
-              {label}
-            </NavLink>
-          ))}
-        </div>
+                    {/* Divider */}
+                    <div style={{ width: '1px', height: '14px', background: 'var(--border-hover)', opacity: 0.5 }} />
 
-        {/* RIGHT: Actions */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                    {/* Date/Time */}
+                    <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-3)', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
+                        {dateStr}
+                    </span>
+                </div>
 
-          {/* Theme toggle */}
-          <button
-            onClick={toggleTheme}
-            title={isDark ? 'Light mode' : 'Dark mode'}
-            style={{
-              width: '28px', height: '28px', borderRadius: '6px', background: 'transparent',
-              border: `1px solid ${borderColor}`,
-              color: isDark ? '#71717A' : '#6B6B6B', fontSize: '13px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            {isDark ? '☀' : '◑'}
-          </button>
+                {/* ── CENTER: Navigation Tabs ── */}
+                <div style={{
+                    flex: 1,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '2px',
+                    position: 'relative',
+                    height: '52px',
+                }}>
+                    {tabs.map(({ key, label }) => (
+                        <button
+                            key={key}
+                            ref={el => tabRefs.current[key] = el}
+                            onClick={() => onTabChange(key)}
+                            style={{
+                                padding: '6px 11px',
+                                fontSize: '12.5px',
+                                fontWeight: activeTab === key ? 650 : 420,
+                                cursor: 'pointer',
+                                border: 'none',
+                                background: 'transparent',
+                                color: activeTab === key ? 'var(--text-1)' : 'var(--text-3)',
+                                letterSpacing: '-0.01em',
+                                transition: 'color 0.2s ease, font-weight 0.2s ease',
+                                position: 'relative',
+                                fontFamily: "'Jost', sans-serif",
+                            }}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                    {/* Sliding gold underline */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '0',
+                        height: '2px',
+                        borderRadius: '2px 2px 0 0',
+                        background: 'var(--accent)',
+                        transition: 'left 0.3s cubic-bezier(0.16,1,0.3,1), width 0.3s cubic-bezier(0.16,1,0.3,1)',
+                        ...indicatorStyle,
+                    }} />
+                </div>
 
-          {/* Notifications */}
-          <div ref={bellRef} style={{ position: 'relative' }}>
-            <NotificationBell count={unreadCount} onOpen={handleOpenNotif} isOpen={notifOpen} />
-            {notifOpen && (
-              <NotifDropdown
-                notifications={notifications}
-                loading={loading}
-                onMarkRead={markRead}
-                onMarkAllRead={markAllRead}
-                onDismiss={dismiss}
-                onClose={() => setNotifOpen(false)}
-                isDark={isDark}
-              />
-            )}
-          </div>
+                {/* ── RIGHT: Controls ── */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
 
-          {/* Avatar */}
-          <button
-            onClick={() => setShowAccount(true)}
-            style={{
-              width: '28px', height: '28px', borderRadius: '50%', background: '#23503B',
-              border: 'none', color: '#fff', font: '600 11px var(--font-sans)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-            aria-label="Account"
-          >
-            {userInitial}
-          </button>
-        </div>
-      </nav>
+                    {/* Theme toggle pill */}
+                    <button
+                        onClick={toggleTheme}
+                        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                        style={{
+                            position: 'relative',
+                            width: '44px',
+                            height: '24px',
+                            borderRadius: '99px',
+                            flexShrink: 0,
+                            cursor: 'pointer',
+                            border: '1px solid var(--border)',
+                            padding: 0,
+                            background: theme === 'dark'
+                                ? 'rgba(212, 175, 55, 0.1)'
+                                : 'rgba(202, 138, 4, 0.12)',
+                            transition: 'background 0.35s ease',
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute',
+                            top: '2px',
+                            left: theme === 'dark' ? '2px' : '20px',
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            background: 'var(--accent)',
+                            boxShadow: '0 0 8px var(--accent-dim)',
+                            transition: 'left 0.3s cubic-bezier(0.16,1,0.3,1)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '10px',
+                        }}>
+                            {theme === 'dark' ? '🌙' : '☀️'}
+                        </div>
+                    </button>
 
-      {showAccount && (
-        <AccountModal isOpen={showAccount} onClose={() => setShowAccount(false)} />
-      )}
+                    {/* Notification Bell */}
+                    <div style={{ position: 'relative' }}>
+                        <NotificationBell count={unreadCount} onOpen={handleOpenNotif} isOpen={notifOpen} />
+                        {notifOpen && (
+                            <NotificationPanel
+                                notifications={notifications}
+                                loading={notifLoading}
+                                onMarkRead={markRead}
+                                onMarkAllRead={markAllRead}
+                                onDismiss={dismiss}
+                                onClose={() => setNotifOpen(false)}
+                            />
+                        )}
+                    </div>
 
+                    <div style={{ width: '1px', height: '14px', background: 'var(--border)', opacity: 0.5 }} />
 
-    </>
-  );
-};
+                    {/* Profile Avatar */}
+                    <div style={{ position: 'relative', zIndex: 50 }}>
+                        <button
+                            onClick={() => setShowAccount(true)}
+                            title="Account settings"
+                            style={{
+                                width: '30px',
+                                height: '30px',
+                                borderRadius: '50%',
+                                cursor: 'pointer',
+                                border: '1.5px solid var(--glass-border-gold)',
+                                padding: 0,
+                                overflow: 'hidden',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                color: 'white',
+                                flexShrink: 0,
+                                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+                                background: !user?.user_metadata?.avatar_url
+                                    ? 'linear-gradient(135deg, var(--accent), #E05C2A)' : 'none',
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.borderColor = 'var(--accent)';
+                                e.currentTarget.style.boxShadow = '0 0 0 3px var(--accent-dim)';
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.borderColor = 'var(--glass-border-gold)';
+                                e.currentTarget.style.boxShadow = 'none';
+                            }}
+                        >
+                            {user?.user_metadata?.avatar_url ? (
+                                <img src={user.user_metadata.avatar_url} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : userInitial}
+                        </button>
+                    </div>
+                </div>
+            </nav>
 
-/* ── Notification dropdown ─────────────────────────────────── */
-const typeIcon = (type) => ({
-  drift_alert: '📉', commitment_miss: '🎯', weekly_summary: '📊',
-  integration_error: '⚠️', streak_milestone: '🔥', xp_level_up: '⚡',
-  weekly_summary_ready: '📊', goal_progress: '🎯',
-}[type] || '💬');
-
-const timeAgo = (iso) => {
-  if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return 'now';
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h`;
-  return `${Math.floor(h / 24)}d`;
-};
-
-const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDismiss, onClose, isDark }) => {
-  const ref = useRef(null);
-
-  React.useEffect(() => {
-    const handle = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
-  }, [onClose]);
-
-  const bg = isDark ? '#161616' : '#fff';
-  const border = isDark ? '#2a2a2a' : '#e5e7eb';
-  const text1 = isDark ? '#ededed' : '#111';
-  const text2 = isDark ? '#a1a1aa' : '#6b7280';
-  const text3 = isDark ? '#52525b' : '#9ca3af';
-
-  return (
-    <div ref={ref} style={{
-      position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-      width: '300px', maxHeight: '400px',
-      background: bg, border: `1px solid ${border}`,
-      borderRadius: '10px',
-      boxShadow: isDark ? '0 16px 48px rgba(0,0,0,0.7)' : '0 8px 24px rgba(0,0,0,0.12)',
-      zIndex: 9999, overflow: 'hidden', display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        borderBottom: `1px solid ${border}`, flexShrink: 0,
-      }}>
-        <span style={{ fontSize: '12px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>Notifications</span>
-        {notifications.some(n => !n.read_at) && (
-          <button onClick={onMarkAllRead} style={{
-            background: 'none', border: 'none', fontSize: '11px', color: '#22C55E',
-            cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 500,
-          }}>Mark all read</button>
-        )}
-      </div>
-
-      {/* List */}
-      <div style={{ overflowY: 'auto', flex: 1 }}>
-        {loading && (
-          <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: text3, fontFamily: 'var(--font-sans)' }}>Loading…</div>
-        )}
-        {!loading && notifications.length === 0 && (
-          <div style={{ padding: '28px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: '22px', marginBottom: '8px' }}>🔔</div>
-            <div style={{ fontSize: '12px', color: text2, fontFamily: 'var(--font-sans)' }}>All clear</div>
-          </div>
-        )}
-        {!loading && notifications.map(n => (
-          <div key={n.id} style={{
-            padding: '10px 14px', borderBottom: `1px solid ${border}`,
-            display: 'flex', gap: '10px', alignItems: 'flex-start',
-            background: !n.read_at ? (isDark ? 'rgba(34,197,94,0.04)' : 'rgba(34,197,94,0.04)') : 'transparent',
-          }}>
-            <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>{typeIcon(n.type)}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '12px', fontWeight: n.read_at ? 400 : 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {n.title}
-              </div>
-              {n.body && <div style={{ fontSize: '11px', color: text2, fontFamily: 'var(--font-sans)', lineHeight: 1.4 }}>{n.body}</div>}
-              <div style={{ fontSize: '10px', color: text3, marginTop: '3px', fontFamily: 'var(--font-sans)' }}>{timeAgo(n.created_at)}</div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
-              {!n.read_at && <button onClick={() => onMarkRead(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22C55E', fontSize: '11px' }}>✓</button>}
-              <button onClick={() => onDismiss(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: text3, fontSize: '11px' }}>✕</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+            {/* ── Account Modal ── */}
+            <AccountModal isOpen={showAccount} onClose={() => setShowAccount(false)} />
+        </>
+    );
 };
 
 export default Navbar;

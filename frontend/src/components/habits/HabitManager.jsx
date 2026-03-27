@@ -9,26 +9,81 @@ import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../../utils/supabase';
 import { insertRow, updateRow } from '../../services/dbService';
 import toast from '../../utils/toast';
-import { EMOJI_PICKER, EMOJI_LABELS, HABIT_CATEGORIES, FREQUENCIES, CATEGORY_FILTER_ALL } from './HabitConstants';
 
+// ─── Emoji picker options ──────────────────────────────────────────────────────
+const EMOJI_OPTIONS = [
+    '🏋️‍♂️', '🏃‍♂️', '🧘‍♂️', '🚴‍♂️', '🏊‍♂️', '🤸‍♂️', '🚶‍♂️', '💊',
+    '💧', '🥗', '🥩', '😴', '📚', '✍️', '💻', '🧠',
+    '🎯', '🔥', '🌅', '🌿', '🎵', '📝', '⏰', '💆‍♂️',
+];
+
+const EMOJI_LABELS = {
+    '🏋️‍♂️': 'Weightlifting',
+    '🏃‍♂️': 'Running',
+    '🧘‍♂️': 'Meditation',
+    '🚴‍♂️': 'Cycling',
+    '🏊‍♂️': 'Swimming',
+    '🤸‍♂️': 'Gymnastics',
+    '🚶‍♂️': 'Walking',
+    '💊':   'Medicine',
+    '💧':   'Hydration',
+    '🥗':   'Healthy Eating',
+    '🥩':   'Protein',
+    '😴':   'Sleep',
+    '📚':   'Reading',
+    '✍️':   'Journaling',
+    '💻':   'Coding',
+    '🧠':   'Mental Health',
+    '🎯':   'Goal / Focus',
+    '🔥':   'Streak',
+    '🌅':   'Morning Routine',
+    '🌿':   'Mindfulness',
+    '🎵':   'Music',
+    '📝':   'Notes',
+    '⏰':   'Schedule',
+    '💆‍♂️': 'Relaxation',
+};
+
+const CATEGORIES = [
+    { key: 'fitness',      label: 'Fitness',      icon: '🏋️' },
+    { key: 'skincare',     label: 'Skincare',     icon: '🧴' },
+    { key: 'learning',     label: 'Learning',     icon: '📚' },
+    { key: 'health',       label: 'Health',       icon: '💊' },
+    { key: 'mental',       label: 'Mental',       icon: '🧠' },
+    { key: 'productivity', label: 'Productivity', icon: '⚡' },
+    { key: 'general',      label: 'General',      icon: '🎯' },
+];
+
+const FREQUENCIES = [
+    { key: 'morning',        label: 'Morning' },
+    { key: 'night',          label: 'Night' },
+    { key: 'morning+night',  label: 'Morning + Night' },
+    { key: 'daily',          label: 'Daily' },
+    { key: 'weekdays',       label: 'Weekdays' },
+    { key: '3x/week',        label: '3x / week' },
+    { key: 'weekly',         label: 'Weekly' },
+    { key: 'custom',         label: 'Custom' },
+];
+
+const CATEGORY_FILTER_ALL = '__all__';
 
 export default function HabitManager({ user }) {
-    const [habits, setHabits] = useState([]);
-    const [routines, setRoutines] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [showForm, setShowForm] = useState(false);
+    const [habits, setHabits]       = useState([]);
+    const [routines, setRoutines]   = useState([]);
+    const [loading, setLoading]     = useState(true);
+    const [showForm, setShowForm]   = useState(false);
     const [filterCat, setFilterCat] = useState(CATEGORY_FILTER_ALL);
 
     // Form state
-    const [name, setName] = useState('');
-    const [emoji, setEmoji] = useState('🎯');
-    const [category, setCategory] = useState('general');
+    const [name, setName]           = useState('');
+    const [emoji, setEmoji]         = useState('🎯');
+    const [category, setCategory]   = useState('general');
     const [frequency, setFrequency] = useState('daily');
-    const [saving, setSaving] = useState(false);
+    const [saving, setSaving]       = useState(false);
     // Step 2: routine assignment
-    const [step, setStep] = useState(1);
+    const [step, setStep]           = useState(1);
     const [selectedRoutine, setSelectedRoutine] = useState(null);
-    const [hoveredEmoji, setHoveredEmoji] = useState(null);
+    const [hoveredEmoji, setHoveredEmoji]       = useState(null);
 
     const fetchHabits = useCallback(async () => {
         if (!user) return;
@@ -62,8 +117,8 @@ export default function HabitManager({ user }) {
         setSaving(true);
         try {
             const data = await insertRow('habits', [{
-                user_id: user.id,
-                name: name.trim(),
+                user_id:   user.id,
+                name:      name.trim(),
                 emoji,
                 frequency: frequency,
                 category,
@@ -73,8 +128,8 @@ export default function HabitManager({ user }) {
                 if (selectedRoutine && data[0].id) {
                     await insertRow('routine_habits', [{
                         routine_id: selectedRoutine,
-                        habit_id: data[0].id,
-                        position: 999, // append at end
+                        habit_id:   data[0].id,
+                        position:   999, // append at end
                     }]);
                 }
                 setHabits(prev => [...prev, data[0]]);
@@ -103,7 +158,7 @@ export default function HabitManager({ user }) {
         ? habits
         : habits.filter(h => h.category === filterCat);
 
-    const getCatMeta = (key) => HABIT_CATEGORIES.find(c => c.key === key) || HABIT_CATEGORIES[HABIT_CATEGORIES.length - 1];
+    const getCatMeta = (key) => CATEGORIES.find(c => c.key === key) || CATEGORIES[CATEGORIES.length - 1];
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -123,7 +178,7 @@ export default function HabitManager({ user }) {
                     >
                         All ({habits.length})
                     </button>
-                    {HABIT_CATEGORIES.filter(c => habits.some(h => h.category === c.key)).map(c => (
+                    {CATEGORIES.filter(c => habits.some(h => h.category === c.key)).map(c => (
                         <button
                             key={c.key}
                             onClick={() => setFilterCat(c.key)}
@@ -255,7 +310,7 @@ export default function HabitManager({ user }) {
                                             Category
                                         </label>
                                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                            {HABIT_CATEGORIES.map(c => (
+                                            {CATEGORIES.map(c => (
                                                 <button
                                                     key={c.key}
                                                     type="button"
@@ -298,9 +353,9 @@ export default function HabitManager({ user }) {
                                                 >
                                                     {f.label}
                                                 </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    ))}
+                                </div>
+                            </div>
 
                                     {/* Actions */}
                                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -362,19 +417,19 @@ export default function HabitManager({ user }) {
                                             gridTemplateColumns: 'repeat(auto-fill, minmax(40px, 1fr))',
                                             gap: '6px',
                                         }}>
-                                            {EMOJI_PICKER.map(em => (
+                                            {EMOJI_OPTIONS.map(em => (
                                                 <button
                                                     key={em}
                                                     type="button"
                                                     onClick={() => setEmoji(em)}
-                                                    onMouseEnter={e => {
-                                                        setHoveredEmoji(em);
-                                                        if (emoji !== em) e.currentTarget.style.background = 'var(--bg-card)';
-                                                    }}
-                                                    onMouseLeave={e => {
-                                                        setHoveredEmoji(null);
-                                                        if (emoji !== em) e.currentTarget.style.background = 'var(--bg-elevated)';
-                                                    }}
+                                                        onMouseEnter={e => {
+                                                            setHoveredEmoji(em);
+                                                            if (emoji !== em) e.currentTarget.style.background = 'var(--bg-card)';
+                                                        }}
+                                                        onMouseLeave={e => {
+                                                            setHoveredEmoji(null);
+                                                            if (emoji !== em) e.currentTarget.style.background = 'var(--bg-elevated)';
+                                                        }}
                                                     style={{
                                                         width: '40px', height: '40px',
                                                         fontSize: '18px', borderRadius: '8px',
