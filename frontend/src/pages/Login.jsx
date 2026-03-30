@@ -5,7 +5,7 @@ import Logo from '../components/Logo';
 const Login = () => {
     const { signUpWithEmail, signInWithEmail } = useAuth();
     const [mode, setMode] = useState('login'); // 'login' or 'signup'
-    const [email, setEmail] = useState('');
+    const [email, setEmail] = useState('AU48');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const [username, setUsername] = useState('');
