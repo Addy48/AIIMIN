@@ -1,0 +1,2900 @@
+[
+  {
+    "id": "hab_sleep_0",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-01T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_1",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-02T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_1",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-02T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_2",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-03T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_2",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-03T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_3",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-04T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_5",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-06T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_6",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-07T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_6",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-07T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_7",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-08T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_7",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-08T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_8",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_9",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-10T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_11",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_12",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-13T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_12",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-13T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_13",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-14T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_14",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-15T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_15",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-16T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_15",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-16T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_16",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-17T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_18",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_19",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-20T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_19",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-20T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_20",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-21T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_20",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-21T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_21",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-22T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_22",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-23T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_22",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-23T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_23",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-24T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_27",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-28T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_27",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-28T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_27",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-28T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_28",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-29T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_28",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-29T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_29",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-30T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_30",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-01-31T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_30",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-01-31T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_30",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-01-31T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_31",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-01T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_34",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-04T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_34",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-04T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_34",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-04T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_35",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-05T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_36",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-06T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_36",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-06T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_38",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-08T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_39",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_40",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-10T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_42",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_42",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-12T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_43",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-13T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_43",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-13T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_44",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-14T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_44",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-14T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_46",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-16T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_46",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_47",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-17T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_47",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-17T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_47",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-17T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_48",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-18T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_48",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-18T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_49",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-19T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_50",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-20T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_50",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-20T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_53",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-23T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_54",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-24T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_54",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-24T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_55",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-25T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_56",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-26T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_56",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-26T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_57",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-02-27T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_57",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-02-27T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_58",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-02-28T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_59",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-01T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_60",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-02T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_61",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-03T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_61",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-03T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_62",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-04T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_63",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-05T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_63",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-05T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_63",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-05T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_64",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-06T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_65",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-07T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_65",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-07T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_66",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-08T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_67",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_68",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-10T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_69",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-11T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_70",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_70",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-12T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_71",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-13T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_71",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-13T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_72",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-14T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_73",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-15T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_74",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-16T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_74",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_75",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-17T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_75",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-17T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_76",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-18T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_76",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-18T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_77",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-19T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_77",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-19T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_77",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_78",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-20T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_78",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-20T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_79",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-21T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_79",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-21T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_81",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-23T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_82",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-24T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_83",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-25T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_84",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-26T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_84",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-26T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_85",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-27T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_85",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-27T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_86",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-03-28T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_86",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-03-28T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_89",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-03-31T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_90",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-01T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_90",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-01T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_91",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-02T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_91",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-02T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_92",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-03T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_93",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-04T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_95",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-06T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_96",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-07T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_97",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-08T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_98",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-09T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_98",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-09T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_98",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_99",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-10T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_99",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-10T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_100",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-11T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_100",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-11T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_103",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-14T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_104",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-15T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_104",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-15T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_105",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-16T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_105",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_106",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-17T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_108",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_109",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-20T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_109",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-20T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_111",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-22T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_111",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-22T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_111",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-22T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_112",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-23T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_112",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-23T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_114",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-25T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_115",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-26T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_117",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-28T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_118",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-04-29T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_118",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-04-29T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_118",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-29T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_119",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-04-30T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_120",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-01T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_121",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-02T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_121",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-02T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_122",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-03T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_123",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-04T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_123",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-04T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_125",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-06T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_125",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-06T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_125",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-06T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_126",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-07T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_126",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-07T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_126",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-07T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_127",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-08T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_128",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-09T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_128",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_129",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-10T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_130",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-11T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_131",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-12T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_132",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-13T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_132",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-13T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_132",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-13T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_133",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-14T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_134",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-15T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_134",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-15T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_134",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-15T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_135",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-16T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_135",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_136",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-17T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_137",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-18T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_137",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-18T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_138",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-19T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_138",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_139",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-20T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_140",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-21T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_140",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-21T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_141",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-22T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_142",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-23T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_143",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-24T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_143",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-24T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_144",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-25T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_145",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-26T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_146",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-27T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_146",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-27T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_146",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-27T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_148",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-29T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_148",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-29T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_149",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-05-30T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_149",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-05-30T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_150",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-05-31T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_152",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-02T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_153",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-03T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_153",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-03T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_155",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-05T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_156",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-06T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_156",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-06T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_159",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-09T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_159",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-09T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_159",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_160",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-10T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_161",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-11T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_161",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-11T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_162",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-12T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_163",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-13T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_163",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-13T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_165",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-15T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_165",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-15T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_166",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-16T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_166",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_167",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-17T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_168",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-18T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_169",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-19T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_169",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-19T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_170",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-20T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_170",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-20T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_172",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-22T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_173",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-23T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_174",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-24T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_174",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-24T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_174",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-24T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_175",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-25T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_176",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-26T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_177",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-06-27T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_178",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-06-28T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_178",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-28T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_179",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-29T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_180",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-06-30T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_181",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-01T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_182",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-02T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_182",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-02T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_183",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-03T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_183",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-03T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_184",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-04T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_184",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-04T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_185",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-05T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_186",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-06T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_187",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-07T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_187",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-07T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_188",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-08T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_188",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-08T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_189",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-09T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_189",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_191",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-11T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_191",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-11T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_192",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_194",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-14T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_195",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-15T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_196",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_197",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-17T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_197",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-17T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_197",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-17T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_198",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-18T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_198",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-18T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_199",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-19T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_199",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_200",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-20T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_201",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-21T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_201",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-21T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_202",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-22T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_203",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-23T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_205",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-25T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_205",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-25T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_206",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-26T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_208",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-28T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_208",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-28T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_209",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-29T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_209",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-07-29T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_210",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-07-30T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_210",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-07-30T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_212",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-01T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_212",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-01T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_212",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-01T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_214",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-03T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_215",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-04T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_215",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-04T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_216",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-05T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_217",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-06T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_218",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-07T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_219",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-08T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_219",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-08T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_219",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-08T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_220",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-09T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_221",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-10T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_222",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-11T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_223",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_224",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-13T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_225",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-14T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_226",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-15T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_227",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_229",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-18T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_229",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-18T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_229",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-18T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_230",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-19T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_230",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_232",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-21T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_233",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-22T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_233",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-22T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_234",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-08-23T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_236",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-25T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_236",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-25T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_237",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-26T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_238",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-27T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_239",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-28T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_240",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-08-29T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_241",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-08-30T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_243",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-01T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_243",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-01T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_244",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-02T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_244",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-02T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_245",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-03T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_246",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-04T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_246",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-04T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_248",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-06T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_249",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-07T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_250",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-08T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_250",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-08T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_251",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-09T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_251",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_252",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-10T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_253",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-11T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_254",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_254",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-12T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_255",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-13T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_256",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-14T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_257",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-15T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_257",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-15T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_258",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-16T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_259",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-17T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_260",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-18T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_260",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-18T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_261",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-19T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_261",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_262",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-20T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_263",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-21T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_264",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-22T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_264",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-22T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_264",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-22T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_265",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-23T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_265",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-23T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_265",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-23T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_266",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-24T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_267",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-25T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_268",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-09-26T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_269",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-27T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_270",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-28T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_270",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-28T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_271",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-29T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_272",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-09-30T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_272",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-09-30T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_273",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-01T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_274",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-02T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_274",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-02T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_275",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-03T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_275",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-03T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_275",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-03T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_278",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-06T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_279",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-07T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_280",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-08T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_280",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-08T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_281",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-09T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_282",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-10T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_282",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-10T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_282",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-10T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_284",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_284",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-12T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_285",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-13T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_285",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-13T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_286",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-14T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_288",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_289",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-17T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_290",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-18T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_290",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-18T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_291",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-19T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_291",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_292",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-20T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_293",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-21T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_294",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-22T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_295",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-23T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_295",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-23T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_296",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-24T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_296",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-24T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_296",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-24T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_297",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-25T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_298",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-10-26T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_299",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-27T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_300",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-28T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_301",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-10-29T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_302",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-30T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_303",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-10-31T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_306",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-03T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_306",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-11-03T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_307",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-04T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_307",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-11-04T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_307",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-04T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_308",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-11-05T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_308",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-05T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_309",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-06T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_311",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-08T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_311",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-08T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_312",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-09T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_312",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-09T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_314",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-11T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_314",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-11-11T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_315",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_316",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-13T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_316",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-13T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_317",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-11-14T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_318",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-15T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_318",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-15T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_320",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-17T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_320",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-17T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_321",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-11-18T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_321",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-18T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_322",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-19T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_322",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-11-19T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_322",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-19T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_323",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-20T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_323",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-20T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_324",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-21T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_325",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-22T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_326",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-11-23T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_327",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-24T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_328",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-25T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_328",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-11-25T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_332",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-11-29T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_334",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-01T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_334",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-01T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_335",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-02T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_335",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-02T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_336",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-03T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_337",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-04T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_337",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-04T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_338",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-05T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_339",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-06T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_339",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-06T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_340",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-07T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_340",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-07T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_341",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-08T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_341",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-08T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_342",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-09T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_343",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-10T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_344",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-11T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_344",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-11T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_345",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-12T08:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_346",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-13T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_347",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-14T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_348",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-15T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_349",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-16T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_349",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-16T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_350",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-17T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_350",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-17T10:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_351",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-18T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_353",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-20T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_354",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-21T08:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_355",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-22T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_355",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-22T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_355",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-22T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_356",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-23T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_357",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-24T06:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_358",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-25T06:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_359",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-26T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_361",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-28T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_362",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-29T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_362",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-29T10:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_363",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-30T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_363",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-30T10:00:00.000Z"
+  },
+  {
+    "id": "hab_sleep_363",
+    "user_id": "mock_user",
+    "habit_id": "sleep_hygiene",
+    "completed_at": "2025-12-30T06:00:00.000Z"
+  },
+  {
+    "id": "hab_gym_364",
+    "user_id": "mock_user",
+    "habit_id": "gym",
+    "completed_at": "2025-12-31T08:00:00.000Z"
+  },
+  {
+    "id": "hab_focus_364",
+    "user_id": "mock_user",
+    "habit_id": "deep_work",
+    "completed_at": "2025-12-31T10:00:00.000Z"
+  }
+]

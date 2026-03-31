@@ -21,7 +21,7 @@ router.get('/resolve', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'SELECT email FROM users WHERE username = $1 LIMIT 1',
+            'SELECT email FROM users WHERE LOWER(username) = LOWER($1) LIMIT 1',
             [identifier]
         );
 

@@ -10,9 +10,8 @@ import SpotifyPlayer from '../SpotifyPlayer';
 import QuickCapture from '../dashboard/QuickCapture';
 import WinsEngine from '../WinsEngine';
 import MomentumBar from '../MomentumBar';
-import ErrorBoundary from '../ErrorBoundary';
+import ErrorBoundary from './ErrorBoundary';
 import HabitsPage from '../habits/HabitsPage';
-import GoogleCalendarIntegration from '../account/GoogleCalendarIntegration';
 import AdminPanel from '../account/AdminPanel';
 import AdminConsole from '../account/AdminConsole';
 import SessionStats from '../SessionStats';
@@ -35,13 +34,11 @@ import PerformanceDeltaHub from '../growth/PerformanceDeltaHub';
 import OneBetterNudge from '../growth/OneBetterNudge';
 import CausalNodeAnalysis from '../growth/CausalNodeAnalysis';
 import WeeklyLifeReview from '../growth/WeeklyLifeReview';
-import LifeChronicle from '../legacy/LifeChronicle';
 import { SettingsSection, SettingsRow } from '../dashboard/SettingsSection';
 import ToggleSwitch from '../dashboard/ToggleSwitch';
 import SystemHealthRings from '../dashboard/SystemHealthRings';
 import SystemBottleneckCard from '../dashboard/SystemBottleneckCard';
 import DayArchetypes from '../dashboard/DayArchetypes';
-import BehavioralReplay from '../dashboard/BehavioralReplay';
 import SystemOverviewStrip from './SystemOverviewStrip';
 
 const SectionLabel = ({ children, anchor, icon }) => (
@@ -93,8 +90,8 @@ export function OverviewSection({ user, firstName, statsData, expandedCard, setE
 
             <DesktopXPBar user={user} />
             <SystemOverviewStrip scores={lhsData?.systemScores} trends={trendMap} />
-            <SystemHealthRings scores={lhsData?.systemScores} trends={trendMap} />
-            <SystemBottleneckCard scores={lhsData?.systemScores} />
+            <SystemHealthRings scores={lhsData?.systemScores} trends={trendMap} drift={reportData?.stabilityAndDrift} />
+            <SystemBottleneckCard scores={lhsData?.systemScores} drift={reportData?.stabilityAndDrift || []} />
             <MomentumBar user={user} />
             <DailyQuests dateStr={todayStr} logData={desktopLogSnapshot} />
             <DailyQuote logSnapshot={desktopLogSnapshot} />
@@ -216,7 +213,33 @@ export function InsightsSection({ lhsData, reportData, recentLogs }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                     <DayArchetypes archetypes={reportData?.archetypes} logs={recentLogs} />
-                    <BehavioralReplay bestDay={reportData?.bestVsWorstDay?.bestDay} logs={recentLogs} />
+                    <div className="glass-panel" style={{ padding: '24px', borderRadius: 'var(--r-lg)', background: 'var(--bg-card)' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>
+                            Peak Day Summary
+                        </div>
+                        {reportData?.bestVsWorstDay?.bestDay ? (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <div style={{ background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '4px' }}>Date</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--gold)' }}>{reportData.bestVsWorstDay.bestDay.date || 'N/A'}</div>
+                                </div>
+                                <div style={{ background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '4px' }}>Sleep</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--gold)' }}>{reportData.bestVsWorstDay.bestDay.sleep_hours || reportData.bestVsWorstDay.bestDay.sleep || 0}h</div>
+                                </div>
+                                <div style={{ background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '4px' }}>Mood Score</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--gold)' }}>{reportData.bestVsWorstDay.bestDay.mood || 0}/10</div>
+                                </div>
+                                <div style={{ background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '4px' }}>Focus</div>
+                                    <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--gold)' }}>{reportData.bestVsWorstDay.bestDay.pomodoro_minutes || reportData.bestVsWorstDay.bestDay.focus || 0}m</div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>No peak day recorded yet.</div>
+                        )}
+                    </div>
                 </div>
                 <DailyIntention />
                 {recentLogs.length > 0 && <OneBetterNudge recentLogs={recentLogs} />}
@@ -226,7 +249,7 @@ export function InsightsSection({ lhsData, reportData, recentLogs }) {
                 <div className="analytics-grid">
                     <PerformanceDeltaHub recentLogs={recentLogs} />
                     <ErrorBoundary label="Causal Node Analysis">
-                        <CausalNodeAnalysis recentLogs={recentLogs} />
+                        <CausalNodeAnalysis behaviorDrivers={reportData?.behaviorDrivers} />
                     </ErrorBoundary>
                 </div>
                 <ErrorBoundary label="Weekly Life Review">
@@ -249,14 +272,8 @@ export function ReportsSection({ user }) {
     return (
         <div id="sys-reports" style={{ scrollMarginTop: '100px' }}>
             <SectionLabel icon="📄">Reports</SectionLabel>
-            <Reports user={user} />
-            <div style={{ marginTop: '24px' }}>
-                <ErrorBoundary label="Life Chronicle">
-                    <LifeChronicle user={user} />
-                </ErrorBoundary>
-                <div style={{ marginTop: '24px' }}>
-                    <PersonalCalendar user={user} />
-                </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
+                <Reports user={user} />
                 <div style={{ marginTop: '24px' }}>
                     <AchievementsGallery user={user} />
                 </div>
@@ -294,14 +311,7 @@ export function SettingsPanelSection({ user, isAdmin, session, notifReminders, n
                     </SettingsSection>
                 )}
 
-                <SettingsSection title="Integrations">
-                    <SettingsRow
-                        icon="📅"
-                        label="Google Calendar"
-                        description="Sync events for time-blocking and session scheduling"
-                        control={<GoogleCalendarIntegration user={user} />}
-                    />
-                </SettingsSection>
+
 
                 <SettingsSection title="Data & Privacy">
                     <SettingsRow

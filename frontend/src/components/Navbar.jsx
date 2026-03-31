@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import useTheme from '../hooks/useTheme';
 import { useNotifications } from '../hooks/useNotifications';
 import NotificationBell from './notifications/NotificationBell';
@@ -7,26 +7,24 @@ import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
 import LogoContainer from './LogoContainer';
 
-const Navbar = ({ user, activeTab, onTabChange }) => {
+const navLinks = [
+    { to: '/overview', label: 'Overview' },
+    { to: '/systems', label: 'Systems' },
+    { to: '/insights', label: 'Insights' },
+    { to: '/calendar', label: 'Calendar' },
+    { to: '/reports', label: 'Reports' },
+    { to: '/finance', label: 'Finance' },
+    { to: '/settings', label: 'Settings' },
+];
+
+const Navbar = ({ user }) => {
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, loading: notifLoading, fetchAll, markRead, markAllRead, dismiss } = useNotifications();
     const [notifOpen, setNotifOpen] = useState(false);
     const [showAccount, setShowAccount] = useState(false);
-    const tabRefs = useRef({});
-
-    const tabs = [
-        { key: 'today', label: 'Today' },
-        { key: 'focus', label: 'Focus' },
-        { key: 'identity', label: 'Identity' },
-        { key: 'growth', label: 'Growth' },
-        { key: 'habits', label: 'Habits' },
-        { key: 'money', label: 'Money' },
-        { key: 'analytics', label: 'Analytics' },
-    ];
 
     const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'U';
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 
     const handleOpenNotif = () => {
@@ -34,51 +32,31 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
         setNotifOpen(o => !o);
     };
 
-    /* ── Active tab underline ── */
-    const [indicatorStyle, setIndicatorStyle] = useState({});
-    useEffect(() => {
-        const el = tabRefs.current[activeTab];
-        if (el) {
-            const parent = el.parentElement;
-            const parentRect = parent.getBoundingClientRect();
-            const elRect = el.getBoundingClientRect();
-            setIndicatorStyle({
-                width: `${elRect.width - 12}px`,
-                left: `${elRect.left - parentRect.left + 6}px`,
-            });
-        }
-    }, [activeTab]);
-
-    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       RENDER — Floating pill system status bar
-    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     return (
         <>
-            {/* ── Floating Pill Nav ── */}
-            <nav style={{
-                position: 'fixed',
-                top: '16px',
-                left: '16px',
-                right: '16px',
-                zIndex: 99999,
-                maxWidth: '1340px',
-                margin: '0 auto',
-                height: '52px',
-                background: 'var(--nav-bg)',
-                backdropFilter: 'blur(24px) saturate(1.6)',
-                WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
-                border: '1px solid var(--nav-border)',
-                borderRadius: '26px',
-                boxShadow: '0 2px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0 16px',
-                gap: '12px',
-            }}>
+            {/* ── Floating Edge-to-Edge Glass Nav ── */}
+            <nav
+                className="glass-surface-nav"
+                style={{
+                    position: 'fixed',
+                    top: '14px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    zIndex: 99999,
+                    width: 'calc(100% - 48px)',
+                    maxWidth: '1340px',
+                    height: '52px',
+                    borderRadius: '26px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 16px',
+                    gap: '12px',
+                }}
+            >
 
-                {/* ── LEFT: Logo + AI Health Orb ── */}
+                {/* ── LEFT: Logo + Pulse Orb + Date ── */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                    <Link to="/brand" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+                    <Link to="/overview" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
                         <LogoContainer size={26} />
                         <span style={{
                             fontSize: '14px',
@@ -89,7 +67,7 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                         }}>AIIMIN</span>
                     </Link>
 
-                    {/* AI Health Orb — slow pulse */}
+                    {/* AI Health Orb */}
                     <div
                         className="orb-pulse"
                         title="AI Sync Active"
@@ -103,16 +81,14 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                         }}
                     />
 
-                    {/* Divider */}
                     <div style={{ width: '1px', height: '14px', background: 'var(--border-hover)', opacity: 0.5 }} />
 
-                    {/* Date/Time */}
                     <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--text-3)', letterSpacing: '0.03em', whiteSpace: 'nowrap' }}>
                         {dateStr}
                     </span>
                 </div>
 
-                {/* ── CENTER: Navigation Tabs ── */}
+                {/* ── CENTER: Navigation Links (NavLink-based) ── */}
                 <div style={{
                     flex: 1,
                     display: 'flex',
@@ -122,38 +98,32 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
                     position: 'relative',
                     height: '52px',
                 }}>
-                    {tabs.map(({ key, label }) => (
-                        <button
-                            key={key}
-                            ref={el => tabRefs.current[key] = el}
-                            onClick={() => onTabChange(key)}
-                            style={{
+                    {navLinks.map(({ to, label }) => (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            style={({ isActive }) => ({
                                 padding: '6px 11px',
                                 fontSize: '12.5px',
-                                fontWeight: activeTab === key ? 650 : 420,
+                                fontWeight: isActive ? 650 : 420,
                                 cursor: 'pointer',
                                 border: 'none',
                                 background: 'transparent',
-                                color: activeTab === key ? 'var(--text-1)' : 'var(--text-3)',
+                                color: isActive ? 'var(--text-1)' : 'var(--text-3)',
                                 letterSpacing: '-0.01em',
                                 transition: 'color 0.2s ease, font-weight 0.2s ease',
                                 position: 'relative',
                                 fontFamily: "'Jost', sans-serif",
-                            }}
+                                textDecoration: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: '52px',
+                                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                            })}
                         >
                             {label}
-                        </button>
+                        </NavLink>
                     ))}
-                    {/* Sliding gold underline */}
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '0',
-                        height: '2px',
-                        borderRadius: '2px 2px 0 0',
-                        background: 'var(--accent)',
-                        transition: 'left 0.3s cubic-bezier(0.16,1,0.3,1), width 0.3s cubic-bezier(0.16,1,0.3,1)',
-                        ...indicatorStyle,
-                    }} />
                 </div>
 
                 {/* ── RIGHT: Controls ── */}

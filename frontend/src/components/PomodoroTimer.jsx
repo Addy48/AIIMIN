@@ -4,8 +4,8 @@ import { upsertRow, insertRow } from '../services/dbService';
 import toast from '../utils/toast';
 import { playSound, sendNotification, requestNotificationPermission } from '../utils/soundEngine';
 import { POMODORO_XP, getRank } from '../utils/xpEngine';
-
-
+import PomodoroReflection from './pomodoro/PomodoroReflection';
+import PomodoroPresets from './pomodoro/PomodoroPresets';
 
 const PomodoroTimer = ({ user }) => {
     const PRESETS = [
@@ -229,52 +229,11 @@ const PomodoroTimer = ({ user }) => {
             </div>
 
             {showReflection ? (
-                <div className="fade-up" style={{
-                    marginTop: '16px', padding: '20px', background: 'var(--bg-elevated)',
-                    border: '1px solid var(--border-accent)', borderRadius: '16px',
-                    boxShadow: 'var(--shadow-md)', textAlign: 'left'
-                }}>
-                    <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '12px' }}>
-                        Great focus! Quick reflection:
-                    </h4>
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                        {['😔', '😕', '😐', '🙂', '🔥'].map((emoji, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setSessionMood(emoji)}
-                                style={{
-                                    flex: 1, height: '36px', borderRadius: '8px', border: '1px solid var(--border)',
-                                    background: sessionMood === emoji ? 'var(--accent-dim)' : 'var(--bg-card)',
-                                    borderColor: sessionMood === emoji ? 'var(--accent)' : 'var(--border)',
-                                    fontSize: '18px', cursor: 'pointer', transition: 'all 0.2s'
-                                }}
-                            >
-                                {emoji}
-                            </button>
-                        ))}
-                    </div>
-                    <textarea
-                        placeholder="Key insight or struggle... (optional)"
-                        value={sessionNote}
-                        onChange={(e) => setSessionNote(e.target.value)}
-                        style={{
-                            width: '100%', height: '60px', borderRadius: '8px', padding: '10px',
-                            background: 'var(--bg-card)', border: '1px solid var(--border)',
-                            color: 'var(--text-1)', fontSize: '13px', resize: 'none', outline: 'none',
-                            marginBottom: '16px'
-                        }}
-                    />
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={handleSkipReflection} style={{
-                            flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--bg-card)',
-                            border: '1px solid var(--border)', color: 'var(--text-2)', fontSize: '13px', fontWeight: 700, cursor: 'pointer'
-                        }}>Skip</button>
-                        <button onClick={handleSaveReflection} style={{
-                            flex: 2, padding: '10px', borderRadius: '8px', background: 'var(--accent)',
-                            border: 'none', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer'
-                        }}>Save & Take Break</button>
-                    </div>
-                </div>
+                <PomodoroReflection
+                    sessionMood={sessionMood} setSessionMood={setSessionMood}
+                    sessionNote={sessionNote} setSessionNote={setSessionNote}
+                    onSave={handleSaveReflection} onSkip={handleSkipReflection}
+                />
             ) : (
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: 'auto' }}>
                     <button
@@ -304,84 +263,14 @@ const PomodoroTimer = ({ user }) => {
                 </div>
             )}
 
-            {/* S7: Preset Duration Pills */}
-            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border)' }}>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
-                    Duration
-                </div>
-                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '6px' }}>
-                    {PRESETS.map((p, i) => (
-                        <button
-                            key={i}
-                            onClick={() => handlePresetSelect(i)}
-                            disabled={isRunning}
-                            style={{
-                                padding: '8px 18px', borderRadius: '99px', fontSize: '13px', fontWeight: 700,
-                                cursor: isRunning ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
-                                border: selectedPreset === i && !showCustom ? '1px solid var(--accent)' : '1px solid var(--border)',
-                                background: selectedPreset === i && !showCustom ? 'var(--accent-dim)' : 'var(--bg-elevated)',
-                                color: selectedPreset === i && !showCustom ? 'var(--accent)' : 'var(--text-2)',
-                                opacity: isRunning ? 0.5 : 1,
-                            }}
-                        >
-                            {p.work} min
-                        </button>
-                    ))}
-                    <button
-                        onClick={() => { if (!isRunning) setShowCustom(!showCustom); }}
-                        disabled={isRunning}
-                        style={{
-                            padding: '8px 14px', borderRadius: '99px', fontSize: '12px', fontWeight: 600,
-                            cursor: isRunning ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
-                            border: showCustom ? '1px solid var(--accent)' : '1px solid var(--border)',
-                            background: showCustom ? 'var(--accent-dim)' : 'var(--bg-elevated)',
-                            color: showCustom ? 'var(--accent)' : 'var(--text-3)',
-                            opacity: isRunning ? 0.5 : 1,
-                        }}
-                    >
-                        ⚙ Custom
-                    </button>
-                </div>
-
-                {/* Auto rest suggestion */}
-                {!showCustom && (
-                    <div style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 500 }}>
-                        Rest: {PRESETS[selectedPreset].rest} min
-                    </div>
-                )}
-
-                {/* Custom duration inputs */}
-                {showCustom && (
-                    <div className="fade-up" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-2)' }}>
-                            Focus
-                            <input
-                                type="number" value={workDuration} min={1} max={120}
-                                onChange={(e) => handleDurationEdit('work', e.target.value)}
-                                style={{
-                                    width: '52px', textAlign: 'center', background: 'var(--bg-elevated)',
-                                    border: '1px solid var(--border-accent)', borderRadius: '6px',
-                                    color: 'var(--accent)', fontSize: '14px', fontWeight: 700, padding: '4px'
-                                }}
-                            />
-                            min
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-2)' }}>
-                            Rest
-                            <input
-                                type="number" value={breakDuration} min={1} max={30}
-                                onChange={(e) => handleDurationEdit('break', e.target.value)}
-                                style={{
-                                    width: '52px', textAlign: 'center', background: 'var(--bg-elevated)',
-                                    border: '1px solid var(--border-accent)', borderRadius: '6px',
-                                    color: 'var(--accent)', fontSize: '14px', fontWeight: 700, padding: '4px'
-                                }}
-                            />
-                            min
-                        </div>
-                    </div>
-                )}
-            </div>
+            <PomodoroPresets
+                presets={PRESETS} selectedPreset={selectedPreset}
+                showCustom={showCustom} isRunning={isRunning}
+                workDuration={workDuration} breakDuration={breakDuration}
+                onPresetSelect={handlePresetSelect}
+                onToggleCustom={() => { if (!isRunning) setShowCustom(!showCustom); }}
+                onDurationEdit={handleDurationEdit}
+            />
 
             <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--text-3)' }}>
                 🔥 {cyclesCompleted} cycles completed today
