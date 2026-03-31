@@ -57,12 +57,12 @@ const Navbar = ({ user, activeTab, onTabChange }) => {
             {/* ── Floating Pill Nav ── */}
             <nav style={{
                 position: 'fixed',
-                top: '14px',
-                left: '50%',
-                transform: 'translateX(-50%)',
+                top: '16px',
+                left: '16px',
+                right: '16px',
                 zIndex: 99999,
-                width: 'calc(100% - 48px)',
                 maxWidth: '1340px',
+                margin: '0 auto',
                 height: '52px',
                 background: 'var(--nav-bg)',
                 backdropFilter: 'blur(24px) saturate(1.6)',

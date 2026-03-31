@@ -13,6 +13,8 @@ import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
 import MobileApp from './components/mobile/MobileApp';
 import { useAuth } from './hooks/useAuth';
+import { AuthProvider } from './context/AuthContext';
+import ErrorBoundary from './components/system/ErrorBoundary';
 import './App.css';
 
 const Footer = () => (
@@ -43,6 +45,18 @@ const Footer = () => (
 );
 
 function App() {
+  return (
+    <ErrorBoundary label="Application">
+      <AuthProvider>
+        <BrowserRouter>
+          <AuthedApp />
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
+  );
+}
+
+function AuthedApp() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -64,11 +78,7 @@ function App() {
     );
   }
 
-  return (
-    <BrowserRouter>
-      <AppContent user={user} loading={loading} />
-    </BrowserRouter>
-  );
+  return <AppContent user={user} loading={loading} />;
 }
 
 function AppContent({ user }) {

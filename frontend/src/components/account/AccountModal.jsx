@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // Added for Portal
 import { useAuth } from '../../hooks/useAuth';
 import toast from '../../utils/toast';
-import { getAuthHeaders, API_URL } from '../../utils/api';
+import supabase from '../../utils/supabase';
+import { apiDelete, apiGet, apiPatch } from '../../utils/api';
 
 const Section = ({ title, children }) => (
     <div style={{ marginBottom: '24px' }}>
@@ -35,20 +36,7 @@ const Row = ({ label, children, border = true }) => (
     </div>
 );
 
-const StatusDot = ({ connected, error }) => (
-    <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: '6px',
-        padding: '4px 10px', borderRadius: '99px', fontSize: '11px', fontWeight: 700,
-        background: error ? 'rgba(235,140,140,0.1)' : connected ? 'rgba(34,197,94,0.1)' : 'var(--bg-elevated)',
-        border: `1px solid ${error ? 'rgba(235,140,140,0.2)' : connected ? 'rgba(34,197,94,0.2)' : 'var(--border)'}`,
-        color: error ? 'var(--danger)' : connected ? '#22c55e' : 'var(--text-3)',
-    }}>
-        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'currentColor' }} />
-        {error ? 'Error' : connected ? 'Connected' : 'Not connected'}
-    </div>
-);
-
-const ChangePassword = ({ session }) => {
+const ChangePassword = () => {
     const [newPw, setNewPw] = useState('');
     const [confirmPw, setConfirmPw] = useState('');
     const [msg, setMsg] = useState('');
@@ -61,13 +49,7 @@ const ChangePassword = ({ session }) => {
         if (newPw !== confirmPw) { setMsg('Passwords do not match'); return; }
         setSaving(true);
         setMsg('');
-        const { createClient } = await import('@supabase/supabase-js');
-        const client = createClient(
-            process.env.REACT_APP_SUPABASE_URL,
-            process.env.REACT_APP_SUPABASE_ANON_KEY,
-            { global: { headers: { Authorization: `Bearer ${session?.access_token}` } } }
-        );
-        const { error } = await client.auth.updateUser({ password: newPw });
+        const { error } = await supabase.auth.updateUser({ password: newPw });
         if (error) { setMsg(error.message); }
         else { setMsg('Password updated ✓'); setNewPw(''); setConfirmPw(''); }
         setSaving(false);
@@ -127,9 +109,7 @@ const AccountModal = ({ isOpen, onClose }) => {
     useEffect(() => {
         if (!isOpen || !session) return;
         setLoading(true);
-        const headers = getAuthHeaders(session);
-        fetch(`${API_URL}/account/profile`, { headers }).then(r => r.ok ? r.json() : Promise.reject('Profile load failed'))
-        .then(p => {
+        apiGet('/account/profile', { session }).then((p) => {
             const fallbackName = p?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || '';
             const fallbackTimezone = p?.timezone || session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
             const normalizedProfile = { ...p, full_name: fallbackName, timezone: fallbackTimezone };
@@ -168,26 +148,15 @@ const AccountModal = ({ isOpen, onClose }) => {
         setSaving(true);
         setSaveMsg('');
         try {
-            const res = await fetch(`${API_URL}/account/profile`, {
-                method: 'PATCH', headers: getAuthHeaders(session),
-                body: JSON.stringify({ full_name: draftProfile.full_name }),
-            });
-            if (res.ok) {
-                const savedProfile = await res.json();
-                setProfile(savedProfile);
-                setDraftProfile(savedProfile);
-                setIsEditingProfile(false);
-                setSaveMsg('Saved ✓');
-                toast.success('Profile saved');
-            }
-            else {
-                const body = await res.json().catch(() => ({}));
-                setSaveMsg('Save failed');
-                toast.error(body.error || 'Profile save failed');
-            }
+            const savedProfile = await apiPatch('/account/profile', { full_name: draftProfile.full_name }, { session });
+            setProfile(savedProfile);
+            setDraftProfile(savedProfile);
+            setIsEditingProfile(false);
+            setSaveMsg('Saved ✓');
+            toast.success('Profile saved');
         } catch (err) {
             setSaveMsg('Failed to save');
-            toast.error(err.message || 'Profile save failed');
+            toast.error(err.response?.data?.error || err.message || 'Profile save failed');
         }
         finally { setSaving(false); setTimeout(() => setSaveMsg(''), 3000); }
     };
@@ -207,12 +176,7 @@ const AccountModal = ({ isOpen, onClose }) => {
     const handleExport = async () => {
         setExporting(true);
         try {
-            const res = await fetch(`${API_URL}/account/export`, { headers: getAuthHeaders(session) });
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error || `Export failed (${res.status})`);
-            }
-            const blob = await res.blob();
+            const blob = await apiGet('/account/export', { session, responseType: 'blob' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -227,14 +191,9 @@ const AccountModal = ({ isOpen, onClose }) => {
         if (deleteConfirm !== 'DELETE') return;
         setDeleting(true);
         try {
-            const res = await fetch(`${API_URL}/account`, {
-                method: 'DELETE', headers: getAuthHeaders(session),
-                body: JSON.stringify({ confirm: 'DELETE' }),
-            });
-            if (res.ok) {
-                signOut();
-                window.location.reload();
-            }
+            await apiDelete('/account', { confirm: 'DELETE' }, { session });
+            await signOut();
+            window.location.reload();
         } catch (err) { toast.error('Delete failed'); } finally { setDeleting(false); }
     };
 
@@ -370,7 +329,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                             </Section>
 
                             <Section title="Change Password">
-                                <ChangePassword session={session} />
+                                <ChangePassword />
                             </Section>
 
                             <Section title="Data Strategy">
@@ -448,4 +407,3 @@ const AccountModal = ({ isOpen, onClose }) => {
 };
 
 export default AccountModal;
-

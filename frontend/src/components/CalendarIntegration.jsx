@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import MonthlyGrid from './calendar/MonthlyGrid';
 import { redirectToGoogle } from '../utils/authRedirect';
-import { API_URL } from '../utils/api';
+import { apiGet } from '../utils/api';
 
 /* ─── Integration Health Badge ─── */
 const StatusBadge = ({ status }) => {
@@ -164,24 +164,19 @@ const CalendarIntegration = ({ user }) => {
         setErrorMsg('');
         setIntegrationStatus('syncing');
         try {
-            const res = await fetch(`${API_URL}/calendar/events`, {
-                headers: { 'x-user-id': user.id }
-            });
-            if (!res.ok) {
-                if ([401, 403, 500].includes(res.status)) {
-                    setIntegrationStatus('error');
-                    setIsConnected(false);
-                    throw new Error('Google Calendar not connected. Use the Connect button to link your account.');
-                }
-                throw new Error('Unable to fetch calendar events. Please try again.');
-            }
-            const formattedEvents = await res.json();
+            const formattedEvents = await apiGet('/calendar/events');
             setEvents(formattedEvents);
             setLastSync(new Date());
             setIsConnected(true);
             setIntegrationStatus('connected');
         } catch (err) {
-            setErrorMsg(err.message);
+            const status = err.response?.status;
+            if ([401, 403, 500].includes(status)) {
+                setIsConnected(false);
+                setErrorMsg('Google Calendar not connected. Use the Connect button to link your account.');
+            } else {
+                setErrorMsg(err.message || 'Unable to fetch calendar events. Please try again.');
+            }
             setIntegrationStatus('error');
         } finally {
             setIsLoadingEvents(false);
