@@ -22,6 +22,7 @@ import accountRoutes from './routes/account.js';
 import healthRoutes from './routes/health.js';
 import habitsRoutes from './routes/habits.js';
 import routinesRoutes, { routineRunsRouter } from './routes/routines.js';
+import intelligenceRoutes from './routes/intelligence.js';
 
 dotenv.config();
 
@@ -46,7 +47,7 @@ if (missingEnvVars.length > 0) {
 const app = express();
 
 // ─── Trust Railway's reverse proxy (fixes express-rate-limit ERR_ERL_UNEXPECTED_X_FORWARDED_FOR)
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 console.log('[CONFIG] Proxy trust enabled:', app.get('trust proxy'));
 
 // ─── Fast Health Check (Top Level) ────────────────────────────
@@ -103,24 +104,28 @@ const apiLimiter = rateLimit({
     windowMs: 60_000, max: 200,
     standardHeaders: true, legacyHeaders: false,
     message: { error: 'Too many requests, please try again later.' },
+    validate: { trustProxy: false },
 });
 // Auth routes — 50 req/15min (login, token refresh)
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, max: 50,
     standardHeaders: true, legacyHeaders: false,
     message: { error: 'Too many auth requests. Please wait.' },
+    validate: { trustProxy: false },
 });
 // Signup — tightest limit
 const signupLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, max: 10,
     standardHeaders: true, legacyHeaders: false,
     message: { error: 'Too many attempts. Protection active.' },
+    validate: { trustProxy: false },
 });
 // OAuth — generous limit so Google redirect loops don't block users
 const oauthLimiter = rateLimit({
     windowMs: 60_000, max: 60,
     standardHeaders: true, legacyHeaders: false,
     message: { error: 'Too many OAuth attempts. Please wait.' },
+    validate: { trustProxy: false },
 });
 
 app.use('/auth/signup', signupLimiter);   // most restrictive first
@@ -144,6 +149,7 @@ app.use('/account', accountRoutes);
 app.use('/habits', habitsRoutes);
 app.use('/routines', routinesRoutes);
 app.use('/routine-runs', routineRunsRouter);
+app.use('/intelligence', intelligenceRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {
