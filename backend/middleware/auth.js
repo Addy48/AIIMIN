@@ -5,14 +5,7 @@
  * Attaches req.user = { id, email } on success.
  * Replaces the insecure x-user-id header approach.
  */
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
-
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { supabaseAdmin as supabase } from '../supabase.js';
 
 const profileCache = new Map();
 const CACHE_TTL = 10000; // 10s cache for roles/onboarding

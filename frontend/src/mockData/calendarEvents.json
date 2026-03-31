@@ -1,0 +1,2362 @@
+[
+  {
+    "id": "cal_fw_1",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-02T09:00:00.000Z",
+    "end_time": "2025-01-02T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_2",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-03T09:00:00.000Z",
+    "end_time": "2025-01-03T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_3",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-04T18:00:00.000Z",
+    "end_time": "2025-01-04T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_5",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-06T18:00:00.000Z",
+    "end_time": "2025-01-06T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_6",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-07T09:00:00.000Z",
+    "end_time": "2025-01-07T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_7",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-08T18:00:00.000Z",
+    "end_time": "2025-01-08T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_7",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-08T09:00:00.000Z",
+    "end_time": "2025-01-08T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_9",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-10T18:00:00.000Z",
+    "end_time": "2025-01-10T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_11",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-12T18:00:00.000Z",
+    "end_time": "2025-01-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_12",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-13T09:00:00.000Z",
+    "end_time": "2025-01-13T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_13",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-14T09:00:00.000Z",
+    "end_time": "2025-01-14T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_14",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-15T09:00:00.000Z",
+    "end_time": "2025-01-15T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_15",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-16T18:00:00.000Z",
+    "end_time": "2025-01-16T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_15",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-16T09:00:00.000Z",
+    "end_time": "2025-01-16T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_16",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-17T09:00:00.000Z",
+    "end_time": "2025-01-17T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_19",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-20T18:00:00.000Z",
+    "end_time": "2025-01-20T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_20",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-21T18:00:00.000Z",
+    "end_time": "2025-01-21T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_21",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-22T09:00:00.000Z",
+    "end_time": "2025-01-22T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_22",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-23T18:00:00.000Z",
+    "end_time": "2025-01-23T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_27",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-28T18:00:00.000Z",
+    "end_time": "2025-01-28T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_27",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-28T09:00:00.000Z",
+    "end_time": "2025-01-28T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_28",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-29T09:00:00.000Z",
+    "end_time": "2025-01-29T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_29",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-30T18:00:00.000Z",
+    "end_time": "2025-01-30T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_30",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-01-31T18:00:00.000Z",
+    "end_time": "2025-01-31T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_30",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-01-31T09:00:00.000Z",
+    "end_time": "2025-01-31T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_34",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-04T18:00:00.000Z",
+    "end_time": "2025-02-04T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_34",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-04T09:00:00.000Z",
+    "end_time": "2025-02-04T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_35",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-05T09:00:00.000Z",
+    "end_time": "2025-02-05T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_36",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-06T18:00:00.000Z",
+    "end_time": "2025-02-06T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_42",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-12T18:00:00.000Z",
+    "end_time": "2025-02-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_43",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-13T09:00:00.000Z",
+    "end_time": "2025-02-13T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_44",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-14T18:00:00.000Z",
+    "end_time": "2025-02-14T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_46",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-16T18:00:00.000Z",
+    "end_time": "2025-02-16T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_47",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-17T18:00:00.000Z",
+    "end_time": "2025-02-17T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_47",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-17T09:00:00.000Z",
+    "end_time": "2025-02-17T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_48",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-18T18:00:00.000Z",
+    "end_time": "2025-02-18T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_49",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-19T09:00:00.000Z",
+    "end_time": "2025-02-19T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_50",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-20T18:00:00.000Z",
+    "end_time": "2025-02-20T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_50",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-20T09:00:00.000Z",
+    "end_time": "2025-02-20T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_54",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-24T18:00:00.000Z",
+    "end_time": "2025-02-24T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_54",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-24T09:00:00.000Z",
+    "end_time": "2025-02-24T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_55",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-25T09:00:00.000Z",
+    "end_time": "2025-02-25T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_56",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-26T18:00:00.000Z",
+    "end_time": "2025-02-26T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_56",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-26T09:00:00.000Z",
+    "end_time": "2025-02-26T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_57",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-02-27T09:00:00.000Z",
+    "end_time": "2025-02-27T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_58",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-02-28T18:00:00.000Z",
+    "end_time": "2025-02-28T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_61",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-03T18:00:00.000Z",
+    "end_time": "2025-03-03T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_62",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-04T18:00:00.000Z",
+    "end_time": "2025-03-04T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_63",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-05T18:00:00.000Z",
+    "end_time": "2025-03-05T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_63",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-05T09:00:00.000Z",
+    "end_time": "2025-03-05T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_65",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-07T09:00:00.000Z",
+    "end_time": "2025-03-07T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_66",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-08T18:00:00.000Z",
+    "end_time": "2025-03-08T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_69",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-11T09:00:00.000Z",
+    "end_time": "2025-03-11T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_70",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-12T18:00:00.000Z",
+    "end_time": "2025-03-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_70",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-12T09:00:00.000Z",
+    "end_time": "2025-03-12T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_71",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-13T09:00:00.000Z",
+    "end_time": "2025-03-13T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_73",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-15T18:00:00.000Z",
+    "end_time": "2025-03-15T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_74",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-16T18:00:00.000Z",
+    "end_time": "2025-03-16T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_75",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-17T18:00:00.000Z",
+    "end_time": "2025-03-17T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_75",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-17T09:00:00.000Z",
+    "end_time": "2025-03-17T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_76",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-18T09:00:00.000Z",
+    "end_time": "2025-03-18T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_77",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-19T18:00:00.000Z",
+    "end_time": "2025-03-19T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_77",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-19T09:00:00.000Z",
+    "end_time": "2025-03-19T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_78",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-20T09:00:00.000Z",
+    "end_time": "2025-03-20T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_79",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-21T09:00:00.000Z",
+    "end_time": "2025-03-21T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_82",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-24T09:00:00.000Z",
+    "end_time": "2025-03-24T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_83",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-25T09:00:00.000Z",
+    "end_time": "2025-03-25T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_84",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-26T18:00:00.000Z",
+    "end_time": "2025-03-26T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_84",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-26T09:00:00.000Z",
+    "end_time": "2025-03-26T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_85",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-27T09:00:00.000Z",
+    "end_time": "2025-03-27T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_86",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-03-28T18:00:00.000Z",
+    "end_time": "2025-03-28T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_86",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-03-28T09:00:00.000Z",
+    "end_time": "2025-03-28T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_90",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-01T18:00:00.000Z",
+    "end_time": "2025-04-01T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_91",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-02T18:00:00.000Z",
+    "end_time": "2025-04-02T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_92",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-03T18:00:00.000Z",
+    "end_time": "2025-04-03T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_93",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-04T09:00:00.000Z",
+    "end_time": "2025-04-04T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_95",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-06T18:00:00.000Z",
+    "end_time": "2025-04-06T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_96",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-07T18:00:00.000Z",
+    "end_time": "2025-04-07T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_97",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-08T18:00:00.000Z",
+    "end_time": "2025-04-08T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_98",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-09T18:00:00.000Z",
+    "end_time": "2025-04-09T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_98",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-09T09:00:00.000Z",
+    "end_time": "2025-04-09T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_99",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-10T09:00:00.000Z",
+    "end_time": "2025-04-10T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_100",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-11T09:00:00.000Z",
+    "end_time": "2025-04-11T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_103",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-14T09:00:00.000Z",
+    "end_time": "2025-04-14T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_104",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-15T18:00:00.000Z",
+    "end_time": "2025-04-15T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_104",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-15T09:00:00.000Z",
+    "end_time": "2025-04-15T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_105",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-16T18:00:00.000Z",
+    "end_time": "2025-04-16T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_109",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-20T18:00:00.000Z",
+    "end_time": "2025-04-20T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_111",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-22T18:00:00.000Z",
+    "end_time": "2025-04-22T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_111",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-22T09:00:00.000Z",
+    "end_time": "2025-04-22T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_112",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-23T18:00:00.000Z",
+    "end_time": "2025-04-23T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_117",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-28T09:00:00.000Z",
+    "end_time": "2025-04-28T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_118",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-04-29T18:00:00.000Z",
+    "end_time": "2025-04-29T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_118",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-04-29T09:00:00.000Z",
+    "end_time": "2025-04-29T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_120",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-01T09:00:00.000Z",
+    "end_time": "2025-05-01T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_121",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-02T09:00:00.000Z",
+    "end_time": "2025-05-02T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_122",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-03T18:00:00.000Z",
+    "end_time": "2025-05-03T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_123",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-04T18:00:00.000Z",
+    "end_time": "2025-05-04T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_125",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-06T18:00:00.000Z",
+    "end_time": "2025-05-06T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_125",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-06T09:00:00.000Z",
+    "end_time": "2025-05-06T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_126",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-07T18:00:00.000Z",
+    "end_time": "2025-05-07T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_126",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-07T09:00:00.000Z",
+    "end_time": "2025-05-07T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_127",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-08T09:00:00.000Z",
+    "end_time": "2025-05-08T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_128",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-09T09:00:00.000Z",
+    "end_time": "2025-05-09T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_129",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-10T18:00:00.000Z",
+    "end_time": "2025-05-10T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_131",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-12T09:00:00.000Z",
+    "end_time": "2025-05-12T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_132",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-13T18:00:00.000Z",
+    "end_time": "2025-05-13T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_132",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-13T09:00:00.000Z",
+    "end_time": "2025-05-13T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_133",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-14T09:00:00.000Z",
+    "end_time": "2025-05-14T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_134",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-15T18:00:00.000Z",
+    "end_time": "2025-05-15T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_134",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-15T09:00:00.000Z",
+    "end_time": "2025-05-15T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_135",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-16T09:00:00.000Z",
+    "end_time": "2025-05-16T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_137",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-18T18:00:00.000Z",
+    "end_time": "2025-05-18T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_138",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-19T09:00:00.000Z",
+    "end_time": "2025-05-19T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_139",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-20T18:00:00.000Z",
+    "end_time": "2025-05-20T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_140",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-21T18:00:00.000Z",
+    "end_time": "2025-05-21T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_141",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-22T18:00:00.000Z",
+    "end_time": "2025-05-22T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_142",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-23T09:00:00.000Z",
+    "end_time": "2025-05-23T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_143",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-24T18:00:00.000Z",
+    "end_time": "2025-05-24T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_146",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-27T18:00:00.000Z",
+    "end_time": "2025-05-27T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_146",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-27T09:00:00.000Z",
+    "end_time": "2025-05-27T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_148",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-29T09:00:00.000Z",
+    "end_time": "2025-05-29T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_149",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-05-30T18:00:00.000Z",
+    "end_time": "2025-05-30T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_149",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-05-30T09:00:00.000Z",
+    "end_time": "2025-05-30T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_152",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-02T09:00:00.000Z",
+    "end_time": "2025-06-02T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_153",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-03T18:00:00.000Z",
+    "end_time": "2025-06-03T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_153",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-03T09:00:00.000Z",
+    "end_time": "2025-06-03T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_155",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-05T09:00:00.000Z",
+    "end_time": "2025-06-05T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_156",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-06T18:00:00.000Z",
+    "end_time": "2025-06-06T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_159",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-09T18:00:00.000Z",
+    "end_time": "2025-06-09T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_159",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-09T09:00:00.000Z",
+    "end_time": "2025-06-09T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_161",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-11T09:00:00.000Z",
+    "end_time": "2025-06-11T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_162",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-12T09:00:00.000Z",
+    "end_time": "2025-06-12T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_163",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-13T18:00:00.000Z",
+    "end_time": "2025-06-13T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_165",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-15T18:00:00.000Z",
+    "end_time": "2025-06-15T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_166",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-16T18:00:00.000Z",
+    "end_time": "2025-06-16T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_168",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-18T18:00:00.000Z",
+    "end_time": "2025-06-18T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_169",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-19T18:00:00.000Z",
+    "end_time": "2025-06-19T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_169",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-19T09:00:00.000Z",
+    "end_time": "2025-06-19T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_170",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-20T18:00:00.000Z",
+    "end_time": "2025-06-20T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_170",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-20T09:00:00.000Z",
+    "end_time": "2025-06-20T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_173",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-23T18:00:00.000Z",
+    "end_time": "2025-06-23T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_174",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-24T18:00:00.000Z",
+    "end_time": "2025-06-24T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_174",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-24T09:00:00.000Z",
+    "end_time": "2025-06-24T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_176",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-26T09:00:00.000Z",
+    "end_time": "2025-06-26T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_177",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-06-27T09:00:00.000Z",
+    "end_time": "2025-06-27T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_178",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-06-28T18:00:00.000Z",
+    "end_time": "2025-06-28T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_181",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-01T09:00:00.000Z",
+    "end_time": "2025-07-01T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_182",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-02T18:00:00.000Z",
+    "end_time": "2025-07-02T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_183",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-03T18:00:00.000Z",
+    "end_time": "2025-07-03T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_183",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-03T09:00:00.000Z",
+    "end_time": "2025-07-03T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_184",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-04T09:00:00.000Z",
+    "end_time": "2025-07-04T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_185",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-05T18:00:00.000Z",
+    "end_time": "2025-07-05T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_186",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-06T18:00:00.000Z",
+    "end_time": "2025-07-06T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_187",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-07T09:00:00.000Z",
+    "end_time": "2025-07-07T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_188",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-08T09:00:00.000Z",
+    "end_time": "2025-07-08T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_189",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-09T09:00:00.000Z",
+    "end_time": "2025-07-09T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_191",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-11T18:00:00.000Z",
+    "end_time": "2025-07-11T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_191",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-11T09:00:00.000Z",
+    "end_time": "2025-07-11T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_192",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-12T18:00:00.000Z",
+    "end_time": "2025-07-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_194",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-14T18:00:00.000Z",
+    "end_time": "2025-07-14T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_197",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-17T18:00:00.000Z",
+    "end_time": "2025-07-17T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_197",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-17T09:00:00.000Z",
+    "end_time": "2025-07-17T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_198",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-18T09:00:00.000Z",
+    "end_time": "2025-07-18T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_199",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-19T18:00:00.000Z",
+    "end_time": "2025-07-19T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_201",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-21T18:00:00.000Z",
+    "end_time": "2025-07-21T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_205",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-25T18:00:00.000Z",
+    "end_time": "2025-07-25T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_205",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-25T09:00:00.000Z",
+    "end_time": "2025-07-25T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_206",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-26T18:00:00.000Z",
+    "end_time": "2025-07-26T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_208",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-28T18:00:00.000Z",
+    "end_time": "2025-07-28T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_209",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-29T18:00:00.000Z",
+    "end_time": "2025-07-29T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_209",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-07-29T09:00:00.000Z",
+    "end_time": "2025-07-29T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_210",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-07-30T18:00:00.000Z",
+    "end_time": "2025-07-30T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_212",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-01T18:00:00.000Z",
+    "end_time": "2025-08-01T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_212",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-01T09:00:00.000Z",
+    "end_time": "2025-08-01T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_214",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-03T18:00:00.000Z",
+    "end_time": "2025-08-03T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_215",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-04T09:00:00.000Z",
+    "end_time": "2025-08-04T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_216",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-05T09:00:00.000Z",
+    "end_time": "2025-08-05T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_219",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-08T18:00:00.000Z",
+    "end_time": "2025-08-08T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_219",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-08T09:00:00.000Z",
+    "end_time": "2025-08-08T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_220",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-09T18:00:00.000Z",
+    "end_time": "2025-08-09T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_223",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-12T18:00:00.000Z",
+    "end_time": "2025-08-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_224",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-13T18:00:00.000Z",
+    "end_time": "2025-08-13T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_225",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-14T09:00:00.000Z",
+    "end_time": "2025-08-14T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_226",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-15T09:00:00.000Z",
+    "end_time": "2025-08-15T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_229",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-18T18:00:00.000Z",
+    "end_time": "2025-08-18T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_229",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-18T09:00:00.000Z",
+    "end_time": "2025-08-18T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_230",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-19T09:00:00.000Z",
+    "end_time": "2025-08-19T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_232",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-21T09:00:00.000Z",
+    "end_time": "2025-08-21T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_233",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-22T18:00:00.000Z",
+    "end_time": "2025-08-22T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_233",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-22T09:00:00.000Z",
+    "end_time": "2025-08-22T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_234",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-08-23T18:00:00.000Z",
+    "end_time": "2025-08-23T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_236",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-25T09:00:00.000Z",
+    "end_time": "2025-08-25T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_240",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-08-29T09:00:00.000Z",
+    "end_time": "2025-08-29T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_243",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-01T09:00:00.000Z",
+    "end_time": "2025-09-01T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_244",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-02T09:00:00.000Z",
+    "end_time": "2025-09-02T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_245",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-03T09:00:00.000Z",
+    "end_time": "2025-09-03T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_246",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-04T18:00:00.000Z",
+    "end_time": "2025-09-04T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_248",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-06T18:00:00.000Z",
+    "end_time": "2025-09-06T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_250",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-08T18:00:00.000Z",
+    "end_time": "2025-09-08T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_251",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-09T09:00:00.000Z",
+    "end_time": "2025-09-09T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_253",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-11T09:00:00.000Z",
+    "end_time": "2025-09-11T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_254",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-12T18:00:00.000Z",
+    "end_time": "2025-09-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_255",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-13T18:00:00.000Z",
+    "end_time": "2025-09-13T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_257",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-15T09:00:00.000Z",
+    "end_time": "2025-09-15T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_258",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-16T09:00:00.000Z",
+    "end_time": "2025-09-16T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_259",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-17T09:00:00.000Z",
+    "end_time": "2025-09-17T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_260",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-18T18:00:00.000Z",
+    "end_time": "2025-09-18T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_261",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-19T18:00:00.000Z",
+    "end_time": "2025-09-19T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_264",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-22T18:00:00.000Z",
+    "end_time": "2025-09-22T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_264",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-22T09:00:00.000Z",
+    "end_time": "2025-09-22T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_265",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-23T18:00:00.000Z",
+    "end_time": "2025-09-23T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_265",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-23T09:00:00.000Z",
+    "end_time": "2025-09-23T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_266",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-24T18:00:00.000Z",
+    "end_time": "2025-09-24T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_267",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-25T18:00:00.000Z",
+    "end_time": "2025-09-25T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_268",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-09-26T09:00:00.000Z",
+    "end_time": "2025-09-26T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_270",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-28T18:00:00.000Z",
+    "end_time": "2025-09-28T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_272",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-09-30T18:00:00.000Z",
+    "end_time": "2025-09-30T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_273",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-01T09:00:00.000Z",
+    "end_time": "2025-10-01T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_274",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-02T18:00:00.000Z",
+    "end_time": "2025-10-02T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_274",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-02T09:00:00.000Z",
+    "end_time": "2025-10-02T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_275",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-03T18:00:00.000Z",
+    "end_time": "2025-10-03T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_275",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-03T09:00:00.000Z",
+    "end_time": "2025-10-03T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_279",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-07T09:00:00.000Z",
+    "end_time": "2025-10-07T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_280",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-08T18:00:00.000Z",
+    "end_time": "2025-10-08T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_280",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-08T09:00:00.000Z",
+    "end_time": "2025-10-08T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_281",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-09T09:00:00.000Z",
+    "end_time": "2025-10-09T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_282",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-10T18:00:00.000Z",
+    "end_time": "2025-10-10T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_282",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-10T09:00:00.000Z",
+    "end_time": "2025-10-10T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_284",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-12T18:00:00.000Z",
+    "end_time": "2025-10-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_285",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-13T18:00:00.000Z",
+    "end_time": "2025-10-13T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_285",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-13T09:00:00.000Z",
+    "end_time": "2025-10-13T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_289",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-17T09:00:00.000Z",
+    "end_time": "2025-10-17T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_290",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-18T18:00:00.000Z",
+    "end_time": "2025-10-18T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_291",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-19T18:00:00.000Z",
+    "end_time": "2025-10-19T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_293",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-21T18:00:00.000Z",
+    "end_time": "2025-10-21T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_294",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-22T09:00:00.000Z",
+    "end_time": "2025-10-22T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_295",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-23T18:00:00.000Z",
+    "end_time": "2025-10-23T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_296",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-24T18:00:00.000Z",
+    "end_time": "2025-10-24T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_296",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-24T09:00:00.000Z",
+    "end_time": "2025-10-24T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_298",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-10-26T18:00:00.000Z",
+    "end_time": "2025-10-26T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_301",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-10-29T09:00:00.000Z",
+    "end_time": "2025-10-29T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_306",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-03T18:00:00.000Z",
+    "end_time": "2025-11-03T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_306",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-11-03T09:00:00.000Z",
+    "end_time": "2025-11-03T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_307",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-04T18:00:00.000Z",
+    "end_time": "2025-11-04T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_307",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-11-04T09:00:00.000Z",
+    "end_time": "2025-11-04T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_308",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-11-05T09:00:00.000Z",
+    "end_time": "2025-11-05T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_311",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-08T18:00:00.000Z",
+    "end_time": "2025-11-08T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_312",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-09T18:00:00.000Z",
+    "end_time": "2025-11-09T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_314",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-11T18:00:00.000Z",
+    "end_time": "2025-11-11T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_314",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-11-11T09:00:00.000Z",
+    "end_time": "2025-11-11T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_315",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-12T18:00:00.000Z",
+    "end_time": "2025-11-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_316",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-13T18:00:00.000Z",
+    "end_time": "2025-11-13T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_317",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-11-14T09:00:00.000Z",
+    "end_time": "2025-11-14T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_318",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-15T18:00:00.000Z",
+    "end_time": "2025-11-15T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_320",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-17T18:00:00.000Z",
+    "end_time": "2025-11-17T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_321",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-11-18T09:00:00.000Z",
+    "end_time": "2025-11-18T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_322",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-19T18:00:00.000Z",
+    "end_time": "2025-11-19T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_322",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-11-19T09:00:00.000Z",
+    "end_time": "2025-11-19T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_323",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-20T18:00:00.000Z",
+    "end_time": "2025-11-20T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_324",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-21T18:00:00.000Z",
+    "end_time": "2025-11-21T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_327",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-24T18:00:00.000Z",
+    "end_time": "2025-11-24T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_328",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-25T18:00:00.000Z",
+    "end_time": "2025-11-25T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_328",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-11-25T09:00:00.000Z",
+    "end_time": "2025-11-25T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_332",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-11-29T18:00:00.000Z",
+    "end_time": "2025-11-29T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_334",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-01T18:00:00.000Z",
+    "end_time": "2025-12-01T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_334",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-01T09:00:00.000Z",
+    "end_time": "2025-12-01T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_335",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-02T18:00:00.000Z",
+    "end_time": "2025-12-02T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_335",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-02T09:00:00.000Z",
+    "end_time": "2025-12-02T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_337",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-04T09:00:00.000Z",
+    "end_time": "2025-12-04T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_339",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-06T18:00:00.000Z",
+    "end_time": "2025-12-06T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_340",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-07T18:00:00.000Z",
+    "end_time": "2025-12-07T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_341",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-08T18:00:00.000Z",
+    "end_time": "2025-12-08T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_341",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-08T09:00:00.000Z",
+    "end_time": "2025-12-08T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_342",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-09T09:00:00.000Z",
+    "end_time": "2025-12-09T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_344",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-11T18:00:00.000Z",
+    "end_time": "2025-12-11T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_344",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-11T09:00:00.000Z",
+    "end_time": "2025-12-11T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_345",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-12T18:00:00.000Z",
+    "end_time": "2025-12-12T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_347",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-14T18:00:00.000Z",
+    "end_time": "2025-12-14T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_348",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-15T18:00:00.000Z",
+    "end_time": "2025-12-15T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_349",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-16T09:00:00.000Z",
+    "end_time": "2025-12-16T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_350",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-17T18:00:00.000Z",
+    "end_time": "2025-12-17T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_350",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-17T09:00:00.000Z",
+    "end_time": "2025-12-17T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_351",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-18T09:00:00.000Z",
+    "end_time": "2025-12-18T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_354",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-21T18:00:00.000Z",
+    "end_time": "2025-12-21T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_gym_355",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-22T18:00:00.000Z",
+    "end_time": "2025-12-22T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_355",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-22T09:00:00.000Z",
+    "end_time": "2025-12-22T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_356",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-23T09:00:00.000Z",
+    "end_time": "2025-12-23T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_fw_359",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-26T09:00:00.000Z",
+    "end_time": "2025-12-26T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_362",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-29T18:00:00.000Z",
+    "end_time": "2025-12-29T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_362",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-29T09:00:00.000Z",
+    "end_time": "2025-12-29T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_363",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-30T18:00:00.000Z",
+    "end_time": "2025-12-30T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_363",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-30T09:00:00.000Z",
+    "end_time": "2025-12-30T12:00:00.000Z",
+    "system_type": "cognitive"
+  },
+  {
+    "id": "cal_gym_364",
+    "user_id": "mock_user",
+    "title": "Workout",
+    "start_time": "2025-12-31T18:00:00.000Z",
+    "end_time": "2025-12-31T19:30:00.000Z",
+    "system_type": "physical"
+  },
+  {
+    "id": "cal_fw_364",
+    "user_id": "mock_user",
+    "title": "Focus Block",
+    "start_time": "2025-12-31T09:00:00.000Z",
+    "end_time": "2025-12-31T12:00:00.000Z",
+    "system_type": "cognitive"
+  }
+]

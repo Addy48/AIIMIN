@@ -12,14 +12,9 @@ import { pool, getIntegrationStatus } from '../lib/googleClient.js';
 import { encrypt } from '../lib/crypto.js';
 import { logOAuthEvent } from '../lib/oauthLogger.js';
 import { requireAuth } from '../middleware/auth.js';
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '../supabase.js';
 
 const router = express.Router();
-
-const supabaseAdmin = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 // S2: OAuth state now persisted in DB (survives container restarts)
 const STATE_TTL_MS = 10 * 60 * 1000;
