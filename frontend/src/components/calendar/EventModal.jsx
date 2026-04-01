@@ -65,13 +65,30 @@ const EventModal = ({ isOpen, onClose, onSave, event = null }) => {
     return (
         <div onClick={onClose} style={{
             position: 'fixed', inset: 0, zIndex: 10000,
-            background: 'rgba(0,0,0,0.6)', display: 'flex',
+            background: 'var(--bg-primary)', display: 'flex',
             alignItems: 'center', justifyContent: 'center',
-            backdropFilter: 'blur(4px)'
         }}>
+            {/* Background decoration matching Login/Dashboard */}
+            <div style={{
+                position: 'absolute', pointerEvents: 'none', zIndex: 0,
+                width: '600px', height: '600px', borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(194,120,20,0.06) 0%, transparent 70%)',
+                top: '-200px', right: '-200px', filter: 'blur(60px)'
+            }}></div>
+            <div style={{
+                position: 'absolute', pointerEvents: 'none', zIndex: 0,
+                width: '500px', height: '500px', borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(224,92,42,0.04) 0%, transparent 70%)',
+                bottom: '-150px', left: '-150px', filter: 'blur(50px)'
+            }}></div>
+
             <div onClick={e => e.stopPropagation()} className="glass-panel" style={{
                 width: '640px', maxHeight: '85vh', overflow: 'auto',
-                borderRadius: '20px', padding: '32px',
+                borderRadius: '24px', padding: '40px',
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--bg-card)',
+                boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.02)',
+                position: 'relative', zIndex: 1
             }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>
@@ -101,14 +118,16 @@ const EventModal = ({ isOpen, onClose, onSave, event = null }) => {
 
                     {/* Row 2: Life System */}
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <label style={labelStyle}>Life System</label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-2)', cursor: 'pointer', marginBottom: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: form.all_day ? '6px' : '0' }}>
+                            <label style={{ ...labelStyle, marginBottom: 0 }}>Life System</label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-2)', cursor: 'pointer' }}>
                                 <input type="checkbox" checked={form.all_day} onChange={e => setForm(f => ({ ...f, all_day: e.target.checked }))} />
                                 All day event
                             </label>
                         </div>
-                        <EventTagSelector value={form.system_type} onChange={v => setForm(f => ({ ...f, system_type: v }))} />
+                        {form.all_day && (
+                            <EventTagSelector value={form.system_type} onChange={v => setForm(f => ({ ...f, system_type: v }))} />
+                        )}
                     </div>
 
                     {/* Row 3: Location */}
