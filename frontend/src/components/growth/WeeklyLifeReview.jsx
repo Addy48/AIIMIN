@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { apiGet } from '../../utils/api';
 import { useAuth } from '../../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
-const WeeklyLifeReview = ({ reviewOverride = null }) => {
+const WeeklyLifeReview = ({ reviewOverride = null, onDismiss }) => {
     const { session } = useAuth();
+    const navigate = useNavigate();
     const [review, setReview] = useState(null);
     const [loading, setLoading] = useState(!reviewOverride);
 
@@ -102,10 +104,17 @@ const WeeklyLifeReview = ({ reviewOverride = null }) => {
             </div>
 
             <div style={{ marginTop: '24px', display: 'flex', gap: '8px' }}>
-                <button className="btn-primary" style={{ padding: '8px 16px', fontSize: '11px', borderRadius: '8px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}>
+                <button
+                    onClick={() => navigate('/reports')}
+                    className="btn-primary"
+                    style={{ padding: '8px 16px', fontSize: '11px', borderRadius: '8px', background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+                >
                     View Full 12-Page Report
                 </button>
-                <button style={{ padding: '8px 16px', fontSize: '11px', borderRadius: '8px', background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border)', fontWeight: 700, cursor: 'pointer' }}>
+                <button
+                    onClick={onDismiss}
+                    style={{ padding: '8px 16px', fontSize: '11px', borderRadius: '8px', background: 'transparent', color: 'var(--text-2)', border: '1px solid var(--border)', fontWeight: 700, cursor: 'pointer' }}
+                >
                     Dismiss
                 </button>
             </div>
