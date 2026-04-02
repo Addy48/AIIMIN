@@ -65,7 +65,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],  // inline styles needed for React
             imgSrc: ["'self'", 'data:', 'https://lh3.googleusercontent.com', 'https://i.ytimg.com'],
             frameSrc: ['https://www.youtube.com'],    // YouTube embeds
-            connectSrc: ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL, 'http://localhost:5000', 'https://api.aiimin.in'],
+            connectSrc: ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL, 'http://localhost:5000', 'http://127.0.0.1:5000', 'https://api.aiimin.in'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             objectSrc: ["'none'"],
         },
@@ -86,7 +86,7 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, cb) => {
-        if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+        if (!origin || process.env.NODE_ENV !== 'production' || allowedOrigins.includes(origin)) cb(null, true);
         else cb(null, allowedOrigins[0]);
     },
     credentials: true,
@@ -160,8 +160,8 @@ app.use((req, res) => {
 app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[BOOT SUCCESS] AIIMIN Backend v2.1.0 cleanly bound to port ${PORT} on 0.0.0.0`);
+const server = app.listen(PORT, () => {
+    console.log(`[BOOT SUCCESS] AIIMIN Backend v2.1.0 cleanly bound to port ${PORT}`);
     logger.info(`AIIMIN Backend v2.1.0 running on port ${PORT}`, {
         env: process.env.NODE_ENV || 'development',
         port: PORT,
