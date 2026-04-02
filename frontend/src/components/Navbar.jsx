@@ -56,8 +56,10 @@ const Navbar = ({ user }) => {
 
                 {/* ── LEFT: Logo + Pulse Orb + Date ── */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                    <Link to="/overview" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+                    <Link to="/brand" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                         <LogoContainer size={26} />
+                    </Link>
+                    <Link to="/overview" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                         <span style={{
                             fontSize: '14px',
                             fontWeight: 800,
