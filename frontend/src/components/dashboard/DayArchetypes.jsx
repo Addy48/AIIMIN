@@ -75,8 +75,17 @@ const DayArchetypes = ({ logs = [], archetypes: archetypeData = null }) => {
         <div className="glass-panel" style={{ padding: '24px', borderRadius: 'var(--r-lg)' }}>
             <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '16px' }}>Macro State: Day Archetypes</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                {archetypes.map(arc => (
-                    <div key={arc.label} style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: 'var(--bg-card)', padding: '14px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                {archetypes.map((arc, index) => (
+                    <div key={arc.label} style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px',
+                        background: 'var(--bg-card)',
+                        padding: '14px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border)',
+                        gridColumn: index === archetypes.length - 1 ? 'span 2' : 'auto'
+                    }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <div style={{ fontSize: '20px' }}>{arc.icon}</div>
                             <div style={{ fontSize: '24px', fontWeight: 800, color: arc.color }}>{arc.count}</div>

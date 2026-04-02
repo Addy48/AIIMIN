@@ -237,7 +237,7 @@ export function InsightsSection({ lhsData, reportData, recentLogs, showReview, o
                                 </div>
                             </div>
                         ) : (
-                            <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>No peak day recorded yet.</div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-3)' }}>Your peak day will appear once consistent data is logged.</div>
                         )}
                     </div>
                 </div>
