@@ -42,9 +42,8 @@ if (missingEnvVars.length > 0) {
 
 const app = express();
 
-// ─── Trust Railway's reverse proxy (fixes express-rate-limit ERR_ERL_UNEXPECTED_X_FORWARDED_FOR)
-app.set('trust proxy', true);
-console.log('[CONFIG] Proxy trust enabled:', app.get('trust proxy'));
+// ─── Trust Nginx reverse proxy (1 = trust exactly one proxy hop)
+app.set('trust proxy', 1);
 
 // ─── Fast Health Check (Top Level) ────────────────────────────
 app.use('/', healthRoutes);
@@ -150,7 +149,7 @@ app.use((req, res) => {
 // ─── Global error handler ─────────────────────────────────────
 app.use(globalErrorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
     console.log(`[BOOT SUCCESS] AIIMIN Backend v2.1.0 cleanly bound to port ${PORT}`);
     logger.info(`AIIMIN Backend v2.1.0 running on port ${PORT}`, {
