@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 
 // Eagerly loaded Auth & public pages
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
-import Brand from './pages/Brand';
 import Privacy from './pages/legal/Privacy';
 import Terms from './pages/legal/Terms';
 import DataDeletion from './pages/legal/DataDeletion';
@@ -19,174 +18,117 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { MockDataProvider } from './providers/MockDataProvider';
 import ErrorBoundary from './components/system/ErrorBoundary';
-import './App.css';
 
 // Lazy-loaded Dashboard routes
-const Overview = React.lazy(() => import('./pages/Overview'));
-const Systems = React.lazy(() => import('./pages/Systems'));
-const Physical = React.lazy(() => import('./pages/systems/Physical'));
-const Cognitive = React.lazy(() => import('./pages/systems/Cognitive'));
-const Behavior = React.lazy(() => import('./pages/systems/Behavior'));
-const Reflection = React.lazy(() => import('./pages/systems/Reflection'));
-const Insights = React.lazy(() => import('./pages/Insights'));
+const Overview    = React.lazy(() => import('./pages/Overview'));
+const Insights    = React.lazy(() => import('./pages/Insights'));
 const CalendarPage = React.lazy(() => import('./pages/CalendarPage'));
-const ReportsPage = React.lazy(() => import('./pages/Reports'));
-const Finance = React.lazy(() => import('./pages/Finance'));
-const Settings = React.lazy(() => import('./pages/Settings'));
+const ReportsPage  = React.lazy(() => import('./pages/Reports'));
+const Finance     = React.lazy(() => import('./pages/Finance'));
+const Settings    = React.lazy(() => import('./pages/Settings'));
 
-// /systems always redirects to the first sub-route
-const LazySystemsIndex = () => <Navigate to="/systems/physical" replace />;
-
-/* ── Suspense fallback ─────────────────────────────────────────────────── */
-const Fallback = () => <div className="glass-panel" style={{ minHeight: '100vh' }} />;
-
-/* ── Footer ────────────────────────────────────────────────────────────── */
-const Footer = () => (
-  <footer style={{
-    padding: '60px 20px 40px',
-    background: 'transparent',
-    textAlign: 'center',
-    marginTop: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '20px',
-  }}>
-    <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
-      Built for behavioral clarity. Designed for control.
-    </p>
-    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-      <Link to="/privacy" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Privacy Policy</Link>
-      <Link to="/terms" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Terms of Service</Link>
-      <Link to="/data-deletion" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Data Deletion</Link>
-      <Link to="/security" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Security</Link>
-      <Link to="/about" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>About</Link>
-      <Link to="/contact" style={{ fontSize: '12px', color: 'var(--text-3)', textDecoration: 'none' }}>Contact</Link>
-    </div>
-  </footer>
+/* ── Suspense fallback ────────────────────────────────────────────────── */
+const Fallback = () => (
+  <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="spinner" />
+  </div>
 );
+const Lazy = ({ children }) => <React.Suspense fallback={<Fallback />}>{children}</React.Suspense>;
 
-/* ── Root App ──────────────────────────────────────────────────────────── */
+/* ── Root App ─────────────────────────────────────────────────────── */
 function App() {
   return (
     <ErrorBoundary label="Application">
-      <ThemeProvider>
-        <AuthProvider>
-          <MockDataProvider>
-            <BrowserRouter>
-              <AuthedApp />
-            </BrowserRouter>
-          </MockDataProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AuthedApp />
+        </BrowserRouter>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }
 
-/* ── Auth gate (shows spinner while session resolves) ──────────────────── */
 function AuthedApp() {
   const { user, loading } = useAuth();
-
-  useEffect(() => {
-    // Theme controlled via CSS variables + data-theme attribute elsewhere
-  }, [user, loading]);
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{
-          width: '32px', height: '32px', borderRadius: '50%',
-          border: '3px solid var(--border)',
-          borderTopColor: 'var(--accent)',
-          animation: 'spin 0.8s linear infinite',
-        }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
-  }
-
+  if (loading) return <Fallback />;
   return <AppContent user={user} />;
 }
 
-/* ── Route tree ────────────────────────────────────────────────────────── */
 function AppContent({ user }) {
   const location = useLocation();
   const isMobile = location.pathname === '/m';
 
-  useEffect(() => {
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (!viewportMeta) return;
-
-    const defaultViewport = 'width=device-width, initial-scale=1, viewport-fit=cover';
-    const mobileLockedViewport = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
-
-    viewportMeta.setAttribute('content', isMobile ? mobileLockedViewport : defaultViewport);
-
+  React.useEffect(() => {
+    const meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) return;
+    const defaultVP = 'width=device-width, initial-scale=1, viewport-fit=cover';
+    const mobileVP  = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+    meta.setAttribute('content', isMobile ? mobileVP : defaultVP);
     if (isMobile) {
-      const blockGesture = (e) => e.preventDefault();
-      const blockPinch = (e) => { if (e.touches && e.touches.length > 1) e.preventDefault(); };
-      document.addEventListener('gesturestart', blockGesture, { passive: false });
-      document.addEventListener('gesturechange', blockGesture, { passive: false });
-      document.addEventListener('touchmove', blockPinch, { passive: false });
-      return () => {
-        viewportMeta.setAttribute('content', defaultViewport);
-        document.removeEventListener('gesturestart', blockGesture);
-        document.removeEventListener('gesturechange', blockGesture);
-        document.removeEventListener('touchmove', blockPinch);
-      };
+      const block = (e) => { if (e.touches?.length > 1) e.preventDefault(); };
+      document.addEventListener('touchmove', block, { passive: false });
+      return () => { meta.setAttribute('content', defaultVP); document.removeEventListener('touchmove', block); };
     }
-
-    return () => { viewportMeta.setAttribute('content', defaultViewport); };
+    return () => meta.setAttribute('content', defaultVP);
   }, [isMobile]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-base)' }}>
       <Routes>
 
-        {/* ── Public / Auth ── */}
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/overview" />} />
+        {/* ── Auth ── */}
+        <Route path="/login"         element={!user ? <Login /> : <Navigate to="/overview" replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/" element={user ? <Navigate to="/overview" replace /> : <Navigate to="/login" />} />
+        <Route path="/"              element={<Navigate to={user ? '/overview' : '/login'} replace />} />
 
         {/* ── Authenticated shell ── */}
-        <Route element={user ? <DashboardLayout user={user} /> : <Navigate to="/login" />}>
-
-          <Route path="/overview" element={<React.Suspense fallback={<Fallback />}><Overview user={user} /></React.Suspense>} />
-
-          <Route path="/systems" element={<React.Suspense fallback={<Fallback />}><Systems /></React.Suspense>}>
-            <Route index element={<LazySystemsIndex />} />
-            <Route path="physical" element={<React.Suspense fallback={<Fallback />}><Physical /></React.Suspense>} />
-            <Route path="cognitive" element={<React.Suspense fallback={<Fallback />}><Cognitive /></React.Suspense>} />
-            <Route path="behavior" element={<React.Suspense fallback={<Fallback />}><Behavior /></React.Suspense>} />
-            <Route path="reflection" element={<React.Suspense fallback={<Fallback />}><Reflection /></React.Suspense>} />
-          </Route>
-
-          <Route path="/insights" element={<React.Suspense fallback={<Fallback />}><Insights /></React.Suspense>} />
-          <Route path="/calendar" element={<React.Suspense fallback={<Fallback />}><CalendarPage /></React.Suspense>} />
-          <Route path="/reports" element={<React.Suspense fallback={<Fallback />}><ReportsPage /></React.Suspense>} />
-          <Route path="/finance" element={<React.Suspense fallback={<Fallback />}><Finance /></React.Suspense>} />
-          <Route path="/settings" element={<React.Suspense fallback={<Fallback />}><Settings /></React.Suspense>} />
-
+        <Route element={user ? <DashboardLayout user={user} /> : <Navigate to="/login" replace />}>
+          <Route path="/overview" element={<Lazy><Overview user={user} /></Lazy>} />
+          <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
+          <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
+          <Route path="/reports"  element={<Lazy><ReportsPage /></Lazy>} />
+          <Route path="/finance"  element={<Lazy><Finance /></Lazy>} />
+          <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}
-        <Route path="/m" element={user ? <MobileApp user={user} /> : <Navigate to="/login" />} />
+        <Route path="/m" element={user ? <MobileApp user={user} /> : <Navigate to="/login" replace />} />
 
-        {/* ── Public pages ── */}
-        <Route path="/brand" element={<Brand />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
+        {/* ── Public legal ── */}
+        <Route path="/privacy"       element={<Privacy />} />
+        <Route path="/terms"         element={<Terms />} />
         <Route path="/data-deletion" element={<DataDeletion />} />
-        <Route path="/security" element={<Security />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/security"      element={<Security />} />
+        <Route path="/about"         element={<About />} />
+        <Route path="/contact"       element={<Contact />} />
+
+        {/* ── 404 ── */}
+        <Route path="*" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
 
       </Routes>
 
-      {!isMobile && <Footer />}
+      {!isMobile && (
+        <footer style={{
+          padding: '32px 24px',
+          background: 'var(--color-surface)',
+          borderTop: '1px solid var(--color-border)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '12px',
+        }}>
+          <span style={{ font: '500 10px/1 var(--font-mono)', color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            AIIMIN — Personal OS
+          </span>
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            {[['/privacy','Privacy'],['/terms','Terms'],['/data-deletion','Data Deletion'],['/security','Security'],['/about','About']].map(([to,label]) => (
+              <Link key={to} to={to} style={{ font: '300 12px/1 var(--font-sans)', color: 'var(--color-text-3)', textDecoration: 'none' }}>{label}</Link>
+            ))}
+          </div>
+        </footer>
+      )}
     </div>
   );
 }

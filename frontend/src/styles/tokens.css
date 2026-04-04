@@ -1,0 +1,109 @@
+/*
+ * AIIMIN Design Tokens — Single Source of Truth
+ * LOCKED. Do not add colors, fonts, or sizes not defined here.
+ * Every component derives from these variables.
+ *
+ * Rules:
+ *  - --color-hero: max 5 uses per screen (Daily Score, Sleep, Steps, Net Worth, Mood)
+ *  - --color-accent: ONLY progress bars, active states, alerts, checked states
+ *  - No gradients. No shadows except --shadow-focus. No border-radius > 8px (modals only).
+ *  - Fonts: DM Sans + DM Mono ONLY. Weights: 300, 400, 500.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400;500&display=swap');
+
+:root {
+  /* ─── Color Palette ─────────────────────────────── */
+  --color-base:       #0C0E0B;   /* page background */
+  --color-surface:    #141614;   /* cards, tiles, nav */
+  --color-elevated:   #1C1E1A;   /* modals, hover state */
+  --color-border:     #242623;   /* subtle border */
+
+  --color-text-1:     #F0EBE1;   /* body text primary */
+  --color-text-2:     #8A8780;   /* labels, subtext */
+  --color-text-3:     #4A4845;   /* disabled, placeholder */
+
+  --color-accent:     #2BA89F;   /* teal — progress/active/alerts ONLY */
+  --color-accent-dim: rgba(43,168,159,0.10); /* teal 10% — completed fill bg */
+  --color-hero:       #E8DCC8;   /* cream — hero numbers ONLY, max 5/screen */
+
+  --color-alert-red:  #E05A5A;   /* left border on critical alerts */
+  --color-gym:        #E05A5A;   /* metric tile: gym */
+  --color-steps:      #5A9AE0;   /* metric tile: steps */
+  --color-water:      #5ABCE0;   /* metric tile: water */
+  --color-sleep:      #2BA89F;   /* metric tile: sleep = accent */
+
+  /* ─── Typography ────────────────────────────────── */
+  --font-sans:        'DM Sans', system-ui, sans-serif;
+  --font-mono:        'DM Mono', 'SF Mono', monospace;
+
+  /* Text styles — do not mix outside these presets */
+  --text-hero:        300 56px/1 var(--font-sans);      /* Score, Sleep, Net Worth */
+  --text-metric:      300 28px/1 var(--font-sans);      /* Steps: 12,482 */
+  --text-heading:     500 16px/1.4 var(--font-sans);    /* section titles */
+  --text-body:        300 13px/1.6 var(--font-sans);    /* default */
+  --text-label:       500 10px/1 var(--font-mono);      /* UPPERCASE labels */
+  --text-subtext:     300 11px/1.5 var(--font-sans);    /* secondary context */
+
+  /* ─── Spacing Scale ─────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  40px;
+  --space-8:  48px;
+  --space-9:  64px;
+
+  /* ─── Component Geometry ────────────────────────── */
+  --radius-none:   0px;
+  --radius-modal:  8px;          /* ONLY modals */
+  --radius-pill:   9999px;       /* tags, badges */
+
+  --border-accent: 2px solid;    /* metric tile left border */
+  --border-alert:  3px solid;    /* status alert left border */
+
+  /* ─── Layout ────────────────────────────────────── */
+  --nav-height:     60px;        /* web header */
+  --nav-height-mob: 44px;        /* mobile topbar */
+  --sidebar-width:  210px;
+  --tab-bar-height: 56px;
+  --content-max:    1280px;
+  --content-pad:    24px;
+
+  /* ─── Component Heights ─────────────────────────── */
+  --card-hero:    120px;
+  --card-tile:    100px;
+  --row-task:      48px;
+  --circle-habit:  48px;
+  --alert-height:  60px;
+
+  /* ─── Animation Tokens ──────────────────────────── */
+  --dur-fast:     120ms;
+  --dur-normal:   150ms;
+  --dur-enter:    200ms;
+  --dur-feedback: 300ms;
+  --dur-progress: 350ms;
+  --dur-hero:    1200ms;
+  --ease:         cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* ─── Focus / Accessibility ─────────────────────── */
+  --shadow-focus: 0 0 0 2px var(--color-accent);
+
+  /* ─── Aliases (matches old var names used in existing code) ──── */
+  --bg-primary:   var(--color-base);
+  --bg-card:      var(--color-surface);
+  --bg-elevated:  var(--color-elevated);
+  --bg-surface:   var(--color-surface);
+  --accent:       var(--color-accent);
+  --accent-dim:   var(--color-accent-dim);
+  --text-1:       var(--color-text-1);
+  --text-2:       var(--color-text-2);
+  --text-3:       var(--color-text-3);
+  --border:       var(--color-border);
+  --success:      var(--color-accent);
+  --max-width:    var(--content-max);
+  --container-px: var(--content-pad);
+  --section-gap:  var(--space-6);
+}
