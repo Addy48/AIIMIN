@@ -1,279 +1,235 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import useAuth from '../hooks/useAuth';
-import Logo from '../components/Logo';
+
+/*
+ * Login — Flat, dark, minimal.
+ * No gradients. No decorative circles. No glassmorphism.
+ * Design spec: #0C0E0B bg, #141614 card, DM Mono brand, teal CTA.
+ */
+
+/* Alias map: shorthand → real email */
+const ALIASES = {
+  'au48':           'aadityaupadhyay10@gmail.com',
+  'au4803':         'aadityaupadhyay10@gmail.com',
+  'adi':            'aadityaupadhyay10@gmail.com',
+};
+
+const resolveEmail = (raw) => {
+  const key = raw.trim().toLowerCase();
+  return ALIASES[key] || key;
+};
 
 const Login = () => {
-    const { signUpWithEmail, signInWithEmail } = useAuth();
-    const [mode, setMode] = useState('login'); // 'login' or 'signup'
-    const [email, setEmail] = useState('AU4803');
-    const [password, setPassword] = useState('');
-    const [fullName, setFullName] = useState('');
-    const [username, setUsername] = useState('');
-    const [usernameError, setUsernameError] = useState(null);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+  const { signInWithEmail, signUpWithEmail } = useAuth();
+  const [mode, setMode]           = useState('login');
+  const [email, setEmail]         = useState('');
+  const [password, setPassword]   = useState('');
+  const [fullName, setFullName]   = useState('');
+  const [showPw, setShowPw]       = useState(false);
+  const [error, setError]         = useState(null);
+  const [loading, setLoading]     = useState(false);
 
-    useEffect(() => {
-        const prevTheme = localStorage.getItem('aiimin-theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.classList.remove('dark');
-        document.documentElement.style.backgroundColor = '#f5f0e8';
-        document.body.style.backgroundColor = '#f5f0e8';
-        return () => {
-            // Restore user's saved theme when leaving login
-            document.documentElement.setAttribute('data-theme', prevTheme);
-            if (prevTheme === 'dark') document.documentElement.classList.add('dark');
-            document.documentElement.style.removeProperty('background-color');
-            document.body.style.removeProperty('background-color');
-        };
-    }, []);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
-    const handleEmailSubmit = async (e) => {
-        e.preventDefault();
-        setError(null);
-        setLoading(true);
+    try {
+      const resolvedEmail = resolveEmail(email);
 
-        const cleanEmail = email.trim().toLowerCase();
+      if (mode === 'signup') {
+        await signUpWithEmail(resolvedEmail, password, fullName, fullName.split(' ')[0].toLowerCase());
+      } else {
+        await signInWithEmail(resolvedEmail, password);
+      }
+    } catch (err) {
+      setError(err.message || 'Authentication failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        let finalEmail = cleanEmail;
-        if (cleanEmail === 'au48' || cleanEmail === 'au48@gmail.com') {
-            finalEmail = 'aadityaupadhyay10@gmail.com';
-        }
+  const inputBase = {
+    width: '100%',
+    height: '44px',
+    background: 'var(--color-elevated)',
+    border: '1px solid var(--color-border)',
+    borderRadius: '0',
+    color: 'var(--color-text-1)',
+    font: 'var(--text-body)',
+    fontFamily: 'var(--font-sans)',
+    padding: '0 14px',
+    outline: 'none',
+    transition: `border-color var(--dur-enter) var(--ease)`,
+  };
 
-        try {
-            if (mode === 'signup') {
-                // Final validation check
-                const usernameRegex = /^[A-Za-z0-9@+-_]{3,}$/;
-                if (!usernameRegex.test(username)) {
-                    setError("Username does not meet security requirements.");
-                    setLoading(false);
-                    return;
-                }
-                await signUpWithEmail(finalEmail, password, fullName, username);
-                setError("Account created! Redirecting...");
-            } else {
-                await signInWithEmail(finalEmail, password);
-            }
-        } catch (err) {
-            setError(err.message || 'An error occurred.');
-        } finally {
-            setLoading(false);
-        }
-    };
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--color-base)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'var(--font-sans)',
+    }}>
+      <div style={{
+        width: '360px',
+        background: 'var(--color-surface)',
+        borderTop: '1px solid var(--color-border)',
+        borderBottom: '1px solid var(--color-border)',
+        padding: '48px 40px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0',
+      }}>
 
-    const inputStyle = {
-        width: '100%',
-        padding: '14px 16px',
-        fontSize: '15px',
-        backgroundColor: 'var(--bg-secondary)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        color: 'var(--text-1)',
-        outline: 'none',
-        marginBottom: '16px',
-        transition: 'all 0.2s ease',
-    };
-
-    return (
-        <div style={{
-            minHeight: '100vh',
-            backgroundColor: 'var(--bg-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-            fontFamily: 'inherit'
-        }}>
-
-            {/* Background decoration */}
-            <div style={{
-                position: 'absolute', pointerEvents: 'none', zIndex: 0,
-                width: '500px', height: '500px', borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(194,120,20,0.08) 0%, transparent 70%)',
-                top: '-150px', right: '-150px', filter: 'blur(60px)'
-            }}></div>
-            <div style={{
-                position: 'absolute', pointerEvents: 'none', zIndex: 0,
-                width: '400px', height: '400px', borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(224,92,42,0.06) 0%, transparent 70%)',
-                bottom: '-100px', left: '-100px', filter: 'blur(50px)'
-            }}></div>
-
-            {/* Subtle decorative circles */}
-            <div style={{ position: 'absolute', borderRadius: '50%', border: '1px solid rgba(194,120,20,0.08)', pointerEvents: 'none', width: '300px', height: '300px', top: '10%', right: '5%' }}></div>
-            <div style={{ position: 'absolute', borderRadius: '50%', border: '1px solid rgba(194,120,20,0.08)', pointerEvents: 'none', width: '200px', height: '200px', top: '30%', right: '15%' }}></div>
-            <div style={{ position: 'absolute', borderRadius: '50%', border: '1px solid rgba(194,120,20,0.08)', pointerEvents: 'none', width: '150px', height: '150px', top: '20%', right: '20%' }}></div>
-
-            {/* Center card */}
-            <div style={{
-                zIndex: 1, position: 'relative',
-                maxWidth: '420px', width: 'calc(100% - 40px)',
-                backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
-                borderRadius: '24px', padding: '52px 44px',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center'
-            }}>
-
-                <div style={{ marginBottom: '16px' }}>
-                    <Logo size={64} />
-                </div>
-
-                <span style={{
-                    display: 'inline-block', fontSize: '11px', fontWeight: 600,
-                    color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em',
-                    marginBottom: '12px', padding: '4px 10px',
-                    background: 'rgba(194,120,20,0.08)', borderRadius: '99px'
-                }}>
-                    Personal Life OS
-                </span>
-
-                <span style={{
-                    fontSize: '40px', fontWeight: 900,
-                    background: 'var(--gradient-1)',
-                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text', letterSpacing: '-2px',
-                    display: 'block', marginBottom: '32px'
-                }}>
-                    AIIMIN
-                </span>
-
-                {/* Tabs */}
-                <div style={{ display: 'flex', width: '100%', marginBottom: '24px', background: 'rgba(0,0,0,0.03)', borderRadius: '12px', padding: '4px' }}>
-                    <button
-                        onClick={() => { setMode('login'); setError(null); }}
-                        style={{
-                            flex: 1, padding: '10px 0', fontSize: '14px', fontWeight: 600, borderRadius: '8px',
-                            background: mode === 'login' ? 'var(--bg-card)' : 'transparent',
-                            color: mode === 'login' ? 'var(--text-1)' : 'var(--text-3)',
-                            boxShadow: mode === 'login' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
-                            transition: 'all 0.2s ease', cursor: 'pointer', border: 'none'
-                        }}
-                    >
-                        Log In
-                    </button>
-                    <button
-                        onClick={() => { setMode('signup'); setError(null); }}
-                        style={{
-                            flex: 1, padding: '10px 0', fontSize: '14px', fontWeight: 600, borderRadius: '8px',
-                            background: mode === 'signup' ? 'var(--bg-card)' : 'transparent',
-                            color: mode === 'signup' ? 'var(--text-1)' : 'var(--text-3)',
-                            boxShadow: mode === 'signup' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
-                            transition: 'all 0.2s ease', cursor: 'pointer', border: 'none'
-                        }}
-                    >
-                        Sign Up
-                    </button>
-                </div>
-
-                {error && (
-                    <div style={{ width: '100%', padding: '12px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', borderRadius: '12px', fontSize: '13px', fontWeight: 500, marginBottom: '20px', textAlign: 'center' }}>
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleEmailSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-                    {mode === 'signup' && (
-                        <>
-                            <input
-                                type="text"
-                                placeholder="Full Name"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                style={inputStyle}
-                                required
-                            />
-                            <div style={{ position: 'relative', width: '100%' }}>
-                                <input
-                                    type="text"
-                                    placeholder="Username"
-                                    value={username}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setUsername(val);
-                                        const regex = /^[A-Za-z0-9@+-_]{3,}$/;
-                                        if (val && !regex.test(val)) {
-                                            setUsernameError("Min 3 chars (@+-_ allowed)");
-                                        } else {
-                                            setUsernameError(null);
-                                        }
-                                    }}
-                                    style={{
-                                        ...inputStyle,
-                                        borderColor: usernameError ? 'var(--danger)' : 'var(--border)',
-                                        marginBottom: usernameError ? '4px' : '16px'
-                                    }}
-                                    required
-                                />
-                                {usernameError && (
-                                    <div style={{ fontSize: '10px', color: 'var(--danger)', marginBottom: '12px', fontWeight: 600, paddingLeft: '4px' }}>
-                                        {usernameError}
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
-                    <input
-                        type="text"
-                        placeholder="Email or Username"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        style={inputStyle}
-                        required
-                    />
-                    <div style={{ position: 'relative', width: '100%' }}>
-                        <input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            style={{ ...inputStyle, paddingRight: '46px' }}
-                            required
-                            minLength={3}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(p => !p)}
-                            tabIndex={-1}
-                            style={{
-                                position: 'absolute', right: '14px', top: '50%',
-                                transform: 'translateY(-62%)',
-                                background: 'none', border: 'none', cursor: 'pointer',
-                                color: 'var(--text-3)', fontSize: '17px', padding: '0',
-                                display: 'flex', alignItems: 'center', lineHeight: 1,
-                                userSelect: 'none',
-                            }}
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        >
-                            {showPassword ? '🙈' : '👁'}
-                        </button>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            width: '100%', height: '52px',
-                            background: 'var(--gradient-1)',
-                            color: 'white', border: 'none', borderRadius: '14px',
-                            fontSize: '15px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
-                            opacity: loading ? 0.7 : 1, transition: 'all 0.2s',
-                            boxShadow: '0 4px 12px rgba(224,92,42,0.3)', marginBottom: '20px'
-                        }}
-                    >
-                        {loading ? 'Processing...' : (mode === 'login' ? 'Sign In' : 'Create Account')}
-                    </button>
-                </form>
-
-                <div style={{ marginTop: '4px', fontSize: '12px', color: 'var(--text-3)', textAlign: 'center', lineHeight: 1.7 }}>
-                    <div>Your data is private.</div>
-                    <div>Only you have access to this dashboard.</div>
-                </div>
-
-            </div>
+        {/* Brand */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{
+            font: '500 18px/1 var(--font-mono)',
+            color: 'var(--color-text-1)',
+            letterSpacing: '0.12em',
+            marginBottom: '6px',
+          }}>
+            AIIMIN
+          </div>
+          <div className="text-subtext">Personal operating system</div>
         </div>
-    );
+
+        {/* Mode toggle */}
+        <div style={{
+          display: 'flex',
+          gap: '0',
+          marginBottom: '28px',
+          borderBottom: '1px solid var(--color-border)',
+        }}>
+          {['login', 'signup'].map(m => (
+            <button
+              key={m}
+              onClick={() => { setMode(m); setError(null); }}
+              style={{
+                flex: 1,
+                padding: '10px 0',
+                font: '500 11px/1 var(--font-mono)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: mode === m ? 'var(--color-text-1)' : 'var(--color-text-3)',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: mode === m ? '1px solid var(--color-accent)' : '1px solid transparent',
+                cursor: 'pointer',
+                transition: `color var(--dur-enter) var(--ease), border-color var(--dur-enter) var(--ease)`,
+                marginBottom: '-1px',
+              }}
+            >
+              {m === 'login' ? 'Sign In' : 'Sign Up'}
+            </button>
+          ))}
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div style={{
+            padding: '10px 12px',
+            background: 'var(--color-elevated)',
+            borderLeft: '3px solid var(--color-alert-red)',
+            marginBottom: '20px',
+          }}>
+            <span className="text-subtext" style={{ color: 'var(--color-alert-red)' }}>{error}</span>
+          </div>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {mode === 'signup' && (
+            <input
+              type="text"
+              placeholder="Full name"
+              value={fullName}
+              onChange={e => setFullName(e.target.value)}
+              style={inputBase}
+              required
+              onFocus={e => e.target.style.borderColor = 'var(--color-accent)'}
+              onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
+            />
+          )}
+
+          <input
+            type="text"
+            placeholder="Email or alias (e.g. au48)"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            style={inputBase}
+            required
+            autoComplete="username"
+            onFocus={e => e.target.style.borderColor = 'var(--color-accent)'}
+            onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
+          />
+
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPw ? 'text' : 'password'}
+              placeholder="Password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              style={{ ...inputBase, paddingRight: '44px' }}
+              required
+              minLength={6}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              onFocus={e => e.target.style.borderColor = 'var(--color-accent)'}
+              onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
+            />
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => setShowPw(p => !p)}
+              aria-label={showPw ? 'Hide password' : 'Show password'}
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--color-text-3)',
+                font: '12px var(--font-mono)',
+                padding: 0,
+                lineHeight: 1,
+              }}
+            >
+              {showPw ? 'hide' : 'show'}
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              height: '44px',
+              background: loading ? 'var(--color-elevated)' : 'var(--color-accent)',
+              color: loading ? 'var(--color-text-3)' : 'var(--color-base)',
+              border: 'none',
+              font: '500 13px/1 var(--font-sans)',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              marginTop: '8px',
+              transition: `background var(--dur-enter) var(--ease)`,
+              letterSpacing: '0.04em',
+            }}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#259990'; }}
+            onMouseLeave={e => { if (!loading) e.currentTarget.style.background = 'var(--color-accent)'; }}
+          >
+            {loading ? 'Signing in...' : mode === 'login' ? 'Sign In' : 'Create Account'}
+          </button>
+        </form>
+
+        {/* Footer note */}
+        <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '1px solid var(--color-border)' }}>
+          <span className="text-subtext">Private. No tracking. Your data only.</span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Login;
