@@ -37,23 +37,29 @@ const MetricTile = ({
   return (
     <div style={{
       height: 'var(--card-tile)',
-      background: mounted ? 'var(--color-surface)' : 'transparent',
-      borderLeft: `2px solid ${mounted ? color : 'transparent'}`,
+      background: mounted ? 'var(--glass-bg)' : 'transparent',
+      backdropFilter: 'var(--glass-blur-sm)',
+      WebkitBackdropFilter: 'var(--glass-blur-sm)',
+      border: `1px solid ${mounted ? 'var(--glass-border)' : 'transparent'}`,
+      borderLeft: `3px solid ${mounted ? color : 'transparent'}`,
+      borderRadius: 'var(--r-md)',
       padding: '16px 16px 12px',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      transition: `background var(--dur-enter) var(--ease), border-color var(--dur-enter) var(--ease)`,
+      transition: `all var(--dur-enter) var(--ease)`,
       position: 'relative',
       overflow: 'hidden',
     }}
     onMouseEnter={e => {
-      e.currentTarget.style.background = 'var(--color-elevated)';
-      e.currentTarget.style.boxShadow = 'inset 0 0 0 1px var(--color-border)';
+      e.currentTarget.style.background = 'var(--glass-bg-hover)';
+      e.currentTarget.style.borderColor = 'var(--glass-border-lit)';
     }}
     onMouseLeave={e => {
-      e.currentTarget.style.background = 'var(--color-surface)';
-      e.currentTarget.style.boxShadow = 'none';
+      e.currentTarget.style.background = 'var(--glass-bg)';
+      e.currentTarget.style.borderTopColor = 'var(--glass-border)';
+      e.currentTarget.style.borderRightColor = 'var(--glass-border)';
+      e.currentTarget.style.borderBottomColor = 'var(--glass-border)';
     }}
     >
       {/* Label */}

@@ -18,8 +18,12 @@ const StatusAlert = ({
   return (
     <div style={{
       minHeight: 'var(--alert-height)',
-      background: 'var(--color-elevated)',
+      background: type === 'critical' ? 'rgba(224,90,90,0.06)' : 'var(--glass-bg)',
+      backdropFilter: 'var(--glass-blur-sm)',
+      WebkitBackdropFilter: 'var(--glass-blur-sm)',
+      border: `1px solid ${type === 'critical' ? 'rgba(224,90,90,0.20)' : 'var(--glass-border)'}`,
       borderLeft: `3px solid ${borderColor}`,
+      borderRadius: 'var(--r-md)',
       padding: '0 16px',
       display: 'flex',
       alignItems: 'center',
