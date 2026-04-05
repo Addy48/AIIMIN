@@ -18,6 +18,10 @@ const RANKS = [
     { rank: 10, name: 'Grandmaster', minXP: 57500, emoji: '👼' },
 ];
 
+export const MONEY_XP = 15;
+export const MONEY_XP_CAP = 3; // max transactions that earn XP per day
+export const POMODORO_XP = 30;
+
 const DAILY_XP = {
     sleep: 30,
     gym: 25,
@@ -277,6 +281,8 @@ export function checkAchievements(userData, existingAchievements = []) {
             case 16: // Legend
                 unlocked = userData.current_rank >= 10;
                 break;
+            default:
+                break;
         }
 
         if (unlocked) {
@@ -285,6 +291,71 @@ export function checkAchievements(userData, existingAchievements = []) {
     });
 
     return newAchievements;
+}
+
+/** Alias for backwards-compat with AchievementsGallery */
+export const ACHIEVEMENT_DEFS = ACHIEVEMENTS;
+
+/**
+ * Get rank progress details (used by MobileHeader)
+ * @param {number} totalXP
+ * @returns {{ name, emoji, rank, progressPct, xpToNext }}
+ */
+export function getRankProgress(totalXP) {
+    const info = getRank(totalXP);
+    return {
+        name: info.name,
+        emoji: info.emoji,
+        rank: info.rank,
+        progressPct: info.progressToNext,
+        xpToNext: info.nextRankXP ? info.nextRankXP - totalXP : 0,
+    };
+}
+
+/**
+ * Get XP multiplier based on streak length (used by MobileStreaks)
+ * @param {number} streakLength
+ * @returns {number} multiplier 1.0 – 2.5
+ */
+export function getStreakMultiplier(streakLength) {
+    return Math.min(2.5, 1 + (streakLength * 0.1));
+}
+
+const QUOTES = {
+    after_reset: [
+        'Every master was once a beginner. Reset. Rebuild.',
+        'The only failure is not getting back up.',
+        'Today is day one. Again.',
+    ],
+    perfect_day: [
+        'Perfection is a practice, not a destination.',
+        'You showed up fully today. That matters.',
+        'Flawless execution. Keep the streak alive.',
+    ],
+    morning_empty: [
+        'The blank page is potential. Fill it.',
+        'Small actions compound into large results.',
+        'Start before you feel ready.',
+    ],
+    default: [
+        'Progress over perfection.',
+        'Discipline is choosing between what you want now and what you want most.',
+        'The system builds the person.',
+        'One metric at a time.',
+    ],
+};
+
+/**
+ * Get a contextual motivational quote (used by DailyQuote)
+ * @param {string} context - 'after_reset' | 'perfect_day' | 'morning_empty' | 'default'
+ * @returns {string}
+ */
+export function getContextualQuote(context = 'default') {
+    const pool = QUOTES[context] || QUOTES.default;
+    const dayOfYear = Math.floor(
+        (new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000
+    );
+    return pool[dayOfYear % pool.length];
 }
 
 export { RANKS, QUESTS, ACHIEVEMENTS, RANK_UP_LINES };
