@@ -1,134 +1,210 @@
-// ============================================================
-// AIIMIN Sound Engine — Web Audio API synthesized sounds
-// No external files, instant playback
-// ============================================================
+/**
+ * soundEngine.js — Web Audio API + Browser Notifications
+ *
+ * Provides sound effects using Web Audio API with fallback to browser notifications
+ */
 
-let audioCtx = null;
+let audioContext = null;
 
-function getContext() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    return audioCtx;
+/**
+ * Initialize Web Audio API context (must be called on user interaction)
+ */
+export function initAudioContext() {
+    if (!audioContext) {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioContext = new AudioContext();
+        } catch (e) {
+            console.warn('Web Audio API not available:', e);
+        }
+    }
+    return audioContext;
 }
 
-// Play a single tone
-function playTone(freq, duration, type = 'sine', volume = 0.3) {
-    const ctx = getContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    gain.gain.setValueAtTime(volume, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + duration);
-}
+/**
+ * Play a simple beep tone
+ * @param {number} frequency - Hz
+ * @param {number} duration - ms
+ * @param {number} volume - 0-1
+ */
+function playTone(frequency = 440, duration = 100, volume = 0.3) {
+    const ctx = audioContext || initAudioContext();
+    if (!ctx) return;
 
-// ── SOUND PRESETS ──────────────────────────────────────────
-
-// Gentle bell — single warm tone with fade
-export function playBell() {
-    playTone(440, 1.5, 'sine', 0.25);
-    playTone(880, 1.5, 'sine', 0.1);
-}
-
-// Ascending 3-note chime — pleasant completion feel
-export function playChime() {
-    const ctx = getContext();
-    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-    notes.forEach((freq, i) => {
+    try {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.frequency.value = frequency;
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15);
-        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
-        gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + i * 0.15 + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.6);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + i * 0.15);
-        osc.stop(ctx.currentTime + i * 0.15 + 0.6);
-    });
-}
 
-// Pulsing alarm — for urgent alerts
-export function playAlarm() {
-    const ctx = getContext();
-    for (let i = 0; i < 3; i++) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(800, ctx.currentTime + i * 0.3);
-        gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.3);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.3 + 0.15);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + i * 0.3);
-        osc.stop(ctx.currentTime + i * 0.3 + 0.15);
+        gain.gain.setValueAtTime(volume, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
+
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + duration / 1000);
+    } catch (e) {
+        console.warn('playTone error:', e);
     }
 }
 
-// Level-up fanfare — triumphant ascending sequence
-export function playLevelUp() {
-    const ctx = getContext();
-    const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99]; // C4→G5
-    notes.forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.1);
-        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.1);
-        gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + i * 0.1 + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.5);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + i * 0.1);
-        osc.stop(ctx.currentTime + i * 0.1 + 0.5);
-    });
-}
-
-// XP earn sound — quick satisfying blip
+/**
+ * Play XP notification sound
+ */
 export function playXP() {
-    playTone(600, 0.15, 'sine', 0.2);
-    setTimeout(() => playTone(900, 0.2, 'sine', 0.15), 80);
+    playTone(700, 100, 0.2);
+    setTimeout(() => playTone(1000, 150, 0.25), 50);
 }
 
-// Map setting name to function
-const SOUNDS = { bell: playBell, chime: playChime, alarm: playAlarm, levelup: playLevelUp, xp: playXP, none: () => {} };
-
-export function playSound(name) {
-    const fn = SOUNDS[name];
-    if (fn) fn();
+/**
+ * Play level up celebration sound
+ */
+export function playLevelUp() {
+    playTone(523, 150, 0.3);
+    setTimeout(() => playTone(659, 150, 0.3), 120);
+    setTimeout(() => playTone(784, 200, 0.35), 240);
 }
 
-// ── BROWSER NOTIFICATIONS ──────────────────────────────────
-
-export function requestNotificationPermission() {
-    if (!('Notification' in window)) return Promise.resolve('denied');
-    if (Notification.permission === 'granted') return Promise.resolve('granted');
-    if (Notification.permission === 'denied') return Promise.resolve('denied');
-    return Notification.requestPermission();
+/**
+ * Play completion sound (Pomodoro session end)
+ */
+export function playComplete() {
+    playTone(600, 150, 0.3);
+    setTimeout(() => playTone(800, 150, 0.3), 100);
 }
 
-export function sendNotification(title, body) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    try { new Notification(title, { body, icon: '/manifest.json' }); } catch { /* mobile fallback */ }
+/**
+ * Play success sound
+ */
+export function playSuccess() {
+    playTone(700, 100, 0.2);
+    setTimeout(() => playTone(800, 150, 0.25), 80);
+    setTimeout(() => playTone(900, 150, 0.25), 150);
 }
 
-// ── NOTIFICATION PREFS (localStorage) ──────────────────────
-
-const PREFS_KEY = 'aiimin_notif_prefs';
-
-export function getNotifPrefs() {
-    try {
-        const raw = localStorage.getItem(PREFS_KEY);
-        if (raw) return JSON.parse(raw);
-    } catch { /* ignore */ }
-    return { sound: 'chime', browser: true, volume: 70 };
+/**
+ * Play error/failure sound
+ */
+export function playError() {
+    playTone(300, 150, 0.2);
+    setTimeout(() => playTone(250, 150, 0.2), 100);
 }
 
-export function setNotifPrefs(prefs) {
-    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+/**
+ * Request browser notification permission
+ */
+export async function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+        console.warn('Notifications not supported');
+        return false;
+    }
+
+    if (Notification.permission === 'granted') {
+        return true;
+    }
+
+    if (Notification.permission !== 'denied') {
+        try {
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        } catch (e) {
+            console.warn('Notification permission request failed:', e);
+            return false;
+        }
+    }
+
+    return false;
 }
+
+/**
+ * Send a browser notification
+ * @param {string} title
+ * @param {Object} options - { body, icon, badge, tag, requireInteraction }
+ */
+export function sendNotification(title, options = {}) {
+    if (Notification.permission === 'granted') {
+        try {
+            new Notification(title, {
+                icon: '/favicon.png',
+                ...options,
+            });
+        } catch (e) {
+            console.warn('Notification error:', e);
+        }
+    }
+}
+
+/**
+ * Combined: play sound + send notification
+ * @param {string} type - 'xp' | 'levelup' | 'complete' | 'success' | 'error'
+ * @param {string} title - notification title
+ * @param {Object} options - notification options
+ */
+export async function playAndNotify(type = 'xp', title = 'AIIMIN', options = {}) {
+    // Play sound
+    switch (type) {
+        case 'xp':
+            playXP();
+            break;
+        case 'levelup':
+            playLevelUp();
+            break;
+        case 'complete':
+            playComplete();
+            break;
+        case 'success':
+            playSuccess();
+            break;
+        case 'error':
+            playError();
+            break;
+        default:
+            break;
+    }
+
+    // Send notification if permission granted
+    if (Notification.permission === 'granted') {
+        sendNotification(title, options);
+    }
+}
+
+/**
+ * Generic sound dispatcher (used by PomodoroTimer and others)
+ * @param {string} type - 'bell' | 'chime' | 'alarm' | 'levelUp' | 'xp' | 'complete' | 'success' | 'error'
+ */
+export function playSound(type) {
+    switch (type) {
+        case 'bell':
+        case 'chime':
+            playComplete();
+            break;
+        case 'alarm':
+            playTone(440, 500, 0.4);
+            setTimeout(() => playTone(440, 500, 0.4), 600);
+            break;
+        case 'levelUp':
+            playLevelUp();
+            break;
+        case 'xp':
+            playXP();
+            break;
+        case 'complete':
+            playComplete();
+            break;
+        case 'success':
+            playSuccess();
+            break;
+        case 'error':
+            playError();
+            break;
+        default:
+            playXP();
+            break;
+    }
+}
+
+// Export for testing/debugging
+export { playTone };
