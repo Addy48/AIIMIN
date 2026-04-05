@@ -175,6 +175,46 @@ export function getDailyQuests(date = new Date()) {
 }
 
 /**
+ * Check which quests are completed
+ * @param {Array} quests - quest objects from getDailyQuests
+ * @param {Object} dailyLog - daily_logs row
+ * @returns {Object} { questId: boolean, ... }
+ */
+export function checkQuests(quests, dailyLog) {
+    const completed = {};
+
+    quests.forEach(quest => {
+        let isComplete = false;
+        const value = dailyLog[quest.metric];
+
+        if (quest.metric === 'perfect_day') {
+            isComplete = dailyLog.sleep_hours >= 7 &&
+                         dailyLog.gym_done &&
+                         dailyLog.breakfast_done &&
+                         dailyLog.steps >= 5000 &&
+                         dailyLog.water_bottles >= 5 &&
+                         dailyLog.learning_done &&
+                         dailyLog.journal_entry?.trim() &&
+                         dailyLog.mood >= 1;
+        } else if (quest.metric === 'rc_count') {
+            isComplete = (value || 0) === quest.target;
+        } else if (quest.metric === 'headache') {
+            isComplete = value === !quest.target;
+        } else if (typeof value === 'number') {
+            isComplete = value >= quest.target;
+        } else if (typeof value === 'boolean') {
+            isComplete = value === (quest.target === 1);
+        } else if (typeof value === 'string') {
+            isComplete = value?.trim().length > 0 && quest.target > 0;
+        }
+
+        completed[quest.id] = isComplete;
+    });
+
+    return completed;
+}
+
+/**
  * Check unlocked achievements
  * @param {Object} userData - user row with stats
  * @param {Array} existingAchievements - already unlocked achievement IDs
