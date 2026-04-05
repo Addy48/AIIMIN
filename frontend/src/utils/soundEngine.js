@@ -161,11 +161,48 @@ export async function playAndNotify(type = 'xp', title = 'AIIMIN', options = {})
         case 'error':
             playError();
             break;
+        default:
+            break;
     }
 
     // Send notification if permission granted
     if (Notification.permission === 'granted') {
         sendNotification(title, options);
+    }
+}
+
+/**
+ * Generic sound dispatcher (used by PomodoroTimer and others)
+ * @param {string} type - 'bell' | 'chime' | 'alarm' | 'levelUp' | 'xp' | 'complete' | 'success' | 'error'
+ */
+export function playSound(type) {
+    switch (type) {
+        case 'bell':
+        case 'chime':
+            playComplete();
+            break;
+        case 'alarm':
+            playTone(440, 500, 0.4);
+            setTimeout(() => playTone(440, 500, 0.4), 600);
+            break;
+        case 'levelUp':
+            playLevelUp();
+            break;
+        case 'xp':
+            playXP();
+            break;
+        case 'complete':
+            playComplete();
+            break;
+        case 'success':
+            playSuccess();
+            break;
+        case 'error':
+            playError();
+            break;
+        default:
+            playXP();
+            break;
     }
 }
 
