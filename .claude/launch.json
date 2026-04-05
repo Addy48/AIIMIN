@@ -3,17 +3,25 @@
   "configurations": [
     {
       "name": "frontend",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["start"],
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["/usr/local/lib/node_modules/npm/bin/npm-cli.js", "start"],
+      "cwd": "frontend",
       "port": 4000,
-      "autoPort": true
+      "autoPort": true,
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
     },
     {
       "name": "backend",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["/usr/local/lib/node_modules/npm/bin/npm-cli.js", "run", "dev"],
+      "cwd": "backend",
       "port": 6000,
-      "autoPort": true
+      "autoPort": true,
+      "env": {
+        "PATH": "/usr/local/bin:/usr/bin:/bin"
+      }
     }
   ]
 }
