@@ -4,7 +4,7 @@ import Navbar from '../Navbar';
 
 /**
  * DashboardLayout — Authenticated shell for all web pages.
- * Flat dark surface. No gradients. No glass. No sidebar.
+ * Glass nav + ambient glow background. Content in glass cards.
  */
 const DashboardLayout = ({ user }) => (
   <div style={{
@@ -17,7 +17,7 @@ const DashboardLayout = ({ user }) => (
     <main style={{
       maxWidth: 'var(--content-max)',
       margin: '0 auto',
-      padding: 'var(--space-6) var(--content-pad) 80px',
+      padding: 'var(--space-5) var(--content-pad) 80px',
     }}>
       <Outlet />
     </main>

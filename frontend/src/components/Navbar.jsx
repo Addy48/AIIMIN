@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotifications';
+import { useThemeContext } from '../context/ThemeContext';
 import NotificationBell from './notifications/NotificationBell';
 import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
@@ -16,6 +17,7 @@ const NAV_LINKS = [
 
 const Navbar = ({ user }) => {
   const { notifications, unreadCount, loading, fetchAll, markRead, markAllRead, dismiss } = useNotifications();
+  const { theme, toggleTheme } = useThemeContext();
   const [notifOpen, setNotifOpen] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
 
@@ -36,8 +38,10 @@ const Navbar = ({ user }) => {
         left: 0,
         right: 0,
         height: 'var(--nav-height)',
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
+        background: 'var(--glass-bg-strong)',
+        backdropFilter: 'var(--glass-blur)',
+        WebkitBackdropFilter: 'var(--glass-blur)',
+        borderBottom: '1px solid var(--glass-border)',
         display: 'flex',
         alignItems: 'center',
         padding: '0 var(--content-pad)',
@@ -48,10 +52,9 @@ const Navbar = ({ user }) => {
         {/* LEFT: Brand */}
         <Link to="/overview" style={{ textDecoration: 'none', flexShrink: 0 }}>
           <span style={{
-            font: 'var(--text-heading)',
+            font: '500 15px/1 var(--font-mono)',
             color: 'var(--color-text-1)',
-            letterSpacing: '0.12em',
-            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.14em',
           }}>
             AIIMIN
           </span>
@@ -64,45 +67,92 @@ const Navbar = ({ user }) => {
               key={to}
               to={to}
               style={({ isActive }) => ({
-                font: 'var(--text-body)',
+                fontSize: '13px',
+                fontWeight: isActive ? 500 : 300,
+                fontFamily: 'var(--font-sans)',
                 color: isActive ? 'var(--color-text-1)' : 'var(--color-text-2)',
                 textDecoration: 'none',
-                padding: '6px 12px',
-                borderBottom: isActive ? '1px solid var(--color-accent)' : '1px solid transparent',
-                transition: `color var(--dur-enter) var(--ease), border-color var(--dur-enter) var(--ease)`,
+                padding: '7px 13px',
+                borderRadius: 'var(--r-sm)',
+                background: isActive ? 'var(--glass-bg)' : 'transparent',
+                border: isActive ? '1px solid var(--glass-border)' : '1px solid transparent',
+                transition: `all var(--dur-enter) var(--ease)`,
+                position: 'relative',
               })}
-              onMouseEnter={e => { if (!e.currentTarget.className.includes('active')) e.currentTarget.style.color = 'var(--color-text-1)'; }}
-              onMouseLeave={e => { if (!e.currentTarget.getAttribute('aria-current')) e.currentTarget.style.color = 'var(--color-text-2)'; }}
             >
-              {label}
+              {({ isActive }) => (
+                <>
+                  {label}
+                  {isActive && (
+                    <span style={{
+                      position: 'absolute',
+                      bottom: '-1px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: '16px',
+                      height: '2px',
+                      background: 'var(--color-accent)',
+                      borderRadius: 'var(--r-pill)',
+                    }} />
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
         </div>
 
         {/* RIGHT: Date + Notifications + Avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
-          <span className="text-label" style={{ letterSpacing: '0.05em' }}>{dateStr}</span>
+          <span style={{
+            font: '400 11px/1 var(--font-mono)',
+            color: 'var(--color-text-3)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}>
+            {dateStr}
+          </span>
 
-          <NotificationBell
-            unreadCount={unreadCount}
-            onClick={handleOpenNotif}
-          />
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            style={{
+              width: '30px', height: '30px',
+              borderRadius: 'var(--r-sm)',
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--glass-border)',
+              color: 'var(--color-text-2)',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: `all var(--dur-enter) var(--ease)`,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--glass-border-lit)'; e.currentTarget.style.color = 'var(--color-text-1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--glass-border)'; e.currentTarget.style.color = 'var(--color-text-2)'; }}
+          >
+            {theme === 'dark' ? '☀' : '◐'}
+          </button>
+
+          <NotificationBell unreadCount={unreadCount} onClick={handleOpenNotif} />
 
           <button
             onClick={() => setShowAccount(true)}
             style={{
-              width: '28px',
-              height: '28px',
+              width: '30px',
+              height: '30px',
               borderRadius: '50%',
-              background: 'var(--color-elevated)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-2)',
-              font: '500 11px var(--font-mono)',
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--glass-border-lit)',
+              color: 'var(--color-accent)',
+              font: '500 12px var(--font-mono)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              transition: `all var(--dur-enter) var(--ease)`,
             }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--glass-bg-hover)'; e.currentTarget.style.borderColor = 'var(--color-accent)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.borderColor = 'var(--glass-border-lit)'; }}
             aria-label="Account settings"
           >
             {userInitial}
@@ -110,7 +160,6 @@ const Navbar = ({ user }) => {
         </div>
       </nav>
 
-      {/* Notifications panel */}
       <NotificationPanel
         open={notifOpen}
         notifications={notifications}
@@ -121,7 +170,6 @@ const Navbar = ({ user }) => {
         onClose={() => setNotifOpen(false)}
       />
 
-      {/* Account modal */}
       {showAccount && (
         <AccountModal user={user} onClose={() => setShowAccount(false)} />
       )}

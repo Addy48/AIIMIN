@@ -269,8 +269,7 @@ const Overview = ({ user }) => {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '1px',
-        background: 'var(--color-border)',
+        gap: '12px',
         marginBottom: 'var(--space-6)',
         marginTop: 'var(--space-5)',
       }}>
@@ -364,8 +363,7 @@ const Overview = ({ user }) => {
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
-            gap: '1px',
-            background: 'var(--color-border)',
+            gap: '10px',
           }}>
             <MetricTile
               type="sleep"

@@ -64,17 +64,20 @@ const HeroMetricCard = ({
       onClick={onClick}
       style={{
         height: 'var(--card-hero)',
-        background: 'var(--color-surface)',
-        padding: '24px',
+        background: 'var(--glass-bg)',
+        backdropFilter: 'var(--glass-blur-sm)',
+        WebkitBackdropFilter: 'var(--glass-blur-sm)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: 'var(--r-lg)',
+        padding: '20px 24px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         cursor: onClick ? 'pointer' : 'default',
-        transition: `background var(--dur-enter) var(--ease)`,
-        borderBottom: '1px solid var(--color-border)',
+        transition: `all var(--dur-enter) var(--ease)`,
       }}
-      onMouseEnter={e => { if (onClick) e.currentTarget.style.background = 'var(--color-elevated)'; }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; }}
+      onMouseEnter={e => { if (onClick) { e.currentTarget.style.background = 'var(--glass-bg-hover)'; e.currentTarget.style.borderColor = 'var(--glass-border-lit)'; } }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
     >
       {/* Label */}
       <span className="text-label">{label}</span>
