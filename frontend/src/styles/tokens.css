@@ -21,7 +21,7 @@
 
   --color-text-1:     #F0EBE1;   /* body text primary */
   --color-text-2:     #8A8780;   /* labels, subtext */
-  --color-text-3:     #4A4845;   /* disabled, placeholder */
+  --color-text-3:     #6A6560;   /* disabled, placeholder — increased contrast */
 
   --color-accent:     #2BA89F;   /* teal — progress/active/alerts ONLY */
   --color-accent-dim: rgba(43,168,159,0.10); /* teal 10% — completed fill bg */
@@ -41,9 +41,9 @@
   --text-hero:        300 56px/1 var(--font-sans);      /* Score, Sleep, Net Worth */
   --text-metric:      300 28px/1 var(--font-sans);      /* Steps: 12,482 */
   --text-heading:     500 16px/1.4 var(--font-sans);    /* section titles */
-  --text-body:        300 13px/1.6 var(--font-sans);    /* default */
-  --text-label:       500 10px/1 var(--font-mono);      /* UPPERCASE labels */
-  --text-subtext:     300 11px/1.5 var(--font-sans);    /* secondary context */
+  --text-body:        300 14px/1.6 var(--font-sans);    /* default — increased from 13px */
+  --text-label:       500 11px/1 var(--font-mono);      /* UPPERCASE labels — increased from 10px */
+  --text-subtext:     300 12px/1.5 var(--font-sans);    /* secondary context — increased from 11px */
 
   /* ─── Spacing Scale ─────────────────────────────── */
   --space-1:  4px;

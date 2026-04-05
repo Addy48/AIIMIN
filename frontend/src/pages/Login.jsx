@@ -51,16 +51,17 @@ const Login = () => {
 
   const inputBase = {
     width: '100%',
-    height: '44px',
+    height: '48px',
     background: 'var(--color-elevated)',
     border: '1px solid var(--color-border)',
     borderRadius: '0',
     color: 'var(--color-text-1)',
     font: 'var(--text-body)',
     fontFamily: 'var(--font-sans)',
+    fontSize: '14px',
     padding: '0 14px',
     outline: 'none',
-    transition: `border-color var(--dur-enter) var(--ease)`,
+    transition: `border-color var(--dur-enter) var(--ease), background-color var(--dur-enter) var(--ease)`,
   };
 
   return (
@@ -109,14 +110,14 @@ const Login = () => {
               onClick={() => { setMode(m); setError(null); }}
               style={{
                 flex: 1,
-                padding: '10px 0',
-                font: '500 11px/1 var(--font-mono)',
+                padding: '12px 0',
+                font: '500 12px/1 var(--font-mono)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.08em',
-                color: mode === m ? 'var(--color-text-1)' : 'var(--color-text-3)',
+                color: mode === m ? 'var(--color-text-1)' : 'var(--color-text-2)',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: mode === m ? '1px solid var(--color-accent)' : '1px solid transparent',
+                borderBottom: mode === m ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
                 cursor: 'pointer',
                 transition: `color var(--dur-enter) var(--ease), border-color var(--dur-enter) var(--ease)`,
                 marginBottom: '-1px',
@@ -206,11 +207,11 @@ const Login = () => {
             type="submit"
             disabled={loading}
             style={{
-              height: '44px',
+              height: '48px',
               background: loading ? 'var(--color-elevated)' : 'var(--color-accent)',
               color: loading ? 'var(--color-text-3)' : 'var(--color-base)',
               border: 'none',
-              font: '500 13px/1 var(--font-sans)',
+              font: '500 14px/1 var(--font-sans)',
               cursor: loading ? 'not-allowed' : 'pointer',
               marginTop: '8px',
               transition: `background var(--dur-enter) var(--ease)`,
