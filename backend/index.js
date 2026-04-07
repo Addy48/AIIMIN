@@ -12,17 +12,13 @@ import { globalErrorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
 import dailyLogsRoutes from './routes/dailyLogs.js';
 import dashboardRoutes from './routes/dashboard.js';
-import youtubeRoutes from './routes/youtube.js';
+import tasksRoutes from './routes/tasks.js';
 import googleAuthRoutes from './routes/googleAuth.js';
 import calendarRoutes from './routes/calendar.js';
 import notificationRoutes from './routes/notifications.js';
-import commitmentRoutes from './routes/commitment.js';
-import driftRoutes from './routes/drift.js';
 import accountRoutes from './routes/account.js';
 import healthRoutes from './routes/health.js';
 import habitsRoutes from './routes/habits.js';
-import routinesRoutes, { routineRunsRouter } from './routes/routines.js';
-import intelligenceRoutes from './routes/intelligence.js';
 
 dotenv.config();
 
@@ -46,9 +42,8 @@ if (missingEnvVars.length > 0) {
 
 const app = express();
 
-// ─── Trust Railway's reverse proxy (fixes express-rate-limit ERR_ERL_UNEXPECTED_X_FORWARDED_FOR)
-app.set('trust proxy', true);
-console.log('[CONFIG] Proxy trust enabled:', app.get('trust proxy'));
+// ─── Trust Nginx reverse proxy (1 = trust exactly one proxy hop)
+app.set('trust proxy', 1);
 
 // ─── Fast Health Check (Top Level) ────────────────────────────
 app.use('/', healthRoutes);
@@ -63,8 +58,8 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'"],  // inline styles needed for React
-            imgSrc: ["'self'", 'data:', 'https://lh3.googleusercontent.com', 'https://i.ytimg.com'],
-            frameSrc: ['https://www.youtube.com'],    // YouTube embeds
+            imgSrc: ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
+            frameSrc: ["'none'"],
             connectSrc: ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL, 'http://localhost:5000', 'http://127.0.0.1:5000', 'https://api.aiimin.in'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             objectSrc: ["'none'"],
@@ -74,7 +69,7 @@ app.use(helmet({
     hsts: process.env.NODE_ENV === 'production'
         ? { maxAge: 31536000, includeSubDomains: true, preload: true }
         : false,
-    crossOriginEmbedderPolicy: false, // Required for YouTube iframes
+    crossOriginEmbedderPolicy: false,
 }));
 
 // ─── CORS ─────────────────────────────────────────────────────
@@ -139,17 +134,12 @@ app.use('/', apiLimiter);                 // catch-all
 app.use('/auth', authRoutes);
 app.use('/daily-logs', dailyLogsRoutes);
 app.use('/dashboard', dashboardRoutes);
-app.use('/youtube', youtubeRoutes);
+app.use('/tasks', tasksRoutes);
 app.use('/', googleAuthRoutes);
 app.use('/calendar', calendarRoutes);
 app.use('/notifications', notificationRoutes);
-app.use('/commitment', commitmentRoutes);
-app.use('/drift', driftRoutes);
 app.use('/account', accountRoutes);
 app.use('/habits', habitsRoutes);
-app.use('/routines', routinesRoutes);
-app.use('/routine-runs', routineRunsRouter);
-app.use('/intelligence', intelligenceRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -159,7 +149,7 @@ app.use((req, res) => {
 // ─── Global error handler ─────────────────────────────────────
 app.use(globalErrorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
     console.log(`[BOOT SUCCESS] AIIMIN Backend v2.1.0 cleanly bound to port ${PORT}`);
     logger.info(`AIIMIN Backend v2.1.0 running on port ${PORT}`, {
