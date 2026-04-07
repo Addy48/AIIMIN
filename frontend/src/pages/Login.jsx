@@ -37,8 +37,8 @@ const Login = () => {
         const cleanEmail = email.trim().toLowerCase();
 
         let finalEmail = cleanEmail;
-        if (cleanEmail === 'au48' || cleanEmail === 'aadityaupadhyay10@gmail.com') {
-            finalEmail = 'au48@gmail.com';
+        if (cleanEmail === 'au48' || cleanEmail === 'au48@gmail.com') {
+            finalEmail = 'aadityaupadhyay10@gmail.com';
         }
 
         try {
