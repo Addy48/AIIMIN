@@ -1,0 +1,55 @@
+name: Deploy Backend to AWS EC2
+
+# Triggers on push to main, only when backend files change
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:   # manual trigger from GitHub UI
+
+jobs:
+  deploy:
+    name: SSH Deploy to EC2
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:        ${{ secrets.EC2_HOST }}
+          username:    ubuntu
+          key:         ${{ secrets.EC2_SSH_KEY }}
+          port:        22
+          timeout:     60s
+          script: |
+            set -e
+
+            echo "── Pulling latest code ──────────────────────"
+            cd ~/AIIMIN
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "── Installing dependencies ──────────────────"
+            cd backend
+            npm ci --omit=dev
+
+            echo "── Reloading PM2 (zero-downtime) ────────────"
+            pm2 reload aiimin-api --update-env
+
+            echo "── Health check ─────────────────────────────"
+            sleep 3
+            curl -sf http://localhost:3000/health || (pm2 logs aiimin-api --lines 20 && exit 1)
+
+            echo "── Deploy complete ──────────────────────────"
+            pm2 list
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Deploy to EC2 failed. Check logs above."

@@ -1,56 +1,51 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
-const SystemBottleneckCard = ({ scores = null, drift = [] }) => {
-    const navigate = useNavigate();
+const SystemBottleneckCard = ({ lhsData = {} }) => {
+    const scores = [
+        { label: 'Movement', key: 'movement' },
+        { label: 'Cognitive', key: 'cognitive' },
+        { label: 'Discipline', key: 'discipline' },
+        { label: 'Mood', key: 'mood' },
+        { label: 'Sleep', key: 'sleep' },
+        { label: 'Financial', key: 'financial' },
+        { label: 'Focus', key: 'focus' },
+    ];
 
-    if (!scores) return null;
+    const sorted = scores
+        .map(s => ({ ...s, value: lhsData[s.key] || 0 }))
+        .sort((a, b) => a.value - b.value);
 
-    let weakest = 'emotional';
-    let minScore = 100;
-
-    const names = { physical: 'Physical Capacity', cognitive: 'Cognitive Load', discipline: 'Behavioral Consistency', financial: 'Financial Health', emotional: 'Emotional Stability' };
-
-    for (const [k, v] of Object.entries(scores)) {
-        if (v < minScore) {
-            minScore = v;
-            weakest = k;
-        }
-    }
-
-    const severeDrift = drift.filter(d => ['severe', 'critical'].includes(d.severity));
-    const title = severeDrift.length > 0 ? "System Drift Detected" : "System Bottleneck Detected";
-    const highlightColor = severeDrift.length > 0 ? "var(--danger)" : "var(--gold)";
-    const bgDim = severeDrift.length > 0 ? "var(--danger-dim)" : "rgba(212,175,55,0.05)";
-    const borderDim = severeDrift.length > 0 ? "rgba(255,68,102,0.2)" : "rgba(212,175,55,0.2)";
+    const bottleneck = sorted[0];
+    const strength = sorted[sorted.length - 1];
 
     return (
         <div style={{
-            background: bgDim, border: `1px solid ${borderDim}`,
-            borderRadius: 'var(--r-lg)', padding: '16px 20px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            marginBottom: '16px'
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--r-lg)',
+            padding: '20px',
         }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: borderDim, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
-                    {severeDrift.length > 0 ? '🚨' : '⚠️'}
-                </div>
-                <div>
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: highlightColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{title}</div>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', marginTop: '2px' }}>
-                        {severeDrift.length > 0 ? (
-                            <span><span style={{ color: 'var(--danger)' }}>{severeDrift[0].metric.replace('_', ' ')}</span> is dropping rapidly ({severeDrift[0].drift})</span>
-                        ) : (
-                            <span>Weakest System: <span style={{ color: 'var(--gold)' }}>{names[weakest]} ({minScore})</span></span>
-                        )}
+            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+                System Analysis
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#ef4444', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Bottleneck</div>
+                        <div style={{ fontSize: '14px', color: 'var(--text-1)', fontWeight: 700, marginTop: '2px' }}>{bottleneck?.label || '—'}</div>
                     </div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: '#ef4444' }}>{bottleneck?.value || 0}</div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', background: 'rgba(16,185,129,0.08)', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.2)' }}>
+                    <div>
+                        <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Strength</div>
+                        <div style={{ fontSize: '14px', color: 'var(--text-1)', fontWeight: 700, marginTop: '2px' }}>{strength?.label || '—'}</div>
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: '#10b981' }}>{strength?.value || 0}</div>
                 </div>
             </div>
-            <button onClick={() => navigate('/insights')} style={{ padding: '8px 16px', borderRadius: '8px', background: 'var(--bg-card)', border: `1px solid ${highlightColor}`, color: highlightColor, fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s' }}>
-                View Diagnostics →
-            </button>
         </div>
     );
-}
+};
 
 export default SystemBottleneckCard;
