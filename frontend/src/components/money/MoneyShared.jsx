@@ -1,19 +1,19 @@
 import React from 'react';
 
 export const EXPENSE_CATS = [
-    { name: 'Food & Dining', icon: '🍛', color: '#ff6b35' },
-    { name: 'Transport', icon: '🚗', color: '#3b82f6' },
-    { name: 'Shopping', icon: '🛍️', color: '#a855f7' },
-    { name: 'Utilities', icon: '🏠', color: '#f59e0b' },
-    { name: 'Health', icon: '💊', color: '#10b981' },
+    { name: 'Food & Dining', icon: '🍛', color: 'var(--gold)' },
+    { name: 'Transport', icon: '🚗', color: 'var(--color-info)' },
+    { name: 'Shopping', icon: '🛍️', color: 'var(--color-card-purple)' },
+    { name: 'Utilities', icon: '🏠', color: 'var(--color-accent)' },
+    { name: 'Health', icon: '💊', color: 'var(--color-rust)' },
     { name: 'Entertainment', icon: '🎬', color: '#ec4899' },
-    { name: 'Other', icon: '📦', color: '#6b7280' },
+    { name: 'Other', icon: '📦', color: 'var(--text-3)' },
 ];
 
 export const ACCOUNT_ICONS = { bank: '🏦', wallet: '👛', credit_card: '💳', cash: '💵', investment: '📈' };
 
 export const getCatMeta = (name) =>
-    EXPENSE_CATS.find(c => c.name === name) || { icon: '💸', color: '#6b7280' };
+    EXPENSE_CATS.find(c => c.name === name) || { icon: '💸', color: 'var(--text-3)' };
 
 export const SUBTABS = [
     { key: 'overview', label: 'Overview', icon: '📊' },
@@ -30,9 +30,9 @@ export const submitBtnStyle = (saving) => ({ width: '100%', padding: '12px', bor
 
 export function MetricCard({ label, value, color }) {
     return (
-        <div style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '14px', border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
-            <div style={{ fontSize: '18px', fontWeight: 800, color, marginTop: '4px' }}>{value}</div>
+        <div className="glass-panel" style={{ padding: '16px', border: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{label}</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: color || 'var(--text-1)', marginTop: '4px' }}>{value}</div>
         </div>
     );
 }

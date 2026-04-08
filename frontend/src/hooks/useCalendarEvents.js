@@ -10,6 +10,7 @@ export function useCalendarEvents(session, rangeStart, rangeEnd) {
     const { isUsingMock, mockData } = useMockData() || {};
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [syncStatus, setSyncStatus] = useState({ connected: false, loading: true, lastSync: null, error: null });
 
     const fetchEvents = useCallback(async () => {
         if (isUsingMock) {
@@ -44,6 +45,21 @@ export function useCalendarEvents(session, rangeStart, rangeEnd) {
     }, [session, rangeStart, rangeEnd, isUsingMock, mockData]);
 
     useEffect(() => { fetchEvents(); }, [fetchEvents]);
+
+    const fetchSyncStatus = useCallback(async () => {
+        if (isUsingMock || !session) {
+            setSyncStatus({ connected: false, loading: false, lastSync: null, error: null });
+            return;
+        }
+        try {
+            const data = await apiGet('/calendar/sync/status', { session });
+            setSyncStatus({ ...data, loading: false });
+        } catch (err) {
+            setSyncStatus({ connected: false, loading: false, lastSync: null, error: err.message });
+        }
+    }, [session, isUsingMock]);
+
+    useEffect(() => { fetchSyncStatus(); }, [fetchSyncStatus]);
 
     const createEvent = async (eventData) => {
         if (isUsingMock) {
@@ -90,5 +106,19 @@ export function useCalendarEvents(session, rangeStart, rangeEnd) {
         await fetchEvents();
     };
 
-    return { events, loading, fetchEvents, createEvent, updateEvent, deleteEvent };
+    const pullGoogleEvents = async () => {
+        const result = await apiPost('/calendar/sync/pull', { start: rangeStart, end: rangeEnd }, { session });
+        await fetchEvents();
+        await fetchSyncStatus();
+        return result;
+    };
+
+    const pushTasksToGoogle = async () => {
+        const result = await apiPost('/calendar/sync/push', { start: rangeStart, end: rangeEnd }, { session });
+        await fetchEvents();
+        await fetchSyncStatus();
+        return result;
+    };
+
+    return { events, loading, syncStatus, fetchEvents, fetchSyncStatus, pullGoogleEvents, pushTasksToGoogle, createEvent, updateEvent, deleteEvent };
 }

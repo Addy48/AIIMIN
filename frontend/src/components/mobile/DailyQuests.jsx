@@ -7,9 +7,9 @@ const DailyQuests = ({ dateStr, logData }) => {
     const completedCount = checked.filter(q => q.completed).length;
 
     return (
-        <div style={{
-            background: 'var(--bg-card)', borderRadius: '14px', padding: '16px',
-            border: '1px solid var(--border)', margin: '0 16px',
+        <div className="glass-panel" style={{
+            padding: '16px',
+            margin: '0 16px',
         }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -28,8 +28,8 @@ const DailyQuests = ({ dateStr, logData }) => {
                     <div key={q.id} style={{
                         display: 'flex', alignItems: 'center', gap: '10px',
                         padding: '10px 12px', borderRadius: '10px',
-                        background: q.completed ? 'rgba(16,185,129,0.08)' : 'var(--bg-elevated)',
-                        border: q.completed ? '1px solid rgba(16,185,129,0.2)' : '1px solid transparent',
+                        background: q.completed ? 'var(--success-dim)' : 'var(--bg-elevated)',
+                        border: q.completed ? '1px solid var(--success-dim)' : '1px solid transparent',
                         transition: 'all 0.3s ease',
                     }}>
                         {/* Check circle */}
@@ -72,7 +72,7 @@ const DailyQuests = ({ dateStr, logData }) => {
             {completedCount === 3 && (
                 <div style={{
                     marginTop: '10px', padding: '8px', borderRadius: '8px',
-                    background: 'rgba(16,185,129,0.1)', textAlign: 'center',
+                    background: 'var(--color-success-dim)', textAlign: 'center',
                     fontSize: '12px', fontWeight: 700, color: 'var(--success)',
                 }}>
                     All quests complete! ⚡

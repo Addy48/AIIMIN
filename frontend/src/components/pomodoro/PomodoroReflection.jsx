@@ -5,10 +5,20 @@ import React from 'react';
  */
 const PomodoroReflection = ({ sessionMood, setSessionMood, sessionNote, setSessionNote, onSave, onSkip }) => (
     <div className="fade-up" style={{
-        marginTop: '16px', padding: '20px', background: 'var(--bg-elevated)',
+        marginTop: '16px', padding: '24px', background: 'var(--bg-elevated)',
         border: '1px solid var(--border-accent)', borderRadius: '16px',
-        boxShadow: 'var(--shadow-md)', textAlign: 'left'
+        boxShadow: 'var(--shadow-md)', textAlign: 'left', position: 'relative'
     }}>
+        <button 
+            onClick={onSkip}
+            style={{ 
+                position: 'absolute', top: '16px', right: '16px', 
+                background: 'none', border: 'none', color: 'var(--text-3)', 
+                cursor: 'pointer', padding: '4px' 
+            }}
+        >
+            <span style={{ fontSize: '18px' }}>✕</span>
+        </button>
         <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '12px' }}>
             Great focus! Quick reflection:
         </h4>
