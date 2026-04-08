@@ -177,10 +177,24 @@ const DailyLogForm = ({ user, externalMood }) => {
 
                 {/* Form Header */}
                 <div style={{ padding: '24px 28px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-1)' }}>Today's Log</h3>
-                    <div style={{ padding: '3px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '12px', color: 'var(--text-3)', fontWeight: 500 }}>
-                        {todayDisplay}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-1)' }}>Today's Log</h3>
+                        <div style={{ padding: '3px 12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '9999px', fontSize: '12px', color: 'var(--text-3)', fontWeight: 500 }}>
+                            {todayDisplay}
+                        </div>
                     </div>
+                    <button type="button" onClick={() => {
+                        setFormData({
+                            sleepStart: '', sleepEnd: '',
+                            gymDone: false, gymDuration: 0,
+                            breakfastDone: false, steps: 0, waterBottles: 0,
+                            learningDone: false, learningTopic: '',
+                            journalEntry: '', mood: null,
+                        });
+                        setIsDirty(false);
+                    }} style={{ background: 'transparent', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
+                        ✕
+                    </button>
                 </div>
 
                 {/* Form Body */}

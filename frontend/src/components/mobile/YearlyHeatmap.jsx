@@ -7,10 +7,10 @@ const DAYS = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
 // Color mapping per completion score
 function getColor(score) {
     if (score === null) return 'var(--bg-elevated)';
-    if (score === 8) return '#10b981';       // dark green — perfect
-    if (score >= 6) return '#34d399';        // light green
-    if (score >= 4) return '#6ee7b7';        // lighter green
-    if (score >= 1) return '#a7f3d0';        // pale green
+    if (score === 8) return 'var(--color-success)';       // perfect
+    if (score >= 6) return 'rgba(34, 197, 94, 0.7)';        // light green
+    if (score >= 4) return 'rgba(34, 197, 94, 0.4)';        // lighter green
+    if (score >= 1) return 'rgba(34, 197, 94, 0.15)';        // pale green
     return 'var(--border)';                   // logged but 0
 }
 
@@ -108,7 +108,7 @@ const YearlyHeatmap = ({ user }) => {
                 </span>
                 <div style={{ display: 'flex', gap: '6px' }}>
                     <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>{totalLogged} days</span>
-                    <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 700 }}>{perfectDays} perfect</span>
+                    <span style={{ fontSize: '11px', color: 'var(--color-success)', fontWeight: 700 }}>{perfectDays} perfect</span>
                 </div>
             </div>
 

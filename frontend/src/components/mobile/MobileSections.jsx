@@ -204,11 +204,11 @@ const MobileMindSection = ({ data, onChange, complete }) => (
         <div style={{ marginTop: '14px' }}>
             <label style={labelSt}>Brain Clarity</label>
             <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                {[{ v: 1, label: '🌫️ Foggy', color: '#ef4444' }, { v: 2, label: '😐 Okay', color: '#f59e0b' }, { v: 3, label: '⚡ Sharp', color: '#10b981' }].map(opt => (
+                {[{ v: 1, label: '🌫️ Foggy', color: 'var(--color-danger)' }, { v: 2, label: '😐 Okay', color: 'var(--color-warning)' }, { v: 3, label: '⚡ Sharp', color: 'var(--color-success)' }].map(opt => (
                     <button key={opt.v} type="button" onClick={() => onChange('brainFog', opt.v)}
                         style={{
                             flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none',
-                            background: data.brainFog === opt.v ? opt.color + '20' : 'var(--bg-elevated)',
+                            background: data.brainFog === opt.v ? `var(--color-${opt.color === 'var(--color-danger)' ? 'danger' : opt.color === 'var(--color-warning)' ? 'warning' : 'success'}-dim)` : 'var(--bg-elevated)',
                             color: data.brainFog === opt.v ? opt.color : 'var(--text-3)',
                             fontSize: '12px', fontWeight: 600, cursor: 'pointer',
                             outline: data.brainFog === opt.v ? `2px solid ${opt.color}` : '2px solid transparent',
@@ -294,19 +294,19 @@ const MobileMoneySection = ({ user, accounts }) => {
     const [saving, setSaving] = useState(false);
 
     const CATS = [
-        { name: 'Food', icon: '🍜', color: '#ff6b35' },
-        { name: 'Drinks', icon: '☕', color: '#c2841a' },
-        { name: 'Snacks', icon: '🍪', color: '#f59e0b' },
-        { name: 'Shopping', icon: '🛒', color: '#8b5cf6' },
-        { name: 'Outfit', icon: '🧥', color: '#a855f7' },
-        { name: 'Household', icon: '🪑', color: '#6b7280' },
-        { name: 'Body Care', icon: '☃️', color: '#06b6d4' },
-        { name: 'Education', icon: '📙', color: '#10b981' },
-        { name: 'Subscriptions', icon: '🎥', color: '#ec4899' },
-        { name: 'Transport', icon: '🚖', color: '#3b82f6' },
-        { name: 'Health', icon: '🧘🏼', color: '#22c55e' },
-        { name: 'Misc', icon: '🌐', color: '#94a3b8' },
-        { name: 'Earning', icon: '🏅', color: '#f5a623' },
+        { name: 'Food', icon: '🍜', color: 'var(--accent)' },
+        { name: 'Drinks', icon: '☕', color: 'var(--gold)' },
+        { name: 'Snacks', icon: '🍪', color: 'var(--accent-dim)' },
+        { name: 'Shopping', icon: '🛒', color: 'var(--text-2)' },
+        { name: 'Outfit', icon: '🧥', color: 'var(--gold)' },
+        { name: 'Household', icon: '🪑', color: 'var(--text-3)' },
+        { name: 'Body Care', icon: '☃️', color: 'var(--accent)' },
+        { name: 'Education', icon: '📙', color: 'var(--success)' },
+        { name: 'Subscriptions', icon: '🎥', color: 'var(--gold)' },
+        { name: 'Transport', icon: '🚖', color: 'var(--text-2)' },
+        { name: 'Health', icon: '🧘🏼', color: 'var(--success)' },
+        { name: 'Misc', icon: '🌐', color: 'var(--text-3)' },
+        { name: 'Earning', icon: '🏅', color: 'var(--gold)' },
     ];
 
     const KEYWORDS = {
@@ -423,15 +423,15 @@ const MobileMoneySection = ({ user, accounts }) => {
                     style={{
                         padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 700, fontSize: '14px',
                         cursor: 'pointer', minHeight: '48px',
-                        background: txType === 'income' ? '#0A1F14' : 'var(--bg-elevated)',
-                        color: txType === 'income' ? '#63C185' : 'var(--text-3)',
+                        background: txType === 'income' ? 'var(--success-dim)' : 'var(--bg-elevated)',
+                        color: txType === 'income' ? 'var(--success)' : 'var(--text-3)',
                     }}>💰 IN</button>
                 <button type="button" onClick={() => setTxType('expense')}
                     style={{
                         padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 700, fontSize: '14px',
                         cursor: 'pointer', minHeight: '48px',
-                        background: txType === 'expense' ? '#1F0A0A' : 'var(--bg-elevated)',
-                        color: txType === 'expense' ? '#EF4444' : 'var(--text-3)',
+                        background: txType === 'expense' ? 'var(--danger-dim)' : 'var(--bg-elevated)',
+                        color: txType === 'expense' ? 'var(--danger)' : 'var(--text-3)',
                     }}>💸 OUT</button>
             </div>
 
@@ -458,7 +458,7 @@ const MobileMoneySection = ({ user, accounts }) => {
                                 style={{
                                     padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
                                     border: `1.5px solid ${category === c.name ? c.color : 'var(--border)'}`,
-                                    background: category === c.name ? c.color + '22' : 'var(--bg-elevated)',
+                                    background: category === c.name ? `var(--color-${c.name === 'Food' || c.name === 'Body Care' ? 'accent' : c.name === 'Drinks' || c.name === 'Outfit' || c.name === 'Subscriptions' || c.name === 'Earning' ? 'gold' : c.name === 'Education' || c.name === 'Health' ? 'success' : 'text-3'}-dim)` : 'var(--bg-elevated)',
                                     color: category === c.name ? c.color : 'var(--text-3)',
                                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px',
                                     whiteSpace: 'nowrap', flex: '0 0 auto',
@@ -687,7 +687,7 @@ const MobileResetSection = ({ user }) => {
 /* ─── DSA Problem Counter ─── */
 
 const DSA_PLATFORMS = { leetcode: '🟡', codeforces: '🔵', gfg: '🟢', codechef: '🟤', hackerrank: '🟩', other: '🟣' };
-const DSA_DIFF = { easy: '#10b981', medium: '#f5a623', hard: '#ef4444' };
+const DSA_DIFF = { easy: 'var(--color-success)', medium: 'var(--color-warning)', hard: 'var(--color-danger)' };
 
 const MobileDSASection = ({ user }) => {
     const [problems, setProblems] = useState([]);
@@ -766,7 +766,7 @@ const MobileDSASection = ({ user }) => {
                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {Object.entries(DSA_PLATFORMS).map(([k, icon]) => (
                             <button key={k} type="button" onClick={() => setPlatform(k)}
-                                style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, border: platform === k ? '1px solid var(--accent)' : '1px solid var(--border)', background: platform === k ? 'rgba(255,107,53,0.1)' : 'transparent', color: platform === k ? 'var(--accent)' : 'var(--text-3)', cursor: 'pointer' }}>
+                                style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, border: platform === k ? '1px solid var(--accent)' : '1px solid var(--border)', background: platform === k ? 'var(--accent-dim)' : 'transparent', color: platform === k ? 'var(--accent)' : 'var(--text-3)', cursor: 'pointer' }}>
                                 {icon} {k}
                             </button>
                         ))}
@@ -774,7 +774,7 @@ const MobileDSASection = ({ user }) => {
                     <div style={{ display: 'flex', gap: '6px' }}>
                         {Object.entries(DSA_DIFF).map(([d, color]) => (
                             <button key={d} type="button" onClick={() => setDifficulty(d)}
-                                style={{ flex: 1, padding: '6px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, border: difficulty === d ? `1px solid ${color}` : '1px solid var(--border)', background: difficulty === d ? `${color}15` : 'transparent', color: difficulty === d ? color : 'var(--text-3)', cursor: 'pointer', textTransform: 'capitalize' }}>
+                                style={{ flex: 1, padding: '6px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, border: difficulty === d ? `1px solid ${color}` : '1px solid var(--border)', background: difficulty === d ? `var(--color-${d === 'easy' ? 'success' : d === 'medium' ? 'warning' : 'danger'}-dim)` : 'transparent', color: difficulty === d ? color : 'var(--text-3)', cursor: 'pointer', textTransform: 'capitalize' }}>
                                 {d}
                             </button>
                         ))}
@@ -807,9 +807,9 @@ const MobileDSASection = ({ user }) => {
 /* ─── Shared primitives ─── */
 
 const SectionCard = ({ icon, title, complete, children }) => (
-    <div style={{
-        background: 'var(--bg-card)', borderRadius: '14px', padding: '16px',
-        border: '1px solid var(--border)', margin: '0 16px',
+    <div className="glass-panel" style={{
+        padding: '16px',
+        margin: '0 16px',
     }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{
@@ -830,8 +830,8 @@ const ToggleRow = ({ label, active, onToggle, icon }) => (
     <div onClick={onToggle} style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '12px 14px', borderRadius: '10px', marginBottom: '8px',
-        border: active ? '1px solid rgba(245,166,35,0.25)' : '1px solid var(--border)',
-        background: active ? 'rgba(245,166,35,0.08)' : 'var(--bg-elevated)',
+        border: active ? '1px solid var(--accent)' : '1px solid var(--border)',
+        background: active ? 'var(--accent-dim)' : 'var(--bg-elevated)',
         cursor: 'pointer',
     }}>
         <span style={{ fontSize: '14px', color: 'var(--text-1)', display: 'flex', alignItems: 'center', gap: '8px' }}>

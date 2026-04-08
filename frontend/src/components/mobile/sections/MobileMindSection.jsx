@@ -49,15 +49,14 @@ const MobileMindSection = ({ data, onChange, complete }) => (
             </div>
         )}
 
-        {/* Brain Clarity */}
         <div style={{ marginTop: '14px' }}>
             <label style={labelSt}>Brain Clarity</label>
             <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                {[{ v: 1, label: '🌫️ Foggy', color: '#ef4444' }, { v: 2, label: '😐 Okay', color: '#f59e0b' }, { v: 3, label: '⚡ Sharp', color: '#10b981' }].map(opt => (
+                {[{ v: 1, label: '🌫️ Foggy', color: 'var(--color-danger)' }, { v: 2, label: '😐 Okay', color: 'var(--color-warning)' }, { v: 3, label: '⚡ Sharp', color: 'var(--color-success)' }].map(opt => (
                     <button key={opt.v} type="button" onClick={() => onChange('brainFog', opt.v)}
                         style={{
                             flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none',
-                            background: data.brainFog === opt.v ? opt.color + '20' : 'var(--bg-elevated)',
+                            background: data.brainFog === opt.v ? `var(--color-${opt.color === 'var(--color-danger)' ? 'danger' : opt.color === 'var(--color-warning)' ? 'warning' : 'success'}-dim)` : 'var(--bg-elevated)',
                             color: data.brainFog === opt.v ? opt.color : 'var(--text-3)',
                             fontSize: '12px', fontWeight: 600, cursor: 'pointer',
                             outline: data.brainFog === opt.v ? `2px solid ${opt.color}` : '2px solid transparent',
