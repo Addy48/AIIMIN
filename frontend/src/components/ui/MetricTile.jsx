@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 /**
  * MetricTile — Tier 2 display component.
@@ -22,6 +22,8 @@ const MetricTile = ({
   context,      // string — secondary context "Target: 8h"
   index = 0,    // stagger delay
   done,         // boolean — completed state
+  onClick,      // optional click handler
+  interactive,  // boolean — shows pointer cursor + tap hint
 }) => {
   const [mounted, setMounted] = useState(false);
   const [barWidth, setBarWidth] = useState(0);
@@ -35,39 +37,52 @@ const MetricTile = ({
   }, [index, progress]);
 
   return (
-    <div style={{
+    <div
+    onClick={onClick}
+    style={{
       height: 'var(--card-tile)',
-      background: mounted ? 'var(--glass-bg)' : 'transparent',
-      backdropFilter: 'var(--glass-blur-sm)',
-      WebkitBackdropFilter: 'var(--glass-blur-sm)',
-      border: `1px solid ${mounted ? 'var(--glass-border)' : 'transparent'}`,
-      borderLeft: `3px solid ${mounted ? color : 'transparent'}`,
+      background: mounted ? 'var(--color-surface)' : 'transparent',
+      border: `1px solid ${mounted ? 'var(--color-border)' : 'transparent'}`,
+      borderLeft: `2px solid ${mounted ? color : 'transparent'}`,
       borderRadius: 'var(--r-md)',
       padding: '16px 16px 12px',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      transition: `all var(--dur-enter) var(--ease)`,
+      transition: `background var(--dur-enter) var(--ease), border-color var(--dur-enter) var(--ease)`,
       position: 'relative',
       overflow: 'hidden',
+      cursor: interactive ? 'pointer' : 'default',
     }}
     onMouseEnter={e => {
-      e.currentTarget.style.background = 'var(--glass-bg-hover)';
-      e.currentTarget.style.borderColor = 'var(--glass-border-lit)';
+      e.currentTarget.style.background = 'var(--color-elevated)';
+      e.currentTarget.style.borderTopColor = 'var(--color-border-lit)';
+      e.currentTarget.style.borderRightColor = 'var(--color-border-lit)';
+      e.currentTarget.style.borderBottomColor = 'var(--color-border-lit)';
     }}
     onMouseLeave={e => {
-      e.currentTarget.style.background = 'var(--glass-bg)';
-      e.currentTarget.style.borderTopColor = 'var(--glass-border)';
-      e.currentTarget.style.borderRightColor = 'var(--glass-border)';
-      e.currentTarget.style.borderBottomColor = 'var(--glass-border)';
+      e.currentTarget.style.background = 'var(--color-surface)';
+      e.currentTarget.style.borderTopColor = 'var(--color-border)';
+      e.currentTarget.style.borderRightColor = 'var(--color-border)';
+      e.currentTarget.style.borderBottomColor = 'var(--color-border)';
     }}
     >
-      {/* Label */}
-      <span className="text-label">{label}</span>
+      {/* Label + log indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span className="text-label">{label}</span>
+        {interactive && !done && (
+          <span style={{
+            font: '500 8px/1 var(--font-mono)',
+            color: 'var(--color-text-3)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}>log</span>
+        )}
+      </div>
 
       {/* Value */}
       <span style={{
-        font: '300 20px/1 var(--font-sans)',
+        font: 'var(--text-metric)',
         color: done ? color : 'var(--color-text-1)',
       }}>
         {value ?? '—'}

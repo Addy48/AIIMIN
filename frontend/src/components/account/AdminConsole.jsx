@@ -32,7 +32,7 @@ const AdminConsole = ({ session }) => {
         }
     }, [session, token]);
 
-    useEffect(() => { fetchLogs(); }, [fetchLogs]);
+    // Don't auto-fetch on mount — fetch only when user clicks Refresh
 
     // Store sim settings in sessionStorage for middleware to pick up
     useEffect(() => {

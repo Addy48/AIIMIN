@@ -19,7 +19,7 @@ const MoodSelector = ({ value, onChange }) => {
       display: 'flex',
       alignItems: 'center',
       gap: '16px',
-      padding: '12px 0',
+      padding: '10px 0',
     }}>
       {/* "Today I feel [word]" */}
       <span style={{
