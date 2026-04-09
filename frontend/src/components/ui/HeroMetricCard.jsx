@@ -64,20 +64,18 @@ const HeroMetricCard = ({
       onClick={onClick}
       style={{
         height: 'var(--card-hero)',
-        background: 'var(--glass-bg)',
-        backdropFilter: 'var(--glass-blur-sm)',
-        WebkitBackdropFilter: 'var(--glass-blur-sm)',
-        border: '1px solid var(--glass-border)',
-        borderRadius: 'var(--r-lg)',
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--r-md)',
         padding: '20px 24px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         cursor: onClick ? 'pointer' : 'default',
-        transition: `all var(--dur-enter) var(--ease)`,
+        transition: `background var(--dur-enter) var(--ease), border-color var(--dur-enter) var(--ease)`,
       }}
-      onMouseEnter={e => { if (onClick) { e.currentTarget.style.background = 'var(--glass-bg-hover)'; e.currentTarget.style.borderColor = 'var(--glass-border-lit)'; } }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-elevated)'; e.currentTarget.style.borderColor = 'var(--color-border-lit)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
     >
       {/* Label */}
       <span className="text-label">{label}</span>

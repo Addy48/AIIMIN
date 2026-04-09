@@ -24,8 +24,9 @@ const PlacementStrip = ({
   return (
     <div style={{
       background: 'var(--color-surface)',
+      borderTop: '1px solid var(--color-border)',
       borderBottom: '1px solid var(--color-border)',
-      padding: '10px 24px',
+      padding: '10px 0',
       display: 'flex',
       alignItems: 'center',
       gap: '32px',
