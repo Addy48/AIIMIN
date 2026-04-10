@@ -18,18 +18,15 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
 
 // Lazy-loaded Dashboard routes
-const Overview = React.lazy(() => import('./pages/Overview'));
-const Insights = React.lazy(() => import('./pages/Insights'));
+const Overview    = React.lazy(() => import('./pages/Overview'));
+const Insights    = React.lazy(() => import('./pages/Insights'));
 const CalendarPage = React.lazy(() => import('./pages/CalendarPage'));
-const ReportsPage = React.lazy(() => import('./pages/Reports'));
-const Finance = React.lazy(() => import('./pages/Finance'));
-const Settings = React.lazy(() => import('./pages/Settings'));
-const Skills = React.lazy(() => import('./pages/Skills'));
-const Growth = React.lazy(() => import('./pages/Growth'));
+const ReportsPage  = React.lazy(() => import('./pages/Reports'));
+const Finance     = React.lazy(() => import('./pages/Finance'));
+const Settings    = React.lazy(() => import('./pages/Settings'));
 
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
@@ -43,13 +40,11 @@ const Lazy = ({ children }) => <React.Suspense fallback={<Fallback />}>{children
 function App() {
   return (
     <ErrorBoundary label="Application">
-      <ThemeProvider>
-        <AuthProvider>
-          <BrowserRouter>
-            <AuthedApp />
-          </BrowserRouter>
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <AuthedApp />
+        </BrowserRouter>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }
@@ -68,7 +63,7 @@ function AppContent({ user }) {
     const meta = document.querySelector('meta[name="viewport"]');
     if (!meta) return;
     const defaultVP = 'width=device-width, initial-scale=1, viewport-fit=cover';
-    const mobileVP = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+    const mobileVP  = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
     meta.setAttribute('content', isMobile ? mobileVP : defaultVP);
     if (isMobile) {
       const block = (e) => { if (e.touches?.length > 1) e.preventDefault(); };
@@ -83,32 +78,30 @@ function AppContent({ user }) {
       <Routes>
 
         {/* ── Auth ── */}
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/overview" replace />} />
+        <Route path="/login"         element={!user ? <Login /> : <Navigate to="/overview" replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
+        <Route path="/"              element={<Navigate to={user ? '/overview' : '/login'} replace />} />
 
         {/* ── Authenticated shell ── */}
         <Route element={user ? <DashboardLayout user={user} /> : <Navigate to="/login" replace />}>
           <Route path="/overview" element={<Lazy><Overview user={user} /></Lazy>} />
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
-          <Route path="/reports" element={<Lazy><ReportsPage /></Lazy>} />
-          <Route path="/finance" element={<Lazy><Finance /></Lazy>} />
+          <Route path="/reports"  element={<Lazy><ReportsPage /></Lazy>} />
+          <Route path="/finance"  element={<Lazy><Finance /></Lazy>} />
           <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
-          <Route path="/skills" element={<Lazy><Skills /></Lazy>} />
-          <Route path="/growth" element={<Lazy><Growth /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}
         <Route path="/m" element={user ? <MobileApp user={user} /> : <Navigate to="/login" replace />} />
 
         {/* ── Public legal ── */}
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy"       element={<Privacy />} />
+        <Route path="/terms"         element={<Terms />} />
         <Route path="/data-deletion" element={<DataDeletion />} />
-        <Route path="/security" element={<Security />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+        <Route path="/security"      element={<Security />} />
+        <Route path="/about"         element={<About />} />
+        <Route path="/contact"       element={<Contact />} />
 
         {/* ── 404 ── */}
         <Route path="*" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
@@ -130,7 +123,7 @@ function AppContent({ user }) {
             AIIMIN — Personal OS
           </span>
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            {[['/privacy', 'Privacy'], ['/terms', 'Terms'], ['/data-deletion', 'Data Deletion'], ['/security', 'Security'], ['/about', 'About']].map(([to, label]) => (
+            {[['/privacy','Privacy'],['/terms','Terms'],['/data-deletion','Data Deletion'],['/security','Security'],['/about','About']].map(([to,label]) => (
               <Link key={to} to={to} style={{ font: '300 12px/1 var(--font-sans)', color: 'var(--color-text-3)', textDecoration: 'none' }}>{label}</Link>
             ))}
           </div>
