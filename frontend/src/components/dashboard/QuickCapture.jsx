@@ -172,11 +172,11 @@ const QuickCapture = ({ user }) => {
             {contextHint && (
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '8px 12px', borderRadius: 'var(--r-sm)',
-                    background: 'var(--color-elevated)', border: '1px solid var(--color-border)',
+                    padding: '8px 12px', borderRadius: '10px',
+                    background: 'var(--bg-elevated)', border: '1px solid var(--border)',
                 }}>
-                    <span style={{ fontSize: '12px' }}>{contextHint.icon}</span>
-                    <span className="text-subtext" style={{ color: 'var(--color-text-3)' }}>
+                    <span style={{ fontSize: '14px' }}>{contextHint.icon}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', lineHeight: 1.4 }}>
                         {contextHint.text}
                     </span>
                 </div>
@@ -184,10 +184,8 @@ const QuickCapture = ({ user }) => {
 
             {/* ── Input area ── */}
             <div style={{
-                background: 'var(--color-elevated)',
-                borderRadius: 'var(--r-md)',
-                border: '1px solid var(--color-border)',
-                overflow: 'hidden',
+                background: 'var(--bg-elevated)', borderRadius: '12px',
+                border: '1px solid var(--border)', overflow: 'hidden',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     <input
@@ -199,55 +197,44 @@ const QuickCapture = ({ user }) => {
                         onKeyDown={e => { if (e.key === 'Enter' && text.trim()) handleSave(); }}
                         style={{
                             flex: 1, padding: '12px 14px', background: 'transparent',
-                            border: 'none', outline: 'none', color: 'var(--color-text-1)',
-                            font: 'var(--text-body)',
+                            border: 'none', outline: 'none', color: 'var(--text-1)',
+                            fontSize: '13px', fontWeight: 500,
                         }}
                     />
                     <button
                         onClick={handleSave}
                         disabled={!text.trim() || saving}
                         style={{
-                            padding: '7px 14px', margin: '4px', borderRadius: 'var(--r-sm)',
-                            border: text.trim() ? '1px solid var(--color-accent)' : '1px solid transparent',
-                            cursor: text.trim() ? 'pointer' : 'default',
-                            background: 'transparent',
-                            color: text.trim() ? 'var(--color-accent)' : 'var(--color-text-3)',
-                            font: '500 10px/1 var(--font-mono)',
-                            letterSpacing: '0.06em',
-                            transition: `all var(--dur-enter) var(--ease)`,
+                            padding: '8px 14px', margin: '4px', borderRadius: '8px',
+                            border: 'none', cursor: text.trim() ? 'pointer' : 'default',
+                            background: text.trim() ? 'var(--accent)' : 'transparent',
+                            color: text.trim() ? 'white' : 'var(--text-3)',
+                            fontSize: '12px', fontWeight: 700, transition: 'all 0.15s',
                             opacity: saving ? 0.6 : 1,
                         }}
                     >
-                        {saving ? '...' : 'Save'}
+                        {saving ? '...' : '↵'}
                     </button>
                 </div>
 
-                {/* Tag pills */}
-                <div style={{ display: 'flex', gap: '4px', padding: '0 10px 10px' }}>
+                {/* Tag pills — only show when input has focus or text */}
+                <div style={{
+                    display: 'flex', gap: '4px', padding: '0 10px 10px',
+                }}>
                     {TAG_OPTIONS.map(tag => (
                         <button
                             key={tag.key}
                             onClick={() => setActiveTag(tag.key)}
                             style={{
-                                padding: '3px 10px',
-                                borderRadius: 'var(--r-pill)',
-                                font: '500 10px/1 var(--font-mono)',
-                                letterSpacing: '0.04em',
-                                border: activeTag === tag.key
-                                    ? '1px solid var(--color-accent)'
-                                    : '1px solid var(--color-border)',
-                                background: activeTag === tag.key
-                                    ? 'var(--color-accent-dim)'
-                                    : 'transparent',
-                                color: activeTag === tag.key
-                                    ? 'var(--color-accent)'
-                                    : 'var(--color-text-3)',
-                                cursor: 'pointer',
-                                transition: `all var(--dur-fast) var(--ease)`,
+                                padding: '3px 10px', borderRadius: '99px', fontSize: '11px', fontWeight: 700,
+                                border: activeTag === tag.key ? '1px solid var(--accent)' : '1px solid var(--border)',
+                                background: activeTag === tag.key ? 'rgba(255,107,53,0.08)' : 'transparent',
+                                color: activeTag === tag.key ? 'var(--accent)' : 'var(--text-3)',
+                                cursor: 'pointer', transition: 'all 0.12s',
                                 display: 'flex', alignItems: 'center', gap: '4px',
                             }}
                         >
-                            <span>{tag.emoji}</span>
+                            <span style={{ fontSize: '11px' }}>{tag.emoji}</span>
                             {tag.label}
                         </button>
                     ))}
@@ -256,19 +243,20 @@ const QuickCapture = ({ user }) => {
 
             {/* ── Notes feed ── */}
             {loading ? (
-                <span className="text-subtext" style={{ padding: '8px 0', color: 'var(--color-text-3)' }}>Loading...</span>
+                <div style={{ fontSize: '11px', color: 'var(--text-3)', padding: '8px 0' }}>Loading...</div>
             ) : allDisplayed.length === 0 ? (
                 <div style={{
-                    padding: '20px', textAlign: 'center',
-                    border: '1px dashed var(--color-border)',
-                    borderRadius: 'var(--r-md)',
+                    padding: '16px', textAlign: 'center',
+                    border: '1px dashed var(--border)', borderRadius: '10px',
                 }}>
-                    <span className="text-subtext" style={{ color: 'var(--color-text-3)' }}>
-                        No captures yet today. Type above.
-                    </span>
+                    <div style={{ fontSize: '16px', marginBottom: '6px' }}>📝</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600, lineHeight: 1.5 }}>
+                        No captures yet today.<br />
+                        Type above to save a thought, task, or reminder.
+                    </div>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {allDisplayed.map(note => {
                         const tag = getNoteTag(note);
                         const isDone = note.completed;
@@ -278,48 +266,42 @@ const QuickCapture = ({ user }) => {
                                 onClick={() => handleToggle(note)}
                                 style={{
                                     display: 'flex', alignItems: 'flex-start', gap: '10px',
-                                    padding: '10px 12px',
-                                    borderRadius: 'var(--r-sm)',
-                                    cursor: 'pointer',
-                                    background: isDone ? 'transparent' : 'var(--color-elevated)',
-                                    border: isDone ? '1px solid transparent' : '1px solid var(--color-border)',
-                                    opacity: isDone ? 0.45 : 1,
-                                    transition: `all var(--dur-enter) var(--ease)`,
+                                    padding: '10px 12px', borderRadius: '10px', cursor: 'pointer',
+                                    background: isDone ? 'transparent' : 'var(--bg-elevated)',
+                                    border: isDone ? '1px solid transparent' : '1px solid var(--border)',
+                                    opacity: isDone ? 0.5 : 1, transition: 'all 0.15s',
                                 }}
                             >
                                 {/* Checkbox */}
                                 <div style={{
-                                    width: '14px', height: '14px',
-                                    borderRadius: 'var(--r-none)',
-                                    flexShrink: 0, marginTop: '1px',
-                                    border: isDone ? 'none' : '1.5px solid var(--color-text-3)',
-                                    background: isDone ? 'var(--color-accent)' : 'transparent',
+                                    width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
+                                    marginTop: '1px',
+                                    border: isDone ? 'none' : '2px solid var(--text-3)',
+                                    background: isDone ? 'var(--accent)' : 'transparent',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    transition: `all var(--dur-fast) var(--ease)`,
+                                    transition: 'all 0.12s',
                                 }}>
-                                    {isDone && (
-                                        <svg width="8" height="6" viewBox="0 0 9 7" fill="none">
-                                            <path d="M1 3L3.5 5.5L8 1" stroke="var(--color-base)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    )}
+                                    {isDone && <span style={{ color: 'white', fontSize: '10px', fontWeight: 800 }}>✓</span>}
                                 </div>
 
                                 {/* Content */}
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{
-                                        font: 'var(--text-body)',
-                                        color: 'var(--color-text-1)',
+                                        fontSize: '12px', fontWeight: 600, color: 'var(--text-1)',
                                         textDecoration: isDone ? 'line-through' : 'none',
-                                        wordBreak: 'break-word',
+                                        lineHeight: 1.4, wordBreak: 'break-word',
                                     }}>
                                         {note.content}
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
-                                        <span style={{ font: '500 9px/1 var(--font-mono)', color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px',
+                                    }}>
+                                        <span style={{ fontSize: '10px' }}>{tag.emoji}</span>
+                                        <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-3)' }}>
                                             {tag.label}
                                         </span>
-                                        <span className="text-subtext" style={{ color: 'var(--color-text-3)' }}>·</span>
-                                        <span className="text-subtext" style={{ color: 'var(--color-text-3)' }}>
+                                        <span style={{ fontSize: '10px', color: 'var(--text-3)' }}>·</span>
+                                        <span style={{ fontSize: '10px', color: 'var(--text-3)' }}>
                                             {timeAgo(note.created_at)}
                                         </span>
                                     </div>
@@ -329,35 +311,31 @@ const QuickCapture = ({ user }) => {
                     })}
 
                     {/* Show more / less + Clear completed */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '4px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '2px 0' }}>
                         {notes.length > 4 && (
                             <button
                                 onClick={() => setExpanded(e => !e)}
                                 style={{
-                                    padding: '4px', background: 'none', border: 'none',
-                                    color: 'var(--color-accent)',
-                                    font: '500 10px/1 var(--font-mono)',
-                                    letterSpacing: '0.04em',
-                                    textTransform: 'uppercase',
+                                    padding: '6px', background: 'none', border: 'none',
+                                    color: 'var(--accent)', fontSize: '11px', fontWeight: 700,
                                     cursor: 'pointer',
                                 }}
                             >
-                                {expanded ? 'Show less' : `+${notes.length - 4} more`}
+                                {expanded ? 'Show less' : `Show ${notes.length - 4} more`}
                             </button>
                         )}
                         {notes.some(n => n.completed) && (
                             <>
-                                {notes.length > 4 && <span className="text-subtext" style={{ color: 'var(--color-text-3)' }}>·</span>}
+                                {notes.length > 4 && <span style={{ color: 'var(--text-3)', fontSize: '10px' }}>·</span>}
                                 <button
                                     onClick={handleClearCompleted}
                                     style={{
-                                        padding: '4px', background: 'none', border: 'none',
-                                        color: 'var(--color-text-3)',
-                                        font: '300 10px/1 var(--font-sans)',
-                                        cursor: 'pointer', transition: `color var(--dur-fast) var(--ease)`,
+                                        padding: '6px', background: 'none', border: 'none',
+                                        color: 'var(--text-3)', fontSize: '11px', fontWeight: 600,
+                                        cursor: 'pointer', transition: 'color 0.15s',
                                     }}
-                                    onMouseEnter={e => e.currentTarget.style.color = 'var(--color-alert-red)'}
-                                    onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-3)'}
+                                    onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-3)'}
                                 >
                                     Clear done ({notes.filter(n => n.completed).length})
                                 </button>
@@ -369,15 +347,18 @@ const QuickCapture = ({ user }) => {
 
             {/* ── Today's pulse ── */}
             {todayNotes.length > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '24px', padding: '4px 0' }}>
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px',
+                    padding: '8px 0',
+                }}>
                     {[
-                        { label: 'Captured', val: todayNotes.length, color: 'var(--color-text-1)' },
-                        { label: 'Ideas', val: todayNotes.filter(n => n.linked_event_id === 'idea').length, color: 'var(--color-warning)' },
-                        { label: 'Done', val: todayNotes.filter(n => n.completed).length, color: 'var(--color-accent)' },
-                    ].map(stat => (
-                        <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span style={{ font: '300 16px/1 var(--font-sans)', color: stat.color }}>{stat.val}</span>
-                            <span className="text-label" style={{ color: 'var(--color-text-3)' }}>{stat.label}</span>
+                        { label: 'Captured', val: todayNotes.length, color: 'var(--text-1)' },
+                        { label: 'Ideas', val: todayNotes.filter(n => n.linked_event_id === 'idea').length, color: '#f5a623' },
+                        { label: 'Done', val: todayNotes.filter(n => n.completed).length, color: '#10b981' },
+                    ].map(s => (
+                        <div key={s.label} style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '14px', fontWeight: 800, color: s.color }}>{s.val}</div>
+                            <div style={{ fontSize: '9px', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
                         </div>
                     ))}
                 </div>
@@ -385,9 +366,12 @@ const QuickCapture = ({ user }) => {
 
             {/* ── Storage indicator ── */}
             {notes.length > 0 && (
-                <span className="text-subtext" style={{ color: 'var(--color-text-3)', paddingBottom: '4px' }}>
-                    {notes.length} note{notes.length !== 1 ? 's' : ''} — completed auto-clear after 7 days
-                </span>
+                <div style={{
+                    textAlign: 'center', fontSize: '10px', fontWeight: 600,
+                    color: 'var(--text-3)', padding: '0 0 4px',
+                }}>
+                    {notes.length} note{notes.length !== 1 ? 's' : ''} loaded · completed auto-clear after 7 days
+                </div>
             )}
         </div>
     );

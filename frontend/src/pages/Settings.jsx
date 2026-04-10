@@ -55,9 +55,7 @@ const Settings = () => {
 
     return (
         <div>
-            <div style={{ font: '300 32px/1 var(--font-sans)', color: 'var(--color-text-1)', marginBottom: 'var(--space-6)', letterSpacing: '-0.02em' }}>
-                Settings<span style={{ color: 'var(--color-accent)' }}>.</span>
-            </div>
+            <h1 className="text-section" style={{ marginBottom: 'var(--space-6)' }}>Settings</h1>
             <SettingsPanelSection
                 user={user}
                 isAdmin={isAdmin}
