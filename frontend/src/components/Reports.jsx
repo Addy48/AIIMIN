@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import toast from '../utils/toast';
-import { apiGet } from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
-import { useMockData } from '../providers/MockDataProvider';
 import { REPORT_MODES, PAGE_TITLES, drawHeader, addFooter, getDateRange } from './reports/ReportPdfUtils';
 import { SECTION_RENDERERS } from './reports/ReportSections';
 import ReportPreviewModal from './reports/ReportPreviewModal';
@@ -16,7 +14,6 @@ import { useLHSData } from '../hooks/useLHSData';
  */
 const Reports = ({ user }) => {
     const { session } = useAuth();
-    const { isUsingMock, mockData } = useMockData() || {};
     const today = new Date().toLocaleDateString('en-CA');
     const [rangeMode, setRangeMode] = useState('week');
     const [reportMode, setReportMode] = useState('standard');
@@ -26,6 +23,9 @@ const Reports = ({ user }) => {
     const [previewCtx, setPreviewCtx] = useState(null);
 
     const { lhsData, reportData } = useLHSData(session);
+
+    const usageDays = user?.created_at ? Math.max(0, Math.floor((new Date() - new Date(user.created_at)) / (1000 * 60 * 60 * 24))) : 0;
+    const hasSufficientData = usageDays >= 15;
 
     const handleRangeSelect = (mode) => {
         setRangeMode(mode);
@@ -139,12 +139,20 @@ const Reports = ({ user }) => {
                         {REPORT_MODES[reportMode].label} • {startDate} to {endDate}
                     </div>
 
-                    <button onClick={handleGenerate} disabled={isGenerating} style={{
+                    {!hasSufficientData && (
+                        <div style={{ padding: '12px', borderRadius: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', fontSize: '12px', color: 'var(--text-3)', textAlign: 'center' }}>
+                            <span style={{ color: 'var(--accent)', fontWeight: 700 }}>Insufficient Data: </span>
+                            Detailed reporting requires at least 15 days of system usage to establish behavioral baselines. 
+                            (Currently at {usageDays} {usageDays === 1 ? 'day' : 'days'})
+                        </div>
+                    )}
+
+                    <button onClick={handleGenerate} disabled={isGenerating || !hasSufficientData} style={{
                         width: '100%', padding: '14px', borderRadius: '10px', border: 'none',
                         background: 'linear-gradient(135deg, var(--accent) 0%, #e05c2a 100%)',
                         color: '#fff', fontWeight: 800, fontSize: '15px',
-                        cursor: isGenerating ? 'not-allowed' : 'pointer',
-                        opacity: isGenerating ? 0.7 : 1,
+                        cursor: (isGenerating || !hasSufficientData) ? 'not-allowed' : 'pointer',
+                        opacity: (isGenerating || !hasSufficientData) ? 0.7 : 1,
                     }}>
                         {isGenerating ? 'Generating Report...' : `Generate ${REPORT_MODES[reportMode].label}`}
                     </button>

@@ -8,29 +8,36 @@ const ASPIRATIONS = [
 ];
 
 const AspirationMeters = () => (
-    <div style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--r-lg)',
-        padding: '20px',
+    <div className="glass-panel" style={{
+        padding: '24px',
+        borderRadius: '20px',
     }}>
-        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '14px' }}>
-            Aspiration Meters
+        <div style={{ 
+            fontSize: '11px', 
+            fontWeight: 800, 
+            color: 'var(--text-3)', 
+            textTransform: 'uppercase', 
+            letterSpacing: '0.15em', 
+            marginBottom: '18px',
+            fontFamily: 'var(--font-mono)'
+        }}>
+            Strategic Aspiration Meters
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             {ASPIRATIONS.map((a, i) => (
                 <div key={i}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '12px', color: 'var(--text-2)', fontWeight: 600 }}>{a.label}</span>
-                        <span style={{ fontSize: '12px', color: a.color, fontWeight: 700 }}>{a.current}%</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'baseline' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--text-1)', fontWeight: 600, fontFamily: 'var(--font-serif)' }}>{a.label}</span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-2)', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{a.current}%</span>
                     </div>
-                    <div style={{ height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '5px', background: 'var(--bg-elevated)', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border)' }}>
                         <div style={{
                             width: `${(a.current / a.target) * 100}%`,
                             height: '100%',
-                            background: a.color,
-                            borderRadius: '3px',
-                            transition: 'width 0.6s ease',
+                            background: `linear-gradient(90deg, ${a.color}ee, ${a.color})`,
+                            boxShadow: `0 0 10px ${a.color}44`,
+                            borderRadius: '10px',
+                            transition: 'width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
                         }} />
                     </div>
                 </div>
