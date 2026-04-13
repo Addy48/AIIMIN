@@ -65,7 +65,7 @@ export default function MoneyLendingTab({ user, lentItems, setLentItems }) {
                         padding: '14px', borderRadius: '12px',
                         background: 'var(--bg-card)', border: '1px solid var(--border)',
                     }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: l.direction === 'lent' ? 'rgba(255,107,53,0.1)' : 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: l.direction === 'lent' ? 'var(--accent-dim)' : 'var(--color-danger-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
                             {l.direction === 'lent' ? '\uD83D\uDCE4' : '\uD83D\uDCE5'}
                         </div>
                         <div style={{ flex: 1 }}>

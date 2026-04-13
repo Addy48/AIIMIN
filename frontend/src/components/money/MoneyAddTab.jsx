@@ -120,7 +120,7 @@ export default function MoneyAddTab({ user, accounts, awardMoneyXP, onSuccess })
                                         padding: '6px 12px', borderRadius: '8px', fontSize: '11px',
                                         fontWeight: 600, cursor: 'pointer',
                                         border: '1px solid ' + (txAccountId === a.id ? 'var(--accent)' : 'var(--border)'),
-                                        background: txAccountId === a.id ? 'rgba(255,107,53,0.1)' : 'var(--bg-elevated)',
+                                        background: txAccountId === a.id ? 'var(--accent-dim)' : 'var(--bg-elevated)',
                                         color: txAccountId === a.id ? 'var(--accent)' : 'var(--text-3)',
                                         display: 'flex', alignItems: 'center', gap: '4px',
                                     }}>
@@ -143,8 +143,8 @@ export default function MoneyAddTab({ user, accounts, awardMoneyXP, onSuccess })
                                         padding: '6px 12px', borderRadius: '8px', fontSize: '11px',
                                         fontWeight: 600, cursor: 'pointer',
                                         border: '1px solid ' + (txToAccountId === a.id ? '#8b5cf6' : 'var(--border)'),
-                                        background: txToAccountId === a.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-elevated)',
-                                        color: txToAccountId === a.id ? '#8b5cf6' : 'var(--text-3)',
+                                        background: txToAccountId === a.id ? 'var(--color-info-dim)' : 'var(--bg-elevated)',
+                                        color: txToAccountId === a.id ? 'var(--color-info)' : 'var(--text-3)',
                                         display: 'flex', alignItems: 'center', gap: '4px',
                                     }}>
                                     {a.icon} {a.name}
