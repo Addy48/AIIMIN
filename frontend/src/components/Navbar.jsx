@@ -1,26 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotifications';
 import { useThemeContext } from '../context/ThemeContext';
 import NotificationBell from './notifications/NotificationBell';
+import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
-import Logo from './Logo';
 
-
-
-/* ── Slim nav — 6 primary links ───────────────────────────── */
 const NAV_LINKS = [
-  { to: '/overview',    label: 'Today' },
-  { to: '/habits',      label: 'Habits' },
-  { to: '/goals',       label: 'Goals' },
-  { to: '/journal',     label: 'Journal' },
-  { to: '/finance',     label: 'Finance' },
-  { to: '/family',      label: 'Family' },
-  { to: '/calendar',    label: 'Calendar' },
-  { to: '/placements',  label: 'Placement' },
-  { to: '/sports',      label: 'Sports', hideFromGuest: true },
-  { to: '/discipline',  label: 'Discipline', hideFromGuest: true },
-  { to: '/focus',       label: 'Focus' },
+  { to: '/overview', label: 'Today' },
+  { to: '/insights', label: 'Insights' },
+  { to: '/calendar', label: 'Calendar' },
+  { to: '/finance', label: 'Finance' },
+  { to: '/lab', label: 'Lab' },
+  { to: '/reports', label: 'Reports' },
+  { to: '/settings', label: 'Settings' },
 ];
 
 const Navbar = ({ user }) => {
@@ -28,11 +21,10 @@ const Navbar = ({ user }) => {
   const { theme, toggleTheme } = useThemeContext();
   const [notifOpen, setNotifOpen] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
-  const bellRef = useRef(null);
 
-  const userInitial = (user?.full_name?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
-  const isDark = theme === 'dark';
-  const borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'A';
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
 
   const handleOpenNotif = () => {
     if (!notifOpen) fetchAll();
@@ -42,212 +34,159 @@ const Navbar = ({ user }) => {
   return (
     <>
       <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
         height: 'var(--nav-height)',
-        background: isDark ? 'rgba(10,10,10,0.85)' : 'rgba(240,237,232,0.85)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${borderColor}`,
+        background: 'var(--glass-bg-strong)',
+        backdropFilter: 'var(--glass-blur)',
+        WebkitBackdropFilter: 'var(--glass-blur)',
+        borderBottom: '1px solid var(--glass-border)',
         display: 'flex',
         alignItems: 'center',
-        padding: '0 24px',
+        padding: '0 var(--content-pad)',
+        gap: '24px',
         zIndex: 1000,
       }}>
 
         {/* LEFT: Brand */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Link to="/identity" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <Logo size={28} />
-            </Link>
-            <Link to="/overview" aria-label="AIIMIN today" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <span style={{
-                fontSize: '25px',
-                fontWeight: 400,
-                letterSpacing: '-0.065em',
-                color: isDark ? '#F2EBDA' : '#1f201d',
-                fontFamily: 'var(--font-serif)',
-                lineHeight: 1,
-              }}>
-                AIIMIN
-              </span>
-            </Link>
+        <Link to="/overview" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '28px', height: '28px',
+            background: 'var(--color-logo-bg)',
+            borderRadius: '9px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+              <path d="M9 2.5 L3.5 14.5 L5.5 14.5 L6.8 11.2 L11.2 11.2 L12.5 14.5 L14.5 14.5 Z" fill="white" fillOpacity="0.95" />
+              <path d="M7.5 9.5 L9 6 L10.5 9.5 Z" fill="var(--color-logo-bg)" />
+              <path d="M9 1.5 C9 1.5 11 3 9 5 C7 3 9 1.5 9 1.5Z" fill="white" fillOpacity="0.85" />
+            </svg>
           </div>
-        </div>
+          <span style={{
+            font: 'italic 600 18px/1 var(--font-sans)',
+            color: 'var(--color-text-1)',
+            letterSpacing: '-0.02em',
+          }}>
+            aiimin
+          </span>
+        </Link>
 
         {/* CENTER: Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {NAV_LINKS.filter(link => !(user?.isGuest && link.hideFromGuest)).map(({ to, label }) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
+          {NAV_LINKS.map(({ to, label }) => (
             <NavLink
-              key={`${to}-${label}`}
+              key={to}
               to={to}
               style={({ isActive }) => ({
-                fontSize: '12px',
-                fontWeight: isActive ? 600 : 400,
+                fontSize: '13px',
+                fontWeight: isActive ? 500 : 400,
                 fontFamily: 'var(--font-sans)',
-                color: isActive
-                  ? (isDark ? '#EDEDED' : 'var(--color-accent)')
-                  : (isDark ? '#71717A' : '#6B6B6B'),
+                color: isActive ? '#fff' : 'var(--color-text-2)',
                 textDecoration: 'none',
-                padding: '6px 11px',
-                borderRadius: '9px',
-                background: isActive
-                  ? (isDark ? 'rgba(255,255,255,0.07)' : 'rgba(30,92,58,0.06)')
-                  : 'transparent',
-                transition: 'all 180ms',
-                whiteSpace: 'nowrap',
+                padding: '6px 14px',
+                borderRadius: 'var(--r-pill)',
+                background: isActive ? 'var(--color-accent)' : 'transparent',
+                border: 'none',
+                transition: `all var(--dur-enter) var(--ease)`,
+                position: 'relative',
               })}
             >
-              {label}
+              {({ isActive }) => (
+                <>
+                  {label}
+                  {isActive && (
+                    <span style={{
+                      position: 'absolute',
+                      bottom: '-1px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: '16px',
+                      height: '2px',
+                      background: 'var(--color-accent)',
+                      borderRadius: 'var(--r-pill)',
+                    }} />
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
         </div>
 
-        {/* RIGHT: Actions */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+        {/* RIGHT: Date + Notifications + Avatar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
+          <span style={{
+            font: '400 11px/1 var(--font-mono)',
+            color: 'var(--color-text-3)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+          }}>
+            {dateStr}
+          </span>
 
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            title={isDark ? 'Light mode' : 'Dark mode'}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             style={{
-              width: '28px', height: '28px', borderRadius: '6px', background: 'transparent',
-              border: `1px solid ${borderColor}`,
-              color: isDark ? '#71717A' : '#6B6B6B', fontSize: '13px', cursor: 'pointer',
+              width: '30px', height: '30px',
+              borderRadius: 'var(--r-sm)',
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--glass-border)',
+              color: 'var(--color-text-2)',
+              fontSize: '14px',
+              cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: `all var(--dur-enter) var(--ease)`,
             }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--glass-border-lit)'; e.currentTarget.style.color = 'var(--color-text-1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--glass-border)'; e.currentTarget.style.color = 'var(--color-text-2)'; }}
           >
-            {isDark ? '☀' : '◑'}
+            {theme === 'dark' ? '☀' : '◐'}
           </button>
 
-          {/* Notifications */}
-          <div ref={bellRef} style={{ position: 'relative' }}>
-            <NotificationBell count={unreadCount} onOpen={handleOpenNotif} isOpen={notifOpen} />
-            {notifOpen && (
-              <NotifDropdown
-                notifications={notifications}
-                loading={loading}
-                onMarkRead={markRead}
-                onMarkAllRead={markAllRead}
-                onDismiss={dismiss}
-                onClose={() => setNotifOpen(false)}
-                isDark={isDark}
-              />
-            )}
-          </div>
+          <NotificationBell unreadCount={unreadCount} onClick={handleOpenNotif} />
 
-          {/* Avatar */}
           <button
             onClick={() => setShowAccount(true)}
             style={{
-              width: '28px', height: '28px', borderRadius: '50%', background: '#23503B',
-              border: 'none', color: '#fff', font: '600 11px var(--font-sans)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '30px',
+              height: '30px',
+              borderRadius: '50%',
+              background: 'var(--glass-bg)',
+              border: '1px solid var(--glass-border-lit)',
+              color: 'var(--color-accent)',
+              font: '500 12px var(--font-mono)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: `all var(--dur-enter) var(--ease)`,
             }}
-            aria-label="Account"
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--glass-bg-hover)'; e.currentTarget.style.borderColor = 'var(--color-accent)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.borderColor = 'var(--glass-border-lit)'; }}
+            aria-label="Account settings"
           >
             {userInitial}
           </button>
         </div>
       </nav>
 
+      <NotificationPanel
+        open={notifOpen}
+        notifications={notifications}
+        loading={loading}
+        onMarkRead={markRead}
+        onMarkAllRead={markAllRead}
+        onDismiss={dismiss}
+        onClose={() => setNotifOpen(false)}
+      />
+
       {showAccount && (
-        <AccountModal isOpen={showAccount} onClose={() => setShowAccount(false)} />
+        <AccountModal user={user} onClose={() => setShowAccount(false)} />
       )}
-
-
     </>
-  );
-};
-
-/* ── Notification dropdown ─────────────────────────────────── */
-const typeIcon = (type) => ({
-  drift_alert: '📉', commitment_miss: '🎯', weekly_summary: '📊',
-  integration_error: '⚠️', streak_milestone: '🔥', xp_level_up: '⚡',
-  weekly_summary_ready: '📊', goal_progress: '🎯',
-}[type] || '💬');
-
-const timeAgo = (iso) => {
-  if (!iso) return '';
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return 'now';
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h`;
-  return `${Math.floor(h / 24)}d`;
-};
-
-const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDismiss, onClose, isDark }) => {
-  const ref = useRef(null);
-
-  React.useEffect(() => {
-    const handle = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
-  }, [onClose]);
-
-  const bg = isDark ? '#161616' : '#fff';
-  const border = isDark ? '#2a2a2a' : '#e5e7eb';
-  const text1 = isDark ? '#ededed' : '#111';
-  const text2 = isDark ? '#a1a1aa' : '#6b7280';
-  const text3 = isDark ? '#52525b' : '#9ca3af';
-
-  return (
-    <div ref={ref} style={{
-      position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-      width: '300px', maxHeight: '400px',
-      background: bg, border: `1px solid ${border}`,
-      borderRadius: '10px',
-      boxShadow: isDark ? '0 16px 48px rgba(0,0,0,0.7)' : '0 8px 24px rgba(0,0,0,0.12)',
-      zIndex: 9999, overflow: 'hidden', display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        borderBottom: `1px solid ${border}`, flexShrink: 0,
-      }}>
-        <span style={{ fontSize: '12px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>Notifications</span>
-        {notifications.some(n => !n.read_at) && (
-          <button onClick={onMarkAllRead} style={{
-            background: 'none', border: 'none', fontSize: '11px', color: '#22C55E',
-            cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 500,
-          }}>Mark all read</button>
-        )}
-      </div>
-
-      {/* List */}
-      <div style={{ overflowY: 'auto', flex: 1 }}>
-        {loading && (
-          <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: text3, fontFamily: 'var(--font-sans)' }}>Loading…</div>
-        )}
-        {!loading && notifications.length === 0 && (
-          <div style={{ padding: '28px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: '22px', marginBottom: '8px' }}>🔔</div>
-            <div style={{ fontSize: '12px', color: text2, fontFamily: 'var(--font-sans)' }}>All clear</div>
-          </div>
-        )}
-        {!loading && notifications.map(n => (
-          <div key={n.id} style={{
-            padding: '10px 14px', borderBottom: `1px solid ${border}`,
-            display: 'flex', gap: '10px', alignItems: 'flex-start',
-            background: !n.read_at ? (isDark ? 'rgba(34,197,94,0.04)' : 'rgba(34,197,94,0.04)') : 'transparent',
-          }}>
-            <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>{typeIcon(n.type)}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '12px', fontWeight: n.read_at ? 400 : 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {n.title}
-              </div>
-              {n.body && <div style={{ fontSize: '11px', color: text2, fontFamily: 'var(--font-sans)', lineHeight: 1.4 }}>{n.body}</div>}
-              <div style={{ fontSize: '10px', color: text3, marginTop: '3px', fontFamily: 'var(--font-sans)' }}>{timeAgo(n.created_at)}</div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
-              {!n.read_at && <button onClick={() => onMarkRead(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22C55E', fontSize: '11px' }}>✓</button>}
-              <button onClick={() => onDismiss(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: text3, fontSize: '11px' }}>✕</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
   );
 };
 

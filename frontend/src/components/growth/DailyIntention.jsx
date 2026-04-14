@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const TODAY_KEY = `aiimin_intention_${new Date().toLocaleDateString('en-CA')}`;
 

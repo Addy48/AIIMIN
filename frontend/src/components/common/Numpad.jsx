@@ -1,12 +1,10 @@
 import React, { useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Delete } from 'lucide-react';
 
 /**
- * Numpad — Nordic Calm Edition
- * Minimalist circular keys with organic feedback.
+ * Numpad — A 3x4 grid locker-style number pad.
+ * Escalated to "Premium Obsidian Gold" standard with physical depth and reactive lighting.
  */
-const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0, isDark = true }) => {
+const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0 }) => {
 
     const handleKeyPress = useCallback((e) => {
         if (e.key >= '0' && e.key <= '9') {
@@ -46,40 +44,26 @@ const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0, 
 
     const getButtonStyle = (btn) => {
         const isSpecial = btn === '⌫' || btn === 'C';
-        let color;
-        let border;
-        let background;
-        const fontW = 700; // Extra prominent bold weight for supreme visibility
-        
-        if (isDark) {
-            color = isSpecial && btn === 'C' ? 'rgba(255, 255, 255, 0.4)' : '#FFFFFF';
-            border = '1px solid rgba(255, 255, 255, 0.08)';
-            background = 'rgba(255, 255, 255, 0.03)';
-        } else {
-            // Nordic light theme: High contrast deep black text against solid white circular key
-            color = isSpecial && btn === 'C' ? 'rgba(31, 32, 29, 0.5)' : '#000000';
-            border = '1px solid rgba(31, 32, 29, 0.12)';
-            background = '#ffffff';
-        }
+        const isBackspace = btn === '⌫';
 
         return {
-            width: '68px',
-            height: '68px',
-            background: background,
-            border: border,
-            borderRadius: '50%',
-            color: color,
-            fontSize: isSpecial ? '16px' : '26px', // Bold, extra-large for maximum readability
-            fontFamily: 'var(--font-sans)',
-            fontWeight: fontW,
+            height: '64px',
+            background: isSpecial ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 'var(--r-md)',
+            color: isBackspace ? '#ff5f5f' : (btn === 'C' ? 'var(--color-accent)' : 'var(--color-text-1)'),
+            fontSize: '22px',
+            fontFamily: btn === '⌫' ? 'sans-serif' : 'var(--font-mono)',
+            fontWeight: 500,
             cursor: 'pointer',
-            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            transition: 'all 0.1s cubic-bezier(0.4, 0, 0.2, 1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             userSelect: 'none',
-            outline: 'none',
-            boxShadow: isDark ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(31,32,29,0.05)',
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.03)',
+            position: 'relative',
+            overflow: 'hidden'
         };
     };
 
@@ -87,31 +71,36 @@ const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0, 
         <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '24px',
+            gap: '16px',
             width: '100%',
-            maxWidth: '280px',
-            marginTop: '8px'
+            maxWidth: '340px',
+            marginTop: '28px'
         }}>
             {buttons.map((btn, idx) => (
-                <motion.button
+                <button
                     key={idx}
                     type="button"
                     onClick={() => handleClick(btn)}
                     style={getButtonStyle(btn)}
-                    whileHover={{
-                        borderColor: isDark ? 'var(--color-accent)' : '#1E5C3A', // Nordic forest green for hover accent
-                        color: isDark ? 'var(--color-accent)' : '#1E5C3A',
-                        background: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(30, 92, 58, 0.08)',
-                        boxShadow: isDark ? '0 6px 16px rgba(0,0,0,0.5)' : '0 6px 16px rgba(30,92,58,0.12)',
-                        scale: 1.06,
+                    onMouseDown={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                        e.currentTarget.style.borderColor = 'var(--color-accent)';
+                        e.currentTarget.style.transform = 'translateY(1px) scale(0.96)';
+                        e.currentTarget.style.boxShadow = '0 0 15px var(--color-accent-glow), inset 0 2px 4px rgba(0,0,0,0.3)';
                     }}
-                    whileTap={{
-                        scale: 0.94,
-                        background: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(30, 92, 58, 0.14)'
+                    onMouseUp={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.03)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
+                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.03)';
+                        e.currentTarget.style.background = (btn === '⌫' || btn === 'C') ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
+                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
                     }}
                 >
-                    {btn === '⌫' ? <Delete size={20} strokeWidth={2} /> : btn}
-                </motion.button>
+                    {btn}
+                </button>
             ))}
         </div>
     );
