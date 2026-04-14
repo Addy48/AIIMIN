@@ -26,10 +26,10 @@ export function ThemeProvider({ children }) {
     }, [theme]);
 
     const toggleTheme = useCallback(() => {
-        setTheme(prev => prev === 'dark' ? 'normal' : 'dark');
+        setTheme(prev => prev === 'dark' ? 'light' : 'dark');
     }, []);
 
-    const value = { theme, setTheme, toggleTheme };
+    const value = { theme, toggleTheme };
 
     return (
         <ThemeContext.Provider value={value}>

@@ -100,10 +100,13 @@ export function computeFinancialHealth(txs = []) {
     return Math.round(score);
 }
 
+/**
+ * Discipline Score: How strict compliance across multiple tracking objectives is.
+ */
 export function computeDisciplineScore(logs = []) {
     if (!logs || !logs.length) return 0;
 
-    const habitHits = logs.reduce((acc, l) => {
+    const complianceHits = logs.reduce((acc, l) => {
         let dailyScore = 0;
         if (l.gym_done) dailyScore++;
         if (l.learning_done) dailyScore++;
@@ -112,11 +115,7 @@ export function computeDisciplineScore(logs = []) {
         return acc + (dailyScore / 4); // 4 core discipline habits
     }, 0);
 
-    const habitScore = (habitHits / logs.length) * 100;
-    const focusScore = computeFocusScore(logs);
-
-    // 80% habit consistency + 20% focus score
-    const score = (habitScore * 0.8) + (focusScore * 0.2);
+    const score = (complianceHits / logs.length) * 100;
     return Math.max(0, Math.min(100, Math.round(score)));
 }
 
