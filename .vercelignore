@@ -1,0 +1,4 @@
+backend/
+*.sql
+.github/
+*.md
