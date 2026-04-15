@@ -60,17 +60,32 @@ const MoodTracker = ({ user, onMoodChange }) => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>Daily Mood</span>
                 {selectedMood !== null && (
-                    <span style={{
-                        padding: '3px 12px',
-                        background: 'rgba(245,166,35,0.12)',
-                        border: '1px solid rgba(245,166,35,0.3)',
-                        borderRadius: '20px',
-                        fontSize: '13px',
-                        fontWeight: 700,
-                        color: '#f5a623',
-                    }}>
-                        {selectedMood}/10
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{
+                            padding: '3px 12px',
+                            background: 'rgba(245,166,35,0.12)',
+                            border: '1px solid rgba(245,166,35,0.3)',
+                            borderRadius: '20px',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            color: '#f5a623',
+                        }}>
+                            {selectedMood}/10
+                        </span>
+                        <button 
+                            onClick={() => handleSelect(null)}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--text-3)',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >✕</button>
+                    </div>
                 )}
             </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import supabase from '../utils/supabase';
 import { fmt, timeToMinutes, minutesToTime, circularMeanMinutes, circularDeviation } from './sleep/SleepHelpers';
-import { MiniBar, Sparkline } from './sleep/SleepCharts';
+import { MiniBar } from './sleep/SleepCharts';
 import { RadialBarChart, RadialBar, LineChart, Line, XAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 /* ─── SleepAnalytics ─── */
