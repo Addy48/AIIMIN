@@ -54,11 +54,11 @@ const MobileStreaks = ({ user }) => {
 
     const multiplier = getStreakMultiplier(streaks.overall);
     const items = [
-        { icon: '🔥', label: 'Overall', days: streaks.overall, color: '#ff6b35' },
-        { icon: '💪', label: 'Gym', days: streaks.gym, color: '#f59e0b' },
-        { icon: '📚', label: 'Learning', days: streaks.learning, color: '#22c55e' },
+        { icon: '🔥', label: 'Overall', days: streaks.overall, color: 'var(--accent)' },
+        { icon: '💪', label: 'Gym', days: streaks.gym, color: 'var(--color-gym)' },
+        { icon: '📚', label: 'Learning', days: streaks.learning, color: 'var(--color-success)' },
         { icon: '🛡️', label: 'Clean', days: streaks.clean, color: '#8b5cf6' },
-        { icon: '👟', label: '10K Steps', days: streaks.walking, color: '#3b82f6' },
+        { icon: '👟', label: '10K Steps', days: streaks.walking, color: 'var(--color-steps)' },
     ];
 
     return (
@@ -76,8 +76,8 @@ const MobileStreaks = ({ user }) => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {multiplier > 1 && (
                         <span style={{
-                            fontSize: '10px', fontWeight: 800, color: '#ff6b35',
-                            background: 'rgba(255,107,53,0.12)', padding: '2px 8px',
+                            fontSize: '10px', fontWeight: 800, color: 'var(--accent)',
+                            background: 'var(--accent-dim)', padding: '2px 8px',
                             borderRadius: '6px',
                         }}>{multiplier}× XP</span>
                     )}
@@ -117,7 +117,7 @@ const MobileStreaks = ({ user }) => {
                                 <div>
                                     <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>{item.label}</div>
                                     {item.days > 0 && (
-                                        <div style={{ fontSize: '10px', color: 'var(--success)', marginTop: '1px' }}>Active</div>
+                                        <div style={{ fontSize: '10px', color: 'var(--color-success)', marginTop: '1px' }}>Active</div>
                                     )}
                                 </div>
                             </div>
@@ -133,13 +133,13 @@ const MobileStreaks = ({ user }) => {
                     {/* Multiplier info */}
                     <div style={{
                         padding: '12px', borderRadius: '10px',
-                        background: 'rgba(255,107,53,0.06)', border: '1px solid rgba(255,107,53,0.15)',
+                        background: 'var(--accent-dim)', border: '1px solid var(--accent-border)',
                         textAlign: 'center',
                     }}>
                         <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', marginBottom: '4px' }}>
                             STREAK MULTIPLIER
                         </div>
-                        <div style={{ fontSize: '24px', fontWeight: 900, color: '#ff6b35' }}>
+                        <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--accent)' }}>
                             {multiplier}×
                         </div>
                         <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '2px' }}>

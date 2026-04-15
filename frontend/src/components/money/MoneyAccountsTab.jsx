@@ -71,7 +71,7 @@ export default function MoneyAccountsTab({ user, accounts, setAccounts }) {
                                     padding: '5px 12px', borderRadius: '99px', fontSize: '11px',
                                     fontWeight: 600, cursor: 'pointer',
                                     border: '1px solid ' + (acctType === key ? 'var(--accent)' : 'var(--border)'),
-                                    background: acctType === key ? 'rgba(255,107,53,0.1)' : 'var(--bg-elevated)',
+                                    background: acctType === key ? 'var(--accent-dim)' : 'var(--bg-elevated)',
                                     color: acctType === key ? 'var(--accent)' : 'var(--text-3)',
                                 }}>
                                 {icon} {key.replace('_', ' ')}
