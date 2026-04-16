@@ -88,6 +88,7 @@ export function useLHSData(session) {
             .catch((err) => {
                 console.error("Pipeline failure in useLHSData:", err);
                 setError(err);
+                throw err;
             })
             .finally(() => setLoading(false));
 
