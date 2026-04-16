@@ -59,14 +59,15 @@ const Skeleton = ({ h, style = {} }) => (
 
 const Overview = ({ user }) => {
   const { session } = useAuth();
-  const { loading: statsLoading, todayLog, computed: { gymDaysThisWeek } } = useDailyStats(user);
+  const { loading: statsLoading, todayLog = {}, computed = {} } = useDailyStats(user) || {};
+  const { gymDaysThisWeek = 0 } = computed || {};
 
-  const [tasks, setTasks]         = useState([]);
-  const [habits, setHabits]       = useState([]);
-  const [netWorth, setNetWorth]   = useState(null);
-  const [dsaData, setDsaData]     = useState({ percent: null, solved: 0, total: 150 });
-  const [mood, setMood]           = useState(todayLog?.mood || null);
-  const [alerts, setAlerts]       = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [habits, setHabits] = useState([]);
+  const [netWorth, setNetWorth] = useState(null);
+  const [dsaData, setDsaData] = useState({ percent: null, solved: 0, total: 150 });
+  const [mood, setMood] = useState(todayLog?.mood || null);
+  const [alerts, setAlerts] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   const daysToPlacement = getDaysToPlacement();
@@ -194,18 +195,18 @@ const Overview = ({ user }) => {
   /* ── Derived values ───────────────────────────── */
   const loading = statsLoading || dataLoading;
   const s = todayLog || {};
-  const score = calcScore(s);
+  const score = React.useMemo(() => calcScore(s), [s]);
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Adi';
 
   const pendingTasks = tasks.filter(t => !t.completed);
   const completedTasks = tasks.filter(t => t.completed);
 
-  const sleepHours = s.sleep_hours || 0;
+  const sleepHours = typeof s?.sleep_hours === 'number' ? s.sleep_hours : 0;
   const sleepContext = sleepHours >= 7
     ? 'Well rested'
     : sleepHours > 0
-    ? `${(7 - sleepHours).toFixed(1)}h deficit`
-    : 'Not logged';
+      ? `${(7 - sleepHours).toFixed(1)}h deficit`
+      : 'Not logged';
 
   /* ── Skeleton state ───────────────────────────── */
   if (loading) {
@@ -219,10 +220,10 @@ const Overview = ({ user }) => {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-            {[1,2,3,4,5].map(i => <Skeleton key={i} h="48px" />)}
+            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} h="48px" />)}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px' }}>
-            {[1,2,3,4].map(i => <Skeleton key={i} h="100px" />)}
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} h="100px" />)}
           </div>
         </div>
       </div>

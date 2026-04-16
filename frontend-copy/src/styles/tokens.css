@@ -1,0 +1,209 @@
+/*
+ * AIIMIN Design Tokens — Single Source of Truth
+ * Garden / Nordic Calm edition
+ * Dark mode default. Light mode via [data-theme="light"].
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400;500&display=swap');
+
+/* ────────────────────────────────────────────────────────
+   DARK MODE (default) — True Black
+───────────────────────────────────────────────────────── */
+:root {
+  color-scheme: dark;
+
+  /* ── Ambient Background ─────────────────────────── */
+  --color-base: #0A0C0B;
+  /* proper true warm black */
+  --color-surface: #111412;
+  /* base surface */
+  --color-elevated: #191C1A;
+  /* hover / input bg */
+  --color-border: #222523;
+  /* subtle border */
+  --color-border-lit: #2C302C;
+  /* slightly lighter border */
+
+  /* ── Text ───────────────────────────────────────── */
+  --color-text-1: #E8E6E1;
+  /* primary text cream */
+  --color-text-2: #8F8C86;
+  /* labels / secondary */
+  --color-text-3: #63605A;
+  /* placeholder / disabled */
+
+  /* ── Accent & Brand ─────────────────────────────── */
+  --color-accent: #44634F;
+  /* forest green */
+  --color-accent-dim: rgba(68, 99, 79, 0.12);
+  --color-accent-glow: rgba(68, 99, 79, 0.20);
+  --color-hero: #E8DCC8;
+  /* cream — hero numbers only */
+  --color-rust: #D27958;
+  /* terracotta accent */
+  --color-logo-bg: #9E6B4D;
+  /* amber logo bg */
+
+  /* ── Status ─────────────────────────────────────── */
+  --color-alert-red: #C45555;
+  --color-gym: #C45555;
+  --color-steps: #5188C7;
+  --color-water: #51ACC7;
+  --color-sleep: #44634F;
+  --color-success: #44634F;
+  --color-warning: #C79E4A;
+
+  /* ── Lab Badges & Status ─────────────────────── */
+  --lab-badge-bronze: #C87137;
+  --lab-badge-silver: #C0C0C0;
+  --lab-badge-gold: #FFD700;
+  --lab-badge-platinum: #E5E4E2;
+  --lab-dot-red: var(--color-alert-red);
+  --lab-dot-gray: var(--color-text-3);
+  --lab-dot-accent: var(--color-accent);
+
+  /* ── Glass Layer (Cleaned up) ───────────────────── */
+  --glass-bg: #111412;
+  --glass-bg-hover: #191C1A;
+  --glass-bg-strong: #111412;
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-border-lit: rgba(255, 255, 255, 0.10);
+  --glass-blur: none;
+  --glass-blur-sm: none;
+  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.40), 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+  --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.30);
+
+  /* ── No ambient glow for clean look ─────────────── */
+  --ambient-1: none;
+  --ambient-2: none;
+
+  /* ── Typography ─────────────────────────────────── */
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'SF Mono', monospace;
+
+  --text-hero: 300 56px/1 var(--font-sans);
+  --text-metric: 300 28px/1 var(--font-sans);
+  --text-heading: 500 16px/1.4 var(--font-sans);
+  --text-body: 300 14px/1.6 var(--font-sans);
+  --text-label: 500 11px/1 var(--font-mono);
+  --text-subtext: 300 12px/1.5 var(--font-sans);
+
+  /* ── Radius ─────────────────────────────────────── */
+  --r-none: 0px;
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-pill: 9999px;
+
+  /* Aliases */
+  --radius-none: var(--r-none);
+  --radius-modal: var(--r-md);
+  --radius-pill: var(--r-pill);
+
+  /* ── Spacing ─────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+  --space-9: 64px;
+
+  /* ── Layout ─────────────────────────────────────── */
+  --nav-height: 60px;
+  --nav-height-mob: 44px;
+  --sidebar-width: 210px;
+  --tab-bar-height: 56px;
+  --content-max: 1280px;
+  --content-pad: 24px;
+
+  /* ── Component heights ───────────────────────────── */
+  --card-hero: 120px;
+  --card-tile: 100px;
+  --row-task: 48px;
+  --circle-habit: 48px;
+  --alert-height: 60px;
+
+  /* ── Animation ────────────────────────────────────── */
+  --dur-fast: 120ms;
+  --dur-normal: 150ms;
+  --dur-enter: 200ms;
+  --dur-feedback: 300ms;
+  --dur-progress: 350ms;
+  --dur-hero: 1200ms;
+  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* ── Focus ────────────────────────────────────────── */
+  --shadow-focus: 0 0 0 2px var(--color-accent);
+
+  /* ── Aliases (backwards compat) ───────────────────── */
+  --bg-primary: var(--color-base);
+  --bg-card: var(--color-surface);
+  --bg-elevated: var(--color-elevated);
+  --bg-surface: var(--color-surface);
+  --accent: var(--color-accent);
+  --accent-dim: var(--color-accent-dim);
+  --text-1: var(--color-text-1);
+  --text-2: var(--color-text-2);
+  --text-3: var(--color-text-3);
+  --border: var(--color-border);
+  --success: var(--color-accent);
+  --max-width: var(--content-max);
+  --container-px: var(--content-pad);
+  --section-gap: var(--space-6);
+}
+
+/* ────────────────────────────────────────────────────────
+   LIGHT MODE
+───────────────────────────────────────────────────── */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --color-base: #F4F3F0;
+  --color-surface: #FAFAF8;
+  --color-elevated: #EFEFEC;
+  --color-border: #E0DED9;
+  --color-border-lit: #CCCAC4;
+
+  --color-text-1: #1A1917;
+  --color-text-2: #6B6863;
+  --color-text-3: #A09D99;
+
+  --color-accent: #1E9990;
+  --color-accent-dim: rgba(30, 153, 144, 0.10);
+  --color-accent-glow: rgba(30, 153, 144, 0.18);
+  --color-hero: #2A2825;
+
+  --color-alert-red: #CC3333;
+  --color-gym: #CC3333;
+  --color-steps: #2B6CB0;
+  --color-water: #2B88AB;
+  --color-sleep: #1E9990;
+  --color-success: #1E9990;
+  --color-warning: #B08820;
+
+  --glass-bg: rgba(255, 255, 255, 0.70);
+  --glass-bg-hover: rgba(255, 255, 255, 0.85);
+  --glass-bg-strong: rgba(255, 255, 255, 0.80);
+  --glass-border: rgba(0, 0, 0, 0.07);
+  --glass-border-lit: rgba(0, 0, 0, 0.12);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.07);
+
+  --ambient-1: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(30, 153, 144, 0.05) 0%, transparent 60%);
+  --ambient-2: radial-gradient(ellipse 50% 50% at 80% 80%, rgba(43, 108, 176, 0.04) 0%, transparent 60%);
+
+  --bg-primary: var(--color-base);
+  --bg-card: var(--color-surface);
+  --bg-elevated: var(--color-elevated);
+  --bg-surface: var(--color-surface);
+  --accent: var(--color-accent);
+  --accent-dim: var(--color-accent-dim);
+  --text-1: var(--color-text-1);
+  --text-2: var(--color-text-2);
+  --text-3: var(--color-text-3);
+  --border: var(--color-border);
+}
