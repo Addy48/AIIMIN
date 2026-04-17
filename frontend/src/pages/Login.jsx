@@ -222,28 +222,32 @@ const Login = () => {
             {step === 1 ? (
               <motion.div
                 key="step1"
-                initial={{ opacity: 0, x: -10, filter: 'blur(4px)' }}
-                animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, x: 5, filter: 'blur(4px)' }}
-                transition={{ duration: 0.4 }}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={{
+                  hidden: { opacity: 0, filter: 'blur(8px)', y: 10 },
+                  visible: { opacity: 1, filter: 'blur(0px)', y: 0, transition: { staggerChildren: 0.1 } },
+                  exit: { opacity: 0, filter: 'blur(8px)', y: -10, transition: { duration: 0.3 } }
+                }}
               >
-                <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {mode === 'signup' && (
-                    <div style={{ position: 'relative' }}>
+                    <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
                       <input
                         type="text"
-                        placeholder="Full Name"
+                        placeholder="FULL NAME"
                         value={fullName}
                         onChange={e => setFullName(e.target.value)}
-                        style={inputStyle}
+                        style={{ ...inputStyle, textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: '13px' }}
                         required
-                        onFocus={e => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
+                        onFocus={e => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.15)'; }}
                         onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.015)'; e.target.style.boxShadow = 'none'; }}
                       />
-                    </div>
+                    </motion.div>
                   )}
 
-                  <div style={{ position: 'relative' }}>
+                  <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
                     <input
                       type="text"
                       placeholder="USERNAME OR EMAIL"
@@ -252,24 +256,31 @@ const Login = () => {
                       style={{ ...inputStyle, textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: '13px' }}
                       required
                       autoComplete="username"
-                      onFocus={e => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
+                      onFocus={e => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.15)'; }}
                       onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.015)'; e.target.style.boxShadow = 'none'; }}
                     />
-                  </div>
+                  </motion.div>
 
-                  {error && (
-                    <div style={{
-                      color: 'var(--color-alert-red)',
-                      fontSize: '12px',
-                      textAlign: 'center',
-                      fontFamily: 'var(--font-mono)',
-                      marginTop: '4px'
-                    }}>
-                      {error}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        style={{
+                          color: '#FDA4AF',
+                          fontSize: '12px',
+                          textAlign: 'center',
+                          fontFamily: 'var(--font-mono)',
+                          letterSpacing: '0.05em'
+                        }}>
+                        {error}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                  <button
+                  <motion.button
+                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
                     type="submit"
                     style={{
                       height: '56px',
@@ -277,10 +288,12 @@ const Login = () => {
                       color: '#fff',
                       border: 'none',
                       borderRadius: '16px',
-                      fontSize: '15px',
-                      fontWeight: 800,
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
                       cursor: 'pointer',
-                      marginTop: '12px',
+                      marginTop: '8px',
                       transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                       boxShadow: '0 8px 24px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
                     }}
@@ -288,9 +301,9 @@ const Login = () => {
                     onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255,255,255,0.2)'; }}
                   >
                     Continue
-                  </button>
+                  </motion.button>
 
-                  <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                  <motion.div variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }} style={{ textAlign: 'center', marginTop: '16px' }}>
                     <button
                       type="button"
                       onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }}
@@ -298,16 +311,21 @@ const Login = () => {
                         background: 'none',
                         border: 'none',
                         color: 'var(--color-text-2)',
-                        fontSize: '12px',
+                        fontSize: '11px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
                         cursor: 'pointer',
                         textDecoration: 'underline',
                         textUnderlineOffset: '4px',
-                        opacity: 0.6
+                        opacity: 0.6,
+                        transition: 'opacity 0.2s ease'
                       }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                      onMouseLeave={e => e.currentTarget.style.opacity = 0.6}
                     >
                       {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Log in'}
                     </button>
-                  </div>
+                  </motion.div>
                 </form>
               </motion.div>
             ) : (
