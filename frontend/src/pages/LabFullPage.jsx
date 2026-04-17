@@ -196,122 +196,163 @@ export default function LabFullPage() {
                 </div>
             )}
 
-            {/* ── Three-Column Grid ── */}
-            <div className="lab-three-column">
-                {/* PRACTICE */}
-                <div className="lab-column practice-column">
-                    <div className="lab-column-header">
-                        <span className="lab-column-label">Practice</span>
-                        <span className="lab-column-count">04 modules</span>
-                    </div>
-
-                    <MetricCard
-                        title="Typing speed"
-                        value={p.typing?.weekly_best_wpm ? `${p.typing.weekly_best_wpm} WPM` : null}
-                        subtitle={p.typing?.mastery !== 'unranked' ? p.typing.mastery : null}
-                        mastery={p.typing?.mastery}
-                        streakDays={p.typing?.streak_days}
+            {/* ── Empty State Hero ── */}
+            {status === 'empty' && (
+                <div style={{
+                    marginTop: '40px',
+                    padding: '64px 40px',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '24px',
+                    textAlign: 'center',
+                    maxWidth: '600px',
+                    margin: '40px auto 0'
+                }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔬</div>
+                    <h2 style={{ font: 'var(--text-subtitle)', fontSize: '24px', color: 'var(--color-text-1)', marginBottom: '12px' }}>
+                        Baseline Calibration Required
+                    </h2>
+                    <p style={{ font: 'var(--text-body)', color: 'var(--color-text-2)', maxWidth: '400px', margin: '0 auto 32px' }}>
+                        The Lab unlocks hidden correlations in your behavior over time. To begin pattern detection, complete your first cognitive baseline test.
+                    </p>
+                    <button
                         onClick={() => setActiveModule('typing')}
-                        emptyText="No tests yet. Aim for 60 WPM at 95% accuracy."
-                    />
-                    <MetricCard
-                        title="Speaking"
-                        value={p.speaking?.latest_score ? `${p.speaking.latest_score}/100` : null}
-                        subtitle={p.speaking?.last_logged_at ? `Last: ${new Date(p.speaking.last_logged_at).toLocaleDateString()}` : null}
-                        mastery={p.speaking?.mastery}
-                        onClick={() => setActiveModule('speaking')}
-                        emptyText="No logs yet. Record a 60-second response to start."
-                    />
-                    <MetricCard
-                        title="Reaction time"
-                        value={p.reaction?.mean_ms_last3 ? `${p.reaction.mean_ms_last3} MS` : null}
-                        subtitle={p.reaction?.tests_today > 0 ? `${p.reaction.tests_today} tests today` : null}
-                        mastery={p.reaction?.mastery}
-                        onClick={() => setActiveModule('reaction')}
-                        emptyText="No tests yet. 5 trials per session."
-                    />
-                    <MetricCard
-                        title="Decision scenarios"
-                        value={p.decisions?.week_count > 0 ? `W${p.decisions.iso_week || ''}` : null}
-                        subtitle={p.decisions?.dominant_domain ? `Domain: ${p.decisions.dominant_domain}` : null}
-                        onClick={() => setActiveModule('decisions')}
-                        emptyText="No scenarios yet. One scenario takes 90 seconds."
-                    />
+                        style={{
+                            background: 'var(--color-accent)',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '16px 32px',
+                            borderRadius: '12px',
+                            fontSize: '15px',
+                            fontWeight: 600,
+                            letterSpacing: '0.05em',
+                            cursor: 'pointer',
+                            boxShadow: '0 8px 24px rgba(16, 185, 129, 0.2)'
+                        }}
+                    >
+                        START COGNITIVE BASELINE
+                    </button>
                 </div>
+            )}
 
-                {/* INTEL */}
-                <div className="lab-column intel-column">
-                    <div className="lab-column-header">
-                        <span className="lab-column-label">Intel & Audit</span>
-                        <span className="lab-column-count">04 modules</span>
+            {/* ── Three-Column Grid ── */}
+            {status !== 'empty' && (
+                <div className="lab-three-column">
+                    {/* PRACTICE */}
+                    <div className="lab-column practice-column">
+                        <div className="lab-column-header">
+                            <span className="lab-column-label">Practice</span>
+                            <span className="lab-column-count">04 modules</span>
+                        </div>
+
+                        <MetricCard
+                            title="Typing speed"
+                            value={p.typing?.weekly_best_wpm ? `${p.typing.weekly_best_wpm} WPM` : null}
+                            subtitle={p.typing?.mastery !== 'unranked' ? p.typing.mastery : null}
+                            mastery={p.typing?.mastery}
+                            streakDays={p.typing?.streak_days}
+                            onClick={() => setActiveModule('typing')}
+                            emptyText="No tests yet. Aim for 60 WPM at 95% accuracy."
+                        />
+                        <MetricCard
+                            title="Speaking"
+                            value={p.speaking?.latest_score ? `${p.speaking.latest_score}/100` : null}
+                            subtitle={p.speaking?.last_logged_at ? `Last: ${new Date(p.speaking.last_logged_at).toLocaleDateString()}` : null}
+                            mastery={p.speaking?.mastery}
+                            onClick={() => setActiveModule('speaking')}
+                            emptyText="No logs yet. Record a 60-second response to start."
+                        />
+                        <MetricCard
+                            title="Reaction time"
+                            value={p.reaction?.mean_ms_last3 ? `${p.reaction.mean_ms_last3} MS` : null}
+                            subtitle={p.reaction?.tests_today > 0 ? `${p.reaction.tests_today} tests today` : null}
+                            mastery={p.reaction?.mastery}
+                            onClick={() => setActiveModule('reaction')}
+                            emptyText="No tests yet. 5 trials per session."
+                        />
+                        <MetricCard
+                            title="Decision scenarios"
+                            value={p.decisions?.week_count > 0 ? `W${p.decisions.iso_week || ''}` : null}
+                            subtitle={p.decisions?.dominant_domain ? `Domain: ${p.decisions.dominant_domain}` : null}
+                            onClick={() => setActiveModule('decisions')}
+                            emptyText="No scenarios yet. One scenario takes 90 seconds."
+                        />
                     </div>
 
-                    <IntelRow
-                        title="Growth dashboard"
-                        value={intel.growth_dashboard?.active_correlations > 0
-                            ? `${intel.growth_dashboard.active_correlations} active correlations`
-                            : null}
-                        emptyText="Pattern detection starts at 14 days of data."
-                    />
-                    <IntelRow
-                        title="RC sub-logger"
-                        value={intel.rc_sublogger?.last_entry_hours_ago !== null
-                            ? `Last ${intel.rc_sublogger.last_entry_hours_ago}h`
-                            : null}
-                        subtitle="Private"
-                        statusDot={intel.rc_sublogger?.status_dot}
-                        emptyText="Private"
-                    />
-                    <IntelRow
-                        title="Mindset state · today"
-                        value={intel.mindset_state?.state || null}
-                        subtitle={intel.mindset_state?.logged_at_hour !== null
-                            ? `Logged ${String(intel.mindset_state.logged_at_hour).padStart(2, '0')}:00`
-                            : null}
-                        onClick={() => setActiveModule('mindset')}
-                        emptyText="..."
-                    />
-                    <IntelRow
-                        title="Insights"
-                        value={intel.insights?.unread_count > 0
-                            ? `${intel.insights.unread_count} unread`
-                            : (intel.insights?.total_count > 0 ? 'All read' : null)}
-                        emptyText="Pattern detection starts at 14 days of data."
-                    />
-                </div>
+                    {/* INTEL */}
+                    <div className="lab-column intel-column">
+                        <div className="lab-column-header">
+                            <span className="lab-column-label">Intel & Audit</span>
+                            <span className="lab-column-count">04 modules</span>
+                        </div>
 
-                {/* AUDIT */}
-                <div className="lab-column audit-column">
-                    <div className="lab-column-header">
-                        <span className="lab-column-label">Audit</span>
-                        <span className="lab-column-count">03 modules</span>
+                        <IntelRow
+                            title="Growth dashboard"
+                            value={intel.growth_dashboard?.active_correlations > 0
+                                ? `${intel.growth_dashboard.active_correlations} active correlations`
+                                : null}
+                            emptyText="Pattern detection starts at 14 days of data."
+                        />
+                        <IntelRow
+                            title="RC sub-logger"
+                            value={intel.rc_sublogger?.last_entry_hours_ago !== null
+                                ? `Last ${intel.rc_sublogger.last_entry_hours_ago}h`
+                                : null}
+                            subtitle="Private"
+                            statusDot={intel.rc_sublogger?.status_dot}
+                            emptyText="Private"
+                        />
+                        <IntelRow
+                            title="Mindset state · today"
+                            value={intel.mindset_state?.state || null}
+                            subtitle={intel.mindset_state?.logged_at_hour !== null
+                                ? `Logged ${String(intel.mindset_state.logged_at_hour).padStart(2, '0')}:00`
+                                : null}
+                            onClick={() => setActiveModule('mindset')}
+                            emptyText="..."
+                        />
+                        <IntelRow
+                            title="Insights"
+                            value={intel.insights?.unread_count > 0
+                                ? `${intel.insights.unread_count} unread`
+                                : (intel.insights?.total_count > 0 ? 'All read' : null)}
+                            emptyText="Pattern detection starts at 14 days of data."
+                        />
                     </div>
 
-                    <AuditRow
-                        title={`Belief inventory · ${audit.belief_inventory?.current_quarter || 'Q1'}`}
-                        value={`${audit.belief_inventory?.completed || 0} of ${audit.belief_inventory?.total || 6}`}
-                        subtitle={audit.belief_inventory?.completed_domains?.length > 0
-                            ? audit.belief_inventory.completed_domains.join(', ')
-                            : null}
-                        onClick={() => setActiveModule('beliefs')}
-                        emptyText="First belief audit opens at quarter start."
-                    />
-                    <AuditRow
-                        title="Pattern flags"
-                        value={audit.pattern_flags?.flagged_count > 0
-                            ? `${audit.pattern_flags.flagged_count} needs review`
-                            : null}
-                        emptyText="No flags yet."
-                    />
-                    <AuditRow
-                        title="Quarterly review"
-                        value={audit.quarterly_review?.days_until !== undefined
-                            ? `${audit.quarterly_review.days_until}d`
-                            : null}
-                        subtitle={`${audit.quarterly_review?.quarter_progress_pct || 0}% through quarter`}
-                    />
+                    {/* AUDIT */}
+                    <div className="lab-column audit-column">
+                        <div className="lab-column-header">
+                            <span className="lab-column-label">Audit</span>
+                            <span className="lab-column-count">03 modules</span>
+                        </div>
+
+                        <AuditRow
+                            title={`Belief inventory · ${audit.belief_inventory?.current_quarter || 'Q1'}`}
+                            value={`${audit.belief_inventory?.completed || 0} of ${audit.belief_inventory?.total || 6}`}
+                            subtitle={audit.belief_inventory?.completed_domains?.length > 0
+                                ? audit.belief_inventory.completed_domains.join(', ')
+                                : null}
+                            onClick={() => setActiveModule('beliefs')}
+                            emptyText="First belief audit opens at quarter start."
+                        />
+                        <AuditRow
+                            title="Pattern flags"
+                            value={audit.pattern_flags?.flagged_count > 0
+                                ? `${audit.pattern_flags.flagged_count} needs review`
+                                : null}
+                            emptyText="No flags yet."
+                        />
+                        <AuditRow
+                            title="Quarterly review"
+                            value={audit.quarterly_review?.days_until !== undefined
+                                ? `${audit.quarterly_review.days_until}d`
+                                : null}
+                            subtitle={`${audit.quarterly_review?.quarter_progress_pct || 0}% through quarter`}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* ── Bottom Bar: Latest Pattern ── */}
             {latest && (

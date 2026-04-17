@@ -19,7 +19,6 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { MockDataProvider } from './providers/MockDataProvider';
 import ErrorBoundary from './components/system/ErrorBoundary';
 
 // Lazy-loaded Dashboard routes
@@ -44,13 +43,11 @@ function App() {
   return (
     <ErrorBoundary label="Application">
       <ThemeProvider>
-        <MockDataProvider>
-          <AuthProvider>
-            <BrowserRouter>
-              <AuthedApp />
-            </BrowserRouter>
-          </AuthProvider>
-        </MockDataProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <AuthedApp />
+          </BrowserRouter>
+        </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
