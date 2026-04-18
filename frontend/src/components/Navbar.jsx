@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { to: '/overview', label: 'Today' },
   { to: '/insights', label: 'Insights' },
   { to: '/calendar', label: 'Calendar' },
+  { to: '/placements', label: 'Placements' },
   { to: '/finance', label: 'Finance' },
   { to: '/lab', label: 'Lab' },
   { to: '/reports', label: 'Reports' },
