@@ -38,15 +38,15 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
     }, [events, now]);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '220px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '220px', flexShrink: 0 }}>
             {/* Mini Month */}
-            <div className="glass-panel" style={{ borderRadius: '14px', padding: '14px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '10px', textAlign: 'center' }}>
+            <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-lg)', padding: '16px', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '16px', textAlign: 'center' }}>
                     {monthLabel}
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '1px', fontSize: '10px', textAlign: 'center' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', fontSize: '10px', textAlign: 'center' }}>
                     {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((w, i) => (
-                        <div key={i} style={{ color: 'var(--text-3)', fontWeight: 700, padding: '2px 0' }}>{w}</div>
+                        <div key={i} style={{ color: 'var(--text-3)', fontWeight: 600, padding: '2px 0' }}>{w}</div>
                     ))}
                     {Array.from({ length: firstDayOffset }, (_, i) => <div key={`p-${i}`} />)}
                     {Array.from({ length: daysInMonth }, (_, i) => {
@@ -58,10 +58,11 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
                                 key={day}
                                 onClick={() => onDateChange(new Date(year, month, day).toISOString())}
                                 style={{
-                                    padding: '3px', borderRadius: '4px', cursor: 'pointer',
-                                    fontWeight: isToday || isSelected ? 800 : 400,
-                                    color: isSelected ? '#fff' : isToday ? 'var(--accent)' : 'var(--text-2)',
-                                    background: isSelected ? 'var(--accent)' : 'transparent',
+                                    padding: '4px 0', borderRadius: '4px', cursor: 'pointer',
+                                    fontWeight: isToday || isSelected ? 600 : 400,
+                                    color: isSelected ? 'var(--bg-primary)' : isToday ? 'var(--accent)' : 'var(--text-2)',
+                                    background: isSelected ? 'var(--text-1)' : isToday ? 'var(--accent-dim)' : 'transparent',
+                                    transition: 'background var(--dur-fast)',
                                 }}
                             >{day}</div>
                         );
@@ -70,8 +71,8 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
             </div>
 
             {/* System Filters */}
-            <div className="glass-panel" style={{ borderRadius: '14px', padding: '14px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+            <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-lg)', padding: '16px', border: '1px solid var(--color-border)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '12px' }}>
                     Systems
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -80,13 +81,14 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
                         style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                             padding: '6px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                            background: !systemFilter ? 'var(--accent-dim)' : 'transparent',
-                            color: !systemFilter ? 'var(--accent)' : 'var(--text-2)',
-                            fontSize: '11px', fontWeight: 600, width: '100%', textAlign: 'left',
+                            background: !systemFilter ? 'var(--text-1)' : 'transparent',
+                            color: !systemFilter ? 'var(--bg-primary)' : 'var(--text-2)',
+                            fontSize: '12px', fontWeight: 500, width: '100%', textAlign: 'left',
+                            transition: 'background var(--dur-fast)'
                         }}
                     >
                         <span>All</span>
-                        <span style={{ fontSize: '10px', fontWeight: 700 }}>{(events || []).length}</span>
+                        <span style={{ fontSize: '10px', fontWeight: 600 }}>{(events || []).length}</span>
                     </button>
                     {Object.entries(SYSTEM_COLORS).map(([key, sys]) => (
                         <button
@@ -97,11 +99,15 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
                                 padding: '6px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer',
                                 background: systemFilter === key ? sys.bg : 'transparent',
                                 color: systemFilter === key ? sys.color : 'var(--text-2)',
-                                fontSize: '11px', fontWeight: 600, width: '100%', textAlign: 'left',
+                                fontSize: '12px', fontWeight: 500, width: '100%', textAlign: 'left',
+                                transition: 'background var(--dur-fast)'
                             }}
                         >
-                            <span>{sys.icon} {sys.label}</span>
-                            <span style={{ fontSize: '10px', fontWeight: 700 }}>{systemCounts[key] || 0}</span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: sys.color }}></span>
+                                {sys.label}
+                            </span>
+                            <span style={{ fontSize: '10px', fontWeight: 600 }}>{systemCounts[key] || 0}</span>
                         </button>
                     ))}
                 </div>
@@ -109,8 +115,8 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
 
             {/* Upcoming Strip */}
             {upcoming.length > 0 && (
-                <div className="glass-panel" style={{ borderRadius: '14px', padding: '14px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+                <div style={{ background: 'var(--bg-elevated)', borderRadius: 'var(--radius-lg)', padding: '16px', border: '1px solid var(--color-border)' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '12px' }}>
                         Upcoming
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>

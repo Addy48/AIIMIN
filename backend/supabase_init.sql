@@ -1175,3 +1175,57 @@ FROM information_schema.columns
 WHERE table_schema = 'public'
   AND table_name = 'money_transactions'
   AND column_name = 'behavior_snapshot';
+
+-- ============================================================
+-- SECTION 17: PLACEMENTS HUB
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.resumes (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    target_role VARCHAR(255),
+    link_url TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_resumes_user_id ON public.resumes(user_id);
+
+CREATE TABLE IF NOT EXISTS public.job_applications (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    company_name VARCHAR(255) NOT NULL,
+    role_title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'wishlist',
+    resume_id UUID REFERENCES public.resumes(id) ON DELETE SET NULL,
+    linkedin_url TEXT,
+    job_post_url TEXT,
+    notes TEXT,
+    applied_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
+);
+
+CREATE INDEX IF NOT EXISTS idx_job_applications_user_id ON public.job_applications(user_id);
+
+ALTER TABLE public.resumes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.job_applications ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "resumes_own" ON public.resumes;
+CREATE POLICY "resumes_own" ON public.resumes
+    FOR ALL TO authenticated
+    USING ((SELECT auth.uid()) = user_id) WITH CHECK ((SELECT auth.uid()) = user_id);
+
+DROP POLICY IF EXISTS "job_applications_own" ON public.job_applications;
+CREATE POLICY "job_applications_own" ON public.job_applications
+    FOR ALL TO authenticated
+    USING ((SELECT auth.uid()) = user_id) WITH CHECK ((SELECT auth.uid()) = user_id);
+
+REVOKE ALL ON public.resumes FROM PUBLIC;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.resumes TO authenticated;
+GRANT ALL ON public.resumes TO service_role;
+
+REVOKE ALL ON public.job_applications FROM PUBLIC;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.job_applications TO authenticated;
+GRANT ALL ON public.job_applications TO service_role;
