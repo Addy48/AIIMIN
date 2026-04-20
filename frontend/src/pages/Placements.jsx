@@ -197,21 +197,37 @@ export default function Placements() {
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
-            {resumes.map(resume => (
-              <div key={resume.id} style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-modal)', padding: 'var(--space-5)' }}>
-                <h3 style={{ font: 'var(--text-heading)', marginBottom: '8px' }}>{resume.title}</h3>
-                <p style={{ font: 'var(--text-body)', color: 'var(--text-2)', marginBottom: 'var(--space-4)' }}>Target: {resume.target_role || 'General'}</p>
-                <a 
-                  href={resume.link_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ display: 'inline-block', background: 'var(--bg-elevated)', color: 'var(--text-1)', textDecoration: 'none', padding: '8px 16px', borderRadius: 'var(--radius-pill)', fontSize: '13px', border: '1px solid var(--color-border)' }}
-                >
-                  Open Link
-                </a>
-              </div>
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 'var(--space-4)' }}>
+            {resumes.map(resume => {
+              let previewUrl = null;
+              if (resume.link_url && (resume.link_url.includes('docs.google.com') || resume.link_url.includes('drive.google.com'))) {
+                previewUrl = resume.link_url.replace(/\/(edit|view)(\?.*)?$/, '/preview');
+              }
+              
+              return (
+                <div key={resume.id} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-modal)', padding: 'var(--space-5)', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ marginBottom: 'var(--space-4)' }}>
+                    <h3 style={{ font: 'var(--text-heading)', marginBottom: '4px' }}>{resume.title}</h3>
+                    <p style={{ font: 'var(--text-body)', color: 'var(--text-2)' }}>Target: {resume.target_role || 'General'}</p>
+                  </div>
+                  
+                  {previewUrl ? (
+                    <div style={{ flex: 1, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--color-border)', marginBottom: 'var(--space-4)', minHeight: '260px' }}>
+                      <iframe src={previewUrl} style={{ width: '100%', height: '100%', border: 'none' }} title={resume.title} />
+                    </div>
+                  ) : null}
+
+                  <a 
+                    href={resume.link_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ display: 'inline-flex', justifyContent: 'center', background: 'var(--text-1)', color: 'var(--bg-primary)', textDecoration: 'none', padding: '8px 16px', borderRadius: 'var(--radius-pill)', fontSize: '13px', border: 'none', fontWeight: 500, marginTop: 'auto' }}
+                  >
+                    Open Link
+                  </a>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
