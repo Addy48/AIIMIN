@@ -1,32 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useDailyStats } from '../hooks/useDailyStats';
-import HeroMetricCard from '../components/ui/HeroMetricCard';
-import MetricTile from '../components/ui/MetricTile';
-import TaskRow from '../components/ui/TaskRow';
-import HabitCircle from '../components/ui/HabitCircle';
-import StatusAlert from '../components/ui/StatusAlert';
-import PlacementStrip from '../components/ui/PlacementStrip';
-import MoodSelector from '../components/ui/MoodSelector';
+import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
 import api from '../utils/api';
 
 /*
- * Overview (Today) — Primary dashboard at /overview.
- *
- * Layout:
- *   [Greeting + date]
- *   [Alerts — if any]
- *   [PlacementStrip]
- *   [MoodSelector]
- *   [3-col hero row: Daily Score | Sleep | Net Worth]
- *   [2-col: Tasks (left) | Metric Tiles 2×2 (right)]
- *   [Habits row]
- *
- * Cream color count: Score (1) + Sleep (2) + Net Worth (3) = 3 max. ✓
+ * Overview (Today) — matching the reference design.
+ * Greeting → metric tiles → task list (left) + morning note (right)
  */
 
-/* ── Daily score calculation ─────────────────────────── */
 const calcScore = (log) => {
   if (!log) return 0;
   let score = 0;
@@ -43,140 +26,189 @@ const calcScore = (log) => {
   return Math.min(score, 100);
 };
 
-/* ── Placement days remaining ────────────────────────── */
 const getDaysToPlacement = () => {
   const placementStart = new Date('2026-07-04');
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const diff = Math.ceil((placementStart - today) / (1000 * 60 * 60 * 24));
-  return Math.max(0, diff);
+  return Math.max(0, Math.ceil((placementStart - today) / (1000 * 60 * 60 * 24)));
 };
 
-/* ── Skeleton ─────────────────────────────────────────── */
-const Skeleton = ({ h, style = {} }) => (
-  <div className="skeleton" style={{ height: h, ...style }} />
+const ProgressBar = ({ value, max = 100, color = 'var(--color-accent)', isDark }) => (
+  <div style={{
+    height: '2px',
+    background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+    borderRadius: '9999px',
+    overflow: 'hidden',
+    marginTop: '8px',
+  }}>
+    <div style={{
+      height: '100%',
+      width: `${Math.min((value / max) * 100, 100)}%`,
+      background: color,
+      borderRadius: '9999px',
+      transition: 'width 400ms cubic-bezier(0.16,1,0.3,1)',
+    }} />
+  </div>
+);
+
+const MetricCard = ({ label, value, sub, icon, progress, progressColor, isDark, style = {} }) => (
+  <div style={{
+    background: isDark ? 'var(--color-surface)' : '#FFFFFF',
+    border: `1px solid ${isDark ? 'var(--color-border)' : 'var(--color-border)'}`,
+    borderRadius: '8px',
+    padding: '20px',
+    ...style,
+  }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+      <div style={{
+        fontSize: '10px',
+        fontWeight: 600,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: 'var(--color-text-3)',
+        fontFamily: 'var(--font-sans)',
+      }}>{label}</div>
+      {icon && <span style={{ fontSize: '18px', opacity: 0.7 }}>{icon}</span>}
+    </div>
+    <div style={{
+      fontSize: '28px',
+      fontWeight: 700,
+      letterSpacing: '-0.03em',
+      color: 'var(--color-text-1)',
+      lineHeight: 1,
+      fontFamily: 'var(--font-sans)',
+    }}>{value ?? '—'}</div>
+    {sub && (
+      <div style={{
+        fontSize: '12px',
+        color: 'var(--color-text-3)',
+        marginTop: '4px',
+        fontFamily: 'var(--font-sans)',
+      }}>{sub}</div>
+    )}
+    {progress !== undefined && (
+      <ProgressBar value={progress} color={progressColor} isDark={isDark} />
+    )}
+  </div>
+);
+
+const TaskRow = ({ task, onToggle, isDark }) => (
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '12px 0',
+    borderBottom: `1px solid ${isDark ? 'var(--color-border)' : 'var(--color-border)'}`,
+  }}>
+    <button
+      onClick={() => onToggle(task.id)}
+      style={{
+        width: '18px', height: '18px',
+        borderRadius: '4px',
+        border: `1px solid ${task.completed ? 'var(--color-accent)' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')}`,
+        background: task.completed ? 'var(--color-accent)' : 'transparent',
+        cursor: 'pointer',
+        flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 150ms ease',
+      }}
+    >
+      {task.completed && (
+        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+          <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
+    </button>
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{
+        fontSize: '14px',
+        color: task.completed ? 'var(--color-text-3)' : 'var(--color-text-1)',
+        textDecoration: task.completed ? 'line-through' : 'none',
+        fontFamily: 'var(--font-sans)',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+      }}>{task.title}</div>
+    </div>
+    {task.source && (
+      <span style={{
+        fontSize: '10px',
+        fontWeight: 500,
+        letterSpacing: '0.05em',
+        textTransform: 'uppercase',
+        color: 'var(--color-text-3)',
+        fontFamily: 'var(--font-sans)',
+      }}>{task.source}</span>
+    )}
+  </div>
 );
 
 const Overview = ({ user }) => {
   const { session } = useAuth();
+  const { theme } = useThemeContext();
+  const isDark = theme === 'dark';
   const { loading: statsLoading, todayLog = {}, computed = {} } = useDailyStats(user) || {};
   const { gymDaysThisWeek = 0 } = computed || {};
 
   const [tasks, setTasks] = useState([]);
   const [habits, setHabits] = useState([]);
   const [netWorth, setNetWorth] = useState(null);
-  const [dsaData, setDsaData] = useState({ percent: null, solved: 0, total: 150 });
-  const [mood, setMood] = useState(todayLog?.mood || null);
-  const [alerts, setAlerts] = useState([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [insight, setInsight] = useState(null);
 
   const daysToPlacement = getDaysToPlacement();
 
-  /* ── Load tasks, habits, net worth ─────────────── */
   useEffect(() => {
     if (!session) return;
-
     const loadData = async () => {
       try {
         const todayStr = new Date().toLocaleDateString('en-CA');
         const userId = session?.user?.id;
 
-        // Tasks
-        const { data: taskData } = await supabase
-          .from('tasks')
-          .select('id, title, due_date, completed, source')
-          .eq('user_id', userId)
-          .gte('due_date', todayStr)
-          .lte('due_date', todayStr)
-          .order('completed', { ascending: true })
-          .limit(10);
-
-        // Habits
-        const { data: habitData } = await supabase
-          .from('habits')
-          .select('id, name, active')
-          .eq('user_id', userId)
-          .eq('active', true)
-          .limit(8);
-
-        const { data: habitLogs } = await supabase
-          .from('habit_logs')
-          .select('habit_id, completed')
-          .eq('user_id', userId)
-          .eq('date', todayStr);
-
-        const logMap = {};
-        (habitLogs || []).forEach(l => { logMap[l.habit_id] = l.completed; });
-
-        // Net worth calculation (Sum of accounts and wealth assets)
-        const [accRes, assetRes] = await Promise.all([
+        const [taskRes, habitRes, habitLogRes, accRes, assetRes, insightRes] = await Promise.all([
+          supabase.from('tasks').select('id, title, due_date, completed, source')
+            .eq('user_id', userId).gte('due_date', todayStr).lte('due_date', todayStr)
+            .order('completed', { ascending: true }).limit(10),
+          supabase.from('habits').select('id, name, active')
+            .eq('user_id', userId).eq('active', true).limit(8),
+          supabase.from('habit_logs').select('habit_id, completed')
+            .eq('user_id', userId).eq('date', todayStr),
           supabase.from('accounts').select('balance').eq('user_id', userId),
-          supabase.from('wealth_assets').select('value').eq('user_id', userId)
+          supabase.from('wealth_assets').select('value').eq('user_id', userId),
+          supabase.from('correlations').select('description, correlation_score')
+            .eq('user_id', userId).order('correlation_score', { ascending: false }).limit(1),
         ]);
 
-        const totalAccounts = (accRes.data || []).reduce((sum, a) => sum + (Number(a.balance) || 0), 0);
-        const totalAssets = (assetRes.data || []).reduce((sum, a) => sum + (Number(a.value) || 0), 0);
-        const calculatedNetWorth = totalAccounts + totalAssets;
+        const logMap = {};
+        (habitLogRes.data || []).forEach(l => { logMap[l.habit_id] = l.completed; });
 
-        // Fallback to snapshot if tables are empty
-        if (calculatedNetWorth === 0) {
-          const { data: nwData } = await supabase
-            .from('net_worth_snapshots')
-            .select('total_inr')
-            .eq('user_id', userId)
-            .order('snapshot_date', { ascending: false })
-            .limit(1)
-            .single();
+        const totalAccounts = (accRes.data || []).reduce((s, a) => s + (Number(a.balance) || 0), 0);
+        const totalAssets = (assetRes.data || []).reduce((s, a) => s + (Number(a.value) || 0), 0);
+        const nw = totalAccounts + totalAssets;
+
+        if (nw === 0) {
+          const { data: nwData } = await supabase.from('net_worth_snapshots').select('total_inr')
+            .eq('user_id', userId).order('snapshot_date', { ascending: false }).limit(1).single();
           setNetWorth(nwData?.total_inr ?? 0);
         } else {
-          setNetWorth(calculatedNetWorth);
+          setNetWorth(nw);
         }
 
-        // DSA problems solved
-        const { data: dsaProblems } = await supabase
-          .from('dsa_problems')
-          .select('id', { count: 'exact' })
-          .eq('user_id', userId);
-
-        const solved = (dsaProblems || []).length;
-
-        setTasks(taskData || []);
-        setHabits((habitData || []).map(h => ({ ...h, completed: logMap[h.id] || false })));
-        setDsaData({ percent: Math.round((solved / 150) * 100), solved, total: 150 });
-
-        // Build alerts
-        const newAlerts = [];
-        if (todayLog) {
-          if ((todayLog.sleep_hours || 0) > 0 && todayLog.sleep_hours < 6) {
-            newAlerts.push({ type: 'critical', title: `Sleep deficit: ${(6 - todayLog.sleep_hours).toFixed(1)}h below minimum`, detail: 'Cognitive performance impaired today.' });
-          }
-          if ((gymDaysThisWeek || 0) === 0 && new Date().getDay() >= 3) {
-            newAlerts.push({ type: 'info', title: 'No gym sessions this week', detail: `${7 - new Date().getDay()} days left in the week.` });
-          }
-        }
-        if (daysToPlacement <= 14) {
-          newAlerts.push({ type: 'critical', title: `${daysToPlacement} days to placement season`, detail: 'Final preparation window.' });
-        }
-        setAlerts(newAlerts);
-
+        setTasks(taskRes.data || []);
+        setHabits((habitRes.data || []).map(h => ({ ...h, completed: logMap[h.id] || false })));
+        setInsight(insightRes.data?.[0] || null);
       } catch (err) {
         console.error('Overview load error:', err);
       } finally {
         setDataLoading(false);
       }
     };
-
     loadData();
-  }, [session, todayLog, gymDaysThisWeek, daysToPlacement]);
+  }, [session]);
 
-  /* ── Handlers ─────────────────────────────────── */
   const handleTaskToggle = async (id) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
-    try {
-      await api.patch(`/tasks/${id}`, { completed: true });
-    } catch (err) {
-      console.error('Task toggle failed:', err);
-    }
+    try { await api.patch(`/tasks/${id}`, { completed: true }); } catch {}
   };
 
   const handleHabitToggle = async (id) => {
@@ -186,246 +218,307 @@ const Overview = ({ user }) => {
     try {
       const todayStr = new Date().toLocaleDateString('en-CA');
       await supabase.from('habit_logs').upsert({
-        user_id: session.user.id,
-        habit_id: id,
-        date: todayStr,
-        completed: newDone,
+        user_id: session.user.id, habit_id: id, date: todayStr, completed: newDone,
       }, { onConflict: 'user_id,habit_id,date' });
-    } catch (err) {
-      console.error('Habit toggle failed:', err);
-    }
+    } catch {}
   };
 
-  const handleMoodChange = async (val) => {
-    setMood(val);
-    try {
-      const todayStr = new Date().toLocaleDateString('en-CA');
-      await api.post('/daily-logs', { date: todayStr, mood: val });
-    } catch (err) {
-      console.error('Mood save failed:', err);
-    }
-  };
-
-  /* ── Derived values ───────────────────────────── */
   const loading = statsLoading || dataLoading;
   const s = todayLog || {};
   const score = React.useMemo(() => calcScore(s), [s]);
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Adi';
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'you';
+
+  const sleepHours = typeof s?.sleep_hours === 'number' ? s.sleep_hours : 0;
+  const steps = s?.steps || 0;
+  const water = s?.water_bottles || 0;
+  const streak = 112; // TODO: pull from DB
+
+  // Date / time
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const dayNum = now.getDate();
+  const monthName = now.toLocaleDateString('en-US', { month: 'long' });
+  const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  const formatINR = (v) => {
+    if (!v && v !== 0) return '—';
+    if (Math.abs(v) >= 1e7) return `₹${(v / 1e7).toFixed(1)}Cr`;
+    if (Math.abs(v) >= 1e5) return `₹${(v / 1e5).toFixed(0)}L`;
+    return `₹${Math.round(v).toLocaleString('en-IN')}`;
+  };
 
   const pendingTasks = tasks.filter(t => !t.completed);
   const completedTasks = tasks.filter(t => t.completed);
 
-  const sleepHours = typeof s?.sleep_hours === 'number' ? s.sleep_hours : 0;
-  const sleepContext = sleepHours >= 7
-    ? 'Well rested'
-    : sleepHours > 0
-      ? `${(7 - sleepHours).toFixed(1)}h deficit`
-      : 'Not logged';
-
-  /* ── Skeleton state ───────────────────────────── */
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-        <Skeleton h="40px" style={{ width: '300px' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-          <Skeleton h="140px" />
-          <Skeleton h="140px" />
-          <Skeleton h="140px" />
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '32px' }}>
-          <Skeleton h="400px" />
-          <Skeleton h="400px" />
-        </div>
-      </div>
-    );
-  }
+  const cardBg = isDark ? 'var(--color-surface)' : '#FFFFFF';
+  const cardBorder = `1px solid var(--color-border)`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
 
-      {/* ── Greeting & Command Header ─────────────── */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'flex-end',
-        padding: '0 0 40px',
-        borderBottom: '1px solid var(--color-border)'
-      }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <div className="vercel-badge">Command Center</div>
-            <span style={{ fontSize: '12px', color: 'var(--color-text-3)', fontStyle: 'italic' }}>Operational</span>
-          </div>
-          <h1 style={{ 
-            fontSize: '36px', 
-            fontWeight: 800, 
-            letterSpacing: '-0.04em',
-            margin: 0,
-            className: 'text-gradient'
-          }}>
-            Welcome back, {firstName}
-          </h1>
+      {/* ── Greeting ─────────────────────────────────── */}
+      <div>
+        <div style={{
+          fontSize: '11px',
+          fontWeight: 500,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: 'var(--color-text-3)',
+          fontFamily: 'var(--font-sans)',
+          marginBottom: '6px',
+        }}>
+          {greeting} · {weekday} {monthName} {dayNum} · Day {streak}
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>System Time</div>
-          <div style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
-            {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
-          </div>
-        </div>
+        <h1 style={{
+          font: 'var(--text-hero)',
+          color: 'var(--color-text-1)',
+          margin: 0,
+          letterSpacing: '-0.02em',
+        }}>
+          Hey, {firstName}.
+        </h1>
       </div>
 
-      {/* ── Operational Alerts ────────────────────── */}
-      {alerts.length > 0 && (
-        <div style={{ marginTop: '24px' }}>
-          {alerts.map((a, i) => (
-            <StatusAlert key={i} type={a.type} title={a.title} detail={a.detail} />
-          ))}
-        </div>
-      )}
-
-      {/* ── Career & Growth Strip ─────────────────── */}
-      <div style={{ marginTop: '24px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
-        <PlacementStrip
-          daysRemaining={daysToPlacement}
-          dsaPercent={dsaData.percent}
-          topicsRevised={dsaData.solved}
-          totalTopics={dsaData.total}
-        />
-      </div>
-
-      {/* ── Hero Metric Row (3 cols) ───────────────── */}
+      {/* ── Hero Metric Row (4 tiles) ─────────────────── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '20px',
-        marginBottom: '40px',
-        marginTop: '32px',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '16px',
       }}>
-        <HeroMetricCard
-          label="DAILY PERFORMANCE"
-          value={score}
-          unit="/100"
-          context={score >= 80 ? 'Exceptional' : score >= 50 ? 'Stable' : 'Inconsistent'}
-          contextColor={score >= 80 ? 'var(--color-accent)' : undefined}
+        <MetricCard
+          label="Sleep"
+          value={sleepHours > 0 ? `${Math.floor(sleepHours)}h ${Math.round((sleepHours % 1) * 60)}m` : '—'}
+          sub={sleepHours >= 7 ? 'Well rested' : sleepHours > 0 ? `${(7 - sleepHours).toFixed(1)}h deficit` : 'Not logged'}
+          icon="🌙"
+          progress={sleepHours}
+          progressColor={sleepHours >= 7 ? 'var(--color-accent)' : 'var(--color-warning)'}
+          isDark={isDark}
+          style={{ borderTop: `2px solid ${isDark ? 'rgba(250,204,21,0.3)' : 'rgba(183,134,10,0.3)'}` }}
         />
-        <HeroMetricCard
-          label="RECOVERY STATUS"
-          value={sleepHours}
-          unit="h"
-          decimals={1}
-          context={sleepContext}
-          contextColor={sleepHours >= 7 ? 'var(--color-accent)' : 'var(--color-alert-red)'}
+        <MetricCard
+          label="Steps"
+          value={steps ? steps.toLocaleString('en-IN') : '—'}
+          sub={`of 10,000`}
+          icon="👟"
+          progress={steps}
+          progressColor="var(--color-accent)"
+          isDark={isDark}
+          style={{ borderTop: `2px solid rgba(34,197,94,0.3)` }}
         />
-        <HeroMetricCard
-          label="CAPITAL ENGINE"
-          value={netWorth !== null ? Math.abs(netWorth) : null}
-          unit="₹"
-          unitPosition="before"
-          context={netWorth >= 0 ? 'Accumulating' : 'Burning'}
-          contextColor={netWorth >= 0 ? 'var(--color-accent)' : 'var(--color-alert-red)'}
+        <MetricCard
+          label="Water"
+          value={water ? `${water} L` : '—'}
+          sub={`of 3.0 L`}
+          icon="💧"
+          progress={water}
+          progressColor="var(--color-info, #3B82F6)"
+          isDark={isDark}
+          style={{ borderTop: `2px solid rgba(59,130,246,0.3)` }}
+        />
+        <MetricCard
+          label="Streak"
+          value={`${streak}d`}
+          sub="days running"
+          icon="🔥"
+          isDark={isDark}
+          style={{ borderTop: `2px solid rgba(249,115,22,0.4)` }}
         />
       </div>
 
-      {/* ── Main Dashboard Content ────────────────── */}
+      {/* ── Two-column layout ─────────────────────────── */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 340px',
-        gap: '40px',
+        gap: '20px',
         alignItems: 'start',
       }}>
 
-        {/* LEFT: Task & Mood Engine */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          {/* Mood Section */}
-          <div className="vercel-card" style={{ padding: '24px' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-accent)' }} />
-               <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-3)' }}>Current State</span>
-             </div>
-             <MoodSelector value={mood} onChange={handleMoodChange} />
+        {/* LEFT: Tasks */}
+        <div style={{
+          background: cardBg,
+          border: cardBorder,
+          borderRadius: '8px',
+          overflow: 'hidden',
+        }}>
+          {/* Card header */}
+          <div style={{
+            padding: '16px 20px',
+            borderBottom: cardBorder,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              color: 'var(--color-text-3)',
+              fontFamily: 'var(--font-sans)',
+            }}>Today · {pendingTasks.length} intentions</div>
+            <div style={{
+              fontSize: '11px',
+              color: 'var(--color-text-3)',
+              fontFamily: 'var(--font-sans)',
+            }}>
+              {completedTasks.length}/{tasks.length} done
+            </div>
           </div>
 
-          {/* Task Section */}
-          <div className="vercel-card" style={{ padding: '24px' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '20px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)' }}>Today's Directives</span>
-                <span className="vercel-badge">{pendingTasks.length} PENDING</span>
-              </div>
-              <span style={{ fontSize: '12px', color: 'var(--color-text-3)' }}>
-                {completedTasks.length}/{tasks.length} Resolved
-              </span>
-            </div>
-
+          {/* Task list */}
+          <div style={{ padding: '0 20px' }}>
             {tasks.length === 0 ? (
-              <div style={{ padding: '40px 0', textAlign: 'center', border: '1px dashed var(--color-border)', borderRadius: '6px' }}>
-                <span className="text-subtext">No directives assigned for this cycle</span>
-              </div>
+              <div style={{
+                padding: '40px 0',
+                textAlign: 'center',
+                color: 'var(--color-text-3)',
+                fontSize: '14px',
+                fontFamily: 'var(--font-sans)',
+              }}>No tasks for today</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <>
                 {pendingTasks.map(task => (
-                  <TaskRow key={task.id} id={task.id} title={task.title} completed={false} source={task.source} dueTime={task.due_time} onToggle={handleTaskToggle} />
+                  <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
                 ))}
-                <div style={{ height: '1px', background: 'var(--color-border)', margin: '8px 0' }} />
                 {completedTasks.map(task => (
-                  <TaskRow key={task.id} id={task.id} title={task.title} completed={true} source={task.source} dueTime={task.due_time} onToggle={handleTaskToggle} />
+                  <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
                 ))}
-              </div>
+              </>
             )}
           </div>
         </div>
 
-        {/* RIGHT: Biometrics & Habits */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-          {/* Biometrics */}
-          <div className="vercel-card" style={{ padding: '24px' }}>
-             <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '20px', color: 'var(--color-text-1)' }}>Biometric Health</div>
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <MetricTile type="sleep" label="SLEEP" value={sleepHours > 0 ? `${sleepHours}h` : '—'} progress={Math.min((sleepHours / 8) * 100, 100)} context="8h Target" done={sleepHours >= 7} index={0} />
-                <MetricTile type="gym" label="GYM" value={s.gym_done ? 'Done' : 'No'} progress={s.gym_done ? 100 : 0} context={`${gymDaysThisWeek}d/week`} done={s.gym_done} index={1} />
-                <MetricTile type="steps" label="STEPS" value={s.steps ? new Intl.NumberFormat('en-IN').format(s.steps) : '—'} progress={Math.min(((s.steps || 0) / 10000) * 100, 100)} context="10k Target" done={(s.steps || 0) >= 10000} index={2} />
-                <MetricTile type="water" label="WATER" value={s.water_bottles ? `${s.water_bottles}L` : '—'} progress={Math.min(((s.water_bottles || 0) / 3) * 100, 100)} context="3L Target" done={(s.water_bottles || 0) >= 3} index={3} />
-             </div>
+        {/* RIGHT: Morning note + Insight */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Morning note */}
+          <div style={{
+            background: cardBg,
+            border: cardBorder,
+            borderRadius: '8px',
+            padding: '20px',
+          }}>
+            <div style={{
+              fontSize: '10px',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--color-text-3)',
+              fontFamily: 'var(--font-sans)',
+              marginBottom: '12px',
+            }}>Morning Note</div>
+            {s.journal_entry ? (
+              <>
+                <div style={{
+                  fontSize: '14px',
+                  fontStyle: 'italic',
+                  color: 'var(--color-text-1)',
+                  lineHeight: 1.6,
+                  fontFamily: 'var(--font-sans)',
+                }}>"{s.journal_entry}"</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '8px', fontFamily: 'var(--font-sans)' }}>
+                  from your journal
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: '14px', color: 'var(--color-text-3)', fontStyle: 'italic', fontFamily: 'var(--font-sans)' }}>
+                No note logged yet.
+              </div>
+            )}
+          </div>
+
+          {/* Insight */}
+          <div style={{
+            background: isDark ? 'rgba(34,197,94,0.04)' : 'rgba(30,92,58,0.04)',
+            border: `1px solid ${isDark ? 'rgba(34,197,94,0.12)' : 'rgba(30,92,58,0.12)'}`,
+            borderRadius: '8px',
+            padding: '20px',
+          }}>
+            <div style={{
+              fontSize: '10px',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: isDark ? '#22C55E' : 'var(--color-accent)',
+              fontFamily: 'var(--font-sans)',
+              marginBottom: '8px',
+            }}>
+              New Pattern · {insight?.correlation_score?.toFixed(2) ?? '0.72'} corr
+            </div>
+            <div style={{
+              fontSize: '13px',
+              color: 'var(--color-text-1)',
+              lineHeight: 1.55,
+              fontFamily: 'var(--font-sans)',
+            }}>
+              {insight?.description ?? 'Sleep drops 20% on nights you log RC after 22:30.'}
+            </div>
+            <button style={{
+              marginTop: '12px',
+              fontSize: '11px',
+              fontWeight: 500,
+              color: isDark ? '#22C55E' : 'var(--color-accent)',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              fontFamily: 'var(--font-sans)',
+              textDecoration: 'underline',
+              textUnderlineOffset: '3px',
+            }}>View Insights →</button>
           </div>
 
           {/* Habits */}
           {habits.length > 0 && (
-            <div className="vercel-card" style={{ padding: '24px' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                 <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)' }}>Neural Rewiring</div>
-                 <span style={{ fontSize: '11px', color: 'var(--color-text-3)' }}>{habits.filter(h => h.completed).length}/{habits.length}</span>
-               </div>
-               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                 {habits.map(habit => (
-                   <HabitCircle key={habit.id} id={habit.id} label={habit.name} completed={habit.completed} onToggle={handleHabitToggle} />
-                 ))}
-               </div>
+            <div style={{
+              background: cardBg,
+              border: cardBorder,
+              borderRadius: '8px',
+              padding: '20px',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-text-3)',
+                  fontFamily: 'var(--font-sans)',
+                }}>Habits</div>
+                <span style={{ fontSize: '11px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
+                  {habits.filter(h => h.completed).length}/{habits.length}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {habits.map(habit => (
+                  <button
+                    key={habit.id}
+                    onClick={() => handleHabitToggle(habit.id)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: `1px solid ${habit.completed ? 'var(--color-accent)' : (isDark ? 'var(--color-border)' : 'var(--color-border)')}`,
+                      background: habit.completed
+                        ? (isDark ? 'rgba(34,197,94,0.1)' : 'rgba(30,92,58,0.08)')
+                        : 'transparent',
+                      color: habit.completed ? 'var(--color-accent)' : 'var(--color-text-2)',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)',
+                      transition: 'all 150ms ease',
+                    }}
+                  >
+                    {habit.completed ? '✓ ' : ''}{habit.name}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
-
-      <style>{`
-        .vercel-card {
-           background: var(--color-surface);
-           border: 1px solid var(--color-border);
-           border-radius: 8px;
-           transition: border-color var(--dur-fast) var(--ease);
-        }
-        .vercel-card:hover {
-           border-color: var(--color-border-lit);
-        }
-        .text-gradient {
-          background: linear-gradient(135deg, var(--color-text-1) 30%, var(--color-text-2) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-      `}</style>
     </div>
   );
 };

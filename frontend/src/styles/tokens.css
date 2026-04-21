@@ -1,97 +1,107 @@
 /*
- * AIIMIN Design Tokens — Single Source of Truth
- * Forest Ink (Light) & Slate & Rust (Dark)
+ * AIIMIN Design Tokens — Vercel-Style Nordic
+ * Dark: Deep Vercel Black (#0A0A0A) with forest-green accents
+ * Light: Parchment (#F0EDE8) with forest-green ink
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ────────────────────────────────────────────────────────
-   LIGHT MODE: Forest Ink (Cream bg, Deep forest green ink)
+   DARK MODE (DEFAULT): Vercel-style black
 ───────────────────────────────────────────────────────── */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* ── Ambient Background ─────────────────────────── */
-  --color-base: #F5F2ED;       /* Parchment/Cream bg */
-  --color-surface: #FCFAF7;    /* Slightly lighter surface */
-  --color-elevated: #EEF5EB;   /* Light nature green */
-  
-  /* Metric Card Backgrounds */
-  --color-card-blue: #E8F0FE;
-  --color-card-green: #E8F5EB;
-  --color-card-peach: #FFF2E5;
-  --color-card-purple: #EFE6FF;
-  --color-card-dark-green: #23503B; /* Forest */
-  
-  --color-border: #E3DED5;
-  --color-border-lit: #D5D0C6;
+  /* ── Base ────────────────────────────────────────── */
+  --color-base:    #0A0A0A;
+  --color-surface: #111111;
+  --color-elevated: #1A1A1A;
+  --color-overlay: #222222;
+
+  /* ── Borders ────────────────────────────────────── */
+  --color-border:     #222222;
+  --color-border-lit: #333333;
 
   /* ── Text ───────────────────────────────────────── */
-  --color-text-1: #1C1C1C;     /* Deep Ink */
-  --color-text-2: #556B2F;     /* Olive */
-  --color-text-3: #8C8C8C;     /* Muted Gray */
-  --color-text-inverse: #FFFFFF;
+  --color-text-1:      #EDEDED;
+  --color-text-2:      #A1A1AA;
+  --color-text-3:      #52525B;
+  --color-text-inverse: #000000;
 
-  /* ── Accent & Brand ─────────────────────────────── */
-  --color-accent: #23503B;     /* Forest green */
-  --color-accent-dim: rgba(35, 80, 59, 0.1);
-  --color-accent-glow: rgba(35, 80, 59, 0.2);
-  
-  --color-hero: #1C1C1C;
-  --color-rust: #E2725B;       /* Terracotta */
-  --color-logo-bg: #E2725B;
+  /* ── Accent — Forest Green ──────────────────────── */
+  --color-accent:       #22C55E;
+  --color-accent-dark:  #16A34A;
+  --color-accent-dim:   rgba(34, 197, 94, 0.08);
+  --color-accent-glow:  rgba(34, 197, 94, 0.15);
+  --color-hero: #FFFFFF;
+
+  /* ── Brand ──────────────────────────────────────── */
+  --color-logo-bg:   #23503B;
+  --color-rust:      #E2725B;
 
   /* ── Status ─────────────────────────────────────── */
-  --color-alert-red: #E2725B;
-  --color-gym: #E2725B;
-  --color-steps: #556B2F;
-  --color-water: #4EA8D9;
-  --color-sleep: #DEB841;
-  --color-success: #23503B;
-  --color-warning: #DEB841;
+  --color-success:  #22C55E;
+  --color-warning:  #FACC15;
+  --color-danger:   #EF4444;
+  --color-info:     #3B82F6;
 
-  /* ── Glass Layer ───────────────────── */
-  --glass-bg: rgba(254, 250, 247, 0.85);
-  --glass-bg-hover: rgba(254, 250, 247, 0.95);
-  --glass-bg-strong: #FCFAF7;
-  --glass-border: rgba(35, 80, 59, 0.08);
-  --glass-border-lit: rgba(35, 80, 59, 0.15);
-  --glass-blur: blur(12px);
-  --glass-blur-sm: blur(6px);
-  --glass-shadow: 0 4px 20px rgba(35, 80, 59, 0.04);
-  --glass-shadow-sm: 0 2px 8px rgba(35, 80, 59, 0.02);
+  --color-alert-red: #EF4444;
+  --color-gym:       #E2725B;
+  --color-steps:     #22C55E;
+  --color-water:     #3B82F6;
+  --color-sleep:     #FACC15;
 
-  /* ── Ambient glow ─────────────── */
+  /* ── Metric Card Tints (dark) ────────────────────── */
+  --color-card-blue:       rgba(59, 130, 246, 0.08);
+  --color-card-green:      rgba(34, 197, 94, 0.06);
+  --color-card-peach:      rgba(251, 146, 60, 0.08);
+  --color-card-purple:     rgba(168, 85, 247, 0.08);
+  --color-card-dark-green: #0D1F18;
+
+  /* ── Glass ──────────────────────────────────────── */
+  --glass-bg:         rgba(17, 17, 17, 0.8);
+  --glass-bg-hover:   rgba(26, 26, 26, 0.9);
+  --glass-bg-strong:  #111111;
+  --glass-border:     rgba(255, 255, 255, 0.06);
+  --glass-border-lit: rgba(255, 255, 255, 0.10);
+  --glass-blur:       blur(16px);
+  --glass-blur-sm:    blur(8px);
+  --glass-shadow:     0 8px 32px rgba(0, 0, 0, 0.6);
+  --glass-shadow-sm:  0 2px 12px rgba(0, 0, 0, 0.4);
+
+  /* ── Ambient glow ───────────────────────────────── */
   --ambient-1: none;
   --ambient-2: none;
 
+  /* ── Focus ──────────────────────────────────────── */
+  --shadow-focus: 0 0 0 2px rgba(34, 197, 94, 0.3);
+
   /* ── Typography ─────────────────────────────────── */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
-  --font-mono: 'JetBrains Mono', 'DM Mono', 'SF Mono', monospace;
+  --font-mono:  'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
 
   /* Type Scale */
-  --text-hero: 700 48px/1.1 var(--font-serif);
-  --text-metric: 400 28px/1 var(--font-sans);
-  --text-heading: 500 16px/1.4 var(--font-sans);
-  --text-body: 400 14px/1.6 var(--font-sans);
-  --text-label: 500 11px/1 var(--font-mono);
+  --text-hero:    italic 700 48px/1.05 var(--font-serif);
+  --text-metric:  700 36px/1 var(--font-sans);
+  --text-heading: 500 15px/1.4 var(--font-sans);
+  --text-body:    400 14px/1.6 var(--font-sans);
+  --text-label:   500 10px/1 var(--font-mono);
   --text-subtext: 400 12px/1.5 var(--font-sans);
 
   /* ── Radius ─────────────────────────────────────── */
   --r-none: 0px;
-  --r-sm: 4px;
-  --r-md: 8px;
-  --r-lg: 12px;
-  --r-xl: 16px;
+  --r-sm:   4px;
+  --r-md:   8px;
+  --r-lg:   12px;
+  --r-xl:   16px;
   --r-pill: 9999px;
 
-  /* Aliases */
-  --radius-none: var(--r-none);
+  --radius-none:  var(--r-none);
   --radius-modal: var(--r-xl);
-  --radius-pill: var(--r-pill);
+  --radius-pill:  var(--r-pill);
 
-  /* ── Spacing ─────────────────────────────────────── */
+  /* ── Spacing ────────────────────────────────────── */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -103,98 +113,109 @@
   --space-9: 64px;
 
   /* ── Layout ─────────────────────────────────────── */
-  --nav-height: 60px;
-  --nav-height-mob: 50px;
-  --sidebar-width: 240px;
-  --tab-bar-height: 56px;
-  --content-max: 1280px;
-  --content-pad: 32px;
+  --nav-height:      52px;
+  --nav-height-mob:  50px;
+  --content-max:     1100px;
+  --content-pad:     40px;
+  --section-gap:     var(--space-6);
 
-  /* ── Component heights ───────────────────────────── */
-  --card-hero: 120px;
-  --card-tile: 100px;
-  --row-task: 48px;
+  /* ── Component heights ──────────────────────────── */
+  --card-hero:    120px;
+  --card-tile:    100px;
+  --row-task:     48px;
   --circle-habit: 48px;
-  --alert-height: 60px;
 
-  /* ── Animation ────────────────────────────────────── */
-  --dur-fast: 100ms;
-  --dur-normal: 150ms;
-  --dur-enter: 200ms;
+  /* ── Animation ──────────────────────────────────── */
+  --dur-fast:     80ms;
+  --dur-normal:   150ms;
+  --dur-enter:    200ms;
   --dur-feedback: 300ms;
-  --dur-progress: 350ms;
-  --dur-hero: 1000ms;
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-progress: 400ms;
+  --dur-hero:     800ms;
+  --ease:         cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* ── Focus ────────────────────────────────────────── */
-  --shadow-focus: 0 0 0 2px rgba(35, 80, 59, 0.3);
-
-  /* ── Aliases ───────────────────── */
-  --bg-primary: var(--color-base);
-  --bg-card: var(--color-surface);
-  --bg-elevated: var(--color-elevated);
-  --bg-surface: var(--color-surface);
-  --accent: var(--color-accent);
-  --accent-dim: var(--color-accent-dim);
-  --text-1: var(--color-text-1);
-  --text-2: var(--color-text-2);
-  --text-3: var(--color-text-3);
-  --border: var(--color-border);
-  --success: var(--color-success);
-  --max-width: var(--content-max);
-  --container-px: var(--content-pad);
-  --section-gap: var(--space-6);
+  /* ── Alias tokens ───────────────────────────────── */
+  --bg-primary:    var(--color-base);
+  --bg-card:       var(--color-surface);
+  --bg-elevated:   var(--color-elevated);
+  --bg-surface:    var(--color-surface);
+  --accent:        var(--color-accent);
+  --accent-dim:    var(--color-accent-dim);
+  --text-1:        var(--color-text-1);
+  --text-2:        var(--color-text-2);
+  --text-3:        var(--color-text-3);
+  --border:        var(--color-border);
+  --success:       var(--color-success);
+  --max-width:     var(--content-max);
+  --container-px:  var(--content-pad);
 }
 
 /* ────────────────────────────────────────────────────────
-   DARK MODE: Slate & Rust
-───────────────────────────────────────────────────── */
-[data-theme="dark"] {
-  color-scheme: dark;
+   LIGHT MODE: Nordic Calm (Parchment + Forest Ink)
+───────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  color-scheme: light;
 
-  /* Deep warm black background - Vercel style */
-  --color-base: #0A0A0A;
-  --color-surface: #121212;      /* Dark surface */
-  --color-elevated: #1A1A1A;     /* Elevated dark */
-  
-  --color-border: #262626;
-  --color-border-lit: #333333;
+  --color-base:    #F0EDE8;
+  --color-surface: #FAFAF9;
+  --color-elevated: #EDE8DF;
+  --color-overlay: #FFFFFF;
 
-  /* Text */
-  --color-text-1: #FFFFFF;
-  --color-text-2: #A1A1AA;
-  --color-text-3: #525252;
-  --color-text-inverse: #000000;
+  --color-border:     #E2DDD7;
+  --color-border-lit: #D0C9C0;
 
-  /* Accents */
-  --color-accent: #E2725B;       /* Terracotta/Rust */
-  --color-accent-dim: rgba(226, 114, 91, 0.1);
-  --color-accent-glow: rgba(226, 114, 91, 0.2);
-  
-  --color-hero: #FFFFFF;
+  --color-text-1:      #1A1A1A;
+  --color-text-2:      #4A5340;
+  --color-text-3:      #9A9186;
+  --color-text-inverse: #FFFFFF;
 
-  --color-alert-red: #E2725B;
-  --color-gym: #E2725B;
-  --color-steps: #556B2F;
-  --color-water: #3B82F6;
-  --color-sleep: #FACC15;
-  --color-success: #556B2F;
-  --color-warning: #FACC15;
-  
-  /* Dark Mode Metric Cards */
-  --color-card-blue: #0E121A;
-  --color-card-green: #0F120F;   
-  --color-card-peach: #120F0E;   
-  --color-card-purple: #120E12;  
-  --color-card-dark-green: #08120D;
+  --color-accent:      #1E5C3A;
+  --color-accent-dark: #164530;
+  --color-accent-dim:  rgba(30, 92, 58, 0.08);
+  --color-accent-glow: rgba(30, 92, 58, 0.15);
+  --color-hero:        #1A1A1A;
 
-  --glass-bg: rgba(10, 10, 10, 0.75);
-  --glass-bg-hover: rgba(18, 18, 18, 0.9);
-  --glass-bg-strong: #121212;
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-border-lit: rgba(255, 255, 255, 0.12);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
-  --glass-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --color-logo-bg:   #23503B;
+  --color-rust:      #C8604A;
 
-  --shadow-focus: 0 0 0 2px rgba(226, 114, 91, 0.4);
+  --color-success: #1E5C3A;
+  --color-warning: #B7860A;
+  --color-danger:  #C1392B;
+  --color-info:    #1D4ED8;
+
+  --color-alert-red: #C1392B;
+  --color-gym:       #C8604A;
+  --color-steps:     #1E5C3A;
+  --color-water:     #1D4ED8;
+  --color-sleep:     #B7860A;
+
+  --color-card-blue:       #E8F1FF;
+  --color-card-green:      #E6F3EB;
+  --color-card-peach:      #FDF0EA;
+  --color-card-purple:     #EEE8F8;
+  --color-card-dark-green: #1E5C3A;
+
+  --glass-bg:         rgba(250, 250, 249, 0.88);
+  --glass-bg-hover:   rgba(250, 250, 249, 0.98);
+  --glass-bg-strong:  #FAFAF9;
+  --glass-border:     rgba(30, 92, 58, 0.06);
+  --glass-border-lit: rgba(30, 92, 58, 0.12);
+  --glass-shadow:     0 4px 20px rgba(0, 0, 0, 0.06);
+  --glass-shadow-sm:  0 2px 8px rgba(0, 0, 0, 0.04);
+
+  --shadow-focus: 0 0 0 2px rgba(30, 92, 58, 0.25);
+
+  /* Alias overrides */
+  --bg-primary:  var(--color-base);
+  --bg-card:     var(--color-surface);
+  --bg-elevated: var(--color-elevated);
+  --bg-surface:  var(--color-surface);
+  --accent:      var(--color-accent);
+  --accent-dim:  var(--color-accent-dim);
+  --text-1:      var(--color-text-1);
+  --text-2:      var(--color-text-2);
+  --text-3:      var(--color-text-3);
+  --border:      var(--color-border);
+  --success:     var(--color-success);
 }

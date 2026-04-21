@@ -1,18 +1,21 @@
 import { Hono } from 'hono';
-import { getPool } from '../lib/db.js';
+import { supabase } from '../lib/db.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const wealthRoutes = new Hono();
 
 // Get all assets
-wealthRoutes.get('/assets', async (c) => {
-    const user = c.get('user');
-    const pool = getPool();
+wealthRoutes.get('/assets', requireAuth, async (c) => {
+    const userId = c.get('userId');
     try {
-        const { rows } = await pool.query(
-            'SELECT * FROM public.wealth_assets WHERE user_id = $1 ORDER BY current_value DESC',
-            [user.id]
-        );
-        return c.json(rows);
+        const { data, error } = await supabase
+            .from('wealth_assets')
+            .select('*')
+            .eq('user_id', userId)
+            .order('current_value', { ascending: false });
+        
+        if (error) throw error;
+        return c.json(data);
     } catch (err) {
         console.error('Error fetching wealth assets:', err);
         return c.json({ error: 'Failed to fetch assets' }, 500);
@@ -20,18 +23,25 @@ wealthRoutes.get('/assets', async (c) => {
 });
 
 // Add new asset
-wealthRoutes.post('/assets', async (c) => {
-    const user = c.get('user');
-    const pool = getPool();
+wealthRoutes.post('/assets', requireAuth, async (c) => {
+    const userId = c.get('userId');
     try {
         const { asset_name, asset_type, units, current_value, invested_value } = await c.req.json();
-        const { rows } = await pool.query(
-            `INSERT INTO public.wealth_assets 
-             (user_id, asset_name, asset_type, units, current_value, invested_value)
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [user.id, asset_name, asset_type, units, current_value, invested_value]
-        );
-        return c.json(rows[0]);
+        const { data, error } = await supabase
+            .from('wealth_assets')
+            .insert({
+                user_id: userId,
+                asset_name,
+                asset_type,
+                units: units || 0,
+                current_value: current_value || 0,
+                invested_value: invested_value || 0
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return c.json(data);
     } catch (err) {
         console.error('Error creating wealth asset:', err);
         return c.json({ error: 'Failed to create asset' }, 500);
@@ -39,24 +49,30 @@ wealthRoutes.post('/assets', async (c) => {
 });
 
 // Update asset
-wealthRoutes.put('/assets/:id', async (c) => {
-    const user = c.get('user');
+wealthRoutes.put('/assets/:id', requireAuth, async (c) => {
+    const userId = c.get('userId');
     const id = c.req.param('id');
-    const pool = getPool();
     try {
-        const { asset_name, asset_type, units, current_value, invested_value } = await c.req.json();
-        const { rows } = await pool.query(
-            `UPDATE public.wealth_assets 
-             SET asset_name = COALESCE($1, asset_name),
-                 asset_type = COALESCE($2, asset_type),
-                 units = COALESCE($3, units),
-                 current_value = COALESCE($4, current_value),
-                 invested_value = COALESCE($5, invested_value),
-                 updated_at = NOW()
-             WHERE id = $6 AND user_id = $7 RETURNING *`,
-            [asset_name, asset_type, units, current_value, invested_value, id, user.id]
-        );
-        return c.json(rows[0]);
+        const updates = await c.req.json();
+        const { asset_name, asset_type, units, current_value, invested_value } = updates;
+        
+        const { data, error } = await supabase
+            .from('wealth_assets')
+            .update({
+                asset_name,
+                asset_type,
+                units,
+                current_value,
+                invested_value,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .eq('user_id', userId)
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return c.json(data);
     } catch (err) {
         console.error('Error updating wealth asset:', err);
         return c.json({ error: 'Failed to update asset' }, 500);
@@ -64,12 +80,17 @@ wealthRoutes.put('/assets/:id', async (c) => {
 });
 
 // Delete asset
-wealthRoutes.delete('/assets/:id', async (c) => {
-    const user = c.get('user');
+wealthRoutes.delete('/assets/:id', requireAuth, async (c) => {
+    const userId = c.get('userId');
     const id = c.req.param('id');
-    const pool = getPool();
     try {
-        await pool.query('DELETE FROM public.wealth_assets WHERE id = $1 AND user_id = $2', [id, user.id]);
+        const { error } = await supabase
+            .from('wealth_assets')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', userId);
+            
+        if (error) throw error;
         return c.json({ success: true });
     } catch (err) {
         console.error('Error deleting wealth asset:', err);

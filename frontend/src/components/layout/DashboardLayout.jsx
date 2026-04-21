@@ -3,8 +3,8 @@ import { Outlet } from 'react-router-dom';
 import Navbar from '../Navbar';
 
 /**
- * DashboardLayout — Authenticated shell for all web pages.
- * Glass nav + ambient glow background. Content in glass cards.
+ * DashboardLayout — Authenticated shell.
+ * Compact nav + clean Vercel-style content area.
  */
 const DashboardLayout = ({ user }) => (
   <div style={{
@@ -17,7 +17,7 @@ const DashboardLayout = ({ user }) => (
     <main style={{
       maxWidth: 'var(--content-max)',
       margin: '0 auto',
-      padding: 'var(--space-5) var(--content-pad) 80px',
+      padding: '40px var(--content-pad) 80px',
     }}>
       <Outlet />
     </main>

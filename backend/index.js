@@ -19,7 +19,7 @@ import wealthRoutes from './routes/wealth.js';
 
 const app = new Hono().basePath('/api');
 
-// ─── STARTUP CHECKS (Safety check inside request context or bound to env) ─────
+// ─── STARTUP CHECKS ─────
 const requiredEnvVars = [
     'SUPABASE_URL',
     'SUPABASE_SERVICE_ROLE_KEY',
@@ -35,7 +35,7 @@ app.use('*', secureHeaders());
 
 // ─── CORS ─────────────────────────────────────────────────────
 app.use('*', cors({
-    origin: (origin) => origin, // Allow all origins or specify strict check
+    origin: (origin) => origin,
     credentials: true,
 }));
 
@@ -70,28 +70,28 @@ app.onError((err, c) => {
 // ─── Cloudflare Worker Handler ────────────────────────────────────────────
 export default {
     async fetch(request, env, ctx) {
-        // Essential: Bind Cloudflare env to process.env for libs that expect it
-        // Note: Better to pass context down, but this is a faster migration path.
         globalThis.process = globalThis.process || {};
         globalThis.process.env = { ...globalThis.process.env, ...env };
-
         return app.fetch(request, env, ctx);
     },
     async scheduled(event, env, ctx) {
-        console.log('[CRON] Starting nightly correlation job...');
+        console.log('[CRON] Starting nightly jobs...');
         try {
-            // Essential: Bind Cloudflare env to process.env
             globalThis.process = globalThis.process || {};
             globalThis.process.env = { ...globalThis.process.env, ...env };
 
             const { runCorrelationEngine } = await import('./jobs/correlationEngine.js');
-            // Re-initialize or pass supabase if needed. Since db.js is a singleton, 
-            // and we set process.env above, it should work.
+            const { runRecurringTransactions } = await import('./jobs/recurringTransactions.js');
             const { supabase } = await import('./lib/db.js');
-            await runCorrelationEngine(supabase);
-            console.log('[CRON] Finished nightly correlation job.');
+
+            await Promise.allSettled([
+                runCorrelationEngine(supabase),
+                runRecurringTransactions(supabase)
+            ]);
+            
+            console.log('[CRON] Finished nightly jobs.');
         } catch (err) {
-            console.error('[CRON] Job failed:', err);
+            console.error('[CRON] Jobs failed:', err);
         }
     }
 };

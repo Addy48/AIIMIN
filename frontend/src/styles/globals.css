@@ -1,42 +1,8 @@
+/*
+ * globals.css — Structural/animation variables only.
+ * Colors and design tokens are in tokens.css (imported via index.css)
+ */
 :root {
-    /* ─── Backgrounds ────────────────────────────────────── */
-    --bg-primary: #0E100D;
-    --bg-main: var(--bg-primary);
-    --bg-secondary: #131512;
-    --bg-surface: rgba(28, 30, 27, 0.6);
-    /* glass fill */
-    --bg-card: #1C1E1B;
-    --bg-card-hover: #242723;
-    --bg-elevated: #2A2E29;
-
-    /* ─── Borders ──────────────────────────────────────── */
-    --border: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.14);
-    --border-accent: rgba(212, 175, 55, 0.4);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-border-gold: rgba(212, 175, 55, 0.25);
-    --nav-bg: rgba(14, 16, 13, 0.72);
-    --nav-border: rgba(255, 255, 255, 0.06);
-
-    /* ─── Accent — Gold (aligned with Tailwind) ────────── */
-    --accent: #D4AF37;
-    --accent-hover: #E5C14A;
-    --accent-dim: rgba(212, 175, 55, 0.15);
-    --accent-glow: 0 0 30px rgba(212, 175, 55, 0.2);
-
-    /* ─── Typography Palette ───────────────────────────── */
-    --text-1: #F5F5F5;
-    --text-2: #B7C1B2;
-    --text-3: #8E9B8A;
-
-    /* ─── Semantic Colors ──────────────────────────────── */
-    --success: #22C55E;
-    --success-dim: rgba(34, 197, 94, 0.1);
-    --warning: #D4AF37;
-    --warning-dim: rgba(212, 175, 55, 0.1);
-    --danger: #EF4444;
-    --danger-dim: rgba(239, 68, 68, 0.1);
-
     /* ─── 8px Spacing Grid ─────────────────────────────── */
     --space-1: 4px;
     --space-2: 8px;
@@ -49,85 +15,50 @@
     --space-9: 64px;
 
     /* ─── Layout Metrics ───────────────────────────────── */
-    --max-width: 1280px;
+    --max-width: 1100px;
     --container-px: var(--space-6);
     --section-gap: var(--space-7);
     --card-px: 20px;
     --card-gap: 16px;
 
     /* ─── Shadows ──────────────────────────────────────── */
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    --shadow-lg: 0 8px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
-
-    /* ─── Radii ────────────────────────────────────────── */
-    --r-sm: 8px;
-    --r-md: 12px;
-    --r-lg: 20px;
-    --r-xl: 32px;
-    --r-full: 9999px;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 48px rgba(0, 0, 0, 0.5);
 
     /* ─── Transitions ──────────────────────────────────── */
     --t-fast: 0.1s ease;
     --t-base: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
     --t-slow: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
-    /* ─── Aliased Tokens ───────────────────────────────── */
+    /* ─── Aliased Tokens (point to tokens.css vars) ────── */
     --gutter: var(--space-4);
     --card-padding: var(--card-px);
-    --text-primary: var(--text-1);
-    --muted: var(--text-3);
+    --text-primary: var(--color-text-1);
+    --muted: var(--color-text-3);
     --btn-min-height: 40px;
     --btn-padding: 10px 16px;
     --btn-radius: 8px;
+    --logo-color: var(--color-text-1);
 
-    /* ─── Logo ─────────────────────────────────────────── */
-    --logo-color: #1a1a1a;
+    /* Motion system */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration-fast: 150ms;
+    --duration-base: 220ms;
+    --duration-slow: 400ms;
 }
 
-/* ─── Light Mode ───────────────────────────────────────── */
+/* ─── Light Mode structural overrides ──────────────────── */
 [data-theme="light"] {
-    --bg-primary: #F5F0E8;
-    --bg-main: var(--bg-primary);
-    --bg-secondary: #faf7f2;
-    --bg-surface: rgba(255, 255, 255, 0.7);
-    /* light glass */
-    --bg-card: #ffffff;
-    --bg-card-hover: #fdf9f4;
-    --bg-elevated: #F0EBE0;
-    --border: rgba(0, 0, 0, 0.07);
-    --border-hover: rgba(0, 0, 0, 0.14);
-    --border-accent: rgba(194, 120, 20, 0.3);
-    --glass-border: rgba(0, 0, 0, 0.06);
-    --glass-border-gold: rgba(194, 120, 20, 0.2);
-    --nav-bg: rgba(250, 247, 242, 0.82);
-    --nav-border: rgba(0, 0, 0, 0.06);
-    --accent: #C27814;
-    --accent-hover: #a8660f;
-    --accent-dim: rgba(194, 120, 20, 0.1);
-    --accent-glow: 0 0 20px rgba(194, 120, 20, 0.2);
-    --gradient-1: linear-gradient(135deg, #c27814 0%, #e05c2a 100%);
-    --gradient-card: linear-gradient(135deg, rgba(194, 120, 20, 0.04) 0%, rgba(224, 92, 42, 0.03) 100%);
-    --text-1: #1A1408;
-    --text-2: #6B5D3F;
-    --text-3: #A89878;
-    --success: #2d7a4a;
-    --success-dim: rgba(45, 122, 74, 0.1);
-    --warning: #C27814;
-    --warning-dim: rgba(194, 120, 20, 0.1);
-    --danger: #d46b6b;
-    --danger-dim: rgba(212, 107, 107, 0.1);
-    --purple: #6d4c9e;
-    --purple-dim: rgba(109, 76, 158, 0.1);
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
-    --shadow-glow: 0 0 0 1px rgba(194, 120, 20, 0.2), 0 4px 16px rgba(194, 120, 20, 0.12);
-    --logo-color: #1c1c1c;
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --logo-color: var(--color-text-1);
 }
 
 [data-theme="dark"] {
-    --logo-color: #f6efe6;
+    --logo-color: var(--color-text-1);
 }
 
 .aiimin-logo {
