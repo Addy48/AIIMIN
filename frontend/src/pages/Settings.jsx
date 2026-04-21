@@ -5,6 +5,7 @@ import { apiDelete } from '../utils/api';
 import toast from '../utils/toast';
 import { useMockData } from '../providers/MockDataProvider';
 import { exportUserData } from '../utils/exportUserData';
+import { supabase } from '../utils/supabase';
 
 /**
  * Settings Page — Account + preferences.
@@ -33,8 +34,41 @@ const Settings = () => {
         }
     }, [session, isUsingMock, mockData]);
 
+    const handleDeleteAllData = useCallback(async () => {
+        if (!window.confirm('This will wipe all your tracked data (Logs, Finance, Placements, Typing) but KEEP your account. Proceed?')) return;
+        const confirmText = `wipe data`;
+        const input = window.prompt(`Type "${confirmText}" to confirm:`);
+        if (input !== confirmText) {
+            toast.error('Deletion cancelled. Input did not match exactly.');
+            return;
+        }
+        const tid = toast.loading('Deleting all data...');
+        try {
+            const userId = user.id;
+            
+            // Delete in order of dependencies if any, though most are flat linked to user_id
+            await supabase.from('daily_logs').delete().eq('user_id', userId);
+            await supabase.from('lab_typing_tests').delete().eq('user_id', userId);
+            await supabase.from('money_transactions').delete().eq('user_id', userId);
+            await supabase.from('wealth_assets').delete().eq('user_id', userId);
+            await supabase.from('accounts').delete().eq('user_id', userId);
+            await supabase.from('job_applications').delete().eq('user_id', userId);
+            await supabase.from('resumes').delete().eq('user_id', userId);
+            await supabase.from('pomodoro_sessions').delete().eq('user_id', userId);
+            await supabase.from('budgets').delete().eq('user_id', userId);
+            await supabase.from('habits').delete().eq('user_id', userId);
+            await supabase.from('notes').delete().eq('user_id', userId);
+            
+            toast.update(tid, 'All data deleted successfully', 'success');
+            setTimeout(() => window.location.reload(), 1500);
+        } catch (err) {
+            console.error('Data deletion error:', err);
+            toast.update(tid, 'Failed to delete data', 'error');
+        }
+    }, [user]);
+
     const handleDeleteAccount = useCallback(async () => {
-        if (!window.confirm('This will PERMANENTLY delete all your data. Proceed to second confirmation?')) return;
+        if (!window.confirm('This will PERMANENTLY delete all your data AND your account. Proceed to second confirmation?')) return;
         const confirmText = `delete ${user.email}`;
         const input = window.prompt(`Type "${confirmText}" to confirm:`);
         if (input !== confirmText) {
@@ -65,6 +99,7 @@ const Settings = () => {
                 onRemindersChange={saveAndSet('aiimin_notif_reminders', setNotifReminders)}
                 onInsightsChange={saveAndSet('aiimin_notif_insights', setNotifInsights)}
                 onExport={handleExport}
+                onDeleteData={handleDeleteAllData}
                 onDelete={handleDeleteAccount}
             />
         </div>

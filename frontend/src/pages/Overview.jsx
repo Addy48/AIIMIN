@@ -108,14 +108,29 @@ const Overview = ({ user }) => {
         const logMap = {};
         (habitLogs || []).forEach(l => { logMap[l.habit_id] = l.completed; });
 
-        // Net worth (latest snapshot)
-        const { data: nwData } = await supabase
-          .from('net_worth_snapshots')
-          .select('total_inr')
-          .eq('user_id', userId)
-          .order('snapshot_date', { ascending: false })
-          .limit(1)
-          .single();
+        // Net worth calculation (Sum of accounts and wealth assets)
+        const [accRes, assetRes] = await Promise.all([
+          supabase.from('accounts').select('balance').eq('user_id', userId),
+          supabase.from('wealth_assets').select('value').eq('user_id', userId)
+        ]);
+
+        const totalAccounts = (accRes.data || []).reduce((sum, a) => sum + (Number(a.balance) || 0), 0);
+        const totalAssets = (assetRes.data || []).reduce((sum, a) => sum + (Number(a.value) || 0), 0);
+        const calculatedNetWorth = totalAccounts + totalAssets;
+
+        // Fallback to snapshot if tables are empty
+        if (calculatedNetWorth === 0) {
+          const { data: nwData } = await supabase
+            .from('net_worth_snapshots')
+            .select('total_inr')
+            .eq('user_id', userId)
+            .order('snapshot_date', { ascending: false })
+            .limit(1)
+            .single();
+          setNetWorth(nwData?.total_inr ?? 0);
+        } else {
+          setNetWorth(calculatedNetWorth);
+        }
 
         // DSA problems solved
         const { data: dsaProblems } = await supabase
@@ -127,7 +142,6 @@ const Overview = ({ user }) => {
 
         setTasks(taskData || []);
         setHabits((habitData || []).map(h => ({ ...h, completed: logMap[h.id] || false })));
-        setNetWorth(nwData?.total_inr ?? null);
         setDsaData({ percent: Math.round((solved / 150) * 100), solved, total: 150 });
 
         // Build alerts
@@ -212,19 +226,15 @@ const Overview = ({ user }) => {
   if (loading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
-        <Skeleton h="24px" style={{ width: '200px' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1px' }}>
-          <Skeleton h="120px" />
-          <Skeleton h="120px" />
-          <Skeleton h="120px" />
+        <Skeleton h="40px" style={{ width: '300px' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+          <Skeleton h="140px" />
+          <Skeleton h="140px" />
+          <Skeleton h="140px" />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-            {[1, 2, 3, 4, 5].map(i => <Skeleton key={i} h="48px" />)}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px' }}>
-            {[1, 2, 3, 4].map(i => <Skeleton key={i} h="100px" />)}
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '32px' }}>
+          <Skeleton h="400px" />
+          <Skeleton h="400px" />
         </div>
       </div>
     );
@@ -233,223 +243,187 @@ const Overview = ({ user }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
 
-      {/* ── Greeting ──────────────────────────────── */}
-      <div style={{ padding: '0 0 var(--space-5)' }}>
-        <span className="text-subtext" style={{ fontStyle: 'italic' }}>
-          {firstName}.
-        </span>
+      {/* ── Greeting & Command Header ─────────────── */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'flex-end',
+        padding: '0 0 40px',
+        borderBottom: '1px solid var(--color-border)'
+      }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <div className="vercel-badge">Command Center</div>
+            <span style={{ fontSize: '12px', color: 'var(--color-text-3)', fontStyle: 'italic' }}>Operational</span>
+          </div>
+          <h1 style={{ 
+            fontSize: '36px', 
+            fontWeight: 800, 
+            letterSpacing: '-0.04em',
+            margin: 0,
+            className: 'text-gradient'
+          }}>
+            Welcome back, {firstName}
+          </h1>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '4px' }}>System Time</div>
+          <div style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+            {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}
+          </div>
+        </div>
       </div>
 
-      {/* ── Alerts ────────────────────────────────── */}
+      {/* ── Operational Alerts ────────────────────── */}
       {alerts.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', marginBottom: 'var(--space-3)' }}>
+        <div style={{ marginTop: '24px' }}>
           {alerts.map((a, i) => (
             <StatusAlert key={i} type={a.type} title={a.title} detail={a.detail} />
           ))}
         </div>
       )}
 
-      {/* ── Placement Strip ───────────────��───────── */}
-      <PlacementStrip
-        daysRemaining={daysToPlacement}
-        dsaPercent={dsaData.percent}
-        topicsRevised={dsaData.solved}
-        totalTopics={dsaData.total}
-      />
-
-      {/* ── Mood Selector ─────────────────────────── */}
-      <div style={{
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        padding: '0 24px',
-      }}>
-        <MoodSelector value={mood} onChange={handleMoodChange} />
+      {/* ── Career & Growth Strip ─────────────────── */}
+      <div style={{ marginTop: '24px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
+        <PlacementStrip
+          daysRemaining={daysToPlacement}
+          dsaPercent={dsaData.percent}
+          topicsRevised={dsaData.solved}
+          totalTopics={dsaData.total}
+        />
       </div>
 
       {/* ── Hero Metric Row (3 cols) ───────────────── */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '12px',
-        marginBottom: 'var(--space-6)',
-        marginTop: 'var(--space-5)',
+        gap: '20px',
+        marginBottom: '40px',
+        marginTop: '32px',
       }}>
         <HeroMetricCard
-          label="DAILY SCORE"
+          label="DAILY PERFORMANCE"
           value={score}
           unit="/100"
-          context={score >= 80 ? 'Strong day' : score >= 50 ? 'On track' : score > 0 ? 'Keep going' : 'Not started'}
+          context={score >= 80 ? 'Exceptional' : score >= 50 ? 'Stable' : 'Inconsistent'}
           contextColor={score >= 80 ? 'var(--color-accent)' : undefined}
         />
         <HeroMetricCard
-          label="SLEEP"
+          label="RECOVERY STATUS"
           value={sleepHours}
           unit="h"
           decimals={1}
           context={sleepContext}
-          contextColor={sleepHours >= 7 ? 'var(--color-accent)' : sleepHours > 0 ? 'var(--color-alert-red)' : undefined}
+          contextColor={sleepHours >= 7 ? 'var(--color-accent)' : 'var(--color-alert-red)'}
         />
         <HeroMetricCard
-          label="NET WORTH"
+          label="CAPITAL ENGINE"
           value={netWorth !== null ? Math.abs(netWorth) : null}
           unit="₹"
           unitPosition="before"
-          context={netWorth !== null ? (netWorth >= 0 ? 'Positive' : 'Negative') : 'No data'}
+          context={netWorth >= 0 ? 'Accumulating' : 'Burning'}
           contextColor={netWorth >= 0 ? 'var(--color-accent)' : 'var(--color-alert-red)'}
         />
       </div>
 
-      {/* ── Main 2-col: Tasks + Metrics ───────────── */}
+      {/* ── Main Dashboard Content ────────────────── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 320px',
-        gap: '32px',
+        gridTemplateColumns: '1fr 340px',
+        gap: '40px',
         alignItems: 'start',
       }}>
 
-        {/* LEFT: Tasks */}
-        <div>
-          {/* Section header */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingBottom: 'var(--space-3)',
-            borderBottom: '1px solid var(--color-border)',
-          }}>
-            <span className="text-label">Tasks</span>
-            <span className="text-subtext">
-              {completedTasks.length}/{tasks.length} done
-            </span>
+        {/* LEFT: Task & Mood Engine */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          {/* Mood Section */}
+          <div className="vercel-card" style={{ padding: '24px' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-accent)' }} />
+               <span style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-3)' }}>Current State</span>
+             </div>
+             <MoodSelector value={mood} onChange={handleMoodChange} />
           </div>
 
-          {/* Task rows */}
-          {tasks.length === 0 ? (
+          {/* Task Section */}
+          <div className="vercel-card" style={{ padding: '24px' }}>
             <div style={{
-              padding: 'var(--space-6) 0',
-              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '20px',
             }}>
-              <span className="text-subtext">No tasks for today</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)' }}>Today's Directives</span>
+                <span className="vercel-badge">{pendingTasks.length} PENDING</span>
+              </div>
+              <span style={{ fontSize: '12px', color: 'var(--color-text-3)' }}>
+                {completedTasks.length}/{tasks.length} Resolved
+              </span>
             </div>
-          ) : (
-            <>
-              {pendingTasks.map(task => (
-                <TaskRow
-                  key={task.id}
-                  id={task.id}
-                  title={task.title}
-                  completed={false}
-                  source={task.source}
-                  dueTime={task.due_time}
-                  onToggle={handleTaskToggle}
-                />
-              ))}
-              {completedTasks.map(task => (
-                <TaskRow
-                  key={task.id}
-                  id={task.id}
-                  title={task.title}
-                  completed={true}
-                  source={task.source}
-                  dueTime={task.due_time}
-                  onToggle={handleTaskToggle}
-                />
-              ))}
-            </>
-          )}
+
+            {tasks.length === 0 ? (
+              <div style={{ padding: '40px 0', textAlign: 'center', border: '1px dashed var(--color-border)', borderRadius: '6px' }}>
+                <span className="text-subtext">No directives assigned for this cycle</span>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                {pendingTasks.map(task => (
+                  <TaskRow key={task.id} id={task.id} title={task.title} completed={false} source={task.source} dueTime={task.due_time} onToggle={handleTaskToggle} />
+                ))}
+                <div style={{ height: '1px', background: 'var(--color-border)', margin: '8px 0' }} />
+                {completedTasks.map(task => (
+                  <TaskRow key={task.id} id={task.id} title={task.title} completed={true} source={task.source} dueTime={task.due_time} onToggle={handleTaskToggle} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* RIGHT: Metric Tiles 2×2 */}
-        <div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '10px',
-          }}>
-            <MetricTile
-              type="sleep"
-              label="SLEEP"
-              value={sleepHours > 0 ? `${sleepHours}h` : '—'}
-              progress={Math.min((sleepHours / 8) * 100, 100)}
-              context="Target: 8h"
-              done={sleepHours >= 7}
-              index={0}
-            />
-            <MetricTile
-              type="gym"
-              label="GYM"
-              value={s.gym_done ? 'Done' : 'No'}
-              progress={s.gym_done ? 100 : 0}
-              context={gymDaysThisWeek != null ? `${gymDaysThisWeek}d this week` : undefined}
-              done={s.gym_done}
-              index={1}
-            />
-            <MetricTile
-              type="steps"
-              label="STEPS"
-              value={s.steps ? new Intl.NumberFormat('en-IN').format(s.steps) : '—'}
-              progress={Math.min(((s.steps || 0) / 10000) * 100, 100)}
-              context="Target: 10,000"
-              done={(s.steps || 0) >= 10000}
-              index={2}
-            />
-            <MetricTile
-              type="water"
-              label="WATER"
-              value={s.water_bottles ? `${s.water_bottles}L` : '—'}
-              progress={Math.min(((s.water_bottles || 0) / 3) * 100, 100)}
-              context="Target: 3L"
-              done={(s.water_bottles || 0) >= 3}
-              index={3}
-            />
+        {/* RIGHT: Biometrics & Habits */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          {/* Biometrics */}
+          <div className="vercel-card" style={{ padding: '24px' }}>
+             <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '20px', color: 'var(--color-text-1)' }}>Biometric Health</div>
+             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <MetricTile type="sleep" label="SLEEP" value={sleepHours > 0 ? `${sleepHours}h` : '—'} progress={Math.min((sleepHours / 8) * 100, 100)} context="8h Target" done={sleepHours >= 7} index={0} />
+                <MetricTile type="gym" label="GYM" value={s.gym_done ? 'Done' : 'No'} progress={s.gym_done ? 100 : 0} context={`${gymDaysThisWeek}d/week`} done={s.gym_done} index={1} />
+                <MetricTile type="steps" label="STEPS" value={s.steps ? new Intl.NumberFormat('en-IN').format(s.steps) : '—'} progress={Math.min(((s.steps || 0) / 10000) * 100, 100)} context="10k Target" done={(s.steps || 0) >= 10000} index={2} />
+                <MetricTile type="water" label="WATER" value={s.water_bottles ? `${s.water_bottles}L` : '—'} progress={Math.min(((s.water_bottles || 0) / 3) * 100, 100)} context="3L Target" done={(s.water_bottles || 0) >= 3} index={3} />
+             </div>
           </div>
+
+          {/* Habits */}
+          {habits.length > 0 && (
+            <div className="vercel-card" style={{ padding: '24px' }}>
+               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                 <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)' }}>Neural Rewiring</div>
+                 <span style={{ fontSize: '11px', color: 'var(--color-text-3)' }}>{habits.filter(h => h.completed).length}/{habits.length}</span>
+               </div>
+               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                 {habits.map(habit => (
+                   <HabitCircle key={habit.id} id={habit.id} label={habit.name} completed={habit.completed} onToggle={handleHabitToggle} />
+                 ))}
+               </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Habits Row ────────────────────────────── */}
-      {habits.length > 0 && (
-        <div style={{ marginTop: 'var(--space-6)' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingBottom: 'var(--space-3)',
-            borderBottom: '1px solid var(--color-border)',
-            marginBottom: 'var(--space-4)',
-          }}>
-            <span className="text-label">Habits</span>
-            <span className="text-subtext">
-              {habits.filter(h => h.completed).length}/{habits.length} today
-            </span>
-          </div>
-
-          <div style={{
-            display: 'flex',
-            gap: 'var(--space-5)',
-            overflowX: 'auto',
-            paddingBottom: 'var(--space-2)',
-          }}>
-            {habits.map(habit => (
-              <HabitCircle
-                key={habit.id}
-                id={habit.id}
-                label={habit.name}
-                completed={habit.completed}
-                onToggle={handleHabitToggle}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Responsive overrides ───────────────────── */}
       <style>{`
-        @media (max-width: 900px) {
-          .overview-hero-row { grid-template-columns: 1fr 1fr !important; }
+        .vercel-card {
+           background: var(--color-surface);
+           border: 1px solid var(--color-border);
+           border-radius: 8px;
+           transition: border-color var(--dur-fast) var(--ease);
         }
-        @media (max-width: 700px) {
-          .overview-main { grid-template-columns: 1fr !important; }
-          .overview-hero-row { grid-template-columns: 1fr !important; }
+        .vercel-card:hover {
+           border-color: var(--color-border-lit);
+        }
+        .text-gradient {
+          background: linear-gradient(135deg, var(--color-text-1) 30%, var(--color-text-2) 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
       `}</style>
     </div>

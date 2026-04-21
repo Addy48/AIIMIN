@@ -1,86 +1,77 @@
 /*
  * AIIMIN Design Tokens — Single Source of Truth
- * Vercel / Linear inspired edition
- * Dark mode default. Light mode via [data-theme="light"].
+ * Forest Ink (Light) & Slate & Rust (Dark)
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ────────────────────────────────────────────────────────
-   DARK MODE (default) — Ultra Premium (Linear/Vercel inspired)
+   LIGHT MODE: Forest Ink (Cream bg, Deep forest green ink)
 ───────────────────────────────────────────────────────── */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* ── Ambient Background ─────────────────────────── */
-  --color-base: #000000;
-  /* Pure Pitch Black */
-  --color-surface: #0A0A0A;
-  /* Slightly elevated surface */
-  --color-elevated: #111111;
-  /* Hover / input bg */
-  --color-border: #333333;
-  /* Very subtle standard border */
-  --color-border-lit: #444444;
-  /* Hover border */
+  --color-base: #F5F2ED;       /* Parchment/Cream bg */
+  --color-surface: #FCFAF7;    /* Slightly lighter surface */
+  --color-elevated: #EEF5EB;   /* Light nature green */
+  
+  /* Metric Card Backgrounds */
+  --color-card-blue: #E8F0FE;
+  --color-card-green: #E8F5EB;
+  --color-card-peach: #FFF2E5;
+  --color-card-purple: #EFE6FF;
+  --color-card-dark-green: #23503B; /* Forest */
+  
+  --color-border: #E3DED5;
+  --color-border-lit: #D5D0C6;
 
   /* ── Text ───────────────────────────────────────── */
-  --color-text-1: #EDEDED;
-  /* Primary crisp white/gray */
-  --color-text-2: #A1A1AA;
-  /* Secondary text */
-  --color-text-3: #52525B;
-  /* Disabled / faint */
+  --color-text-1: #1C1C1C;     /* Deep Ink */
+  --color-text-2: #556B2F;     /* Olive */
+  --color-text-3: #8C8C8C;     /* Muted Gray */
+  --color-text-inverse: #FFFFFF;
 
   /* ── Accent & Brand ─────────────────────────────── */
-  --color-accent: #FFFFFF;
-  /* High contrast accent (White in dark mode) */
-  --color-accent-dim: rgba(255, 255, 255, 0.1);
-  --color-accent-glow: rgba(255, 255, 255, 0.2);
+  --color-accent: #23503B;     /* Forest green */
+  --color-accent-dim: rgba(35, 80, 59, 0.1);
+  --color-accent-glow: rgba(35, 80, 59, 0.2);
   
-  --color-hero: #FFFFFF;
-  --color-rust: #E54D2E;
-  /* Subtle alert/terracotta */
-  --color-logo-bg: #FFFFFF;
+  --color-hero: #1C1C1C;
+  --color-rust: #E2725B;       /* Terracotta */
+  --color-logo-bg: #E2725B;
 
   /* ── Status ─────────────────────────────────────── */
-  --color-alert-red: #E54D2E;
-  --color-gym: #E54D2E;
-  --color-steps: #0090FF;
-  --color-water: #00B5CE;
-  --color-sleep: #46A758;
-  --color-success: #46A758;
-  --color-warning: #FFC53D;
+  --color-alert-red: #E2725B;
+  --color-gym: #E2725B;
+  --color-steps: #556B2F;
+  --color-water: #4EA8D9;
+  --color-sleep: #DEB841;
+  --color-success: #23503B;
+  --color-warning: #DEB841;
 
-  /* ── Lab Badges & Status ─────────────────────── */
-  --lab-badge-bronze: #C87137;
-  --lab-badge-silver: #C0C0C0;
-  --lab-badge-gold: #FFD700;
-  --lab-badge-platinum: #E5E4E2;
-  --lab-dot-red: var(--color-alert-red);
-  --lab-dot-gray: var(--color-text-3);
-  --lab-dot-accent: var(--color-accent);
+  /* ── Glass Layer ───────────────────── */
+  --glass-bg: rgba(254, 250, 247, 0.85);
+  --glass-bg-hover: rgba(254, 250, 247, 0.95);
+  --glass-bg-strong: #FCFAF7;
+  --glass-border: rgba(35, 80, 59, 0.08);
+  --glass-border-lit: rgba(35, 80, 59, 0.15);
+  --glass-blur: blur(12px);
+  --glass-blur-sm: blur(6px);
+  --glass-shadow: 0 4px 20px rgba(35, 80, 59, 0.04);
+  --glass-shadow-sm: 0 2px 8px rgba(35, 80, 59, 0.02);
 
-  /* ── Glass Layer (Cleaned up) ───────────────────── */
-  --glass-bg: #0a0a0a;
-  --glass-bg-hover: #111111;
-  --glass-bg-strong: #000000;
-  --glass-border: #333333;
-  --glass-border-lit: #444444;
-  --glass-blur: none;
-  --glass-blur-sm: none;
-  --glass-shadow: 0 4px 20px rgba(0, 0, 0, 0.80);
-  --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.60);
-
-  /* ── No ambient glow for clean look ─────────────── */
+  /* ── Ambient glow ─────────────── */
   --ambient-1: none;
   --ambient-2: none;
 
   /* ── Typography ─────────────────────────────────── */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'DM Mono', 'SF Mono', monospace;
 
-  --text-hero: 400 56px/1 var(--font-sans);
+  /* Type Scale */
+  --text-hero: 700 48px/1.1 var(--font-serif);
   --text-metric: 400 28px/1 var(--font-sans);
   --text-heading: 500 16px/1.4 var(--font-sans);
   --text-body: 400 14px/1.6 var(--font-sans);
@@ -136,9 +127,9 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ── Focus ────────────────────────────────────────── */
-  --shadow-focus: 0 0 0 2px rgba(255, 255, 255, 0.4);
+  --shadow-focus: 0 0 0 2px rgba(35, 80, 59, 0.3);
 
-  /* ── Aliases (backwards compat) ───────────────────── */
+  /* ── Aliases ───────────────────── */
   --bg-primary: var(--color-base);
   --bg-card: var(--color-surface);
   --bg-elevated: var(--color-elevated);
@@ -156,59 +147,54 @@
 }
 
 /* ────────────────────────────────────────────────────────
-   LIGHT MODE — Crisp & High Contrast
+   DARK MODE: Slate & Rust
 ───────────────────────────────────────────────────── */
-[data-theme="light"] {
-  color-scheme: light;
+[data-theme="dark"] {
+  color-scheme: dark;
 
-  --color-base: #FFFFFF;
-  --color-surface: #FAFAFA;
-  --color-elevated: #F4F4F5;
-  --color-border: rgba(0, 0, 0, 0.1);
-  --color-border-lit: rgba(0, 0, 0, 0.2);
-
-  --color-text-1: #09090B;
-  --color-text-2: #71717A;
-  --color-text-3: #A1A1AA;
-
-  --color-accent: #000000;
-  /* High contrast accent (Black in light mode) */
-  --color-accent-dim: rgba(0, 0, 0, 0.05);
-  --color-accent-glow: rgba(0, 0, 0, 0.1);
+  /* Deep warm black background - Vercel style */
+  --color-base: #0A0A0A;
+  --color-surface: #121212;      /* Dark surface */
+  --color-elevated: #1A1A1A;     /* Elevated dark */
   
-  --color-hero: #000000;
+  --color-border: #262626;
+  --color-border-lit: #333333;
 
-  --color-alert-red: #E54D2E;
-  --color-gym: #E54D2E;
-  --color-steps: #0090FF;
-  --color-water: #00B5CE;
-  --color-sleep: #46A758;
-  --color-success: #46A758;
-  --color-warning: #FFC53D;
+  /* Text */
+  --color-text-1: #FFFFFF;
+  --color-text-2: #A1A1AA;
+  --color-text-3: #525252;
+  --color-text-inverse: #000000;
 
-  --glass-bg: rgba(255, 255, 255, 0.70);
-  --glass-bg-hover: rgba(250, 250, 250, 0.85);
-  --glass-bg-strong: rgba(255, 255, 255, 0.90);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-border-lit: rgba(0, 0, 0, 0.15);
-  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), 0 1px 0 rgba(255, 255, 255, 1) inset;
-  --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --glass-blur: blur(16px);
-  --glass-blur-sm: blur(8px);
+  /* Accents */
+  --color-accent: #E2725B;       /* Terracotta/Rust */
+  --color-accent-dim: rgba(226, 114, 91, 0.1);
+  --color-accent-glow: rgba(226, 114, 91, 0.2);
+  
+  --color-hero: #FFFFFF;
 
-  --shadow-focus: 0 0 0 2px rgba(0, 0, 0, 0.3);
+  --color-alert-red: #E2725B;
+  --color-gym: #E2725B;
+  --color-steps: #556B2F;
+  --color-water: #3B82F6;
+  --color-sleep: #FACC15;
+  --color-success: #556B2F;
+  --color-warning: #FACC15;
+  
+  /* Dark Mode Metric Cards */
+  --color-card-blue: #0E121A;
+  --color-card-green: #0F120F;   
+  --color-card-peach: #120F0E;   
+  --color-card-purple: #120E12;  
+  --color-card-dark-green: #08120D;
 
-  --ambient-1: none;
-  --ambient-2: none;
+  --glass-bg: rgba(10, 10, 10, 0.75);
+  --glass-bg-hover: rgba(18, 18, 18, 0.9);
+  --glass-bg-strong: #121212;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-lit: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+  --glass-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
 
-  --bg-primary: var(--color-base);
-  --bg-card: var(--color-surface);
-  --bg-elevated: var(--color-elevated);
-  --bg-surface: var(--color-surface);
-  --accent: var(--color-accent);
-  --accent-dim: var(--color-accent-dim);
-  --text-1: var(--color-text-1);
-  --text-2: var(--color-text-2);
-  --text-3: var(--color-text-3);
-  --border: var(--color-border);
+  --shadow-focus: 0 0 0 2px rgba(226, 114, 91, 0.4);
 }

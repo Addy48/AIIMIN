@@ -286,7 +286,7 @@ export function ReportsSection({ user }) {
     );
 }
 
-export function SettingsPanelSection({ user, isAdmin, session, notifReminders, notifInsights, onRemindersChange, onInsightsChange, onExport, onDelete }) {
+export function SettingsPanelSection({ user, isAdmin, session, notifReminders, notifInsights, onRemindersChange, onInsightsChange, onExport, onDeleteData, onDelete }) {
     return (
         <div id="sys-settings" style={{ scrollMarginTop: '100px' }}>
             <SectionLabel icon="⚙️">Settings</SectionLabel>
@@ -323,6 +323,13 @@ export function SettingsPanelSection({ user, isAdmin, session, notifReminders, n
                         label="Export Your Data"
                         description="Download all logs, mood entries, and session data as JSON"
                         control={<button onClick={onExport} style={{ padding: '6px 14px', background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--border-accent)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Export</button>}
+                    />
+                    <SettingsRow
+                        icon="🧹"
+                        label="Wipe Tracked Data"
+                        description="Deletes all your logs and metrics but keeps your account intact."
+                        danger={true}
+                        control={<button onClick={onDeleteData} style={{ padding: '6px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Wipe Data</button>}
                     />
                     <SettingsRow
                         icon="🗑"

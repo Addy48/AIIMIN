@@ -15,6 +15,7 @@ import healthRoutes from './routes/health.js';
 import habitsRoutes from './routes/habits.js';
 import labRoutes from './routes/lab.js';
 import placementsRoutes from './routes/placements.js';
+import wealthRoutes from './routes/wealth.js';
 
 const app = new Hono().basePath('/api');
 
@@ -53,6 +54,7 @@ app.route('/account', accountRoutes);
 app.route('/habits', habitsRoutes);
 app.route('/lab', labRoutes);
 app.route('/placements', placementsRoutes);
+app.route('/wealth', wealthRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────
 app.notFound((c) => {
