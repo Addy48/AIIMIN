@@ -15,3 +15,5 @@ backend/.env.production
 frontend/build/
 .DS_Store
 frontend/tools/
+.vercel
+.env*.local
