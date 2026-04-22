@@ -60,7 +60,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],  // inline styles needed for React
             imgSrc: ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
             frameSrc: ["'none'"],
-            connectSrc: ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL, 'http://localhost:5000', 'http://127.0.0.1:5000', 'https://api.aiimin.in'],
+            connectSrc: ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL, 'http://localhost:5000', 'http://127.0.0.1:5000', 'http://localhost:5001', 'http://127.0.0.1:5001', 'https://api.aiimin.in'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             objectSrc: ["'none'"],
         },

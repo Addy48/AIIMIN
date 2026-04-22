@@ -15,8 +15,10 @@ html, body {
   height: 100%;
   background: var(--color-base);
   color: var(--color-text-1);
-  font: var(--text-body);
   font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -63,7 +65,7 @@ input[type='number'] { -moz-appearance: textfield; }
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
 }
 
 .glass-panel-sm {
@@ -72,7 +74,7 @@ input[type='number'] { -moz-appearance: textfield; }
   -webkit-backdrop-filter: var(--glass-blur-sm);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow-sm);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
 }
 
 .glass-panel-lit {
@@ -81,7 +83,7 @@ input[type='number'] { -moz-appearance: textfield; }
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border-lit);
   box-shadow: var(--glass-shadow);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
 }
 
 .glass-hover:hover {
