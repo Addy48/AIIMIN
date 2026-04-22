@@ -289,17 +289,14 @@ export function ReportsSection({ user }) {
 export function SettingsPanelSection({ user, isAdmin, session, notifReminders, notifInsights, onRemindersChange, onInsightsChange, onExport, onDelete }) {
     return (
         <div id="sys-settings" style={{ scrollMarginTop: '100px' }}>
-            <SectionLabel icon="⚙️">Settings</SectionLabel>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <SettingsSection title="System Controls">
+                <SettingsSection title="Notifications">
                     <SettingsRow
-                        icon="🔔"
                         label="Daily Reminders"
                         description="Morning check-in prompts and evening reflection nudges"
                         control={<ToggleSwitch checked={notifReminders} onChange={onRemindersChange} />}
                     />
                     <SettingsRow
-                        icon="📊"
                         label="Weekly Insight Digest"
                         description="Summary of behavioral patterns delivered Sunday evening"
                         control={<ToggleSwitch checked={notifInsights} onChange={onInsightsChange} />}
@@ -308,28 +305,48 @@ export function SettingsPanelSection({ user, isAdmin, session, notifReminders, n
 
                 {isAdmin && (
                     <SettingsSection title="Admin Tools">
-                        <div style={{ borderBottom: '1px solid var(--border)' }}>
+                        <div style={{ borderBottom: '1px solid var(--color-border)' }}>
                             <AdminPanel user={user} onClose={() => { }} />
                         </div>
                         <AdminConsole session={session} />
                     </SettingsSection>
                 )}
 
-
-
                 <SettingsSection title="Data & Privacy">
                     <SettingsRow
-                        icon="📥"
                         label="Export Your Data"
                         description="Download all logs, mood entries, and session data as JSON"
-                        control={<button onClick={onExport} style={{ padding: '6px 14px', background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--border-accent)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Export</button>}
+                        control={
+                            <button onClick={onExport} style={{
+                                padding: '6px 14px',
+                                background: 'var(--color-accent-dim)',
+                                color: 'var(--color-accent)',
+                                border: '1px solid var(--color-border-lit)',
+                                borderRadius: 'var(--r-sm)',
+                                font: '500 11px/1 var(--font-mono)',
+                                cursor: 'pointer',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.06em',
+                            }}>Export</button>
+                        }
                     />
                     <SettingsRow
-                        icon="🗑"
                         label="Delete Account & Data"
                         description="Permanently removes all data. This cannot be undone."
                         danger={true}
-                        control={<button onClick={onDelete} style={{ padding: '6px 14px', background: 'var(--danger-dim)', color: 'var(--danger)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>}
+                        control={
+                            <button onClick={onDelete} style={{
+                                padding: '6px 14px',
+                                background: 'rgba(239,68,68,0.08)',
+                                color: 'var(--color-alert-red)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: 'var(--r-sm)',
+                                font: '500 11px/1 var(--font-mono)',
+                                cursor: 'pointer',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.06em',
+                            }}>Delete</button>
+                        }
                     />
                 </SettingsSection>
             </div>

@@ -1058,14 +1058,21 @@ CREATE OR REPLACE VIEW public.recent_notifications AS
 DROP VIEW IF EXISTS public.behavioral_daily_summary CASCADE;
 DROP VIEW IF EXISTS public.user_daily_metrics CASCADE;
 
+-- Fixed view: removed non-existent columns (focus_score, routines_completed, habits_completed)
+-- These columns were never added to daily_logs table
 CREATE OR REPLACE VIEW public.user_daily_metrics AS
     SELECT
         dl.user_id,
         dl.date,
         dl.mood,
-        dl.focus_score,
-        dl.routines_completed,
-        dl.habits_completed,
+        dl.energy_level,
+        dl.sleep_hours,
+        dl.gym_done,
+        dl.breakfast_done,
+        dl.steps,
+        dl.water_bottles,
+        dl.learning_done,
+        (dl.journal_entry IS NOT NULL AND dl.journal_entry != '') AS journal_logged,
         COUNT(DISTINCT hl.id) AS habits_logged
     FROM public.daily_logs dl
     LEFT JOIN public.habit_logs hl
@@ -1076,9 +1083,14 @@ CREATE OR REPLACE VIEW public.user_daily_metrics AS
         dl.user_id,
         dl.date,
         dl.mood,
-        dl.focus_score,
-        dl.routines_completed,
-        dl.habits_completed;
+        dl.energy_level,
+        dl.sleep_hours,
+        dl.gym_done,
+        dl.breakfast_done,
+        dl.steps,
+        dl.water_bottles,
+        dl.learning_done,
+        dl.journal_entry;
 
 
 CREATE OR REPLACE VIEW public.behavioral_daily_summary AS
@@ -1086,11 +1098,24 @@ CREATE OR REPLACE VIEW public.behavioral_daily_summary AS
         user_id,
         date,
         mood,
-        focus_score,
-        routines_completed,
-        habits_completed,
-        (focus_score + habits_completed + routines_completed) AS behavioral_score
+        energy_level,
+        sleep_hours,
+        gym_done,
+        learning_done,
+        journal_logged,
+        habits_logged,
+        -- Simple behavioral score based on actual metrics
+        (
+            CASE WHEN mood >= 7 THEN 1 ELSE 0 END +
+            CASE WHEN energy_level >= 3 THEN 1 ELSE 0 END +
+            CASE WHEN sleep_hours >= 7 THEN 1 ELSE 0 END +
+            CASE WHEN gym_done THEN 1 ELSE 0 END +
+            CASE WHEN learning_done THEN 1 ELSE 0 END +
+            CASE WHEN journal_logged THEN 1 ELSE 0 END +
+            CASE WHEN habits_logged > 0 THEN 1 ELSE 0 END
+        ) AS behavioral_score
     FROM public.user_daily_metrics;
+
 
 
 -- ============================================================

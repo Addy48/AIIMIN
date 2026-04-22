@@ -43,26 +43,14 @@ Light mode:
 
 ## Architecture
 
-### Two Views
+### View
 - **Desktop** (`/`): Full dashboard with analytics, charts, insights, pomodoro, reports
-- **Mobile** (`/m`): Data collection ONLY — log form, quick-entry sections, no analytics
 
 ### Frontend Structure
 ```
 frontend/src/
 ├── components/
-│   ├── mobile/          # Mobile data collection view
-│   │   ├── MobileApp.jsx         # Main container, state, save handler, XP processing
-│   │   ├── MobileHeader.jsx      # XP bar, rank badge, completion ring, streak
-│   │   ├── MobileSaveBar.jsx     # Save button with XP preview
-│   │   ├── MobileSections.jsx    # 9 data input sections (sleep, body, mind, etc.)
-│   │   ├── MobileStreaks.jsx     # 5 streaks + XP multiplier display
-│   │   ├── MobileGoals.jsx       # Goal setting + progress bars
-│   │   ├── DailyQuests.jsx       # 3 daily quests from deterministic pool
-│   │   ├── LevelUpModal.jsx      # Full-screen rank-up celebration
-│   │   ├── AchievementUnlock.jsx # Achievement unlock modal
-│   │   ├── AchievementsGallery.jsx # 4-column grid of all achievements
-│   │   └── YearlyHeatmap.jsx     # 365-day GitHub-style grid
+│   ├── ...                  # Components organized by feature
 │   ├── calendar/        # MonthlyGrid, CalendarHeatmap, MetricMonthGrid
 │   ├── dashboard/       # StatCard, WeekRows, QuickCapture, SettingsSection
 │   ├── habits/          # HabitManager, HabitsPage, HabitsWidget, StreakAnalytics
@@ -143,24 +131,9 @@ backend/
 
 ---
 
-## Mobile Data Logging Sections (MobileSections.jsx)
-
-The mobile view is ONLY for data collection. No analytics, insights, or tools.
-
-| Section | Component | Fields |
-|---------|-----------|--------|
-| Sleep | MobileSleepSection | bedtime, wake time, auto-calc hours, sleep quality tags (8 tags when <7h) |
-| Body | MobileBodySection | gym (yes/no + duration), breakfast (yes/no), steps (text + chips), water (counter) |
-| Mind | MobileMindSection | mood (1-10 slider), energy level (5 buttons), learning (toggle + topic chips), brain fog (foggy/okay/sharp), headache (toggle) |
-| Journal | Inline textarea | Free text entry |
-| Tasks | MobileTaskSection | Calendar events, add task, toggle complete |
-| Money | MobileMoneySection | Quick transaction entry with account selection |
-| Notes | MobileNotesSection | Quick notes |
-| Wins | MobileWinSection | Daily small wins text |
-| DSA | MobileDSASection | Log problems (platform, difficulty), stats |
-| Reset | MobileResetSection | Private reset counter (resets clean_streak) |
-
 ---
+
+## Database Schema (supabase_init.sql — 16 Sections)
 
 ## Database Schema (supabase_init.sql — 16 Sections)
 
@@ -211,7 +184,6 @@ Score = (metrics_logged / 8) * 100
 - No local storage for sensitive data. All persisted on backend.
 - Do not modify auth logic or database schema without explicit instruction.
 - Always use the locked color palette. Never introduce new colors without approval.
-- Mobile view is DATA COLLECTION ONLY — no analytics, insights, pomodoro, or tools.
 - Single SQL file: all schema changes go in backend/supabase_init.sql — NO separate migration files.
 
 ---
@@ -280,6 +252,18 @@ Score = (metrics_logged / 8) * 100
   - Mobile is DATA COLLECTION ONLY — analytics/tools stay on desktop
 - Removed protein_grams from mobile (replaced by water_bottles in earlier session)
 - Updated CLAUDE.md with full timeline and current architecture
+
+### Phase 8: Critical Bug Fixes + Integration (Completed — 2026-03-25)
+- **FIXED**: Dashboard cache invalidation — mobile saves now reflect on desktop immediately
+- **FIXED**: Database views crash — user_daily_metrics and behavioral_daily_summary now use correct columns
+- **FIXED**: Dashboard summary endpoint — returns water_bottles instead of protein_grams
+- **FIXED**: Daily logs POST route — accepts all mobile fields (mood, energyLevel, brainFog, headache, waterBottles)
+- **VERIFIED**: Steps tracking sync (mobile → dashboard) works correctly
+- **VERIFIED**: Money transactions type field exists in schema
+- **VERIFIED**: Accounts loading works correctly in mobile money section
+- **ADDED**: Cache invalidation on daily log save (dashboard refreshes within 5 seconds)
+- **FIXED**: Behavioral score calculation (0-7 range based on actual metrics)
+- **DOCUMENTED**: BUGFIX_SUMMARY.md with full technical details
 
 ---
 

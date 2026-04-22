@@ -3,6 +3,7 @@ import supabase from '../supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
 import { pool } from '../lib/googleClient.js';
+import { cacheInvalidate } from '../lib/cache.js';
 
 const router = express.Router();
 
@@ -21,10 +22,14 @@ router.post('/', requireAuth, async (req, res) => {
             gymDuration,
             breakfastDone,
             steps,
-            proteinGrams,
+            waterBottles,
             learningDone,
             learningTopic,
-            journalEntry
+            journalEntry,
+            mood,
+            energyLevel,
+            brainFog,
+            headache
         } = req.body;
         const userId = req.userId;
 
@@ -41,10 +46,14 @@ router.post('/', requireAuth, async (req, res) => {
                 gym_duration: gymDuration || null,
                 breakfast_done: breakfastDone || false,
                 steps: steps || 0,
-                protein_grams: proteinGrams || 0,
+                water_bottles: waterBottles || 0,
                 learning_done: learningDone || false,
                 learning_topic: learningTopic || null,
-                journal_entry: journalEntry || null
+                journal_entry: journalEntry || null,
+                mood: mood || null,
+                energy_level: energyLevel || null,
+                brain_fog: brainFog || null,
+                headache: headache || false
             }, {
                 onConflict: 'user_id,date'
             })
@@ -54,11 +63,14 @@ router.post('/', requireAuth, async (req, res) => {
 
         const savedLog = data[0];
 
+        // Invalidate dashboard cache so desktop reflects mobile save immediately
+        cacheInvalidate(`dashboard-summary:${userId}`);
+
         // ─── Automated Stage Progression ───
         try {
             // 1. Get user statistics
             const stats = await pool.query(
-                `SELECT 
+                `SELECT
                     COUNT(*) as total_logs,
                     COUNT(*) FILTER (WHERE date >= NOW() - INTERVAL '7 days') as recent_logs
                  FROM daily_logs WHERE user_id = $1`,
@@ -66,7 +78,6 @@ router.post('/', requireAuth, async (req, res) => {
             );
 
             // 2. Determine new stage
-            // Note: Simplistic version for this MVP step
             const totalLogs = parseInt(stats.rows[0].total_logs);
             const newStage = BehavioralEngine.determineOnboardingStage({
                 totalLogs,

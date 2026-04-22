@@ -1,6 +1,6 @@
 # AIIMIN — The Behavior-Shaping OS
 
-AIIMIN is a premium, high-fidelity operating system designed to bridge the gap between human intention and consistent action. Evolved from a simple tracker into a sophisticated **Behavior-Shaping OS**, it combines elite visual aesthetics with rigorous algorithmic analysis.
+AIIMIN is a premium, high-fidelity behavioral intelligence platform designed to bridge the gap between human intention and consistent action. Evolved from a simple tracker into a sophisticated **Behavior-Shaping Dashboard**, it combines elite visual aesthetics with rigorous algorithmic analysis.
 
 ## 🌌 The Ghost Interface
 Built on the **Obsidian Gold** design system, AIIMIN utilizes high-performance Glassmorphism and pulsing spatial cues (the AI Heartbeat) to create a weightless, focused environment.

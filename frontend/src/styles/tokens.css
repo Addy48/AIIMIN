@@ -13,16 +13,16 @@
   color-scheme: dark;
 
   /* ── Ambient Background ─────────────────────────── */
-  --color-base:       #0A0C0B;   /* deepest bg */
-  --color-surface:    #111412;   /* base surface */
-  --color-elevated:   #191C1A;   /* hover / input bg */
+  --color-base:       #0C0E0B;   /* deepest bg */
+  --color-surface:    #141614;   /* base surface */
+  --color-elevated:   #1C1E1A;   /* hover / input bg */
   --color-border:     #252825;   /* subtle border */
   --color-border-lit: #323632;   /* slightly lighter border */
 
   /* ── Text ───────────────────────────────────────── */
-  --color-text-1:     #F2EDE3;   /* primary text */
-  --color-text-2:     #8C887F;   /* labels / secondary */
-  --color-text-3:     #6A6560;   /* placeholder / disabled */
+  --color-text-1:     #F0EBE1;   /* primary text */
+  --color-text-2:     #9E9B97;   /* labels / secondary — bumped for readability */
+  --color-text-3:     #6B6865;   /* placeholder / disabled — bumped for readability */
 
   /* ── Accent & Hero ──────────────────────────────── */
   --color-accent:     #2BA89F;   /* teal — CTAs, active states */
@@ -40,9 +40,9 @@
   --color-warning:    #D4A843;
 
   /* ── Glass Layer ────────────────────────────────── */
-  --glass-bg:         rgba(255,255,255,0.035);
-  --glass-bg-hover:   rgba(255,255,255,0.055);
-  --glass-bg-strong:  rgba(255,255,255,0.06);
+  --glass-bg:         rgba(255,255,255,0.04);
+  --glass-bg-hover:   rgba(255,255,255,0.065);
+  --glass-bg-strong:  rgba(255,255,255,0.07);
   --glass-border:     rgba(255,255,255,0.08);
   --glass-border-lit: rgba(255,255,255,0.14);
   --glass-blur:       blur(20px);
@@ -61,9 +61,9 @@
   --text-hero:    300 56px/1   var(--font-sans);
   --text-metric:  300 28px/1   var(--font-sans);
   --text-heading: 500 16px/1.4 var(--font-sans);
-  --text-body:    300 14px/1.6 var(--font-sans);
+  --text-body:    400 14px/1.6 var(--font-sans);
   --text-label:   500 11px/1   var(--font-mono);
-  --text-subtext: 300 12px/1.5 var(--font-sans);
+  --text-subtext: 400 12px/1.5 var(--font-sans);
 
   /* ── Radius ─────────────────────────────────────── */
   --r-none:  0px;
@@ -94,12 +94,12 @@
   --nav-height-mob: 44px;
   --sidebar-width:  210px;
   --tab-bar-height: 56px;
-  --content-max:    1280px;
-  --content-pad:    24px;
+  --content-max:    1140px;
+  --content-pad:    32px;
 
   /* ── Component heights ───────────────────────────── */
-  --card-hero:   120px;
-  --card-tile:   100px;
+  --card-hero:   140px;
+  --card-tile:   110px;
   --row-task:     48px;
   --circle-habit: 48px;
   --alert-height: 60px;

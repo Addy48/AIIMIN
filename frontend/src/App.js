@@ -18,6 +18,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
 
 // Lazy-loaded Dashboard routes
@@ -40,11 +41,13 @@ const Lazy = ({ children }) => <React.Suspense fallback={<Fallback />}>{children
 function App() {
   return (
     <ErrorBoundary label="Application">
-      <AuthProvider>
-        <BrowserRouter>
-          <AuthedApp />
-        </BrowserRouter>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <AuthedApp />
+          </BrowserRouter>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
