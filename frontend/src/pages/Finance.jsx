@@ -490,39 +490,22 @@ const Finance = () => {
 
       <style>{`
         .nordic-card {
-          background: var(--bg-surface);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-          overflow: hidden;
+          background: var(--color-surface);
+          border: 1px solid var(--color-border);
+          border-radius: 8px;
+          transition: all 0.2s ease;
         }
         .nordic-card:hover {
-          transform: translateY(-4px);
-          border-color: var(--accent);
-          box-shadow: 0 12px 24px rgba(0,0,0,0.04);
+          border-color: var(--color-border-lit);
         }
         .asset-row:hover {
-          transform: translateX(8px);
-          transition: transform 0.3s ease;
+          transform: translateX(4px);
+          transition: transform 0.2s ease;
         }
         .table-row-hover:hover {
-          background: var(--bg-elevated);
+          background: var(--color-elevated);
         }
-        .spinner {
-          width: 32px;
-          height: 32px;
-          border: 3px solid var(--border);
-          border-top-color: var(--accent);
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* Custom scrollbar for tabs */
-        div::-webkit-scrollbar {
-          display: none;
-        }
+        div::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   );
