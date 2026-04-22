@@ -113,7 +113,7 @@ router.get('/summary', requireAuth, dashboardCache, async (req, res) => {
                 mood_before: log.mood_before,
                 mood_after: log.mood_after,
                 energy_level: log.energy_level,
-                protein_grams: log.protein_grams,
+                water_bottles: log.water_bottles || 0,
             } : null,
             commitment_today: commit ? {
                 targets: commit.targets,

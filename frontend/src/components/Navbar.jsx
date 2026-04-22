@@ -72,10 +72,10 @@ const Navbar = ({ user }) => {
                 fontFamily: 'var(--font-sans)',
                 color: isActive ? 'var(--color-text-1)' : 'var(--color-text-2)',
                 textDecoration: 'none',
-                padding: '7px 13px',
+                padding: '6px 12px',
                 borderRadius: 'var(--r-sm)',
-                background: isActive ? 'var(--glass-bg)' : 'transparent',
-                border: isActive ? '1px solid var(--glass-border)' : '1px solid transparent',
+                background: isActive ? 'var(--color-surface)' : 'transparent',
+                border: isActive ? '1px solid var(--color-border)' : '1px solid transparent',
                 transition: `all var(--dur-enter) var(--ease)`,
                 position: 'relative',
               })}
@@ -133,7 +133,19 @@ const Navbar = ({ user }) => {
             {theme === 'dark' ? '☀' : '◐'}
           </button>
 
-          <NotificationBell unreadCount={unreadCount} onClick={handleOpenNotif} />
+          <div style={{ position: 'relative' }}>
+            <NotificationBell unreadCount={unreadCount} onClick={handleOpenNotif} />
+            {notifOpen && (
+              <NotificationPanel
+                notifications={notifications}
+                loading={loading}
+                onMarkRead={markRead}
+                onMarkAllRead={markAllRead}
+                onDismiss={dismiss}
+                onClose={() => setNotifOpen(false)}
+              />
+            )}
+          </div>
 
           <button
             onClick={() => setShowAccount(true)}
@@ -160,18 +172,8 @@ const Navbar = ({ user }) => {
         </div>
       </nav>
 
-      <NotificationPanel
-        open={notifOpen}
-        notifications={notifications}
-        loading={loading}
-        onMarkRead={markRead}
-        onMarkAllRead={markAllRead}
-        onDismiss={dismiss}
-        onClose={() => setNotifOpen(false)}
-      />
-
       {showAccount && (
-        <AccountModal user={user} onClose={() => setShowAccount(false)} />
+        <AccountModal user={user} isOpen={showAccount} onClose={() => setShowAccount(false)} />
       )}
     </>
   );
