@@ -7,12 +7,12 @@ import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
 
 const NAV_LINKS = [
-  { to: '/overview',  label: 'Today' },
-  { to: '/insights',  label: 'Insights' },
-  { to: '/calendar',  label: 'Calendar' },
-  { to: '/finance',   label: 'Finance' },
-  { to: '/reports',   label: 'Reports' },
-  { to: '/settings',  label: 'Settings' },
+  { to: '/overview', label: 'Today' },
+  { to: '/insights', label: 'Insights' },
+  { to: '/calendar', label: 'Calendar' },
+  { to: '/finance', label: 'Finance' },
+  { to: '/reports', label: 'Reports' },
+  { to: '/settings', label: 'Settings' },
 ];
 
 const Navbar = ({ user }) => {
@@ -50,32 +50,44 @@ const Navbar = ({ user }) => {
       }}>
 
         {/* LEFT: Brand */}
-        <Link to="/overview" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <span style={{
-            font: '500 15px/1 var(--font-mono)',
-            color: 'var(--color-text-1)',
-            letterSpacing: '0.14em',
+        <Link to="/overview" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '28px', height: '28px',
+            background: 'var(--color-logo-bg)',
+            borderRadius: '9px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            AIIMIN
+            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+              <path d="M9 2.5 L3.5 14.5 L5.5 14.5 L6.8 11.2 L11.2 11.2 L12.5 14.5 L14.5 14.5 Z" fill="white" fillOpacity="0.95" />
+              <path d="M7.5 9.5 L9 6 L10.5 9.5 Z" fill="var(--color-logo-bg)" />
+              <path d="M9 1.5 C9 1.5 11 3 9 5 C7 3 9 1.5 9 1.5Z" fill="white" fillOpacity="0.85" />
+            </svg>
+          </div>
+          <span style={{
+            font: 'italic 600 18px/1 var(--font-sans)',
+            color: 'var(--color-text-1)',
+            letterSpacing: '-0.02em',
+          }}>
+            aiimin
           </span>
         </Link>
 
         {/* CENTER: Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
           {NAV_LINKS.map(({ to, label }) => (
             <NavLink
               key={to}
               to={to}
               style={({ isActive }) => ({
                 fontSize: '13px',
-                fontWeight: isActive ? 500 : 300,
+                fontWeight: isActive ? 500 : 400,
                 fontFamily: 'var(--font-sans)',
-                color: isActive ? 'var(--color-text-1)' : 'var(--color-text-2)',
+                color: isActive ? '#fff' : 'var(--color-text-2)',
                 textDecoration: 'none',
-                padding: '7px 13px',
-                borderRadius: 'var(--r-sm)',
-                background: isActive ? 'var(--glass-bg)' : 'transparent',
-                border: isActive ? '1px solid var(--glass-border)' : '1px solid transparent',
+                padding: '6px 14px',
+                borderRadius: 'var(--r-pill)',
+                background: isActive ? 'var(--color-accent)' : 'transparent',
+                border: 'none',
                 transition: `all var(--dur-enter) var(--ease)`,
                 position: 'relative',
               })}

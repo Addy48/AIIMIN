@@ -105,28 +105,7 @@ const Login = () => {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Atmospheric Ambient Glows */}
-      <div style={{
-        position: 'absolute', top: '-15%', left: '-10%',
-        width: '600px', height: '600px',
-        background: 'radial-gradient(circle, rgba(200,98,26,0.12) 0%, transparent 70%)',
-        filter: 'blur(80px)',
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '-20%', right: '-10%',
-        width: '500px', height: '500px',
-        background: 'radial-gradient(circle, rgba(43,168,159,0.08) 0%, transparent 70%)',
-        filter: 'blur(60px)',
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute', top: '20%', right: '15%',
-        width: '300px', height: '300px',
-        background: 'radial-gradient(circle, rgba(245,166,35,0.04) 0%, transparent 70%)',
-        filter: 'blur(40px)',
-        pointerEvents: 'none',
-      }} />
+      {/* Removed Atmospheric Ambient Glows to keep clean dark look */}
 
       {/* Glass Card */}
       <div style={{
