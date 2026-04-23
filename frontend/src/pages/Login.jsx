@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Shield, Command } from 'lucide-react';
+import { ArrowLeft, Shield, Sun, Moon } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import Numpad from '../components/common/Numpad';
+import Logo from '../components/Logo';
+import { useThemeContext } from '../context/ThemeContext';
 
 /**
  * AIIMIN Identity Portal
- * Vercel-Inspired Minimalist Aesthetic
+ * Premium Branding & Theme Awareness
  */
 
 const ALIASES = {
@@ -19,6 +21,9 @@ const resolveEmail = (raw) => ALIASES[raw.trim().toLowerCase()] || raw.trim();
 
 const Login = () => {
   const { signInWithEmail, signUpWithEmail } = useAuth();
+  const { theme, toggleTheme } = useThemeContext();
+  const isDark = theme === 'dark';
+
   const [mode, setMode] = useState('login');
   const [step, setStep] = useState(1);
   const [identifier, setIdentifier] = useState('');
@@ -86,149 +91,236 @@ const Login = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#000',
-      color: '#fff',
+      background: 'var(--bg-primary)',
+      color: 'var(--text-1)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       padding: '24px',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
+      {/* Background Ambient Glow */}
+      <div style={{
+        position: 'absolute',
+        top: '-10%',
+        right: '-10%',
+        width: '40%',
+        height: '40%',
+        background: 'var(--accent)',
+        filter: 'blur(120px)',
+        opacity: isDark ? 0.05 : 0.03,
+        borderRadius: '50%',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Theme Toggle */}
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={toggleTheme}
+        style={{
+          position: 'absolute',
+          top: '24px',
+          right: '24px',
+          background: 'var(--bg-elevated)',
+          border: '1px solid var(--border)',
+          borderRadius: '12px',
+          padding: '10px',
+          cursor: 'pointer',
+          color: 'var(--text-2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10,
+        }}
+      >
+        {isDark ? <Sun size={18} /> : <Moon size={18} />}
+      </motion.button>
+
       <div style={{
         width: '100%',
         maxWidth: '400px',
         display: 'flex',
         flexDirection: 'column',
         gap: '40px',
+        zIndex: 1,
       }}>
         
         {/* Branding */}
         <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            display: 'inline-flex', 
-            background: '#fff', 
-            color: '#000', 
-            padding: '12px', 
-            borderRadius: '12px',
-            marginBottom: '24px'
-          }}>
-            <Command size={32} strokeWidth={2.5} />
-          </div>
-          <h1 style={{ 
-            fontSize: '24px', 
-            fontWeight: 600, 
-            letterSpacing: '-0.02em',
-            margin: '0 0 8px' 
-          }}>
-            {step === 1 ? (mode === 'login' ? 'Sign in to AIIMIN' : 'Create your account') : 'Security Verification'}
-          </h1>
-          <p style={{ 
-            fontSize: '14px', 
-            color: '#888',
-            margin: 0 
-          }}>
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            style={{ 
+              display: 'inline-flex', 
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '32px'
+            }}
+          >
+            <Logo size={56} />
+            <span style={{ 
+              fontSize: '20px', 
+              fontWeight: 800, 
+              letterSpacing: '0.2em', 
+              color: 'var(--text-1)',
+              textTransform: 'uppercase',
+              marginLeft: '0.2em' // Offset for letter-spacing center
+            }}>AIIMIN</span>
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+            style={{ 
+              fontSize: '28px', 
+              fontWeight: 700, 
+              letterSpacing: '-0.03em',
+              margin: '0 0 10px',
+              color: 'var(--text-1)'
+            }}
+          >
+            {step === 1 ? (mode === 'login' ? 'Sign in to Portal' : 'Create Account') : 'Security Verification'}
+          </motion.h1>
+          
+          <motion.p 
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+            style={{ 
+              fontSize: '15px', 
+              color: 'var(--text-3)',
+              margin: 0,
+              lineHeight: '1.5'
+            }}
+          >
             {step === 1 
               ? (mode === 'login' ? 'Use your username or email to continue' : 'Enter your details to join the network') 
               : 'Enter the 6-digit access code linked to your identity'}
-          </p>
+          </motion.p>
         </div>
 
         <AnimatePresence mode="wait">
           {step === 1 ? (
             <motion.div
               key="identifier"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
             >
-              <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {mode === 'signup' && (
                    <div>
-                    <label style={{ fontSize: '12px', color: '#888', fontWeight: 500, display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Full Name</label>
+                    <label style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600, display: 'block', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Full Name</label>
                     <input
                       type="text"
                       required
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}
+                      placeholder="e.g. Aaditya Upadhyay"
                       style={{
                         width: '100%',
-                        height: '48px',
-                        background: '#000',
-                        border: '1px solid #333',
-                        borderRadius: '8px',
-                        color: '#fff',
-                        padding: '0 16px',
-                        fontSize: '14px',
+                        height: '52px',
+                        background: 'var(--bg-elevated)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '12px',
+                        color: 'var(--text-1)',
+                        padding: '0 18px',
+                        fontSize: '15px',
                         outline: 'none',
-                        transition: 'border-color 0.2s',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       }}
-                      onFocus={e => e.target.style.borderColor = '#fff'}
-                      onBlur={e => e.target.style.borderColor = '#333'}
+                      onFocus={e => {
+                        e.target.style.borderColor = 'var(--accent)';
+                        e.target.style.boxShadow = '0 0 0 1px var(--accent)';
+                      }}
+                      onBlur={e => {
+                        e.target.style.borderColor = 'var(--border)';
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                 )}
                 
                 <div>
-                  <label style={{ fontSize: '12px', color: '#888', fontWeight: 500, display: 'block', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Username or Email</label>
+                  <label style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600, display: 'block', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Username or Email</label>
                   <input
                     type="text"
                     required
                     value={identifier}
                     onChange={e => setIdentifier(e.target.value)}
                     autoFocus
+                    placeholder="e.g. au48"
                     style={{
                       width: '100%',
-                      height: '48px',
-                      background: '#000',
-                      border: '1px solid #333',
-                      borderRadius: '8px',
-                      color: '#fff',
-                      padding: '0 16px',
-                      fontSize: '14px',
+                      height: '52px',
+                      background: 'var(--bg-elevated)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      color: 'var(--text-1)',
+                      padding: '0 18px',
+                      fontSize: '15px',
                       outline: 'none',
-                      transition: 'border-color 0.2s',
+                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     }}
-                    onFocus={e => e.target.style.borderColor = '#fff'}
-                    onBlur={e => e.target.style.borderColor = '#333'}
+                    onFocus={e => {
+                      e.target.style.borderColor = 'var(--accent)';
+                      e.target.style.boxShadow = '0 0 0 1px var(--accent)';
+                    }}
+                    onBlur={e => {
+                      e.target.style.borderColor = 'var(--border)';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   type="submit"
                   style={{
-                    height: '48px',
-                    background: '#fff',
-                    color: '#000',
+                    height: '52px',
+                    background: 'var(--text-1)',
+                    color: 'var(--bg-primary)',
                     border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: 600,
+                    borderRadius: '12px',
+                    fontSize: '15px',
+                    fontWeight: 700,
                     cursor: 'pointer',
-                    marginTop: '8px',
+                    marginTop: '10px',
                     transition: 'opacity 0.2s',
                   }}
-                  onMouseEnter={e => e.target.style.opacity = 0.9}
-                  onMouseLeave={e => e.target.style.opacity = 1}
                 >
                   Continue
-                </button>
+                </motion.button>
 
-                <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                <div style={{ textAlign: 'center', marginTop: '12px' }}>
                    <button
                     type="button"
                     onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(null); }}
                     style={{
                       background: 'none',
                       border: 'none',
-                      color: '#888',
-                      fontSize: '13px',
+                      color: 'var(--text-3)',
+                      fontSize: '14px',
                       cursor: 'pointer',
                       textDecoration: 'none',
+                      fontWeight: 500,
+                      transition: 'color 0.2s',
                     }}
+                    onMouseEnter={e => e.target.style.color = 'var(--text-2)'}
+                    onMouseLeave={e => e.target.style.color = 'var(--text-3)'}
                   >
-                    {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Log in'}
+                    {mode === 'login' ? (
+                      <>Don't have an account? <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign up</span></>
+                    ) : (
+                      <>Already have an account? <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Log in</span></>
+                    )}
                   </button>
                 </div>
               </form>
@@ -236,42 +328,51 @@ const Login = () => {
           ) : (
             <motion.div
               key="pin"
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
             >
                <button
                   type="button"
                   onClick={handleBack}
                   style={{
-                    background: 'none',
-                    border: 'none',
+                    background: 'var(--bg-elevated)',
+                    border: '1px solid var(--border)',
                     cursor: 'pointer',
-                    color: '#888',
+                    color: 'var(--text-2)',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px',
+                    gap: '8px',
                     fontSize: '13px',
+                    fontWeight: 600,
                     marginBottom: '32px',
-                    padding: 0
+                    padding: '8px 16px',
+                    borderRadius: '99px',
+                    transition: 'all 0.2s',
                   }}
+                  onMouseEnter={e => e.target.style.background = 'var(--border)'}
+                  onMouseLeave={e => e.target.style.background = 'var(--bg-elevated)'}
                 >
-                  <ArrowLeft size={14} /> Back
+                  <ArrowLeft size={16} /> Back
                 </button>
 
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '48px' }}>
+                <div style={{ display: 'flex', gap: '14px', marginBottom: '48px' }}>
                   {[...Array(6)].map((_, i) => (
-                    <div
+                    <motion.div
                       key={i}
+                      initial={false}
+                      animate={{ 
+                        scale: i < pin.length ? 1.2 : 1,
+                        background: i < pin.length ? 'var(--accent)' : 'transparent'
+                      }}
                       style={{
-                        width: '12px',
-                        height: '12px',
+                        width: '14px',
+                        height: '14px',
                         borderRadius: '50%',
-                        background: i < pin.length ? '#fff' : 'transparent',
-                        border: '1px solid #333',
-                        transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)'
+                        border: `2px solid ${i < pin.length ? 'var(--accent)' : 'var(--border)'}`,
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                     />
                   ))}
@@ -279,8 +380,8 @@ const Login = () => {
 
                 {loading ? (
                   <div style={{ padding: '40px', textAlign: 'center' }}>
-                    <div className="vercel-spinner" />
-                    <p style={{ color: '#888', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '16px' }}>Authenticating</p>
+                    <div className="portal-spinner" />
+                    <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: '20px' }}>Secure Identity Check</p>
                   </div>
                 ) : (
                   <Numpad
@@ -289,48 +390,66 @@ const Login = () => {
                     onClear={handlePinClear}
                     maxLength={6}
                     currentLength={pin.length}
-                    style={{ color: '#fff' }}
+                    style={{ color: 'var(--text-1)' }}
                   />
                 )}
 
                 {error && (
-                  <div style={{ color: '#ff4d4d', fontSize: '13px', marginTop: '24px' }}>
+                  <motion.div 
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ color: 'var(--color-danger)', fontSize: '14px', marginTop: '24px', fontWeight: 500 }}
+                  >
                     {error}
-                  </div>
+                  </motion.div>
                 )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      <div style={{ position: 'fixed', bottom: '32px', textAlign: 'center', width: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#444' }}>
+      {/* Footer Branding */}
+      <div style={{ position: 'fixed', bottom: '32px', textAlign: 'center', width: '100%', opacity: 0.6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--text-3)' }}>
           <Shield size={14} />
-          <span style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.02em' }}>SECURE ACCESS PROTOCOL</span>
+          <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.1em' }}>SECURE ACCESS PROTOCOL</span>
         </div>
       </div>
 
       <style>{`
-        .vercel-spinner {
-          width: 24px;
-          height: 24px;
-          border: 2px solid rgba(255, 255, 255, 0.1);
-          border-top-color: #fff;
+        .portal-spinner {
+          width: 32px;
+          height: 32px;
+          border: 3px solid var(--border);
+          border-top-color: var(--accent);
           border-radius: 50%;
-          animation: spin 0.6s linear infinite;
+          animation: spin 0.7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Custom Numpad Styles for Vercel Look */
+        /* Premium Numpad Adjustments */
+        .numpad-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
         .numpad-grid button {
-          background: transparent !important;
-          border: 1px solid transparent !important;
-          color: #fff !important;
-          font-weight: 500 !important;
+          background: var(--bg-elevated) !important;
+          border: 1px solid var(--border) !important;
+          color: var(--text-1) !important;
+          width: 72px !important;
+          height: 72px !important;
+          border-radius: 50% !important;
+          font-size: 24px !important;
+          font-weight: 600 !important;
+          transition: all 0.2s ease !important;
         }
         .numpad-grid button:hover {
-          background: rgba(255,255,255,0.05) !important;
-          border-color: #333 !important;
+          background: var(--border) !important;
+          transform: scale(1.05);
+        }
+        .numpad-grid button:active {
+          transform: scale(0.95);
         }
       `}</style>
     </div>
