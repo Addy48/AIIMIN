@@ -13,19 +13,19 @@ const MobileMoneySection = ({ user, accounts }) => {
     const [saving, setSaving] = useState(false);
 
     const CATS = [
-        { name: 'Food', icon: '🍜', color: '#ff6b35' },
-        { name: 'Drinks', icon: '☕', color: '#c2841a' },
-        { name: 'Snacks', icon: '🍪', color: '#f59e0b' },
-        { name: 'Shopping', icon: '🛒', color: '#8b5cf6' },
-        { name: 'Outfit', icon: '🧥', color: '#a855f7' },
-        { name: 'Household', icon: '🪑', color: '#6b7280' },
-        { name: 'Body Care', icon: '☃️', color: '#06b6d4' },
-        { name: 'Education', icon: '📙', color: '#10b981' },
-        { name: 'Subscriptions', icon: '🎥', color: '#ec4899' },
-        { name: 'Transport', icon: '🚖', color: '#3b82f6' },
-        { name: 'Health', icon: '🧘🏼', color: '#22c55e' },
-        { name: 'Misc', icon: '🌐', color: '#94a3b8' },
-        { name: 'Earning', icon: '🏅', color: '#f5a623' },
+        { name: 'Food', icon: '🍜', color: 'var(--accent)' },
+        { name: 'Drinks', icon: '☕', color: 'var(--gold)' },
+        { name: 'Snacks', icon: '🍪', color: 'var(--color-warning)' },
+        { name: 'Shopping', icon: '🛒', color: 'var(--color-info)' },
+        { name: 'Outfit', icon: '🧥', color: 'var(--color-info)' },
+        { name: 'Household', icon: '🪑', color: 'var(--text-3)' },
+        { name: 'Body Care', icon: '☃️', color: 'var(--accent)' },
+        { name: 'Education', icon: '📙', color: 'var(--success)' },
+        { name: 'Subscriptions', icon: '🎥', color: 'var(--gold)' },
+        { name: 'Transport', icon: '🚖', color: 'var(--color-info)' },
+        { name: 'Health', icon: '🧘🏼', color: 'var(--success)' },
+        { name: 'Misc', icon: '🌐', color: 'var(--text-3)' },
+        { name: 'Earning', icon: '🏅', color: 'var(--gold)' },
     ];
 
     const KEYWORDS = {
@@ -142,15 +142,15 @@ const MobileMoneySection = ({ user, accounts }) => {
                     style={{
                         padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 700, fontSize: '14px',
                         cursor: 'pointer', minHeight: '48px',
-                        background: txType === 'income' ? '#0A1F14' : 'var(--bg-elevated)',
-                        color: txType === 'income' ? '#63C185' : 'var(--text-3)',
+                        background: txType === 'income' ? 'var(--color-success-dim)' : 'var(--bg-elevated)',
+                        color: txType === 'income' ? 'var(--color-success)' : 'var(--text-3)',
                     }}>💰 IN</button>
                 <button type="button" onClick={() => setTxType('expense')}
                     style={{
                         padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 700, fontSize: '14px',
                         cursor: 'pointer', minHeight: '48px',
-                        background: txType === 'expense' ? '#1F0A0A' : 'var(--bg-elevated)',
-                        color: txType === 'expense' ? '#EF4444' : 'var(--text-3)',
+                        background: txType === 'expense' ? 'var(--color-danger-dim)' : 'var(--bg-elevated)',
+                        color: txType === 'expense' ? 'var(--color-danger)' : 'var(--text-3)',
                     }}>💸 OUT</button>
             </div>
 
@@ -177,7 +177,7 @@ const MobileMoneySection = ({ user, accounts }) => {
                                 style={{
                                     padding: '5px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 600,
                                     border: `1.5px solid ${category === c.name ? c.color : 'var(--border)'}`,
-                                    background: category === c.name ? c.color + '22' : 'var(--bg-elevated)',
+                                    background: category === c.name ? `var(--color-${c.name === 'Food' || c.name === 'Body Care' ? 'accent' : c.name === 'Drinks' || c.name === 'Outfit' || c.name === 'Subscriptions' || c.name === 'Earning' ? 'gold' : c.name === 'Education' || c.name === 'Health' ? 'success' : 'text-3'}-dim)` : 'var(--bg-elevated)',
                                     color: category === c.name ? c.color : 'var(--text-3)',
                                     cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px',
                                     whiteSpace: 'nowrap', flex: '0 0 auto',

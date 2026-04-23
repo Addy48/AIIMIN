@@ -145,13 +145,13 @@ const MobileGoals = ({ user }) => {
                         const p = progress[g.id];
                         const metricDef = METRIC_OPTIONS.find(m => m.id === g.metric);
                         const pct = p?.pct || 0;
-                        const color = pct >= 1 ? '#10b981' : pct >= 0.5 ? '#f59e0b' : 'var(--text-3)';
+                        const color = pct >= 1 ? 'var(--color-success)' : pct >= 0.5 ? 'var(--color-warning)' : 'var(--text-3)';
                         return (
                             <div key={g.id} style={{
                                 display: 'flex', alignItems: 'center', gap: '4px',
                                 padding: '4px 10px', borderRadius: '8px',
-                                background: pct >= 1 ? 'rgba(16,185,129,0.1)' : 'var(--bg-elevated)',
-                                border: `1px solid ${pct >= 1 ? 'rgba(16,185,129,0.2)' : 'var(--border)'}`,
+                                background: pct >= 1 ? 'var(--color-success-dim)' : 'var(--bg-elevated)',
+                                border: `1px solid ${pct >= 1 ? 'var(--color-success-border)' : 'var(--border)'}`,
                             }}>
                                 <span style={{ fontSize: '11px' }}>{metricDef?.icon}</span>
                                 <span style={{ fontSize: '11px', fontWeight: 700, color }}>{Math.round(pct * 100)}%</span>
@@ -171,8 +171,8 @@ const MobileGoals = ({ user }) => {
                         return (
                             <div key={g.id} style={{
                                 padding: '12px', borderRadius: '10px',
-                                background: done ? 'rgba(16,185,129,0.06)' : 'var(--bg-elevated)',
-                                border: `1px solid ${done ? 'rgba(16,185,129,0.2)' : 'var(--border)'}`,
+                                background: done ? 'var(--color-success-dim)' : 'var(--bg-elevated)',
+                                border: `1px solid ${done ? 'var(--color-success-border)' : 'var(--border)'}`,
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -187,7 +187,7 @@ const MobileGoals = ({ user }) => {
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '14px', fontWeight: 800, color: done ? '#10b981' : 'var(--text-1)' }}>
+                                        <span style={{ fontSize: '14px', fontWeight: 800, color: done ? 'var(--color-success)' : 'var(--text-1)' }}>
                                             {p?.current || 0}/{g.target}
                                         </span>
                                         <button onClick={() => handleDelete(g.id)} style={{
@@ -204,12 +204,12 @@ const MobileGoals = ({ user }) => {
                                     <div style={{
                                         height: '100%', borderRadius: '3px',
                                         width: `${Math.min(pct * 100, 100)}%`,
-                                        background: done ? '#10b981' : pct >= 0.5 ? '#f59e0b' : 'var(--accent)',
+                                        background: done ? 'var(--color-success)' : pct >= 0.5 ? 'var(--color-warning)' : 'var(--accent)',
                                         transition: 'width 0.6s ease',
                                     }} />
                                 </div>
                                 {done && (
-                                    <div style={{ fontSize: '10px', color: '#10b981', fontWeight: 700, marginTop: '4px' }}>
+                                    <div style={{ fontSize: '10px', color: 'var(--color-success)', fontWeight: 700, marginTop: '4px' }}>
                                         ✓ Goal achieved!
                                     </div>
                                 )}

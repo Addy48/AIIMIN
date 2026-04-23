@@ -45,11 +45,32 @@
   --color-danger:   #EF4444;
   --color-info:     #3B82F6;
 
+  --color-success-dim: rgba(34, 197, 94, 0.08);
+  --color-danger-dim:  rgba(239, 68, 68, 0.08);
+  --color-warning-dim: rgba(250, 204, 21, 0.08);
+
+  --color-info-dim:    rgba(59, 130, 246, 0.08);
   --color-alert-red: #EF4444;
   --color-gym:       #E2725B;
   --color-steps:     #22C55E;
   --color-water:     #3B82F6;
   --color-sleep:     #FACC15;
+
+  --gold:             #c2841a;
+  --glass-border-gold: rgba(194, 132, 26, 0.15);
+
+  /* ── Tiers ───────────────────────────────────────── */
+  --tier-diamond:  #B9F2FF;
+  --tier-platinum: #E5E4E2;
+  --tier-gold:     #FACC15;
+  --tier-silver:   #A1A1AA;
+  --tier-bronze:   #CD7F32;
+
+  --tier-diamond-bg:  rgba(185, 242, 255, 0.08);
+  --tier-platinum-bg: rgba(229, 228, 226, 0.08);
+  --tier-gold-bg:     rgba(250, 204, 21, 0.08);
+  --tier-silver-bg:   rgba(161, 161, 170, 0.08);
+  --tier-bronze-bg:   rgba(205, 127, 50, 0.08);
 
   /* ── Metric Card Tints (dark) ────────────────────── */
   --color-card-blue:       rgba(59, 130, 246, 0.08);
@@ -184,11 +205,32 @@
   --color-danger:  #C1392B;
   --color-info:    #1D4ED8;
 
+  --color-success-dim: rgba(30, 92, 58, 0.08);
+  --color-danger-dim:  rgba(193, 57, 43, 0.08);
+  --color-warning-dim: rgba(183, 134, 10, 0.08);
+
+  --color-info-dim:    rgba(29, 78, 216, 0.08);
   --color-alert-red: #C1392B;
   --color-gym:       #C8604A;
   --color-steps:     #1E5C3A;
   --color-water:     #1D4ED8;
   --color-sleep:     #B7860A;
+
+  --gold:             #B7860A;
+  --glass-border-gold: rgba(183, 134, 10, 0.15);
+
+  /* ── Tiers ───────────────────────────────────────── */
+  --tier-diamond:  #0EA5E9;
+  --tier-platinum: #64748B;
+  --tier-gold:     #B7860A;
+  --tier-silver:   #71717A;
+  --tier-bronze:   #92400E;
+
+  --tier-diamond-bg:  rgba(14, 165, 233, 0.08);
+  --tier-platinum-bg: rgba(100, 116, 139, 0.08);
+  --tier-gold-bg:     rgba(183, 134, 10, 0.08);
+  --tier-silver-bg:   rgba(113, 113, 122, 0.08);
+  --tier-bronze-bg:   rgba(146, 64, 14, 0.08);
 
   --color-card-blue:       #E8F1FF;
   --color-card-green:      #E6F3EB;

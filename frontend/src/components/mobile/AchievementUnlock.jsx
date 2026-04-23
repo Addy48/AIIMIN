@@ -65,7 +65,7 @@ const AchievementUnlock = ({ achievement, onDismiss }) => {
                     width: 60px;
                     height: 60px;
                     border-radius: 50%;
-                    background: linear-gradient(135deg, #ff6b35, #ffa500);
+                    background: 'linear-gradient(135deg, var(--accent), var(--gold))',
                     font-size: 32px;
                     animation: achieveBounce 0.6s ease;
                     margin-bottom: 12px;
@@ -86,13 +86,13 @@ const AchievementUnlock = ({ achievement, onDismiss }) => {
             <div className="achievement-card">
                 <div className="achievement-badge">🏆</div>
                 <div className="achievement-text-title">Achievement Unlocked!</div>
-                <div className="achievement-text-title" style={{ color: '#ff6b35' }}>
+                <div className="achievement-text-title" style={{ color: 'var(--accent)' }}>
                     {achievement.name}
                 </div>
                 <div className="achievement-text-desc">
                     {achievement.description}
                 </div>
-                <div className="achievement-text-desc" style={{ marginTop: '8px', color: '#10b981', fontWeight: 600 }}>
+                <div className="achievement-text-desc" style={{ marginTop: '8px', color: 'var(--color-success)', fontWeight: 600 }}>
                     +{achievement.xpReward} XP
                 </div>
             </div>

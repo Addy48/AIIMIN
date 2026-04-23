@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useThemeContext } from '../../context/ThemeContext';
 import { EventTagSelector } from './EventCard';
 
 /**
  * EventModal — Create/Edit event modal with Life OS system_type selector.
+ * Redesigned with Nordic Calm aesthetic.
  */
-const EventModal = ({ isOpen, onClose, onSave, event = null }) => {
+const EventModal = ({ isOpen, onClose, onSave, event = null, onDelete }) => {
+    const { theme } = useThemeContext();
     const [form, setForm] = useState({
         title: '', description: '', start_time: '', end_time: '',
         all_day: false, system_type: 'general', tags: [],
@@ -55,106 +58,156 @@ const EventModal = ({ isOpen, onClose, onSave, event = null }) => {
         onClose();
     };
 
-    const inputStyle = {
-        width: '100%', padding: '10px 12px', borderRadius: '8px',
-        border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-        color: 'var(--text-1)', fontSize: '13px', outline: 'none',
+    const border = 'var(--color-border)';
+    const text1 = 'var(--color-text-1)';
+    const text2 = 'var(--color-text-2)';
+    const bg = 'var(--color-base)';
+    const inputBg = 'var(--color-elevated)';
+
+    const labelStyle = { 
+        fontSize: '10px', fontWeight: 700, color: text2, 
+        textTransform: 'uppercase', letterSpacing: '0.08em', 
+        marginBottom: '8px', display: 'block', fontFamily: 'var(--font-sans)' 
     };
-    const labelStyle = { fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', display: 'block' };
+
+    const inputStyle = {
+        width: '100%', padding: '12px 14px', borderRadius: '10px',
+        border: `1px solid ${border}`, background: inputBg,
+        color: text1, fontSize: '13px', outline: 'none',
+        fontFamily: 'var(--font-sans)', transition: 'all 200ms var(--ease)',
+    };
 
     return (
         <div onClick={onClose} style={{
             position: 'fixed', inset: 0, zIndex: 10000,
-            background: 'var(--bg-primary)', display: 'flex',
+            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)', display: 'flex',
             alignItems: 'center', justifyContent: 'center',
+            animation: 'fadeIn 200ms var(--ease)',
         }}>
-            {/* Background decoration matching Login/Dashboard */}
-            <div style={{
-                position: 'absolute', pointerEvents: 'none', zIndex: 0,
-                width: '600px', height: '600px', borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(194,120,20,0.06) 0%, transparent 70%)',
-                top: '-200px', right: '-200px', filter: 'blur(60px)'
-            }}></div>
-            <div style={{
-                position: 'absolute', pointerEvents: 'none', zIndex: 0,
-                width: '500px', height: '500px', borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(224,92,42,0.04) 0%, transparent 70%)',
-                bottom: '-150px', left: '-150px', filter: 'blur(50px)'
-            }}></div>
-
-            <div onClick={e => e.stopPropagation()} className="glass-panel" style={{
-                width: '640px', maxHeight: '85vh', overflow: 'auto',
-                borderRadius: '24px', padding: '40px',
-                border: '1px solid var(--border)',
-                backgroundColor: 'var(--bg-card)',
-                boxShadow: '0 24px 80px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.02)',
-                position: 'relative', zIndex: 1
+            <div onClick={e => e.stopPropagation()} style={{
+                width: '520px', maxHeight: '90vh', overflow: 'auto',
+                borderRadius: '24px', background: bg,
+                border: `1px solid ${border}`,
+                boxShadow: 'var(--glass-shadow-lg)',
+                position: 'relative', zIndex: 1,
+                animation: 'scaleUp 250ms var(--ease)',
             }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>
+                {/* Header */}
+                <div style={{ 
+                    padding: '24px 32px', borderBottom: `1px solid ${border}`, 
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center' 
+                }}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 700, color: text1, margin: 0, fontFamily: 'var(--font-sans)' }}>
                         {event ? 'Edit Event' : 'New Event'}
                     </h3>
-                    <button onClick={onClose} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: '18px', cursor: 'pointer' }}>✕</button>
+                    <button onClick={onClose} style={{ 
+                        background: 'var(--color-elevated)', border: `1px solid ${border}`, 
+                        borderRadius: '10px', width: '32px', height: '32px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        color: text2, fontSize: '18px', cursor: 'pointer',
+                        transition: 'all 200ms var(--ease)'
+                    }} onMouseEnter={e => e.currentTarget.style.color = text1}>✕</button>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                    {/* Row: Title (Full Width) */}
+                <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    {/* Row: Title */}
                     <div>
                         <label style={labelStyle}>Title</label>
-                        <input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Deep work session..." style={inputStyle} autoFocus />
+                        <input 
+                            value={form.title} 
+                            onChange={e => setForm(f => ({ ...f, title: e.target.value }))} 
+                            placeholder="Deep work session..." 
+                            style={inputStyle} 
+                            autoFocus 
+                            onFocus={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
+                            onBlur={e => e.currentTarget.style.borderColor = border}
+                        />
                     </div>
 
-                    {/* Row 1: Start | End */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    {/* Row: Start | End */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <div>
                             <label style={labelStyle}>Start</label>
-                            <input type="datetime-local" value={form.start_time} onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} style={inputStyle} />
+                            <input 
+                                type="datetime-local" 
+                                value={form.start_time} 
+                                onChange={e => setForm(f => ({ ...f, start_time: e.target.value }))} 
+                                style={inputStyle} 
+                            />
                         </div>
                         <div>
                             <label style={labelStyle}>End</label>
-                            <input type="datetime-local" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} style={inputStyle} />
+                            <input 
+                                type="datetime-local" 
+                                value={form.end_time} 
+                                onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} 
+                                style={inputStyle} 
+                            />
                         </div>
                     </div>
 
-                    {/* Row 2: Life System */}
+                    {/* Row: Life System */}
                     <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: form.all_day ? '6px' : '0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                             <label style={{ ...labelStyle, marginBottom: 0 }}>Life System</label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-2)', cursor: 'pointer' }}>
-                                <input type="checkbox" checked={form.all_day} onChange={e => setForm(f => ({ ...f, all_day: e.target.checked }))} />
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: text2, cursor: 'pointer', fontWeight: 600 }}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={form.all_day} 
+                                    onChange={e => setForm(f => ({ ...f, all_day: e.target.checked }))} 
+                                />
                                 All day event
                             </label>
                         </div>
-                        {form.all_day && (
-                            <EventTagSelector value={form.system_type} onChange={v => setForm(f => ({ ...f, system_type: v }))} />
-                        )}
+                        <EventTagSelector value={form.system_type} onChange={v => setForm(f => ({ ...f, system_type: v }))} />
                     </div>
 
-                    {/* Row 3: Location */}
-                    <div>
-                        <label style={labelStyle}>Location</label>
-                        <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} placeholder="Optional" style={inputStyle} />
+                    {/* Row: Location & Description */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                        <div>
+                            <label style={labelStyle}>Location</label>
+                            <input 
+                                value={form.location} 
+                                onChange={e => setForm(f => ({ ...f, location: e.target.value }))} 
+                                placeholder="Optional" 
+                                style={inputStyle} 
+                            />
+                        </div>
+                        <div>
+                            <label style={labelStyle}>Description</label>
+                            <textarea 
+                                value={form.description} 
+                                onChange={e => setForm(f => ({ ...f, description: e.target.value }))} 
+                                placeholder="Optional notes..." 
+                                rows={3}
+                                style={{ ...inputStyle, resize: 'none', minHeight: '80px' }} 
+                            />
+                        </div>
                     </div>
 
-                    {/* Row 4: Description */}
-                    <div>
-                        <label style={labelStyle}>Description</label>
-                        <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Optional notes..." rows={3}
-                            style={{ ...inputStyle, resize: 'vertical', minHeight: '60px' }} />
-                    </div>
-
-                    {/* Row 5: Reminder | Recurrence */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    {/* Row: Reminder | Recurrence */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <div>
                             <label style={labelStyle}>Reminder (min)</label>
-                            <input type="number" value={form.reminder_minutes || ''} onChange={e => setForm(f => ({ ...f, reminder_minutes: e.target.value ? parseInt(e.target.value) : null }))} placeholder="15" style={inputStyle} />
+                            <input 
+                                type="number" 
+                                value={form.reminder_minutes || ''} 
+                                onChange={e => setForm(f => ({ ...f, reminder_minutes: e.target.value ? parseInt(e.target.value) : null }))} 
+                                placeholder="15" 
+                                style={inputStyle} 
+                            />
                         </div>
                         <div>
                             <label style={labelStyle}>Recurrence</label>
-                            <select value={form.recurrence_rule?.freq || ''} onChange={e => {
-                                const freq = e.target.value;
-                                setForm(f => ({ ...f, recurrence_rule: freq ? { freq, interval: 1 } : null }));
-                            }} style={inputStyle}>
+                            <select 
+                                value={form.recurrence_rule?.freq || ''} 
+                                onChange={e => {
+                                    const freq = e.target.value;
+                                    setForm(f => ({ ...f, recurrence_rule: freq ? { freq, interval: 1 } : null }));
+                                }} 
+                                style={inputStyle}
+                            >
                                 <option value="">None</option>
                                 <option value="daily">Daily</option>
                                 <option value="weekly">Weekly</option>
@@ -163,21 +216,48 @@ const EventModal = ({ isOpen, onClose, onSave, event = null }) => {
                         </div>
                     </div>
 
-                    {/* Row 6: Cancel | Save (Right Aligned) */}
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '8px', justifyContent: 'flex-end' }}>
-                        <button onClick={onClose} style={{
-                            padding: '12px 24px', borderRadius: '10px',
-                            background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                            color: 'var(--text-2)', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-                        }}>Cancel</button>
-                        <button onClick={handleSave} style={{
-                            padding: '12px 32px', borderRadius: '10px',
-                            background: 'linear-gradient(135deg, var(--accent) 0%, #e05c2a 100%)',
-                            border: 'none', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-                        }}>{event ? 'Update' : 'Create'}</button>
+                    {/* Footer Actions */}
+                    <div style={{ 
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                        marginTop: '12px', borderTop: `1px solid ${border}`, paddingTop: '24px' 
+                    }}>
+                        <div>
+                            {event && onDelete && (
+                                <button onClick={() => onDelete(event.id)} style={{
+                                    padding: '10px 16px', borderRadius: '10px', border: 'none',
+                                    background: 'transparent', color: 'var(--color-rust)',
+                                    fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                                    fontFamily: 'var(--font-sans)', transition: 'background 200ms'
+                                }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'} 
+                                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>Delete Event</button>
+                            )}
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button onClick={onClose} style={{
+                                padding: '10px 20px', borderRadius: '10px',
+                                background: 'transparent', border: `1px solid ${border}`,
+                                color: text1, fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+                                fontFamily: 'var(--font-sans)', transition: 'all 200ms var(--ease)'
+                            }} onMouseEnter={e => e.currentTarget.style.background = 'var(--color-elevated)'}>Cancel</button>
+                            <button onClick={handleSave} style={{
+                                padding: '10px 28px', borderRadius: '10px',
+                                background: 'var(--color-accent)', border: 'none',
+                                color: theme === 'dark' ? '#000' : '#fff', fontSize: '12px', fontWeight: 700, 
+                                cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                                boxShadow: '0 4px 12px rgba(34,197,94,0.2)',
+                                transition: 'all 200ms var(--ease)'
+                            }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+                               onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+                                {event ? 'Update' : 'Create Event'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+            <style>{`
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+            `}</style>
         </div>
     );
 };

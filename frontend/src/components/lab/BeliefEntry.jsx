@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import supabase from '../../utils/supabase';
 
 export default function BeliefEntry({ quarterLabel, completedDomains = [], onComplete }) {
     const [prompts, setPrompts] = useState([]);
@@ -16,12 +15,13 @@ export default function BeliefEntry({ quarterLabel, completedDomains = [], onCom
     useEffect(() => {
         const fetchPrompts = async () => {
             try {
-                const token = localStorage.getItem('access_token');
-                const res = await fetch(`${API_BASE}/lab/beliefs/prompts`, {
-                    headers: { 'Authorization': `Bearer ${token}` },
-                });
-                const data = await res.json();
-                setPrompts(data);
+                const { data, error } = await supabase
+                    .from('lab_belief_prompts')
+                    .select('*')
+                    .order('sort_order', { ascending: true });
+                
+                if (error) throw error;
+                setPrompts(data || []);
             } catch (err) {
                 console.error('[BeliefEntry] Fetch prompts error:', err);
             }
@@ -33,16 +33,32 @@ export default function BeliefEntry({ quarterLabel, completedDomains = [], onCom
         if (!selectedDomain || !selectedPrompt || !response.trim()) return;
         setSaving(true);
         try {
-            const token = localStorage.getItem('access_token');
-            await fetch(`${API_BASE}/lab/beliefs`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ domain: selectedDomain, prompt_id: selectedPrompt.id, response_text: response }),
-            });
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            // Convert "Q1 2026" to "2026-01-01"
+            const [q, year] = quarterLabel.split(' ');
+            const month = q === 'Q1' ? '01' : q === 'Q2' ? '04' : q === 'Q3' ? '07' : '10';
+            const anchorDate = `${year}-${month}-01`;
+
+            const { error } = await supabase
+                .from('lab_beliefs')
+                .insert({
+                    user_id: user.id,
+                    domain: selectedDomain,
+                    prompt_id: selectedPrompt.id,
+                    response_text: response,
+                    quarter_anchor: anchorDate,
+                    created_at: new Date().toISOString()
+                });
+
+            if (error) throw error;
+
             setDone(true);
             onComplete?.({ domain: selectedDomain });
         } catch (err) {
             console.error('[BeliefEntry] Save error:', err);
+            alert('Failed to save belief to Supabase.');
         } finally {
             setSaving(false);
         }

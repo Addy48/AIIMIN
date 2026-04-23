@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import supabase from '../../utils/supabase';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const DOMAINS = ['money', 'opportunity', 'women', 'identity', 'society', 'fear'];
@@ -22,17 +23,28 @@ export default function DecisionScenario({ onComplete }) {
         if (!domain || !response.trim()) return;
         setSaving(true);
         try {
-            const token = localStorage.getItem('access_token');
-            const res = await fetch(`${API_BASE}/lab/practice/decisions`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ domain, response_text: response, quality_self: quality }),
-            });
-            const data = await res.json();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            const { data, error } = await supabase
+                .from('lab_decision_scenarios')
+                .insert({
+                    user_id: user.id,
+                    domain: domain,
+                    response_text: response,
+                    quality_self: quality,
+                    responded_at: new Date().toISOString()
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
             setResult(data);
             onComplete?.(data);
         } catch (err) {
             console.error('[DecisionScenario] Save error:', err);
+            alert('Failed to save decision to Supabase.');
         } finally {
             setSaving(false);
         }
