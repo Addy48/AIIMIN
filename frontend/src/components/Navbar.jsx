@@ -7,12 +7,13 @@ import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
 
 const NAV_LINKS = [
-  { to: '/overview',  label: 'Today' },
-  { to: '/insights',  label: 'Insights' },
-  { to: '/calendar',  label: 'Calendar' },
-  { to: '/finance',   label: 'Finance' },
-  { to: '/reports',   label: 'Reports' },
-  { to: '/settings',  label: 'Settings' },
+  { to: '/overview', label: 'Today' },
+  { to: '/insights', label: 'Insights' },
+  { to: '/skills', label: 'Skills' },
+  { to: '/growth', label: 'Growth' },
+  { to: '/finance', label: 'Finance' },
+  { to: '/reports', label: 'Reports' },
+  { to: '/settings', label: 'Settings' },
 ];
 
 /* Forest-leaf logo mark */
