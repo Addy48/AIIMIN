@@ -1,219 +1,186 @@
 /*
- * AIIMIN Design Tokens — Garden / Nordic Calm
- * Light: warm parchment page, white cards, forest green + terracotta
- * Dark: true warm-black, same green accent, cream text
+ * AIIMIN Design Tokens — Single Source of Truth
+ * Glassmorphism edition: glass layers on dark ambient background.
+ * Dark mode default. Light mode via [data-theme="light"].
  */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&family=DM+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400;500&display=swap');
 
 /* ────────────────────────────────────────────────────────
-   LIGHT MODE (default) — Warm Parchment
+   DARK MODE (default)
 ───────────────────────────────────────────────────────── */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* ── Page & Card ──────────────────────────────────── */
-  --color-base: #E8E5DF;
-  /* warm parchment page */
-  --color-surface: #FFFFFF;
-  /* white card */
-  --color-elevated: #F2F0EC;
-  /* input / hover */
-  --color-border: #E0DDD7;
-  /* subtle border */
-  --color-border-lit: #C9C5BE;
-  /* focus border */
+  /* ── Ambient Background ─────────────────────────── */
+  --color-base:       #0A0C0B;   /* deepest bg */
+  --color-surface:    #111412;   /* base surface */
+  --color-elevated:   #191C1A;   /* hover / input bg */
+  --color-border:     #252825;   /* subtle border */
+  --color-border-lit: #323632;   /* slightly lighter border */
 
   /* ── Text ───────────────────────────────────────── */
-  --color-text-1: #1C1917;
-  /* near-black */
-  --color-text-2: #6B6865;
-  /* secondary */
-  --color-text-3: #A09D99;
-  /* placeholder/muted */
+  --color-text-1:     #F2EDE3;   /* primary text */
+  --color-text-2:     #8C887F;   /* labels / secondary */
+  --color-text-3:     #6A6560;   /* placeholder / disabled */
 
-  /* ── Brand accents ───────────────────────────────── */
-  --color-logo-bg: #B97A4A;
-  /* amber logo square */
-  --color-accent: #3B6148;
-  /* forest green — CTAs, active pill, checks */
-  --color-accent-dim: rgba(59, 97, 72, 0.10);
-  --color-accent-glow: rgba(59, 97, 72, 0.20);
-  --color-rust: #C07850;
-  /* terracotta — italic hero emphasis */
-  --color-hero: #1C1917;
+  /* ── Accent & Hero ──────────────────────────────── */
+  --color-accent:     #2BA89F;   /* teal — CTAs, active states */
+  --color-accent-dim: rgba(43,168,159,0.12);
+  --color-accent-glow:rgba(43,168,159,0.20);
+  --color-hero:       #E8DCC8;   /* cream — hero numbers only */
 
   /* ── Status ─────────────────────────────────────── */
-  --color-alert-red: #C94040;
-  --color-gym: #C94040;
-  --color-steps: #2B6CB0;
-  --color-water: #2B88AB;
-  --color-sleep: #3B6148;
-  --color-success: #3B6148;
-  --color-warning: #C07850;
+  --color-alert-red:  #E05A5A;
+  --color-gym:        #E05A5A;
+  --color-steps:      #5A9AE0;
+  --color-water:      #5ABCE0;
+  --color-sleep:      #2BA89F;
+  --color-success:    #2BA89F;
+  --color-warning:    #D4A843;
 
-  /* ── Sage / Drought alert ────────────────────────── */
-  --color-sage-bg: rgba(59, 97, 72, 0.08);
-  --color-sage-text: #2A4A35;
-  --color-dark-card: #3B5142;
-  /* dark green intention card */
-  --color-drought-bg: rgba(192, 120, 80, 0.08);
-  --color-drought-border: rgba(192, 120, 80, 0.25);
-  --color-drought-text: #8A4E28;
+  /* ── Glass Layer ────────────────────────────────── */
+  --glass-bg:         rgba(255,255,255,0.035);
+  --glass-bg-hover:   rgba(255,255,255,0.055);
+  --glass-bg-strong:  rgba(255,255,255,0.06);
+  --glass-border:     rgba(255,255,255,0.08);
+  --glass-border-lit: rgba(255,255,255,0.14);
+  --glass-blur:       blur(20px);
+  --glass-blur-sm:    blur(10px);
+  --glass-shadow:     0 4px 24px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --glass-shadow-sm:  0 2px 12px rgba(0,0,0,0.25);
 
-  /* ── Cards — solid, no blur ──────────────────────── */
-  --glass-bg: #FFFFFF;
-  --glass-bg-hover: #F8F7F4;
-  --glass-bg-strong: #FFFFFF;
-  --glass-border: rgba(0, 0, 0, 0.07);
-  --glass-border-lit: rgba(0, 0, 0, 0.13);
-  --glass-blur: none;
-  --glass-blur-sm: none;
-  --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.03);
-  --glass-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  /* ── Ambient glow background ────────────────────── */
+  --ambient-1: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(43,168,159,0.06) 0%, transparent 60%);
+  --ambient-2: radial-gradient(ellipse 50% 50% at 80% 80%, rgba(90,154,224,0.04) 0%, transparent 60%);
 
-  /* ── No ambient glow ─────────────────────────────── */
-  --ambient-1: none;
-  --ambient-2: none;
+  /* ── Typography ─────────────────────────────────── */
+  --font-sans:  'DM Sans', system-ui, sans-serif;
+  --font-mono:  'DM Mono', 'SF Mono', monospace;
 
-  /* ── Typography ──────────────────────────────────── */
-  --font-sans: 'DM Sans', system-ui, sans-serif;
-  --font-mono: 'DM Mono', 'SF Mono', monospace;
+  --text-hero:    300 56px/1   var(--font-sans);
+  --text-metric:  300 28px/1   var(--font-sans);
+  --text-heading: 500 16px/1.4 var(--font-sans);
+  --text-body:    300 14px/1.6 var(--font-sans);
+  --text-label:   500 11px/1   var(--font-mono);
+  --text-subtext: 300 12px/1.5 var(--font-sans);
 
-  /* ── Radius ──────────────────────────────────────── */
-  --r-none: 0px;
-  --r-sm: 4px;
-  --r-md: 8px;
-  --r-lg: 12px;
-  --r-xl: 16px;
-  --r-card: 14px;
-  --r-pill: 9999px;
-  --radius-none: var(--r-none);
-  --radius-modal: var(--r-xl);
-  --radius-pill: var(--r-pill);
+  /* ── Radius ─────────────────────────────────────── */
+  --r-none:  0px;
+  --r-sm:    4px;
+  --r-md:    8px;
+  --r-lg:    12px;
+  --r-xl:    16px;
+  --r-pill:  9999px;
+
+  /* Aliases */
+  --radius-none:  var(--r-none);
+  --radius-modal: var(--r-md);
+  --radius-pill:  var(--r-pill);
 
   /* ── Spacing ─────────────────────────────────────── */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-7: 32px;
-  --space-8: 48px;
-  --space-9: 64px;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  40px;
+  --space-8:  48px;
+  --space-9:  64px;
 
-  /* ── Layout ──────────────────────────────────────── */
-  --nav-height: 76px;
+  /* ── Layout ─────────────────────────────────────── */
+  --nav-height:     60px;
   --nav-height-mob: 44px;
-  --sidebar-width: 210px;
+  --sidebar-width:  210px;
   --tab-bar-height: 56px;
-  --content-max: 1120px;
-  --content-pad: 32px;
+  --content-max:    1280px;
+  --content-pad:    24px;
 
-  /* ── Component sizes ─────────────────────────────── */
-  --card-tile: 110px;
-  --row-task: 48px;
+  /* ── Component heights ───────────────────────────── */
+  --card-hero:   120px;
+  --card-tile:   100px;
+  --row-task:     48px;
   --circle-habit: 48px;
-  --alert-height: 64px;
+  --alert-height: 60px;
 
-  /* ── Animation ───────────────────────────────────── */
-  --dur-fast: 120ms;
-  --dur-normal: 150ms;
-  --dur-enter: 200ms;
+  /* ── Animation ────────────────────────────────────── */
+  --dur-fast:     120ms;
+  --dur-normal:   150ms;
+  --dur-enter:    200ms;
   --dur-feedback: 300ms;
-  --dur-progress: 800ms;
-  --dur-hero: 1200ms;
-  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dur-progress: 350ms;
+  --dur-hero:    1200ms;
+  --ease:    cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-  /* ── Focus ───────────────────────────────────────── */
+  /* ── Focus ────────────────────────────────────────── */
   --shadow-focus: 0 0 0 2px var(--color-accent);
 
-  /* ── Aliases ─────────────────────────────────────── */
-  --bg-primary: var(--color-base);
-  --bg-card: var(--color-surface);
-  --bg-elevated: var(--color-elevated);
-  --text-primary: var(--color-text-1);
-  --text-secondary: var(--color-text-2);
-  --accent: var(--color-accent);
-  --border: var(--color-border);
+  /* ── Aliases (backwards compat) ───────────────────── */
+  --bg-primary:    var(--color-base);
+  --bg-card:       var(--color-surface);
+  --bg-elevated:   var(--color-elevated);
+  --bg-surface:    var(--color-surface);
+  --accent:        var(--color-accent);
+  --accent-dim:    var(--color-accent-dim);
+  --text-1:        var(--color-text-1);
+  --text-2:        var(--color-text-2);
+  --text-3:        var(--color-text-3);
+  --border:        var(--color-border);
+  --success:       var(--color-accent);
+  --max-width:     var(--content-max);
+  --container-px:  var(--content-pad);
+  --section-gap:   var(--space-6);
 }
 
 /* ────────────────────────────────────────────────────────
-   DARK MODE — True Warm Black
-───────────────────────────────────────────────────────── */
-[data-theme="dark"] {
-  color-scheme: dark;
+   LIGHT MODE
+───────────────────────────────────────────────────── */
+[data-theme="light"] {
+  color-scheme: light;
 
-  /* ── Page & Card ──────────────────────────────────── */
-  --color-base: #0F0D0B;
-  /* true warm-black */
-  --color-surface: #1A1816;
-  /* dark warm card */
-  --color-elevated: #232018;
-  /* input / hover */
-  --color-border: #2C2924;
-  /* subtle warm border */
-  --color-border-lit: #3D3A33;
-  /* focus border */
+  --color-base:       #F4F3F0;
+  --color-surface:    #FAFAF8;
+  --color-elevated:   #EFEFEC;
+  --color-border:     #E0DED9;
+  --color-border-lit: #CCCAC4;
 
-  /* ── Text ───────────────────────────────────────── */
-  --color-text-1: #F0EBE1;
-  /* warm cream */
-  --color-text-2: #9E9B97;
-  /* secondary */
-  --color-text-3: #6B6865;
-  /* muted */
+  --color-text-1:     #1A1917;
+  --color-text-2:     #6B6863;
+  --color-text-3:     #A09D99;
 
-  /* ── Brand accents ───────────────────────────────── */
-  --color-logo-bg: #B97A4A;
-  /* same logo always amber */
-  --color-accent: #5A9E72;
-  /* lighter green for dark bg */
-  --color-accent-dim: rgba(90, 158, 114, 0.12);
-  --color-accent-glow: rgba(90, 158, 114, 0.22);
-  --color-rust: #D4906A;
-  /* terracotta, brighter on dark */
-  --color-hero: #F0EBE1;
+  --color-accent:     #1E9990;
+  --color-accent-dim: rgba(30,153,144,0.10);
+  --color-accent-glow:rgba(30,153,144,0.18);
+  --color-hero:       #2A2825;
 
-  /* ── Status ─────────────────────────────────────── */
-  --color-alert-red: #E05A5A;
-  --color-gym: #E05A5A;
-  --color-steps: #5A9AE0;
-  --color-water: #5ABCE0;
-  --color-sleep: #5A9E72;
-  --color-success: #5A9E72;
-  --color-warning: #D4A843;
+  --color-alert-red:  #CC3333;
+  --color-gym:        #CC3333;
+  --color-steps:      #2B6CB0;
+  --color-water:      #2B88AB;
+  --color-sleep:      #1E9990;
+  --color-success:    #1E9990;
+  --color-warning:    #B08820;
 
-  /* ── Sage / Drought alert ────────────────────────── */
-  --color-sage-bg: rgba(90, 158, 114, 0.10);
-  --color-sage-text: #7FBE95;
-  --color-dark-card: #0E1A12;
-  --color-drought-bg: rgba(212, 144, 106, 0.08);
-  --color-drought-border: rgba(212, 144, 106, 0.25);
-  --color-drought-text: #D4906A;
+  --glass-bg:         rgba(255,255,255,0.70);
+  --glass-bg-hover:   rgba(255,255,255,0.85);
+  --glass-bg-strong:  rgba(255,255,255,0.80);
+  --glass-border:     rgba(0,0,0,0.07);
+  --glass-border-lit: rgba(0,0,0,0.12);
+  --glass-shadow:     0 4px 24px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+  --glass-shadow-sm:  0 2px 8px rgba(0,0,0,0.07);
 
-  /* ── Cards — solid, no blur ──────────────────────── */
-  --glass-bg: #1A1816;
-  --glass-bg-hover: #232018;
-  --glass-bg-strong: #1A1816;
-  --glass-border: rgba(255, 255, 255, 0.06);
-  --glass-border-lit: rgba(255, 255, 255, 0.10);
-  --glass-blur: none;
-  --glass-blur-sm: none;
-  --glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.40), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --glass-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.30);
+  --ambient-1: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(30,153,144,0.05) 0%, transparent 60%);
+  --ambient-2: radial-gradient(ellipse 50% 50% at 80% 80%, rgba(43,108,176,0.04) 0%, transparent 60%);
 
-  /* ── No ambient glow ─────────────────────────────── */
-  --ambient-1: none;
-  --ambient-2: none;
-
-  /* ── Aliases ─────────────────────────────────────── */
-  --bg-primary: var(--color-base);
-  --bg-card: var(--color-surface);
-  --bg-elevated: var(--color-elevated);
-  --text-primary: var(--color-text-1);
-  --text-secondary: var(--color-text-2);
-  --accent: var(--color-accent);
-  --border: var(--color-border);
+  --bg-primary:    var(--color-base);
+  --bg-card:       var(--color-surface);
+  --bg-elevated:   var(--color-elevated);
+  --bg-surface:    var(--color-surface);
+  --accent:        var(--color-accent);
+  --accent-dim:    var(--color-accent-dim);
+  --text-1:        var(--color-text-1);
+  --text-2:        var(--color-text-2);
+  --text-3:        var(--color-text-3);
+  --border:        var(--color-border);
 }
