@@ -12,71 +12,77 @@ const ALIASES = {
 };
 const resolveEmail = (raw) => ALIASES[raw.trim().toLowerCase()] || raw.trim();
 
-/* ── LocalStorage key ───────────────────────────────────── */
 const LS_KEY = 'aiimin_remembered_id';
 
-/* ── Small leaf logo ────────────────────────────────────── */
-const Logo = () => (
+/* ── AIIMIN Logo mark — amber square with A ─────────────── */
+const LoginLogo = () => (
   <div style={{
-    width: '42px', height: '42px',
-    background: 'var(--color-accent)',
-    borderRadius: '12px',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    margin: '0 auto 20px',
-    flexShrink: 0,
+    width: '56px',
+    height: '56px',
+    background: 'var(--color-logo-bg)',
+    borderRadius: '14px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto 18px',
+    boxShadow: '0 4px 16px rgba(185,122,74,0.30)',
   }}>
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M10 2C6.5 2 4 5 4 9C4 13 6.5 16.5 10 18C13.5 16.5 16 13 16 9C16 5 13.5 2 10 2Z"
-        fill="white" fillOpacity="0.95" />
-      <line x1="10" y1="10" x2="10" y2="18" stroke="white" strokeWidth="1.4" strokeOpacity="0.4" />
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      {/* A letter */}
+      <path
+        d="M14 4L5 22H8.5L10.5 17H17.5L19.5 22H23L14 4Z"
+        fill="white"
+        fillOpacity="0.95"
+      />
+      {/* Counter of A (cutout) */}
+      <path d="M11.8 14L14 9L16.2 14Z" fill="var(--color-logo-bg)" />
+      {/* Small leaf on top */}
+      <path
+        d="M14 2C14 2 17 5 14 8C11 5 14 2 14 2Z"
+        fill="white"
+        fillOpacity="0.80"
+      />
     </svg>
   </div>
 );
 
 /* ═══════════════════════════════════════════════════════════
-   Login page
+   Login
 ═══════════════════════════════════════════════════════════ */
 const Login = () => {
   const { signInWithEmail, signUpWithEmail } = useAuth();
   const { theme, toggleTheme } = useThemeContext();
 
   const [mode, setMode] = useState('login');
-  const [step, setStep] = useState(1);        // 1 = identifier, 2 = PIN
+  const [step, setStep] = useState(1);
   const [identifier, setIdentifier] = useState('');
   const [fullName, setFullName] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [remembered, setRemembered] = useState(false);    // remember-me checkbox
+  const [remembered, setRemembered] = useState(false);
 
-  /* Load remembered username on mount */
+  /* Load remembered username */
   useEffect(() => {
     const saved = localStorage.getItem(LS_KEY);
-    if (saved) {
-      setIdentifier(saved);
-      setRemembered(true);
-    }
+    if (saved) { setIdentifier(saved); setRemembered(true); }
   }, []);
 
-  /* Step 1 → Step 2 */
   const handleNext = (e) => {
     if (e) e.preventDefault();
-    if (!identifier.trim()) { setError('Please enter a username or email.'); return; }
-    if (mode === 'signup' && !fullName.trim()) { setError('Please enter your full name.'); return; }
+    if (!identifier.trim()) { setError('Enter your username or email.'); return; }
+    if (mode === 'signup' && !fullName.trim()) { setError('Enter your full name.'); return; }
     setError(null);
     setStep(2);
   };
 
   const handleBack = () => { setStep(1); setPin(''); setError(null); };
 
-  /* PIN entry */
   const handlePinEntry = useCallback((digit) => {
     setPin(prev => {
       if (prev.length >= 6) return prev;
       const next = prev + digit;
-      if (next.length === 6) {
-        setTimeout(() => handleSubmitPin(next), 60);
-      }
+      if (next.length === 6) setTimeout(() => handleSubmitPin(next), 80);
       return next;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,21 +101,17 @@ const Login = () => {
       } else {
         await signInWithEmail(resolved, finalPin);
       }
-      /* Persist identifier if remember checked */
-      if (remembered) {
-        localStorage.setItem(LS_KEY, identifier.trim().toLowerCase());
-      } else {
-        localStorage.removeItem(LS_KEY);
-      }
+      if (remembered) { localStorage.setItem(LS_KEY, identifier.trim().toLowerCase()); }
+      else { localStorage.removeItem(LS_KEY); }
     } catch (err) {
-      setError(err.message || 'Authentication failed. Check your PIN.');
+      setError(err.message || 'Wrong PIN. Try again.');
       setPin('');
     } finally {
       setLoading(false);
     }
   };
 
-  /* ── Shared input style ────────────────────────────────── */
+  /* ── Styles ─────────────────────────────── */
   const inp = {
     width: '100%',
     height: '44px',
@@ -126,7 +128,6 @@ const Login = () => {
     transition: 'border-color 150ms ease',
   };
 
-  /* ── Render ─────────────────────────────────────────────── */
   return (
     <div style={{
       minHeight: '100vh',
@@ -137,12 +138,12 @@ const Login = () => {
       fontFamily: 'var(--font-sans)',
     }}>
 
-      {/* Theme toggle — top right corner */}
+      {/* Theme toggle */}
       <button
         onClick={toggleTheme}
-        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        aria-label="Toggle theme"
         style={{
-          position: 'fixed', top: '16px', right: '16px',
+          position: 'fixed', top: '18px', right: '18px',
           width: '36px', height: '36px',
           borderRadius: '10px',
           background: 'var(--color-surface)',
@@ -152,26 +153,29 @@ const Login = () => {
           cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           zIndex: 100,
+          transition: 'border-color 150ms ease',
         }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-border-lit)'}
+        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
       >
         {theme === 'dark' ? '☀' : '◐'}
       </button>
 
-      {/* Card */}
+      {/* Login card */}
       <div style={{
-        width: '380px',
+        width: '360px',
         background: 'var(--color-surface)',
         border: '1px solid var(--color-border)',
         borderRadius: '20px',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-        padding: '40px 36px 36px',
+        boxShadow: 'var(--glass-shadow)',
+        padding: '44px 36px 36px',
         display: 'flex',
         flexDirection: 'column',
       }}>
 
         {/* Brand */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <Logo />
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <LoginLogo />
           <div style={{
             font: '500 18px/1 var(--font-sans)',
             color: 'var(--color-text-1)',
@@ -184,15 +188,14 @@ const Login = () => {
             color: 'var(--color-text-3)',
             marginTop: '6px',
           }}>
-            Behavior-Shaping OS
+            Your behavior-shaping OS
           </div>
         </div>
 
         {/* Mode switcher — step 1 only */}
         {step === 1 && (
           <div style={{
-            display: 'flex',
-            gap: '4px',
+            display: 'flex', gap: '4px',
             marginBottom: '20px',
             background: 'var(--color-elevated)',
             border: '1px solid var(--color-border)',
@@ -204,15 +207,12 @@ const Login = () => {
                 key={m}
                 onClick={() => { setMode(m); setError(null); }}
                 style={{
-                  flex: 1,
-                  padding: '8px 0',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  fontFamily: 'var(--font-sans)',
-                  letterSpacing: '0.02em',
-                  color: mode === m ? 'var(--color-text-1)' : 'var(--color-text-3)',
-                  background: mode === m ? 'var(--color-surface)' : 'transparent',
-                  border: mode === m ? '1px solid var(--color-border)' : '1px solid transparent',
+                  flex: 1, padding: '8px 0',
+                  font: '500 12px/1 var(--font-sans)',
+                  letterSpacing: '0.01em',
+                  color: mode === m ? '#fff' : 'var(--color-text-3)',
+                  background: mode === m ? 'var(--color-accent)' : 'transparent',
+                  border: 'none',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   transition: 'all 150ms ease',
@@ -228,10 +228,10 @@ const Login = () => {
         {error && (
           <div style={{
             padding: '10px 14px',
-            background: 'rgba(224,90,90,0.07)',
-            border: '1px solid rgba(224,90,90,0.2)',
+            background: 'var(--color-drought-bg, rgba(201,64,64,0.07))',
+            border: '1px solid rgba(201,64,64,0.20)',
             borderRadius: '10px',
-            marginBottom: '16px',
+            marginBottom: '14px',
             font: '400 13px/1.4 var(--font-sans)',
             color: 'var(--color-alert-red)',
           }}>
@@ -241,10 +241,10 @@ const Login = () => {
 
         <AnimatePresence mode="wait">
 
-          {/* ── Step 1: Identifier ─────────────────────────── */}
+          {/* ── Step 1: identifier ────────────────────────── */}
           {step === 1 && (
             <motion.form
-              key="step1"
+              key="s1"
               onSubmit={handleNext}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -266,7 +266,7 @@ const Login = () => {
 
               <input
                 type="text"
-                placeholder="Username"
+                placeholder="Username or email"
                 value={identifier}
                 onChange={e => setIdentifier(e.target.value.toLowerCase())}
                 style={inp}
@@ -278,9 +278,7 @@ const Login = () => {
 
               {/* Remember me */}
               <label style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                display: 'flex', alignItems: 'center', gap: '8px',
                 cursor: 'pointer',
                 font: '400 13px/1 var(--font-sans)',
                 color: 'var(--color-text-2)',
@@ -290,19 +288,17 @@ const Login = () => {
                   type="checkbox"
                   checked={remembered}
                   onChange={e => setRemembered(e.target.checked)}
-                  style={{ accentColor: 'var(--color-accent)', width: '14px', height: '14px' }}
+                  style={{ accentColor: 'var(--color-accent)', width: '14px', height: '14px', cursor: 'pointer' }}
                 />
-                Remember my username
+                Remember me
               </label>
 
               <button
                 type="submit"
                 style={{
-                  height: '44px',
-                  marginTop: '4px',
+                  height: '44px', marginTop: '4px',
                   background: 'var(--color-accent)',
-                  color: '#fff',
-                  border: 'none',
+                  color: '#fff', border: 'none',
                   borderRadius: '10px',
                   font: '500 14px/1 var(--font-sans)',
                   cursor: 'pointer',
@@ -316,10 +312,10 @@ const Login = () => {
             </motion.form>
           )}
 
-          {/* ── Step 2: PIN ────────────────────────────────── */}
+          {/* ── Step 2: PIN ───────────────────────────────── */}
           {step === 2 && (
             <motion.div
-              key="step2"
+              key="s2"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -332,65 +328,42 @@ const Login = () => {
                 onClick={handleBack}
                 style={{
                   alignSelf: 'flex-start',
-                  background: 'none',
-                  border: 'none',
+                  background: 'none', border: 'none',
                   cursor: 'pointer',
                   color: 'var(--color-text-3)',
                   font: '400 13px/1 var(--font-sans)',
-                  padding: '0',
-                  marginBottom: '20px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
+                  padding: 0, marginBottom: '20px',
+                  display: 'flex', alignItems: 'center', gap: '6px',
                 }}
               >
                 ← Back
               </button>
 
               {/* Who */}
-              <div style={{
-                font: '500 10px/1 var(--font-mono)',
-                color: 'var(--color-text-3)',
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                marginBottom: '4px',
-              }}>
-                Signing in as
+              <div style={{ font: '400 11px/1 var(--font-mono)', color: 'var(--color-text-3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                signing in as
               </div>
-              <div style={{
-                font: '500 15px/1 var(--font-sans)',
-                color: 'var(--color-accent)',
-                marginBottom: '28px',
-                letterSpacing: '-0.01em',
-              }}>
-                {identifier.toLowerCase()}
+              <div style={{ font: '500 15px/1 var(--font-sans)', color: 'var(--color-accent)', marginBottom: '24px' }}>
+                {identifier}
               </div>
 
               {/* PIN dots */}
-              <div style={{ display: 'flex', gap: '14px', marginBottom: '28px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '28px' }}>
                 {[...Array(6)].map((_, i) => (
                   <div key={i} style={{
-                    width: '12px', height: '12px',
+                    width: '11px', height: '11px',
                     borderRadius: '50%',
-                    background: i < pin.length ? 'var(--color-accent)' : 'var(--color-border)',
-                    border: i < pin.length ? 'none' : '1px solid var(--color-border-lit)',
-                    transition: 'background 200ms ease, transform 100ms ease',
-                    transform: i === pin.length - 1 ? 'scale(1.2)' : 'scale(1)',
+                    background: i < pin.length ? 'var(--color-accent)' : 'transparent',
+                    border: `2px solid ${i < pin.length ? 'var(--color-accent)' : 'var(--color-border-lit)'}`,
+                    transition: 'background 150ms ease, border-color 150ms ease',
                   }} />
                 ))}
               </div>
 
               {/* Numpad or spinner */}
               {loading ? (
-                <div style={{
-                  height: '240px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '16px',
-                }}>
-                  <div className="spinner" style={{ width: '40px', height: '40px' }} />
+                <div style={{ height: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px' }}>
+                  <div className="spinner" style={{ width: '36px', height: '36px' }} />
                   <span style={{ font: '400 12px/1 var(--font-sans)', color: 'var(--color-text-3)' }}>
                     Verifying...
                   </span>
@@ -409,9 +382,9 @@ const Login = () => {
         </AnimatePresence>
 
         {/* Footer */}
-        <div style={{ marginTop: '28px', textAlign: 'center' }}>
+        <div style={{ marginTop: '24px', textAlign: 'center' }}>
           <span style={{ font: '400 11px/1 var(--font-sans)', color: 'var(--color-text-3)' }}>
-            Private. No tracking. Your data only.
+            Private · No tracking · Your data only
           </span>
         </div>
       </div>
