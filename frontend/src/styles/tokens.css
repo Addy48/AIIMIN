@@ -1,58 +1,63 @@
 /*
- * AIIMIN Design Tokens — Single Source of Truth
- * Glassmorphism edition: glass layers on dark ambient background.
- * Dark mode default. Light mode via [data-theme="light"].
+ * AIIMIN Design Tokens — Nordic Calm Edition
+ * Warm, minimal, airy. Clean borders, no glassmorphism.
+ * Dark mode = Nordic Warm Dark. Light mode = Nordic Calm.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap');
 
 /* ────────────────────────────────────────────────────────
-   DARK MODE (default)
+   DARK MODE (default) — Nordic Warm Dark
 ───────────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
 
-  /* ── Ambient Background ─────────────────────────── */
-  --color-base:       #0C0E0B;   /* deepest bg */
-  --color-surface:    #141614;   /* base surface */
-  --color-elevated:   #1C1E1A;   /* hover / input bg */
-  --color-border:     #252825;   /* subtle border */
-  --color-border-lit: #323632;   /* slightly lighter border */
+  /* ── Background ─────────────────────────────────── */
+  --color-base:       #141210;   /* warm very dark charcoal */
+  --color-surface:    #1E1C19;   /* warm dark card */
+  --color-elevated:   #252320;   /* input / hover bg */
+  --color-border:     #2E2C29;   /* subtle warm border */
+  --color-border-lit: #3D3A37;   /* focus / lit border */
 
   /* ── Text ───────────────────────────────────────── */
-  --color-text-1:     #F0EBE1;   /* primary text */
-  --color-text-2:     #9E9B97;   /* labels / secondary — bumped for readability */
-  --color-text-3:     #6B6865;   /* placeholder / disabled — bumped for readability */
+  --color-text-1:     #F0EBE1;   /* warm cream primary */
+  --color-text-2:     #9E9B97;   /* warm secondary */
+  --color-text-3:     #6B6865;   /* placeholder */
 
-  /* ── Accent & Hero ──────────────────────────────── */
-  --color-accent:     #2BA89F;   /* teal — CTAs, active states */
-  --color-accent-dim: rgba(43,168,159,0.12);
-  --color-accent-glow:rgba(43,168,159,0.20);
-  --color-hero:       #E8DCC8;   /* cream — hero numbers only */
+  /* ── Accent — muted forest green ───────────────── */
+  --color-accent:     #5A9E72;
+  --color-accent-dim: rgba(90,158,114,0.12);
+  --color-accent-glow:rgba(90,158,114,0.20);
+  --color-hero:       #F0EBE1;
 
   /* ── Status ─────────────────────────────────────── */
   --color-alert-red:  #E05A5A;
   --color-gym:        #E05A5A;
   --color-steps:      #5A9AE0;
   --color-water:      #5ABCE0;
-  --color-sleep:      #2BA89F;
-  --color-success:    #2BA89F;
+  --color-sleep:      #5A9E72;
+  --color-success:    #5A9E72;
   --color-warning:    #D4A843;
 
-  /* ── Glass Layer ────────────────────────────────── */
-  --glass-bg:         rgba(255,255,255,0.04);
-  --glass-bg-hover:   rgba(255,255,255,0.065);
-  --glass-bg-strong:  rgba(255,255,255,0.07);
-  --glass-border:     rgba(255,255,255,0.08);
-  --glass-border-lit: rgba(255,255,255,0.14);
-  --glass-blur:       blur(20px);
-  --glass-blur-sm:    blur(10px);
-  --glass-shadow:     0 4px 24px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.04) inset;
-  --glass-shadow-sm:  0 2px 12px rgba(0,0,0,0.25);
+  /* ── Cards — solid, no blur ─────────────────────── */
+  --glass-bg:         #1E1C19;
+  --glass-bg-hover:   #252320;
+  --glass-bg-strong:  #1E1C19;
+  --glass-border:     rgba(255,255,255,0.07);
+  --glass-border-lit: rgba(255,255,255,0.12);
+  --glass-blur:       none;
+  --glass-blur-sm:    none;
+  --glass-shadow:     0 1px 3px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.04);
+  --glass-shadow-sm:  0 1px 2px rgba(0,0,0,0.20);
 
-  /* ── Ambient glow background ────────────────────── */
-  --ambient-1: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(43,168,159,0.06) 0%, transparent 60%);
-  --ambient-2: radial-gradient(ellipse 50% 50% at 80% 80%, rgba(90,154,224,0.04) 0%, transparent 60%);
+  /* ── Nordic specials ────────────────────────────── */
+  --color-sage-bg:    rgba(90,158,114,0.10);
+  --color-sage-text:  #7FBE95;
+  --color-dark-card:  #0E1A12;
+
+  /* ── No ambient glow ────────────────────────────── */
+  --ambient-1: none;
+  --ambient-2: none;
 
   /* ── Typography ─────────────────────────────────── */
   --font-sans:  'DM Sans', system-ui, sans-serif;
@@ -71,11 +76,11 @@
   --r-md:    8px;
   --r-lg:    12px;
   --r-xl:    16px;
+  --r-card:  14px;
   --r-pill:  9999px;
 
-  /* Aliases */
   --radius-none:  var(--r-none);
-  --radius-modal: var(--r-md);
+  --radius-modal: var(--r-xl);
   --radius-pill:  var(--r-pill);
 
   /* ── Spacing ─────────────────────────────────────── */
@@ -90,7 +95,7 @@
   --space-9:  64px;
 
   /* ── Layout ─────────────────────────────────────── */
-  --nav-height:     60px;
+  --nav-height:     76px;   /* 12px gap + 52px bar + 12px gap */
   --nav-height-mob: 44px;
   --sidebar-width:  210px;
   --tab-bar-height: 56px;
@@ -102,21 +107,21 @@
   --card-tile:   110px;
   --row-task:     48px;
   --circle-habit: 48px;
-  --alert-height: 60px;
+  --alert-height: 64px;
 
   /* ── Animation ────────────────────────────────────── */
   --dur-fast:     120ms;
   --dur-normal:   150ms;
   --dur-enter:    200ms;
   --dur-feedback: 300ms;
-  --dur-progress: 350ms;
+  --dur-progress: 800ms;
   --dur-hero:    1200ms;
   --ease:    cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   /* ── Focus ────────────────────────────────────────── */
   --shadow-focus: 0 0 0 2px var(--color-accent);
 
-  /* ── Aliases (backwards compat) ───────────────────── */
+  /* ── Aliases ──────────────────────────────────────── */
   --bg-primary:    var(--color-base);
   --bg-card:       var(--color-surface);
   --bg-elevated:   var(--color-elevated);
@@ -134,45 +139,58 @@
 }
 
 /* ────────────────────────────────────────────────────────
-   LIGHT MODE
-───────────────────────────────────────────────────── */
+   LIGHT MODE — Nordic Calm
+───────────────────────────────────────────────────────── */
 [data-theme="light"] {
   color-scheme: light;
 
-  --color-base:       #F4F3F0;
-  --color-surface:    #FAFAF8;
-  --color-elevated:   #EFEFEC;
-  --color-border:     #E0DED9;
-  --color-border-lit: #CCCAC4;
+  /* ── Background ─────────────────────────────────── */
+  --color-base:       #ECEAE5;   /* warm parchment page bg */
+  --color-surface:    #FFFFFF;   /* white card surfaces */
+  --color-elevated:   #F5F3EF;   /* input bg / elevated */
+  --color-border:     #E2DFD9;   /* subtle warm border */
+  --color-border-lit: #C8C5BE;   /* focus border */
 
-  --color-text-1:     #1A1917;
-  --color-text-2:     #6B6863;
-  --color-text-3:     #A09D99;
+  /* ── Text ───────────────────────────────────────── */
+  --color-text-1:     #1C1917;   /* near-black warm */
+  --color-text-2:     #6B6865;   /* medium warm gray */
+  --color-text-3:     #A09D99;   /* placeholder */
 
-  --color-accent:     #1E9990;
-  --color-accent-dim: rgba(30,153,144,0.10);
-  --color-accent-glow:rgba(30,153,144,0.18);
-  --color-hero:       #2A2825;
+  /* ── Accent — forest green ──────────────────────── */
+  --color-accent:     #3A6647;
+  --color-accent-dim: rgba(58,102,71,0.10);
+  --color-accent-glow:rgba(58,102,71,0.18);
+  --color-hero:       #1C1917;
 
-  --color-alert-red:  #CC3333;
-  --color-gym:        #CC3333;
+  /* ── Status ─────────────────────────────────────── */
+  --color-alert-red:  #C94040;
+  --color-gym:        #C94040;
   --color-steps:      #2B6CB0;
   --color-water:      #2B88AB;
-  --color-sleep:      #1E9990;
-  --color-success:    #1E9990;
-  --color-warning:    #B08820;
+  --color-sleep:      #3A6647;
+  --color-success:    #3A6647;
+  --color-warning:    #9B7520;
 
-  --glass-bg:         rgba(255,255,255,0.70);
-  --glass-bg-hover:   rgba(255,255,255,0.85);
-  --glass-bg-strong:  rgba(255,255,255,0.80);
+  /* ── Cards — solid ──────────────────────────────── */
+  --glass-bg:         #FFFFFF;
+  --glass-bg-hover:   #F8F7F4;
+  --glass-bg-strong:  #FFFFFF;
   --glass-border:     rgba(0,0,0,0.07);
   --glass-border-lit: rgba(0,0,0,0.12);
-  --glass-shadow:     0 4px 24px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
-  --glass-shadow-sm:  0 2px 8px rgba(0,0,0,0.07);
+  --glass-blur:       none;
+  --glass-blur-sm:    none;
+  --glass-shadow:     0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+  --glass-shadow-sm:  0 1px 2px rgba(0,0,0,0.04);
 
-  --ambient-1: radial-gradient(ellipse 60% 40% at 20% 10%, rgba(30,153,144,0.05) 0%, transparent 60%);
-  --ambient-2: radial-gradient(ellipse 50% 50% at 80% 80%, rgba(43,108,176,0.04) 0%, transparent 60%);
+  /* ── Nordic specials ────────────────────────────── */
+  --color-sage-bg:    #C8D8C8;   /* sage alert bg */
+  --color-sage-text:  #2D4A35;   /* text on sage */
+  --color-dark-card:  #1E2A22;   /* dark intention card */
 
+  --ambient-1: none;
+  --ambient-2: none;
+
+  /* ── Aliases ──────────────────────────────────────── */
   --bg-primary:    var(--color-base);
   --bg-card:       var(--color-surface);
   --bg-elevated:   var(--color-elevated);
