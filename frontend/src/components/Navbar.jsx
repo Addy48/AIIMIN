@@ -16,28 +16,39 @@ const NAV_LINKS = [
   { to: '/settings', label: 'Settings' },
 ];
 
-/* Forest-leaf logo mark */
+/* Amber A-mark logo — matches reference design */
 const LogoMark = () => (
   <div style={{
-    width: '30px',
-    height: '30px',
-    background: 'var(--color-accent)',
-    borderRadius: '8px',
+    width: '32px',
+    height: '32px',
+    background: 'var(--color-logo-bg)',   /* #B97A4A amber */
+    borderRadius: '9px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   }}>
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      {/* Stylised A with leaf arch */}
       <path
-        d="M8 1.5C5.5 1.5 3 3.5 3 7C3 10 5.5 13 8 14.5C10.5 13 13 10 13 7C13 3.5 10.5 1.5 8 1.5Z"
+        d="M9 2.5 L3.5 14.5 L5.5 14.5 L6.8 11.2 L11.2 11.2 L12.5 14.5 L14.5 14.5 Z"
         fill="white"
         fillOpacity="0.95"
       />
-      <line x1="8" y1="8" x2="8" y2="14.5" stroke="white" strokeWidth="1.2" strokeOpacity="0.5" />
+      <path
+        d="M7.5 9.5 L9 6 L10.5 9.5 Z"
+        fill="var(--color-logo-bg)"
+      />
+      {/* Small leaf on top of A */}
+      <path
+        d="M9 1.5 C9 1.5 11 3 9 5 C7 3 9 1.5 9 1.5Z"
+        fill="white"
+        fillOpacity="0.85"
+      />
     </svg>
   </div>
 );
+
 
 const Navbar = ({ user }) => {
   const { notifications, unreadCount, loading, fetchAll, markRead, markAllRead, dismiss } = useNotifications();
@@ -128,23 +139,26 @@ const Navbar = ({ user }) => {
               font-family: var(--font-sans);
               color: var(--color-text-2);
               text-decoration: none;
-              padding: 6px 12px;
+              padding: 6px 14px;
               border-radius: 9px;
               background: transparent;
-              border: 1px solid transparent;
+              border: none;
               transition: all var(--dur-enter) var(--ease);
               white-space: nowrap;
             }
             .nc-nav-link:hover {
               color: var(--color-text-1);
               background: var(--color-elevated);
-              border-color: var(--color-border);
             }
             .nc-nav-link--active {
               font-weight: 500;
-              color: var(--color-text-1);
-              background: var(--color-elevated);
-              border-color: var(--color-border);
+              color: #fff !important;
+              background: var(--color-accent) !important;
+              border-radius: 9px;
+            }
+            [data-theme="dark"] .nc-nav-link--active {
+              color: #fff !important;
+              background: var(--color-accent) !important;
             }
           `}</style>
 
