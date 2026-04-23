@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const DSA_PLATFORMS = { leetcode: '🟡', codeforces: '🔵', gfg: '🟢', codechef: '🟤', hackerrank: '🟩', other: '🟣' };
-const DSA_DIFF = { easy: '#10b981', medium: '#f5a623', hard: '#ef4444' };
+const DSA_DIFF = { easy: 'var(--color-success)', medium: 'var(--color-warning)', hard: 'var(--color-danger)' };
 
 const MobileDSASection = ({ user }) => {
     const [problems, setProblems] = useState([]);
@@ -80,7 +80,7 @@ const MobileDSASection = ({ user }) => {
                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                         {Object.entries(DSA_PLATFORMS).map(([k, icon]) => (
                             <button key={k} type="button" onClick={() => setPlatform(k)}
-                                style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, border: platform === k ? '1px solid var(--accent)' : '1px solid var(--border)', background: platform === k ? 'rgba(255,107,53,0.1)' : 'transparent', color: platform === k ? 'var(--accent)' : 'var(--text-3)', cursor: 'pointer' }}>
+                                style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 600, border: platform === k ? '1px solid var(--accent)' : '1px solid var(--border)', background: platform === k ? 'var(--accent-dim)' : 'transparent', color: platform === k ? 'var(--accent)' : 'var(--text-3)', cursor: 'pointer' }}>
                                 {icon} {k}
                             </button>
                         ))}
@@ -88,7 +88,7 @@ const MobileDSASection = ({ user }) => {
                     <div style={{ display: 'flex', gap: '6px' }}>
                         {Object.entries(DSA_DIFF).map(([d, color]) => (
                             <button key={d} type="button" onClick={() => setDifficulty(d)}
-                                style={{ flex: 1, padding: '6px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, border: difficulty === d ? `1px solid ${color}` : '1px solid var(--border)', background: difficulty === d ? `${color}15` : 'transparent', color: difficulty === d ? color : 'var(--text-3)', cursor: 'pointer', textTransform: 'capitalize' }}>
+                                style={{ flex: 1, padding: '6px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, border: difficulty === d ? `1px solid ${color}` : '1px solid var(--border)', background: difficulty === d ? `var(--color-${d === 'easy' ? 'success' : d === 'medium' ? 'warning' : 'danger'}-dim)` : 'transparent', color: difficulty === d ? color : 'var(--text-3)', cursor: 'pointer', textTransform: 'capitalize' }}>
                                 {d}
                             </button>
                         ))}

@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+import supabase from '../../utils/supabase';
 
 export default function ReactionTest({ onComplete }) {
     const [phase, setPhase] = useState('ready'); // ready | waiting | green | done
@@ -49,19 +48,32 @@ export default function ReactionTest({ onComplete }) {
     const meanMs = trials.length > 0 ? Math.round(trials.reduce((a, b) => a + b, 0) / trials.length) : null;
 
     const handleSave = async () => {
+        if (trials.length < 5) return;
         setSaving(true);
         try {
-            const token = localStorage.getItem('access_token');
-            const res = await fetch(`${API_BASE}/lab/practice/reaction`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ trial_ms: trials }),
-            });
-            const data = await res.json();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            const meanVal = Math.round(trials.reduce((a, b) => a + b, 0) / trials.length);
+            
+            const { data, error } = await supabase
+                .from('lab_reaction_tests')
+                .insert({
+                    user_id: user.id,
+                    trial_ms: trials,
+                    mean_ms: meanVal,
+                    taken_at: new Date().toISOString()
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            
             setResult(data);
             onComplete?.(data);
         } catch (err) {
             console.error('[ReactionTest] Save error:', err);
+            alert('Failed to save result to Supabase.');
         } finally {
             setSaving(false);
         }

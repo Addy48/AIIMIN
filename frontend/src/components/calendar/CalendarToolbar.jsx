@@ -13,10 +13,11 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
   const isDark = theme === 'dark';
   const d = new Date(currentDate);
 
-  const border = isDark ? '#222' : '#E5E7EB';
-  const bg = isDark ? '#111' : '#fff';
-  const text1 = isDark ? '#EDEDED' : '#111';
-  const text2 = isDark ? '#71717A' : '#6B7280';
+  const border = 'var(--color-border)';
+  const bg = 'var(--glass-bg)';
+  const text1 = 'var(--color-text-1)';
+  const text2 = 'var(--color-text-2)';
+  const accent = 'var(--color-accent)';
 
   const navigate = (dir) => {
     const next = new Date(d);
@@ -33,51 +34,57 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
       : d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   const btnBase = {
-    background: 'transparent', border: `1px solid ${border}`, cursor: 'pointer',
-    color: text2, fontFamily: 'var(--font-sans)', transition: 'all 150ms ease',
+    background: 'var(--color-elevated)', border: `1px solid ${border}`, cursor: 'pointer',
+    color: text2, fontFamily: 'var(--font-sans)', transition: 'all 200ms var(--ease)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
+    outline: 'none',
   };
 
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '14px 20px', background: bg, border: `1px solid ${border}`,
-      borderRadius: '12px', marginBottom: '16px',
+      padding: '12px 16px', background: bg, border: `1px solid ${border}`,
+      borderRadius: 'var(--r-lg)', marginBottom: '16px',
+      backdropFilter: 'var(--glass-blur)', WebkitBackdropFilter: 'var(--glass-blur)',
+      boxShadow: 'var(--glass-shadow-sm)',
     }}>
       {/* Left: navigation */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <button onClick={() => navigate(-1)} style={{ ...btnBase, width: '32px', height: '32px', borderRadius: '8px', fontSize: '16px' }}>‹</button>
-        <button onClick={() => onDateChange(new Date().toISOString())} style={{
-          ...btnBase, padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 500,
-        }}>Today</button>
-        <button onClick={() => navigate(1)} style={{ ...btnBase, width: '32px', height: '32px', borderRadius: '8px', fontSize: '16px' }}>›</button>
-        <span style={{ fontSize: '16px', fontWeight: 700, color: text1, fontFamily: 'var(--font-sans)', marginLeft: '8px', letterSpacing: '-0.02em' }}>
+        <div style={{ display: 'flex', gap: '1px', background: border, borderRadius: '8px', overflow: 'hidden', border: `1px solid ${border}` }}>
+          <button onClick={() => navigate(-1)} style={{ ...btnBase, width: '32px', height: '32px', border: 'none' }}>‹</button>
+          <button onClick={() => onDateChange(new Date().toISOString())} style={{
+            ...btnBase, padding: '0 14px', height: '32px', fontSize: '11px', fontWeight: 600, border: 'none', textTransform: 'uppercase', letterSpacing: '0.04em'
+          }}>Today</button>
+          <button onClick={() => navigate(1)} style={{ ...btnBase, width: '32px', height: '32px', border: 'none' }}>›</button>
+        </div>
+        <span style={{ fontSize: '15px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', marginLeft: '12px', letterSpacing: '-0.01em' }}>
           {title}
         </span>
       </div>
 
       {/* Right: view switcher + add */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{ display: 'flex', gap: '2px', padding: '3px', background: isDark ? '#1a1a1a' : '#F3F4F6', borderRadius: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '2px', padding: '3px', background: 'var(--color-elevated)', borderRadius: '10px', border: `1px solid ${border}` }}>
           {VIEWS.map(v => (
             <button key={v.key} onClick={() => onViewChange(v.key)} style={{
-              padding: '5px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-              fontSize: '12px', fontWeight: 500, fontFamily: 'var(--font-sans)',
-              background: view === v.key ? bg : 'transparent',
+              padding: '6px 14px', borderRadius: '7px', border: 'none', cursor: 'pointer',
+              fontSize: '11px', fontWeight: 600, fontFamily: 'var(--font-sans)',
+              background: view === v.key ? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent',
               color: view === v.key ? text1 : text2,
-              boxShadow: view === v.key ? `0 1px 3px rgba(0,0,0,${isDark ? 0.4 : 0.1})` : 'none',
-              transition: 'all 150ms ease',
+              transition: 'all 200ms var(--ease)',
+              outline: 'none',
             }}>{v.label}</button>
           ))}
         </div>
         <button onClick={onNewEvent} style={{
-          padding: '7px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-          background: '#22C55E', color: '#fff', fontSize: '12px', fontWeight: 600,
-          fontFamily: 'var(--font-sans)', transition: 'opacity 150ms ease',
+          padding: '8px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+          background: accent, color: isDark ? '#000' : '#fff', fontSize: '12px', fontWeight: 700,
+          fontFamily: 'var(--font-sans)', transition: 'all 200ms var(--ease)',
+          boxShadow: `0 4px 12px ${isDark ? 'rgba(34,197,94,0.2)' : 'rgba(30,92,58,0.15)'}`,
         }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-        >+ New event</button>
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >+ New Event</button>
       </div>
     </div>
   );

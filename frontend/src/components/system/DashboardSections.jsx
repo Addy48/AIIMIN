@@ -97,7 +97,7 @@ export function OverviewSection({ user, firstName, statsData, expandedCard, setE
             <DailyQuote logSnapshot={desktopLogSnapshot} />
 
             <div style={{ marginTop: '24px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: '12px' }}>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: '12px' }}>
                     Daily Pulse
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }} className="metrics-row">
@@ -176,7 +176,9 @@ export function FinancialSection({ user }) {
     return (
         <div id="sys-financial" style={{ scrollMarginTop: '100px' }}>
             <SectionLabel icon="💰">Financial System</SectionLabel>
-            <MoneyManager user={user} />
+            <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
+                <MoneyManager user={user} />
+            </div>
         </div>
     );
 }

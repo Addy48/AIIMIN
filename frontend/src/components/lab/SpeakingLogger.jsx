@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import supabase from '../../utils/supabase';
 
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 const SLIDERS = [
     { key: 'confidence_score', label: 'Confidence', desc: 'How confident did you feel delivering your point?' },
     { key: 'clarity_score', label: 'Clarity', desc: 'How clear and structured was your speech?' },
@@ -25,21 +25,30 @@ export default function SpeakingLogger({ onComplete }) {
 
     const cyclePrompt = () => setPromptIndex(prev => (prev + 1) % SPEAKING_PROMPTS.length);
 
-
     const handleSave = async () => {
         setSaving(true);
         try {
-            const token = localStorage.getItem('access_token');
-            const res = await fetch(`${API_BASE}/lab/practice/speaking`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...scores, notes: notes || null }),
-            });
-            const data = await res.json();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            const { data, error } = await supabase
+                .from('lab_speaking_logs')
+                .insert({
+                    user_id: user.id,
+                    ...scores,
+                    notes: notes || null,
+                    logged_at: new Date().toISOString()
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            
             setResult(data);
             onComplete?.(data);
         } catch (err) {
             console.error('[SpeakingLogger] Save error:', err);
+            alert('Failed to save log to Supabase.');
         } finally {
             setSaving(false);
         }
