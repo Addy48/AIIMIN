@@ -10,7 +10,7 @@ const DashboardLayout = ({ user }) => (
   <div style={{
     minHeight: '100vh',
     background: 'var(--color-base)',
-    paddingTop: 'var(--nav-height)',  /* 76px: 12px gap + 52px nav + 12px gap */
+    paddingTop: 'var(--nav-height)',
     color: 'var(--color-text-1)',
   }}>
     <Navbar user={user} />

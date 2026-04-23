@@ -33,12 +33,10 @@ const Insights = () => {
     if (loading) {
         return (
             <div>
-                <div style={{ font: '300 32px/1 var(--font-sans)', color: 'var(--color-text-1)', marginBottom: 'var(--space-6)', letterSpacing: '-0.02em' }}>
-                    Insights<span style={{ color: 'var(--color-accent)' }}>.</span>
-                </div>
+                <h1 className="text-section" style={{ marginBottom: 'var(--space-6)' }}>Insights</h1>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="skeleton" style={{ height: '120px', borderRadius: 'var(--r-md)' }} />
+                        <div key={i} className="skeleton" style={{ height: '120px', borderRadius: 'var(--r-lg)' }} />
                     ))}
                 </div>
             </div>
@@ -47,9 +45,7 @@ const Insights = () => {
 
     return (
         <div>
-            <div style={{ font: '300 32px/1 var(--font-sans)', color: 'var(--color-text-1)', marginBottom: 'var(--space-6)', letterSpacing: '-0.02em' }}>
-                Insights<span style={{ color: 'var(--color-accent)' }}>.</span>
-            </div>
+            <h1 className="text-section" style={{ marginBottom: 'var(--space-6)' }}>Insights</h1>
             <InsightsSection
                 lhsData={lhsData}
                 reportData={reportData}

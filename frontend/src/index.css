@@ -23,7 +23,15 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* No ambient glow — Nordic Calm is clean */
+/* Ambient glow overlay on body */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--ambient-1), var(--ambient-2);
+  pointer-events: none;
+  z-index: 0;
+}
 
 #root { position: relative; z-index: 1; }
 
