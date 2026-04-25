@@ -5,17 +5,14 @@
  * Reads encrypted tokens from DB, auto-refreshes on expiry, logs refresh events.
  */
 import { google } from 'googleapis';
-import pg from 'pg';
 import { encrypt, decrypt } from './crypto.js';
 import { logOAuthEvent } from './oauthLogger.js';
+import { pool } from './db.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
-export const pool = new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    max: 10,
-});
+// Re-export pool for backward compatibility (M-1: pool now lives in lib/db.js)
+export { pool };
 
 /**
  * Returns an authenticated OAuth2 client for the given user.

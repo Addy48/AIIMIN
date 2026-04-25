@@ -53,6 +53,15 @@
   --color-success: #44634F;
   --color-warning: #C79E4A;
 
+  /* ── Lab Badges & Status ─────────────────────── */
+  --lab-badge-bronze: #C87137;
+  --lab-badge-silver: #C0C0C0;
+  --lab-badge-gold: #FFD700;
+  --lab-badge-platinum: #E5E4E2;
+  --lab-dot-red: var(--color-alert-red);
+  --lab-dot-gray: var(--color-text-3);
+  --lab-dot-accent: var(--color-accent);
+
   /* ── Glass Layer (Cleaned up) ───────────────────── */
   --glass-bg: #111412;
   --glass-bg-hover: #191C1A;

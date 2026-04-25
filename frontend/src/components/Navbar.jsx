@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { to: '/insights', label: 'Insights' },
   { to: '/calendar', label: 'Calendar' },
   { to: '/finance', label: 'Finance' },
+  { to: '/lab', label: 'Lab' },
   { to: '/reports', label: 'Reports' },
   { to: '/settings', label: 'Settings' },
 ];
