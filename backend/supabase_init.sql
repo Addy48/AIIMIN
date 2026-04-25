@@ -213,6 +213,7 @@ GRANT ALL ON public.goals TO service_role;
 
 
 -- pomodoro_sessions: VIEW over sessions (consolidated from legacy table — C-3)
+DROP TABLE IF EXISTS public.pomodoro_sessions CASCADE;
 DROP VIEW IF EXISTS public.pomodoro_sessions CASCADE;
 CREATE OR REPLACE VIEW public.pomodoro_sessions AS
 SELECT
