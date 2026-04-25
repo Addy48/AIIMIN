@@ -40,7 +40,7 @@ AIIMIN tracks behavioral patterns across six domains — discipline, fitness, le
 | **Backend** | Node.js, Express.js 4.x |
 | **Database** | PostgreSQL via Supabase (RLS-enabled) |
 | **Auth** | Supabase Auth + Google OAuth2 |
-| **Hosting** | Vercel (frontend), Railway/Render (backend) |
+| **Hosting** | Vercel (frontend), Render (backend) |
 | **Design** | Custom design system with DM Sans/DM Mono, glassmorphism, Garden palette |
 
 ## Prerequisites
