@@ -2,7 +2,7 @@ import express from 'express';
 import supabase from '../supabase.js';
 import { requireAuth } from '../middleware/auth.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
-import { pool } from '../lib/googleClient.js';
+import { pool } from '../lib/db.js';
 
 const router = express.Router();
 
@@ -16,15 +16,20 @@ router.post('/', requireAuth, async (req, res) => {
             sleepStart,
             sleepEnd,
             sleepHours,
-            masturbationCount,
+            rcCount,              // renamed from masturbationCount (C-2 consolidation)
             gymDone,
             gymDuration,
             breakfastDone,
             steps,
             proteinGrams,
+            waterBottles,
             learningDone,
             learningTopic,
-            journalEntry
+            journalEntry,
+            mood,                 // now 1-5 scale (C-4)
+            moodBefore,
+            moodAfter,
+            energyLevel,
         } = req.body;
         const userId = req.userId;
 
@@ -36,15 +41,20 @@ router.post('/', requireAuth, async (req, res) => {
                 sleep_start: sleepStart || null,
                 sleep_end: sleepEnd || null,
                 sleep_hours: sleepHours || null,
-                masturbation_count: masturbationCount || 0,
+                rc_count: rcCount || 0,
                 gym_done: gymDone || false,
                 gym_duration: gymDuration || null,
                 breakfast_done: breakfastDone || false,
                 steps: steps || 0,
                 protein_grams: proteinGrams || 0,
+                water_bottles: waterBottles || 0,
                 learning_done: learningDone || false,
                 learning_topic: learningTopic || null,
-                journal_entry: journalEntry || null
+                journal_entry: journalEntry || null,
+                mood: mood || null,
+                mood_before: moodBefore || null,
+                mood_after: moodAfter || null,
+                energy_level: energyLevel || null,
             }, {
                 onConflict: 'user_id,date'
             })
@@ -54,29 +64,40 @@ router.post('/', requireAuth, async (req, res) => {
 
         const savedLog = data[0];
 
-        // ─── Automated Stage Progression ───
+        // ─── Automated Stage Progression (C-6 fix: real consecutive days) ───
         try {
-            // 1. Get user statistics
-            const stats = await pool.query(
-                `SELECT 
-                    COUNT(*) as total_logs,
-                    COUNT(*) FILTER (WHERE date >= NOW() - INTERVAL '7 days') as recent_logs
-                 FROM daily_logs WHERE user_id = $1`,
+            // Use window function to compute actual consecutive streak
+            const streakResult = await pool.query(
+                `WITH ordered_dates AS (
+                    SELECT date,
+                           date - (ROW_NUMBER() OVER (ORDER BY date))::int AS streak_grp
+                    FROM daily_logs
+                    WHERE user_id = $1 AND deleted_at IS NULL
+                ),
+                current_streak AS (
+                    SELECT COUNT(*) AS days
+                    FROM ordered_dates
+                    WHERE streak_grp = (
+                        SELECT streak_grp FROM ordered_dates ORDER BY date DESC LIMIT 1
+                    )
+                )
+                SELECT
+                    (SELECT COUNT(*) FROM daily_logs WHERE user_id = $1 AND deleted_at IS NULL) AS total,
+                    (SELECT days FROM current_streak) AS streak`,
                 [userId]
             );
 
-            // 2. Determine new stage
-            // Note: Simplistic version for this MVP step
-            const totalLogs = parseInt(stats.rows[0].total_logs);
+            const { total, streak } = streakResult.rows[0];
             const newStage = BehavioralEngine.determineOnboardingStage({
-                totalLogs,
-                consecutiveDays: totalLogs // Simplified
+                totalLogs: parseInt(total),
+                consecutiveDays: parseInt(streak)
             });
 
-            // 3. Update if progressive
-            if (newStage > (req.user.onboarding_stage || 0)) {
+            // Update if progressive
+            const currentStage = req.user?.onboarding_stage || 0;
+            if (newStage > currentStage) {
                 await pool.query(
-                    'UPDATE users SET onboarding_stage = $1 WHERE id = $2',
+                    'UPDATE users SET onboarding_stage = $1, updated_at = NOW() WHERE id = $2',
                     [newStage, userId]
                 );
             }

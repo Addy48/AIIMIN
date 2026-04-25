@@ -19,6 +19,7 @@ import notificationRoutes from './routes/notifications.js';
 import accountRoutes from './routes/account.js';
 import healthRoutes from './routes/health.js';
 import habitsRoutes from './routes/habits.js';
+import labRoutes from './routes/lab.js';
 
 dotenv.config();
 
@@ -52,6 +53,12 @@ app.use('/', healthRoutes);
 app.use(correlationIdMiddleware);
 
 // ─── Security Headers (helmet) ────────────────────────────────
+// Mi-4: Only allow localhost in CSP connectSrc when NOT in production
+const connectSources = ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL, 'https://api.aiimin.in'];
+if (process.env.NODE_ENV !== 'production') {
+    connectSources.push('http://localhost:5000', 'http://127.0.0.1:5000', 'http://localhost:5001', 'http://127.0.0.1:5001');
+}
+
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -60,7 +67,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],  // inline styles needed for React
             imgSrc: ["'self'", 'data:', 'https://lh3.googleusercontent.com'],
             frameSrc: ["'none'"],
-            connectSrc: ["'self'", 'https://accounts.google.com', process.env.SUPABASE_URL, 'http://localhost:5000', 'http://127.0.0.1:5000', 'http://localhost:5001', 'http://127.0.0.1:5001', 'https://api.aiimin.in'],
+            connectSrc: connectSources,
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             objectSrc: ["'none'"],
         },
@@ -82,7 +89,7 @@ const allowedOrigins = [
 app.use(cors({
     origin: (origin, cb) => {
         if (!origin || process.env.NODE_ENV !== 'production' || allowedOrigins.includes(origin)) cb(null, true);
-        else cb(null, allowedOrigins[0]);
+        else cb(new Error('Origin not allowed by CORS'), false);  // C-5 fix: reject properly
     },
     credentials: true,
 }));
@@ -140,6 +147,7 @@ app.use('/calendar', calendarRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/account', accountRoutes);
 app.use('/habits', habitsRoutes);
+app.use('/lab', labRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {
