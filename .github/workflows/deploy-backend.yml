@@ -1,4 +1,4 @@
-name: Deploy Backend to AWS EC2
+name: Deploy Backend to Server
 
 # Triggers on push to main, only when backend files change
 on:
@@ -11,9 +11,11 @@ on:
 
 jobs:
   deploy:
-    name: SSH Deploy to EC2
+    name: SSH Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Only run if the SSH secrets are configured
+    if: ${{ secrets.EC2_HOST != '' }}
 
     steps:
       - name: Checkout
@@ -23,7 +25,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         with:
           host:        ${{ secrets.EC2_HOST }}
-          username:    ubuntu
+          username:    ${{ secrets.EC2_USER || 'ubuntu' }}
           key:         ${{ secrets.EC2_SSH_KEY }}
           port:        22
           timeout:     60s
@@ -44,7 +46,7 @@ jobs:
 
             echo "── Health check ─────────────────────────────"
             sleep 3
-            curl -sf http://localhost:3000/health || (pm2 logs aiimin-api --lines 20 && exit 1)
+            curl -sf http://localhost:5000/health || (pm2 logs aiimin-api --lines 20 && exit 1)
 
             echo "── Deploy complete ──────────────────────────"
             pm2 list
@@ -52,4 +54,4 @@ jobs:
       - name: Notify on failure
         if: failure()
         run: |
-          echo "::error::Deploy to EC2 failed. Check logs above."
+          echo "::error::Deploy failed. Check logs above."
