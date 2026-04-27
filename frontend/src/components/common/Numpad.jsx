@@ -1,8 +1,10 @@
 import React, { useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Delete, X } from 'lucide-react';
 
 /**
- * Numpad — A 3x4 grid locker-style number pad.
- * Escalated to "Premium Obsidian Gold" standard with physical depth and reactive lighting.
+ * Numpad — Nordic Calm Edition
+ * Minimalist circular keys with organic feedback.
  */
 const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0 }) => {
 
@@ -44,26 +46,23 @@ const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0 }
 
     const getButtonStyle = (btn) => {
         const isSpecial = btn === '⌫' || btn === 'C';
-        const isBackspace = btn === '⌫';
-
         return {
+            width: '64px',
             height: '64px',
-            background: isSpecial ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: 'var(--r-md)',
-            color: isBackspace ? '#ff5f5f' : (btn === 'C' ? 'var(--color-accent)' : 'var(--color-text-1)'),
-            fontSize: '22px',
-            fontFamily: btn === '⌫' ? 'sans-serif' : 'var(--font-mono)',
-            fontWeight: 500,
+            background: 'transparent',
+            border: '1px solid var(--color-border)',
+            borderRadius: '50%',
+            color: isSpecial && btn === 'C' ? 'var(--color-text-3)' : 'var(--color-text-1)',
+            fontSize: isSpecial ? '14px' : '20px',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 300,
             cursor: 'pointer',
-            transition: 'all 0.1s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             userSelect: 'none',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.03)',
-            position: 'relative',
-            overflow: 'hidden'
+            outline: 'none',
         };
     };
 
@@ -71,36 +70,29 @@ const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0 }
         <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '16px',
+            gap: '24px',
             width: '100%',
-            maxWidth: '340px',
-            marginTop: '28px'
+            maxWidth: '280px',
+            marginTop: '8px'
         }}>
             {buttons.map((btn, idx) => (
-                <button
+                <motion.button
                     key={idx}
                     type="button"
                     onClick={() => handleClick(btn)}
                     style={getButtonStyle(btn)}
-                    onMouseDown={(e) => {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                        e.currentTarget.style.borderColor = 'var(--color-accent)';
-                        e.currentTarget.style.transform = 'translateY(1px) scale(0.96)';
-                        e.currentTarget.style.boxShadow = '0 0 15px var(--color-accent-glow), inset 0 2px 4px rgba(0,0,0,0.3)';
+                    whileHover={{
+                        borderColor: 'var(--color-accent)',
+                        color: 'var(--color-accent)',
+                        background: 'rgba(68, 99, 79, 0.05)'
                     }}
-                    onMouseUp={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.03)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.03)';
-                        e.currentTarget.style.background = (btn === '⌫' || btn === 'C') ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)';
-                        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                    whileTap={{
+                        scale: 0.92,
+                        background: 'rgba(68, 99, 79, 0.1)'
                     }}
                 >
-                    {btn}
-                </button>
+                    {btn === '⌫' ? <Delete size={18} strokeWidth={1.5} /> : btn}
+                </motion.button>
             ))}
         </div>
     );
