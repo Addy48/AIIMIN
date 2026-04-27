@@ -1,0 +1,420 @@
+/* ══════════════════════════════════════════════════════
+   Lab — Component Styles
+   Matches AIIMIN Garden / Nordic Calm design language.
+   Dark mode default, light overrides via tokens.
+   ══════════════════════════════════════════════════════ */
+
+/* ── Page Container ─────────────────────────────── */
+.lab-page {
+    padding: var(--space-6) var(--content-pad);
+    max-width: var(--content-max);
+    margin: 0 auto;
+    min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────────────── */
+.lab-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.lab-title {
+    font: var(--text-heading);
+    color: var(--color-text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin: 0 0 var(--space-2);
+}
+
+.lab-title+.lab-subtitle,
+.lab-header .lab-subtitle {
+    font: 300 24px/1.2 var(--font-sans);
+    color: var(--color-text-1);
+    display: block;
+}
+
+.lab-subtitle em {
+    font-style: italic;
+    color: var(--color-accent);
+}
+
+.lab-module-count {
+    font: var(--text-label);
+    color: var(--color-text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+/* ── Three-Column Grid ──────────────────────────── */
+.lab-three-column {
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 1399px) and (min-width: 900px) {
+    .lab-three-column {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "practice practice"
+            "intel    audit";
+    }
+
+    .practice-column {
+        grid-area: practice;
+    }
+
+    .intel-column {
+        grid-area: intel;
+    }
+
+    .audit-column {
+        grid-area: audit;
+    }
+}
+
+@media (max-width: 899px) {
+    .lab-three-column {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Column ─────────────────────────────────────── */
+.lab-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.lab-column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-2);
+}
+
+.lab-column-label {
+    font: 500 14px/1 var(--font-sans);
+    color: var(--color-text-1);
+}
+
+.lab-column-count {
+    font: var(--text-label);
+    color: var(--color-text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+/* ── Metric Card (PRACTICE) ─────────────────────── */
+.lab-metric-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--r-md);
+    padding: var(--space-4);
+    transition: border-color var(--dur-normal) var(--ease);
+}
+
+.lab-metric-card:hover {
+    border-color: var(--color-border-lit);
+}
+
+.lab-metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+}
+
+.lab-metric-title {
+    font: 500 13px/1 var(--font-sans);
+    color: var(--color-text-1);
+}
+
+.lab-badge {
+    font: var(--text-label);
+    letter-spacing: 0.08em;
+}
+
+.lab-metric-value {
+    font: 300 28px/1 var(--font-sans);
+    color: var(--color-hero);
+    margin-bottom: var(--space-1);
+}
+
+.lab-metric-subtitle {
+    font: var(--text-subtext);
+    color: var(--color-text-2);
+}
+
+.lab-streak {
+    font: var(--text-label);
+    color: var(--color-accent);
+    margin-top: var(--space-2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.lab-empty-state {
+    font: var(--text-subtext);
+    color: var(--color-text-3);
+    padding: var(--space-3) 0;
+    font-style: italic;
+}
+
+/* ── Intel Row ──────────────────────────────────── */
+.lab-intel-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--r-md);
+    transition: border-color var(--dur-normal) var(--ease);
+    min-height: 56px;
+}
+
+.lab-intel-row:hover {
+    border-color: var(--color-border-lit);
+}
+
+.lab-intel-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.lab-intel-title {
+    font: 500 13px/1 var(--font-sans);
+    color: var(--color-text-1);
+}
+
+.lab-intel-subtitle {
+    font: var(--text-label);
+    color: var(--color-text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.lab-intel-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.lab-intel-value {
+    font: var(--text-label);
+    color: var(--color-text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.lab-intel-empty {
+    font: var(--text-subtext);
+    color: var(--color-text-3);
+}
+
+/* Status Dots */
+.lab-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.lab-dot-red {
+    background: var(--color-alert-red);
+}
+
+.lab-dot-gray {
+    background: var(--color-text-3);
+}
+
+.lab-dot-green {
+    background: var(--color-success);
+}
+
+/* ── Audit Row ──────────────────────────────────── */
+.lab-audit-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--r-md);
+    transition: border-color var(--dur-normal) var(--ease);
+    min-height: 56px;
+}
+
+.lab-audit-row:hover {
+    border-color: var(--color-border-lit);
+}
+
+.lab-audit-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.lab-audit-title {
+    font: 500 13px/1 var(--font-sans);
+    color: var(--color-text-1);
+}
+
+.lab-audit-subtitle {
+    font: var(--text-label);
+    color: var(--color-text-3);
+}
+
+.lab-audit-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.lab-audit-value {
+    font: 500 14px/1 var(--font-mono);
+    color: var(--color-text-1);
+}
+
+.lab-audit-empty {
+    font: var(--text-subtext);
+    color: var(--color-text-3);
+}
+
+/* ── Bottom Bar ─────────────────────────────────── */
+.lab-bottom-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--r-md);
+}
+
+.lab-bottom-icon {
+    font-size: 24px;
+    color: var(--color-accent);
+    line-height: 1;
+}
+
+.lab-bottom-text {
+    flex: 1;
+    font: 300 14px/1.5 var(--font-sans);
+    color: var(--color-text-1);
+    font-style: italic;
+}
+
+.lab-bottom-action {
+    font: var(--text-label);
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.lab-bottom-action:hover {
+    text-decoration: underline;
+}
+
+/* ── Typing Test Characters ─────────────────────── */
+.tt-char-correct {
+    color: var(--color-success);
+}
+
+.tt-char-wrong {
+    color: var(--color-alert-red);
+    text-decoration: underline;
+}
+
+.tt-char-pending {
+    color: var(--color-text-3);
+}
+
+/* ── Skeleton ───────────────────────────────────── */
+.lab-skeleton {
+    background: var(--color-elevated);
+    border-radius: var(--r-sm);
+    animation: lab-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes lab-shimmer {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* ── Error / Retry ──────────────────────────────── */
+.lab-error {
+    text-align: center;
+    padding: var(--space-9) var(--space-5);
+    color: var(--color-text-2);
+}
+
+.lab-error h2 {
+    font: var(--text-heading);
+    color: var(--color-text-1);
+    margin-bottom: var(--space-3);
+}
+
+.lab-error p {
+    font: var(--text-body);
+    margin-bottom: var(--space-5);
+}
+
+.lab-retry-btn {
+    background: var(--color-accent);
+    color: white;
+    border: none;
+    border-radius: var(--r-sm);
+    padding: var(--space-2) var(--space-5);
+    font: var(--text-label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: opacity var(--dur-normal);
+}
+
+.lab-retry-btn:hover {
+    opacity: 0.85;
+}
+
+/* ── Touch targets for mobile ───────────────────── */
+@media (max-width: 899px) {
+
+    .lab-metric-card,
+    .lab-intel-row,
+    .lab-audit-row {
+        min-height: 56px;
+    }
+
+    .lab-bottom-action {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .lab-header {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .lab-title+.lab-subtitle,
+    .lab-header .lab-subtitle {
+        font: 300 20px/1.2 var(--font-sans);
+    }
+}
