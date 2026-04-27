@@ -137,7 +137,8 @@ CREATE TABLE IF NOT EXISTS public.lab_belief_prompts (
     id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     domain          TEXT NOT NULL CHECK (domain IN ('money','opportunity','women','identity','society','fear')),
     prompt_text     TEXT NOT NULL,
-    sort_order      SMALLINT DEFAULT 0
+    sort_order      SMALLINT DEFAULT 0,
+    UNIQUE(domain, prompt_text)
 );
 ALTER TABLE public.lab_belief_prompts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "lab_prompts_read_all" ON public.lab_belief_prompts;

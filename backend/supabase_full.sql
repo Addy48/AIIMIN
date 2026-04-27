@@ -1319,7 +1319,8 @@ CREATE TABLE IF NOT EXISTS public.lab_belief_prompts (
     id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     domain          TEXT NOT NULL CHECK (domain IN ('money','opportunity','women','identity','society','fear')),
     prompt_text     TEXT NOT NULL,
-    sort_order      SMALLINT DEFAULT 0
+    sort_order      SMALLINT DEFAULT 0,
+    UNIQUE(domain, prompt_text)
 );
 ALTER TABLE public.lab_belief_prompts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "lab_prompts_read_all" ON public.lab_belief_prompts;
@@ -1458,4 +1459,4 @@ INSERT INTO public.lab_belief_prompts (domain, prompt_text, sort_order) VALUES
 ('fear', 'Name your three biggest fears in order. Be precise, not poetic.', 1),
 ('fear', 'What fear is currently shaping a decision you are making this month?', 2),
 ('fear', 'When was the last time fear stopped you from doing something you wanted? What happened?', 3)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (domain, prompt_text) DO NOTHING;

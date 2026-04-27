@@ -26,7 +26,6 @@ dotenv.config();
 // ─── STARTUP CHECKS ───────────────────────────────────────────
 const requiredEnvVars = [
     'SUPABASE_URL',
-    'SUPABASE_SERVICE_KEY',
     'SUPABASE_SERVICE_ROLE_KEY',
     'DATABASE_URL',
     'TOKEN_ENCRYPTION_KEY',

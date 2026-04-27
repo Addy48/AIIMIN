@@ -7,11 +7,24 @@ const SLIDERS = [
     { key: 'pace_score', label: 'Pace', desc: 'How well did you control your speaking pace?' },
 ];
 
+const SPEAKING_PROMPTS = [
+    "Explain your primary career objective as if you were talking to a 50-year-old mentor.",
+    "Describe a complex technical concept you recently learned, but explain it to a non-technical friend.",
+    "Walk through your decision process for your most significant purchase in the last 12 months.",
+    "What is the single most important habit you've formed in 2026? Justify why it matters.",
+    "If you had to pitch AIIMIN's core value proposition to a high-performer in 60 seconds, what would you say?",
+    "Describe a time you failed to communicate clearly. What was the impact, and what would you change?"
+];
+
 export default function SpeakingLogger({ onComplete }) {
+    const [promptIndex, setPromptIndex] = useState(0);
     const [scores, setScores] = useState({ confidence_score: 50, clarity_score: 50, pace_score: 50 });
     const [notes, setNotes] = useState('');
     const [saving, setSaving] = useState(false);
     const [result, setResult] = useState(null);
+
+    const cyclePrompt = () => setPromptIndex(prev => (prev + 1) % SPEAKING_PROMPTS.length);
+
 
     const handleSave = async () => {
         setSaving(true);
@@ -49,9 +62,21 @@ export default function SpeakingLogger({ onComplete }) {
     return (
         <div className="lab-metric-card" style={{ padding: 'var(--space-5)' }}>
             <div className="lab-metric-header"><span className="lab-metric-title">Speaking Logger</span></div>
-            <p style={{ font: 'var(--text-subtext)', color: 'var(--color-text-3)', margin: 'var(--space-2) 0 var(--space-4)' }}>
-                Rate your last speaking effort. Record a 60-second response, then score yourself.
+
+            <div style={{ background: 'var(--color-elevated)', borderRadius: 'var(--r-sm)', padding: 'var(--space-3)', margin: 'var(--space-3) 0' }}>
+                <div style={{ font: 'var(--text-label)', color: 'var(--color-accent)', marginBottom: 'var(--space-1)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Prompt:</div>
+                <p style={{ font: '300 14px/1.5 var(--font-sans)', color: 'var(--color-text-1)', fontStyle: 'italic' }}>
+                    "{SPEAKING_PROMPTS[promptIndex]}"
+                </p>
+                <button onClick={cyclePrompt} style={{ background: 'none', border: 'none', color: 'var(--color-text-3)', font: '500 11px var(--font-mono)', cursor: 'pointer', padding: 'var(--space-1) 0', marginTop: 'var(--space-2)' }}>
+                    CYCLE PROMPT ↻
+                </button>
+            </div>
+
+            <p style={{ font: 'var(--text-subtext)', color: 'var(--color-text-3)', marginBottom: 'var(--space-4)' }}>
+                Record a 60-second response, then score your performance below.
             </p>
+
             {SLIDERS.map(({ key, label, desc }) => (
                 <div key={key} style={{ marginBottom: 'var(--space-4)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>

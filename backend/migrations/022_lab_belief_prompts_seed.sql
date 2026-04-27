@@ -27,4 +27,4 @@ INSERT INTO public.lab_belief_prompts (domain, prompt_text, sort_order) VALUES
 ('fear', 'Name your three biggest fears in order. Be precise, not poetic.', 1),
 ('fear', 'What fear is currently shaping a decision you are making this month?', 2),
 ('fear', 'When was the last time fear stopped you from doing something you wanted? What happened?', 3)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (domain, prompt_text) DO NOTHING;
