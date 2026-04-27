@@ -87,19 +87,20 @@ const Login = () => {
 
   const inputStyle = {
     width: '100%',
-    height: '52px',
-    background: 'rgba(255, 255, 255, 0.02)',
-    border: '1px solid var(--color-border)',
-    borderRadius: 'var(--r-md)',
+    height: '56px',
+    background: 'rgba(255, 255, 255, 0.015)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '16px',
     color: 'var(--color-text-1)',
     fontFamily: 'var(--font-sans)',
     fontSize: '15px',
-    fontWeight: 300,
-    padding: '0 18px',
+    fontWeight: 400,
+    padding: '0 20px',
     outline: 'none',
-    transition: `all var(--dur-enter) var(--ease)`,
+    transition: `all 0.3s cubic-bezier(0.16, 1, 0.3, 1)`,
     textAlign: 'center',
-    letterSpacing: '0.02em',
+    letterSpacing: '0.04em',
+    backdropFilter: 'blur(8px)',
   };
 
   return (
@@ -113,17 +114,47 @@ const Login = () => {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Background Organic Textures - Very subtle */}
-      <div style={{
-        position: 'absolute',
-        top: '-10%',
-        right: '-10%',
-        width: '40%',
-        height: '40%',
-        background: 'radial-gradient(circle, var(--color-accent-glow) 0%, transparent 70%)',
-        opacity: 0.15,
-        pointerEvents: 'none',
-      }} />
+      {/* Background Organic Textures - Animated Mesh */}
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          opacity: [0.08, 0.15, 0.08],
+          x: [0, 50, 0],
+          y: [0, 30, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: 'absolute',
+          top: '-10%',
+          right: '-5%',
+          width: '50vw',
+          height: '50vw',
+          background: 'radial-gradient(circle at center, var(--color-accent) 0%, transparent 60%)',
+          filter: 'blur(80px)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+        }}
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.3, 1],
+          opacity: [0.05, 0.1, 0.05],
+          x: [0, -40, 0],
+          y: [0, -30, 0],
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        style={{
+          position: 'absolute',
+          bottom: '-15%',
+          left: '-10%',
+          width: '60vw',
+          height: '60vw',
+          background: 'radial-gradient(circle at center, var(--color-hero) 0%, transparent 60%)',
+          filter: 'blur(100px)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+        }}
+      />
 
       <div style={{
         width: '100%',
@@ -132,15 +163,18 @@ const Login = () => {
         zIndex: 2,
       }}>
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: 'var(--r-xl)',
+            background: 'rgba(10, 12, 10, 0.65)',
+            backdropFilter: 'blur(40px)',
+            WebkitBackdropFilter: 'blur(40px)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+            borderRadius: '32px',
             padding: '56px 48px',
-            boxShadow: '0 40px 100px rgba(0,0,0,0.4)',
+            boxShadow: '0 40px 100px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)',
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -203,8 +237,8 @@ const Login = () => {
                         onChange={e => setFullName(e.target.value)}
                         style={inputStyle}
                         required
-                        onFocus={e => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
-                        onBlur={e => { e.target.style.borderColor = 'var(--color-border)'; e.target.style.background = 'rgba(255,255,255,0.02)'; }}
+                        onFocus={e => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
+                        onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.015)'; e.target.style.boxShadow = 'none'; }}
                       />
                     </div>
                   )}
@@ -215,11 +249,11 @@ const Login = () => {
                       placeholder="USERNAME OR EMAIL"
                       value={identifier.toUpperCase()}
                       onChange={e => setIdentifier(e.target.value)}
-                      style={{ ...inputStyle, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '13px' }}
+                      style={{ ...inputStyle, textTransform: 'uppercase', letterSpacing: '0.15em', fontSize: '13px' }}
                       required
                       autoComplete="username"
-                      onFocus={e => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.background = 'rgba(255,255,255,0.04)'; }}
-                      onBlur={e => { e.target.style.borderColor = 'var(--color-border)'; e.target.style.background = 'rgba(255,255,255,0.02)'; }}
+                      onFocus={e => { e.target.style.borderColor = 'var(--color-accent)'; e.target.style.background = 'rgba(255,255,255,0.06)'; e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)'; }}
+                      onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.background = 'rgba(255,255,255,0.015)'; e.target.style.boxShadow = 'none'; }}
                     />
                   </div>
 
@@ -238,19 +272,20 @@ const Login = () => {
                   <button
                     type="submit"
                     style={{
-                      height: '52px',
+                      height: '56px',
                       background: 'var(--color-accent)',
                       color: '#fff',
                       border: 'none',
-                      borderRadius: 'var(--r-md)',
-                      fontSize: '14px',
-                      fontWeight: 500,
+                      borderRadius: '16px',
+                      fontSize: '15px',
+                      fontWeight: 800,
                       cursor: 'pointer',
-                      marginTop: '8px',
-                      transition: 'all 0.3s ease',
+                      marginTop: '12px',
+                      transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                      boxShadow: '0 8px 24px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255,255,255,0.2)',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#4d6e58'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#0e9f6e'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 32px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255,255,255,0.2)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255,255,255,0.2)'; }}
                   >
                     Continue
                   </button>
