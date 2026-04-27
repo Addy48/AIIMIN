@@ -279,6 +279,10 @@ router.get('/summary', requireAuth, labCache, async (req, res) => {
                     quarter_progress_pct: quarterInfo.progressPct,
                 },
             },
+            user: {
+                lab_onboarded_at: userRes.rows[0]?.lab_onboarded_at || null,
+                quarterly_review_anchor: anchor,
+            },
             latest_pattern: latestPattern.rows[0] ? {
                 insight_id: latestPattern.rows[0].id,
                 headline: latestPattern.rows[0].headline,
@@ -584,6 +588,20 @@ router.post('/beliefs', requireAuth, async (req, res) => {
     } catch (err) {
         console.error('[lab/beliefs] Error:', err);
         res.status(500).json({ error: err.message, correlationId: req.correlationId });
+    }
+});
+
+// POST /lab/onboard — mark user as having seen the intro
+router.post('/onboard', requireAuth, async (req, res) => {
+    try {
+        await pool.query(
+            `UPDATE users SET lab_onboarded_at = NOW() WHERE id = $1 AND lab_onboarded_at IS NULL`,
+            [req.userId]
+        );
+        res.status(204).end();
+    } catch (err) {
+        console.error('[lab/onboard] Error:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 

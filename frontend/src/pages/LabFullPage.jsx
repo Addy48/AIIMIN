@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useLabSummary from '../hooks/useLabSummary';
+import LabOnboarding from '../components/lab/LabOnboarding';
+import TypingTest from '../components/lab/TypingTest';
+import ReactionTest from '../components/lab/ReactionTest';
+import SpeakingLogger from '../components/lab/SpeakingLogger';
+import DecisionScenario from '../components/lab/DecisionScenario';
+import MindsetLogger from '../components/lab/MindsetLogger';
+import BeliefEntry from '../components/lab/BeliefEntry';
 import './lab/lab.css';
+
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const BADGE_COLORS = {
     unranked: 'var(--color-text-3)',
@@ -16,10 +25,10 @@ const Skeleton = ({ width = '100%', height = '16px' }) => (
 );
 
 /* ── Metric Card (PRACTICE) ──────────────────────── */
-function MetricCard({ title, value, subtitle, mastery, streakDays, trend, emptyText }) {
+function MetricCard({ title, value, subtitle, mastery, streakDays, onClick, emptyText }) {
     const isEmpty = value === null || value === undefined;
     return (
-        <div className="lab-metric-card">
+        <div className="lab-metric-card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
             <div className="lab-metric-header">
                 <span className="lab-metric-title">{title}</span>
                 {mastery && mastery !== 'unranked' && (
@@ -44,9 +53,9 @@ function MetricCard({ title, value, subtitle, mastery, streakDays, trend, emptyT
 }
 
 /* ── Intel Row ───────────────────────────────────── */
-function IntelRow({ title, value, subtitle, statusDot, emptyText }) {
+function IntelRow({ title, value, subtitle, statusDot, onClick, emptyText }) {
     return (
-        <div className="lab-intel-row">
+        <div className="lab-intel-row" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
             <div className="lab-intel-left">
                 <span className="lab-intel-title">{title}</span>
                 {subtitle && <span className="lab-intel-subtitle">{subtitle}</span>}
@@ -66,9 +75,9 @@ function IntelRow({ title, value, subtitle, statusDot, emptyText }) {
 }
 
 /* ── Audit Row ───────────────────────────────────── */
-function AuditRow({ title, value, subtitle, emptyText }) {
+function AuditRow({ title, value, subtitle, onClick, emptyText }) {
     return (
-        <div className="lab-audit-row">
+        <div className="lab-audit-row" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
             <div className="lab-audit-left">
                 <span className="lab-audit-title">{title}</span>
                 {subtitle && <span className="lab-audit-subtitle">{subtitle}</span>}
@@ -87,6 +96,26 @@ function AuditRow({ title, value, subtitle, emptyText }) {
 /* ── Main Lab Page ───────────────────────────────── */
 export default function LabFullPage() {
     const { data, status, error, retry } = useLabSummary();
+    const [showOnboarding, setShowOnboarding] = useState(false);
+    const [activeModule, setActiveModule] = useState(null); // 'typing' | 'reaction' | 'speaking' | 'decisions' | 'mindset' | 'beliefs'
+
+    // Show onboarding if never seen
+    React.useEffect(() => {
+        if (data?.user && !data.user.lab_onboarded_at) {
+            setShowOnboarding(true);
+        }
+    }, [data?.user]);
+
+    const handleDismissOnboarding = async () => {
+        setShowOnboarding(false);
+        try {
+            const token = localStorage.getItem('access_token');
+            await fetch(`${API_BASE}/lab/onboard`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+        } catch (err) { console.error('Failed to save onboarding state', err); }
+    };
 
     if (status === 'loading') {
         return (
@@ -130,8 +159,22 @@ export default function LabFullPage() {
     const audit = data?.audit || {};
     const latest = data?.latest_pattern;
 
+    const renderActiveModule = () => {
+        switch (activeModule) {
+            case 'typing': return <TypingTest onComplete={retry} />;
+            case 'reaction': return <ReactionTest onComplete={retry} />;
+            case 'speaking': return <SpeakingLogger onComplete={retry} />;
+            case 'decisions': return <DecisionScenario onComplete={retry} />;
+            case 'mindset': return <MindsetLogger currentState={intel.mindset_state?.state} onComplete={retry} />;
+            case 'beliefs': return <BeliefEntry quarterLabel={audit.belief_inventory?.current_quarter} completedDomains={audit.belief_inventory?.completed_domains} onComplete={retry} />;
+            default: return null;
+        }
+    };
+
     return (
         <div className="lab-page">
+            {showOnboarding && <LabOnboarding onDismiss={handleDismissOnboarding} />}
+
             {/* ── Header ── */}
             <div className="lab-header">
                 <div>
@@ -139,9 +182,19 @@ export default function LabFullPage() {
                     <span className="lab-subtitle">What's <em>under</em> the dashboard.</span>
                 </div>
                 <div className="lab-module-count">
-                    {status === 'empty' ? '0 modules' : '8 modules'}
+                    {status === 'empty' ? '0 modules' : '8 modules active'}
                 </div>
             </div>
+
+            {/* ── Active Module Overlay (if any) ── */}
+            {activeModule && (
+                <div className="lab-active-overlay" onClick={() => setActiveModule(null)}>
+                    <div className="lab-module-container" onClick={e => e.stopPropagation()}>
+                        <button className="lab-close-btn" onClick={() => setActiveModule(null)}>✕</button>
+                        {renderActiveModule()}
+                    </div>
+                </div>
+            )}
 
             {/* ── Three-Column Grid ── */}
             <div className="lab-three-column">
@@ -158,6 +211,7 @@ export default function LabFullPage() {
                         subtitle={p.typing?.mastery !== 'unranked' ? p.typing.mastery : null}
                         mastery={p.typing?.mastery}
                         streakDays={p.typing?.streak_days}
+                        onClick={() => setActiveModule('typing')}
                         emptyText="No tests yet. Aim for 60 WPM at 95% accuracy."
                     />
                     <MetricCard
@@ -165,6 +219,7 @@ export default function LabFullPage() {
                         value={p.speaking?.latest_score ? `${p.speaking.latest_score}/100` : null}
                         subtitle={p.speaking?.last_logged_at ? `Last: ${new Date(p.speaking.last_logged_at).toLocaleDateString()}` : null}
                         mastery={p.speaking?.mastery}
+                        onClick={() => setActiveModule('speaking')}
                         emptyText="No logs yet. Record a 60-second response to start."
                     />
                     <MetricCard
@@ -172,13 +227,14 @@ export default function LabFullPage() {
                         value={p.reaction?.mean_ms_last3 ? `${p.reaction.mean_ms_last3} MS` : null}
                         subtitle={p.reaction?.tests_today > 0 ? `${p.reaction.tests_today} tests today` : null}
                         mastery={p.reaction?.mastery}
+                        onClick={() => setActiveModule('reaction')}
                         emptyText="No tests yet. 5 trials per session."
                     />
                     <MetricCard
                         title="Decision scenarios"
                         value={p.decisions?.week_count > 0 ? `W${p.decisions.iso_week || ''}` : null}
                         subtitle={p.decisions?.dominant_domain ? `Domain: ${p.decisions.dominant_domain}` : null}
-                        mastery={null}
+                        onClick={() => setActiveModule('decisions')}
                         emptyText="No scenarios yet. One scenario takes 90 seconds."
                     />
                 </div>
@@ -212,6 +268,7 @@ export default function LabFullPage() {
                         subtitle={intel.mindset_state?.logged_at_hour !== null
                             ? `Logged ${String(intel.mindset_state.logged_at_hour).padStart(2, '0')}:00`
                             : null}
+                        onClick={() => setActiveModule('mindset')}
                         emptyText="..."
                     />
                     <IntelRow
@@ -236,6 +293,7 @@ export default function LabFullPage() {
                         subtitle={audit.belief_inventory?.completed_domains?.length > 0
                             ? audit.belief_inventory.completed_domains.join(', ')
                             : null}
+                        onClick={() => setActiveModule('beliefs')}
                         emptyText="First belief audit opens at quarter start."
                     />
                     <AuditRow
@@ -270,3 +328,4 @@ export default function LabFullPage() {
         </div>
     );
 }
+

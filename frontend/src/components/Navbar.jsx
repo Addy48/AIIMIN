@@ -5,6 +5,9 @@ import { useThemeContext } from '../context/ThemeContext';
 import NotificationBell from './notifications/NotificationBell';
 import NotificationPanel from './notifications/NotificationPanel';
 import AccountModal from './account/AccountModal';
+import LabMegaMenu from './lab/LabMegaMenu';
+import useLabSummary from '../hooks/useLabSummary';
+
 
 const NAV_LINKS = [
   { to: '/overview', label: 'Today' },
@@ -21,6 +24,9 @@ const Navbar = ({ user }) => {
   const { theme, toggleTheme } = useThemeContext();
   const [notifOpen, setNotifOpen] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [labMenuOpen, setLabMenuOpen] = useState(false);
+  const { data: labData } = useLabSummary();
+
 
   const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'A';
   const now = new Date();
@@ -76,43 +82,57 @@ const Navbar = ({ user }) => {
         {/* CENTER: Nav links */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
           {NAV_LINKS.map(({ to, label }) => (
-            <NavLink
+            <div
               key={to}
-              to={to}
-              style={({ isActive }) => ({
-                fontSize: '13px',
-                fontWeight: isActive ? 500 : 400,
-                fontFamily: 'var(--font-sans)',
-                color: isActive ? '#fff' : 'var(--color-text-2)',
-                textDecoration: 'none',
-                padding: '6px 14px',
-                borderRadius: 'var(--r-pill)',
-                background: isActive ? 'var(--color-accent)' : 'transparent',
-                border: 'none',
-                transition: `all var(--dur-enter) var(--ease)`,
-                position: 'relative',
-              })}
+              onMouseEnter={() => label === 'Lab' && setLabMenuOpen(true)}
+              onMouseLeave={() => label === 'Lab' && setLabMenuOpen(false)}
+              style={{ position: 'relative' }}
             >
-              {({ isActive }) => (
-                <>
-                  {label}
-                  {isActive && (
-                    <span style={{
-                      position: 'absolute',
-                      bottom: '-1px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      width: '16px',
-                      height: '2px',
-                      background: 'var(--color-accent)',
-                      borderRadius: 'var(--r-pill)',
-                    }} />
-                  )}
-                </>
+              <NavLink
+                to={to}
+                style={({ isActive }) => ({
+                  fontSize: '13px',
+                  fontWeight: isActive ? 500 : 400,
+                  fontFamily: 'var(--font-sans)',
+                  color: isActive ? '#fff' : 'var(--color-text-2)',
+                  textDecoration: 'none',
+                  padding: '6px 14px',
+                  borderRadius: 'var(--r-pill)',
+                  background: isActive ? 'var(--color-accent)' : 'transparent',
+                  border: 'none',
+                  transition: `all var(--dur-enter) var(--ease)`,
+                  display: 'flex',
+                  alignItems: 'center',
+                })}
+              >
+                {({ isActive }) => (
+                  <>
+                    {label}
+                    {isActive && (
+                      <span style={{
+                        position: 'absolute',
+                        bottom: '-1px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: '16px',
+                        height: '2px',
+                        background: 'var(--color-accent)',
+                        borderRadius: 'var(--r-pill)',
+                      }} />
+                    )}
+                  </>
+                )}
+              </NavLink>
+
+              {label === 'Lab' && labMenuOpen && (
+                <div onMouseEnter={() => setLabMenuOpen(true)}>
+                  <LabMegaMenu summary={labData} onClose={() => setLabMenuOpen(false)} />
+                </div>
               )}
-            </NavLink>
+            </div>
           ))}
         </div>
+
 
         {/* RIGHT: Date + Notifications + Avatar */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
