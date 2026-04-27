@@ -55,8 +55,10 @@ const SportsPage = () => {
   const [footballRecent, setFootballRecent] = useState([]);
   const [footballUpcoming, setFootballUpcoming] = useState([]);
   const [f1Standings, setF1Standings] = useState([]);
+  const [f1Races, setF1Races] = useState([]);
   const [cricketLive, setCricketLive] = useState([]);
   const [loadingLive, setLoadingLive] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'live') {
@@ -69,14 +71,17 @@ const SportsPage = () => {
   const fetchLiveData = async () => {
     setLoadingLive(true);
     try {
-      const [fb, f1, cr] = await Promise.all([
+      const [fb, f1S, f1R, cr] = await Promise.all([
         sportsService.fetchFootballLive(),
         sportsService.fetchF1Standings(),
+        sportsService.fetchF1Races(),
         sportsService.fetchCricketLive()
       ]);
       setFootballLive(fb.slice(0, 5));
-      setF1Standings(f1.slice(0, 10));
+      setF1Standings(f1S.slice(0, 10));
+      setF1Races(f1R);
       setCricketLive(cr.slice(0, 5));
+      setLastUpdated(new Date());
 
       // If no live football, fetch recent results and upcoming fixtures
       if (fb.length === 0) {
@@ -108,30 +113,57 @@ const SportsPage = () => {
   const totalMin = MOCK_SESSIONS.reduce((a, b) => a + b.duration, 0);
 
   return (
-    <div style={{ flex: 1, paddingBottom: '80px' }}>
+    <div style={{ flex: 1, paddingBottom: '80px', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-accent)', fontFamily: 'var(--font-mono)', marginBottom: '8px' }}>
-            Sports · Arena
+          <div style={{ 
+            fontSize: '11px', 
+            fontWeight: 800, 
+            letterSpacing: '0.2em', 
+            textTransform: 'uppercase', 
+            color: 'var(--color-accent)', 
+            marginBottom: '12px' 
+          }}>
+            Performance · Arena
           </div>
-          <h1 style={{ font: 'var(--text-hero)', color: text1, margin: 0, letterSpacing: '-0.03em' }}>
-            {activeTab === 'activity' ? 'Move every day.' : 'Live from the field.'}
+          <h1 style={{ 
+            fontSize: '42px', 
+            fontWeight: 800, 
+            color: text1, 
+            margin: 0, 
+            letterSpacing: '-0.04em',
+            fontFamily: 'var(--font-serif)'
+          }}>
+            {activeTab === 'activity' ? 'The daily pursuit.' : 'Live competition.'}
           </h1>
         </div>
         
         {/* Tab Switcher */}
-        <div style={{ display: 'flex', background: 'var(--color-surface)', padding: '4px', borderRadius: '12px', border: `1px solid ${border}` }}>
+        <div style={{ 
+            display: 'flex', 
+            background: 'var(--glass-bg)', 
+            padding: '4px', 
+            borderRadius: '16px', 
+            border: `1px solid ${border}`,
+            backdropFilter: 'blur(10px)'
+        }}>
           {['activity', 'live'].map(t => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
               style={{
-                padding: '8px 20px', borderRadius: '8px', border: 'none',
-                background: activeTab === t ? 'var(--color-accent)' : 'transparent',
-                color: activeTab === t ? '#fff' : text3,
-                fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer',
-                transition: 'all 200ms var(--ease)',
+                padding: '10px 24px', 
+                borderRadius: '12px', 
+                border: 'none',
+                background: activeTab === t ? 'var(--color-text-1)' : 'transparent',
+                color: activeTab === t ? 'var(--color-base)' : text3,
+                fontSize: '12px', 
+                fontWeight: 800, 
+                textTransform: 'uppercase', 
+                cursor: 'pointer',
+                letterSpacing: '0.05em',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             >
               {t}
@@ -149,11 +181,11 @@ const SportsPage = () => {
             exit={{ opacity: 0, y: -10 }}
           >
             {/* Stats row */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '40px' }}>
-              <StatCard label="This Week" value={`${Math.round(totalMin / 60)}h ${totalMin % 60}m`} sub="5 sessions logged" color="#10B981" isDark={isDark} />
-              <StatCard label="Active Streak" value={`3 days`} sub="Personal best: 12" color="#3B82F6" isDark={isDark} />
-              <StatCard label="Sessions" value={MOCK_SESSIONS.length} sub="This month" color="#8B5CF6" isDark={isDark} />
-              <StatCard label="Top Category" value="Gym" sub="3 sessions / week" color="#F59E0B" isDark={isDark} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+              <StatCard label="Volume" value={`${Math.round(totalMin / 60)}h ${totalMin % 60}m`} sub="Active this week" color="var(--color-accent)" isDark={isDark} />
+              <StatCard label="Momentum" value={`3 days`} sub="Current active streak" color="#3B82F6" isDark={isDark} />
+              <StatCard label="Consistency" value={MOCK_SESSIONS.length} sub="Sessions completed" color="#8B5CF6" isDark={isDark} />
+              <StatCard label="Top Focus" value="Gym" sub="Power & Endurance" color="#F59E0B" isDark={isDark} />
             </div>
 
             {/* Sport filter pills */}
@@ -237,28 +269,58 @@ const SportsPage = () => {
             {/* Left: Football & Cricket Live */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
               {/* Football Live */}
-              <section>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1 }}>⚽ Live Football</h3>
-                  {loadingLive && <span style={{ fontSize: '10px', color: 'var(--color-accent)' }}>Updating...</span>}
+              <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: text1, margin: 0 }}>⚽ Pitch Overview</h3>
+                    {lastUpdated && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px #10B981' }} />
+                        <span style={{ fontSize: '10px', color: text3, fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                          LIVE · {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <button 
+                    onClick={fetchLiveData} 
+                    disabled={loadingLive}
+                    style={{
+                      background: 'var(--bg-elevated)', border: `1px solid ${border}`, color: text2, 
+                      fontSize: '11px', fontWeight: 700, cursor: 'pointer', padding: '6px 12px', borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', gap: '6px'
+                    }}
+                  >
+                    {loadingLive ? '...' : 'Refresh'}
+                  </button>
                 </div>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {footballLive.length > 0 ? (
                     footballLive.map((match, i) => (
-                      <div key={i} className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div key={i} style={{ 
+                        padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', 
+                        justifyContent: 'space-between', background: 'var(--bg-elevated)', border: `1px solid ${border}`,
+                        position: 'relative', overflow: 'hidden'
+                      }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: 'var(--color-accent)' }} />
                         <div style={{ flex: 1, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: 600 }}>{match.teams.home.name}</span>
-                          <img src={match.teams.home.logo} alt="" style={{ width: '24px', height: '24px' }} />
+                          <span style={{ fontSize: '14px', fontWeight: 700 }}>{match.teams.home.name}</span>
+                          <img src={match.teams.home.logo} alt="" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
                         </div>
-                        <div style={{ width: '100px', textAlign: 'center' }}>
-                          <div style={{ fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+                        <div style={{ width: '120px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '28px', fontWeight: 800, fontFamily: 'var(--font-mono)', letterSpacing: '4px', color: 'var(--color-accent)' }}>
                             {match.goals.home} - {match.goals.away}
                           </div>
-                          <div style={{ fontSize: '10px', color: 'var(--color-accent)', fontWeight: 700 }}>{match.fixture.status.elapsed}'</div>
+                          <div style={{ fontSize: '10px', color: text3, fontWeight: 800, textTransform: 'uppercase', marginTop: '4px' }}>
+                            {match.fixture.status.short === '1H' || match.fixture.status.short === '2H' 
+                              ? `${match.fixture.status.elapsed}'` 
+                              : match.fixture.status.short}
+                          </div>
                         </div>
                         <div style={{ flex: 1, textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <img src={match.teams.away.logo} alt="" style={{ width: '24px', height: '24px' }} />
-                          <span style={{ fontSize: '14px', fontWeight: 600 }}>{match.teams.away.name}</span>
+                          <img src={match.teams.away.logo} alt="" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+                          <span style={{ fontSize: '14px', fontWeight: 700 }}>{match.teams.away.name}</span>
                         </div>
                       </div>
                     ))
@@ -266,16 +328,21 @@ const SportsPage = () => {
                     <>
                       {/* Recent Results */}
                       {footballRecent.length > 0 && (
-                        <div style={{ marginBottom: '12px' }}>
-                          <div style={{ fontSize: '11px', fontWeight: 800, color: text3, marginBottom: '8px', textTransform: 'uppercase' }}>Recent Results</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ marginBottom: '16px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 800, color: text3, marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: text3 }}></span> Recent Results
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             {footballRecent.map((match, i) => (
-                              <div key={i} className="glass-panel" style={{ padding: '14px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: 0.8 }}>
-                                <div style={{ flex: 1, textAlign: 'right', fontSize: '13px', fontWeight: 600 }}>{match.teams.home.name}</div>
-                                <div style={{ width: '80px', textAlign: 'center', fontSize: '14px', fontWeight: 800, color: 'var(--color-accent)' }}>
+                              <div key={i} style={{ 
+                                padding: '14px 20px', borderRadius: '14px', display: 'flex', alignItems: 'center', 
+                                justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', border: `1px solid ${border}` 
+                              }}>
+                                <div style={{ flex: 1, textAlign: 'right', fontSize: '13px', fontWeight: 600, color: text2 }}>{match.teams.home.name}</div>
+                                <div style={{ width: '80px', textAlign: 'center', fontSize: '16px', fontWeight: 800, color: text1, fontFamily: 'var(--font-mono)' }}>
                                   {match.goals.home} - {match.goals.away}
                                 </div>
-                                <div style={{ flex: 1, textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>{match.teams.away.name}</div>
+                                <div style={{ flex: 1, textAlign: 'left', fontSize: '13px', fontWeight: 600, color: text2 }}>{match.teams.away.name}</div>
                               </div>
                             ))}
                           </div>
@@ -285,8 +352,10 @@ const SportsPage = () => {
                       {/* Upcoming Fixtures */}
                       {footballUpcoming.length > 0 && (
                         <div>
-                          <div style={{ fontSize: '11px', fontWeight: 800, color: text3, marginBottom: '8px', textTransform: 'uppercase' }}>Upcoming Fixtures</div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-accent)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-accent)' }}></span> Upcoming Fixtures
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             {footballUpcoming.map((match, i) => {
                               const matchDate = new Date(match.fixture.date);
                               const now = new Date();
@@ -295,15 +364,38 @@ const SportsPage = () => {
                               const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
                               
                               return (
-                                <div key={i} className="glass-panel" style={{ padding: '14px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                  <div style={{ flex: 1, textAlign: 'right', fontSize: '13px', fontWeight: 600 }}>{match.teams.home.name}</div>
-                                  <div style={{ width: '120px', textAlign: 'center' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-accent)' }}>
-                                      {diffHrs > 0 ? `In ${diffHrs}h ${diffMins}m` : `Starting Soon`}
+                                <div key={i} style={{ 
+                                  padding: '16px 24px', 
+                                  borderRadius: '20px', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'space-between', 
+                                  background: 'var(--bg-elevated)', 
+                                  border: `1px solid ${border}`,
+                                  position: 'relative',
+                                  overflow: 'hidden'
+                                }}>
+                                  <div style={{ flex: 1, textAlign: 'right', fontSize: '14px', fontWeight: 700, color: text1 }}>{match.teams.home.name}</div>
+                                  <div style={{ width: '160px', textAlign: 'center', position: 'relative' }}>
+                                    <div style={{ 
+                                        fontSize: '10px', 
+                                        fontWeight: 900, 
+                                        color: 'var(--color-accent)', 
+                                        textTransform: 'uppercase', 
+                                        letterSpacing: '0.1em',
+                                        background: 'var(--color-accent-dim)',
+                                        padding: '2px 8px',
+                                        borderRadius: '99px',
+                                        display: 'inline-block',
+                                        marginBottom: '6px'
+                                    }}>
+                                      {diffHrs > 0 ? `Starts in ${diffHrs}h ${diffMins}m` : `Imminent`}
                                     </div>
-                                    <div style={{ fontSize: '9px', color: text3 }}>{matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                    <div style={{ fontSize: '12px', color: text3, fontWeight: 600, fontFamily: 'var(--font-mono)' }}>
+                                      {matchDate.toLocaleDateString([], { month: 'short', day: 'numeric' })} · {matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
                                   </div>
-                                  <div style={{ flex: 1, textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>{match.teams.away.name}</div>
+                                  <div style={{ flex: 1, textAlign: 'left', fontSize: '14px', fontWeight: 700, color: text1 }}>{match.teams.away.name}</div>
                                 </div>
                               );
                             })}
@@ -312,49 +404,94 @@ const SportsPage = () => {
                       )}
                       
                       {footballRecent.length === 0 && footballUpcoming.length === 0 && (
-                        <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: text3 }}>No matches currently scheduled.</div>
+                        <div style={{ padding: '60px 40px', textAlign: 'center', color: text3, fontSize: '13px', fontStyle: 'italic', background: 'rgba(255,255,255,0.01)', borderRadius: '16px', border: `1px dashed ${border}` }}>
+                          No football data currently available. Check back soon.
+                        </div>
                       )}
                     </>
                   )}
                 </div>
+
               </section>
 
               {/* Cricket Live */}
-              <section>
-                <h3 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '20px' }}>🏏 Cricket Matches</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '24px' }}>🏏 Cricket Matches</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {cricketLive.length > 0 ? cricketLive.map((match, i) => (
-                    <div key={i} className="glass-panel" style={{ padding: '20px', borderRadius: '16px' }}>
-                      <div style={{ fontSize: '12px', color: 'var(--color-accent)', fontWeight: 700, marginBottom: '8px' }}>{match.status}</div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontSize: '15px', fontWeight: 600 }}>{match.name}</div>
-                        <div style={{ fontSize: '12px', color: text3 }}>{match.matchType.toUpperCase()}</div>
+                    <div key={i} style={{ 
+                      padding: '20px', borderRadius: '16px', background: 'var(--bg-elevated)', 
+                      border: `1px solid ${border}`, transition: 'all 200ms ease'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '11px', color: 'var(--color-accent)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '4px' }}>{match.status}</div>
+                          <div style={{ fontSize: '15px', fontWeight: 700, color: text1, lineHeight: 1.4 }}>{match.name}</div>
+                        </div>
+                        <div style={{ fontSize: '10px', padding: '4px 8px', borderRadius: '6px', background: border, color: text2, fontWeight: 700 }}>{match.matchType.toUpperCase()}</div>
                       </div>
+                      
+                      {match.score && match.score.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', borderTop: `1px solid ${border}`, paddingTop: '16px' }}>
+                          {match.score.map((s, idx) => (
+                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: text2 }}>{s.inning}</div>
+                              <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>
+                                {s.r}/{s.w} <span style={{ fontSize: '11px', fontWeight: 500, color: text3, marginLeft: '4px' }}>({s.o})</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )) : (
-                    <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: text3 }}>No active cricket matches.</div>
+                    <div style={{ padding: '40px', textAlign: 'center', color: text3, fontSize: '13px', fontStyle: 'italic' }}>No active cricket matches found.</div>
                   )}
                 </div>
               </section>
             </div>
 
-            {/* Right: F1 Standings */}
+            {/* Right: F1 & Stats */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-              <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '24px' }}>🏎️ F1 Standings</h3>
+              {/* F1 Races */}
+              <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '24px' }}>🏎️ F1 Schedule</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {f1Standings.map((driver, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: text3, width: '20px' }}>{driver.position}</span>
-                      <img src={driver.driver.image} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-elevated)' }} />
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700 }}>{driver.driver.name}</div>
-                        <div style={{ fontSize: '10px', color: text3 }}>{driver.team.name}</div>
+                  {f1Races.map((race, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingBottom: '16px', borderBottom: i < f1Races.length - 1 ? `1px solid ${border}` : 'none' }}>
+                      <div style={{ 
+                        width: '50px', height: '50px', borderRadius: '12px', background: 'var(--bg-elevated)', 
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: `1px solid ${border}`
+                      }}>
+                        <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-accent)', textTransform: 'uppercase' }}>{new Date(race.date).toLocaleDateString('en-US', { month: 'short' })}</div>
+                        <div style={{ fontSize: '18px', fontWeight: 800 }}>{new Date(race.date).getDate()}</div>
                       </div>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-accent)' }}>{driver.points} pts</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: text1 }}>{race.competition.name}</div>
+                        <div style={{ fontSize: '11px', color: text3, marginTop: '2px' }}>{race.circuit.name} · {race.competition.location.city}</div>
+                      </div>
                     </div>
                   ))}
-                  {f1Standings.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: text3 }}>No F1 data available.</div>}
+                  {f1Races.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: text3, fontSize: '13px' }}>No upcoming races.</div>}
+                </div>
+              </section>
+
+              {/* F1 Standings */}
+              <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
+                <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '24px' }}>🏆 F1 Standings</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {f1Standings.map((driver, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '12px', background: i < 3 ? 'rgba(226,183,20,0.05)' : 'transparent' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: text3, width: '24px' }}>{driver.position}</span>
+                      <img src={driver.driver.image} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', objectFit: 'contain', border: `1px solid ${border}` }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: text1 }}>{driver.driver.name}</div>
+                        <div style={{ fontSize: '10px', color: text3 }}>{driver.team.name}</div>
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>{driver.points}</div>
+                    </div>
+                  ))}
+                  {f1Standings.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: text3, fontSize: '13px' }}>Standings unavailable.</div>}
                 </div>
               </section>
             </div>

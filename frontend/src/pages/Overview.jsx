@@ -33,61 +33,91 @@ const getDaysToPlacement = () => {
   return Math.max(0, Math.ceil((placementStart - today) / (1000 * 60 * 60 * 24)));
 };
 
-const ProgressBar = ({ value, max = 100, color = 'var(--color-accent)', isDark }) => (
-  <div style={{
-    height: '2px',
-    background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-    borderRadius: '9999px',
-    overflow: 'hidden',
-    marginTop: '8px',
-  }}>
-    <div style={{
-      height: '100%',
-      width: `${Math.min((value / max) * 100, 100)}%`,
-      background: color,
-      borderRadius: '9999px',
-      transition: 'width 400ms cubic-bezier(0.16,1,0.3,1)',
-    }} />
-  </div>
-);
+const DayProgress = ({ isDark }) => {
+  const [progress, setProgress] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState('');
+
+  useEffect(() => {
+    const update = () => {
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const totalSeconds = 24 * 60 * 60;
+      const elapsedSeconds = (now - startOfDay) / 1000;
+      const pct = (elapsedSeconds / totalSeconds) * 100;
+      setProgress(pct);
+
+      const hoursLeft = 23 - now.getHours();
+      const minsLeft = 59 - now.getMinutes();
+      setTimeRemaining(`${hoursLeft}h ${minsLeft}m remaining`);
+    };
+    update();
+    const interval = setInterval(update, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ marginBottom: '48px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
+        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+          Day Progress · {progress.toFixed(1)}%
+        </div>
+        <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)', opacity: 0.7 }}>
+          {timeRemaining}
+        </div>
+      </div>
+      <div style={{ height: '4px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+        <motion.div 
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+          style={{ height: '100%', background: 'var(--color-accent)', borderRadius: '2px' }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const MetricCard = ({ label, value, sub, icon, progress, progressColor, isDark, style = {} }) => (
   <div style={{
-    background: isDark ? 'var(--color-surface)' : '#FFFFFF',
-    border: `1px solid ${isDark ? 'var(--color-border)' : 'var(--color-border)'}`,
-    borderRadius: '8px',
-    padding: '20px',
+    background: 'transparent',
+    padding: '0',
     ...style,
   }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-      <div style={{
-        fontSize: '10px',
-        fontWeight: 600,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: 'var(--color-text-3)',
-        fontFamily: 'var(--font-sans)',
-      }}>{label}</div>
-      {icon && <span style={{ fontSize: '18px', opacity: 0.7 }}>{icon}</span>}
-    </div>
     <div style={{
-      fontSize: '28px',
+      fontSize: '10px',
       fontWeight: 700,
-      letterSpacing: '-0.03em',
+      color: 'var(--color-text-3)',
+      textTransform: 'uppercase',
+      letterSpacing: '0.15em',
+      marginBottom: '16px',
+      fontFamily: 'var(--font-sans)',
+    }}>{label}</div>
+    <div style={{
+      fontSize: '36px',
+      fontWeight: 500,
       color: 'var(--color-text-1)',
       lineHeight: 1,
-      fontFamily: 'var(--font-sans)',
-    }}>{value ?? '—'}</div>
+      fontFamily: 'var(--font-serif)',
+      marginBottom: '12px',
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: '8px'
+    }}>
+      {value ?? '—'}
+    </div>
     {sub && (
       <div style={{
-        fontSize: '12px',
+        fontSize: '11px',
         color: 'var(--color-text-3)',
-        marginTop: '4px',
         fontFamily: 'var(--font-sans)',
+        opacity: 0.6,
+        fontWeight: 500
       }}>{sub}</div>
     )}
     {progress !== undefined && (
-      <ProgressBar value={progress} color={progressColor} isDark={isDark} />
+      <div style={{ marginTop: '16px' }}>
+        <ProgressBar value={progress} color={progressColor} isDark={isDark} />
+      </div>
     )}
   </div>
 );
@@ -96,48 +126,50 @@ const TaskRow = ({ task, onToggle, isDark }) => (
   <div style={{
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '12px 0',
-    borderBottom: `1px solid ${isDark ? 'var(--color-border)' : 'var(--color-border)'}`,
+    gap: '16px',
+    padding: '16px 0',
+    borderBottom: `1px solid var(--color-border)`,
   }}>
     <button
       onClick={() => onToggle(task.id)}
       style={{
-        width: '18px', height: '18px',
-        borderRadius: '4px',
-        border: `1px solid ${task.completed ? 'var(--color-accent)' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)')}`,
+        width: '20px', height: '20px',
+        borderRadius: '6px',
+        border: `1.5px solid ${task.completed ? 'var(--color-accent)' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`,
         background: task.completed ? 'var(--color-accent)' : 'transparent',
         cursor: 'pointer',
         flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 150ms ease',
+        transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
       {task.completed && (
-        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-          <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+          <path d="M1 5L4.5 8.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       )}
     </button>
     <div style={{ flex: 1, minWidth: 0 }}>
       <div style={{
-        fontSize: '14px',
+        fontSize: '15px',
         color: task.completed ? 'var(--color-text-3)' : 'var(--color-text-1)',
         textDecoration: task.completed ? 'line-through' : 'none',
         fontFamily: 'var(--font-sans)',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
+        fontWeight: task.completed ? 400 : 500,
       }}>{task.title}</div>
     </div>
     {task.source && (
       <span style={{
-        fontSize: '10px',
-        fontWeight: 500,
-        letterSpacing: '0.05em',
+        fontSize: '9px',
+        fontWeight: 800,
+        letterSpacing: '0.1em',
         textTransform: 'uppercase',
         color: 'var(--color-text-3)',
         fontFamily: 'var(--font-sans)',
+        opacity: 0.5
       }}>{task.source}</span>
     )}
   </div>
@@ -240,7 +272,7 @@ const Overview = ({ user }) => {
   const monthName = now.toLocaleDateString('en-US', { month: 'long' });
   const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
   const hour = now.getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting = hour < 12 ? 'Focus, ' : hour < 17 ? 'Execute, ' : 'Review, ';
 
   const formatINR = (v) => {
     if (!v && v !== 0) return '—';
@@ -256,28 +288,35 @@ const Overview = ({ user }) => {
   const cardBorder = `1px solid var(--color-border)`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '1100px', margin: '0 auto' }}>
+
+      {/* ── Day Progress ─────────────────────────────── */}
+      <DayProgress isDark={isDark} />
 
       {/* ── Greeting ─────────────────────────────────── */}
-      <div>
+      <div style={{ marginBottom: '24px' }}>
         <div style={{
           fontSize: '11px',
-          fontWeight: 500,
-          letterSpacing: '0.06em',
+          fontWeight: 700,
+          letterSpacing: '0.2em',
           textTransform: 'uppercase',
           color: 'var(--color-text-3)',
           fontFamily: 'var(--font-sans)',
-          marginBottom: '6px',
+          marginBottom: '12px',
+          opacity: 0.6
         }}>
-          {greeting} · {weekday} {monthName} {dayNum} · Day {streak}
+          {weekday} · {monthName} {dayNum} · Day {streak}
         </div>
         <h1 style={{
-          font: 'var(--text-hero)',
+          fontSize: '56px',
+          fontWeight: 500,
           color: 'var(--color-text-1)',
           margin: 0,
-          letterSpacing: '-0.02em',
+          letterSpacing: '-0.04em',
+          lineHeight: 1,
+          fontFamily: 'var(--font-serif)',
         }}>
-          Hey, {firstName}.
+          {greeting}{firstName}.
         </h1>
       </div>
 
@@ -285,45 +324,40 @@ const Overview = ({ user }) => {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '16px',
+        gap: '40px',
+        padding: '40px 0',
+        borderBottom: `1px solid var(--color-border)`,
+        marginBottom: '20px'
       }}>
         <MetricCard
           label="Sleep"
-          value={sleepHours > 0 ? `${Math.floor(sleepHours)}h ${Math.round((sleepHours % 1) * 60)}m` : '—'}
-          sub={sleepHours >= 7 ? 'Well rested' : sleepHours > 0 ? `${(7 - sleepHours).toFixed(1)}h deficit` : 'Not logged'}
-          icon="🌙"
+          value={sleepHours > 0 ? `${Math.floor(sleepHours)}h` : '—'}
+          sub={sleepHours >= 7 ? 'RESTORATIVE' : 'DEFICIT'}
           progress={sleepHours}
           progressColor={sleepHours >= 7 ? 'var(--color-accent)' : 'var(--color-warning)'}
           isDark={isDark}
-          style={{ borderTop: `2px solid ${isDark ? 'rgba(250,204,21,0.3)' : 'rgba(183,134,10,0.3)'}` }}
         />
         <MetricCard
-          label="Steps"
-          value={steps ? steps.toLocaleString('en-IN') : '—'}
-          sub={`of 10,000`}
-          icon="👟"
+          label="Vitality"
+          value={steps ? `${(steps / 1000).toFixed(1)}k` : '—'}
+          sub={`${steps.toLocaleString()} STEPS`}
           progress={steps}
           progressColor="var(--color-accent)"
           isDark={isDark}
-          style={{ borderTop: `2px solid rgba(34,197,94,0.3)` }}
         />
         <MetricCard
-          label="Water"
-          value={water ? `${water} L` : '—'}
-          sub={`of 3.0 L`}
-          icon="💧"
+          label="Hydration"
+          value={water ? `${water}L` : '—'}
+          sub={`3.0L TARGET`}
           progress={water}
-          progressColor="var(--color-info, #3B82F6)"
+          progressColor="#3B82F6"
           isDark={isDark}
-          style={{ borderTop: `2px solid rgba(59,130,246,0.3)` }}
         />
         <MetricCard
-          label="Streak"
+          label="Momentum"
           value={`${streak}d`}
-          sub="days running"
-          icon="🔥"
+          sub="ACTIVE STREAK"
           isDark={isDark}
-          style={{ borderTop: `2px solid rgba(249,115,22,0.4)` }}
         />
       </div>
 
@@ -335,57 +369,55 @@ const Overview = ({ user }) => {
         alignItems: 'start',
       }}>
 
-        {/* LEFT: Tasks */}
-        <div style={{
-          background: cardBg,
-          border: cardBorder,
-          borderRadius: '8px',
-          overflow: 'hidden',
-        }}>
-          {/* Card header */}
+        {/* LEFT: Intentions (Tasks) */}
+        <div>
           <div style={{
-            padding: '16px 20px',
-            borderBottom: cardBorder,
+            padding: '0 0 20px 0',
+            borderBottom: `1px solid var(--color-border)`,
+            marginBottom: '16px',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'baseline',
           }}>
             <div style={{
-              fontSize: '11px',
-              fontWeight: 600,
-              letterSpacing: '0.06em',
+              fontSize: '12px',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
               textTransform: 'uppercase',
-              color: 'var(--color-text-3)',
+              color: 'var(--color-text-2)',
               fontFamily: 'var(--font-sans)',
-            }}>Today · {pendingTasks.length} intentions</div>
+            }}>Intentions</div>
             <div style={{
               fontSize: '11px',
               color: 'var(--color-text-3)',
-              fontFamily: 'var(--font-sans)',
+              fontFamily: 'var(--font-mono)',
             }}>
-              {completedTasks.length}/{tasks.length} done
+              {completedTasks.length} / {tasks.length}
             </div>
           </div>
 
-          {/* Task list */}
-          <div style={{ padding: '0 20px' }}>
+          <div style={{ padding: '0' }}>
             {tasks.length === 0 ? (
               <div style={{
                 padding: '40px 0',
-                textAlign: 'center',
                 color: 'var(--color-text-3)',
                 fontSize: '14px',
                 fontFamily: 'var(--font-sans)',
-              }}>No tasks for today</div>
+                fontStyle: 'italic'
+              }}>No intentions set for today.</div>
             ) : (
-              <>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {pendingTasks.map(task => (
                   <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
                 ))}
-                {completedTasks.map(task => (
-                  <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
-                ))}
-              </>
+                {completedTasks.length > 0 && (
+                  <div style={{ marginTop: '20px', opacity: 0.4 }}>
+                    {completedTasks.map(task => (
+                      <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
