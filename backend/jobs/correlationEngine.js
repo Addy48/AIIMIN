@@ -1,30 +1,11 @@
 /**
  * jobs/correlationEngine.js
  * 
- * Nightly cron: collect 30-day signals per user, compute pairwise
- * Spearman correlations, write to lab_correlations + generate lab_insights.
- * 
- * Run via: node jobs/correlationEngine.js
- * Or schedule with cron: 0 2 * * * node /path/to/jobs/correlationEngine.js
+ * Spearman correlation computation for AIIMIN intelligence.
+ * Refactored for Cloudflare Workers (uses Supabase client).
  */
-import { pool } from '../lib/db.js';
 import { spearman, benjaminiHochberg } from '../lib/spearman.js';
 
-const SIGNAL_QUERIES = {
-    // Each returns { day_of, value } rows for a user over last 30 days
-    mood: `SELECT date AS day_of, mood::float AS value FROM daily_logs WHERE user_id = $1 AND mood IS NOT NULL AND date > CURRENT_DATE - 30 AND deleted_at IS NULL`,
-    sleep_hours: `SELECT date AS day_of, sleep_hours::float AS value FROM daily_logs WHERE user_id = $1 AND sleep_hours IS NOT NULL AND date > CURRENT_DATE - 30 AND deleted_at IS NULL`,
-    focus_score: `SELECT date AS day_of, focus_score::float AS value FROM daily_logs WHERE user_id = $1 AND focus_score > 0 AND date > CURRENT_DATE - 30 AND deleted_at IS NULL`,
-    rc_count: `SELECT date AS day_of, rc_count::float AS value FROM daily_logs WHERE user_id = $1 AND date > CURRENT_DATE - 30 AND deleted_at IS NULL`,
-    gym_done: `SELECT date AS day_of, CASE WHEN gym_done THEN 1.0 ELSE 0.0 END AS value FROM daily_logs WHERE user_id = $1 AND date > CURRENT_DATE - 30 AND deleted_at IS NULL`,
-    steps: `SELECT date AS day_of, steps::float AS value FROM daily_logs WHERE user_id = $1 AND date > CURRENT_DATE - 30 AND deleted_at IS NULL`,
-    water_bottles: `SELECT date AS day_of, water_bottles::float AS value FROM daily_logs WHERE user_id = $1 AND date > CURRENT_DATE - 30 AND deleted_at IS NULL`,
-    typing_wpm: `SELECT day_of, MAX(wpm)::float AS value FROM lab_typing_tests WHERE user_id = $1 AND test_invalid = false AND day_of > CURRENT_DATE - 30 GROUP BY day_of`,
-    reaction_ms: `SELECT day_of, MIN(mean_ms)::float AS value FROM lab_reaction_tests WHERE user_id = $1 AND test_invalid = false AND day_of > CURRENT_DATE - 30 GROUP BY day_of`,
-    speaking_score: `SELECT day_of, MAX(confidence_score)::float AS value FROM lab_speaking_logs WHERE user_id = $1 AND day_of > CURRENT_DATE - 30 GROUP BY day_of`,
-};
-
-const SIGNAL_NAMES = Object.keys(SIGNAL_QUERIES);
 const MIN_SAMPLES = 7;
 
 function generateHeadline(signalA, signalB, rho) {
@@ -33,15 +14,70 @@ function generateHeadline(signalA, signalB, rho) {
     return `When ${signalA.replace(/_/g, ' ')} is ${direction}, ${signalB.replace(/_/g, ' ')} trends ${rho > 0 ? 'up' : 'down'} by ~${pctImpact}%`;
 }
 
-async function processUser(userId) {
-    // 1. Fetch all signals
-    const signalData = {};
-    for (const name of SIGNAL_NAMES) {
-        const result = await pool.query(SIGNAL_QUERIES[name], [userId]);
-        signalData[name] = new Map(result.rows.map(r => [r.day_of.toISOString().slice(0, 10), r.value]));
+async function fetchSignal(supabase, userId, name, thirtyDaysAgo) {
+    let query;
+    switch (name) {
+        case 'mood':
+            query = supabase.from('daily_logs').select('date, mood').eq('user_id', userId).not('mood', 'is', null).gt('date', thirtyDaysAgo).is('deleted_at', null);
+            break;
+        case 'sleep_hours':
+            query = supabase.from('daily_logs').select('date, sleep_hours').eq('user_id', userId).not('sleep_hours', 'is', null).gt('date', thirtyDaysAgo).is('deleted_at', null);
+            break;
+        case 'focus_score':
+            query = supabase.from('daily_logs').select('date, focus_score').eq('user_id', userId).gt('focus_score', 0).gt('date', thirtyDaysAgo).is('deleted_at', null);
+            break;
+        case 'rc_count':
+            query = supabase.from('daily_logs').select('date, rc_count').eq('user_id', userId).gt('date', thirtyDaysAgo).is('deleted_at', null);
+            break;
+        case 'gym_done':
+            query = supabase.from('daily_logs').select('date, gym_done').eq('user_id', userId).gt('date', thirtyDaysAgo).is('deleted_at', null);
+            break;
+        case 'steps':
+            query = supabase.from('daily_logs').select('date, steps').eq('user_id', userId).gt('date', thirtyDaysAgo).is('deleted_at', null);
+            break;
+        case 'water_bottles':
+            query = supabase.from('daily_logs').select('date, water_bottles').eq('user_id', userId).gt('date', thirtyDaysAgo).is('deleted_at', null);
+            break;
+        case 'typing_wpm':
+            query = supabase.from('lab_typing_tests').select('day_of, wpm').eq('user_id', userId).eq('test_invalid', false).gt('day_of', thirtyDaysAgo);
+            break;
+        case 'reaction_ms':
+            query = supabase.from('lab_reaction_tests').select('day_of, mean_ms').eq('user_id', userId).eq('test_invalid', false).gt('day_of', thirtyDaysAgo);
+            break;
+        case 'speaking_score':
+            query = supabase.from('lab_speaking_logs').select('logged_at, confidence_score').eq('user_id', userId).gt('logged_at', thirtyDaysAgo);
+            break;
+        default: return new Map();
     }
 
-    // 2. Compute pairwise correlations
+    const { data, error } = await query;
+    if (error || !data) return new Map();
+
+    const result = new Map();
+    data.forEach(r => {
+        const date = (r.date || r.day_of || r.logged_at).slice(0, 10);
+        const val = r.mood ?? r.sleep_hours ?? r.focus_score ?? r.rc_count ?? (r.gym_done ? 1.0 : 0.0) ?? r.steps ?? r.water_bottles ?? r.wpm ?? r.mean_ms ?? r.confidence_score;
+
+        // Handle max/min group logic in JS
+        if (!result.has(date) ||
+            (name === 'reaction_ms' && val < result.get(date)) ||
+            (name !== 'reaction_ms' && val > result.get(date))) {
+            result.set(date, val);
+        }
+    });
+    return result;
+}
+
+const SIGNAL_NAMES = ['mood', 'sleep_hours', 'focus_score', 'rc_count', 'gym_done', 'steps', 'water_bottles', 'typing_wpm', 'reaction_ms', 'speaking_score'];
+
+async function processUser(supabase, userId) {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+    const signalData = {};
+
+    for (const name of SIGNAL_NAMES) {
+        signalData[name] = await fetchSignal(supabase, userId, name, thirtyDaysAgo);
+    }
+
     const results = [];
     for (let i = 0; i < SIGNAL_NAMES.length; i++) {
         for (let j = i + 1; j < SIGNAL_NAMES.length; j++) {
@@ -50,7 +86,6 @@ async function processUser(userId) {
             const mapA = signalData[a];
             const mapB = signalData[b];
 
-            // Find overlapping dates
             const commonDates = [...mapA.keys()].filter(d => mapB.has(d));
             if (commonDates.length < MIN_SAMPLES) continue;
 
@@ -64,31 +99,28 @@ async function processUser(userId) {
 
     if (results.length === 0) return 0;
 
-    // 3. Apply BH-FDR correction
     const passes = benjaminiHochberg(results, 0.10);
-
-    // 4. Write to lab_correlations and generate insights
     let insightCount = 0;
+
     for (let k = 0; k < results.length; k++) {
         const r = results[k];
         const bhPassed = passes[k];
 
-        const corrResult = await pool.query(
-            `INSERT INTO lab_correlations (user_id, signal_a, signal_b, rho, p_value, bh_passed, n_samples)
-             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-            [userId, r.signalA, r.signalB, r.rho, r.pValue, bhPassed, r.n]
-        );
+        const { data: corr, error: corrErr } = await supabase
+            .from('lab_correlations')
+            .insert({ user_id: userId, signal_a: r.signalA, signal_b: r.signalB, rho: r.rho, p_value: r.pValue, bh_passed: bhPassed, n_samples: r.n })
+            .select()
+            .single();
 
-        // Generate insight if statistically significant and effect is notable
+        if (corrErr) continue;
+
         if (bhPassed && Math.abs(r.rho) >= 0.35) {
             const headline = generateHeadline(r.signalA, r.signalB, r.rho);
             const severity = Math.abs(r.rho) >= 0.60 ? 'flag' : 'surface';
 
-            await pool.query(
-                `INSERT INTO lab_insights (user_id, correlation_id, headline, effect_pct, n_samples, rho, severity)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                [userId, corrResult.rows[0].id, headline, Math.round(Math.abs(r.rho) * 100), r.n, r.rho, severity]
-            );
+            await supabase.from('lab_insights').insert({
+                user_id: userId, correlation_id: corr.id, headline, effect_pct: Math.round(Math.abs(r.rho) * 100), n_samples: r.n, rho: r.rho, severity
+            });
             insightCount++;
         }
     }
@@ -96,38 +128,33 @@ async function processUser(userId) {
     return insightCount;
 }
 
-async function main() {
+export async function runCorrelationEngine(supabase) {
     console.log('[CorrelationEngine] Starting...');
-    const start = Date.now();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
 
-    try {
-        // Get all users with enough data (at least 14 daily logs in last 30 days)
-        const usersResult = await pool.query(
-            `SELECT DISTINCT user_id FROM daily_logs
-             WHERE date > CURRENT_DATE - 30 AND deleted_at IS NULL
-             GROUP BY user_id HAVING COUNT(*) >= 14`
-        );
+    // Get users with 14+ logs
+    const { data: users, error } = await supabase
+        .from('daily_logs')
+        .select('user_id')
+        .gt('date', thirtyDaysAgo)
+        .is('deleted_at', null);
 
-        console.log(`[CorrelationEngine] Processing ${usersResult.rows.length} users...`);
+    if (error || !users) return;
 
-        let totalInsights = 0;
-        for (const row of usersResult.rows) {
-            try {
-                const count = await processUser(row.user_id);
-                totalInsights += count;
-            } catch (err) {
-                console.error(`[CorrelationEngine] Error for user ${row.user_id}:`, err);
-            }
+    const userCounts = {};
+    users.forEach(u => userCounts[u.user_id] = (userCounts[u.user_id] || 0) + 1);
+    const targetUsers = Object.keys(userCounts).filter(uid => userCounts[uid] >= 14);
+
+    console.log(`[CorrelationEngine] Processing ${targetUsers.length} users...`);
+
+    let totalInsights = 0;
+    for (const userId of targetUsers) {
+        try {
+            const count = await processUser(supabase, userId);
+            totalInsights += count;
+        } catch (err) {
+            console.error(`[CorrelationEngine] Error for user ${userId}:`, err);
         }
-
-        const elapsed = ((Date.now() - start) / 1000).toFixed(1);
-        console.log(`[CorrelationEngine] Done. ${totalInsights} insights generated in ${elapsed}s`);
-    } catch (err) {
-        console.error('[CorrelationEngine] Fatal error:', err);
-        process.exit(1);
-    } finally {
-        await pool.end();
     }
+    console.log(`[CorrelationEngine] Done. ${totalInsights} insights generated.`);
 }
-
-main();

@@ -1,29 +1,25 @@
 /**
  * lib/db.js
  * 
- * Central database pool (M-1 fix: extracted from googleClient.js).
- * All route files should import pool from here.
+ * Central database connector for Cloudflare Workers.
+ * Refactored to handle global process.env or direct env binding.
  */
-import pg from 'pg';
-import dotenv from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 
-dotenv.config();
+// We rely on index.js setting globalThis.process.env from the Cloudflare 'env' object
+const initClient = () => {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
 
-const { Pool } = pg;
+    if (!url || !key) {
+        // Fallback for initialization phase / local dev without proper env but using nodejs_compat
+        return null;
+    }
+    return createClient(url, key);
+};
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: false }
-        : false,
-    max: 10,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
-});
+const supabase = initClient();
+const supabaseAdmin = supabase; // Standardized for privileged operations
 
-pool.on('error', (err) => {
-    console.error('[DB Pool] Unexpected error on idle client:', err);
-});
-
-export { pool };
-export default pool;
+export { supabase, supabaseAdmin };
+export default supabase;

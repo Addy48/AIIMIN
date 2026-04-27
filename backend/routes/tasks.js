@@ -1,20 +1,14 @@
-import express from 'express';
-import supabase from '../supabase.js';
+import { Hono } from 'hono';
+import { supabase } from '../lib/db.js';
 import { requireAuth as auth } from '../middleware/auth.js';
 
-const router = express.Router();
+const app = new Hono();
 
-/*
- * Tasks API — CRUD for daily tasks.
- * All routes require auth.
- * Dates in ISO 8601: YYYY-MM-DD (IST)
- */
-
-/* GET /tasks?date=YYYY-MM-DD */
-router.get('/', auth, async (req, res, next) => {
+/* GET /api/tasks?date=YYYY-MM-DD */
+app.get('/', auth, async (c) => {
   try {
-    const userId = req.user.id;
-    const { date } = req.query;
+    const userId = c.get('userId');
+    const date = c.req.query('date');
 
     let query = supabase
       .from('tasks')
@@ -30,20 +24,20 @@ router.get('/', auth, async (req, res, next) => {
     const { data, error } = await query;
     if (error) throw error;
 
-    res.json({ success: true, data });
+    return c.json({ success: true, data });
   } catch (err) {
-    next(err);
+    return c.json({ success: false, error: err.message }, 500);
   }
 });
 
-/* POST /tasks — Create a task */
-router.post('/', auth, async (req, res, next) => {
+/* POST /api/tasks — Create a task */
+app.post('/', auth, async (c) => {
   try {
-    const userId = req.user.id;
-    const { title, due_date, due_time, source = 'manual' } = req.body;
+    const userId = c.get('userId');
+    const { title, due_date, due_time, source = 'manual' } = await c.req.json();
 
     if (!title?.trim()) {
-      return res.status(400).json({ success: false, error: 'Title is required.' });
+      return c.json({ success: false, error: 'Title is required.' }, 400);
     }
 
     const { data, error } = await supabase
@@ -51,7 +45,7 @@ router.post('/', auth, async (req, res, next) => {
       .insert({
         user_id: userId,
         title: title.trim(),
-        due_date: due_date || new Date().toLocaleDateString('en-CA'),
+        due_date: due_date || new Date().toISOString().split('T')[0],
         due_time: due_time || null,
         source,
         completed: false,
@@ -61,18 +55,18 @@ router.post('/', auth, async (req, res, next) => {
 
     if (error) throw error;
 
-    res.status(201).json({ success: true, data });
+    return c.json({ success: true, data }, 201);
   } catch (err) {
-    next(err);
+    return c.json({ success: false, error: err.message }, 500);
   }
 });
 
-/* PATCH /tasks/:id — Update (toggle complete, edit title) */
-router.patch('/:id', auth, async (req, res, next) => {
+/* PATCH /api/tasks/:id — Update (toggle complete, edit title) */
+app.patch('/:id', auth, async (c) => {
   try {
-    const userId = req.user.id;
-    const { id } = req.params;
-    const { completed, title } = req.body;
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    const { completed, title } = await c.req.json();
 
     const updates = {};
     if (completed !== undefined) updates.completed = completed;
@@ -87,19 +81,19 @@ router.patch('/:id', auth, async (req, res, next) => {
       .single();
 
     if (error) throw error;
-    if (!data) return res.status(404).json({ success: false, error: 'Task not found.' });
+    if (!data) return c.json({ success: false, error: 'Task not found.' }, 404);
 
-    res.json({ success: true, data });
+    return c.json({ success: true, data });
   } catch (err) {
-    next(err);
+    return c.json({ success: false, error: err.message }, 500);
   }
 });
 
-/* DELETE /tasks/:id */
-router.delete('/:id', auth, async (req, res, next) => {
+/* DELETE /api/tasks/:id */
+app.delete('/:id', auth, async (c) => {
   try {
-    const userId = req.user.id;
-    const { id } = req.params;
+    const userId = c.get('userId');
+    const id = c.req.param('id');
 
     const { error } = await supabase
       .from('tasks')
@@ -109,10 +103,10 @@ router.delete('/:id', auth, async (req, res, next) => {
 
     if (error) throw error;
 
-    res.json({ success: true });
+    return c.json({ success: true });
   } catch (err) {
-    next(err);
+    return c.json({ success: false, error: err.message }, 500);
   }
 });
 
-export default router;
+export default app;

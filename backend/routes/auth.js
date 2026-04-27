@@ -1,39 +1,42 @@
-import express from 'express';
-import { pool } from '../lib/googleClient.js';
+import { Hono } from 'hono';
+import { supabase } from '../lib/db.js';
 
-const router = express.Router();
+const app = new Hono();
 
 /**
  * GET /auth/resolve?identifier=...
  * Resolves a username or email to the actual email address for Supabase login.
  */
-router.get('/resolve', async (req, res) => {
-    const { identifier } = req.query;
+app.get('/resolve', async (c) => {
+    const identifier = c.req.query('identifier');
 
     if (!identifier) {
-        return res.status(400).json({ error: 'Identifier is required' });
+        return c.json({ error: 'Identifier is required' }, 400);
     }
 
     // If it's already an email, just return it
     if (identifier.includes('@')) {
-        return res.json({ email: identifier.toLowerCase() });
+        return c.json({ email: identifier.toLowerCase() });
     }
 
     try {
-        const result = await pool.query(
-            'SELECT email FROM users WHERE LOWER(username) = LOWER($1) LIMIT 1',
-            [identifier]
-        );
+        // Equivalent to SELECT email FROM users WHERE LOWER(username) = LOWER($1)
+        const { data, error } = await supabase
+            .from('users')
+            .select('email')
+            .ilike('username', identifier)
+            .maybeSingle();
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
+        if (error) throw error;
+        if (!data) {
+            return c.json({ error: 'User not found' }, 404);
         }
 
-        res.json({ email: result.rows[0].email });
+        return c.json({ email: data.email });
     } catch (err) {
         console.error('[auth/resolve] error:', err.message);
-        res.status(500).json({ error: 'Internal server error' });
+        return c.json({ error: 'Internal server error' }, 500);
     }
 });
 
-export default router;
+export default app;

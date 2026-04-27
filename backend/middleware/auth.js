@@ -2,28 +2,25 @@
  * middleware/auth.js
  *
  * Validates Supabase JWT from Authorization header.
- * Attaches req.user = { id, email } on success.
- * Replaces the insecure x-user-id header approach.
+ * Attaches c.set('user', ...) and c.set('userId', ...) on success.
  */
 import { supabaseAdmin as supabase } from '../supabase.js';
 
 const profileCache = new Map();
 const CACHE_TTL = 10000; // 10s cache for roles/onboarding
 
-export const requireAuth = async (req, res, next) => {
-    res.setHeader('Content-Type', 'application/json');
-
-    const authHeader = req.headers['authorization'];
+export const requireAuth = async (c, next) => {
+    const authHeader = c.req.header('authorization');
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
     if (!token) {
-        return res.status(401).json({ error: 'Unauthorized: missing Bearer token' });
+        return c.json({ error: 'Unauthorized: missing Bearer token' }, 401);
     }
 
     try {
         const { data: { user }, error } = await supabase.auth.getUser(token);
         if (error || !user) {
-            return res.status(401).json({ error: 'Unauthorized: invalid or expired token', code: 'INVALID_TOKEN' });
+            return c.json({ error: 'Unauthorized: invalid or expired token', code: 'INVALID_TOKEN' }, 401);
         }
 
         // Enrich with public.users profile (role, onboarding_stage)
@@ -43,16 +40,17 @@ export const requireAuth = async (req, res, next) => {
             }
         }
 
-        req.user = {
+        c.set('user', {
             ...user,
             role: profile?.role || 'user',
             onboarding_stage: profile?.onboarding_stage || 0,
             username: profile?.username
-        };
-        req.userId = user.id;
-        next();
+        });
+        c.set('userId', user.id);
+
+        await next();
     } catch (err) {
         console.error('[auth middleware]', err.message);
-        return res.status(500).json({ error: 'Internal Auth Error' });
+        return c.json({ error: 'Internal Auth Error' }, 500);
     }
 };
