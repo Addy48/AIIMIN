@@ -35,7 +35,7 @@ const Insights = () => {
 
   return (
     <div>
-      <PageHeader label="Insights · Correlation Engine" title="The signal beneath the days." />
+      <PageHeader label="Skills · Proficiency Engine" title="The signal beneath the days." />
       <InsightsSection
         lhsData={lhsData}
         reportData={reportData}
@@ -50,12 +50,12 @@ const Insights = () => {
 const PageHeader = ({ label, title }) => (
   <div style={{ marginBottom: '40px' }}>
     <div style={{
-      fontSize: '10px',
-      fontWeight: 600,
-      letterSpacing: '0.08em',
+      fontSize: '11px',
+      fontWeight: 700,
+      letterSpacing: '0.12em',
       textTransform: 'uppercase',
       color: 'var(--color-text-3)',
-      fontFamily: 'var(--font-sans)',
+      fontFamily: 'var(--font-mono)',
       marginBottom: '8px',
     }}>{label}</div>
     <h1 style={{

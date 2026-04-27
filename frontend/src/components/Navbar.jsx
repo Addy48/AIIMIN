@@ -12,7 +12,7 @@ const NAV_LINKS = [
   { to: '/finance',    label: 'Finance' },
   { to: '/calendar',   label: 'Calendar' },
   { to: '/journal',    label: 'Journal' },
-  { to: '/lab',        label: 'Lab', hasNew: true },
+  { to: '/lab',        label: 'Lab' },
   { to: '/sports',     label: 'Sports' },
   { to: '/placements', label: 'Placement' },
   { to: '/insights',   label: 'Skills' },
@@ -82,13 +82,6 @@ const Navbar = ({ user }) => {
               })}
             >
               {label}
-              {hasNew && (
-                <span style={{
-                  fontSize: '7px', fontWeight: 800, padding: '1px 5px',
-                  borderRadius: '9999px', background: 'var(--color-accent)', color: '#fff',
-                  letterSpacing: '0.05em', lineHeight: 1.4,
-                }}>NEW</span>
-              )}
             </NavLink>
           ))}
         </div>
