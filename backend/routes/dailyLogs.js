@@ -1,22 +1,23 @@
-import express from 'express';
-import supabase from '../supabase.js';
+import { Hono } from 'hono';
+import { supabase } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
-import { pool } from '../lib/db.js';
 
-const router = express.Router();
+const app = new Hono();
 
 /**
+ * POST /api/daily-logs
  * Create or update daily log
  */
-router.post('/', requireAuth, async (req, res) => {
+app.post('/', requireAuth, async (c) => {
     try {
+        const body = await c.req.json();
         const {
             date = new Date().toISOString().split('T')[0],
             sleepStart,
             sleepEnd,
             sleepHours,
-            rcCount,              // renamed from masturbationCount (C-2 consolidation)
+            rcCount,
             gymDone,
             gymDuration,
             breakfastDone,
@@ -26,12 +27,12 @@ router.post('/', requireAuth, async (req, res) => {
             learningDone,
             learningTopic,
             journalEntry,
-            mood,                 // now 1-5 scale (C-4)
+            mood,
             moodBefore,
             moodAfter,
             energyLevel,
-        } = req.body;
-        const userId = req.userId;
+        } = body;
+        const userId = c.get('userId');
 
         const { data, error } = await supabase
             .from('daily_logs')
@@ -62,73 +63,85 @@ router.post('/', requireAuth, async (req, res) => {
 
         if (error) throw error;
 
-        const savedLog = data[0];
-
-        // ─── Automated Stage Progression (C-6 fix: real consecutive days) ───
+        // ─── Automated Stage Progression (Refactored to JS for Workers) ───
         try {
-            // Use window function to compute actual consecutive streak
-            const streakResult = await pool.query(
-                `WITH ordered_dates AS (
-                    SELECT date,
-                           date - (ROW_NUMBER() OVER (ORDER BY date))::int AS streak_grp
-                    FROM daily_logs
-                    WHERE user_id = $1 AND deleted_at IS NULL
-                ),
-                current_streak AS (
-                    SELECT COUNT(*) AS days
-                    FROM ordered_dates
-                    WHERE streak_grp = (
-                        SELECT streak_grp FROM ordered_dates ORDER BY date DESC LIMIT 1
-                    )
-                )
-                SELECT
-                    (SELECT COUNT(*) FROM daily_logs WHERE user_id = $1 AND deleted_at IS NULL) AS total,
-                    (SELECT days FROM current_streak) AS streak`,
-                [userId]
-            );
+            // Fetch recent logs to calculate streak in memory
+            const { data: recentLogs } = await supabase
+                .from('daily_logs')
+                .select('date')
+                .eq('user_id', userId)
+                .is('deleted_at', null)
+                .order('date', { ascending: false })
+                .limit(100);
 
-            const { total, streak } = streakResult.rows[0];
+            let streak = 0;
+            if (recentLogs && recentLogs.length > 0) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                const lastLogDate = recentLogs[0].date;
+
+                // If the latest log is today or yesterday, streak continues
+                const diff = (new Date(todayStr) - new Date(lastLogDate)) / (1000 * 60 * 60 * 24);
+
+                if (diff <= 1) {
+                    streak = 1;
+                    for (let i = 1; i < recentLogs.length; i++) {
+                        const prev = new Date(recentLogs[i - 1].date);
+                        const curr = new Date(recentLogs[i].date);
+                        const gap = (prev - curr) / (1000 * 60 * 60 * 24);
+                        if (gap === 1) streak++;
+                        else break;
+                    }
+                }
+            }
+
+            const { count: totalLogs } = await supabase
+                .from('daily_logs')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', userId)
+                .is('deleted_at', null);
+
             const newStage = BehavioralEngine.determineOnboardingStage({
-                totalLogs: parseInt(total),
-                consecutiveDays: parseInt(streak)
+                totalLogs: totalLogs || 0,
+                consecutiveDays: streak
             });
 
-            // Update if progressive
-            const currentStage = req.user?.onboarding_stage || 0;
+            const currentStage = c.get('user')?.onboarding_stage || 0;
             if (newStage > currentStage) {
-                await pool.query(
-                    'UPDATE users SET onboarding_stage = $1, updated_at = NOW() WHERE id = $2',
-                    [newStage, userId]
-                );
+                await supabase
+                    .from('users')
+                    .update({ onboarding_stage: newStage, updated_at: new Date().toISOString() })
+                    .eq('id', userId);
             }
         } catch (stageErr) {
             console.error('[Stage Progression Error]', stageErr);
         }
 
-        res.status(201).json(savedLog);
+        return c.json(data[0], 201);
     } catch (error) {
         console.error('Error saving daily log:', error);
-        res.status(500).json({ error: error.message || 'Internal server error' });
+        return c.json({ error: error.message || 'Internal server error' }, 500);
     }
 });
 
-router.get('/:userId/:date', requireAuth, async (req, res) => {
+/**
+ * GET /api/daily-logs/:userId/:date
+ */
+app.get('/:userId/:date', requireAuth, async (c) => {
     try {
-        const { userId, date } = req.params;
+        const { userId, date } = c.req.param();
         const { data, error } = await supabase
             .from('daily_logs')
             .select('*')
             .eq('user_id', userId)
             .eq('date', date)
-            .single();
+            .maybeSingle();
 
-        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "Rows not found"
-
-        res.json(data || {});
+        if (error) throw error;
+        return c.json(data || {});
     } catch (error) {
         console.error('Error fetching daily log:', error);
-        res.status(500).json({ error: error.message || 'Internal server error' });
+        return c.json({ error: error.message || 'Internal server error' }, 500);
     }
 });
 
-export default router;
+export default app;

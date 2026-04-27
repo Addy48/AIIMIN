@@ -1,27 +1,28 @@
-import express from 'express';
-import { pool } from '../lib/googleClient.js';
+import { Hono } from 'hono';
+import { supabase } from '../lib/db.js';
 
-const router = express.Router();
+const app = new Hono();
 
 /**
  * GET /health
  * Comprehensive health check for application dependencies.
  */
-router.get('/health', async (req, res) => {
+app.get('/', async (c) => {
     let dbStatus = 'connected';
     let oauthStatus = 'configured';
     let overallStatus = 'ok';
 
-    // Check DB
+    // Check DB (simple query to verify link)
     try {
-        await pool.query('SELECT 1');
+        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
+        if (error) throw error;
     } catch (e) {
         dbStatus = 'error';
         overallStatus = 'degraded';
     }
 
     // Check OAuth Config
-    const hasOauth = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_REDIRECT_URI;
+    const hasOauth = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET;
     if (!hasOauth) {
         oauthStatus = 'missing';
         overallStatus = 'degraded';
@@ -37,20 +38,21 @@ router.get('/health', async (req, res) => {
         }
     };
 
-    res.status(overallStatus === 'ok' ? 200 : 503).json(payload);
+    return c.json(payload, overallStatus === 'ok' ? 200 : 503);
 });
 
 /**
- * GET /ready
- * Lightweight liveness probe for Railway container orchestrator.
+ * GET /health/ready
+ * Lightweight liveness probe.
  */
-router.get('/ready', async (req, res) => {
+app.get('/ready', async (c) => {
     try {
-        await pool.query('SELECT 1');
-        res.status(200).json({ ready: true });
+        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
+        if (error) throw error;
+        return c.json({ ready: true });
     } catch (e) {
-        res.status(503).json({ ready: false });
+        return c.json({ ready: false }, 503);
     }
 });
 
-export default router;
+export default app;

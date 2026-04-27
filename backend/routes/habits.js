@@ -1,125 +1,142 @@
 /**
  * routes/habits.js
  *
- * Habits CRUD — create, list, update, archive.
- * Habits are individual trackable behaviours (e.g. "Meditate 10 min").
- * They are linked to routines via the routine_habits junction table.
+ * Habits CRUD — Refactored for Hono / Cloudflare Workers.
  */
-import express from 'express';
-import { pool } from '../lib/googleClient.js';
+import { Hono } from 'hono';
+import { supabase } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 
-const router = express.Router();
+const app = new Hono();
 
-// GET /habits — list all active habits for user
-router.get('/', requireAuth, async (req, res) => {
+// GET /api/habits — list all active habits for user
+app.get('/', requireAuth, async (c) => {
     try {
-        const { status = 'active', category } = req.query;
-        const params = [req.userId];
-        let query = `
-            SELECT id, name, emoji, category, frequency, status, created_at
-            FROM habits
-            WHERE user_id = $1
-        `;
-        if (status) {
-            params.push(status);
-            query += ` AND status = $${params.length}`;
-        }
-        if (category) {
-            params.push(category);
-            query += ` AND category = $${params.length}`;
-        }
-        query += ` ORDER BY created_at ASC`;
+        const userId = c.get('userId');
+        const { status = 'active', category } = c.req.query();
 
-        const { rows } = await pool.query(query, params);
-        res.json(rows);
+        let query = supabase
+            .from('habits')
+            .select('id, name, emoji, category, frequency, status, created_at')
+            .eq('user_id', userId);
+
+        if (status) query = query.eq('status', status);
+        if (category) query = query.eq('category', category);
+
+        const { data, error } = await query.order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return c.json(data);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
-// POST /habits — create a new habit
-router.post('/', requireAuth, async (req, res) => {
+// POST /api/habits — create a new habit
+app.post('/', requireAuth, async (c) => {
     try {
-        const { name, emoji = '🎯', category, frequency = 'daily' } = req.body;
-        if (!name?.trim()) return res.status(400).json({ error: 'name is required' });
+        const userId = c.get('userId');
+        const { name, emoji = '🎯', category, frequency = 'daily' } = await c.req.json();
+        if (!name?.trim()) return c.json({ error: 'name is required' }, 400);
 
-        const { rows } = await pool.query(
-            `INSERT INTO habits (user_id, name, emoji, category, frequency)
-             VALUES ($1, $2, $3, $4, $5)
-             RETURNING *`,
-            [req.userId, name.trim(), emoji, category || null, frequency]
-        );
-        res.status(201).json(rows[0]);
+        const { data, error } = await supabase
+            .from('habits')
+            .insert({
+                user_id: userId,
+                name: name.trim(),
+                emoji,
+                category: category || null,
+                frequency
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return c.json(data, 201);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
-// PUT /habits/:id — update name, category, frequency, or status
-router.put('/:id', requireAuth, async (req, res) => {
+// PUT /api/habits/:id
+app.put('/:id', requireAuth, async (c) => {
     try {
-        const { name, emoji, category, frequency, status } = req.body;
-        const validStatuses = ['active', 'paused', 'archived'];
-        if (status && !validStatuses.includes(status)) {
-            return res.status(400).json({ error: `status must be one of: ${validStatuses.join(', ')}` });
-        }
+        const userId = c.get('userId');
+        const id = c.req.param('id');
+        const body = await c.req.json();
+        const { name, emoji, category, frequency, status } = body;
 
-        const { rows } = await pool.query(
-            `UPDATE habits
-             SET name      = COALESCE($1, name),
-                 emoji     = COALESCE($2, emoji),
-                 category  = COALESCE($3, category),
-                 frequency = COALESCE($4, frequency),
-                 status    = COALESCE($5, status)
-             WHERE id = $6 AND user_id = $7
-             RETURNING *`,
-            [name || null, emoji || null, category || null, frequency || null, status || null,
-             req.params.id, req.userId]
-        );
-        if (!rows.length) return res.status(404).json({ error: 'Habit not found' });
-        res.json(rows[0]);
+        const updates = {};
+        if (name !== undefined) updates.name = name;
+        if (emoji !== undefined) updates.emoji = emoji;
+        if (category !== undefined) updates.category = category;
+        if (frequency !== undefined) updates.frequency = frequency;
+        if (status !== undefined) updates.status = status;
+
+        if (Object.keys(updates).length === 0) return c.json({ error: 'No fields to update' }, 400);
+
+        const { data, error } = await supabase
+            .from('habits')
+            .update(updates)
+            .eq('id', id)
+            .eq('user_id', userId)
+            .select()
+            .maybeSingle();
+
+        if (error) throw error;
+        if (!data) return c.json({ error: 'Habit not found' }, 404);
+        return c.json(data);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
-// DELETE /habits/:id — hard delete (prefer status=archived for soft delete)
-router.delete('/:id', requireAuth, async (req, res) => {
+// DELETE /api/habits/:id
+app.delete('/:id', requireAuth, async (c) => {
     try {
-        const { rowCount } = await pool.query(
-            `DELETE FROM habits WHERE id = $1 AND user_id = $2`,
-            [req.params.id, req.userId]
-        );
-        if (!rowCount) return res.status(404).json({ error: 'Habit not found' });
-        res.json({ deleted: true });
+        const userId = c.get('userId');
+        const id = c.req.param('id');
+
+        const { error } = await supabase
+            .from('habits')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        return c.json({ deleted: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
-// GET /habits/:id/logs?date=YYYY-MM-DD — completion history for a habit
-router.get('/:id/logs', requireAuth, async (req, res) => {
+// GET /api/habits/:id/logs
+app.get('/:id/logs', requireAuth, async (c) => {
     try {
-        const { date, limit = 30 } = req.query;
-        const params = [req.params.id, req.userId];
-        let query = `
-            SELECT id, completed_at, status, session, notes
-            FROM habit_logs
-            WHERE habit_id = $1 AND user_id = $2
-        `;
+        const userId = c.get('userId');
+        const id = c.req.param('id');
+        const { date, limit = 30 } = c.req.query();
+
+        let query = supabase
+            .from('habit_logs')
+            .select('id, completed_at, status, session, notes')
+            .eq('habit_id', id)
+            .eq('user_id', userId);
+
         if (date) {
-            params.push(date);
-            query += ` AND DATE(completed_at AT TIME ZONE 'Asia/Kolkata') = $${params.length}`;
+            // Simplistic equality for date part
+            query = query.gte('completed_at', `${date}T00:00:00.000Z`).lte('completed_at', `${date}T23:59:59.999Z`);
         }
-        params.push(parseInt(limit, 10));
-        query += ` ORDER BY completed_at DESC LIMIT $${params.length}`;
 
-        const { rows } = await pool.query(query, params);
-        res.json(rows);
+        const { data, error } = await query
+            .order('completed_at', { ascending: false })
+            .limit(parseInt(limit, 10));
+
+        if (error) throw error;
+        return c.json(data);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
-export default router;
+export default app;

@@ -2,19 +2,14 @@
  * routes/notifications.js
  *
  * In-app notification system.
- * Notifications created server-side only — never from frontend.
- * createNotification() has 24h dedup guard to prevent notification spam.
+ * Refactored for Hono / Cloudflare Workers.
  */
-import express from 'express';
-import { pool } from '../lib/googleClient.js';
+import { Hono } from 'hono';
+import { supabase } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 
-const router = express.Router();
+const app = new Hono();
 
-/**
- * Typed error codes used by all integration health responses.
- * Allows IntegrationHealthCard to show specific error states.
- */
 export const INTEGRATION_ERROR_CODES = {
     TOKEN_EXPIRED: 'token_expired',
     REFRESH_FAILED: 'refresh_failed',
@@ -25,133 +20,137 @@ export const INTEGRATION_ERROR_CODES = {
 };
 
 /**
- * GET /notifications
- * List active (non-dismissed) notifications, newest first.
- * Optional: ?limit=20&offset=0
+ * GET /api/notifications
  */
-router.get('/', requireAuth, async (req, res) => {
+app.get('/', requireAuth, async (c) => {
     try {
-        const limit = Math.min(parseInt(req.query.limit || 30), 100);
-        const offset = parseInt(req.query.offset || 0, 10);
+        const userId = c.get('userId');
+        const limit = Math.min(parseInt(c.req.query('limit') || 30), 100);
+        const offset = parseInt(c.req.query('offset') || 0, 10);
 
-        const result = await pool.query(
-            `SELECT id, type, title, body, action_url, read_at, created_at
-             FROM notifications
-             WHERE user_id = $1 AND dismissed_at IS NULL
-             ORDER BY created_at DESC
-             LIMIT $2 OFFSET $3`,
-            [req.userId, limit, offset]
-        );
+        const { data, error } = await supabase
+            .from('notifications')
+            .select('id, type, title, body, action_url, read_at, created_at')
+            .eq('user_id', userId)
+            .is('dismissed_at', null)
+            .order('created_at', { ascending: false })
+            .range(offset, offset + limit - 1);
 
-        res.json(result.rows);
+        if (error) throw error;
+        return c.json(data);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
 /**
- * GET /notifications/count
- * Returns { unread: N } — used for the bell badge.
- * Lightweight endpoint, safe to poll every 60s.
+ * GET /api/notifications/count
  */
-router.get('/count', requireAuth, async (req, res) => {
+app.get('/count', requireAuth, async (c) => {
     try {
-        const result = await pool.query(
-            `SELECT COUNT(*)::int AS unread
-             FROM notifications
-             WHERE user_id = $1 AND dismissed_at IS NULL AND read_at IS NULL`,
-            [req.userId]
-        );
-        res.json({ unread: result.rows[0].unread });
+        const userId = c.get('userId');
+        const { count, error } = await supabase
+            .from('notifications')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .is('dismissed_at', null)
+            .is('read_at', null);
+
+        if (error) throw error;
+        return c.json({ unread: count || 0 });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
 /**
- * PATCH /notifications/:id/read
- * Mark a single notification as read.
+ * PATCH /api/notifications/:id/read
  */
-router.patch('/:id/read', requireAuth, async (req, res) => {
+app.patch('/:id/read', requireAuth, async (c) => {
     try {
-        const result = await pool.query(
-            `UPDATE notifications
-             SET read_at = NOW()
-             WHERE id = $1 AND user_id = $2 AND read_at IS NULL
-             RETURNING id`,
-            [req.params.id, req.userId]
-        );
-        if (result.rowCount === 0) return res.status(404).json({ error: 'Notification not found or already read' });
-        res.json({ success: true });
+        const userId = c.get('userId');
+        const id = c.req.param('id');
+        const { data, error } = await supabase
+            .from('notifications')
+            .update({ read_at: new Date().toISOString() })
+            .eq('id', id)
+            .eq('user_id', userId)
+            .is('read_at', null)
+            .select();
+
+        if (error) throw error;
+        if (!data || data.length === 0) return c.json({ error: 'Already read or not found' }, 404);
+        return c.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
 /**
- * POST /notifications/mark-all-read
- * Mark all unread notifications as read.
+ * POST /api/notifications/mark-all-read
  */
-router.post('/mark-all-read', requireAuth, async (req, res) => {
+app.post('/mark-all-read', requireAuth, async (c) => {
     try {
-        const result = await pool.query(
-            `UPDATE notifications
-             SET read_at = NOW()
-             WHERE user_id = $1 AND dismissed_at IS NULL AND read_at IS NULL`,
-            [req.userId]
-        );
-        res.json({ updated: result.rowCount });
+        const userId = c.get('userId');
+        const { data, error } = await supabase
+            .from('notifications')
+            .update({ read_at: new Date().toISOString() })
+            .eq('user_id', userId)
+            .is('dismissed_at', null)
+            .is('read_at', null)
+            .select();
+
+        if (error) throw error;
+        return c.json({ updated: data?.length || 0 });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
 /**
- * DELETE /notifications/:id
- * Dismiss a notification (soft delete via dismissed_at).
+ * DELETE /api/notifications/:id
+ * Dismiss a notification (soft delete).
  */
-router.delete('/:id', requireAuth, async (req, res) => {
+app.delete('/:id', requireAuth, async (c) => {
     try {
-        const result = await pool.query(
-            `UPDATE notifications
-             SET dismissed_at = NOW()
-             WHERE id = $1 AND user_id = $2 AND dismissed_at IS NULL
-             RETURNING id`,
-            [req.params.id, req.userId]
-        );
-        if (result.rowCount === 0) return res.status(404).json({ error: 'Notification not found' });
-        res.json({ success: true });
+        const userId = c.get('userId');
+        const id = c.req.param('id');
+        const { data, error } = await supabase
+            .from('notifications')
+            .update({ dismissed_at: new Date().toISOString() })
+            .eq('id', id)
+            .eq('user_id', userId)
+            .is('dismissed_at', null)
+            .select();
+
+        if (error) throw error;
+        if (!data || data.length === 0) return c.json({ error: 'Notification not found' }, 404);
+        return c.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return c.json({ error: err.message }, 500);
     }
 });
 
 /**
- * Internal helper — exported for use by commitment/drift controllers and background jobs.
- * De-duplicates: same type + title cannot be inserted within dedupWindowHours (default 24h).
- * This prevents notification spam from repeated cron runs or rapid triggers.
- *
- * @param {string} userId
- * @param {string} type
- * @param {string} title
- * @param {string|null} body
- * @param {string|null} actionUrl
- * @param {number} dedupWindowHours  - default 24h; use 48h for weekly drift alerts
+ * Internal helper
  */
 export const createNotification = async (userId, type, title, body = null, actionUrl = null, dedupWindowHours = 24) => {
-    await pool.query(
-        `INSERT INTO notifications (user_id, type, title, body, action_url)
-         SELECT $1, $2, $3, $4, $5
-         WHERE NOT EXISTS (
-           SELECT 1 FROM notifications
-           WHERE user_id      = $1
-             AND type         = $2
-             AND title        = $3
-             AND dismissed_at IS NULL
-             AND created_at   > NOW() - ($6 || ' hours')::interval
-         )`,
-        [userId, type, title, body, actionUrl, String(dedupWindowHours)]
-    );
+    const cutoff = new Date(Date.now() - (dedupWindowHours * 3600000)).toISOString();
+
+    // De-duplication check
+    const { data: existing } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('type', type)
+        .eq('title', title)
+        .is('dismissed_at', null)
+        .gt('created_at', cutoff)
+        .limit(1);
+
+    if (existing && existing.length > 0) return;
+
+    await supabase.from('notifications').insert({ user_id: userId, type, title, body, action_url: actionUrl });
 };
 
-export default router;
+export default app;

@@ -5,7 +5,7 @@
  * Key is loaded from TOKEN_ENCRYPTION_KEY env var (64 hex chars = 32 bytes).
  * Stored format: "<iv_hex>:<authTag_hex>:<ciphertext_hex>"
  */
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 const ALGO = 'aes-256-gcm';
 
