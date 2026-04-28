@@ -14,6 +14,24 @@ const SPORTS = [
   { key: 'gym', label: 'Gym', emoji: '🏋️', color: '#EC4899' },
 ];
 
+
+class SportsBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { crashed: false }; }
+  static getDerivedStateFromError() { return { crashed: true }; }
+  componentDidCatch(err) { console.error('Sports crash:', err); }
+  render() {
+    if (this.state.crashed) return (
+      <div style={{ padding: '60px', textAlign: 'center' }}>
+        <div style={{ fontSize: '32px', marginBottom: '16px' }}>🏟️</div>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Sports data temporarily unavailable</h2>
+        <p style={{ color: 'var(--color-text-3)', marginBottom: '20px' }}>Live scores and standings couldn't load right now.</p>
+        <button onClick={() => this.setState({ crashed: false })} style={{ padding: '10px 24px', background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600 }}>Try Again</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
 const MOCK_SESSIONS = [
   { sport: 'cricket', note: 'Net practice – 45 min', date: '2026-05-03', duration: 45, rating: 4 },
   { sport: 'gym', note: 'Chest & triceps', date: '2026-05-03', duration: 60, rating: 5 },
@@ -59,48 +77,59 @@ const SportsPage = () => {
   const [cricketLive, setCricketLive] = useState([]);
   const [loadingLive, setLoadingLive] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [liveError, setLiveError] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'live') {
       fetchLiveData();
-      const interval = setInterval(fetchLiveData, 60000); // Refresh every minute
+      const interval = setInterval(fetchLiveData, 60000);
       return () => clearInterval(interval);
     }
-  }, [activeTab]);
+  }, [activeTab]); // eslint-disable-line
+
+  const safeSlice = (arr, n) => (Array.isArray(arr) ? arr.slice(0, n) : []);
 
   const fetchLiveData = async () => {
     setLoadingLive(true);
+    setLiveError(null);
     try {
-      const [fb, f1S, f1R, cr] = await Promise.all([
+      const results = await Promise.allSettled([
         sportsService.fetchFootballLive(),
         sportsService.fetchF1Standings(),
         sportsService.fetchF1Races(),
-        sportsService.fetchCricketLive()
+        sportsService.fetchCricketLive(),
       ]);
-      setFootballLive(fb.slice(0, 5));
-      setF1Standings(f1S.slice(0, 10));
-      setF1Races(f1R);
-      setCricketLive(cr.slice(0, 5));
+      const [fb, f1S, f1R, cr] = results.map(r => r.status === 'fulfilled' ? r.value : []);
+      setFootballLive(safeSlice(fb, 5));
+      setF1Standings(safeSlice(f1S, 10));
+      setF1Races(Array.isArray(f1R) ? f1R : []);
+      setCricketLive(safeSlice(cr, 5));
       setLastUpdated(new Date());
 
-      // If no live football, fetch recent results and upcoming fixtures
-      if (fb.length === 0) {
-        const [recent, upcoming] = await Promise.all([
-          sportsService.fetchFootballRecent(),
-          sportsService.fetchFootballUpcoming()
-        ]);
-        setFootballRecent(recent.slice(0, 5));
-        setFootballUpcoming(upcoming.slice(0, 5));
+      if (!Array.isArray(fb) || fb.length === 0) {
+        try {
+          const [recent, upcoming] = await Promise.all([
+            sportsService.fetchFootballRecent(),
+            sportsService.fetchFootballUpcoming(),
+          ]);
+          setFootballRecent(safeSlice(recent, 5));
+          setFootballUpcoming(safeSlice(upcoming, 5));
+        } catch {
+          setFootballRecent([]);
+          setFootballUpcoming([]);
+        }
       } else {
         setFootballRecent([]);
         setFootballUpcoming([]);
       }
     } catch (err) {
       console.error('Failed to fetch live sports:', err);
+      setLiveError('Live data temporarily unavailable. Showing cached data.');
     } finally {
       setLoadingLive(false);
     }
   };
+
 
   if (!user) return null;
 
@@ -113,7 +142,7 @@ const SportsPage = () => {
   const totalMin = MOCK_SESSIONS.reduce((a, b) => a + b.duration, 0);
 
   return (
-    <div style={{ flex: 1, paddingBottom: '80px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ flex: 1, paddingBottom: '80px' }}>
       {/* Header */}
       <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
@@ -457,21 +486,29 @@ const SportsPage = () => {
               <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
                 <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '24px' }}>🏎️ F1 Schedule</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {f1Races.map((race, i) => (
+                  {f1Races.map((race, i) => {
+                    const raceDate = race.date ? new Date(race.date) : null;
+                    const raceName = race?.competition?.name || race?.name || 'Grand Prix';
+                    const circuitName = race?.circuit?.name || '';
+                    const city = race?.competition?.location?.city || race?.circuit?.city || '';
+                    return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingBottom: '16px', borderBottom: i < f1Races.length - 1 ? `1px solid ${border}` : 'none' }}>
                       <div style={{ 
                         width: '50px', height: '50px', borderRadius: '12px', background: 'var(--bg-elevated)', 
                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: `1px solid ${border}`
                       }}>
-                        <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-accent)', textTransform: 'uppercase' }}>{new Date(race.date).toLocaleDateString('en-US', { month: 'short' })}</div>
-                        <div style={{ fontSize: '18px', fontWeight: 800 }}>{new Date(race.date).getDate()}</div>
+                        {raceDate ? (<>
+                          <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-accent)', textTransform: 'uppercase' }}>{raceDate.toLocaleDateString('en-US', { month: 'short' })}</div>
+                          <div style={{ fontSize: '18px', fontWeight: 800 }}>{raceDate.getDate()}</div>
+                        </>) : <div style={{ fontSize: '20px' }}>🏎️</div>}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: text1 }}>{race.competition.name}</div>
-                        <div style={{ fontSize: '11px', color: text3, marginTop: '2px' }}>{race.circuit.name} · {race.competition.location.city}</div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: text1 }}>{raceName}</div>
+                        {(circuitName || city) && <div style={{ fontSize: '11px', color: text3, marginTop: '2px' }}>{[circuitName, city].filter(Boolean).join(' · ')}</div>}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                   {f1Races.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: text3, fontSize: '13px' }}>No upcoming races.</div>}
                 </div>
               </section>
@@ -480,17 +517,24 @@ const SportsPage = () => {
               <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
                 <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '24px' }}>🏆 F1 Standings</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {f1Standings.map((driver, i) => (
+                  {f1Standings.map((driver, i) => {
+                    const driverName = driver?.driver?.name || driver?.name || 'Driver';
+                    const teamName = driver?.team?.name || driver?.constructor?.name || '';
+                    const driverImg = driver?.driver?.image || null;
+                    const pts = driver?.points ?? driver?.pts ?? '—';
+                    const pos = driver?.position ?? (i + 1);
+                    return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '12px', background: i < 3 ? 'rgba(226,183,20,0.05)' : 'transparent' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: text3, width: '24px' }}>{driver.position}</span>
-                      <img src={driver.driver.image} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', objectFit: 'contain', border: `1px solid ${border}` }} />
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: text3, width: '24px' }}>{pos}</span>
+                      {driverImg ? <img src={driverImg} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', objectFit: 'contain', border: `1px solid ${border}` }} /> : <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', border: `1px solid ${border}` }}>🏎️</div>}
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: text1 }}>{driver.driver.name}</div>
-                        <div style={{ fontSize: '10px', color: text3 }}>{driver.team.name}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: text1 }}>{driverName}</div>
+                        {teamName && <div style={{ fontSize: '10px', color: text3 }}>{teamName}</div>}
                       </div>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>{driver.points}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>{pts}</div>
                     </div>
-                  ))}
+                    );
+                  })}
                   {f1Standings.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: text3, fontSize: '13px' }}>Standings unavailable.</div>}
                 </div>
               </section>
@@ -521,11 +565,45 @@ const SportsPage = () => {
                 </select>
               </div>
               
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Duration (min)</label>
+                  <input
+                    type="number" placeholder="45"
+                    value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
+                    style={{
+                      width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${border}`,
+                      background: 'var(--color-surface)', color: text1, fontSize: '14px', outline: 'none',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Rating (1-5)</label>
+                  <div style={{ display: 'flex', gap: '8px', padding: '8px 0' }}>
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, rating: star }))}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          fontSize: '20px', color: star <= form.rating ? 'var(--color-accent)' : border,
+                          padding: 0, transition: 'all 0.2s'
+                        }}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Duration (min)</label>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Date</label>
                 <input
-                  type="number" placeholder="45"
-                  value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
+                  type="date"
+                  value={form.date || new Date().toISOString().split('T')[0]}
+                  onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                   style={{
                     width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${border}`,
                     background: 'var(--color-surface)', color: text1, fontSize: '14px', outline: 'none',
@@ -564,4 +642,9 @@ const SportsPage = () => {
   );
 };
 
-export default SportsPage;
+const SportsPageWrapped = () => (
+  <SportsBoundary>
+    <SportsPage />
+  </SportsBoundary>
+);
+export default SportsPageWrapped;
