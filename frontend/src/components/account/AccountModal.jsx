@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // Added for Portal
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import toast from '../../utils/toast';
 import supabase from '../../utils/supabase';
 import { apiDelete, apiGet, apiPatch } from '../../utils/api';
+
 
 const Section = ({ title, children }) => (
     <div style={{ marginBottom: '24px' }}>
@@ -326,6 +328,34 @@ const AccountModal = ({ isOpen, onClose }) => {
                                         </div>
                                     </div>
                                 )}
+                            </Section>
+
+                            <Section title="Reports &amp; Analytics">
+                                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.5, fontWeight: 500 }}>
+                                        View your behavioral reports, spending analysis, and quarterly reviews.
+                                    </div>
+                                    <Link
+                                        to="/reports"
+                                        onClick={onClose}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '10px',
+                                            padding: '14px 16px',
+                                            background: 'var(--bg-elevated)',
+                                            border: '1px solid var(--border)',
+                                            borderRadius: '12px',
+                                            textDecoration: 'none',
+                                            color: 'var(--text-1)',
+                                            fontWeight: 700,
+                                            fontSize: '14px',
+                                            transition: 'all 0.2s ease',
+                                        }}
+                                    >
+                                        <span style={{ fontSize: '18px' }}>📊</span>
+                                        View Reports &amp; Analytics
+                                        <span style={{ marginLeft: 'auto', color: 'var(--text-3)', fontSize: '12px' }}>→</span>
+                                    </Link>
+                                </div>
                             </Section>
 
                             <Section title="Change Password">

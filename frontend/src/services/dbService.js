@@ -16,6 +16,19 @@ export async function insertRow(table, payload) {
     return data;
 }
 
+/** Fetch rows from a table with optional ordering and filtering. */
+export async function getRows(table, { orderCol = 'created_at', ascending = false, eq = null } = {}) {
+    let q = supabase.from(table).select('*');
+    if (eq) {
+        Object.entries(eq).forEach(([col, val]) => {
+            q = q.eq(col, val);
+        });
+    }
+    const { data, error } = await q.order(orderCol, { ascending });
+    if (error) throw new Error(`[db:fetch:${table}] ${error.message}`);
+    return data;
+}
+
 /**
  * Update rows where col = val (and optionally extraCol = extraVal).
  * Returns the updated records.

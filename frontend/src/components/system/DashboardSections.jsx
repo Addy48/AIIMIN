@@ -40,6 +40,8 @@ import SystemHealthRings from '../dashboard/SystemHealthRings';
 import SystemBottleneckCard from '../dashboard/SystemBottleneckCard';
 import DayArchetypes from '../dashboard/DayArchetypes';
 import SystemOverviewStrip from './SystemOverviewStrip';
+import { motion } from 'framer-motion';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 function DayProgressBar() {
     const [progress, setProgress] = React.useState(0);
