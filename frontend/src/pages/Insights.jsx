@@ -55,6 +55,18 @@ const SKILL_DOMAINS = [
       { name: 'Meditation',        level: 2, lastPracticed: '4 days ago', xp: 240 },
     ],
   },
+  {
+    key: 'career',
+    label: 'Career & Placement',
+    emoji: '💼',
+    color: '#EC4899',
+    skills: [
+      { name: 'Interview Readiness', level: 3, lastPracticed: '4 days ago', xp: 520 },
+      { name: 'Resume Score',        level: 4, lastPracticed: '1 week ago', xp: 880 },
+      { name: 'System Design',       level: 3, lastPracticed: '5 days ago', xp: 540 },
+      { name: 'Aptitude & Logic',    level: 4, lastPracticed: '2 days ago', xp: 720 },
+    ],
+  },
 ];
 
 const MAX_XP = 1000;
@@ -173,10 +185,10 @@ const Insights = () => {
 
       {/* ── Page header ── */}
       <div style={{ marginBottom: '32px' }}>
-        <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: text3, marginBottom: '10px' }}>
+        <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: text3, marginBottom: '12px' }}>
           Skills · Mastery Engine
         </div>
-        <h1 style={{ font: 'var(--text-hero)', color: text1, margin: 0, letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: '52px', fontWeight: 800, color: text1, margin: 0, letterSpacing: '-0.03em' }}>
           Build yourself.
         </h1>
       </div>
@@ -184,14 +196,15 @@ const Insights = () => {
       {/* ── XP summary ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
         {[
-          { label: 'Total XP', value: totalXp.toLocaleString(), color: '#F59E0B' },
-          { label: 'Domains', value: SKILL_DOMAINS.length, color: '#3B82F6' },
-          { label: 'Skills Tracked', value: SKILL_DOMAINS.flatMap(d => d.skills).length, color: '#22C55E' },
-          { label: 'Avg Level', value: `${overallLevel} / 5`, color: '#8B5CF6' },
+          { label: 'Total XP', value: totalXp.toLocaleString(), color: '#F59E0B', emoji: '🔥' },
+          { label: 'Domains', value: SKILL_DOMAINS.length, color: '#3B82F6', emoji: '💠' },
+          { label: 'Skills Tracked', value: SKILL_DOMAINS.flatMap(d => d.skills).length, color: '#22C55E', emoji: '🎯' },
+          { label: 'Avg Level', value: `${overallLevel} / 5`, color: '#8B5CF6', emoji: '⭐' },
         ].map(m => (
-          <div key={m.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: '12px', padding: '16px', borderTop: `3px solid ${m.color}` }}>
-            <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: text3, marginBottom: '6px' }}>{m.label}</div>
-            <div style={{ fontSize: '22px', fontWeight: 800, color: m.color, fontFamily: 'var(--font-mono)' }}>{m.value}</div>
+          <div key={m.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: '20px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', right: '-10px', top: '-10px', fontSize: '64px', opacity: 0.05 }}>{m.emoji}</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: text3, marginBottom: '12px' }}>{m.label}</div>
+            <div style={{ fontSize: '28px', fontWeight: 900, color: m.color, fontFamily: 'var(--font-mono)' }}>{m.value}</div>
           </div>
         ))}
       </div>
