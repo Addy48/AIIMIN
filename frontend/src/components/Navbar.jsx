@@ -9,13 +9,13 @@ import Logo from './Logo';
 /* ── Slim nav — 6 primary links ───────────────────────────── */
 const NAV_LINKS = [
   { to: '/overview',    label: 'Today' },
-  { to: '/finance',    label: 'Finance' },
-  { to: '/calendar',   label: 'Calendar' },
-  { to: '/journal',    label: 'Journal' },
-  { to: '/lab',        label: 'Lab' },
-  { to: '/sports',     label: 'Sports' },
-  { to: '/placements', label: 'Placement' },
-  { to: '/insights',   label: 'Skills' },
+  { to: '/habits',      label: 'Habits' },
+  { to: '/journal',     label: 'Journal' },
+  { to: '/finance',     label: 'Finance' },
+  { to: '/calendar',    label: 'Calendar' },
+  { to: '/placements',  label: 'Placement' },
+  { to: '/sports',      label: 'Sports' },
+  { to: '/insights',    label: 'Skills' },
 ];
 
 const Navbar = ({ user }) => {
