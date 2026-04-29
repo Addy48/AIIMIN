@@ -32,6 +32,7 @@ const LabFullPage = React.lazy(() => import('./pages/LabFullPage'));
 const Placements = React.lazy(() => import('./pages/Placements'));
 const SportsPage = React.lazy(() => import('./pages/Sports'));
 const JournalPage = React.lazy(() => import('./pages/Journal'));
+const HabitsPage  = React.lazy(() => import('./pages/Habits'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -100,6 +101,7 @@ function AppContent({ user }) {
           <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
           <Route path="/lab" element={<Lazy><LabFullPage /></Lazy>} />
           <Route path="/placements" element={<Lazy><Placements /></Lazy>} />
+          <Route path="/habits"     element={<Lazy><HabitsPage /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}
