@@ -163,6 +163,7 @@
   --bg-surface:    var(--color-surface);
   --accent:        var(--color-accent);
   --accent-dim:    var(--color-accent-dim);
+  --accent-alpha:  color-mix(in srgb, var(--color-accent) 15%, transparent);
   --text-1:        var(--color-text-1);
   --text-2:        var(--color-text-2);
   --text-3:        var(--color-text-3);
@@ -175,7 +176,7 @@
 /* ────────────────────────────────────────────────────────
    LIGHT MODE: Nordic Calm (Parchment + Forest Ink)
 ───────────────────────────────────────────────────────── */
-[data-theme="light"] {
+[data-theme="normal"] {
   color-scheme: light;
 
   --color-base:    #F0EDE8;
@@ -260,4 +261,45 @@
   --text-3:      var(--color-text-3);
   --border:      var(--color-border);
   --success:     var(--color-success);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: NOTION B&W
+───────────────────────────────────────────────────────── */
+[data-theme="notion"] {
+  color-scheme: light;
+  --color-base: #FFFFFF;
+  --color-surface: #F7F7F5;
+  --color-elevated: #EBEBEA;
+  --color-border: #E1E1E1;
+  --color-border-lit: #D4D4D4;
+  --color-text-1: #37352F;
+  --color-text-2: #787774;
+  --color-text-3: #9F9E9B;
+  --color-accent: #000000;
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(0, 0, 0, 0.06);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: INTERNET (Hacker / Retro Web)
+───────────────────────────────────────────────────────── */
+[data-theme="internet"] {
+  color-scheme: dark;
+  --color-base: #0A0D10;
+  --color-surface: #101419;
+  --color-elevated: #161B22;
+  --color-border: #21262D;
+  --color-border-lit: #30363D;
+  --color-text-1: #F0F6FC;
+  --color-text-2: #8B949E;
+  --color-text-3: #484F58;
+  --color-accent: #00F0FF;
+  --color-success: #00FF88;
+  --color-warning: #FFD33D;
+  --color-danger: #FF7B72;
+  --glass-bg: rgba(10, 13, 16, 0.85);
+  --glass-border: rgba(0, 240, 255, 0.25);
+  --ambient-1: radial-gradient(circle at 0% 0%, rgba(0, 240, 255, 0.15), transparent 40%);
+  --ambient-2: radial-gradient(circle at 100% 100%, rgba(0, 255, 136, 0.1), transparent 40%);
 }

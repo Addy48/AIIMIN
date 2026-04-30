@@ -1,217 +1,482 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, Wifi } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { apiPost } from '../utils/api';
 import { sportsService } from '../services/sportsService';
-
-/* ── Fallback data — always shows something ── */
-const FALLBACK = {
-  football: [
-    { fixture: { id:1, status:{ short:'FT', elapsed:null } }, teams: { home:{ name:'Real Madrid' }, away:{ name:'FC Barcelona' } }, goals:{ home:3, away:2 }, league:{ name:'La Liga' } },
-    { fixture: { id:2, status:{ short:'FT', elapsed:null } }, teams: { home:{ name:'Man City' }, away:{ name:'Arsenal' } }, goals:{ home:2, away:1 }, league:{ name:'Premier League' } },
-    { fixture: { id:3, status:{ short:'NS', elapsed:null } }, teams: { home:{ name:'Bayern Munich' }, away:{ name:'Borussia Dortmund' } }, goals:{ home:null, away:null }, league:{ name:'Bundesliga' } },
-  ],
-  f1: [
-    { name:'Monaco Grand Prix', date:'2026-05-25', circuit:{ name:'Circuit de Monaco' }, competition:{ name:'Monaco GP' }, status:'Scheduled', type:'Race' },
-    { name:'Canadian Grand Prix', date:'2026-06-08', circuit:{ name:'Circuit Gilles Villeneuve' }, competition:{ name:'Canadian GP' }, status:'Scheduled', type:'Race' },
-    { name:'British Grand Prix', date:'2026-07-06', circuit:{ name:'Silverstone Circuit' }, competition:{ name:'British GP' }, status:'Scheduled', type:'Race' },
-  ],
-  cricket: [
-    { name:'IPL 2026 — CSK vs MI', status:'Live', live:true, score:'CSK 187/4 (18.3 ov)' },
-    { name:'IPL 2026 — RCB vs KKR', status:'Scheduled', live:false, score:'Mar 24, 7:30 PM IST' },
-  ],
-  recentMatches: [
-    { title:'Real Madrid vs Barcelona', score:'3 - 2', status:'Finished' },
-    { title:'Man City vs Arsenal', score:'2 - 1', status:'Finished' },
-    { title:'PSG vs Lyon', score:'4 - 0', status:'Finished' },
-  ],
-  news: [
-    { title:'Verstappen on pole at Monaco qualifying', time:'1h ago', source:'F1 Official' },
-    { title:'CSK beat MI in last-over thriller — Dhoni finishes in style', time:'3h ago', source:'ESPNcricinfo' },
-    { title:'Mbappé hat-trick seals Real Madrid title', time:'5h ago', source:'Sky Sports' },
-  ],
-};
-
-const statusLabel = (s) => {
-  if (!s) return 'Scheduled';
-  const m = { FT:'Finished', NS:'Upcoming', '1H':'Live', '2H':'Live', HT:'Half-Time', ET:'Extra Time' };
-  return m[s] || s;
-};
-
-const ArenaCard = ({ type, title, subtitle, status, score, time }) => {
-  const isLive = status === 'Live';
-  return (
-    <motion.div
-      initial={{ opacity:0, y:10 }} animate={{ opacity:1, y:0 }}
-      whileHover={{ y: -3, boxShadow:'0 12px 30px rgba(0,0,0,0.12)' }}
-      style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'20px', display:'flex', flexDirection:'column', gap:'12px', transition:'box-shadow 0.2s' }}
-    >
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <div style={{ fontSize:'9px', fontWeight:900, color:'var(--color-accent)', textTransform:'uppercase', letterSpacing:'0.12em' }}>{type}</div>
-        <div style={{ padding:'3px 8px', background: isLive ? 'rgba(239,68,68,0.12)' : 'var(--color-elevated)', borderRadius:'6px', color: isLive ? '#ef4444' : 'var(--color-text-3)', fontSize:'9px', fontWeight:800, display:'flex', alignItems:'center', gap:'4px' }}>
-          {isLive && <span style={{ width:'5px', height:'5px', borderRadius:'50%', background:'#ef4444', animation:'pulse 1s infinite', display:'inline-block' }} />}
-          {status}
-        </div>
-      </div>
-      <div>
-        <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)', marginBottom:'3px' }}>{title}</div>
-        <div style={{ fontSize:'11px', color:'var(--color-text-3)', fontWeight:600 }}>{subtitle}</div>
-      </div>
-      <div style={{ background:'var(--color-elevated)', borderRadius:'12px', padding:'14px', textAlign:'center', border:'1px solid var(--color-border)' }}>
-        <div style={{ fontSize:'22px', fontWeight:900, letterSpacing:'0.05em', color:'var(--color-text-1)' }}>{score || '— vs —'}</div>
-      </div>
-      {time && <div style={{ fontSize:'10px', fontWeight:700, color:'var(--color-text-3)', textAlign:'center' }}>{time}</div>}
-    </motion.div>
-  );
-};
-
-const TrainingLog = () => {
-  const EXERCISES = [
-    { name:'Push-ups', sets:3, reps:20 },
-    { name:'Pull-ups', sets:3, reps:10 },
-    { name:'Squats', sets:4, reps:15 },
-    { name:'Plank', sets:3, reps:'60s' },
-  ];
-  const [done, setDone] = useState({});
-
-  return (
-    <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-      <div style={{ background:'linear-gradient(135deg, #1E5C3A 0%, #0D3B26 100%)', borderRadius:'16px', padding:'24px', color:'#fff', marginBottom:'4px' }}>
-        <div style={{ fontSize:'10px', fontWeight:800, opacity:0.75, marginBottom:'4px', textTransform:'uppercase', letterSpacing:'0.1em' }}>Today's Session</div>
-        <div style={{ fontSize:'22px', fontWeight:900 }}>HIIT Training</div>
-        <div style={{ display:'flex', gap:'20px', marginTop:'12px', fontSize:'12px', opacity:0.85 }}>
-          <div><div style={{ fontSize:'9px', opacity:0.7, marginBottom:'2px' }}>DURATION</div><div style={{ fontWeight:900 }}>45m</div></div>
-          <div><div style={{ fontSize:'9px', opacity:0.7, marginBottom:'2px' }}>INTENSITY</div><div style={{ fontWeight:900 }}>8/10</div></div>
-          <div><div style={{ fontSize:'9px', opacity:0.7, marginBottom:'2px' }}>DONE</div><div style={{ fontWeight:900 }}>{Object.values(done).filter(Boolean).length}/{EXERCISES.length}</div></div>
-        </div>
-      </div>
-      {EXERCISES.map(ex => (
-        <div key={ex.name} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 16px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'12px' }}>
-          <div>
-            <div style={{ fontSize:'13px', fontWeight:700, color:'var(--color-text-1)' }}>{ex.name}</div>
-            <div style={{ fontSize:'11px', color:'var(--color-text-3)' }}>{ex.sets} × {ex.reps}</div>
-          </div>
-          <button onClick={() => setDone(p=>({...p,[ex.name]:!p[ex.name]}))}
-            style={{ width:'28px', height:'28px', borderRadius:'50%', background: done[ex.name] ? 'var(--color-accent)' : 'var(--color-elevated)', border:`1px solid ${done[ex.name]?'var(--color-accent)':'var(--color-border)'}`, cursor:'pointer', color: done[ex.name]?'#fff':'var(--color-text-3)', fontSize:'12px', fontWeight:900 }}>
-            {done[ex.name] ? '✓' : '○'}
-          </button>
-        </div>
-      ))}
-    </div>
-  );
-};
+import PageHeader from '../components/layout/PageHeader';
 
 const Sports = () => {
-  const [data, setData] = useState(FALLBACK);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+  const user = React.useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
+  const [activeTab, setActiveTab] = useState('Cricket'); // 'Cricket' | 'Football' | 'Formula 1'
   const [refreshing, setRefreshing] = useState(false);
-  const [usingFallback, setUsingFallback] = useState(false);
-  const [activeTab, setActiveTab] = useState('Arena');
 
-  const loadData = useCallback(async () => {
+  const [feed, setFeed] = useState(null);
+
+  const fetchScores = async (isRefresh = false) => {
     setRefreshing(true);
     try {
-      const res = await sportsService.getAggregatedSports();
-      const hasReal = (res.football?.length > 0 && res.football[0] !== FALLBACK.football[0]);
-      setData(res.football?.length ? res : FALLBACK);
-      setUsingFallback(!hasReal);
-    } catch {
-      setData(FALLBACK);
-      setUsingFallback(true);
+      if (isRefresh) {
+        try {
+          const res = await apiPost('/sports/refresh', {});
+          setFeed(res.data || res);
+        } catch (err) {
+          console.warn('Server refresh failed, fetching local aggregated sports feed:', err);
+          const localData = await sportsService.getAggregatedSports();
+          setFeed(localData);
+        }
+      } else {
+        const localData = await sportsService.getAggregatedSports();
+        setFeed(localData);
+      }
+    } catch (err) {
+      console.error('Failed to sync sports:', err);
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  };
 
-  useEffect(() => { loadData(); const iv = setInterval(loadData, 60000); return () => clearInterval(iv); }, [loadData]);
+  const handleRefresh = () => {
+    fetchScores(true);
+  };
 
+  useEffect(() => {
+    // Initial sync
+    fetchScores();
+    // 5-minute interval sync
+    const interval = setInterval(() => {
+      fetchScores(true);
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, navigate]);
+
+
+  // Recent Balls data (Cricket tab) removed
   return (
-    <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
-      {/* Header */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:'32px' }}>
-        <div>
-          <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--color-accent)', marginBottom:'6px' }}>Sports Intelligence</div>
-          <h1 style={{ font:'var(--text-hero)', margin:0, color:'var(--color-text-1)' }}>The Arena.</h1>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          {usingFallback && (
-            <div style={{ display:'flex', alignItems:'center', gap:'6px', padding:'6px 12px', background:'var(--color-warning-dim)', border:'1px solid var(--color-warning)', borderRadius:'8px', fontSize:'10px', fontWeight:800, color:'var(--color-warning)' }}>
-              <WifiOff size={11} /> Cached Data
+    <div className="page-container">
+      <PageHeader 
+        title="The Arena."
+        subtitle="AIIMIN Sports Intelligence"
+        rightContent={
+          <>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              fontSize: '11px',
+              fontWeight: 800,
+              color: 'var(--color-accent)'
+            }}>
+              <Wifi size={13} style={{ strokeWidth: 2.5 }} /> Live Score Feed
             </div>
-          )}
-          <button onClick={loadData} disabled={refreshing} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'12px', padding:'10px 16px', fontSize:'11px', fontWeight:800, color:'var(--color-text-2)', cursor:'pointer', display:'flex', alignItems:'center', gap:'8px' }}>
-            <RefreshCw size={12} style={{ animation: refreshing ? 'aiimin-spin 0.7s linear infinite' : 'none' }} />
-            {refreshing ? 'Refreshing...' : 'Live Refresh'}
-          </button>
-        </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
+                padding: '10px 18px',
+                fontSize: '12px',
+                fontWeight: 800,
+                color: 'var(--color-text-2)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <RefreshCw size={13} className={refreshing ? 'spin-anim' : ''} style={{ transition: 'transform 0.5s' }} />
+              {refreshing ? 'Syncing...' : 'Sync Scores'}
+            </button>
+          </>
+        }
+      />
+
+      {/* Main Tabs Navigation */}
+      <div style={{
+        marginBottom: '32px',
+        display: 'flex',
+        gap: '12px',
+        borderBottom: '1px solid var(--border)',
+        paddingBottom: '16px'
+      }}>
+        {['Cricket', 'Football', 'Formula 1'].map((tab) => {
+          const isActive = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: '10px 24px',
+                borderRadius: '99px',
+                border: `1px solid ${isActive ? 'var(--color-accent)' : 'var(--border)'}`,
+                background: isActive ? 'var(--color-accent)' : 'var(--color-surface)',
+                color: isActive ? 'var(--color-base)' : 'var(--color-text-2)',
+                fontSize: '13px',
+                fontWeight: 800,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+              }}
+            >
+              {tab === 'Cricket' && '🏏'}
+              {tab === 'Football' && '⚽'}
+              {tab === 'Formula 1' && '🏎️'}
+              {tab}
+            </button>
+          );
+        })}
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 300px', gap:'32px' }}>
-        {/* Main */}
-        <div>
-          <div style={{ display:'flex', gap:'0', marginBottom:'24px', borderBottom:'1px solid var(--color-border)' }}>
-            {['Arena','Training','Insights'].map(t => (
-              <button key={t} onClick={() => setActiveTab(t)} style={{ padding:'12px 20px', background:'none', border:'none', fontSize:'12px', fontWeight:800, color: activeTab===t ? 'var(--color-accent)' : 'var(--color-text-3)', borderBottom: activeTab===t ? '2px solid var(--color-accent)' : '2px solid transparent', cursor:'pointer', fontFamily:'inherit' }}>
-                {t}
-              </button>
-            ))}
-          </div>
+      {/* Tab Panels */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <AnimatePresence mode="wait">
+          {activeTab === 'Cricket' && (
+            <motion.div
+              key="cricket"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}
+            >
+              {/* If we have real cricket events from cricapi/ESPN, render them dynamically! */}
+              {feed?.cricket?.[0]?.events?.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+                  {feed.cricket[0].events.map((match) => (
+                    <div key={match.id} style={{
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, var(--color-surface) 40%, var(--color-surface) 100%)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '24px',
+                      padding: '28px',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '20px',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: match.isLive ? 'rgba(239,68,68,0.1)' : 'var(--bg-elevated)',
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                        }}>
+                          {match.isLive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                          <span style={{ fontSize: '10px', fontWeight: 900, color: match.isLive ? '#EF4444' : 'var(--color-accent)', letterSpacing: '0.05em' }}>
+                            {match.isLive ? 'LIVE' : match.isFinished ? 'FINISHED' : 'UPCOMING'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 600 }}>{match.notes?.[0] || 'Match'}</span>
+                      </div>
+                      
+                      <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, fontFamily: 'var(--font-serif)', color: 'var(--color-text-1)' }}>
+                        {match.name}
+                      </h3>
 
-          {loading ? (
-            <div style={{ padding:'100px', textAlign:'center', color:'var(--color-text-3)', fontSize:'13px', fontWeight:700 }}>TUNING FEEDS...</div>
-          ) : activeTab === 'Arena' ? (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px, 1fr))', gap:'16px' }}>
-              {(data.football||[]).slice(0,4).map((m,i) => (
-                <ArenaCard key={`fb-${i}`} type="Football" title={`${m.teams?.home?.name} vs ${m.teams?.away?.name}`}
-                  subtitle={m.league?.name||'League Match'} status={statusLabel(m.fixture?.status?.short)}
-                  score={m.goals?.home != null ? `${m.goals.home} – ${m.goals.away}` : '—'} time={m.fixture?.status?.elapsed ? `${m.fixture.status.elapsed}'` : null} />
-              ))}
-              {(data.f1||[]).slice(0,2).map((f,i) => (
-                <ArenaCard key={`f1-${i}`} type="Formula 1" title={f.competition?.name||f.name||'Grand Prix'}
-                  subtitle={f.circuit?.name||'Circuit'} status={f.status||'Scheduled'}
-                  score={f.type||'Race'} time={f.date ? new Date(f.date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'TBD'} />
-              ))}
-              {(data.cricket||[]).slice(0,2).map((c,i) => (
-                <ArenaCard key={`cr-${i}`} type="Cricket" title={c.name||c.title}
-                  subtitle={c.status} status={c.live?'Live':'Scheduled'} score={c.score||'—'} />
-              ))}
-            </div>
-          ) : activeTab === 'Training' ? (
-            <TrainingLog />
-          ) : (
-            <div style={{ padding:'60px 40px', textAlign:'center', border:'1px dashed var(--color-border)', borderRadius:'20px', color:'var(--color-text-3)' }}>
-              <div style={{ fontSize:'32px', marginBottom:'12px' }}>🧠</div>
-              <div style={{ fontSize:'14px', fontWeight:700 }}>Analytical models converging</div>
-              <div style={{ fontSize:'12px', marginTop:'6px' }}>Insights available after 7+ days of session data</div>
-            </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 700 }}>{match.home.name}</span>
+                          <span style={{ fontSize: '18px', fontWeight: 900, fontFamily: 'monospace' }}>{match.home.score || '—'}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 700 }}>{match.away.name}</span>
+                          <span style={{ fontSize: '18px', fontWeight: 900, fontFamily: 'monospace' }}>{match.away.score || '—'}</span>
+                        </div>
+                      </div>
+
+                      <div style={{
+                        background: 'var(--bg-elevated)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '16px',
+                        padding: '12px 16px',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        color: 'var(--color-accent)',
+                        textAlign: 'center'
+                      }}>
+                        {match.status}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '40px', textAlign: 'center', background: 'var(--color-surface)', borderRadius: '24px', border: '1px solid var(--border)' }}>
+                  <h3 style={{ fontSize: '18px', color: 'var(--color-text-3)' }}>No live or upcoming cricket matches found at this time.</h3>
+                </div>
+              )}
+            </motion.div>
           )}
-        </div>
 
-        {/* Sidebar */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
-          <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'20px' }}>
-            <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', color:'var(--color-text-3)', marginBottom:'16px', letterSpacing:'0.1em' }}>Quick Scores</div>
-            {(data.recentMatches||[]).map((m,i,arr) => (
-              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom: i<arr.length-1?'1px solid var(--color-border)':'none' }}>
-                <div style={{ fontSize:'12px', fontWeight:700, color:'var(--color-text-1)', flex:1 }}>{m.title}</div>
-                <div style={{ fontSize:'13px', fontWeight:900, color:'var(--color-accent)', marginLeft:'12px', whiteSpace:'nowrap' }}>{m.score}</div>
-              </div>
-            ))}
-          </div>
+          {activeTab === 'Football' && (
+            <motion.div
+              key="football"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}
+            >
+              {/* If we have real football events from the live feed, render them dynamically! */}
+              {feed?.football?.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+                  {feed.football.flatMap(league => 
+                    league.events.map(match => (
+                      <div key={match.id} style={{
+                        background: match.home?.color && match.away?.color 
+                          ? `linear-gradient(135deg, ${match.home.color}15 0%, var(--color-surface) 35%, var(--color-surface) 65%, ${match.away.color}15 100%)`
+                          : 'var(--color-surface)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '24px',
+                        padding: '28px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase' }}>
+                            {league.league.flag} {league.league.name}
+                          </span>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: match.isLive ? 'rgba(239,68,68,0.1)' : 'var(--bg-elevated)',
+                            padding: '4px 10px',
+                            borderRadius: '8px'
+                          }}>
+                            {match.isLive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                            <span style={{ fontSize: '10px', fontWeight: 900, color: match.isLive ? '#EF4444' : 'var(--color-accent)' }}>
+                              {match.isLive ? `LIVE ${match.clock || ''}` : match.isFinished ? 'FINISHED' : 'SCHEDULED'}
+                            </span>
+                          </div>
+                        </div>
 
-          <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'20px' }}>
-            <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', color:'var(--color-text-3)', marginBottom:'16px', letterSpacing:'0.1em' }}>Sports Intel</div>
-            {(data.news||[]).map((n,i) => (
-              <div key={i} style={{ marginBottom:'14px', paddingBottom:'14px', borderBottom: i<data.news.length-1?'1px solid var(--color-border)':'none' }}>
-                <div style={{ fontSize:'13px', fontWeight:600, color:'var(--color-text-1)', lineHeight:1.4, marginBottom:'4px' }}>{n.title}</div>
-                <div style={{ fontSize:'10px', color:'var(--color-text-3)', fontWeight:700 }}>{n.time} · {n.source}</div>
-              </div>
-            ))}
-          </div>
-        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+                            {match.home.logo ? <img src={match.home.logo} alt="" style={{ width: '32px', height: '32px', objectFit: 'contain' }} /> : <span style={{ fontSize: '24px' }}>🛡️</span>}
+                            <span style={{ fontSize: '13px', fontWeight: 800, textAlign: 'center' }}>{match.home.name}</span>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                            <span style={{ fontSize: '28px', fontWeight: 900, fontFamily: 'monospace' }}>{match.home.score ?? '—'}</span>
+                            <span style={{ fontSize: '16px', color: '#A0AEC0', fontWeight: 700 }}>:</span>
+                            <span style={{ fontSize: '28px', fontWeight: 900, fontFamily: 'monospace' }}>{match.away.score ?? '—'}</span>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+                            {match.away.logo ? <img src={match.away.logo} alt="" style={{ width: '32px', height: '32px', objectFit: 'contain' }} /> : <span style={{ fontSize: '24px' }}>🛡️</span>}
+                            <span style={{ fontSize: '13px', fontWeight: 800, textAlign: 'center' }}>{match.away.name}</span>
+                          </div>
+                        </div>
+
+                        <div style={{ fontSize: '12px', color: 'var(--color-text-3)', textAlign: 'center', fontWeight: 600 }}>
+                          {match.statusDetail || match.status}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              ) : (
+                <div style={{ padding: '40px', textAlign: 'center', background: 'var(--color-surface)', borderRadius: '24px', border: '1px solid var(--border)' }}>
+                  <h3 style={{ fontSize: '18px', color: 'var(--color-text-3)' }}>No live or upcoming football matches found at this time.</h3>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'Formula 1' && (
+            <motion.div
+              key="f1"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}
+            >
+              {feed?.f1?.upcoming?.length > 0 || feed?.f1?.standings?.length > 0 ? (
+                <>
+                  {/* Formula 1 Header */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '16px',
+                    borderBottom: '2px solid var(--color-accent)',
+                    paddingBottom: '8px',
+                    marginBottom: '8px'
+                  }}>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-accent)', borderBottom: '3px solid var(--color-accent)', paddingBottom: '8px', marginBottom: '-10px' }}>GRID STANDINGS</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-3)' }}>UPCOMING GP</span>
+                  </div>
+
+                  {/* Grid split */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
+                    
+                    {/* Left Column: Next Grand Prix & Constructors */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                      
+                      {/* Upcoming Race Card */}
+                      {feed?.f1?.upcoming?.[0] && (
+                        <div style={{
+                          background: 'var(--color-accent)',
+                          borderRadius: '24px',
+                          padding: '32px',
+                          color: '#FFFFFF',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '24px'
+                        }}>
+                          <div>
+                            <div style={{ fontSize: '11px', fontWeight: 800, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px' }}>
+                              🏎️ NEXT GRAND PRIX
+                            </div>
+                            <h2 style={{ fontSize: '26px', fontWeight: 900, margin: '0 0 6px 0', fontFamily: 'var(--font-serif)' }}>
+                              {feed.f1.upcoming[0].raceName}
+                            </h2>
+                            <span style={{ fontSize: '13px', opacity: 0.8, fontWeight: 500 }}>
+                              {feed.f1.upcoming[0].Circuit?.circuitName}, {feed.f1.upcoming[0].Circuit?.Location?.locality}
+                            </span>
+                          </div>
+
+                          <div style={{
+                            height: '1px',
+                            background: 'rgba(255,255,255,0.15)'
+                          }} />
+                          
+                          <div style={{ fontSize: '16px', fontWeight: 800 }}>
+                            Date: {
+                              new Date(`${feed.f1.upcoming[0].date}T${feed.f1.upcoming[0].time || '00:00:00Z'}`)
+                                .toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
+                            } IST
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Constructor Championship Standings */}
+                      {feed?.f1?.constructors?.length > 0 && (
+                        <div style={{
+                          background: 'var(--color-surface)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '24px',
+                          padding: '24px',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
+                        }}>
+                          <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '16px', margin: 0 }}>
+                            CONSTRUCTOR STANDINGS
+                          </h3>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            {feed.f1.constructors.slice(0, 5).map((team, idx) => (
+                              <div key={idx} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                paddingBottom: idx < 4 ? '12px' : '0',
+                                borderBottom: idx < 4 ? '1px solid var(--border)' : 'none'
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-3)', minWidth: '16px' }}>{team.position}</span>
+                                  <div>
+                                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-1)' }}>{team.Constructor.name}</div>
+                                    <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 600 }}>{team.wins} Wins</div>
+                                  </div>
+                                </div>
+                                <span style={{ fontSize: '16px', fontWeight: 900, fontFamily: 'monospace', color: 'var(--color-accent)' }}>{team.points}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right Column: Driver Standings */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                      {feed?.f1?.standings?.length > 0 && (
+                        <div style={{
+                          background: 'var(--color-surface)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '24px',
+                          padding: '24px',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
+                        }}>
+                          <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px', margin: 0 }}>
+                            DRIVER CHAMPIONSHIP
+                          </h3>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {feed.f1.standings.slice(0, 10).map((driver, idx) => {
+                              const maxPoints = parseInt(feed.f1.standings[0].points) || 400;
+                              return (
+                              <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '12px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '11px', fontWeight: 900, color: idx === 0 ? 'var(--color-accent)' : 'var(--color-text-3)' }}>P{driver.position}</span>
+                                    <span style={{ fontWeight: 800, color: driver.Driver.familyName === 'Hamilton' ? '#FBBF24' : driver.Driver.familyName === 'Verstappen' ? '#93C5FD' : 'var(--color-text-1)' }}>
+                                      {driver.Driver.familyName === 'Hamilton' && '👑 '}
+                                      {driver.Driver.familyName === 'Verstappen' && '⭐ '}
+                                      {driver.Driver.givenName} {driver.Driver.familyName}
+                                    </span>
+                                    <span style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 600 }}>{driver.Constructors[0]?.name}</span>
+                                  </div>
+                                  <span style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-accent)', fontFamily: 'monospace' }}>{driver.points} PTS</span>
+                                </div>
+                                <div style={{ height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
+                                  <div style={{
+                                    width: `${(driver.points / maxPoints) * 100}%`,
+                                    height: '100%',
+                                    background: driver.Driver.familyName === 'Hamilton' ? '#FBBF24' : driver.Driver.familyName === 'Verstappen' ? '#93C5FD' : 'var(--color-accent)',
+                                    borderRadius: '3px'
+                                  }} />
+                                </div>
+                              </div>
+                            )})}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div style={{ padding: '40px', textAlign: 'center', background: 'var(--color-surface)', borderRadius: '24px', border: '1px solid var(--border)' }}>
+                  <h3 style={{ fontSize: '18px', color: 'var(--color-text-3)' }}>No Formula 1 standings or upcoming races available.</h3>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <style>{`@keyframes aiimin-spin { to { transform: rotate(360deg); } } @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
+      {/* Global CSS for Animations */}
+      <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .spin-anim {
+          animation: spin 0.8s linear infinite;
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
+      `}</style>
     </div>
   );
 };

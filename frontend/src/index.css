@@ -22,6 +22,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.25s ease, color 0.25s ease;
+  zoom: 1.15;
 }
 
 #root { position: relative; z-index: 1; min-height: 100vh; }
@@ -209,12 +210,19 @@ button:disabled, button[disabled] {
 .insight-card:hover { border-color: var(--color-border-lit); }
 
 /* ─── Card hover depth ───────────────────────────────── */
+.nordic-card,
 .card-hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, var(--color-surface) 40%, var(--color-surface) 100%) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
   transition: transform var(--dur-normal) var(--ease), box-shadow var(--dur-normal) var(--ease);
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: var(--glass-shadow);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08) !important;
 }
 
 /* ─── Toast (Top-Right) ──────────────────────────────── */
@@ -277,4 +285,13 @@ button:disabled, button[disabled] {
 }
 .text-caption {
   font-size: 11px; font-weight: 500; color: var(--color-text-3); line-height: 1.4;
+}
+
+/* ─── Page Container ─────────────────────────────────── */
+.page-container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--content-pad) var(--content-pad) 100px var(--content-pad);
+  animation: fadeUp 0.4s var(--ease) forwards;
 }

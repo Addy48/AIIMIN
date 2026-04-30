@@ -6,16 +6,21 @@ import NotificationBell from './notifications/NotificationBell';
 import AccountModal from './account/AccountModal';
 import Logo from './Logo';
 
+
+
 /* ── Slim nav — 6 primary links ───────────────────────────── */
 const NAV_LINKS = [
   { to: '/overview',    label: 'Today' },
   { to: '/habits',      label: 'Habits' },
+  { to: '/goals',       label: 'Goals' },
   { to: '/journal',     label: 'Journal' },
   { to: '/finance',     label: 'Finance' },
+  { to: '/family',      label: 'Family' },
   { to: '/calendar',    label: 'Calendar' },
   { to: '/placements',  label: 'Placement' },
-  { to: '/sports',      label: 'Sports' },
-  { to: '/insights',    label: 'Skills' },
+  { to: '/sports',      label: 'Sports', hideFromGuest: true },
+  { to: '/discipline',  label: 'Discipline', hideFromGuest: true },
+  { to: '/focus',       label: 'Focus' },
 ];
 
 const Navbar = ({ user }) => {
@@ -25,7 +30,7 @@ const Navbar = ({ user }) => {
   const [showAccount, setShowAccount] = useState(false);
   const bellRef = useRef(null);
 
-  const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'A';
+  const userInitial = (user?.full_name?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
   const isDark = theme === 'dark';
   const borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
 
@@ -50,18 +55,28 @@ const Navbar = ({ user }) => {
 
         {/* LEFT: Brand */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <Link to="/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Logo size={28} />
-            <span style={{
-              fontSize: '16px', fontWeight: 700, letterSpacing: '-0.03em',
-              color: isDark ? '#FFFFFF' : '#000000', fontFamily: 'var(--font-sans)',
-            }}>AIIMIN</span>
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Link to="/identity" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <Logo size={28} />
+            </Link>
+            <Link to="/overview" aria-label="AIIMIN today" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <span style={{
+                fontSize: '25px',
+                fontWeight: 400,
+                letterSpacing: '-0.065em',
+                color: isDark ? '#F2EBDA' : '#1f201d',
+                fontFamily: 'var(--font-serif)',
+                lineHeight: 1,
+              }}>
+                AIIMIN
+              </span>
+            </Link>
+          </div>
         </div>
 
-        {/* CENTER: Nav links — centered perfectly */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-          {NAV_LINKS.map(({ to, label, hasNew }) => (
+        {/* CENTER: Nav links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {NAV_LINKS.filter(link => !(user?.isGuest && link.hideFromGuest)).map(({ to, label }) => (
             <NavLink
               key={`${to}-${label}`}
               to={to}
@@ -69,15 +84,16 @@ const Navbar = ({ user }) => {
                 fontSize: '12px',
                 fontWeight: isActive ? 600 : 400,
                 fontFamily: 'var(--font-sans)',
-                color: isActive ? (isDark ? '#EDEDED' : 'var(--color-accent)') : (isDark ? '#71717A' : '#6B6B6B'),
+                color: isActive
+                  ? (isDark ? '#EDEDED' : 'var(--color-accent)')
+                  : (isDark ? '#71717A' : '#6B6B6B'),
                 textDecoration: 'none',
-                padding: '6px 12px',
-                borderRadius: '8px',
+                padding: '6px 11px',
+                borderRadius: '9px',
                 background: isActive
-                  ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(30,92,58,0.05)')
+                  ? (isDark ? 'rgba(255,255,255,0.07)' : 'rgba(30,92,58,0.06)')
                   : 'transparent',
-                transition: 'all 200ms var(--ease)',
-                display: 'flex', alignItems: 'center', gap: '6px',
+                transition: 'all 180ms',
                 whiteSpace: 'nowrap',
               })}
             >
@@ -105,7 +121,7 @@ const Navbar = ({ user }) => {
 
           {/* Notifications */}
           <div ref={bellRef} style={{ position: 'relative' }}>
-            <NotificationBell unreadCount={unreadCount} onClick={handleOpenNotif} />
+            <NotificationBell count={unreadCount} onOpen={handleOpenNotif} isOpen={notifOpen} />
             {notifOpen && (
               <NotifDropdown
                 notifications={notifications}
@@ -137,6 +153,8 @@ const Navbar = ({ user }) => {
       {showAccount && (
         <AccountModal isOpen={showAccount} onClose={() => setShowAccount(false)} />
       )}
+
+
     </>
   );
 };
