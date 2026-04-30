@@ -4,13 +4,12 @@ import PomodoroTimer from '../PomodoroTimer';
 import MoodTracker from '../MoodTracker';
 import Streaks from '../Streaks';
 import MoneyManager from '../MoneyManager';
-import PersonalCalendar from '../PersonalCalendar';
 import Reports from '../Reports';
-import SpotifyPlayer from '../SpotifyPlayer';
 import QuickCapture from '../dashboard/QuickCapture';
 import WinsEngine from '../WinsEngine';
 import MomentumBar from '../MomentumBar';
 import ErrorBoundary from './ErrorBoundary';
+import PDFReportGenerator from '../PDFReportGenerator';
 import HabitsPage from '../habits/HabitsPage';
 import AdminPanel from '../account/AdminPanel';
 import AdminConsole from '../account/AdminConsole';
@@ -29,16 +28,11 @@ import AspirationMeters from '../identity/AspirationMeters';
 import PhaseTagger from '../identity/PhaseTagger';
 import IdentityTrajectory from '../identity/IdentityTrajectory';
 import SideQuests from '../growth/SideQuests';
-import DailyIntention from '../growth/DailyIntention';
-import PerformanceDeltaHub from '../growth/PerformanceDeltaHub';
-import OneBetterNudge from '../growth/OneBetterNudge';
-import CausalNodeAnalysis from '../growth/CausalNodeAnalysis';
 import WeeklyLifeReview from '../growth/WeeklyLifeReview';
 import { SettingsSection, SettingsRow } from '../dashboard/SettingsSection';
 import ToggleSwitch from '../dashboard/ToggleSwitch';
 import SystemHealthRings from '../dashboard/SystemHealthRings';
 import SystemBottleneckCard from '../dashboard/SystemBottleneckCard';
-import DayArchetypes from '../dashboard/DayArchetypes';
 import SystemOverviewStrip from './SystemOverviewStrip';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
@@ -73,18 +67,18 @@ function DayProgressBar() {
             overflow: 'hidden'
         }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                     Temporal Drift · {timeStr}
                 </span>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>
+                <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>
                     {Math.round(progress)}% Complete
                 </span>
             </div>
-            <div style={{ height: '6px', background: 'var(--bg-elevated)', borderRadius: '99px', overflow: 'hidden' }}>
+            <div style={{ height: '6px', background: 'var(--color-elevated)', borderRadius: '99px', overflow: 'hidden' }}>
                 <div
                     style={{ 
                         height: '100%', 
-                        background: 'var(--accent)', 
+                        background: 'var(--color-accent)', 
                         borderRadius: '99px', 
                         width: `${progress}%`,
                         transition: 'width 1s ease-in-out',
@@ -198,15 +192,10 @@ export function CognitiveSection({ user }) {
     return (
         <div id="sys-cognitive" style={{ scrollMarginTop: '100px' }}>
             <SectionLabel icon="🧠">Cognitive System</SectionLabel>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'stretch' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', alignItems: 'stretch' }}>
                 <div style={{ height: '390px' }}>
                     <div className="glass-panel-gold" style={{ borderRadius: 'var(--r-lg)', padding: '24px 20px', height: '100%' }}>
                         <PomodoroTimer user={user} />
-                    </div>
-                </div>
-                <div style={{ height: '390px' }}>
-                    <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: '24px 20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <SpotifyPlayer />
                     </div>
                 </div>
             </div>
@@ -448,6 +437,7 @@ export function ReportsSection({ user }) {
             <SectionLabel icon="📄">Reports</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
                 <Reports user={user} />
+                <PDFReportGenerator />
                 <div style={{ marginTop: '24px' }}>
                     <AchievementsGallery user={user} />
                 </div>

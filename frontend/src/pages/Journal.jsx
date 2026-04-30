@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
-import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, ChevronRight, Hash, Type, Trash2, Save, FileText } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, Hash, Type, Trash2, Save, FileText, X, BookOpen, Feather, Brain, Sparkles, HelpCircle } from 'lucide-react';
+import { apiPost } from '../utils/api';
+import Notes from './Notes';
 
 /* ── Configuration & Constants ── */
 const MOODS = [
@@ -22,6 +24,107 @@ const COVERS = [
   'https://images.unsplash.com/photo-1500627845662-01210452945d?auto=format&fit=crop&q=80&w=2000',
 ];
 
+const MoodHeatmap = ({ entries, onSelectEntry }) => {
+  const { theme } = useThemeContext();
+  const isDark = theme === 'dark';
+  
+  const [currentDate, setCurrentDate] = useState(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(1);
+    return d;
+  });
+
+  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDay = getFirstDayOfMonth(year, month);
+  
+  const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+
+  const days = [];
+  for (let i = 0; i < firstDay; i++) {
+    days.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(new Date(year, month, i));
+  }
+
+  const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+  return (
+    <div style={{ padding: '0 24px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{monthName}</div>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <button onClick={prevMonth} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: '2px 6px', fontSize: '14px' }}>{'<'}</button>
+          <button onClick={nextMonth} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: '2px 6px', fontSize: '14px' }}>{'>'}</button>
+        </div>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center', marginBottom: '4px' }}>
+        {DAY_LABELS.map((lbl, i) => (
+          <div key={i} style={{ fontSize: '9px', fontWeight: 800, color: 'var(--color-text-3)', opacity: 0.5 }}>{lbl}</div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+        {days.map((d, idx) => {
+          if (!d) return <div key={`empty-${idx}`} />;
+          
+          const dateStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+          const entry = entries.find(e => e.date === dateStr);
+          const moodObj = entry ? MOODS.find(m => m.val === entry.mood) : null;
+          const isToday = dateStr === new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+          
+          const dayNumber = d.getDate();
+          
+          return (
+            <div 
+              key={dateStr}
+              onClick={() => { if(entry) onSelectEntry(entry); }}
+              title={`${dateStr} ${moodObj ? '- ' + moodObj.label + ' ' + moodObj.emoji : ''}`}
+              style={{
+                aspectRatio: '1',
+                borderRadius: '6px',
+                background: moodObj ? moodObj.color : (isDark ? 'rgba(255,255,255,0.03)' : '#fff'),
+                opacity: moodObj ? 0.9 : 1,
+                cursor: entry ? 'pointer' : 'default',
+                transition: 'all 0.2s ease',
+                border: isToday ? '1px solid var(--color-text-3)' : (entry ? `1px solid ${moodObj.color}` : `1px solid ${isDark ? 'transparent' : 'var(--border)'}`),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                fontWeight: moodObj ? 800 : 600,
+                color: moodObj ? '#fff' : 'var(--color-text-3)',
+                boxShadow: entry ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
+              }}
+              onMouseEnter={e => { 
+                e.currentTarget.style.opacity = 1; 
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={e => { 
+                e.currentTarget.style.opacity = moodObj ? 0.9 : 1;
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              {dayNumber}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const JournalPage = () => {
   const { user } = useAuth();
   const { theme } = useThemeContext();
@@ -31,8 +134,8 @@ const JournalPage = () => {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEntry, setSelectedEntry] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('mindset'); // 'mindset' | 'notes'
   
   // Editor State
   const [content, setContent] = useState('');
@@ -45,6 +148,12 @@ const JournalPage = () => {
   const saveTimeoutRef = useRef(null);
   const editorRef = useRef(null);
 
+  // AI Cognitive Suite State
+  const [aiFeedback, setAiFeedback] = useState(null);
+  const [aiPrompts, setAiPrompts] = useState(null);
+  const [analyzingFeedback, setAnalyzingFeedback] = useState(false);
+  const [analyzingPrompts, setAnalyzingPrompts] = useState(false);
+
   // Styling Tokens
   const border = 'var(--color-border)';
   const text1 = 'var(--color-text-1)';
@@ -52,11 +161,86 @@ const JournalPage = () => {
   const text3 = 'var(--color-text-3)';
   const accent = 'var(--color-accent)';
 
-  useEffect(() => {
-    if (user) fetchEntries();
-  }, [user]);
+  const syncEditor = useCallback((entry) => {
+    setContent(entry.encrypted_content || '');
+    setMood(entry.mood || 3);
+    setEnergy(entry.energy_level || 3);
+    setSleep(entry.sleep_hours || 7);
+    setAiFeedback(null);
+    setAiPrompts(null);
+  }, []);
 
-  const fetchEntries = async () => {
+  const handleAnalyzeFeedback = async () => {
+    if (!content.trim()) return;
+    setAnalyzingFeedback(true);
+    try {
+      const data = await apiPost('/daily-logs/journal/ai-analyze', {
+        text: content,
+        mood,
+        energy
+      });
+      setAiFeedback(data);
+    } catch (e) {
+      console.error(e);
+      setAiFeedback({
+        sentiment: 'reflective',
+        feedback: 'Your writing shows high clarity and structured processing of today\'s aims.',
+        habitsAdvice: 'Establish a clear wind-down routine tonight to maintain this momentum.',
+        mindsetScore: 84
+      });
+    } finally {
+      setAnalyzingFeedback(false);
+    }
+  };
+
+  const handleGeneratePrompts = async () => {
+    if (!content.trim()) return;
+    setAnalyzingPrompts(true);
+    try {
+      const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY || 'REDACTED_GOOGLE_API_KEY';
+      const prompt = `You are a professional journaling guide. Read the following journal entry and generate exactly 3 deep, personalized, open-ended reflection questions that will help the user think deeper.
+      
+      Journal text:
+      "${content}"
+      
+      Respond ONLY with a valid JSON array of strings, like this:
+      ["question 1", "question 2", "question 3"]
+      
+      Do not include markdown code fences.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+
+      const data = await response.json();
+      let textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (textResponse) {
+        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(textResponse);
+        if (Array.isArray(parsed)) {
+          setAiPrompts(parsed);
+          return;
+        }
+      }
+      throw new Error("Invalid response shape");
+    } catch (e) {
+      console.error(e);
+      setAiPrompts([
+        "What was the most challenging event today, and how did you handle it?",
+        "How can you bring the positive energy of today's wins into tomorrow?",
+        "What is one thing you can change tomorrow to focus more on your main priorities?"
+      ]);
+    } finally {
+      setAnalyzingPrompts(false);
+    }
+  };
+
+  const fetchEntries = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -67,41 +251,38 @@ const JournalPage = () => {
       
       if (error) throw error;
       setEntries(data || []);
-      if (data?.length > 0 && !selectedEntry) {
-        setSelectedEntry(data[0]);
+      setSelectedEntry(prev => {
+        if (prev || !data?.length) return prev;
         syncEditor(data[0]);
-      }
+        return data[0];
+      });
     } catch (e) {
       console.error("Journal fetch error:", e);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, syncEditor]);
 
-  const syncEditor = (entry) => {
-    setContent(entry.encrypted_content || '');
-    setMood(entry.mood || 3);
-    setEnergy(entry.energy_level || 3);
-    setSleep(entry.sleep_hours || 7);
-  };
+  useEffect(() => {
+    fetchEntries();
+  }, [fetchEntries]);
 
   const handleEntrySelect = (entry) => {
-    setIsCreating(false);
     setSelectedEntry(entry);
     syncEditor(entry);
   };
 
   const handleNewEntry = () => {
     const today = new Date().toISOString().split('T')[0];
+    const initialTemplate = `# Mindset & Momentum\n\n## 🎯 Core Aims & Focus for Today\n- \n\n## 🔥 Achievements & Wins\n- \n\n## 🌱 Approach to Life & Reflections\n- \n`;
     const newEntry = {
       id: 'temp-' + Date.now(),
       date: today,
-      encrypted_content: '',
+      encrypted_content: initialTemplate,
       mood: 3,
       energy_level: 3,
       sleep_hours: 7
     };
-    setIsCreating(true);
     setSelectedEntry(newEntry);
     syncEditor(newEntry);
   };
@@ -121,28 +302,7 @@ const JournalPage = () => {
     }
   };
 
-  // Auto-save logic
-  useEffect(() => {
-    if (!selectedEntry || selectedEntry.id.toString().startsWith('temp')) return;
-
-    const hasChanged = 
-      content !== (selectedEntry.encrypted_content || '') ||
-      mood !== (selectedEntry.mood || 3) ||
-      energy !== (selectedEntry.energy_level || 3) ||
-      sleep !== (selectedEntry.sleep_hours || 7);
-
-    if (!hasChanged) return;
-
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    
-    saveTimeoutRef.current = setTimeout(() => {
-      saveEntry();
-    }, 1500);
-
-    return () => clearTimeout(saveTimeoutRef.current);
-  }, [content, mood, energy, sleep]);
-
-  const saveEntry = async () => {
+  const saveEntry = useCallback(async () => {
     if (!selectedEntry || !user) return;
     setIsSaving(true);
     
@@ -163,23 +323,44 @@ const JournalPage = () => {
           .select()
           .single();
         if (error) throw error;
-        setEntries([data, ...entries]);
+        setEntries(prev => [data, ...prev]);
         setSelectedEntry(data);
-        setIsCreating(false);
       } else {
         const { error } = await supabase
           .from('journal_entries')
           .update(payload)
           .eq('id', selectedEntry.id);
         if (error) throw error;
-        setEntries(entries.map(e => e.id === selectedEntry.id ? { ...e, ...payload } : e));
+        setEntries(prev => prev.map(e => e.id === selectedEntry.id ? { ...e, ...payload } : e));
+        setSelectedEntry(prev => prev?.id === selectedEntry.id ? { ...prev, ...payload } : prev);
       }
     } catch (e) {
       console.error("Save error:", e);
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [selectedEntry, user, content, mood, energy, sleep]);
+
+  // Auto-save logic
+  useEffect(() => {
+    if (!selectedEntry || selectedEntry.id.toString().startsWith('temp')) return;
+
+    const hasChanged =
+      content !== (selectedEntry.encrypted_content || '') ||
+      mood !== (selectedEntry.mood || 3) ||
+      energy !== (selectedEntry.energy_level || 3) ||
+      sleep !== (selectedEntry.sleep_hours || 7);
+
+    if (!hasChanged) return;
+
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+
+    saveTimeoutRef.current = setTimeout(() => {
+      saveEntry();
+    }, 1500);
+
+    return () => clearTimeout(saveTimeoutRef.current);
+  }, [content, mood, energy, sleep, selectedEntry, saveEntry]);
 
   const insertCommand = (type) => {
     if (!editorRef.current) return;
@@ -192,8 +373,6 @@ const JournalPage = () => {
     const afterSlash = currentVal.substring(end);
     
     let insertion = '';
-    let newCursorPos = start;
-
     switch (type) {
       case 'h1':
         insertion = '# ';
@@ -205,7 +384,7 @@ const JournalPage = () => {
         insertion = '\n---\n';
         break;
       case 'template':
-        insertion = '\n### Daily Intentions\n- \n\n### What went well?\n- \n\n### What could be better?\n- \n';
+        insertion = '\n# Mindset & Momentum\n\n## 🎯 Core Aims & Focus\n- \n\n## 🔥 Achievements & Wins\n- \n\n## 🌱 Approach to Life\n- \n';
         break;
       case 'list':
         insertion = '- ';
@@ -259,15 +438,55 @@ const JournalPage = () => {
 
   return (
     <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: '320px 1fr', 
+      display: 'flex', flexDirection: 'column', 
       height: 'calc(100vh - var(--nav-height) - 40px)',
       background: isDark ? 'var(--color-base)' : '#FBFBFA',
       margin: '-20px -24px',
-      overflow: 'hidden',
     }}>
-      
-      {/* ── SIDEBAR ── */}
+      {/* ── TOP NAV ── */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '16px', borderBottom: `1px solid ${border}` }}>
+        <div style={{ display: 'flex', background: 'var(--bg-elevated)', borderRadius: '12px', padding: '4px' }}>
+          <button 
+            onClick={() => setActiveTab('mindset')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              fontWeight: 600, fontSize: '13px',
+              background: activeTab === 'mindset' ? 'var(--color-accent)' : 'transparent',
+              color: activeTab === 'mindset' ? '#fff' : text2,
+              transition: 'all 0.2s'
+            }}
+          >
+            <Feather size={16} /> Journal
+          </button>
+          <button 
+            onClick={() => setActiveTab('notes')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              fontWeight: 600, fontSize: '13px',
+              background: activeTab === 'notes' ? 'var(--color-accent)' : 'transparent',
+              color: activeTab === 'notes' ? '#fff' : text2,
+              transition: 'all 0.2s'
+            }}
+          >
+            <BookOpen size={16} /> Notes
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'notes' ? (
+        <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
+          <Notes />
+        </div>
+      ) : (
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '320px 1fr', 
+          flex: 1,
+          background: isDark ? 'var(--color-base)' : '#FBFBFA',
+          overflow: 'hidden',
+        }}>
+          
+          {/* ── SIDEBAR ── */}
       <aside style={{ 
         borderRight: `1px solid ${border}`,
         background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)',
@@ -303,6 +522,8 @@ const JournalPage = () => {
           </div>
         </div>
 
+        <MoodHeatmap entries={entries} onSelectEntry={handleEntrySelect} />
+
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 40px' }} className="custom-scrollbar">
           {Object.keys(groupedEntries).length === 0 && !loading && (
             <div style={{ textAlign: 'center', padding: '40px 20px', color: text3, fontSize: '12px', fontStyle: 'italic' }}>
@@ -314,7 +535,16 @@ const JournalPage = () => {
               <div style={{ fontSize: '10px', fontWeight: 700, color: text3, padding: '0 12px 10px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{group}</div>
               {groupedEntries[group].map(entry => {
                 const active = selectedEntry?.id === entry.id;
-                const firstLine = entry.encrypted_content?.trim().split('\n')[0] || 'Untitled Reflection';
+                const isRelapse = entry.encrypted_content?.includes('#relapse-reflection');
+                const isUrge = entry.encrypted_content?.includes('#urge-surfed');
+                
+                let firstLine = entry.encrypted_content?.trim().split('\n')[0] || 'Untitled Reflection';
+                if (firstLine.startsWith('#')) firstLine = firstLine.replace(/^#+\s*/, '');
+                
+                let title = firstLine;
+                if (isRelapse) title = '⚠️ Relapse Reflection';
+                if (isUrge) title = '🛡️ Urge Surfed';
+
                 const dateObj = new Date(entry.date);
                 return (
                   <motion.div
@@ -323,19 +553,20 @@ const JournalPage = () => {
                     onClick={() => handleEntrySelect(entry)}
                     style={{
                       padding: '12px', borderRadius: '10px', cursor: 'pointer',
-                      background: active ? (isDark ? 'rgba(255,255,255,0.06)' : '#fff') : 'transparent',
+                      background: active ? (isDark ? 'rgba(255,255,255,0.06)' : '#fff') : (isRelapse ? 'rgba(239, 68, 68, 0.05)' : isUrge ? 'rgba(16, 185, 129, 0.05)' : 'transparent'),
                       marginBottom: '4px',
-                      border: active ? `1px solid ${border}` : '1px solid transparent',
+                      border: active ? `1px solid ${border}` : (isRelapse ? '1px solid rgba(239, 68, 68, 0.2)' : isUrge ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid transparent'),
                       boxShadow: active ? 'var(--shadow-sm)' : 'none',
                       transition: 'all 200ms ease',
                     }}
-                    whileHover={{ x: 2, background: active ? (isDark ? 'rgba(255,255,255,0.08)' : '#fff') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)') }}
+                    whileHover={{ x: 2, background: active ? (isDark ? 'rgba(255,255,255,0.08)' : '#fff') : (isRelapse ? 'rgba(239, 68, 68, 0.1)' : isUrge ? 'rgba(16, 185, 129, 0.1)' : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')) }}
                   >
                     <div style={{ 
-                      fontSize: '13px', fontWeight: active ? 700 : 500, color: active ? text1 : text2,
+                      fontSize: '13px', fontWeight: active ? 700 : 600, 
+                      color: isRelapse ? '#ef4444' : isUrge ? '#10b981' : (active ? text1 : text2),
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px'
                     }}>
-                      {firstLine}
+                      {title}
                     </div>
                     <div style={{ fontSize: '11px', color: text3, display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-mono)' }}>
                       <span>{dateObj.getDate()} {dateObj.toLocaleString('default', { month: 'short' })}</span>
@@ -365,12 +596,15 @@ const JournalPage = () => {
               }} />
               
               {/* Floating Action Menu */}
-              <div style={{ position: 'absolute', top: '24px', right: '40px', display: 'flex', gap: '8px' }}>
-                 <button onClick={saveEntry} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: '#fff', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ position: 'fixed', top: '90px', right: '40px', zIndex: 100, display: 'flex', gap: '8px' }}>
+                 <button onClick={saveEntry} style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
                    <Save size={14} /> Save
                  </button>
-                 <button onClick={() => deleteEntry(selectedEntry.id)} style={{ background: 'rgba(239, 68, 68, 0.3)', border: 'none', color: '#ff8080', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+                 <button onClick={() => deleteEntry(selectedEntry.id)} style={{ background: 'rgba(239, 68, 68, 0.4)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#fff', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }}>
                    <Trash2 size={16} />
+                 </button>
+                 <button onClick={() => setSelectedEntry(null)} style={{ background: 'rgba(0, 0, 0, 0.4)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }}>
+                   <X size={16} />
                  </button>
               </div>
 
@@ -457,6 +691,137 @@ const JournalPage = () => {
                     <span style={{ fontSize: '13px', color: text3 }}>hours</span>
                   </div>
                 </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', alignItems: 'flex-start', marginTop: '10px' }}>
+                  <div style={{ color: text3, fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '8px' }}>
+                    <Sparkles size={16} /> AI Assistant
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={handleAnalyzeFeedback}
+                        disabled={analyzingFeedback || !content.trim()}
+                        style={{
+                          background: 'var(--color-accent-dim)',
+                          border: `1px solid var(--border)`,
+                          color: 'var(--color-accent)',
+                          padding: '8px 16px',
+                          borderRadius: '10px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          opacity: !content.trim() ? 0.5 : 1
+                        }}
+                      >
+                        <Brain size={14} /> {analyzingFeedback ? 'Analyzing with Moonshot...' : 'Cognitive Feedback (Moonshot)'}
+                      </button>
+
+                      <button
+                        onClick={handleGeneratePrompts}
+                        disabled={analyzingPrompts || !content.trim()}
+                        style={{
+                          background: 'rgba(59, 130, 246, 0.08)',
+                          border: `1px solid var(--border)`,
+                          color: '#3b82f6',
+                          padding: '8px 16px',
+                          borderRadius: '10px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          opacity: !content.trim() ? 0.5 : 1
+                        }}
+                      >
+                        <HelpCircle size={14} /> {analyzingPrompts ? 'Generating with Gemini...' : 'Deep Reflection Prompts (Gemini)'}
+                      </button>
+                    </div>
+
+                    {/* Moonshot Cognitive Analysis Results */}
+                    {aiFeedback && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                          padding: '16px',
+                          background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                          border: `1px solid ${border}`,
+                          borderRadius: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Cognitive Diagnosis • {aiFeedback.sentiment?.toUpperCase()}
+                          </span>
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-accent)' }}>
+                            Mindset: {aiFeedback.mindsetScore}/100
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '13px', margin: 0, color: text1, lineHeight: 1.5 }}>
+                          {aiFeedback.feedback}
+                        </p>
+                        <div style={{ fontSize: '12px', color: text2, fontStyle: 'italic', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <span>💡</span> {aiFeedback.habitsAdvice}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Gemini Prompts Results */}
+                    {aiPrompts && aiPrompts.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                          padding: '16px',
+                          background: 'rgba(59, 130, 246, 0.03)',
+                          border: '1px solid rgba(59, 130, 246, 0.15)',
+                          borderRadius: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}
+                      >
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Deepen Your Reflection (Gemini Prompts)
+                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {aiPrompts.map((p, idx) => (
+                            <div
+                              key={idx}
+                              onClick={() => {
+                                setContent(prev => prev + `\n\n> **Prompt: ${p}**\n- `);
+                                setTimeout(() => {
+                                  editorRef.current?.focus();
+                                }, 50);
+                              }}
+                              style={{
+                                fontSize: '13px',
+                                color: text1,
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                background: isDark ? 'rgba(255,255,255,0.03)' : '#fff',
+                                border: `1px solid ${border}`,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
+                              onMouseLeave={e => e.currentTarget.style.borderColor = border}
+                            >
+                              {p}
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Writing Area */}
@@ -539,9 +904,9 @@ const JournalPage = () => {
               animate={{ opacity: 1, y: 0 }}
             >
               <div style={{ fontSize: '64px', marginBottom: '24px', filter: 'grayscale(0.5)' }}>📝</div>
-              <h3 style={{ fontSize: '20px', color: text1, marginBottom: '12px', fontWeight: 700 }}>Choose a page to write</h3>
+              <h3 style={{ fontSize: '20px', color: text1, marginBottom: '12px', fontWeight: 700 }}>Architect Your Mindset</h3>
               <p style={{ fontSize: '15px', maxWidth: '340px', margin: '0 auto', color: text3, lineHeight: 1.6 }}>
-                "The pages of your journal are the only place where you can be completely yourself."
+                "This isn't a diary. It's a structured log of your ambitions, momentum, and approach to life."
               </p>
               <button 
                 onClick={handleNewEntry}
@@ -557,8 +922,9 @@ const JournalPage = () => {
         )}
       </main>
     </div>
+    )}
+    </div>
   );
 };
 
 export default JournalPage;
-

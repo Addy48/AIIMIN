@@ -9,6 +9,8 @@
   <link rel="icon" href="/favicon-light.svg" media="(prefers-color-scheme: light)">
   <link rel="icon" href="/favicon-dark.svg" media="(prefers-color-scheme: dark)">
   <link rel="icon" href="/favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="/logo192.png" />
+  <link rel="manifest" href="/manifest.json" />
 
   <!-- Viewport & theme -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -24,6 +26,16 @@
     content="productivity, habit tracker, daily log, behavioral insights, focus timer, life operating system, AIIMIN" />
   <meta name="author" content="AIIMIN" />
   <meta name="robots" content="index, follow" />
+
+  <!-- ============================================================ -->
+  <!-- ⚠️  DO NOT REMOVE — GOOGLE SEARCH CONSOLE DOMAIN VERIFICATION -->
+  <!-- This tag proves ownership of aiimin.in to Google.            -->
+  <!-- Removing it will break Google OAuth branding verification    -->
+  <!-- and may revoke the app's ability to use Google Sign-In.      -->
+  <!-- PERMANENT — must stay in index.html at all times.            -->
+  <!-- ============================================================ -->
+  <meta name="google-site-verification" content="vhLAVNQErtH_7QQihSvHyG2jouLwYpJOPlpWRuoVxU0" />
+  <!-- ============================================================ -->
 
   <!-- Canonical -->
   <link rel="canonical" href="https://aiimin.app/" />
@@ -95,7 +107,7 @@
     html,
     body,
     #root {
-      background-color: #050505;
+      background-color: var(--color-base, #050505);
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
       letter-spacing: -0.01em;
     }
