@@ -163,7 +163,6 @@
   --bg-surface:    var(--color-surface);
   --accent:        var(--color-accent);
   --accent-dim:    var(--color-accent-dim);
-  --accent-alpha:  color-mix(in srgb, var(--color-accent) 15%, transparent);
   --text-1:        var(--color-text-1);
   --text-2:        var(--color-text-2);
   --text-3:        var(--color-text-3);
@@ -176,7 +175,7 @@
 /* ────────────────────────────────────────────────────────
    LIGHT MODE: Nordic Calm (Parchment + Forest Ink)
 ───────────────────────────────────────────────────────── */
-[data-theme="normal"] {
+[data-theme="light"] {
   color-scheme: light;
 
   --color-base:    #F0EDE8;
@@ -282,24 +281,76 @@
 }
 
 /* ────────────────────────────────────────────────────────
-   THEME: INTERNET (Hacker / Retro Web)
+   THEME: MIDNIGHT BLUE
 ───────────────────────────────────────────────────────── */
-[data-theme="internet"] {
+[data-theme="midnight"] {
   color-scheme: dark;
-  --color-base: #0A0D10;
-  --color-surface: #101419;
-  --color-elevated: #161B22;
-  --color-border: #21262D;
-  --color-border-lit: #30363D;
-  --color-text-1: #F0F6FC;
-  --color-text-2: #8B949E;
-  --color-text-3: #484F58;
-  --color-accent: #00F0FF;
-  --color-success: #00FF88;
-  --color-warning: #FFD33D;
-  --color-danger: #FF7B72;
-  --glass-bg: rgba(10, 13, 16, 0.85);
-  --glass-border: rgba(0, 240, 255, 0.25);
-  --ambient-1: radial-gradient(circle at 0% 0%, rgba(0, 240, 255, 0.15), transparent 40%);
-  --ambient-2: radial-gradient(circle at 100% 100%, rgba(0, 255, 136, 0.1), transparent 40%);
+  --color-base: #0B1120;
+  --color-surface: #0F172A;
+  --color-elevated: #1E293B;
+  --color-border: #1E293B;
+  --color-border-lit: #334155;
+  --color-text-1: #F8FAFC;
+  --color-text-2: #94A3B8;
+  --color-text-3: #64748B;
+  --color-accent: #38BDF8;
+  --glass-bg: rgba(15, 23, 42, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: SOLARIZED DARK
+───────────────────────────────────────────────────────── */
+[data-theme="solarized"] {
+  color-scheme: dark;
+  --color-base: #002B36;
+  --color-surface: #073642;
+  --color-elevated: #002B36;
+  --color-border: #586E75;
+  --color-border-lit: #657B83;
+  --color-text-1: #839496;
+  --color-text-2: #93A1A1;
+  --color-text-3: #586E75;
+  --color-accent: #2AA198;
+  --glass-bg: rgba(7, 54, 66, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: NEON CYBERPUNK
+───────────────────────────────────────────────────────── */
+[data-theme="cyberpunk"] {
+  color-scheme: dark;
+  --color-base: #09090B;
+  --color-surface: #18181B;
+  --color-elevated: #27272A;
+  --color-border: #27272A;
+  --color-border-lit: #3F3F46;
+  --color-text-1: #F4F4F5;
+  --color-text-2: #A1A1AA;
+  --color-text-3: #71717A;
+  --color-accent: #F43F5E;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --glass-bg: rgba(24, 24, 27, 0.88);
+  --glass-border: rgba(244, 63, 94, 0.15);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: MONOKAI
+───────────────────────────────────────────────────────── */
+[data-theme="monokai"] {
+  color-scheme: dark;
+  --color-base: #272822;
+  --color-surface: #3E3D32;
+  --color-elevated: #49483E;
+  --color-border: #49483E;
+  --color-border-lit: #75715E;
+  --color-text-1: #F8F8F2;
+  --color-text-2: #E6DB74;
+  --color-text-3: #75715E;
+  --color-accent: #A6E22E;
+  --glass-bg: rgba(62, 61, 50, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.06);
 }

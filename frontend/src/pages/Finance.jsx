@@ -1,23 +1,23 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Plus, Upload, Search,
-  Wallet, PieChart, TrendingUp, CheckCircle2, X,
-  AlertCircle, Settings, Activity, Flame, Timer, Zap, Trophy,
+  Plus, Upload, Filter, Search, Download, Calendar, ArrowUpRight, ArrowDownLeft, 
+  Wallet, CreditCard, PieChart, TrendingUp, CheckCircle2, ChevronRight, X, 
+  AlertCircle, FileText, Settings, HelpCircle, Activity, Heart, Flame, Timer, Zap, MapPin, Trophy,
   FileSpreadsheet
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import supabase from '../utils/supabase';
 import toast from '../utils/toast';
-import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
+import { insertRow, getRows } from '../services/dbService';
 import { EXPENSE_CATS } from '../components/money/MoneyShared';
-import DesktopWindow from '../components/ui/DesktopWindow';
-import PageHeader from '../components/layout/PageHeader';
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Cell, PieChart as RePieChart, Pie
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, Cell, PieChart as RePieChart, Pie 
 } from 'recharts';
 
-
+// XLSX is loaded via CDN in index.html to avoid build-time dependency issues
+const XLSX = typeof window !== 'undefined' ? (window.XLSX || null) : null;
 
 const Finance = () => {
   const { user } = useAuth();
@@ -27,8 +27,6 @@ const Finance = () => {
   const [accounts, setAccounts] = useState([]);
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [aiSummary, setAiSummary] = useState(null);
-  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
   // Import & Entry State
   const [importOpen, setImportOpen] = useState(false);
@@ -46,41 +44,66 @@ const Finance = () => {
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [newAccount, setNewAccount] = useState({ name: '', balance: 0, type: 'Checking', icon: '🏦' });
 
-  const handleFileUpload = async (file) => {
-    if (!file) return;
-    setImportStatus('processing');
+  // Excel Import Logic
+  const [freedomDate, setFreedomDate] = useState('Aug 2042');
+  const [velocity, setVelocity] = useState([]);
+  
+  const parseExcelDate = (val) => {
+    if (!val) return new Date().toISOString().split('T')[0];
+    if (typeof val === 'number') {
+      // Excel serial date to JS date
+      const date = new Date((val - 25569) * 86400 * 1000);
+      return date.toISOString().split('T')[0];
+    }
+    // Try parsing string
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+    } catch (e) {}
+    return new Date().toISOString().split('T')[0];
+  };
 
-      // Use raw fetch so we don't set Content-Type (browser auto-sets multipart boundary)
-      const { getCurrentSession, API_URL } = await import('../utils/api');
-      const currentSession = await getCurrentSession();
-      const token = currentSession?.access_token;
+  const handleFileUpload = (file) => {
+    if (!file) return;
+    if (!XLSX) {
+      toast.error('Excel engine is still initializing. Please wait a moment.');
+      return;
+    }
+    setImportStatus('processing');
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-      const response = await fetch(`${API_URL}/wealth/import`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
+        // Transform Excel data to transaction objects
+        const newTransactions = jsonData.map((row, i) => ({
+          id: `import-${Date.now()}-${i}`,
+          date: parseExcelDate(row.Date || row.date || row.DATE),
+          amount: Math.abs(parseFloat(row.Amount || row.amount || row.AMOUNT || 0)),
+          category: row.Category || row.category || row.CATEGORY || 'Other',
+          description: row.Note || row.note || row.Description || row.description || row.NOTE || '',
+          type: (row.Type || row.type || row.Category || '').toLowerCase().includes('inc') ? 'income' : 'expense'
+        })).filter(t => t.amount > 0);
 
-      const res = await response.json();
-      if (res.success) {
-        toast.success(res.message || `Imported ${res.imported || ''} transactions`);
+        if (newTransactions.length === 0) throw new Error("No valid transactions found");
+
+        setTransactions(prev => [...newTransactions, ...prev]);
         setImportStatus('success');
-        await loadFinanceData();
         setTimeout(() => {
           setImportOpen(false);
           setImportStatus('idle');
         }, 2000);
-      } else {
-        throw new Error(res.error || 'Import failed');
+      } catch (err) {
+        console.error("Excel Import Error:", err);
+        setImportStatus('error');
       }
-    } catch (err) {
-      console.error("Excel Import Error:", err);
-      toast.error(err.message || "Failed to process the spreadsheet.");
-      setImportStatus('error');
-    }
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   const handleDrag = (e) => {
@@ -100,32 +123,23 @@ const Finance = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      loadFinanceData();
-      // Lazy-load AI summary after initial data
-      if (!user.isGuest) {
-        setAiSummaryLoading(true);
-        apiGet('/wealth/ai-summary').then(data => {
-          setAiSummary(data);
-        }).catch(() => {}).finally(() => setAiSummaryLoading(false));
-      }
-    }
+    if (user) loadFinanceData();
   }, [user]);
 
   const loadFinanceData = async () => {
     setLoading(true);
     try {
-      const [transData, assetsData, accountsData, budgetsData] = await Promise.all([
-        apiGet('/wealth/transactions'),
-        apiGet('/wealth/assets'),
-        apiGet('/wealth/accounts'),
-        apiGet('/wealth/budgets')
+      const [transRes, assetsRes, accountsRes, budgetsRes] = await Promise.all([
+        supabase.from('money_transactions').select('*').order('date', { ascending: false }),
+        supabase.from('wealth_assets').select('*').order('current_value', { ascending: false }),
+        supabase.from('accounts').select('*').order('balance', { ascending: false }),
+        supabase.from('budgets').select('*, money_categories(name)').order('amount', { ascending: false })
       ]);
 
-      setTransactions(transData || []);
-      setAssets(assetsData || []);
-      setAccounts(accountsData || []);
-      setBudgets(budgetsData || []);
+      setTransactions(transRes.data || []);
+      setAssets(assetsRes.data || []);
+      setAccounts(accountsRes.data || []);
+      setBudgets(budgetsRes.data || []);
     } catch (error) {
       console.error("Finance data fetch error:", error);
     } finally {
@@ -181,7 +195,7 @@ const Finance = () => {
   }, [assets, accounts]);
 
   // Analytics & Insights
-  const { topExpenses, dailySpend, savingsRate, velocityData, fiYears } = useMemo(() => {
+  const { categoryData, topExpenses, dailySpend, cashflowData, savingsRate, prevMonthExpenses, velocityData, fiYears } = useMemo(() => {
     const currentMonth = new Date().getMonth();
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     
@@ -247,29 +261,32 @@ savingsRate: (sRate * 100).toFixed(1),
     try {
       if (newAccount.id) {
         // Edit existing
-        const updated = await apiPut('/wealth/accounts/' + newAccount.id, {
+        const { error } = await supabase.from('accounts').update({
           name: newAccount.name,
           balance: newAccount.balance,
           type: newAccount.type,
           icon: newAccount.icon
-        });
-        setAccounts(prev => prev.map(a => a.id === newAccount.id ? updated : a));
+        }).eq('id', newAccount.id);
+        if (error) throw error;
+        setAccounts(prev => prev.map(a => a.id === newAccount.id ? { ...a, ...newAccount } : a));
         toast.success("Account updated");
       } else {
         // Create new
-        const created = await apiPost('/wealth/accounts', {
+        const res = await insertRow('accounts', {
           name: newAccount.name,
           balance: newAccount.balance,
           type: newAccount.type,
-          icon: newAccount.icon
+          icon: newAccount.icon,
+          user_id: user.id
         });
-        setAccounts(prev => [created, ...prev]);
-        toast.success("Account added successfully");
+        if (res && res.length > 0) {
+          setAccounts(prev => [res[0], ...prev]);
+          toast.success("Account added successfully");
+        }
       }
       setAccountModalOpen(false);
       setNewAccount({ name: '', balance: 0, type: 'Checking', icon: '🏦' });
     } catch (err) {
-      console.error(err);
       toast.error("Operation failed");
     }
   };
@@ -277,11 +294,11 @@ savingsRate: (sRate * 100).toFixed(1),
   const handleDeleteAccount = async (id) => {
     if (!window.confirm("Are you sure you want to remove this account? This will not delete transactions.")) return;
     try {
-      await apiDelete('/wealth/accounts/' + id);
+      const { error } = await supabase.from('accounts').delete().eq('id', id);
+      if (error) throw error;
       setAccounts(prev => prev.filter(a => a.id !== id));
       toast.success("Account removed");
     } catch (err) {
-      console.error(err);
       toast.error("Failed to delete account");
     }
   };
@@ -295,27 +312,40 @@ savingsRate: (sRate * 100).toFixed(1),
   }).format(val);
 
   const monthStr = new Date().toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
-  const runwayMonths = monthlyExpenses > 0 ? Math.round(totalBalance / monthlyExpenses) : 0;
-  const financeChecks = [
-    { label: 'Emergency runway', value: `${runwayMonths} months`, ok: runwayMonths >= 6, fix: 'Target 6+ months in liquid accounts.' },
-    { label: 'Savings rate', value: `${savingsRate}%`, ok: Number(savingsRate) >= 30, fix: 'Raise income-minus-expense efficiency above 30%.' },
-    { label: 'Budget coverage', value: `${budgets.length} budgets`, ok: budgets.length >= 3, fix: 'Create budgets for food, transport, and subscriptions.' },
-    { label: 'Account map', value: `${accounts.length} accounts`, ok: accounts.length > 0, fix: 'Add your active bank, wallet, and investment accounts.' },
-  ];
 
   return (
-    <div className="page-container">
+    <div style={{ paddingBottom: '80px' }}>
 
       {/* Header */}
-      <PageHeader 
-        title={
-          <span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            Wealth Vault<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
-          </span>
-        }
-        subtitle={`Capital Allocation · ${monthStr}`}
-        rightContent={
-          <>
+      <header style={{ marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 800,
+              color: 'var(--color-accent)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
+              marginBottom: '12px',
+            }}>
+              Capital Allocation · {monthStr}
+            </div>
+            <h1 style={{
+              fontSize: '48px',
+              fontWeight: 800,
+              color: 'var(--color-text-1)',
+              margin: 0,
+              letterSpacing: '-0.04em',
+              fontFamily: 'var(--font-serif)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              Wealth Vault<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
+            </h1>
+
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
             <button 
               onClick={() => setImportOpen(true)}
               style={{
@@ -378,9 +408,9 @@ savingsRate: (sRate * 100).toFixed(1),
             >
               <Plus size={18} /> New Entry
             </button>
-          </>
-        }
-      />
+          </div>
+        </div>
+      </header>
 
 
       {/* Navigation Tabs */}
@@ -465,77 +495,10 @@ savingsRate: (sRate * 100).toFixed(1),
                       </div>
                   </div>
                   {/* Decorative background element */}
-                  <div style={{ position: 'absolute', right: '-5%', bottom: '-10%', width: '40%', height: '80%', background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)', opacity: 0.1, pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', right: '-5%', bottom: '-10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
               </div>
-
-              {/* AI Finance Summary Card */}
-              {(aiSummaryLoading || aiSummary) && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  style={{
-                    background: aiSummary?.sentiment === 'positive'
-                      ? 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%)'
-                      : aiSummary?.sentiment === 'warning'
-                      ? 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.02) 100%)'
-                      : 'var(--color-surface)',
-                    border: `1px solid ${aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.2)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.2)' : 'var(--color-border)'}`,
-                    borderRadius: '20px',
-                    padding: '28px 32px',
-                    marginBottom: '32px',
-                  }}
-                >
-                  {aiSummaryLoading ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {[180, 300, 220].map((w, i) => (
-                        <div key={i} style={{ height: '14px', background: 'var(--color-border)', borderRadius: '8px', width: `${w}px`, opacity: 0.5 }} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div>
-                      {aiSummary?.aiStatus && aiSummary.aiStatus !== 'success' && (
-                        <div style={{
-                          display: 'flex', alignItems: 'center', gap: '8px',
-                          padding: '10px 14px', borderRadius: '8px', marginBottom: '16px',
-                          background: 'var(--color-warning-dim)',
-                          border: '1px solid rgba(245,158,11,0.2)'
-                        }}>
-                          <span style={{ fontSize: '14px' }}>⚠</span>
-                          <span style={{ fontSize: '12px', color: 'var(--color-warning)', fontWeight: 500 }}>
-                            {aiSummary.aiStatus === 'limit_reached'
-                              ? 'AI limit reached. Showing statistical fallback summary.'
-                              : 'API key expired. Showing statistical fallback summary.'}
-                          </span>
-                        </div>
-                      )}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: aiSummary?.sentiment === 'positive' ? '#10B981' : aiSummary?.sentiment === 'warning' ? '#F59E0B' : 'var(--color-text-3)', background: aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.12)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.12)' : 'var(--bg-elevated)', border: '1px solid var(--color-border)', padding: '4px 10px', borderRadius: '99px' }}>
-                          {aiSummary?.sentiment === 'positive' ? '✦ AI Insight' : aiSummary?.sentiment === 'warning' ? '⚠ AI Alert' : '◆ AI Summary'}
-                        </div>
-                        <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>30-day analysis · just now</div>
-                      </div>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '10px', fontFamily: 'var(--font-serif)', lineHeight: 1.4 }}>
-                        {aiSummary?.headline}
-                      </div>
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px', lineHeight: 1.65 }}>
-                        {aiSummary?.summary}
-                      </p>
-                      {aiSummary?.recommendations?.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                          {aiSummary.recommendations.map((rec, i) => (
-                            <div key={i} style={{ fontSize: '12px', padding: '5px 12px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', color: 'var(--color-text-2)', fontWeight: 500 }}>
-                              → {rec}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
+                  
               {/* 6-Stat Hero Strip - BREAKTHROUGH UPGRADE */}
-
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px', marginBottom: '32px' }}>
                 {[
                   { label: 'Freedom Velocity', val: `${savingsRate}%`, trend: `FI in ${fiYears}y`, icon: <Zap size={14} />, color: '#10B981', detail: 'Efficiency' },
@@ -555,7 +518,7 @@ savingsRate: (sRate * 100).toFixed(1),
                       padding: '24px', 
                       position: 'relative', 
                       overflow: 'hidden',
-                      background: 'var(--bg-elevated)',
+                      background: 'rgba(255,255,255,0.02)',
                       border: '1px solid var(--color-border)',
                       backdropFilter: 'blur(10px)',
                       borderRadius: '20px'
@@ -582,39 +545,6 @@ savingsRate: (sRate * 100).toFixed(1),
                       />
                     </div>
                   </motion.div>
-                ))}
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
-                {financeChecks.map((check) => (
-                  <div key={check.label} style={{
-                    background: 'var(--color-surface)',
-                    border: `1px solid ${check.ok ? 'rgba(16,185,129,0.24)' : 'rgba(226,114,91,0.32)'}`,
-                    borderRadius: '16px',
-                    padding: '18px 20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: '18px'
-                  }}>
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em' }}>{check.label}</div>
-                      <div style={{ fontSize: '18px', color: 'var(--color-text-1)', fontWeight: 800, marginTop: '6px' }}>{check.value}</div>
-                      {!check.ok && <div style={{ fontSize: '11px', color: 'var(--color-rust)', marginTop: '6px', lineHeight: 1.4 }}>{check.fix}</div>}
-                    </div>
-                    <div style={{
-                      width: '34px',
-                      height: '34px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      background: check.ok ? 'rgba(16,185,129,0.12)' : 'rgba(226,114,91,0.12)',
-                      color: check.ok ? '#10B981' : 'var(--color-rust)'
-                    }}>
-                      {check.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-                    </div>
-                  </div>
                 ))}
               </div>
 
@@ -649,7 +579,7 @@ savingsRate: (sRate * 100).toFixed(1),
                             <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                         <XAxis dataKey="name" stroke="var(--text-3)" fontSize={11} tickLine={false} axisLine={false} />
                         <YAxis hide />
                         <Tooltip 
@@ -809,7 +739,7 @@ savingsRate: (sRate * 100).toFixed(1),
 
           {activeTab === 'ACCOUNTS' && (
             <motion.div key="accounts" initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }}>
-              <div style={{ marginBottom: '32px', padding: '32px', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '32px', padding: '32px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '8px' }}>Total Liquid Balance</div>
                   <div style={{ fontSize: '48px', fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>{formatCurrency(totalBalance)}</div>
@@ -824,19 +754,19 @@ savingsRate: (sRate * 100).toFixed(1),
                     key={acc.id} 
                     style={{ 
                       padding: '32px', 
-                      background: 'var(--bg-elevated)', 
+                      background: 'rgba(255,255,255,0.02)', 
                       backdropFilter: 'blur(16px)', 
-                      border: '1px solid var(--color-border)', 
+                      border: '1px solid rgba(255,255,255,0.05)', 
                       borderRadius: '24px', 
                       transition: 'all 0.2s', 
                       position: 'relative'
                     }} 
-                    onMouseEnter={e => {e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'var(--color-border-lit)';}} 
-                    onMouseLeave={e => {e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'var(--color-border)';}}
+                    onMouseEnter={e => {e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)';}} 
+                    onMouseLeave={e => {e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)';}}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                           {acc.icon || '🏦'}
                         </div>
                         <div>
@@ -866,7 +796,7 @@ savingsRate: (sRate * 100).toFixed(1),
                     <div style={{ fontSize: '32px', fontFamily: 'var(--font-serif)', fontWeight: 600, letterSpacing: '-0.02em' }}>{formatCurrency(acc.balance)}</div>
                     
                     {/* Visual bar */}
-                    <div style={{ height: '4px', background: 'var(--color-border)', borderRadius: '2px', marginTop: '24px', overflow: 'hidden' }}>
+                    <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', marginTop: '24px', overflow: 'hidden' }}>
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: '100%' }}
@@ -1051,7 +981,7 @@ savingsRate: (sRate * 100).toFixed(1),
                   { label: 'Unrealized Gain', value: totalReturns, icon: <Activity size={16} />, color: '#8B5CF6', sub: `+${returnPct}% ROI` },
                   { label: 'Freedom Progress', value: `${Math.round((totalNetWorth / (monthlyExpenses * 12 * 25 || 1)) * 100)}%`, icon: <Trophy size={16} />, color: '#F59E0B', isPct: true, sub: 'To 25x Burn' }
                 ].map((stat, i) => (
-                  <div key={i} className="nordic-card" style={{ padding: '24px', background: 'var(--bg-elevated)' }}>
+                  <div key={i} className="nordic-card" style={{ padding: '24px', background: 'rgba(255,255,255,0.02)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: stat.color }}>
                       {stat.icon}
                       <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)' }}>{stat.label}</span>
@@ -1066,7 +996,7 @@ savingsRate: (sRate * 100).toFixed(1),
 
               <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '24px' }}>
                 {/* Main Asset Distribution */}
-                <div className="nordic-card" style={{ padding: '40px', background: 'var(--bg-elevated)' }}>
+                <div className="nordic-card" style={{ padding: '40px', background: 'rgba(255,255,255,0.01)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
                     <div>
                       <h3 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 4px 0', fontFamily: 'var(--font-serif)' }}>Portfolio Matrix</h3>
@@ -1114,7 +1044,7 @@ savingsRate: (sRate * 100).toFixed(1),
                         { label: 'Defensive Assets', val: assetBreakdown.gold, color: '#F59E0B', icon: '🛡️' },
                         { label: 'Liquid Capital', val: assetBreakdown.bank + assetBreakdown.cash, color: '#3B82F6', icon: '💧' }
                       ].map((cat, i) => (
-                        <div key={i} style={{ padding: '16px', background: 'var(--color-base)', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
+                        <div key={i} style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span style={{ fontSize: '16px' }}>{cat.icon}</span>
@@ -1122,7 +1052,7 @@ savingsRate: (sRate * 100).toFixed(1),
                             </div>
                             <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{((cat.val / totalNetWorth) * 100).toFixed(1)}%</span>
                           </div>
-                          <div style={{ height: '4px', background: 'var(--color-border)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${(cat.val / totalNetWorth) * 100}%` }}
@@ -1152,7 +1082,7 @@ savingsRate: (sRate * 100).toFixed(1),
                         'Increase Gold SIP by 10%',
                         'Check Tax Harvesting'
                       ].map((action, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px' }}>
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', background: 'rgba(255,255,255,0.08)', padding: '12px', borderRadius: '8px' }}>
                           <CheckCircle2 size={12} color="#10B981" />
                           <span>{action}</span>
                         </div>
@@ -1160,7 +1090,7 @@ savingsRate: (sRate * 100).toFixed(1),
                     </div>
                   </div>
 
-                  <div className="nordic-card" style={{ padding: '32px', background: 'var(--bg-elevated)' }}>
+                  <div className="nordic-card" style={{ padding: '32px', background: 'rgba(255,255,255,0.02)' }}>
                     <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '16px' }}>Projected Net Worth (2026)</div>
                     <div style={{ fontSize: '32px', fontWeight: 600, fontFamily: 'var(--font-serif)', marginBottom: '8px' }}>{formatCurrency(totalNetWorth * 1.25)}</div>
                     <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 700 }}>↗ EST. +25% YEARLY YIELD</div>
@@ -1185,7 +1115,7 @@ savingsRate: (sRate * 100).toFixed(1),
                   { label: 'Capital', val: assetBreakdown.bank, icon: '🏦', color: '#3B82F6' },
                   { label: 'Other', val: assetBreakdown.cash, icon: '💵', color: '#EC4899' }
                 ].map((item, i) => (
-                  <div key={i} className="nordic-card" style={{ padding: '20px', textAlign: 'center', background: 'var(--bg-elevated)' }}>
+                  <div key={i} className="nordic-card" style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.01)' }}>
                     <div style={{ fontSize: '24px', marginBottom: '12px' }}>{item.icon}</div>
                     <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{item.label}</div>
                     <div style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{formatCurrency(item.val)}</div>
@@ -1201,8 +1131,15 @@ savingsRate: (sRate * 100).toFixed(1),
       {/* Add Account Modal */}
       <AnimatePresence>
         {accountModalOpen && (
-          <DesktopWindow title={newAccount.id ? 'Edit Account' : 'New Bank Account'} subtitle="accounts.finance" onClose={() => setAccountModalOpen(false)} width="520px">
-            <div style={{ padding: '32px' }}>
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              style={{ width: '400px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '32px' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-serif)' }}>{newAccount.id ? 'Edit Account' : 'Initialize Account'}</h3>
+                <button onClick={() => setAccountModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer' }}><X size={20} /></button>
+              </div>
               <form onSubmit={handleAddAccount} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px' }}>Account Name</label>
@@ -1227,16 +1164,38 @@ savingsRate: (sRate * 100).toFixed(1),
                   {newAccount.id ? 'Save Changes' : 'Create Account'}
                 </button>
               </form>
-            </div>
-          </DesktopWindow>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
       {/* Entry Modal */}
       <AnimatePresence>
         {entryOpen && (
-          <DesktopWindow title="Record Finance Entry" subtitle="transactions.finance" onClose={() => setEntryOpen(false)} width="560px" maxHeight="88vh">
-            <div style={{ padding: '24px' }}>
+          <div 
+            onClick={() => setEntryOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '500px', background: 'var(--color-base)', borderRadius: '24px', border: '1px solid var(--color-border)',
+                padding: '40px', position: 'relative', boxShadow: '0 30px 60px rgba(0,0,0,0.3)',
+                maxHeight: '90vh', overflowY: 'auto'
+              }}
+            >
+              <button onClick={() => setEntryOpen(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+
+              <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-text-1)', marginBottom: '32px', fontFamily: 'var(--font-serif)' }}>Record Entry</h2>
+
               <EntryForm 
                 user={user} 
                 accounts={accounts} 
@@ -1247,16 +1206,35 @@ savingsRate: (sRate * 100).toFixed(1),
                   toast.success('Entry synchronized.');
                 }} 
               />
-            </div>
-          </DesktopWindow>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
       {/* Excel Import Modal */}
       <AnimatePresence>
         {importOpen && (
-          <DesktopWindow title="Import Spreadsheet" subtitle="money-import.finance" onClose={() => setImportOpen(false)} width="520px">
-            <div style={{ padding: '28px' }}>
+          <div 
+            onClick={() => setImportOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '440px', background: 'var(--color-base)', borderRadius: '24px', border: '1px solid var(--color-border)',
+                padding: '40px', position: 'relative', boxShadow: '0 30px 60px rgba(0,0,0,0.3)'
+              }}
+            >
+              <button onClick={() => setImportOpen(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--color-accent-dim)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <FileSpreadsheet size={30} />
@@ -1309,8 +1287,8 @@ savingsRate: (sRate * 100).toFixed(1),
                   <button onClick={() => setImportStatus('idle')} style={{ marginTop: '20px', background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Try Again</button>
                 </div>
               )}
-            </div>
-          </DesktopWindow>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -1352,7 +1330,7 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
     if (accounts?.length > 0 && !accountId) {
       setAccountId(accounts[0].id);
     }
-  }, [accounts, accountId]);
+  }, [accounts]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1376,7 +1354,8 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
         const refNote = note.trim() || 'Internal Transfer';
 
         // Log outflow from source
-        await apiPost('/wealth/transactions', {
+        await insertRow('money_transactions', {
+          user_id: user.id,
           date: date,
           category: 'Transfer',
           description: `To: ${accounts.find(a => a.id === targetAccountId)?.name} — ${refNote}`,
@@ -1389,7 +1368,8 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
         });
 
         // Log inflow to target
-        await apiPost('/wealth/transactions', {
+        await insertRow('money_transactions', {
+          user_id: user.id,
           date: date,
           category: 'Transfer',
           description: `From: ${accounts.find(a => a.id === accountId)?.name} — ${refNote}`,
@@ -1405,7 +1385,8 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
         if (type === 'expense') finalAmount = -Math.abs(finalAmount);
         else finalAmount = Math.abs(finalAmount);
 
-        await apiPost('/wealth/transactions', {
+        await insertRow('money_transactions', {
+          user_id: user.id,
           date: date,
           category: category || (type === 'income' ? 'Income' : 'Other'),
           description: note.trim() || null,

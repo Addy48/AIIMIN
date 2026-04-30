@@ -1,5 +1,6 @@
 import React from 'react';
 import { EventCard } from './EventCard';
+import { useThemeContext } from '../../context/ThemeContext';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
@@ -8,6 +9,9 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
  * Redesigned with Nordic Calm aesthetic.
  */
 const DayView = ({ events, currentDate, onEventClick, onSlotClick }) => {
+    const { theme } = useThemeContext();
+    const isDark = theme === 'dark';
+
     const d = new Date(currentDate);
     const dateLabel = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     const now = new Date();
