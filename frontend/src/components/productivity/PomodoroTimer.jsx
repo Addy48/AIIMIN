@@ -1,28 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Play, Pause, Square, RotateCcw, Flame } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, Square, RotateCcw, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useThemeContext } from '../../context/ThemeContext';
-
-const MODES = {
-  focus: { time: 25 * 60, label: 'Deep Work', color: '#E2725B' },
-  shortBreak: { time: 5 * 60, label: 'Short Break', color: '#3B7E58' },
-  longBreak: { time: 15 * 60, label: 'Long Break', color: '#DCA134' },
-};
 
 const PomodoroTimer = ({ onComplete, onClose }) => {
-  const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState('focus'); // focus, shortBreak, longBreak
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
   const [task, setTask] = useState('');
 
-  const switchMode = useCallback((newMode) => {
-    setMode(newMode);
-    setTimeLeft(MODES[newMode].time);
-    setIsActive(false);
-  }, []);
+  const MODES = {
+    focus: { time: 25 * 60, label: 'Focus Session', color: '#EF4444' },
+    shortBreak: { time: 5 * 60, label: 'Short Break', color: '#10B981' },
+    longBreak: { time: 15 * 60, label: 'Long Break', color: '#3B82F6' },
+  };
 
   useEffect(() => {
     let interval = null;
@@ -45,7 +36,13 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
       }
     }
     return () => clearInterval(interval);
-  }, [isActive, timeLeft, mode, sessionsCompleted, switchMode]);
+  }, [isActive, timeLeft, mode, sessionsCompleted]);
+
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setTimeLeft(MODES[newMode].time);
+    setIsActive(false);
+  };
 
   const toggleTimer = () => setIsActive(!isActive);
 
@@ -63,151 +60,130 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
   const progress = ((MODES[mode].time - timeLeft) / MODES[mode].time) * 100;
 
   const text1 = 'var(--color-text-1)';
-  const text2 = 'var(--color-text-2)';
   const text3 = 'var(--color-text-3)';
+  const border = 'var(--color-border)';
 
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      background: isDark ? 'rgba(20,20,20,0.65)' : 'var(--glass-bg)',
-      backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)',
-      borderRadius: '24px',
-      border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--color-border)',
-      boxShadow: isDark 
-        ? '0 30px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)' 
-        : '0 20px 48px rgba(31,32,29,0.06), inset 0 1px 0 rgba(255,255,255,0.6)',
-      width: '100%', maxWidth: '700px', margin: '0 auto', fontFamily: 'var(--font-sans)',
-      position: 'relative', overflow: 'hidden'
+      padding: '40px', background: 'var(--color-surface)', borderRadius: '24px',
+      border: `1px solid ${MODES[mode].color}40`, boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+      maxWidth: '400px', margin: '0 auto', fontFamily: 'var(--font-sans)', width: '100%',
+      position: 'relative'
     }}>
+      {onClose && (
+        <button 
+          onClick={onClose}
+          style={{
+            position: 'absolute', 
+            top: '12px', 
+            right: '12px', 
+            width: '32px',
+            height: '32px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(255,255,255,0.05)', 
+            border: `1px solid ${border}`, 
+            color: text3, 
+            cursor: 'pointer', 
+            borderRadius: '50%',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = text1; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = text3; }}
+        >
+          <X size={18} />
+        </button>
+      )}
       
-      <div style={{ padding: '40px 60px', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        
-        {/* Progress Bar (Subtle top edge) */}
-        <div style={{ position: 'absolute', top: '0px', left: 0, right: 0, height: '2px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(31,32,29,0.05)' }}>
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 1, ease: "linear" }}
-            style={{ height: '100%', background: MODES[mode].color, boxShadow: `0 0 10px ${MODES[mode].color}` }}
-          />
-        </div>
+      {/* Task Input */}
+      <input
+        type="text"
+        placeholder="What are you focusing on?"
+        value={task}
+        onChange={(e) => setTask(e.target.value)}
+        style={{
+          width: '100%', background: 'var(--color-background)', border: '1px solid var(--color-border)',
+          borderRadius: '12px', padding: '16px', fontSize: '16px', color: 'var(--color-text-1)',
+          textAlign: 'center', outline: 'none', marginBottom: '32px', fontWeight: 500
+        }}
+      />
 
-        {/* Task Input Area */}
-        <div style={{ width: '100%', marginBottom: '40px', position: 'relative' }}>
-          <input 
-            type="text" 
-            placeholder="What is your singular focus right now?" 
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
+      {/* Mode Selectors */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '40px', background: 'var(--color-background)', padding: '6px', borderRadius: '14px' }}>
+        {Object.entries(MODES).map(([key, val]) => (
+          <button
+            key={key}
+            onClick={() => switchMode(key)}
             style={{
-              width: '100%', background: 'transparent', border: 'none',
-              borderBottom: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(31,32,29,0.12)',
-              padding: '12px 0', color: text1, fontSize: '18px', fontWeight: 500, textAlign: 'center',
-              outline: 'none', fontFamily: 'var(--font-sans)'
+              padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+              background: mode === key ? val.color : 'transparent',
+              color: mode === key ? '#FFF' : 'var(--color-text-3)',
+              border: 'none', transition: 'all 0.2s'
             }}
+          >
+            {val.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Timer Display */}
+      <div style={{ position: 'relative', width: '240px', height: '240px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '40px' }}>
+        <svg width="240" height="240" style={{ position: 'absolute', transform: 'rotate(-90deg)' }}>
+          <circle
+            cx="120" cy="120" r="110"
+            fill="none" stroke="var(--color-border)" strokeWidth="6"
           />
-        </div>
-
-        {/* Timer Display */}
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0 50px' }}>
-          <motion.div 
-            key={timeLeft}
-            initial={{ opacity: 0.8, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            style={{ 
-              fontSize: '110px', fontWeight: 200, color: text1, 
-              fontFamily: 'var(--font-mono)', letterSpacing: '-0.05em',
-              textShadow: isActive && isDark ? `0 0 40px ${MODES[mode].color}40` : 'none',
-              lineHeight: 1
-            }}
-          >
+          <motion.circle
+            cx="120" cy="120" r="110"
+            fill="none" stroke={MODES[mode].color} strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={2 * Math.PI * 110}
+            strokeDashoffset={2 * Math.PI * 110 * (1 - progress / 100)}
+            transition={{ duration: 1, ease: "linear" }}
+          />
+        </svg>
+        <div style={{ textAlign: 'center', zIndex: 1 }}>
+          <div style={{ fontSize: '64px', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--color-text-1)', letterSpacing: '-0.05em', lineHeight: 1 }}>
             {formatTime(timeLeft)}
-          </motion.div>
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--color-text-3)', fontWeight: 600, marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            {task || 'No task set'}
+          </div>
         </div>
+      </div>
 
-        {/* Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '40px' }}>
-          <motion.button 
-            whileHover={{ scale: 1.06, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(31,32,29,0.06)' }}
-            whileTap={{ scale: 0.94 }}
-            onClick={resetTimer} 
-            style={{ 
-              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(31,32,29,0.03)',
-              border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--color-border)',
-              borderRadius: '50%',
-              width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: text2, cursor: 'pointer', transition: 'all 0.2s', outline: 'none'
-            }}
-          >
-            <RotateCcw size={22} />
-          </motion.button>
+      {/* Controls */}
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+        <button
+          onClick={resetTimer}
+          style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--color-elevated)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-2)' }}
+        >
+          <RotateCcw size={20} />
+        </button>
+        <button
+          onClick={toggleTimer}
+          style={{ width: '64px', height: '64px', borderRadius: '50%', background: isActive ? 'var(--color-elevated)' : MODES[mode].color, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FFF', boxShadow: isActive ? 'none' : `0 8px 24px ${MODES[mode].color}60`, transition: 'all 0.2s' }}
+        >
+          {isActive ? <Pause size={28} color="var(--color-text-1)" /> : <Play size={28} style={{ marginLeft: '4px' }} />}
+        </button>
+        <button
+          onClick={() => { setIsActive(false); setTimeLeft(0); }}
+          style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--color-elevated)', border: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-2)' }}
+        >
+          <Square size={18} />
+        </button>
+      </div>
 
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleTimer} 
-            style={{ 
-              background: isActive ? 'var(--color-elevated)' : MODES[mode].color, 
-              border: `1px solid ${isActive ? 'var(--color-border)' : MODES[mode].color}`, 
-              borderRadius: '50%', width: '80px', height: '80px', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: isActive ? text1 : '#ffffff',
-              cursor: 'pointer', transition: 'all 0.3s', outline: 'none',
-              boxShadow: isActive ? 'none' : `0 10px 24px ${MODES[mode].color}40`
-            }}
-          >
-            {isActive ? <Pause size={32} fill="currentColor" /> : <Play size={36} fill="currentColor" style={{ marginLeft: '4px' }} />}
-          </motion.button>
-
-          <motion.button 
-            whileHover={{ scale: 1.06, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(31,32,29,0.06)' }}
-            whileTap={{ scale: 0.94 }}
-            onClick={() => { setIsActive(false); if (onComplete) onComplete({ sessions: sessionsCompleted, task }); onClose && onClose(); }} 
-            style={{ 
-              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(31,32,29,0.03)',
-              border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--color-border)',
-              borderRadius: '50%',
-              width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: text2, cursor: 'pointer', transition: 'all 0.2s', outline: 'none'
-            }}
-          >
-            <Square size={22} fill="currentColor" />
-          </motion.button>
-        </div>
-
-        {/* Mode Switcher */}
-        <div style={{ 
-          display: 'flex', gap: '8px',
-          background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(31,32,29,0.04)',
-          padding: '6px', borderRadius: '16px',
-          border: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid var(--color-border)'
-        }}>
-          {Object.entries(MODES).map(([key, m]) => (
-            <motion.button 
-              key={key} 
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => switchMode(key)}
-              style={{
-                background: mode === key ? (isDark ? 'rgba(255,255,255,0.1)' : 'var(--color-surface)') : 'transparent',
-                border: mode === key && !isDark ? '1px solid var(--color-border)' : 'none',
-                padding: '8px 20px', borderRadius: '12px', cursor: 'pointer',
-                color: mode === key ? text1 : text3, fontSize: '13px', fontWeight: 600,
-                boxShadow: mode === key && !isDark ? '0 4px 12px rgba(31,32,29,0.06)' : 'none',
-                transition: 'all 0.2s', outline: 'none'
-              }}
-            >
-              {m.label}
-            </motion.button>
-          ))}
-        </div>
-
-        {/* Stats */}
-        <div style={{ marginTop: '30px', display: 'flex', alignItems: 'center', gap: '8px', color: text3, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-          <Flame size={14} color="#ff5f56" /> {sessionsCompleted} Sessions Completed
-        </div>
-
+      {/* Session Tracker */}
+      <div style={{ marginTop: '32px', display: 'flex', gap: '8px' }}>
+        {[...Array(4)].map((_, i) => (
+          <div key={i} style={{
+            width: '12px', height: '12px', borderRadius: '50%',
+            background: i < (sessionsCompleted % 4) ? MODES.focus.color : 'var(--color-border)'
+          }} />
+        ))}
       </div>
     </div>
   );
