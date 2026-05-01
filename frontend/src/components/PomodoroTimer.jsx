@@ -10,9 +10,10 @@ import PomodoroReflection from './pomodoro/PomodoroReflection';
 
 const PomodoroTimer = ({ user, onClose }) => {
     const PRESETS = [
+        { work: 15, rest: 5, label: 'Quick' },
         { work: 25, rest: 5, label: 'Standard' },
         { work: 45, rest: 10, label: 'Deep Work' },
-        { work: 90, rest: 20, label: 'Extreme' },
+        { work: 60, rest: 15, label: 'Flow' },
     ];
     
     const [selectedPreset, setSelectedPreset] = useState(0);
@@ -335,19 +336,20 @@ const PomodoroTimer = ({ user, onClose }) => {
                                         marginBottom: '24px'
                                     }}>
 
-                                        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                                        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                                             {PRESETS.map((p, i) => (
                                                 <button
                                                     key={i}
                                                     onClick={() => handlePresetSelect(i)}
                                                     disabled={isRunning}
                                                     style={{
-                                                        flex: 1, padding: '10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700,
-                                                        border: selectedPreset === i ? `1px solid ${accentColor}` : '1px solid var(--color-border)',
-                                                        background: selectedPreset === i ? bgDimm : 'transparent',
-                                                        color: selectedPreset === i ? accentColor : 'var(--color-text-3)',
+                                                        flex: 1, padding: '16px 8px', borderRadius: '32px', fontSize: '18px', fontWeight: 800,
+                                                        border: 'none',
+                                                        background: selectedPreset === i ? accentColor : 'var(--color-surface)',
+                                                        color: selectedPreset === i ? '#fff' : 'var(--color-text-1)',
                                                         cursor: isRunning ? 'not-allowed' : 'pointer',
-                                                        transition: 'all 0.2s'
+                                                        transition: 'all 0.2s',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                                                     }}
                                                 >
                                                     {p.work}m
