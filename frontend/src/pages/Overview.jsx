@@ -175,8 +175,8 @@ const Overview = ({ user }) => {
             .eq('user_id', userId).eq('date', todayStr),
           supabase.from('accounts').select('balance').eq('user_id', userId),
           supabase.from('wealth_assets').select('value').eq('user_id', userId),
-          supabase.from('correlations').select('description, correlation_score')
-            .eq('user_id', userId).order('correlation_score', { ascending: false }).limit(1),
+          supabase.from('lab_correlations').select('signal_a, signal_b, rho')
+            .eq('user_id', userId).order('rho', { ascending: false }).limit(1),
         ]);
 
         const logMap = {};
@@ -445,7 +445,7 @@ const Overview = ({ user }) => {
               fontFamily: 'var(--font-sans)',
               marginBottom: '8px',
             }}>
-              New Pattern · {insight?.correlation_score?.toFixed(2) ?? '0.72'} corr
+              New Pattern · {insight?.rho?.toFixed(2) ?? '0.72'} corr
             </div>
             <div style={{
               fontSize: '13px',
@@ -453,7 +453,9 @@ const Overview = ({ user }) => {
               lineHeight: 1.55,
               fontFamily: 'var(--font-sans)',
             }}>
-              {insight?.description ?? 'Sleep drops 20% on nights you log RC after 22:30.'}
+              {insight
+                ? `${insight.signal_a} correlates with ${insight.signal_b}`
+                : 'Sleep drops 20% on nights you log RC after 22:30.'}
             </div>
             <button style={{
               marginTop: '12px',
