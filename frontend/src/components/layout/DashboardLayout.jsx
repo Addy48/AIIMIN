@@ -18,6 +18,9 @@ const DashboardLayout = ({ user }) => (
       maxWidth: 'var(--content-max)',
       margin: '0 auto',
       padding: '40px var(--content-pad) 80px',
+      display: 'flex',
+      flexDirection: 'column',
+      minHeight: 'calc(100vh - var(--nav-height))',
     }}>
       <Outlet />
     </main>

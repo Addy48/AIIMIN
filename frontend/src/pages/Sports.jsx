@@ -48,99 +48,118 @@ const SportsPage = () => {
 
   if (!user) return null;
 
+  const border = 'var(--color-border)';
+  const text1 = 'var(--color-text-1)';
+  const text2 = 'var(--color-text-2)';
+  const text3 = 'var(--color-text-3)';
+
   const filtered = activeSport === 'all' ? MOCK_SESSIONS : MOCK_SESSIONS.filter(s => s.sport === activeSport);
   const totalMin = MOCK_SESSIONS.reduce((a, b) => a + b.duration, 0);
   const streak = 3;
 
-  const bg = isDark ? '#0A0A0A' : '#F9FAFB';
-  const cardBg = isDark ? '#111111' : '#FFFFFF';
-  const border = isDark ? '#222222' : '#E5E7EB';
-  const text1 = isDark ? '#EDEDED' : '#111111';
-  const text2 = isDark ? '#A1A1AA' : '#6B7280';
-  const text3 = isDark ? '#52525B' : '#9CA3AF';
-
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{ flex: 1, paddingBottom: '80px' }}>
       {/* Header */}
-      <div style={{ marginBottom: '40px' }}>
-        <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: text3, fontFamily: 'var(--font-sans)', marginBottom: '8px' }}>
-          Sports · Activity Log
+      <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-accent)', fontFamily: 'var(--font-mono)', marginBottom: '8px' }}>
+            Sports · Activity Log
+          </div>
+          <h1 style={{ font: 'var(--text-hero)', color: text1, margin: 0, letterSpacing: '-0.03em' }}>
+            Move every day.
+          </h1>
         </div>
-        <h1 style={{ font: 'var(--text-hero)', color: text1, margin: 0, letterSpacing: '-0.02em' }}>
-          Move every day.
-        </h1>
+        <div style={{ textAlign: 'right' }}>
+          <span style={{ fontSize: '12px', color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Active Mode
+          </span>
+        </div>
       </div>
 
       {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '32px' }}>
-        <StatCard label="This Week" value={`${Math.round(totalMin / 60)}h ${totalMin % 60}m`} sub="5 sessions" color="#10B981" isDark={isDark} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '40px' }}>
+        <StatCard label="This Week" value={`${Math.round(totalMin / 60)}h ${totalMin % 60}m`} sub="5 sessions logged" color="#10B981" isDark={isDark} />
         <StatCard label="Active Streak" value={`${streak} days`} sub="Personal best: 12" color="#3B82F6" isDark={isDark} />
         <StatCard label="Sessions" value={MOCK_SESSIONS.length} sub="This month" color="#8B5CF6" isDark={isDark} />
-        <StatCard label="Top Sport" value="Gym" sub="3 sessions / week" color="#F59E0B" isDark={isDark} />
+        <StatCard label="Top Category" value="Gym" sub="3 sessions / week" color="#F59E0B" isDark={isDark} />
       </div>
 
       {/* Sport filter pills */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '32px', flexWrap: 'wrap', alignItems: 'center' }}>
         {[{ key: 'all', label: 'All', emoji: '⚡' }, ...SPORTS].map(s => (
           <button
             key={s.key}
             onClick={() => setActiveSport(s.key)}
+            className="glass-panel"
             style={{
-              padding: '6px 14px',
-              borderRadius: '9999px',
-              border: `1px solid ${activeSport === s.key ? s.color || '#22C55E' : border}`,
-              background: activeSport === s.key ? (s.color ? `${s.color}18` : 'rgba(34,197,94,0.1)') : 'transparent',
-              color: activeSport === s.key ? (s.color || '#22C55E') : text2,
-              fontSize: '12px', fontWeight: 500, cursor: 'pointer',
-              fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: '5px',
-              transition: 'all 150ms ease',
+              padding: '8px 16px',
+              borderRadius: '12px',
+              border: `1px solid ${activeSport === s.key ? s.color || 'var(--color-accent)' : border}`,
+              background: activeSport === s.key ? (s.color ? `${s.color}15` : 'var(--color-accent-dim)') : 'var(--glass-bg)',
+              color: activeSport === s.key ? (s.color || 'var(--color-accent)') : text2,
+              fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+              fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: '6px',
+              transition: 'all 200ms var(--ease)',
+              boxShadow: activeSport === s.key ? 'var(--glass-shadow-sm)' : 'none',
             }}
           >
-            {s.emoji} {s.label}
+            <span>{s.emoji}</span>
+            <span>{s.label}</span>
           </button>
         ))}
         <button
           onClick={() => setLogOpen(true)}
           style={{
-            marginLeft: 'auto', padding: '6px 16px', borderRadius: '9999px',
-            background: '#10B981', border: 'none', color: '#fff',
-            fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)',
+            marginLeft: 'auto', padding: '10px 20px', borderRadius: '12px',
+            background: 'var(--color-accent)', border: 'none', color: '#fff',
+            fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)',
+            boxShadow: 'var(--shadow-md)', transition: 'all 200ms var(--ease)',
           }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
         >
           + Log Session
         </button>
       </div>
 
       {/* Session list */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {filtered.map((s, i) => {
           const sport = SPORTS.find(sp => sp.key === s.sport) || { emoji: '🏃', label: s.sport, color: '#10B981' };
           return (
-            <div key={i} style={{
-              background: cardBg, border: `1px solid ${border}`, borderRadius: '10px',
-              padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px',
-              transition: 'border-color 150ms ease',
+            <div key={i} className="glass-panel" style={{
+              background: 'var(--glass-bg)', border: `1px solid ${border}`, borderRadius: '16px',
+              padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '20px',
+              transition: 'all 200ms var(--ease)',
+              boxShadow: 'var(--glass-shadow-sm)',
             }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = sport.color + '55'}
-              onMouseLeave={e => e.currentTarget.style.borderColor = border}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = sport.color;
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = border;
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
             >
               <div style={{
-                width: '40px', height: '40px', borderRadius: '10px', flexShrink: 0,
-                background: `${sport.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
+                width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0,
+                background: `${sport.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                fontSize: '24px', border: `1px solid ${sport.color}30`,
               }}>
                 {sport.emoji}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '3px' }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '4px' }}>
                   {s.note}
                 </div>
-                <div style={{ fontSize: '12px', color: text2, fontFamily: 'var(--font-sans)' }}>
+                <div style={{ fontSize: '12px', color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   {sport.label} · {s.duration} min · {new Date(s.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '2px' }}>
+              <div style={{ display: 'flex', gap: '3px', background: 'var(--color-surface)', padding: '6px 12px', borderRadius: '99px', border: `1px solid ${border}` }}>
                 {[1,2,3,4,5].map(star => (
-                  <span key={star} style={{ fontSize: '12px', color: star <= s.rating ? '#F59E0B' : text3 }}>★</span>
+                  <span key={star} style={{ fontSize: '12px', color: star <= s.rating ? 'var(--color-accent)' : 'var(--color-border)' }}>★</span>
                 ))}
               </div>
             </div>
@@ -148,13 +167,13 @@ const SportsPage = () => {
         })}
 
         {filtered.length === 0 && (
-          <div style={{
-            background: cardBg, border: `1px solid ${border}`, borderRadius: '10px',
-            padding: '48px 24px', textAlign: 'center',
+          <div className="glass-panel" style={{
+            background: 'var(--glass-bg)', border: `1px solid ${border}`, borderRadius: '20px',
+            padding: '60px 24px', textAlign: 'center',
           }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🏃</div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '4px' }}>No sessions logged</div>
-            <div style={{ fontSize: '12px', color: text2, fontFamily: 'var(--font-sans)' }}>Log your first session to start tracking</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.6 }}>🏃</div>
+            <div style={{ fontSize: '16px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '6px' }}>No sessions found</div>
+            <div style={{ fontSize: '13px', color: text3, fontFamily: 'var(--font-sans)' }}>Start tracking your movement to see data here.</div>
           </div>
         )}
       </div>
@@ -162,46 +181,62 @@ const SportsPage = () => {
       {/* Log modal */}
       {logOpen && (
         <div onClick={() => setLogOpen(false)} style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2000,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 2000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            background: cardBg, border: `1px solid ${border}`, borderRadius: '16px',
-            padding: '32px', width: '400px', maxWidth: '90vw',
+          <div onClick={e => e.stopPropagation()} className="glass-panel" style={{
+            background: 'var(--color-base)', border: `1px solid ${border}`, borderRadius: '24px',
+            padding: '40px', width: '440px', maxWidth: '95vw', boxShadow: 'var(--shadow-xl)',
           }}>
-            <h2 style={{ font: '600 18px var(--font-sans)', color: text1, margin: '0 0 24px' }}>Log a Session</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <select value={form.sport} onChange={e => setForm(f => ({ ...f, sport: e.target.value }))} style={{
-                padding: '10px 14px', borderRadius: '8px', border: `1px solid ${border}`,
-                background: isDark ? '#161616' : '#F9FAFB', color: text1, fontFamily: 'var(--font-sans)', fontSize: '14px',
-              }}>
-                {SPORTS.map(s => <option key={s.key} value={s.key}>{s.emoji} {s.label}</option>)}
-              </select>
-              <input
-                type="number" placeholder="Duration (minutes)"
-                value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
-                style={{
-                  padding: '10px 14px', borderRadius: '8px', border: `1px solid ${border}`,
-                  background: isDark ? '#161616' : '#F9FAFB', color: text1, fontFamily: 'var(--font-sans)', fontSize: '14px',
-                }}
-              />
-              <input
-                type="text" placeholder="Note (optional)"
-                value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
-                style={{
-                  padding: '10px 14px', borderRadius: '8px', border: `1px solid ${border}`,
-                  background: isDark ? '#161616' : '#F9FAFB', color: text1, fontFamily: 'var(--font-sans)', fontSize: '14px',
-                }}
-              />
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <h2 style={{ font: 'var(--text-hero)', fontSize: '24px', color: text1, margin: '0 0 32px', letterSpacing: '-0.02em' }}>Log Activity</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', display: 'block' }}>Category</label>
+                <select value={form.sport} onChange={e => setForm(f => ({ ...f, sport: e.target.value }))} style={{
+                  width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${border}`,
+                  background: 'var(--color-surface)', color: text1, fontFamily: 'var(--font-sans)', fontSize: '14px', outline: 'none',
+                }}>
+                  {SPORTS.map(s => <option key={s.key} value={s.key}>{s.emoji} {s.label}</option>)}
+                </select>
+              </div>
+              
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', display: 'block' }}>Duration (min)</label>
+                <input
+                  type="number" placeholder="45"
+                  value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
+                  style={{
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${border}`,
+                    background: 'var(--color-surface)', color: text1, fontFamily: 'var(--font-sans)', fontSize: '14px', outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', display: 'block' }}>Activity Note</label>
+                <input
+                  type="text" placeholder="What did you accomplish?"
+                  value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
+                  style={{
+                    width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${border}`,
+                    background: 'var(--color-surface)', color: text1, fontFamily: 'var(--font-sans)', fontSize: '14px', outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '12px' }}>
                 <button onClick={() => setLogOpen(false)} style={{
-                  padding: '10px 20px', borderRadius: '8px', border: `1px solid ${border}`,
-                  background: 'transparent', color: text2, fontFamily: 'var(--font-sans)', fontSize: '13px', cursor: 'pointer',
+                  padding: '12px 24px', borderRadius: '12px', border: `1px solid ${border}`,
+                  background: 'transparent', color: text2, fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+                  transition: 'all 200ms var(--ease)',
                 }}>Cancel</button>
                 <button onClick={() => setLogOpen(false)} style={{
-                  padding: '10px 20px', borderRadius: '8px', border: 'none',
-                  background: '#10B981', color: '#fff', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-                }}>Log it</button>
+                  padding: '12px 28px', borderRadius: '12px', border: 'none',
+                  background: 'var(--color-accent)', color: '#fff', fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                  transition: 'all 200ms var(--ease)', boxShadow: 'var(--shadow-md)',
+                }}>Log Activity</button>
               </div>
             </div>
           </div>

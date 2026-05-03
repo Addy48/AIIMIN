@@ -79,10 +79,10 @@ export default function MoneyOverviewTab({ transactions, accounts, budgets, savi
 
             {/* Account summary */}
             {accounts.length > 0 && (
-                <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '14px', border: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Accounts</span>
-                        <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-1)' }}>{fmtINR(totalBalance)}</span>
+                <div className="card" style={{ padding: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Accounts</span>
+                        <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-1)' }}>{fmtINR(totalBalance)}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         {accounts.map(a => (
@@ -108,21 +108,21 @@ export default function MoneyOverviewTab({ transactions, accounts, budgets, savi
             )}
 
             {/* Burn rate */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '14px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="card" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>Daily Burn</div>
-                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-1)', marginTop: '2px' }}>{fmtINR(dailyBurn) + '/day'}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Daily Burn</div>
+                    <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', marginTop: '2px' }}>{fmtINR(dailyBurn) + '/day'}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>Projected</div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--accent)' }}>{fmtINR(projMonth) + '/mo'}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Projected</div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--accent)' }}>{fmtINR(projMonth) + '/mo'}</div>
                 </div>
             </div>
 
             {/* Category breakdown */}
             {sortedCats.length > 0 && (
-                <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '14px', border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.05em' }}>Top Categories</div>
+                <div className="card" style={{ padding: '16px' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.1em' }}>Top Categories</div>
                     {sortedCats.map(([cat, amt]) => {
                         const budget = budgetByCategory[cat];
                         const barPct = budget ? Math.min((amt / budget) * 100, 100) : (amt / maxCat) * 100;
@@ -149,8 +149,8 @@ export default function MoneyOverviewTab({ transactions, accounts, budgets, savi
             )}
 
             {/* 7-day trend */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '14px', border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.05em' }}>7-Day Spend</div>
+            <div className="card" style={{ padding: '16px' }}>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.1em' }}>7-Day Spend</div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '50px' }}>
                     {last7.map((d, i) => (
                         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
@@ -165,7 +165,7 @@ export default function MoneyOverviewTab({ transactions, accounts, budgets, savi
 
             {/* Late-night spending insight */}
             {lateNightTotal > 0 && (
-                <div style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)', borderRadius: '10px', padding: '12px 16px', fontSize: '12px', color: '#a855f7', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ background: 'var(--color-card-purple)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '12px 16px', fontSize: '12px', color: 'var(--text-1)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '16px' }}>{'\uD83C\uDF19'}</span>
                     {'Late-night spending: ' + fmtINR(lateNightTotal) + ' (' + lateNightTx.length + ' txns after 11 PM)'}
                 </div>
@@ -175,14 +175,14 @@ export default function MoneyOverviewTab({ transactions, accounts, budgets, savi
             {(totalLent > 0 || totalBorrowed > 0) && (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                     {totalLent > 0 && (
-                        <div style={{ background: 'var(--bg-card)', borderRadius: '10px', padding: '12px', border: '1px solid var(--border)' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>You Lent</div>
+                        <div className="card" style={{ padding: '12px' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>You Lent</div>
                             <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--accent)', marginTop: '2px' }}>{fmtINR(totalLent)}</div>
                         </div>
                     )}
                     {totalBorrowed > 0 && (
-                        <div style={{ background: 'var(--bg-card)', borderRadius: '10px', padding: '12px', border: '1px solid var(--border)' }}>
-                            <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>You Borrowed</div>
+                        <div className="card" style={{ padding: '12px' }}>
+                            <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>You Borrowed</div>
                             <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--danger)', marginTop: '2px' }}>{fmtINR(totalBorrowed)}</div>
                         </div>
                     )}
@@ -191,7 +191,7 @@ export default function MoneyOverviewTab({ transactions, accounts, budgets, savi
 
             {/* Savings goals */}
             {savingsGoals.length > 0 && (
-                <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '14px', border: '1px solid var(--border)' }}>
+                <div className="card" style={{ padding: '16px' }}>
                     <button onClick={() => setGoalsOpen(o => !o)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                         <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{'\uD83C\uDFAF'} Savings Goals</span>
                         <span style={{ fontSize: '13px', color: 'var(--text-3)', transform: goalsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', display: 'inline-block' }}>{'\u25BE'}</span>
@@ -222,7 +222,7 @@ export default function MoneyOverviewTab({ transactions, accounts, budgets, savi
 
             {/* Recent transactions */}
             <div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Recent Activity</div>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Recent Activity</div>
                 {loading ? (
                     <div style={{ color: 'var(--text-3)', fontSize: '13px' }}>Loading...</div>
                 ) : transactions.length === 0 ? (
@@ -234,12 +234,12 @@ export default function MoneyOverviewTab({ transactions, accounts, budgets, savi
                             const isXfer = t.type === 'transfer_out' || t.type === 'transfer_in';
                             const meta = isXfer ? { icon: '\uD83D\uDD04', color: '#8b5cf6' } : isExp ? getCatMeta(t.category) : { icon: '\uD83D\uDCC8', color: '#10b981' };
                             return (
-                                <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--bg-card)', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: isExp ? 'var(--bg-elevated)' : 'var(--success-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>{meta.icon}</div>
+                                <div key={t.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderRadius: '12px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: isExp ? 'var(--bg-elevated)' : 'var(--color-accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>{meta.icon}</div>
                                         <div>
-                                            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-1)' }}>{t.category}</div>
-                                            <div style={{ fontSize: '10px', color: 'var(--text-3)' }}>
+                                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>{t.category}</div>
+                                            <div style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 500 }}>
                                                 {t.description ? (t.description + ' \u00B7 ') : ''}
                                                 {new Date(t.date || t.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                                             </div>

@@ -6,16 +6,16 @@
  */
 
 const RANKS = [
-    { rank: 1, name: 'Apprentice',  minXP: 0,     emoji: '🌱' },
-    { rank: 2, name: 'Adept',       minXP: 500,   emoji: '⚡' },
-    { rank: 3, name: 'Warrior',     minXP: 1500,  emoji: '⚔️' },
-    { rank: 4, name: 'Master',      minXP: 3500,  emoji: '🏆' },
-    { rank: 5, name: 'Sage',        minXP: 7000,  emoji: '📚' },
-    { rank: 6, name: 'Champion',    minXP: 12500, emoji: '👑' },
-    { rank: 7, name: 'Legend',      minXP: 20000, emoji: '⭐' },
-    { rank: 8, name: 'Mythic',      minXP: 30000, emoji: '🌟' },
-    { rank: 9, name: 'Ascendant',   minXP: 42500, emoji: '✨' },
-    { rank: 10, name: 'Grandmaster', minXP: 57500, emoji: '👼' },
+    { rank: 1, name: 'Apprentice',  minXP: 0,     emoji: '🌱', color: 'var(--text-3)' },
+    { rank: 2, name: 'Adept',       minXP: 500,   emoji: '⚡', color: 'var(--color-info)' },
+    { rank: 3, name: 'Warrior',     minXP: 1500,  emoji: '⚔️', color: 'var(--accent)' },
+    { rank: 4, name: 'Master',      minXP: 3500,  emoji: '🏆', color: 'var(--gold)' },
+    { rank: 5, name: 'Sage',        minXP: 7000,  emoji: '📚', color: 'var(--color-success)' },
+    { rank: 6, name: 'Champion',    minXP: 12500, emoji: '👑', color: 'var(--accent)' },
+    { rank: 7, name: 'Legend',      minXP: 20000, emoji: '⭐', color: 'var(--gold)' },
+    { rank: 8, name: 'Mythic',      minXP: 30000, emoji: '🌟', color: 'var(--color-success)' },
+    { rank: 9, name: 'Ascendant',   minXP: 42500, emoji: '✨', color: 'var(--accent)' },
+    { rank: 10, name: 'Grandmaster', minXP: 57500, emoji: '👼', color: 'var(--gold)' },
 ];
 
 export const MONEY_XP = 15;
@@ -56,22 +56,22 @@ const QUESTS = [
 ];
 
 const ACHIEVEMENTS = [
-    { id: 1, name: 'First Steps', description: 'Complete your first daily log', xpReward: 50 },
-    { id: 2, name: 'Week Warrior', description: 'Complete 7 consecutive days', xpReward: 100 },
-    { id: 3, name: 'Sleep Master', description: 'Sleep 8+ hours for 14 days', xpReward: 150 },
-    { id: 4, name: 'Gym Rat', description: 'Gym 20 times in a month', xpReward: 150 },
-    { id: 5, name: 'Bookworm', description: 'Log learning 30 days', xpReward: 100 },
-    { id: 6, name: 'Hydration Hero', description: '5+ water bottles daily for 7 days', xpReward: 75 },
-    { id: 7, name: 'Step Counter', description: '10K+ steps for 10 days', xpReward: 100 },
-    { id: 8, name: 'Mood Tracker', description: 'Log mood for 30 consecutive days', xpReward: 150 },
-    { id: 9, name: 'Perfect Day', description: 'Log all 8 metrics in one day', xpReward: 75 },
-    { id: 10, name: 'Streak Master', description: 'Reach 30-day overall streak', xpReward: 200 },
-    { id: 11, name: 'Journal Keeper', description: 'Write 50 journal entries', xpReward: 100 },
-    { id: 12, name: 'Money Manager', description: 'Log 50 transactions', xpReward: 100 },
-    { id: 13, name: 'DSA Champion', description: 'Solve 100 DSA problems', xpReward: 200 },
-    { id: 14, name: 'Clean Streak', description: '30-day clean day streak', xpReward: 150 },
-    { id: 15, name: 'Rank Up', description: 'Reach Rank 5 (Sage)', xpReward: 250 },
-    { id: 16, name: 'Legend', description: 'Reach Rank 10 (Grandmaster)', xpReward: 500 },
+    { id: 1, name: 'First Steps', desc: 'Complete your first daily log', xp: 50, tier: 5, icon: '🌱' },
+    { id: 2, name: 'Week Warrior', desc: 'Complete 7 consecutive days', xp: 100, tier: 4, icon: '⚔️' },
+    { id: 3, name: 'Sleep Master', desc: 'Sleep 8+ hours for 14 days', xp: 150, tier: 4, icon: '💤' },
+    { id: 4, name: 'Gym Rat', desc: 'Gym 20 times in a month', xp: 150, tier: 4, icon: '💪' },
+    { id: 5, name: 'Bookworm', desc: 'Log learning 30 days', xp: 100, tier: 4, icon: '📚' },
+    { id: 6, name: 'Hydration Hero', desc: '5+ water bottles daily for 7 days', xp: 75, tier: 5, icon: '💧' },
+    { id: 7, name: 'Step Counter', desc: '10K+ steps for 10 days', xp: 100, tier: 4, icon: '👟' },
+    { id: 8, name: 'Mood Tracker', desc: 'Log mood for 30 consecutive days', xp: 150, tier: 4, icon: '🧘' },
+    { id: 9, name: 'Perfect Day', desc: 'Log all 8 metrics in one day', xp: 75, tier: 5, icon: '💎' },
+    { id: 10, name: 'Streak Master', desc: 'Reach 30-day overall streak', xp: 200, tier: 3, icon: '🔥' },
+    { id: 11, name: 'Journal Keeper', desc: 'Write 50 journal entries', xp: 100, tier: 4, icon: '✍️' },
+    { id: 12, name: 'Money Manager', desc: 'Log 50 transactions', xp: 100, tier: 4, icon: '💸' },
+    { id: 13, name: 'DSA Champion', desc: 'Solve 100 DSA problems', xp: 200, tier: 3, icon: '🏆' },
+    { id: 14, name: 'Clean Streak', desc: '30-day clean day streak', xp: 150, tier: 4, icon: '🛡️' },
+    { id: 15, name: 'Rank Up', desc: 'Reach Rank 5 (Sage)', xp: 250, tier: 3, icon: '🌟' },
+    { id: 16, name: 'Legend', desc: 'Reach Rank 10 (Grandmaster)', xp: 500, tier: 2, icon: '👑' },
 ];
 
 const RANK_UP_LINES = {
@@ -153,6 +153,7 @@ export function getRank(totalXP) {
         rank: current.rank,
         name: current.name,
         emoji: current.emoji,
+        color: current.color,
         nextRankXP: nextRank?.minXP || null,
         progressToNext,
     };
@@ -303,12 +304,13 @@ export const ACHIEVEMENT_DEFS = ACHIEVEMENTS;
  */
 export function getRankProgress(totalXP) {
     const info = getRank(totalXP);
+    const currentRankIdx = RANKS.findIndex(r => r.rank === info.rank);
+    const nextRank = RANKS[currentRankIdx + 1] || null;
+
     return {
-        name: info.name,
-        emoji: info.emoji,
-        rank: info.rank,
-        progressPct: info.progressToNext,
-        xpToNext: info.nextRankXP ? info.nextRankXP - totalXP : 0,
+        current: { ...info, color: RANKS[currentRankIdx].color },
+        next: nextRank ? { ...nextRank, xpRequired: nextRank.minXP } : null,
+        progress: info.progressToNext / 100,
     };
 }
 

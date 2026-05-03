@@ -38,18 +38,17 @@ const Navbar = ({ user }) => {
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         height: 'var(--nav-height)',
-        background: isDark ? 'rgba(10,10,10,0.94)' : 'rgba(240,237,232,0.94)',
-        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+        background: isDark ? 'rgba(10,10,10,0.85)' : 'rgba(240,237,232,0.85)',
+        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
         borderBottom: `1px solid ${borderColor}`,
-        display: 'grid',
-        gridTemplateColumns: '1fr auto 1fr',
+        display: 'flex',
         alignItems: 'center',
         padding: '0 24px',
         zIndex: 1000,
       }}>
 
         {/* LEFT: Brand */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
           <Link to="/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
               width: '24px', height: '24px', background: '#23503B', borderRadius: '6px',
@@ -67,35 +66,34 @@ const Navbar = ({ user }) => {
           </Link>
         </div>
 
-        {/* CENTER: Nav links — grid auto column keeps this exactly centered */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+        {/* CENTER: Nav links — centered perfectly */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
           {NAV_LINKS.map(({ to, label, hasNew }) => (
             <NavLink
               key={`${to}-${label}`}
               to={to}
               style={({ isActive }) => ({
-                fontSize: '12.5px',
-                fontWeight: isActive ? 500 : 400,
+                fontSize: '12px',
+                fontWeight: isActive ? 600 : 400,
                 fontFamily: 'var(--font-sans)',
-                color: isActive ? (isDark ? '#EDEDED' : '#111') : (isDark ? '#71717A' : '#6B6B6B'),
+                color: isActive ? (isDark ? '#EDEDED' : 'var(--color-accent)') : (isDark ? '#71717A' : '#6B6B6B'),
                 textDecoration: 'none',
-                padding: '4px 9px',
-                borderRadius: '6px',
+                padding: '6px 12px',
+                borderRadius: '8px',
                 background: isActive
-                  ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)')
+                  ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(30,92,58,0.05)')
                   : 'transparent',
-                border: `1px solid ${isActive ? borderColor : 'transparent'}`,
-                transition: 'all 140ms ease',
-                display: 'flex', alignItems: 'center', gap: '4px',
+                transition: 'all 200ms var(--ease)',
+                display: 'flex', alignItems: 'center', gap: '6px',
                 whiteSpace: 'nowrap',
               })}
             >
               {label}
               {hasNew && (
                 <span style={{
-                  fontSize: '7.5px', fontWeight: 700, padding: '1px 4px',
-                  borderRadius: '9999px', background: '#22C55E', color: '#fff',
-                  letterSpacing: '0.04em', lineHeight: 1.5,
+                  fontSize: '7px', fontWeight: 800, padding: '1px 5px',
+                  borderRadius: '9999px', background: 'var(--color-accent)', color: '#fff',
+                  letterSpacing: '0.05em', lineHeight: 1.4,
                 }}>NEW</span>
               )}
             </NavLink>
@@ -103,7 +101,7 @@ const Navbar = ({ user }) => {
         </div>
 
         {/* RIGHT: Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
 
           {/* Theme toggle */}
           <button

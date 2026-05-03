@@ -271,7 +271,7 @@ export default function LabFullPage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{ flex: 1 }}>
       {/* Header */}
       <div style={{ marginBottom: '36px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
