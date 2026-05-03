@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
-import { supabase } from '../lib/supabaseClient';
 
 /* ── Sports dashboard ────────────────────────────────────────── */
 const SPORTS = [
