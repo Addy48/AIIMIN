@@ -90,30 +90,30 @@ const Finance = () => {
     maximumFractionDigits: 0
   }).format(val);
 
+  const monthStr = new Date().toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+
   return (
-    <div style={{ maxWidth: 'var(--content-max)', margin: '0 auto', padding: '0 var(--content-pad)', paddingBottom: 'var(--space-9)' }}>
-      
-      {/* Header - Nordic Calm Aesthetic */}
-      <header style={{ marginTop: 'var(--space-6)', marginBottom: 'var(--space-8)' }}>
-        <div style={{ 
-          fontSize: '11px', 
-          fontWeight: 700, 
-          color: 'var(--text-3)', 
-          textTransform: 'uppercase', 
-          letterSpacing: '0.15em', 
-          marginBottom: '8px' 
+    <div style={{ paddingBottom: '80px' }}>
+
+      {/* Header */}
+      <header style={{ marginBottom: '32px' }}>
+        <div style={{
+          fontSize: '10px',
+          fontWeight: 600,
+          color: 'var(--color-text-3)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: '8px',
+          fontFamily: 'var(--font-sans)',
         }}>
-          FINANCE HUB · {new Date().toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase()}
+          Finance · {monthStr}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <h1 style={{ 
-            fontFamily: 'var(--font-serif)', 
-            fontSize: '56px', 
-            fontWeight: 400, 
-            color: 'var(--color-hero)', 
-            lineHeight: '1',
+          <h1 style={{
+            font: 'var(--text-hero)',
+            color: 'var(--color-text-1)',
             margin: 0,
-            letterSpacing: '-0.02em'
+            letterSpacing: '-0.02em',
           }}>
             Watch the curve.
           </h1>
@@ -121,55 +121,55 @@ const Finance = () => {
             background: 'var(--color-accent)',
             color: 'white',
             border: 'none',
-            padding: '12px 24px',
-            borderRadius: '4px',
-            fontSize: '11px',
-            fontWeight: 700,
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
+            padding: '10px 20px',
+            borderRadius: '6px',
+            fontSize: '12px',
+            fontWeight: 600,
             cursor: 'pointer',
-            transition: 'opacity 0.2s',
-            boxShadow: '0 4px 12px var(--color-accent-glow)'
+            fontFamily: 'var(--font-sans)',
+            letterSpacing: '0.01em',
+            transition: 'opacity 0.15s ease',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
           }}
-          onMouseEnter={(e) => e.target.style.opacity = 0.9}
-          onMouseLeave={(e) => e.target.style.opacity = 1}
+          onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
           >
-            + New Transaction
+            + Add Transaction
           </button>
         </div>
       </header>
 
       {/* Navigation Tabs */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '40px', 
-        borderBottom: '1px solid var(--border)', 
-        marginBottom: 'var(--space-8)',
-        paddingBottom: '2px',
+      <div style={{
+        display: 'flex',
+        gap: '0',
+        borderBottom: '1px solid var(--color-border)',
+        marginBottom: '32px',
         overflowX: 'auto',
-        scrollbarWidth: 'none'
+        scrollbarWidth: 'none',
       }}>
-        {['OVERVIEW', 'ACCOUNTS', 'TRANSACTIONS', 'BUDGETS', 'WEALTH'].map(tab => (
-          <button 
+        {['OVERVIEW', 'ACCOUNTS', 'TRANSACTIONS'].map(tab => (
+          <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             style={{
-              padding: '16px 0',
-              fontSize: '11px',
-              fontWeight: 700,
-              color: activeTab === tab ? 'var(--text-1)' : 'var(--text-3)',
+              padding: '12px 20px',
+              fontSize: '13px',
+              fontWeight: activeTab === tab ? 600 : 400,
+              color: activeTab === tab ? 'var(--color-text-1)' : 'var(--color-text-3)',
               border: 'none',
               background: 'none',
-              borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
+              borderBottom: activeTab === tab ? '2px solid var(--color-text-1)' : '2px solid transparent',
               cursor: 'pointer',
-              textTransform: 'uppercase',
-              letterSpacing: '0.12em',
-              transition: 'all 0.2s ease',
+              fontFamily: 'var(--font-sans)',
+              transition: 'all 0.15s ease',
               whiteSpace: 'nowrap',
-              marginBottom: '-1px'
+              marginBottom: '-1px',
             }}
           >
-            {tab}
+            {tab.charAt(0) + tab.slice(1).toLowerCase()}
           </button>
         ))}
       </div>
