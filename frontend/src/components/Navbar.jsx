@@ -8,16 +8,30 @@ import AccountModal from './account/AccountModal';
 import LabMegaMenu from './lab/LabMegaMenu';
 import useLabSummary from '../hooks/useLabSummary';
 
-
 const NAV_LINKS = [
-  { to: '/overview', label: 'Today' },
-  { to: '/insights', label: 'Insights' },
-  { to: '/calendar', label: 'Calendar' },
-  { to: '/placements', label: 'Placements' },
-  { to: '/finance', label: 'Finance' },
-  { to: '/lab', label: 'Lab' },
-  { to: '/reports', label: 'Reports' },
-  { to: '/settings', label: 'Settings' },
+  { to: '/overview',    label: 'Today' },
+  { to: '/insights',   label: 'Skills' },
+  { to: '/calendar',   label: 'Calendar' },
+  { to: '/finance',    label: 'Finance' },
+  { to: '/lab',        label: 'Journal' },
+  { to: '/reports',    label: 'Sports' },
+  { to: '/placements', label: 'Placement' },
+  { to: '/insights',   label: 'Insights', skip: true },
+  { to: '/reports',    label: 'Reports' },
+  { to: '/lab',        label: 'Lab', hasNew: true },
+];
+
+const MAIN_NAV = [
+  { to: '/overview',    label: 'Today' },
+  { to: '/insights',   label: 'Skills' },
+  { to: '/calendar',   label: 'Calendar' },
+  { to: '/finance',    label: 'Finance' },
+  { to: '/lab',        label: 'Journal' },
+  { to: '/reports',    label: 'Sports' },
+  { to: '/placements', label: 'Placement' },
+  { to: '/insights',   label: 'Insights' },
+  { to: '/reports',    label: 'Reports' },
+  { to: '/lab',        label: 'Lab', hasNew: true },
 ];
 
 const Navbar = ({ user }) => {
@@ -28,15 +42,14 @@ const Navbar = ({ user }) => {
   const [labMenuOpen, setLabMenuOpen] = useState(false);
   const { data: labData } = useLabSummary();
 
-
   const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'A';
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
 
   const handleOpenNotif = () => {
     if (!notifOpen) fetchAll();
     setNotifOpen(o => !o);
   };
+
+  const isDark = theme === 'dark';
 
   return (
     <>
@@ -46,45 +59,59 @@ const Navbar = ({ user }) => {
         left: 0,
         right: 0,
         height: 'var(--nav-height)',
-        background: 'var(--glass-bg-strong)',
-        backdropFilter: 'var(--glass-blur)',
-        WebkitBackdropFilter: 'var(--glass-blur)',
-        borderBottom: '1px solid var(--glass-border)',
+        background: isDark ? 'rgba(10,10,10,0.92)' : 'rgba(240,237,232,0.92)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
         display: 'flex',
         alignItems: 'center',
         padding: '0 var(--content-pad)',
-        gap: '24px',
+        gap: '0',
         zIndex: 1000,
       }}>
 
         {/* LEFT: Brand */}
-        <Link to="/overview" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <Link to="/overview" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px', marginRight: '24px' }}>
           <div style={{
-            width: '28px', height: '28px',
-            background: 'var(--color-logo-bg)',
-            borderRadius: '9px',
+            width: '26px', height: '26px',
+            background: '#23503B',
+            borderRadius: '7px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
           }}>
-            <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
               <path d="M9 2.5 L3.5 14.5 L5.5 14.5 L6.8 11.2 L11.2 11.2 L12.5 14.5 L14.5 14.5 Z" fill="white" fillOpacity="0.95" />
-              <path d="M7.5 9.5 L9 6 L10.5 9.5 Z" fill="var(--color-logo-bg)" />
-              <path d="M9 1.5 C9 1.5 11 3 9 5 C7 3 9 1.5 9 1.5Z" fill="white" fillOpacity="0.85" />
+              <path d="M7.5 9.5 L9 6 L10.5 9.5 Z" fill="#23503B" />
             </svg>
           </div>
           <span style={{
-            font: 'italic 600 18px/1 var(--font-sans)',
-            color: 'var(--color-text-1)',
+            fontSize: '15px',
+            fontWeight: 600,
             letterSpacing: '-0.02em',
+            fontStyle: 'italic',
+            color: isDark ? '#EDEDED' : '#1A1A1A',
+            fontFamily: 'var(--font-sans)',
           }}>
-            aiimin
+            AIIMIN
           </span>
         </Link>
 
         {/* CENTER: Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
-          {NAV_LINKS.map(({ to, label }) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, overflowX: 'auto' }}>
+          {[
+            { to: '/overview',    label: 'Today' },
+            { to: '/insights',   label: 'Skills' },
+            { to: '/calendar',   label: 'Calendar' },
+            { to: '/finance',    label: 'Finance' },
+            { to: '/lab',        label: 'Journal' },
+            { to: '/reports',    label: 'Sports' },
+            { to: '/placements', label: 'Placement' },
+            { to: '/insights',   label: 'Insights' },
+            { to: '/reports',    label: 'Reports' },
+            { to: '/lab',        label: 'Lab', hasNew: true },
+          ].map(({ to, label, hasNew }) => (
             <div
-              key={to}
+              key={`${to}-${label}`}
               onMouseEnter={() => label === 'Lab' && setLabMenuOpen(true)}
               onMouseLeave={() => label === 'Lab' && setLabMenuOpen(false)}
               style={{ position: 'relative' }}
@@ -95,33 +122,38 @@ const Navbar = ({ user }) => {
                   fontSize: '13px',
                   fontWeight: isActive ? 500 : 400,
                   fontFamily: 'var(--font-sans)',
-                  color: isActive ? '#fff' : 'var(--color-text-2)',
+                  color: isActive
+                    ? (isDark ? '#EDEDED' : '#1A1A1A')
+                    : (isDark ? '#71717A' : '#6B6B6B'),
                   textDecoration: 'none',
-                  padding: '6px 14px',
-                  borderRadius: 'var(--r-pill)',
-                  background: isActive ? 'var(--color-accent)' : 'transparent',
-                  border: 'none',
-                  transition: `all var(--dur-enter) var(--ease)`,
+                  padding: '5px 10px',
+                  borderRadius: 'var(--r-md)',
+                  background: isActive
+                    ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
+                    : 'transparent',
+                  border: '1px solid',
+                  borderColor: isActive
+                    ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')
+                    : 'transparent',
+                  transition: 'all var(--dur-enter) var(--ease)',
                   display: 'flex',
                   alignItems: 'center',
+                  gap: '4px',
+                  whiteSpace: 'nowrap',
                 })}
               >
-                {({ isActive }) => (
-                  <>
-                    {label}
-                    {isActive && (
-                      <span style={{
-                        position: 'absolute',
-                        bottom: '-1px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        width: '16px',
-                        height: '2px',
-                        background: 'var(--color-accent)',
-                        borderRadius: 'var(--r-pill)',
-                      }} />
-                    )}
-                  </>
+                {label}
+                {hasNew && (
+                  <span style={{
+                    fontSize: '9px',
+                    fontWeight: 600,
+                    padding: '1px 5px',
+                    borderRadius: 'var(--r-pill)',
+                    background: isDark ? '#22C55E' : '#1E5C3A',
+                    color: '#fff',
+                    letterSpacing: '0.04em',
+                    fontFamily: 'var(--font-sans)',
+                  }}>NEW</span>
                 )}
               </NavLink>
 
@@ -134,59 +166,57 @@ const Navbar = ({ user }) => {
           ))}
         </div>
 
-
-        {/* RIGHT: Date + Notifications + Avatar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0 }}>
-          <span style={{
-            font: '400 11px/1 var(--font-mono)',
-            color: 'var(--color-text-3)',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-          }}>
-            {dateStr}
-          </span>
+        {/* RIGHT: Theme + Notifications + Avatar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
 
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
             style={{
               width: '30px', height: '30px',
-              borderRadius: 'var(--r-sm)',
-              background: 'var(--glass-bg)',
-              border: '1px solid var(--glass-border)',
-              color: 'var(--color-text-2)',
-              fontSize: '14px',
+              borderRadius: 'var(--r-md)',
+              background: 'transparent',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+              color: isDark ? '#A1A1AA' : '#6B6B6B',
+              fontSize: '15px',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: `all var(--dur-enter) var(--ease)`,
+              transition: 'all var(--dur-enter) var(--ease)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--glass-border-lit)'; e.currentTarget.style.color = 'var(--color-text-1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--glass-border)'; e.currentTarget.style.color = 'var(--color-text-2)'; }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+              e.currentTarget.style.color = isDark ? '#EDEDED' : '#1A1A1A';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = isDark ? '#A1A1AA' : '#6B6B6B';
+            }}
           >
-            {theme === 'dark' ? '☀' : '◐'}
+            {isDark ? '☀' : '◑'}
           </button>
 
           <NotificationBell unreadCount={unreadCount} onClick={handleOpenNotif} />
 
+          {/* Avatar */}
           <button
             onClick={() => setShowAccount(true)}
             style={{
               width: '30px',
               height: '30px',
               borderRadius: '50%',
-              background: 'var(--glass-bg)',
-              border: '1px solid var(--glass-border-lit)',
-              color: 'var(--color-accent)',
-              font: '500 12px var(--font-mono)',
+              background: '#23503B',
+              border: 'none',
+              color: '#fff',
+              font: '600 12px var(--font-sans)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: `all var(--dur-enter) var(--ease)`,
+              transition: 'all var(--dur-enter) var(--ease)',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--glass-bg-hover)'; e.currentTarget.style.borderColor = 'var(--color-accent)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.borderColor = 'var(--glass-border-lit)'; }}
+            onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
+            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
             aria-label="Account settings"
           >
             {userInitial}
