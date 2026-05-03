@@ -29,20 +29,20 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
     }, [events]);
 
     return (
-        <div className="glass-panel" style={{ borderRadius: '16px', padding: '20px' }}>
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
             {/* Weekday headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', marginBottom: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: '1px solid var(--color-border)', background: 'var(--bg-elevated)' }}>
                 {WEEKDAYS.map(w => (
-                    <div key={w} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '4px 0' }}>
+                    <div key={w} style={{ textAlign: 'center', fontSize: '11px', fontWeight: 600, color: 'var(--text-2)', padding: '12px 0', borderRight: '1px solid var(--color-border)' }}>
                         {w}
                     </div>
                 ))}
             </div>
 
             {/* Day cells */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', background: 'var(--color-border)', gap: '1px' }}>
                 {Array.from({ length: firstDayOffset }, (_, i) => (
-                    <div key={`pad-${i}`} style={{ minHeight: '80px' }} />
+                    <div key={`pad-${i}`} style={{ minHeight: '120px', background: 'var(--bg-elevated)' }} />
                 ))}
 
                 {Array.from({ length: daysInMonth }, (_, i) => {
@@ -55,32 +55,43 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
                             key={day}
                             onClick={() => onDayClick(new Date(year, month, day))}
                             style={{
-                                minHeight: '80px', padding: '4px 6px', cursor: 'pointer',
-                                borderRadius: '8px', border: isToday ? '1.5px solid var(--accent)' : '1px solid transparent',
-                                background: isToday ? 'rgba(245,166,35,0.06)' : 'transparent',
-                                transition: 'background 0.1s',
+                                minHeight: '120px', padding: '8px', cursor: 'pointer',
+                                background: isToday ? 'var(--accent-dim)' : 'var(--bg-primary)',
+                                transition: 'background var(--dur-fast)',
+                                position: 'relative'
                             }}
                             onMouseEnter={e => { if (!isToday) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
-                            onMouseLeave={e => { if (!isToday) e.currentTarget.style.background = 'transparent'; }}
+                            onMouseLeave={e => { if (!isToday) e.currentTarget.style.background = 'var(--bg-primary)'; }}
                         >
                             <div style={{
-                                fontSize: '11px', fontWeight: isToday ? 800 : 500,
-                                color: isToday ? 'var(--accent)' : 'var(--text-2)', marginBottom: '4px',
-                            }}>{day}</div>
+                                fontSize: '13px', fontWeight: isToday ? 600 : 400,
+                                color: isToday ? 'var(--accent)' : 'var(--text-2)', marginBottom: '8px',
+                                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                                width: '24px', height: '24px', borderRadius: '50%',
+                                background: isToday ? 'var(--bg-primary)' : 'transparent',
+                                boxShadow: isToday ? 'var(--glass-shadow-sm)' : 'none'
+                            }}>
+                                {day}
+                            </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                {dayEvents.slice(0, 3).map(ev => (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {dayEvents.slice(0, 4).map(ev => (
                                     <EventCard key={ev.id} event={ev} compact onClick={onEventClick} />
                                 ))}
-                                {dayEvents.length > 3 && (
-                                    <div style={{ fontSize: '9px', color: 'var(--text-3)', fontWeight: 600 }}>
-                                        +{dayEvents.length - 3} more
+                                {dayEvents.length > 4 && (
+                                    <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 500, paddingLeft: '4px' }}>
+                                        +{dayEvents.length - 4} more
                                     </div>
                                 )}
                             </div>
                         </div>
                     );
                 })}
+                
+                {/* Fill remaining cells to complete the grid */}
+                {Array.from({ length: (7 - ((firstDayOffset + daysInMonth) % 7)) % 7 }, (_, i) => (
+                    <div key={`pad-end-${i}`} style={{ minHeight: '120px', background: 'var(--bg-elevated)' }} />
+                ))}
             </div>
         </div>
     );
