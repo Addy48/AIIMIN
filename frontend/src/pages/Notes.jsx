@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Search, Pin, Trash2, Hash, Clock, Archive, LayoutGrid, Info, ArrowUpRight, BookOpen, Layers } from 'lucide-react';
 
 const STORAGE_KEY = 'aiimin_notes_v3';
-const CATEGORIES = ['All', 'Ideas', 'Tasks', 'Learning', 'Reflections', 'Archive'];
+const CATEGORIES = ['All', 'Ideas', 'Tasks', 'Learning', 'Archive'];
 
 const loadNotes = () => {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
