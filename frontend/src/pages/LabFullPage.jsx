@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
-import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
 import TypingTest from '../components/lab/TypingTest';
@@ -12,12 +11,6 @@ import './lab/lab.css';
 /* ─────────────────────────────────────────────────────────────
    LabFullPage — reads directly from Supabase, no backend needed
 ───────────────────────────────────────────────────────────── */
-
-const SAMPLE_TEXTS = [
-  "The mind is not a vessel to be filled, but a fire to be kindled.",
-  "Clarity comes from engagement, not from thought.",
-  "Discipline is choosing between what you want now and what you want most.",
-];
 
 // TypingTestSupabase removed and replaced by premium component from ../components/lab/TypingTest
 
@@ -32,6 +25,17 @@ export default function LabFullPage() {
   const [typingStats, setTypingStats] = useState(null);
   const [todayMindset, setTodayMindset] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (activeModule) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeModule]);
 
   const cardBg = 'var(--color-surface)';
   const border = 'var(--color-border)';

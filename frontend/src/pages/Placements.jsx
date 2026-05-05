@@ -736,64 +736,77 @@ export default function Placements() {
         {showAppModal && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAppModal(false)} style={{ position: 'absolute', inset: 0, background: 'var(--glass-bg)', backdropFilter: 'blur(10px)' }} />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="modal-content" style={{ position: 'relative' }}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="modal-content application-intake-modal" style={{ position: 'relative' }}>
               <button type="button" onClick={() => setShowAppModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}>
                 <X size={20} />
               </button>
-              <h2 style={{ fontSize: '28px', fontWeight: 500, fontFamily: 'var(--font-serif)', marginBottom: '32px' }}>{editingApp ? 'Update Application' : 'Track Opportunity'}</h2>
-              <form onSubmit={handleSaveApplication} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div className="input-group">
-                    <label>Company Name</label>
-                    <input required value={appForm.company_name} onChange={e => setAppForm({...appForm, company_name: e.target.value})} placeholder="e.g. Anthropic" />
+              <div className="application-intake-layout">
+                <aside className="application-intake-rail">
+                  <div>
+                    <div className="modal-eyebrow">Opportunity Intake</div>
+                    <h2>{editingApp ? 'Update application' : 'Track opportunity'}</h2>
+                    <p>Capture role, resume, source links, outreach date, and notes in one clean record.</p>
                   </div>
-                  <div className="input-group">
-                    <label>Role Title</label>
-                    <input required value={appForm.role_title} onChange={e => setAppForm({...appForm, role_title: e.target.value})} placeholder="e.g. AI Engineer" />
+                  <div className="intake-summary-grid">
+                    <span>Company</span><strong>{appForm.company_name || 'Not set'}</strong>
+                    <span>Status</span><strong>{STATUS_CONFIG[appForm.status]?.label}</strong>
+                    <span>Resume</span><strong>{appForm.resume_id ? 'Linked' : 'Unlinked'}</strong>
                   </div>
-                </div>
-
-                <div className="input-group">
-                  <label>Status</label>
-                  <select value={appForm.status} onChange={e => setAppForm({...appForm, status: e.target.value})}>
-                    {Object.keys(STATUS_CONFIG).map(s => <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>)}
-                  </select>
-                </div>
-
-                <div className="input-group">
-                  <label>Associated Resume</label>
-                  <select value={appForm.resume_id} onChange={e => setAppForm({...appForm, resume_id: e.target.value})}>
-                    <option value="">None Linked</option>
-                    {resumes.map(r => <option key={r.id} value={r.id}>{r.title} ({r.target_role})</option>)}
-                  </select>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div className="input-group">
-                    <label>LinkedIn URL</label>
-                    <input value={appForm.linkedin_url || ''} onChange={e => setAppForm({...appForm, linkedin_url: e.target.value})} placeholder="https://..." />
+                </aside>
+                <form onSubmit={handleSaveApplication} className="application-intake-form">
+                  <div className="form-grid two">
+                    <div className="input-group">
+                      <label>Company Name</label>
+                      <input required value={appForm.company_name} onChange={e => setAppForm({...appForm, company_name: e.target.value})} placeholder="e.g. Anthropic" />
+                    </div>
+                    <div className="input-group">
+                      <label>Role Title</label>
+                      <input required value={appForm.role_title} onChange={e => setAppForm({...appForm, role_title: e.target.value})} placeholder="e.g. AI Engineer" />
+                    </div>
                   </div>
-                  <div className="input-group">
-                    <label>Job Post URL</label>
-                    <input value={appForm.job_post_url || ''} onChange={e => setAppForm({...appForm, job_post_url: e.target.value})} placeholder="https://..." />
+
+                  <div className="form-grid three">
+                    <div className="input-group">
+                      <label>Status</label>
+                      <select value={appForm.status} onChange={e => setAppForm({...appForm, status: e.target.value})}>
+                        {Object.keys(STATUS_CONFIG).map(s => <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>)}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>Resume</label>
+                      <select value={appForm.resume_id} onChange={e => setAppForm({...appForm, resume_id: e.target.value})}>
+                        <option value="">None Linked</option>
+                        {resumes.map(r => <option key={r.id} value={r.id}>{r.title} ({r.target_role})</option>)}
+                      </select>
+                    </div>
+                    <div className="input-group">
+                      <label>Last Contacted</label>
+                      <input type="date" value={appForm.last_contacted || ''} onChange={e => setAppForm({...appForm, last_contacted: e.target.value})} />
+                    </div>
                   </div>
-                </div>
 
-                <div className="input-group">
-                  <label>Last Contacted Date</label>
-                  <input type="date" value={appForm.last_contacted || ''} onChange={e => setAppForm({...appForm, last_contacted: e.target.value})} />
-                </div>
+                  <div className="form-grid two">
+                    <div className="input-group">
+                      <label>LinkedIn URL</label>
+                      <input value={appForm.linkedin_url || ''} onChange={e => setAppForm({...appForm, linkedin_url: e.target.value})} placeholder="https://..." />
+                    </div>
+                    <div className="input-group">
+                      <label>Job Post URL</label>
+                      <input value={appForm.job_post_url || ''} onChange={e => setAppForm({...appForm, job_post_url: e.target.value})} placeholder="https://..." />
+                    </div>
+                  </div>
 
-                <div className="input-group">
-                  <label>Strategy Notes</label>
-                  <textarea rows={3} value={appForm.notes || ''} onChange={e => setAppForm({...appForm, notes: e.target.value})} placeholder="Key points to mention, research notes..." />
-                </div>
+                  <div className="input-group">
+                    <label>Strategy Notes</label>
+                    <textarea rows={5} value={appForm.notes || ''} onChange={e => setAppForm({...appForm, notes: e.target.value})} placeholder="Recruiter names, referrals, role requirements, interview angles..." />
+                  </div>
 
-                <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                  <button type="button" onClick={() => setShowAppModal(false)} className="btn-secondary">Cancel</button>
-                  <button type="submit" className="btn-primary">Synchronize Track</button>
-                </div>
-              </form>
+                  <div className="modal-action-row">
+                    <button type="button" onClick={() => setShowAppModal(false)} className="btn-secondary">Cancel</button>
+                    <button type="submit" className="btn-primary">Save Track</button>
+                  </div>
+                </form>
+              </div>
             </motion.div>
           </div>
         )}
@@ -917,14 +930,85 @@ export default function Placements() {
         .modal-content {
           position: relative;
           width: 100%;
-          maxWidth: 520px;
+          max-width: 520px;
           padding: 48px;
           background: var(--bg-surface);
           border-radius: 24px;
           border: 1px solid var(--border);
           box-shadow: var(--glass-shadow);
         }
-        .input-group { display: flex; flexDirection: column; gap: 8px; }
+        .application-intake-modal {
+          max-width: min(1040px, 94vw);
+          padding: 0;
+          overflow: hidden;
+        }
+        .application-intake-layout {
+          display: grid;
+          grid-template-columns: 320px minmax(0, 1fr);
+          min-height: 560px;
+        }
+        .application-intake-rail {
+          background: var(--color-card-dark-green);
+          color: white;
+          padding: 36px 30px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 28px;
+        }
+        .application-intake-rail h2 {
+          font-family: var(--font-serif);
+          font-size: 34px;
+          line-height: 1.05;
+          font-weight: 500;
+          margin: 12px 0 16px;
+        }
+        .application-intake-rail p {
+          color: rgba(255,255,255,0.68);
+          font-size: 13px;
+          line-height: 1.65;
+          margin: 0;
+        }
+        .modal-eyebrow {
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          color: #7DD3A7;
+        }
+        .intake-summary-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 6px;
+          padding-top: 18px;
+          border-top: 1px solid rgba(255,255,255,0.12);
+        }
+        .intake-summary-grid span {
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          color: rgba(255,255,255,0.45);
+        }
+        .intake-summary-grid strong {
+          font-size: 13px;
+          margin-bottom: 10px;
+        }
+        .application-intake-form {
+          padding: 36px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+        .form-grid {
+          display: grid;
+          gap: 16px;
+        }
+        .form-grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .form-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .modal-action-row { display: flex; gap: 12px; margin-top: 8px; justify-content: flex-end; }
+        .modal-action-row .btn-secondary,
+        .modal-action-row .btn-primary { min-width: 150px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
         .input-group label { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.1em; }
         .input-group input, .input-group select, .input-group textarea {
           background: var(--bg-elevated);
@@ -936,10 +1020,19 @@ export default function Placements() {
           outline: none;
           transition: border-color 0.2s;
         }
-        .input-group input:focus { border-color: var(--text-1); }
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus { border-color: var(--text-1); }
         
-        .btn-primary { background: var(--text-1); color: var(--bg-primary); border: none; padding: 14px; borderRadius: 12px; fontSize: 14px; fontWeight: 600; cursor: pointer; }
-        .btn-secondary { background: none; border: 1px solid var(--border); color: var(--text-2); padding: 14px; borderRadius: 12px; fontSize: 14px; fontWeight: 600; cursor: pointer; }
+        .btn-primary { background: var(--text-1); color: var(--bg-primary); border: none; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .btn-secondary { background: none; border: 1px solid var(--border); color: var(--text-2); padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+        @media (max-width: 900px) {
+          .application-intake-layout { grid-template-columns: 1fr; }
+          .application-intake-rail { padding: 28px; }
+          .form-grid.two,
+          .form-grid.three { grid-template-columns: 1fr; }
+        }
 
         .spinner {
           width: 32px;

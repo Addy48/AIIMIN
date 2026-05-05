@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Circle, Flame, Calendar, Plus, X, Trash2, BarChart2, Check } from 'lucide-react';
+import { CheckCircle, Circle, Plus, X, Trash2, BarChart2, Check } from 'lucide-react';
 
 const DEFAULT_HABITS = [
   { id: 'h1', name: 'Morning Workout', icon: '🏋️', category: 'Health', color: '#22C55E', description: 'Gym session / home workout', target: 7 },

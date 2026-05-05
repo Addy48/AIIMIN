@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Search, Pin, Trash2, Hash, Clock, Archive, LayoutGrid, Info, ArrowUpRight, BookOpen, Layers } from 'lucide-react';
+import { Plus, X, Search, Pin, Clock, ArrowUpRight, BookOpen } from 'lucide-react';
 
 const STORAGE_KEY = 'aiimin_notes_v3';
 const CATEGORIES = ['All', 'Ideas', 'Tasks', 'Learning', 'Archive'];

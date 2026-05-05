@@ -46,7 +46,15 @@ const CalendarPage = () => {
         return { rangeStart: start.toISOString(), rangeEnd: end.toISOString() };
     }, [currentDate, view]);
 
-    const { events, loading, createEvent, updateEvent } = useCalendarEvents(session, rangeStart, rangeEnd);
+    const {
+        events,
+        loading,
+        syncStatus,
+        pullGoogleEvents,
+        pushTasksToGoogle,
+        createEvent,
+        updateEvent
+    } = useCalendarEvents(session, rangeStart, rangeEnd);
 
     // Apply system filter
     const filteredEvents = useMemo(() => {
@@ -111,6 +119,10 @@ const CalendarPage = () => {
                 currentDate={currentDate}
                 onDateChange={setCurrentDate}
                 onNewEvent={handleNewEvent}
+                session={session}
+                syncStatus={syncStatus}
+                onPullGoogle={pullGoogleEvents}
+                onPushGoogle={pushTasksToGoogle}
             />
 
             <div style={{ display: 'flex', gap: '16px' }}>
