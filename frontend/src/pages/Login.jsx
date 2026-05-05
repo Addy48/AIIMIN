@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Shield, Sun, Moon, User } from 'lucide-react';
+import { ArrowLeft, Shield, User } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import Numpad from '../components/common/Numpad';
 import Logo from '../components/Logo';
-import { useThemeContext } from '../context/ThemeContext';
 
 /**
  * AIIMIN Identity Portal v3
@@ -36,9 +35,8 @@ const GridBg = ({ isDark }) => (
 );
 
 const Login = () => {
-  const { signInWithEmail, signUpWithEmail } = useAuth();
-  const { theme, toggleTheme } = useThemeContext();
-  const isDark = theme === 'dark';
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+  const isDark = false;
 
   const [mode, setMode]       = useState('login');
   const [step, setStep]       = useState(1);
@@ -61,7 +59,9 @@ const Login = () => {
 
   const handleNext = (e) => {
     if (e) e.preventDefault();
+    const resolved = resolveEmail(identifier);
     if (!identifier.trim()) { setError('Identifier required.'); return; }
+    if (resolved.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resolved)) { setError('Enter a valid email address.'); return; }
     if (mode === 'signup' && !fullName.trim()) { setError('Full name required.'); return; }
     setError(null);
     setStep(2);
@@ -130,29 +130,13 @@ const Login = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'var(--bg-primary)',
-      color: 'var(--text-1)',
+      background: '#f6f3ec',
+      color: '#1f201d',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       padding: '24px', position: 'relative', overflow: 'hidden',
     }}>
-      <GridBg isDark={isDark} />
-
-      {/* Theme Toggle */}
-      <motion.button
-        whileTap={{ scale: 0.93 }}
-        onClick={toggleTheme}
-        style={{
-          position: 'absolute', top: '24px', right: '24px',
-          background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-          borderRadius: '10px', padding: '10px', cursor: 'pointer',
-          color: 'var(--text-2)', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 10,
-        }}
-      >
-        {isDark ? <Sun size={16} /> : <Moon size={16} />}
-      </motion.button>
+      <GridBg isDark={false} />
 
       <div style={{ width: '100%', maxWidth: '380px', display: 'flex', flexDirection: 'column', gap: '32px', zIndex: 1 }}>
 
@@ -253,11 +237,15 @@ const Login = () => {
                 )}
 
                 <div>
-                  <label style={labelStyle}>Username or Email</label>
+                  <label style={labelStyle}>Username or email</label>
                   <input
                     type="text" required value={identifier} autoFocus
                     onChange={e => setIdentifier(e.target.value)}
-                    placeholder="e.g. au48"
+                    placeholder="au48 or you@email.com"
+                    autoCapitalize="none"
+                    autoComplete="username"
+                    autoCorrect="off"
+                    spellCheck="false"
                     style={inputStyle}
                     onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                     onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
@@ -297,6 +285,23 @@ const Login = () => {
                       : <>Have an account? <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign in</span></>}
                   </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={signInWithGoogle}
+                  style={{
+                    height: '48px',
+                    background: 'rgba(255,255,255,0.45)',
+                    color: '#111111',
+                    border: '1px solid rgba(0,0,0,0.12)',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                >
+                  Continue with Google
+                </button>
               </form>
             </motion.div>
           ) : (
@@ -361,6 +366,7 @@ const Login = () => {
                   onClear={handlePinClear}
                   maxLength={6}
                   currentLength={pin.length}
+                  isDark={false}
                 />
               )}
 
@@ -394,28 +400,6 @@ const Login = () => {
           animation: aiimin-spin 0.7s linear infinite;
         }
         @keyframes aiimin-spin { to { transform: rotate(360deg); } }
-
-        .numpad-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-        }
-        .numpad-grid button {
-          background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'} !important;
-          border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} !important;
-          color: ${isDark ? '#EDEDED' : '#111111'} !important;
-          width: 70px !important; height: 70px !important;
-          border-radius: 50% !important;
-          font-size: 22px !important; font-weight: 600 !important;
-          transition: all 0.15s ease !important;
-          cursor: pointer !important;
-          font-family: var(--font-sans) !important;
-        }
-        .numpad-grid button:hover {
-          background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'} !important;
-          transform: scale(1.05);
-        }
-        .numpad-grid button:active { transform: scale(0.92) !important; }
       `}</style>
     </div>
   );

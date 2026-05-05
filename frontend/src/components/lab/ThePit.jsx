@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../utils/supabase';
 
 const CHALLENGES = [
@@ -12,28 +12,26 @@ const CHALLENGES = [
 
 export default function ThePit({ userId, isDark, onClose }) {
   const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [logging, setLogging] = useState(null);
 
   const border = 'var(--color-border)';
   const text1 = 'var(--color-text-1)';
   const text2 = 'var(--color-text-2)';
 
-  useEffect(() => {
-    fetchTodayLogs();
-  }, [userId]);
-
-  const fetchTodayLogs = async () => {
+  const fetchTodayLogs = useCallback(async () => {
     const today = new Date().toISOString().split('T')[0];
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('lab_pit_logs')
       .select('*')
       .eq('user_id', userId)
       .gte('created_at', today);
     
     if (data) setLogs(data);
-    setLoading(false);
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    fetchTodayLogs();
+  }, [fetchTodayLogs]);
 
   const handleLog = async (challenge) => {
     setLogging(challenge.id);

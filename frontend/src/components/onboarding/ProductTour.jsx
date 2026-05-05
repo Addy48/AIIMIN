@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, Check } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { ChevronRight, Check } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useThemeContext } from '../../context/ThemeContext';
 
 const TOUR_STEPS = [
@@ -39,31 +39,21 @@ const TOUR_STEPS = [
 
 export default function ProductTour() {
     const { theme } = useThemeContext();
-    const location = useLocation();
     const navigate = useNavigate();
     const isDark = theme === 'dark';
 
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
-    const [hasSeenTour, setHasSeenTour] = useState(true); // Default true, we'll check localStorage
 
-    useEffect(() => {
-        const seen = localStorage.getItem('aiimin_tour_seen');
-        if (!seen) {
-            setHasSeenTour(false);
-        }
-    }, []);
-
-    const startTour = () => {
+    const startTour = useCallback(() => {
         setIsOpen(true);
         setCurrentStep(0);
         navigate(TOUR_STEPS[0].target);
-    };
+    }, [navigate]);
 
     const endTour = () => {
         setIsOpen(false);
         localStorage.setItem('aiimin_tour_seen', 'true');
-        setHasSeenTour(true);
     };
 
     const nextStep = () => {
@@ -80,14 +70,12 @@ export default function ProductTour() {
     useEffect(() => {
         window.startProductTour = startTour;
         return () => { delete window.startProductTour; };
-    }, []);
+    }, [startTour]);
 
     const bg = isDark ? '#161616' : '#ffffff';
     const border = isDark ? '#2a2a2a' : '#e5e7eb';
     const text1 = isDark ? '#ededed' : '#111111';
     const text2 = isDark ? '#a1a1aa' : '#6b7280';
-    const accent = isDark ? '#ededed' : '#111111';
-
     return (
         <>
             <AnimatePresence>

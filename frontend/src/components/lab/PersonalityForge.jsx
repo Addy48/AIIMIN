@@ -27,7 +27,7 @@ export default function PersonalityForge({ userId, isDark, onClose }) {
 
   useEffect(() => {
     async function loadLatest() {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('lab_personality_logs')
         .select('*')
         .eq('user_id', userId)

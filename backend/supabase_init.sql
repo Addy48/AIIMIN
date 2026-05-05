@@ -887,6 +887,15 @@ ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS all_day     BOOLEAN 
 ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS event_type  TEXT DEFAULT 'personal';
 ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS updated_at  TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'user';
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS system_type TEXT DEFAULT 'general';
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS tags        TEXT[] DEFAULT '{}';
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS color       TEXT;
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS location    TEXT;
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS reminder_minutes INTEGER;
+ALTER TABLE public.calendar_events ADD COLUMN IF NOT EXISTS recurrence_rule  TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_calendar_events_google_unique
+    ON public.calendar_events(user_id, google_event_id);
 
 ALTER TABLE public.wins ADD COLUMN IF NOT EXISTS source_type TEXT DEFAULT 'user';
 ALTER TABLE public.wins ADD COLUMN IF NOT EXISTS deleted_at  TIMESTAMPTZ;

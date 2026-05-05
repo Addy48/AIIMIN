@@ -42,7 +42,7 @@ const parseESPNEvents = (data) => {
       name: ev.name,
       shortName: ev.shortName,
       status: status.name,
-      statusShort: statusDetail,
+      statusShort: status.completed ? '' : statusDetail,
       statusDetail: comp.status?.type?.detail || '',
       clock: comp.status?.displayClock,
       period: comp.status?.period,
@@ -220,7 +220,11 @@ export const fetchCricket = async () => {
         date: match.dateTimeGMT,
         name: `${match.t1} vs ${match.t2}`,
         status: match.status,
-        statusShort: isLive ? 'Live' : isFinished ? 'Final' : 'Scheduled',
+        statusShort: isLive
+          ? (match.status || 'Live')
+          : isFinished
+            ? (match.status || 'Result')
+            : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(match.dateTimeGMT).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
         statusDetail: match.t1s || match.t2s || '',
         isLive,
         isFinished,
@@ -292,7 +296,7 @@ export const fetchBasketball = async (dateOffset = 0) => {
 export const fetchAllSports = async (dateOffset = 0) => {
   const [football, cricket, basketball, f1] = await Promise.allSettled([
     fetchFootball(dateOffset),
-    fetchCricket(dateOffset),
+    fetchCricket(),
     fetchBasketball(dateOffset),
     fetchF1(),
   ]);
@@ -330,5 +334,4 @@ export const sportsService = {
   fetchFootballStandings,
   fetchMatchDetails
 };
-
 

@@ -56,11 +56,17 @@ const Navbar = ({ user }) => {
             <Link to="/identity" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
               <Logo size={28} />
             </Link>
-            <Link to="/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <Link to="/overview" aria-label="AIIMIN today" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
               <span style={{
-                fontSize: '16px', fontWeight: 700, letterSpacing: '-0.03em',
-                color: isDark ? '#FFFFFF' : '#000000', fontFamily: 'var(--font-sans)',
-              }}>AIIMIN</span>
+                fontSize: '25px',
+                fontWeight: 400,
+                letterSpacing: '-0.065em',
+                color: isDark ? '#F2EBDA' : '#1f201d',
+                fontFamily: 'var(--font-serif)',
+                lineHeight: 1,
+              }}>
+                AIIMIN
+              </span>
             </Link>
           </div>
         </div>

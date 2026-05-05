@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Target, BookOpen, Briefcase, Heart, Brain, CheckCircle, Trash2, Calendar, ChevronRight, BarChart3, Clock, ArrowUpRight } from 'lucide-react';
+import { Plus, X, Target, BookOpen, Briefcase, Heart, Brain, CheckCircle, Trash2, Clock, ArrowUpRight } from 'lucide-react';
 
 /* ── Constants ─────────────────────────────────────────────── */
 const PILLARS = [
@@ -66,10 +66,6 @@ const GoalCard = ({ goal, onUpdate, onDelete }) => {
     if (updated.milestones.every(m => m.done) && updated.status !== 'Achieved') updated.status = 'Achieved';
     onUpdate(updated);
   };
-
-  const daysSinceCreation = Math.max(1, Math.ceil((new Date() - new Date(goal.createdAt)) / 86400000));
-  const velocity = (done / daysSinceCreation).toFixed(2);
-  const priorityColor = PRIORITIES.find(p => p.level === goal.priority)?.color || '#f59e0b';
 
   return (
     <motion.div 

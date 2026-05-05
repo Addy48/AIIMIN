@@ -161,7 +161,6 @@ const Insights = () => {
 
   const border  = isDark ? '#222' : '#e5e7eb';
   const text1   = isDark ? '#ededed' : '#111';
-  const text2   = isDark ? '#a1a1aa' : '#6b7280';
   const text3   = isDark ? '#52525b' : '#9ca3af';
   const cardBg  = isDark ? '#111' : '#fff';
 

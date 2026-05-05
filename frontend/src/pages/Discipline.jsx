@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Flame, RefreshCw, ChevronDown, ChevronUp, Trophy, Target, Brain, Zap, Lock, X } from 'lucide-react';
+import { Shield, RefreshCw, ChevronDown, ChevronUp, Trophy, Brain, Zap, Lock, X, Wind } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../utils/supabase';
 
 /* ── Storage ── */
 const SK_DATA = 'aiimin_discipline_v2';
@@ -52,15 +54,14 @@ const MILESTONES = [
   { days: 90,  icon: '👑', label: '90 Days',   msg: 'THREE MONTHS. Ronaldo-level commitment.' },
 ];
 
-/* ── Reset Modal ── */
-const ResetModal = ({ onConfirm, onCancel }) => {
+const ResetModal = ({ onConfirm, onCancel, currentDays, currentHours }) => {
   const TRIGGERS = [
     'Boredom / loneliness', 'Stress / anxiety', 'Late night scroll',
     'Triggered by content', 'Weak mindset moment', 'Other',
   ];
   const [trigger, setTrigger] = useState('');
   const [note, setNote] = useState('');
-  const [agreed, setAgreed] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
 
   return (
     <div style={{
@@ -93,12 +94,15 @@ const ResetModal = ({ onConfirm, onCancel }) => {
           <X size={20} />
         </button>
 
-        <div style={{ fontSize: '28px', marginBottom: '8px', textAlign: 'center' }}>😔</div>
+        <div style={{ fontSize: '28px', marginBottom: '8px', textAlign: 'center' }}>⚠️</div>
         <h2 style={{ textAlign: 'center', fontSize: '20px', fontWeight: 900, color: '#ef4444', marginBottom: '6px', letterSpacing: '-0.02em' }}>
-          Streak Reset
+          You are about to throw away
         </h2>
+        <h1 style={{ textAlign: 'center', fontSize: '32px', fontWeight: 900, color: 'var(--color-text-1)', marginBottom: '16px', letterSpacing: '-0.02em' }}>
+          {currentDays} Days, {currentHours} Hours
+        </h1>
         <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--color-text-3)', marginBottom: '28px', lineHeight: 1.6 }}>
-          This resets your counter. Be honest — accountability is the only way forward.
+          Are you sure you want to surrender? If so, take accountability.
         </p>
 
         <div style={{ marginBottom: '20px' }}>
@@ -123,7 +127,7 @@ const ResetModal = ({ onConfirm, onCancel }) => {
 
         <div style={{ marginBottom: '20px' }}>
           <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
-            Reflect briefly (optional):
+            Reflect briefly (mandatory):
           </div>
           <textarea
             value={note} onChange={e => setNote(e.target.value)} rows={3}
@@ -138,27 +142,38 @@ const ResetModal = ({ onConfirm, onCancel }) => {
           />
         </div>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px', cursor: 'pointer' }}>
-          <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)}
-            style={{ accentColor: 'var(--color-accent)', width: '16px', height: '16px' }} />
-          <span style={{ fontSize: '12px', color: 'var(--color-text-2)', lineHeight: 1.5 }}>
-            I take full accountability. This failure is data — I will analyze and improve.
-          </span>
-        </label>
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
+            Type "I relapse" to confirm:
+          </div>
+          <input
+            type="text"
+            value={confirmText}
+            onChange={e => setConfirmText(e.target.value)}
+            placeholder="I relapse"
+            style={{
+              width: '100%', boxSizing: 'border-box',
+              background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+              borderRadius: '12px', padding: '12px 14px', fontSize: '13px',
+              color: 'var(--color-text-1)', outline: 'none',
+              fontFamily: 'inherit',
+            }}
+          />
+        </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={onCancel}
             style={{ flex: 1, padding: '14px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '14px', fontSize: '14px', fontWeight: 800, color: 'var(--color-text-2)', cursor: 'pointer', fontFamily: 'inherit' }}>
             Cancel
           </button>
-          <button onClick={() => agreed && trigger && onConfirm({ trigger, note })}
-            disabled={!agreed || !trigger}
+          <button onClick={() => confirmText.trim().toLowerCase() === 'i relapse' && trigger && note && onConfirm({ trigger, note })}
+            disabled={confirmText.trim().toLowerCase() !== 'i relapse' || !trigger || !note}
             style={{
-              flex: 1, padding: '14px', background: agreed && trigger ? '#ef4444' : 'var(--color-surface)',
-              border: `1px solid ${agreed && trigger ? '#ef4444' : 'var(--color-border)'}`,
+              flex: 1, padding: '14px', background: (confirmText.trim().toLowerCase() === 'i relapse' && trigger && note) ? '#ef4444' : 'var(--color-surface)',
+              border: `1px solid ${(confirmText.trim().toLowerCase() === 'i relapse' && trigger && note) ? '#ef4444' : 'var(--color-border)'}`,
               borderRadius: '14px', fontSize: '14px', fontWeight: 900,
-              color: agreed && trigger ? '#fff' : 'var(--color-text-3)',
-              cursor: agreed && trigger ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'all 0.2s',
+              color: (confirmText.trim().toLowerCase() === 'i relapse' && trigger && note) ? '#fff' : 'var(--color-text-3)',
+              cursor: (confirmText.trim().toLowerCase() === 'i relapse' && trigger && note) ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'all 0.2s',
             }}>
             Reset & Restart
           </button>
@@ -168,13 +183,106 @@ const ResetModal = ({ onConfirm, onCancel }) => {
   );
 };
 
+/* ── Urge Surfing Modal ── */
+const UrgeModal = ({ onComplete, onCancel }) => {
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [note, setNote] = useState('');
+  
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTimeLeft(t => t - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timeLeft]);
+
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)',
+      zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
+    }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        style={{
+          background: 'var(--color-surface, #111111)',
+          border: '1px solid rgba(59,130,246,0.3)',
+          borderRadius: '32px', padding: '48px',
+          width: '100%', maxWidth: '600px',
+          position: 'relative', textAlign: 'center'
+        }}
+      >
+        <button 
+          onClick={onCancel}
+          style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}
+        >
+          <X size={24} />
+        </button>
+
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          style={{ width: '80px', height: '80px', background: 'rgba(59,130,246,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#3b82f6' }}
+        >
+          <Wind size={40} />
+        </motion.div>
+
+        <h2 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-text-1)', marginBottom: '8px' }}>Urge Surfing</h2>
+        <p style={{ color: 'var(--color-text-3)', marginBottom: '32px', lineHeight: 1.6 }}>Breathe. The urge is a wave. It will peak and it will pass. Just wait it out.</p>
+
+        <div style={{ fontSize: '64px', fontWeight: 900, fontFamily: 'monospace', color: timeLeft === 0 ? '#10b981' : '#3b82f6', marginBottom: '32px', letterSpacing: '-0.05em' }}>
+          {String(m).padStart(2,'0')}:{String(s).padStart(2,'0')}
+        </div>
+
+        <div style={{ marginBottom: '32px', textAlign: 'left' }}>
+          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
+            Journal your thoughts (Optional):
+          </div>
+          <textarea
+            value={note} onChange={e => setNote(e.target.value)} rows={3}
+            placeholder="Write down what you're feeling right now. Externalize the urge."
+            style={{
+              width: '100%', boxSizing: 'border-box',
+              background: 'var(--color-elevated)', border: '1px solid var(--color-border)',
+              borderRadius: '12px', padding: '16px', fontSize: '14px',
+              color: 'var(--color-text-1)', outline: 'none', resize: 'none',
+              fontFamily: 'inherit', lineHeight: 1.6,
+            }}
+          />
+        </div>
+
+        <button onClick={() => onComplete(note)}
+          disabled={timeLeft > 0}
+          style={{
+            width: '100%', padding: '16px', background: timeLeft === 0 ? '#10b981' : 'var(--color-surface)',
+            border: `1px solid ${timeLeft === 0 ? '#10b981' : 'var(--color-border)'}`,
+            borderRadius: '16px', fontSize: '15px', fontWeight: 800,
+            color: timeLeft === 0 ? '#fff' : 'var(--color-text-3)',
+            cursor: timeLeft === 0 ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'all 0.3s',
+          }}>
+          {timeLeft === 0 ? 'I Survived the Urge' : 'Wait out the timer...'}
+        </button>
+      </motion.div>
+    </div>
+  );
+};
+
 /* ── Main Discipline Page ── */
 const Discipline = () => {
+  const { user } = useAuth();
   const [data, setData] = useState(initData);
   const [log, setLog] = useState(loadLog);
   const [showReset, setShowReset] = useState(false);
+  const [showUrge, setShowUrge] = useState(false);
   const [showLog, setShowLog] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [pledgedToday, setPledgedToday] = useState(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return localStorage.getItem('aiimin_discipline_pledge') === today;
+  });
 
   // Calculate elapsed seconds from lastUpdated
   useEffect(() => {
@@ -188,17 +296,6 @@ const Discipline = () => {
     return () => clearInterval(interval);
   }, [data.lastUpdated]);
 
-  // Check if a new day passed to increment streak
-  useEffect(() => {
-    if (!data.lastUpdated) return;
-    const last = new Date(data.lastUpdated);
-    const now = new Date();
-    const daysDiff = Math.floor((now - last) / 86400000);
-    if (daysDiff >= 1 && data.streak >= 0) {
-      // Already tracking via elapsed — days is derived from elapsed
-    }
-  }, []);
-
   const currentDays = data.lastUpdated ? Math.floor(elapsed / 86400) : 0;
   const { d, h, m, s } = secToDHMS(elapsed);
 
@@ -209,7 +306,38 @@ const Discipline = () => {
     saveData(updated);
   };
 
-  const handleReset = ({ trigger, note }) => {
+  const handlePledge = () => {
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem('aiimin_discipline_pledge', today);
+    setPledgedToday(true);
+  };
+
+  const logToJournal = async (content, mood) => {
+    if (!user) return;
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      await supabase.from('journal_entries').insert({
+        user_id: user.id,
+        date: today,
+        encrypted_content: content,
+        mood: mood,
+        energy_level: 3,
+        sleep_hours: 7
+      });
+    } catch (e) {
+      console.error("Failed to log to journal:", e);
+    }
+  };
+
+  const handleUrgeSurfed = async (note) => {
+    setShowUrge(false);
+    if (note.trim()) {
+      const content = `#urge-surfed\n\nI successfully rode out a strong urge today without breaking my streak.\n\n**Reflection during urge:**\n${note}`;
+      await logToJournal(content, 5); // Great mood for a win
+    }
+  };
+
+  const handleReset = async ({ trigger, note }) => {
     const now = new Date().toISOString();
     const entry = {
       id: Date.now().toString(),
@@ -231,10 +359,13 @@ const Discipline = () => {
     saveData(updated);
     saveLog(newLog);
     setShowReset(false);
+    
+    // Log relapse to journal
+    const content = `#relapse-reflection\n\nI lost a streak of ${currentDays} days.\n\n**Trigger:** ${trigger}\n\n**Reflection:**\n${note}`;
+    await logToJournal(content, 1); // Rough mood for a loss
   };
 
   const nextMilestone = MILESTONES.find(m => m.days > currentDays);
-  const achievedMilestones = MILESTONES.filter(m => m.days <= currentDays);
 
   const motivational = [
     '"Discipline is the bridge between goals and accomplishment." — Jim Rohn',
@@ -328,20 +459,64 @@ const Discipline = () => {
               </div>
             )}
 
-            {/* Reset button */}
-            <button onClick={() => setShowReset(true)}
-              style={{
-                padding: '12px 28px', background: 'transparent',
-                border: '1px solid rgba(239,68,68,0.4)', borderRadius: '14px',
-                fontSize: '13px', fontWeight: 800, color: 'rgba(239,68,68,0.8)',
-                cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
-                display: 'flex', alignItems: 'center', gap: '8px', margin: '0 auto',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = '#ef4444'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
-            >
-              <RefreshCw size={14} /> Reset Counter
-            </button>
+            {/* Daily Pledge */}
+            <div style={{ marginBottom: '24px' }}>
+              {!pledgedToday ? (
+                <button onClick={handlePledge}
+                  style={{
+                    padding: '14px 32px', background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)', borderRadius: '16px',
+                    fontSize: '14px', fontWeight: 800, color: 'var(--color-text-2)',
+                    cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
+                    display: 'flex', alignItems: 'center', gap: '8px', margin: '0 auto',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.color = '#22c55e'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-2)'; }}
+                >
+                  <Shield size={16} /> I pledge to stay clean today.
+                </button>
+              ) : (
+                <div style={{
+                  padding: '12px 24px', background: 'rgba(34,197,94,0.1)',
+                  border: '1px solid rgba(34,197,94,0.3)', borderRadius: '16px',
+                  fontSize: '13px', fontWeight: 800, color: '#22c55e',
+                  display: 'flex', alignItems: 'center', gap: '8px', margin: '0 auto', width: 'fit-content'
+                }}>
+                  <Shield size={16} /> Pledge Active
+                </div>
+              )}
+            </div>
+
+            {/* Emergency & Reset buttons */}
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+              <button onClick={() => setShowUrge(true)}
+                style={{
+                  padding: '12px 28px', background: '#3b82f6',
+                  border: 'none', borderRadius: '14px',
+                  fontSize: '13px', fontWeight: 800, color: '#fff',
+                  cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  boxShadow: '0 8px 24px rgba(59,130,246,0.4)'
+                }}
+              >
+                <Wind size={14} /> I have an urge
+              </button>
+              
+              <button onClick={() => setShowReset(true)}
+                style={{
+                  padding: '12px 28px', background: 'transparent',
+                  border: '1px solid rgba(239,68,68,0.4)', borderRadius: '14px',
+                  fontSize: '13px', fontWeight: 800, color: 'rgba(239,68,68,0.8)',
+                  cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = '#ef4444'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
+              >
+                <RefreshCw size={14} /> Relapse (Reset)
+              </button>
+            </div>
           </>
         ) : (
           <>
@@ -445,7 +620,12 @@ const Discipline = () => {
 
       {/* Reset modal */}
       <AnimatePresence>
-        {showReset && <ResetModal onConfirm={handleReset} onCancel={() => setShowReset(false)} />}
+        {showReset && <ResetModal currentDays={d} currentHours={h} onConfirm={handleReset} onCancel={() => setShowReset(false)} />}
+      </AnimatePresence>
+
+      {/* Urge modal */}
+      <AnimatePresence>
+        {showUrge && <UrgeModal onComplete={handleUrgeSurfed} onCancel={() => setShowUrge(false)} />}
       </AnimatePresence>
     </div>
   );

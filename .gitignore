@@ -17,3 +17,5 @@ frontend/build/
 frontend/tools/
 .vercel
 .env*.local
+
+.claude/

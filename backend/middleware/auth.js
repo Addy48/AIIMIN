@@ -11,7 +11,12 @@ const CACHE_TTL = 10000; // 10s cache for roles/onboarding
 
 export const requireAuth = async (c, next) => {
     const authHeader = c.req.header('authorization');
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    if (!token) {
+        // Fallback: check query parameter "token" (used for direct browser redirects like Google OAuth init)
+        token = c.req.query('token');
+    }
 
     if (!token) {
         return c.json({ error: 'Unauthorized: missing Bearer token' }, 401);
