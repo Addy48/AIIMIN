@@ -71,30 +71,33 @@ function AuthedApp() {
 
 function AppContent({ user }) {
   const location = useLocation();
-  const isMobile = location.pathname === '/m';
+  const isMobileRoute = location.pathname === '/m';
+
+  // Basic check for mobile form factor (used for smart default routing)
+  const isMobileDevice = typeof window !== 'undefined' && (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768);
 
   React.useEffect(() => {
     const meta = document.querySelector('meta[name="viewport"]');
     if (!meta) return;
     const defaultVP = 'width=device-width, initial-scale=1, viewport-fit=cover';
     const mobileVP = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
-    meta.setAttribute('content', isMobile ? mobileVP : defaultVP);
-    if (isMobile) {
+    meta.setAttribute('content', isMobileRoute ? mobileVP : defaultVP);
+    if (isMobileRoute) {
       const block = (e) => { if (e.touches?.length > 1) e.preventDefault(); };
       document.addEventListener('touchmove', block, { passive: false });
       return () => { meta.setAttribute('content', defaultVP); document.removeEventListener('touchmove', block); };
     }
     return () => meta.setAttribute('content', defaultVP);
-  }, [isMobile]);
+  }, [isMobileRoute]);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-base)' }}>
       <Routes>
 
         {/* ── Auth ── */}
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/overview" replace />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to={isMobileDevice ? '/m' : '/overview'} replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
+        <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
 
         {/* ── Authenticated shell ── */}
         <Route element={user ? <DashboardLayout user={user} /> : <Navigate to="/login" replace />}>
@@ -128,11 +131,11 @@ function AppContent({ user }) {
         <Route path="/contact" element={<Contact />} />
 
         {/* ── 404 ── */}
-        <Route path="*" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
+        <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
 
       </Routes>
 
-      {!isMobile && (
+      {!isMobileRoute && (
         <footer style={{
           padding: '32px 24px',
           background: 'var(--color-surface)',
@@ -155,8 +158,8 @@ function AppContent({ user }) {
       )}
 
       {/* Global Widgets */}
-      {!isMobile && user && <ProductTour />}
-      {!isMobile && user && <FeedbackWidget />}
+      {!isMobileRoute && user && <ProductTour />}
+      {!isMobileRoute && user && <FeedbackWidget />}
     </div>
   );
 }

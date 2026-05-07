@@ -241,9 +241,8 @@ const Login = () => {
                   <input
                     type="text" required value={identifier} autoFocus
                     onChange={e => setIdentifier(e.target.value)}
-                    placeholder="au48 or you@email.com"
                     autoCapitalize="none"
-                    autoComplete="username"
+                    autoComplete="off"
                     autoCorrect="off"
                     spellCheck="false"
                     style={inputStyle}
