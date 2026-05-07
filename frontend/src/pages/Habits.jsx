@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Circle, Plus, X, Trash2, BarChart2, Check } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
+
 
 const DEFAULT_HABITS = [
   { id: 'h1', name: 'Morning Workout', icon: '🏋️', category: 'Health', color: '#22C55E', description: 'Gym session / home workout', target: 7 },
@@ -177,10 +179,10 @@ const AddModal = ({ onClose, onAdd }) => {
   const inp = { background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '10px 14px', color: 'var(--color-text-1)', fontSize: '13px', fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box' };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        style={{ background: 'var(--color-bg, #0e0e0e)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto' }}>
+        style={{ background: 'var(--color-base)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 32px 80px rgba(0,0,0,0.6)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
           <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0 }}>New Habit</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}><X size={18} /></button>
@@ -331,24 +333,29 @@ const Habits = () => {
   const filtered = filter === 'all' ? habits : habits.filter(h => h.category === filter);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="page-container">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
-        <div>
-          <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--color-accent)', marginBottom: '6px' }}>Daily Discipline</div>
-          <h1 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.03em', fontFamily: 'var(--font-serif)' }}>Habits.</h1>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '28px', fontWeight: 900, color: pct === 100 ? '#22C55E' : 'var(--color-accent)', lineHeight: 1 }}>{completedToday}/{habits.length}</div>
-            <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 700, marginTop: '3px' }}>today's habits</div>
-          </div>
-          <button onClick={() => setAdding(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-accent)', border: 'none', borderRadius: '14px', padding: '12px 18px', fontSize: '13px', fontWeight: 800, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <Plus size={15} /> New
-          </button>
-        </div>
-      </div>
+      {/* Header */}
+      <PageHeader 
+        title={
+          <span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            Habits<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
+          </span>
+        }
+        subtitle="Daily Discipline"
+        rightContent={
+          <>
+            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: 900, color: pct === 100 ? '#22C55E' : 'var(--color-accent)', lineHeight: 1 }}>{completedToday}/{habits.length}</div>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 700, marginTop: '3px' }}>today's habits</div>
+            </div>
+            <button onClick={() => window.location.search.includes('guest') ? window.dispatchEvent(new CustomEvent('guest-gate', {detail: 'create habits'})) : setAdding(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-accent)', border: 'none', borderRadius: '14px', padding: '12px 18px', fontSize: '13px', fontWeight: 800, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <Plus size={15} /> New
+            </button>
+          </>
+        }
+      />
 
       {/* Progress bar */}
       <div style={{ marginBottom: '28px' }}>
