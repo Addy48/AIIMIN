@@ -5,11 +5,11 @@ import MoodTracker from '../MoodTracker';
 import Streaks from '../Streaks';
 import MoneyManager from '../MoneyManager';
 import Reports from '../Reports';
+import SpotifyPlayer from '../SpotifyPlayer';
 import QuickCapture from '../dashboard/QuickCapture';
 import WinsEngine from '../WinsEngine';
 import MomentumBar from '../MomentumBar';
 import ErrorBoundary from './ErrorBoundary';
-import PDFReportGenerator from '../PDFReportGenerator';
 import HabitsPage from '../habits/HabitsPage';
 import AdminPanel from '../account/AdminPanel';
 import AdminConsole from '../account/AdminConsole';
@@ -192,10 +192,15 @@ export function CognitiveSection({ user }) {
     return (
         <div id="sys-cognitive" style={{ scrollMarginTop: '100px' }}>
             <SectionLabel icon="🧠">Cognitive System</SectionLabel>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', alignItems: 'stretch' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'stretch' }}>
                 <div style={{ height: '390px' }}>
                     <div className="glass-panel-gold" style={{ borderRadius: 'var(--r-lg)', padding: '24px 20px', height: '100%' }}>
                         <PomodoroTimer user={user} />
+                    </div>
+                </div>
+                <div style={{ height: '390px' }}>
+                    <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: '24px 20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                        <SpotifyPlayer />
                     </div>
                 </div>
             </div>
@@ -437,7 +442,6 @@ export function ReportsSection({ user }) {
             <SectionLabel icon="📄">Reports</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
                 <Reports user={user} />
-                <PDFReportGenerator />
                 <div style={{ marginTop: '24px' }}>
                     <AchievementsGallery user={user} />
                 </div>

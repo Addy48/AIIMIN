@@ -76,13 +76,6 @@ export default function LabFullPage() {
     { key: "personality",emoji: "🧬",  label: "Personality Forge",desc: "Core trait & value alignment",  color: "#EC4899" },
     { key: "pit",       emoji: "⛓️",  label: "The Pit",        desc: "Hard-mode & resilience logs",   color: "#EF4444" },
     { key: "reading",    emoji: "📖",  label: "Reading Log",    desc: "Log books, articles & ratings",  color: "#10B981" },
-    { key: "aptitude", emoji: "🧠", label: "Aptitude Tests", desc: "Logical reasoning & pattern recognition", color: "#F59E0B" },
-    { key: "quant", emoji: "📐", label: "Quantitative Maths", desc: "Speed math for screening rounds", color: "#F97316" },
-    { key: "techsim", emoji: "💻", label: "Tech Simulator", desc: "Code output prediction & tricky MCQs", color: "#06B6D4" },
-    { key: "star", emoji: "⭐", label: "STAR Method", desc: "Behavioral interview storytelling", color: "#EAB308" },
-    { key: "resume", emoji: "📄", label: "Resume ATS Matcher", desc: "Match your resume against Job Descriptions", color: "#6366F1" },
-    { key: "flashcards", emoji: "🗂️", label: "Domain Flashcards", desc: "Spaced repetition for tech stacks", color: "#14B8A6" },
-    { key: "sysdesign", emoji: "🏗️", label: "System Design", desc: "Architecture whiteboard sandbox", color: "#8B5CF6" },
   ];
 
   return (
@@ -141,17 +134,11 @@ export default function LabFullPage() {
           speaking: { title: "Improvement Lab — Vocal Resonance Speech Logger", width: "1150px" },
           personality: { title: "Improvement Lab — Identity & Trait Sculptor", width: "780px" },
           pit: { title: "Improvement Lab — Self-Honesty Ledger & Challenges", width: "950px" },
-          reading: { title: "Improvement Lab — Intellect & Reading Log", width: "780px" },
-          aptitude: { title: "Improvement Lab — Aptitude & Logical Reasoning", width: "900px" },
-          quant: { title: "Improvement Lab — Quantitative Mathematics", width: "900px" },
-          techsim: { title: "Improvement Lab — Technical Interview Simulator", width: "1000px" },
-          star: { title: "Improvement Lab — STAR Behavioral Framework", width: "900px" },
-          resume: { title: "Improvement Lab — ATS Resume Matcher", width: "1100px" },
-          flashcards: { title: "Improvement Lab — Technical Flashcards", width: "800px" },
-          sysdesign: { title: "Improvement Lab — System Design Architecture", width: "1200px" },
+          reading: { title: "Improvement Lab — Intellect & Reading Log", width: "780px" }
         }[activeModule] || { title: "Improvement Lab module", width: "780px" };
 
         const winBg = isDark ? 'var(--color-surface)' : 'var(--color-overlay)';
+        const headerBg = isDark ? 'var(--color-elevated)' : 'var(--color-surface)';
         const winBorder = 'var(--color-border)';
 
         return (
@@ -173,37 +160,41 @@ export default function LabFullPage() {
                 backdropFilter: "blur(20px)"
               }}>
               
-              {/* Dark Title Bar — matches site theme */}
+              {/* macOS Browser Title Bar Mock */}
               <div style={{
-                height: '52px',
-                minHeight: '52px',
-                padding: '0 18px 0 20px',
+                height: '48px',
+                minHeight: '48px',
+                padding: '0 20px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                borderBottom: '1px solid rgba(255,255,255,0.07)',
-                background: 'rgba(255,255,255,0.03)',
-                flexShrink: 0,
+                borderBottom: `1px solid ${winBorder}`,
+                background: headerBg
               }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'var(--font-mono, monospace)', letterSpacing: '0.03em' }}>
-                    {config.title}
-                  </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span onClick={() => setActiveModule(null)} style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56', cursor: 'pointer', transition: 'opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 0.8} onMouseLeave={e => e.currentTarget.style.opacity = 1} title="Close" />
+                  <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e', opacity: 0.6 }} />
+                  <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f', opacity: 0.6 }} />
                 </div>
-                <button
-                  onClick={() => setActiveModule(null)}
+                <div style={{ fontSize: '13px', fontWeight: 600, color: text2, letterSpacing: '0.02em', textTransform: 'uppercase', font: '600 11px/1 var(--font-mono)' }}>
+                  {config.title}
+                </div>
+                <button onClick={() => setActiveModule(null)}
                   style={{
-                    width: '32px', height: '32px', borderRadius: '8px',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    background: 'rgba(255,255,255,0.05)',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--color-text-3)', transition: 'all 0.15s', flexShrink: 0,
+                    background: 'transparent',
+                    border: 'none',
+                    color: text2,
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 0.2s'
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--color-text-3)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
-                >
-                  ✕
-                </button>
+                  onMouseEnter={e => e.currentTarget.style.color = text1}
+                  onMouseLeave={e => e.currentTarget.style.color = text2}
+                >✕</button>
               </div>
 
               {/* Scrollable Contents */}
@@ -213,16 +204,6 @@ export default function LabFullPage() {
                 {activeModule === "personality" && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
                 {activeModule === "pit"         && <ThePit userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
                 {activeModule === "reading"     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-                
-                {["aptitude", "quant", "techsim", "star", "resume", "flashcards", "sysdesign"].includes(activeModule) && (
-                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
-                    <div style={{ fontSize: "48px", marginBottom: "24px" }}>🚧</div>
-                    <h2 style={{ color: text1, fontSize: "24px", fontWeight: 700, marginBottom: "12px" }}>Module Under Construction</h2>
-                    <p style={{ color: text2, fontSize: "15px", maxWidth: "400px", margin: "0 auto", lineHeight: 1.6 }}>
-                      This BTech interview prep module is currently being built. Check back soon for the full interactive experience.
-                    </p>
-                  </div>
-                )}
               </div>
 
             </div>
@@ -266,10 +247,10 @@ function ReadingLog({ userId, isDark, onClose }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [recent, setRecent] = useState([]);
-  const border = 'var(--color-border)';
-  const text1 = 'var(--color-text-1)';
-  const text3 = 'var(--color-text-3)';
-  const inp = { width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.04)', color: 'var(--color-text-1)', fontSize: '13px', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s', fontFamily: 'inherit' };
+  const border = isDark ? "#2a2a2a" : "#e5e7eb";
+  const text1 = isDark ? "#ededed" : "#111";
+  const text3 = isDark ? "#52525b" : "#9ca3af";
+  const inp = { width: "100%", padding: "10px 12px", borderRadius: "8px", border: `1px solid ${border}`, background: isDark?"#1a1a1a":"#f9fafb", color: text1, fontSize: "13px" };
   useEffect(() => {
     supabase.from("lab_reading_log").select("title,author,rating,logged_at").eq("user_id", userId)
       .order("logged_at", { ascending: false }).limit(5).then(({ data }) => setRecent(data || []));
