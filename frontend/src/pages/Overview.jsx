@@ -1,73 +1,102 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight, Keyboard, Mic, AlertTriangle } from 'lucide-react';
+import { Plus, X, ChevronRight, Keyboard, Mic, Timer } from 'lucide-react';
 import TypingTest from '../components/lab/TypingTest';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
+import PomodoroTimer from '../components/productivity/PomodoroTimer';
 import DesktopWindow from '../components/ui/DesktopWindow';
-import PageHeader from '../components/layout/PageHeader';
-import CommandCenter from '../components/overview/CommandCenter';
 
+const STATES = ['clarity','scarcity','abundance','fear','growth','aimlessness','focus','noise'];
+const STATE_ICONS = { clarity:'🔍', scarcity:'🪨', abundance:'🌊', fear:'🌑', growth:'🌱', aimlessness:'🌫️', focus:'🎯', noise:'📡' };
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-/* ── Trajectory progress bar — smooth GPU-composited ── */
-const ProgressRow = ({ label, val, color, delay = 0 }) => {
-  const [displayed, setDisplayed] = React.useState(0);
-  const mounted = React.useRef(false);
+/* ── Trajectory progress bar ── */
+const ProgressRow = ({ label, val, color }) => (
+  <div style={{ marginBottom: '14px' }}>
+    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'6px' }}>
+      <span style={{ fontSize:'11px', fontWeight:700, color:'var(--color-text-2)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{label}</span>
+      <span style={{ fontSize:'11px', fontWeight:800, color }}>{val}%</span>
+    </div>
+    <div style={{ height:'5px', background:'var(--color-border)', borderRadius:'99px', overflow:'hidden' }}>
+      <motion.div
+        initial={{ width: 0 }}
+        animate={{ width: `${val}%` }}
+        transition={{ duration: 0.8, ease: [0.16,1,0.3,1], delay: 0.2 }}
+        style={{ height:'100%', background: color, borderRadius:'99px' }}
+      />
+    </div>
+  </div>
+);
 
-  // On mount: animate from 0 → val smoothly once
-  // After that: keep in sync with val via fast CSS transition (no re-trigger of framer)
-  React.useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      const t = setTimeout(() => setDisplayed(val), 60 + delay);
-      return () => clearTimeout(t);
-    }
-    setDisplayed(val);
-  }, [val]); // eslint-disable-line
+/* ── Quick Check-In ── */
+const QuickCheckIn = ({ user }) => {
+  const [vals, setVals] = useState({ mood:7, energy:7, focus:7 });
+  const [state, setState] = useState('focus');
+  const [note, setNote] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    if (!user || saving) return;
+    setSaving(true);
+    const today = new Date().toISOString().split('T')[0];
+    try {
+      await supabase.from('daily_logs').insert({ user_id: user.id, mood: vals.mood, energy_level: vals.energy, focus_score: vals.focus, logged_at: new Date().toISOString() });
+      await supabase.from('lab_mindset_logs').insert({ user_id: user.id, state, note: note.trim() || null, day_of: today, logged_at: new Date().toISOString() });
+      setSaved(true);
+      setNote('');
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) { console.error(err); }
+    finally { setSaving(false); }
+  };
 
   return (
-    <div style={{ marginBottom: '0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>
-        <span style={{ fontSize: '11px', fontWeight: 800, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{Number(val).toFixed(4)}%</span>
+    <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px' }}>
+      <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-3)', marginBottom:'16px', display:'flex', alignItems:'center', gap:'8px' }}>
+        <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'var(--color-accent)', display:'inline-block' }} />
+        Operational Pulse
       </div>
-      <div style={{ height: '6px', background: 'var(--color-border)', borderRadius: '99px', overflow: 'hidden', position: 'relative' }}>
-        {/* Glow track */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `linear-gradient(90deg, transparent 0%, color-mix(in srgb, ${color} 15%, transparent) 100%)`,
-          borderRadius: '99px',
-        }} />
-        {/* Animated fill */}
-        <div style={{
-          height: '100%',
-          width: `${displayed}%`,
-          background: `linear-gradient(90deg, color-mix(in srgb, ${color} 80%, transparent), ${color})`,
-          borderRadius: '99px',
-          transition: mounted.current
-            ? 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
-            : 'none',
-          willChange: 'width',
-          position: 'relative',
-          boxShadow: `0 0 8px color-mix(in srgb, ${color} 40%, transparent)`,
-        }}>
-          {/* Shimmer tip */}
-          <div style={{
-            position: 'absolute', right: 0, top: 0, bottom: 0,
-            width: '12px',
-            background: `radial-gradient(ellipse at right, ${color} 100%, transparent 100%)`,
-            borderRadius: '99px',
-          }} />
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'6px', marginBottom:'20px' }}>
+        {STATES.map(s => (
+          <button key={s} onClick={() => setState(s)} style={{
+            background: state===s ? 'var(--color-accent)' : 'var(--color-elevated)',
+            color: state===s ? '#fff' : 'var(--color-text-3)',
+            border: `1px solid ${state===s ? 'var(--color-accent)' : 'var(--color-border)'}`,
+            borderRadius:'8px', padding:'8px 4px', cursor:'pointer',
+            fontSize:'9px', fontWeight:800, textAlign:'center',
+            transition:'all 0.15s', display:'flex', flexDirection:'column', alignItems:'center', gap:'3px'
+          }}>
+            <span style={{ fontSize:'13px' }}>{STATE_ICONS[s]}</span>
+            {s}
+          </button>
+        ))}
+      </div>
+      {['mood','energy','focus'].map(k => (
+        <div key={k} style={{ marginBottom:'14px' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'6px' }}>
+            <span style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', color:'var(--color-text-3)' }}>{k}</span>
+            <span style={{ fontSize:'11px', fontWeight:900, color:'var(--color-accent)' }}>{vals[k]}</span>
+          </div>
+          <input type="range" min={1} max={10} value={vals[k]} onChange={e => setVals(v=>({...v,[k]:Number(e.target.value)}))}
+            style={{ width:'100%', height:'4px', appearance:'none', background:'var(--color-border)', borderRadius:'10px', outline:'none', cursor:'pointer', accentColor:'var(--color-accent)' }} />
         </div>
-      </div>
+      ))}
+      <textarea placeholder="Quick reflection..." value={note} onChange={e=>setNote(e.target.value)}
+        style={{ width:'100%', boxSizing:'border-box', background:'var(--color-elevated)', border:'1px solid var(--color-border)', borderRadius:'10px', padding:'10px 12px', fontSize:'13px', color:'var(--color-text-1)', outline:'none', resize:'none', height:'56px', fontFamily:'inherit', marginBottom:'12px' }} />
+      <button onClick={save} disabled={saved||saving} style={{
+        width:'100%', padding:'13px', borderRadius:'12px',
+        background: saved ? 'var(--color-accent-dim)' : 'var(--color-accent)',
+        color: saved ? 'var(--color-accent)' : '#fff',
+        border:'none', fontSize:'12px', fontWeight:900, cursor:'pointer', transition:'all 0.2s'
+      }}>
+        {saved ? '✓ SYNCED' : saving ? 'SYNCING...' : 'COMMIT SESSION'}
+      </button>
     </div>
   );
 };
-
-
 
 /* ── Weekly task cell ── */
 const WeekCell = ({ day, isToday }) => {
@@ -132,8 +161,39 @@ const WeekCell = ({ day, isToday }) => {
   );
 };
 
-const TrajectoryProgress = () => {
+/* ── Main Overview ── */
+const Overview = () => {
+  const { user } = useAuth();
+
   const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
+
+
+  const [activeModal, setActiveModal] = useState(null);
+
+  useEffect(() => {
+    if (activeModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeModal]);
+
+  const targetDate = new Date('2026-07-26');
+  const now = new Date();
+  const daysLeft = Math.max(0, Math.floor((targetDate - now) / 86400000));
+
+  const getWeekNum = (d) => {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const y = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+    return Math.ceil((((d - y) / 86400000) + 1) / 7);
+  };
+
+  const weekNum = getWeekNum(now);
+  const todayIdx = (now.getDay() + 6) % 7;
 
   useEffect(() => {
     const updateProgress = () => {
@@ -167,111 +227,33 @@ const TrajectoryProgress = () => {
     };
 
     updateProgress();
-    const interval = setInterval(updateProgress, 1000);
+    const interval = setInterval(updateProgress, 60000);
     return () => clearInterval(interval);
   }, []);
-
-  return (
-    <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
-      <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'24px' }}>Trajectory Execution</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 24px' }}>
-        <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" delay={0}   />
-        <ProgressRow label="Monthly" val={progress.month} color="#3B82F6"              delay={80}  />
-        <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B"              delay={160} />
-        <ProgressRow label="Daily"   val={progress.day}   color="#EC4899"              delay={240} />
-      </div>
-    </div>
-  );
-};
-
-/* ── Main Overview ── */
-const Overview = () => {
-  const { user: authUser } = useAuth();
-  const user = useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
-
-  const [urgentReminders, setUrgentReminders] = useState([]);
-  const [activeModal, setActiveModal] = useState(null);
-
-  useEffect(() => {
-    if (user?.isGuest) return;
-    const fetchReminders = async () => {
-      const { data } = await supabase
-        .from('family_reminders')
-        .select('*')
-        .eq('completed', false)
-        .gte('due_date', new Date().toISOString().split('T')[0])
-        .lte('due_date', new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0])
-        .order('due_date', { ascending: true });
-      if (data) setUrgentReminders(data);
-    };
-    fetchReminders();
-  }, [user]);
-
-  useEffect(() => {
-    if (activeModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [activeModal]);
-
-  const [daysLeft, setDaysLeft] = useState(() => {
-    const targetStr = localStorage.getItem('aiimin_execution_target');
-    if (targetStr) {
-      const targetDate = new Date(targetStr);
-      return Math.max(0, Math.ceil((targetDate - new Date()) / 86400000));
-    }
-    const targetDate = new Date('2026-07-26');
-    return Math.max(0, Math.floor((targetDate - new Date()) / 86400000));
-  });
-
-  useEffect(() => {
-    const handleStorage = () => {
-      const targetStr = localStorage.getItem('aiimin_execution_target');
-      if (targetStr) {
-        const targetDate = new Date(targetStr);
-        setDaysLeft(Math.max(0, Math.ceil((targetDate - new Date()) / 86400000)));
-      }
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
-
-  const now = new Date();
-
-  const getWeekNum = (d) => {
-    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-    const y = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-    return Math.ceil((((d - y) / 86400000) + 1) / 7);
-  };
-
-  const weekNum = getWeekNum(now);
-  const todayIdx = (now.getDay() + 6) % 7;
-
-
 
   if (!user) return null;
 
   return (
-    <div className="page-container">
-      <PageHeader 
-        title="Day Control."
-        subtitle="Operational Intelligence"
-        rightContent={
-          <div style={{ textAlign:'right' }}>
-            <div style={{ fontSize:'13px', fontWeight:700, color:'var(--color-text-2)' }}>
-              {now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}
-            </div>
-            <div style={{ fontSize:'10px', color:'var(--color-text-3)', marginTop:'3px' }}>
-              Week {weekNum} · AIIMIN v3
-            </div>
+    <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
+      {/* Header */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:'32px', gap: '24px', flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--color-accent)', marginBottom:'6px' }}>
+            Operational Intelligence
           </div>
-        }
-      />
+          <h1 style={{ fontSize:'36px', fontWeight:800, color:'var(--color-text-1)', margin:0, letterSpacing:'-0.03em', fontFamily:'var(--font-serif)' }}>
+            Day Control.
+          </h1>
+        </div>
+        <div style={{ textAlign:'right' }}>
+          <div style={{ fontSize:'13px', fontWeight:700, color:'var(--color-text-2)' }}>
+            {now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}
+          </div>
+          <div style={{ fontSize:'10px', color:'var(--color-text-3)', marginTop:'3px' }}>
+            Week {weekNum} · AIIMIN v3
+          </div>
+        </div>
+      </div>
 
       {/* Main Grid */}
       <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px' }} className="overview-grid">
@@ -279,25 +261,9 @@ const Overview = () => {
         {/* LEFT column */}
         <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
           
-          {/* Urgent Reminders Banner */}
-          {urgentReminders.length > 0 && (
-            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '16px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#EF4444', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <AlertTriangle size={14} /> Urgent Family Reminders
-              </div>
-              {urgentReminders.map(r => (
-                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--color-text-1)', fontWeight: 600 }}>{r.title}</span>
-                  <span style={{ fontSize: '13px', color: '#EF4444', fontWeight: 700 }}>Due: {r.due_date}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
           {/* Quick Access Horizontal Strip */}
           <div style={{ display:'flex', gap:'12px', overflowX:'auto', paddingBottom:'4px', scrollbarWidth: 'none' }}>
             {[
-                        { to:'/family',     label:'Family',      icon:'👨‍👩‍👧', color:'#EC4899' },
               { to:'/journal',     label:'Journal',     icon:'📓', color:'#F59E0B' },
               { to:'/finance',     label:'Wealth',      icon:'💰', color:'#22C55E' },
               { to:'/habits',      label:'Habits',      icon:'✅', color:'#3B82F6' },
@@ -365,7 +331,14 @@ const Overview = () => {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
               <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Productivity Labs</div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:'20px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'20px' }}>
+              <button onClick={() => setActiveModal('pomodoro')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#EF4444'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+                <div style={{ background:'rgba(239, 68, 68, 0.1)', color:'#EF4444', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Timer size={24} /></div>
+                <div>
+                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Focus Timer</div>
+                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Deep work pomodoro</div>
+                </div>
+              </button>
               <button onClick={() => setActiveModal('typing')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#10B981'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
                 <div style={{ background:'rgba(16, 185, 129, 0.1)', color:'#10B981', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Keyboard size={24} /></div>
                 <div>
@@ -399,27 +372,38 @@ const Overview = () => {
         {/* RIGHT sidebar */}
         <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
 
-          <CommandCenter user={user} />
+          <QuickCheckIn user={user} />
 
-          <TrajectoryProgress />
+          {/* Trajectory */}
+          <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
+            <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'24px' }}>Trajectory Execution</div>
+            <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" />
+            <ProgressRow label="Monthly" val={progress.month} color="#3B82F6" />
+            <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B" />
+            <ProgressRow label="Daily"   val={progress.day}   color="#EC4899" />
+          </div>
 
         </div>
       </div>
 
       {/* Modals */}
       {activeModal === 'typing' && (
-        <DesktopWindow title="Typing Lab" subtitle="monkeytype-style keyboard practice" onClose={() => setActiveModal(null)} width="1180px" maxWidth="1180px" height="84vh">
+        <DesktopWindow title="Typing Lab" subtitle="monkeytype-style keyboard practice" onClose={() => setActiveModal(null)} width="1180px" height="84vh">
           <TypingTest userId={user.id} onComplete={() => {}} onClose={() => setActiveModal(null)} />
         </DesktopWindow>
       )}
 
       {activeModal === 'speaking' && (
-        <DesktopWindow title="Speaking Lab" subtitle="prompt, record, assess, save" onClose={() => setActiveModal(null)} width="1180px" maxWidth="1180px" height="84vh">
+        <DesktopWindow title="Speaking Lab" subtitle="prompt, record, assess, save" onClose={() => setActiveModal(null)} width="1180px" height="84vh">
           <SpeakingLogger onComplete={() => {}} onClose={() => setActiveModal(null)} />
         </DesktopWindow>
       )}
 
-
+      {activeModal === 'pomodoro' && (
+        <DesktopWindow title="Focus Timer" subtitle="single-task pomodoro workspace" onClose={() => setActiveModal(null)} width="1040px">
+          <PomodoroTimer onComplete={() => {}} onClose={() => setActiveModal(null)} />
+        </DesktopWindow>
+      )}
 
 
       {/* Responsive */}

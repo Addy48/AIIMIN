@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../utils/supabase';
 import toast from '../utils/toast';
-import { apiGet, apiPost, apiPut, apiDelete, API_URL, getCurrentAccessToken } from '../utils/api';
-import { X, FileSearch, FileText } from 'lucide-react';
-import ATSAnalyzer from './ATSAnalyzer';
+import { apiGet } from '../utils/api';
+import { X } from 'lucide-react';
 
 const STATUS_CONFIG = {
   wishlist: { label: 'Wishlist', color: '#8C8C8C', icon: '📝' },
@@ -15,15 +15,13 @@ const STATUS_CONFIG = {
 };
 
 export default function Placements() {
-  const { user: authUser } = useAuth();
-  const user = authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('kanban'); // kanban | timeline | resources | resumes | trajectory
   const [applications, setApplications] = useState([]);
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
-  const [resumeViewMode, setResumeViewMode] = useState('vault'); // 'vault' | 'analyzer'
 
   // Modals
   const [showAppModal, setShowAppModal] = useState(false);
@@ -56,105 +54,69 @@ export default function Placements() {
 
   useEffect(() => {
     if (user) loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const loadData = async () => {
     setLoading(true);
-    if (user.isGuest) {
-      // Load standard, gorgeous mock data immediately for a premium guest experience
-      setApplications([
-        {
-          id: 'mock-1',
-          company_name: 'Vercel',
-          role_title: 'Solutions Architect',
-          status: 'offer',
-          notes: 'Completed system design interview. Received offer sheet with excellent equity options.',
-          applied_at: new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0],
-          updated_at: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0]
-        },
-        {
-          id: 'mock-2',
-          company_name: 'Stripe',
-          role_title: 'Software Engineer',
-          status: 'interview',
-          notes: 'Technical screen passed. Virtual onsite scheduled for next week.',
-          applied_at: new Date(Date.now() - 10 * 86400000).toISOString().split('T')[0],
-          updated_at: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0]
-        },
-        {
-          id: 'mock-3',
-          company_name: 'Google',
-          role_title: 'Frontend Engineer',
-          status: 'applied',
-          notes: 'Applied through internal referral. Resume parsed and screening scheduled.',
-          applied_at: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0],
-          updated_at: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0]
-        }
-      ]);
-      setResumes([
-        {
-          id: 'mock-res-1',
-          title: 'Senior Systems & Architecture Resume',
-          target_role: 'Solutions Architect',
-          link_url: 'https://drive.google.com/file/d/1Xy_mock_resume_id/view',
-          created_at: new Date(Date.now() - 30 * 86400000).toISOString()
-        }
-      ]);
-      setDsaMetrics({ score: 88, desc: '94 solved problems logged' });
-      setCommunicationMetrics({ score: 85, desc: 'Based on active mock monologue metrics' });
-      setSystemDesignMetrics({ score: 75, desc: 'System patterns successfully structured' });
-      setMomentumScore(80);
-      setMomentumStatus('Peak');
-      setMomentumGrowth('+18.4% vs LW');
-      setMomentumText('You are maintaining a strong execution velocity. Keep completing daily modules.');
-      setLoading(false);
-      return;
-    }
-    let anySuccess = false;
     try {
-      // Fetch each endpoint independently — a single missing route won't kill everything
-      const [appsData, resumesData, habitsData] = await Promise.allSettled([
-        apiGet('/placements/applications'),
-        apiGet('/placements/resumes'),
-        apiGet('/placements/habit-logs'),
+      const [appsRes, resumesRes, dsaRes, speakingRes, habitsRes] = await Promise.all([
+        supabase.from('job_applications').select('*').order('applied_at', { ascending: false }),
+        supabase.from('resumes').select('*').order('updated_at', { ascending: false }),
+        supabase.from('dsa_logs').select('*'),
+        supabase.from('lab_speaking_logs').select('*'),
+        supabase.from('habit_logs').select('*')
       ]);
+      setApplications(appsRes.data || []);
+      setResumes(resumesRes.data || []);
 
-      if (appsData.status === 'fulfilled') {
-        setApplications(appsData.value || []);
-        anySuccess = true;
-      } else {
-        console.warn('[Placements] Applications endpoint unavailable:', appsData.reason);
-        setApplications([]);
-      }
+      const dsaCount = dsaRes.data ? dsaRes.data.length : 0;
+      const speakingLogs = speakingRes.data || [];
+      const resumeCount = resumesRes.data ? resumesRes.data.length : 0;
 
-      if (resumesData.status === 'fulfilled') {
-        setResumes(resumesData.value || []);
-        anySuccess = true;
-      } else {
-        console.warn('[Placements] Resumes endpoint unavailable:', resumesData.reason);
-        setResumes([]);
-      }
-
-      const habitsRaw = habitsData.status === 'fulfilled' ? (habitsData.value || []) : [];
-
-      // Readiness metrics — silent fallback, never toast
       try {
         const readinessData = await apiGet('/placements/readiness');
-        if (readinessData?.dsa) {
+        if (readinessData && readinessData.dsa) {
           setDsaMetrics(readinessData.dsa);
           setCommunicationMetrics(readinessData.communication);
           setSystemDesignMetrics(readinessData.systemDesign);
+        } else {
+          throw new Error('Invalid response structure');
         }
-      } catch {
-        // Use static defaults — no toast, no console error
-        setDsaMetrics({ score: 65, desc: 'No solved problems logged yet' });
-        setCommunicationMetrics({ score: 60, desc: 'Record speaking logs to benchmark' });
-        setSystemDesignMetrics({ score: 40, desc: 'Target key systems in resumes' });
+      } catch (err) {
+        console.warn('Failed to fetch backend readiness metrics, using client-side calculations', err);
+        // Calculate DSA score
+        const calculatedDsaScore = Math.min(100, Math.max(35, 35 + dsaCount * 5));
+        const calculatedDsaDesc = dsaCount > 0 ? `${dsaCount} problems solved this period` : 'No solved problems logged yet';
+        setDsaMetrics({ score: calculatedDsaScore, desc: calculatedDsaDesc });
+
+        // Calculate speaking/communication score
+        let calculatedCommScore = 60; // baseline
+        if (speakingLogs.length > 0) {
+          const totalSum = speakingLogs.reduce((acc, log) => {
+            const conf = Number(log.confidence_score || 0);
+            const clar = Number(log.clarity_score || 0);
+            const pace = Number(log.pace_score || 0);
+            return acc + (conf + clar + pace) / 3;
+          }, 0);
+          const rawAvg = totalSum / speakingLogs.length;
+          calculatedCommScore = rawAvg <= 10 ? Math.round(rawAvg * 10) : Math.round(rawAvg);
+          calculatedCommScore = Math.min(100, Math.max(0, calculatedCommScore));
+        }
+        const calculatedCommDesc = speakingLogs.length > 0 
+          ? `Based on ${speakingLogs.length} speech logs` 
+          : 'Record speaking logs to benchmark';
+        setCommunicationMetrics({ score: calculatedCommScore, desc: calculatedCommDesc });
+
+        // Calculate System Design score
+        const calculatedSysScore = Math.min(100, Math.max(40, 40 + resumeCount * 15));
+        const calculatedSysDesc = resumeCount > 0 
+          ? `${resumeCount} active resumes mapped` 
+          : 'Target key systems in resumes';
+        setSystemDesignMetrics({ score: calculatedSysScore, desc: calculatedSysDesc });
       }
 
-      // Momentum calculation from habits
-      const completedLogs = habitsRaw.filter(h => h.status === 'done' || h.completed_at);
+      // Momentum Status & Trajectory Analytics
+      const completedLogs = (habitsRes.data || []).filter(h => h.status === 'done' || h.completed_at);
       const now = new Date();
       const oneDayMs = 24 * 60 * 60 * 1000;
       const last7DaysCount = completedLogs.filter(h => {
@@ -176,7 +138,8 @@ export default function Placements() {
       } else if (last7DaysCount > 0) {
         pctChange = 100;
       }
-      setMomentumGrowth((pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '% vs LW');
+      const pctChangeStr = (pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '% vs LW';
+      setMomentumGrowth(pctChangeStr);
 
       let status = 'Stagnant';
       if (calcMomentumScore >= 80) status = 'Peak';
@@ -184,72 +147,34 @@ export default function Placements() {
       else if (calcMomentumScore >= 45) status = 'Building';
       setMomentumStatus(status);
 
-      setMomentumText(
-        calcMomentumScore >= 65
-          ? `Your habit consistency is strong with ${last7DaysCount} checkins. Keep building momentum.`
-          : 'Increase your daily habit completions and speaking practice to drive higher momentum.'
-      );
+      const text = calcMomentumScore >= 65 
+        ? `Your habit consistency is strong with ${last7DaysCount} checkins. Keep building momentum.` 
+        : "Increase your daily habit completions and speaking practice to drive higher momentum.";
+      setMomentumText(text);
 
     } catch (error) {
-      // Only reaches here if something truly unexpected happens
-      console.error('[Placements] Critical load error:', error);
-      if (!anySuccess) {
-        toast.error('Career data temporarily unavailable — check your connection');
-      }
+      console.error("Placements Load Error:", error);
+      toast.error("Failed to load career data");
     } finally {
       setLoading(false);
     }
   };
 
-
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadMode, setUploadMode] = useState('file'); // 'file' | 'link'
-
   const handleCreateResume = async (e) => {
     e.preventDefault();
     const tid = toast.loading('Archiving resume version...');
     try {
-      let key = '';
+      const { data, error } = await supabase.from('resumes').insert([{
+        user_id: user.id,
+        ...resumeForm
+      }]).select().single();
       
-      if (uploadMode === 'file') {
-        if (!selectedFile) {
-          toast.update(tid, 'Please select a file to upload', 'error');
-          return;
-        }
-        
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-
-        const uploadData = await fetch(`${API_URL}/placements/resumes/upload`, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Authorization': `Bearer ${await getCurrentAccessToken()}`
-          }
-        }).then(r => {
-            if (!r.ok) throw new Error('Upload failed');
-            return r.json();
-        });
-        
-        key = uploadData.url;
-      } else {
-        key = resumeForm.link_url;
-      }
-      
-      // 3. Confirm metadata to backend
-      const data = await apiPost('/placements/resumes/confirm', {
-        title: resumeForm.title,
-        target_role: resumeForm.target_role,
-        key
-      });
-      
+      if (error) throw error;
       setResumes([data, ...resumes]);
       setShowResumeModal(false);
       setResumeForm({ title: '', target_role: '', link_url: '' });
-      setSelectedFile(null);
       toast.update(tid, 'Resume archived ✓', 'success');
     } catch (err) {
-      console.error('Resume upload/archive failed:', err);
       toast.update(tid, 'Archive failed', 'error');
     }
   };
@@ -259,13 +184,19 @@ export default function Placements() {
     const tid = toast.loading(editingApp ? 'Updating application...' : 'Tracking application...');
     try {
       if (editingApp) {
-        const data = await apiPut(`/placements/applications/${editingApp.id}`, appForm);
+        const { data, error } = await supabase.from('job_applications')
+          .update(appForm)
+          .eq('id', editingApp.id)
+          .select().single();
+        if (error) throw error;
         setApplications(applications.map(a => a.id === data.id ? data : a));
       } else {
-        const data = await apiPost('/placements/applications', {
+        const { data, error } = await supabase.from('job_applications').insert([{
+          user_id: user.id,
           ...appForm,
-          applied_at: appForm.applied_at || new Date().toISOString().split('T')[0]
-        });
+          applied_at: new Date().toISOString().split('T')[0]
+        }]).select().single();
+        if (error) throw error;
         setApplications([data, ...applications]);
       }
       
@@ -274,23 +205,17 @@ export default function Placements() {
       setAppForm({ company_name: '', role_title: '', status: 'wishlist', resume_id: '', linkedin_url: '', job_post_url: '', notes: '', last_contacted: '' });
       toast.update(tid, 'Application synchronized ✓', 'success');
     } catch (err) {
-      console.error('Save application failed:', err);
       toast.update(tid, 'Sync failed', 'error');
     }
   };
 
   const updateStatus = async (id, newStatus) => {
-    const app = applications.find(a => a.id === id);
-    if (!app) return;
     try {
-      const data = await apiPut(`/placements/applications/${id}`, {
-        ...app,
-        status: newStatus
-      });
-      setApplications(applications.map(a => a.id === id ? data : a));
+      const { error } = await supabase.from('job_applications').update({ status: newStatus }).eq('id', id);
+      if (error) throw error;
+      setApplications(applications.map(a => a.id === id ? { ...a, status: newStatus } : a));
       toast.success(`Moved to ${newStatus.toUpperCase()}`);
     } catch (err) {
-      console.error('Update status failed:', err);
       toast.error('Move failed');
     }
   };
@@ -298,11 +223,10 @@ export default function Placements() {
   const deleteApplication = async (id) => {
     if (!window.confirm("Abandon this application track?")) return;
     try {
-      await apiDelete(`/placements/applications/${id}`);
+      await supabase.from('job_applications').delete().eq('id', id);
       setApplications(applications.filter(a => a.id !== id));
       toast.success("Track removed");
     } catch (err) {
-      console.error('Delete application failed:', err);
       toast.error("Removal failed");
     }
   };
@@ -356,7 +280,7 @@ export default function Placements() {
   };
 
   return (
-    <div className="page-container" style={{ minHeight: '100vh' }}>
+    <div style={{ padding: 'var(--content-pad)', maxWidth: 'var(--content-max)', margin: '0 auto', minHeight: '100vh' }}>
       {/* Header Section */}
       <header style={{ marginBottom: 'var(--space-8)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '20px' }}>
@@ -655,7 +579,6 @@ export default function Placements() {
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-3)', marginBottom: '24px' }}>{res.type}</div>
                 <div style={{ marginTop: 'auto' }}>
-)}
                   <a href={res.url} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: 'var(--color-rust)', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     Open Resource ↗
                   </a>
@@ -665,34 +588,37 @@ export default function Placements() {
           </div>
         </motion.div>
       ) : activeTab === 'trajectory' ? (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px' }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '40px' }}>
+          {/* Main Trajectory Content */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             
-            {/* Momentum Status */}
-            <div className="card-hover" style={{ 
-              padding: '16px', 
-              background: 'linear-gradient(145deg, rgba(30,30,30,0.6), rgba(20,20,20,0.8))', 
-              backdropFilter: 'blur(10px)',
-              border: '1px solid var(--border)',
-              borderRadius: '12px',
+            {/* Career Velocity Indicator */}
+            <div className="nordic-card" style={{ 
+              padding: '40px', 
+              background: 'var(--bg-surface)', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-sm)'
+              border: '1px solid var(--border)',
+              borderRadius: '24px',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-              <div>
-                <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '6px' }}>Momentum Status</h3>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-1)', fontFamily: 'var(--font-serif)' }}>{momentumStatus}</span>
-                  <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: momentumGrowth.startsWith('-') ? 'rgba(226,114,91,0.1)' : 'rgba(93,184,122,0.1)', color: momentumGrowth.startsWith('-') ? 'var(--color-rust)' : 'var(--color-success)' }}>{momentumGrowth}</span>
+              <div style={{ zIndex: 1 }}>
+                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '12px' }}>Momentum Status</h3>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+                  <span style={{ fontSize: '48px', fontWeight: 400, fontFamily: 'var(--font-serif)', color: 'var(--text-1)' }}>{momentumStatus}</span>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: momentumGrowth.startsWith('-') ? 'var(--color-rust)' : 'var(--color-success)', background: momentumGrowth.startsWith('-') ? 'var(--color-rust)15' : 'var(--color-success)15', padding: '4px 12px', borderRadius: '20px' }}>{momentumGrowth}</span>
                 </div>
-                <p style={{ fontSize: '11px', color: 'var(--text-2)', marginTop: '6px', margin: 0, lineHeight: 1.4 }}>{momentumText}</p>
+                <p style={{ fontSize: '13px', color: 'var(--text-2)', marginTop: '16px', maxWidth: '400px', lineHeight: '1.6' }}>
+                  {momentumText}
+                </p>
               </div>
-              <div style={{ width: '64px', height: '64px', position: 'relative', flexShrink: 0 }}>
-                 <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', dropShadow: '0 0 8px rgba(226,114,91,0.4)' }}>
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-elevated)" strokeWidth="6" />
+              <div style={{ width: '120px', height: '120px', position: 'relative' }}>
+                 <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-elevated)" strokeWidth="8" />
                     <motion.circle 
-                      cx="50" cy="50" r="45" fill="none" stroke="var(--color-rust)" strokeWidth="6"
+                      cx="50" cy="50" r="45" fill="none" stroke="var(--color-rust)" strokeWidth="8"
                       strokeDasharray="283"
                       initial={{ strokeDashoffset: 283 }}
                       animate={{ strokeDashoffset: 283 - (283 * (momentumScore / 100)) }}
@@ -700,54 +626,35 @@ export default function Placements() {
                       strokeLinecap="round"
                     />
                  </svg>
-                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 800, color: 'var(--text-1)' }}>{momentumScore}</div>
+                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 600 }}>{momentumScore}</div>
               </div>
+              <div style={{ position: 'absolute', right: '-10%', top: '-20%', width: '200px', height: '200px', background: 'var(--color-rust)', filter: 'blur(80px)', opacity: 0.05 }} />
             </div>
 
-            {/* Strategic Directive */}
-            <div className="card-hover" style={{ 
-              padding: '16px', 
-              background: 'linear-gradient(145deg, rgba(226,114,91,0.05), rgba(20,20,20,0.8))', 
-              backdropFilter: 'blur(10px)',
-              border: '1px solid var(--border)',
-              borderRadius: '12px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between'
-            }}>
-              <div>
-                <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--color-rust)', marginBottom: '8px' }}>Strategic Directive</h3>
-                <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-1)', lineHeight: '1.5', fontStyle: 'italic', marginBottom: '12px' }}>
-                  "Focus on System Design and LLD. Your DSA is top-tier, but response rates drop for L5+ roles."
-                </div>
+            {/* Conversion Funnel */}
+            <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)' }}>Conversion Funnel Efficiency</h3>
+                <span style={{ fontSize: '12px', color: 'var(--text-2)', fontWeight: 500 }}>Target: 15% Interview Rate</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-2)' }}>Next: Mock Interview v4</span>
-                <span style={{ fontSize: '10px', color: 'var(--color-rust)', fontWeight: 700 }}>3 Days Left</span>
-              </div>
-            </div>
-
-            {/* Compact Conversion Funnel */}
-            <div className="card-hover" style={{ padding: '16px', borderRadius: '12px', background: 'rgba(30,30,30,0.4)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)' }}>
-              <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Conversion Funnel</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
                   { label: 'Wishlist', count: stats.wishlist, color: '#8C8C8C', pct: 100 },
                   { label: 'Applied', count: stats.applied, color: '#556B2F', pct: (stats.applied / (stats.total || 1)) * 100 },
                   { label: 'Interview', count: stats.interviews, color: '#E2725B', pct: (stats.interviews / (stats.total || 1)) * 100 },
                   { label: 'Offer', count: stats.offers, color: '#23503B', pct: (stats.offers / (stats.total || 1)) * 100 }
                 ].map((step, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                     <div style={{ width: '65px', fontSize: '10px', fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase' }}>{step.label}</div>
-                     <div style={{ flex: 1, height: '20px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', overflow: 'hidden', position: 'relative' }}>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+                     <div style={{ width: '120px', fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>{step.label}</div>
+                     <div style={{ flex: 1, height: '54px', background: 'var(--bg-elevated)', borderRadius: '12px', overflow: 'hidden', position: 'relative', border: '1px solid var(--border)' }}>
                        <motion.div 
                          initial={{ width: 0 }}
                          animate={{ width: `${step.pct}%` }}
                          transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
                          style={{ height: '100%', background: step.color, opacity: 0.85 }}
                        />
-                       <div style={{ position: 'absolute', right: '8px', top: '0', bottom: '0', display: 'flex', alignItems: 'center', fontSize: '10px', fontWeight: 800, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                         {step.count}
+                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 20px', fontSize: '14px', fontWeight: 700, color: step.pct > 30 ? 'white' : 'var(--text-1)' }}>
+                         {step.count} <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '10px', fontWeight: 500 }}>({step.pct.toFixed(0)}%)</span>
                        </div>
                      </div>
                   </div>
@@ -755,118 +662,133 @@ export default function Placements() {
               </div>
             </div>
 
-            {/* Market Readiness Scorecard */}
-            <div className="card-hover" style={{ padding: '16px', borderRadius: '12px', background: 'rgba(30,30,30,0.4)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)' }}>
-              <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Market Readiness</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {/* Preparation Scorecard */}
+            <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
+              <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '40px' }}>Market Readiness Scorecard</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px' }}>
                 {[
-                  { label: 'DSA/Algorithms', score: dsaMetrics.score, color: 'var(--color-rust)' },
-                  { label: 'Communication', score: communicationMetrics.score, color: 'var(--color-success)' },
-                  { label: 'System Design', score: systemDesignMetrics.score, color: 'var(--color-warning)' }
-                ].map((m, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: '6px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-2)' }}>{m.label}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '50px', height: '4px', background: 'rgba(0,0,0,0.4)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <motion.div initial={{ width: 0 }} animate={{ width: `${m.score}%` }} style={{ height: '100%', background: m.color }} />
+                  { label: 'DSA/Algorithms', score: dsaMetrics.score, color: 'var(--color-rust)', desc: dsaMetrics.desc },
+                  { label: 'Communication', score: communicationMetrics.score, color: 'var(--accent)', desc: communicationMetrics.desc },
+                  { label: 'System Design', score: systemDesignMetrics.score, color: '#23503B', desc: systemDesignMetrics.desc }
+                ].map((m, i) => (
+                  <div key={i} style={{ textAlign: 'center' }}>
+                    <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 24px' }}>
+                      <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--bg-elevated)" strokeWidth="2.5" />
+                        <motion.path 
+                          initial={{ strokeDasharray: '0, 100' }}
+                          animate={{ strokeDasharray: `${m.score}, 100` }}
+                          transition={{ duration: 1.5, delay: i * 0.2, ease: "circOut" }}
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                          fill="none" 
+                          stroke={m.color} 
+                          strokeWidth="2.5" 
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 500, fontFamily: 'var(--font-serif)', color: 'var(--text-1)' }}>
+                        {m.score}
                       </div>
-                      <div style={{ fontSize: '11px', fontWeight: 800, color: m.color, minWidth: '24px', textAlign: 'right' }}>{m.score}</div>
                     </div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-1)', letterSpacing: '0.1em', marginBottom: '8px' }}>{m.label}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: '1.4' }}>{m.desc}</div>
                   </div>
                 ))}
               </div>
             </div>
+          </div>
 
-            {/* Market Sentiment */}
-            <div className="card-hover" style={{ padding: '16px', borderRadius: '12px', background: 'rgba(30,30,30,0.4)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)' }}>
-              <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Market Sentiment</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {[
-                  { label: 'AI/ML Infrastructure', trend: 'SURGING', color: '#10B981', val: '+24%' },
-                  { label: 'Fintech Backend', trend: 'STABLE', color: '#3B82F6', val: '+2%' },
-                  { label: 'Crypto/Web3', trend: 'VOLATILE', color: 'var(--color-rust)', val: '-12%' }
-                ].map((s, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingBottom: i < 2 ? '8px' : '0' }}>
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-1)' }}>{s.label}</div>
-                      <div style={{ fontSize: '9px', fontWeight: 800, color: s.color, marginTop: '2px', letterSpacing: '0.05em' }}>{s.trend}</div>
-                    </div>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: s.val.startsWith('+') ? '#10B981' : 'var(--color-rust)' }}>{s.val}</span>
+          {/* Right Column: Career Strategy */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+             <div className="nordic-card" style={{ 
+                padding: '40px', 
+                background: 'var(--text-1)', 
+                color: 'var(--bg-primary)', 
+                border: 'none',
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: '24px'
+              }}>
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <h3 style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '32px', opacity: 0.6 }}>Strategic Directive</h3>
+                  <div style={{ fontSize: '20px', fontFamily: 'var(--font-serif)', lineHeight: '1.4', marginBottom: '32px' }}>
+                    "Focus on <span style={{ opacity: 0.7 }}>System Design</span> and <span style={{ opacity: 0.7 }}>Low Level Design</span>. Your DSA performance is top-tier, but response rates drop for L5+ roles."
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Interview Prep Quests */}
-            <div className="card-hover" style={{ padding: '16px', borderRadius: '12px', background: 'rgba(30,30,30,0.4)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)' }}>
-              <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Active Quests</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {[
-                  { label: 'System Design Mock', type: 'Technical', status: 'Pending', color: 'var(--color-rust)' },
-                  { label: 'Amazon LP Review', type: 'Behavioral', status: 'Reviewing', color: 'var(--color-warning)' },
-                  { label: 'DSA: Graph Cycles', type: 'Algorithmic', status: 'Completed', color: 'var(--color-success)' }
-                ].map((q, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: '6px', borderLeft: `3px solid ${q.color}` }}>
-                    <div>
-                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-1)' }}>{q.label}</div>
-                      <div style={{ fontSize: '9px', color: 'var(--text-3)', marginTop: '2px', textTransform: 'uppercase' }}>{q.type}</div>
+                  
+                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, marginBottom: '16px', opacity: 0.5, letterSpacing: '0.1em' }}>Next Milestone</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '15px', fontWeight: 600 }}>Mock Interview v4</span>
+                      <span style={{ fontSize: '12px', opacity: 0.6 }}>3 Days Left</span>
                     </div>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: q.color }}>{q.status}</span>
+                    <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: '65%' }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                        style={{ height: '100%', background: 'var(--color-rust)' }} 
+                      />
+                    </div>
                   </div>
-                ))}
+                </div>
+                <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', background: 'var(--color-rust)', filter: 'blur(80px)', opacity: 0.2 }} />
               </div>
-            </div>
 
+              <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
+                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '32px' }}>Market Sentiment</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {[
+                    { label: 'AI/ML Infrastructure', trend: 'SURGING', color: '#10B981', val: '+24%' },
+                    { label: 'Fintech Backend', trend: 'STABLE', color: '#3B82F6', val: '+2%' },
+                    { label: 'Crypto/Web3', trend: 'VOLATILE', color: 'var(--color-rust)', val: '-12%' }
+                  ].map((s, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-1)' }}>{s.label}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 700, color: s.color, marginTop: '4px' }}>{s.trend}</div>
+                      </div>
+                      <span style={{ fontSize: '16px', fontWeight: 600, color: s.val.startsWith('+') ? '#10B981' : 'var(--color-rust)' }}>{s.val}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Interview Prep Quests */}
+              <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
+                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '32px' }}>Interview Prep Quests</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {[
+                    { label: 'System Design Mock', type: 'Technical', status: 'Pending', color: 'var(--color-rust)' },
+                    { label: 'Behavioral Stories (STAR)', type: 'Soft Skills', status: 'In Progress', color: '#3B82F6' },
+                    { label: 'LeetCode Hard Array/String', type: 'Coding', status: 'Completed', color: '#10B981' }
+                  ].map((s, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-1)' }}>{s.label}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', marginTop: '4px' }}>{s.type}</div>
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: s.color, background: `${s.color}15`, padding: '4px 12px', borderRadius: '12px' }}>{s.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
           </div>
         </motion.div>
       ) : (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
             <div>
-              <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '4px' }}>Resume Hub</h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-3)' }}>Manage your resume versions and analyze match with JD.</p>
+              <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '4px' }}>Resume Iterations</h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-3)' }}>Targeted versions for specific roles and industries.</p>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ display: 'flex', background: 'var(--bg-surface)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                <button 
-                  onClick={() => setResumeViewMode('vault')}
-                  style={{
-                    padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                    fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px',
-                    background: resumeViewMode === 'vault' ? 'var(--text-1)' : 'transparent',
-                    color: resumeViewMode === 'vault' ? 'var(--bg-primary)' : 'var(--text-3)',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <FileText size={14} /> Vault
-                </button>
-                <button 
-                  onClick={() => setResumeViewMode('analyzer')}
-                  style={{
-                    padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                    fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px',
-                    background: resumeViewMode === 'analyzer' ? 'var(--text-1)' : 'transparent',
-                    color: resumeViewMode === 'analyzer' ? 'var(--bg-primary)' : 'var(--text-3)',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <FileSearch size={14} /> Analyzer
-                </button>
-              </div>
-              {resumeViewMode === 'vault' && (
-                <button 
-                  onClick={() => { setResumeForm({ title: '', target_role: '', link_url: '' }); setShowResumeModal(true); }} 
-                  style={{ background: 'var(--text-1)', color: 'var(--bg-primary)', border: 'none', padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  + New Version
-                </button>
-              )}
-            </div>
+            <button 
+              onClick={() => { setResumeForm({ title: '', target_role: '', link_url: '' }); setShowResumeModal(true); }} 
+              style={{ background: 'var(--text-1)', color: 'var(--bg-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+            >
+              + New Version
+            </button>
           </div>
 
-          {resumeViewMode === 'analyzer' ? (
-            <ATSAnalyzer />
-          ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '32px' }}>
             {resumes.map(resume => (
               <div key={resume.id} className="resume-card">
@@ -878,52 +800,33 @@ export default function Placements() {
                         {resume.target_role || 'General'}
                       </div>
                     </div>
-                    <button 
-                      onClick={async () => { 
-                        if (window.confirm('Delete this version?')) { 
-                          const tid = toast.loading('Deleting resume...');
-                          try {
-                            await apiDelete(`/placements/resumes/${resume.id}`);
-                            setResumes(resumes.filter(r => r.id !== resume.id)); 
-                            toast.update(tid, 'Resume deleted ✓', 'success');
-                          } catch (err) {
-                            toast.update(tid, 'Failed to delete resume', 'error');
-                          }
-                        } 
-                      }} 
-                      style={{ background: 'none', border: 'none', opacity: 0.3, cursor: 'pointer' }}
-                    >
-                      ❌
-                    </button>
+                    <button onClick={async () => { if(window.confirm('Delete this version?')){ await supabase.from('resumes').delete().eq('id', resume.id); setResumes(resumes.filter(r => r.id !== resume.id)); }}} style={{ background: 'none', border: 'none', opacity: 0.3, cursor: 'pointer' }}>❌</button>
                   </div>
 
                   <div className="resume-preview-container">
-                    {resume.view_url ? (
+                    {resume.link_url ? (
                       <iframe 
-                        src={resume.view_url.includes('drive.google.com') ? getDrivePreviewUrl(resume.view_url) : resume.view_url} 
+                        src={getDrivePreviewUrl(resume.link_url)} 
                         style={{ width: '100%', height: '400px', border: 'none', borderRadius: '8px' }} 
                         title={resume.title}
                       />
                     ) : (
                       <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: '12px', border: '1px dashed var(--border)', borderRadius: '8px' }}>
-                        No Preview Available
+                        No Link Provided
                       </div>
                     )}
                     <div className="preview-overlay">
-                      {resume.view_url && (
-                        <a href={resume.view_url} target="_blank" rel="noopener noreferrer" className="preview-btn">Open Full Document ↗</a>
-                      )}
+                      <a href={resume.link_url} target="_blank" rel="noopener noreferrer" className="preview-btn">Open Full Document ↗</a>
                     </div>
                   </div>
                   
                   <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Updated {new Date(resume.updated_at || resume.created_at).toLocaleDateString()}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Updated {new Date(resume.updated_at).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-          )}
         </motion.div>
       )}
 
@@ -1017,43 +920,7 @@ export default function Placements() {
               <button type="button" onClick={() => setShowResumeModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}>
                 <X size={20} />
               </button>
-              <h2 style={{ fontSize: '28px', fontWeight: 500, fontFamily: 'var(--font-serif)', marginBottom: '16px' }}>Archive Version</h2>
-              
-              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '24px', gap: '16px' }}>
-                <button 
-                  type="button" 
-                  onClick={() => setUploadMode('file')}
-                  style={{
-                    padding: '8px 16px',
-                    border: 'none',
-                    background: 'none',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: uploadMode === 'file' ? 'var(--color-rust)' : 'var(--text-3)',
-                    borderBottom: uploadMode === 'file' ? '2px solid var(--color-rust)' : 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  📁 Upload PDF File
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => setUploadMode('link')}
-                  style={{
-                    padding: '8px 16px',
-                    border: 'none',
-                    background: 'none',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: uploadMode === 'link' ? 'var(--color-rust)' : 'var(--text-3)',
-                    borderBottom: uploadMode === 'link' ? '2px solid var(--color-rust)' : 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  🔗 Shareable Link
-                </button>
-              </div>
-
+              <h2 style={{ fontSize: '28px', fontWeight: 500, fontFamily: 'var(--font-serif)', marginBottom: '32px' }}>Archive Version</h2>
               <form onSubmit={handleCreateResume} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div className="input-group">
                   <label>Version Descriptor</label>
@@ -1063,61 +930,13 @@ export default function Placements() {
                   <label>Target Role / Industry</label>
                   <input required value={resumeForm.target_role} onChange={e => setResumeForm({...resumeForm, target_role: e.target.value})} placeholder="e.g. Web3, Backend, Product" />
                 </div>
-
-                {uploadMode === 'file' ? (
-                  <div className="input-group">
-                    <label>PDF Document</label>
-                    <div style={{
-                      border: '2px dashed var(--border)',
-                      borderRadius: '12px',
-                      padding: '24px',
-                      textAlign: 'center',
-                      background: 'var(--bg-elevated)',
-                      cursor: 'pointer',
-                      position: 'relative'
-                    }}>
-                      <input 
-                        type="file" 
-                        accept="application/pdf" 
-                        required={uploadMode === 'file'}
-                        onChange={e => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            setSelectedFile(file);
-                            if (!resumeForm.title || resumeForm.title === '') {
-                              const baseName = file.name.replace(/\.[^/.]+$/, "");
-                              setResumeForm(prev => ({ ...prev, title: baseName }));
-                            }
-                          }
-                        }}
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          opacity: 0,
-                          cursor: 'pointer',
-                          width: '100%',
-                          height: '100%'
-                        }}
-                      />
-                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>📄</span>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-1)', display: 'block' }}>
-                        {selectedFile ? selectedFile.name : 'Select or drop resume PDF'}
-                      </span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-3)', display: 'block', marginTop: '4px' }}>
-                        {selectedFile ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB` : 'PDF only, max 10MB'}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="input-group">
-                    <label>Google Drive Share Link</label>
-                    <input required={uploadMode === 'link'} value={resumeForm.link_url} onChange={e => setResumeForm({...resumeForm, link_url: e.target.value})} placeholder="https://drive.google.com/..." />
-                    <p style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '6px' }}>Ensure link is set to "Anyone with the link can view" for the preview to work.</p>
-                  </div>
-                )}
-
+                <div className="input-group">
+                  <label>Google Drive Share Link</label>
+                  <input required value={resumeForm.link_url} onChange={e => setResumeForm({...resumeForm, link_url: e.target.value})} placeholder="https://drive.google.com/..." />
+                  <p style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '6px' }}>Ensure link is set to "Anyone with the link can view" for the preview to work.</p>
+                </div>
                 <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                  <button type="button" onClick={() => { setShowResumeModal(false); setSelectedFile(null); }} className="btn-secondary">Cancel</button>
+                  <button type="button" onClick={() => setShowResumeModal(false)} className="btn-secondary">Cancel</button>
                   <button type="submit" className="btn-primary">Archive to Vault</button>
                 </div>
               </form>
