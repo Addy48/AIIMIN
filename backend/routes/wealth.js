@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import XLSX from 'xlsx';
+import * as XLSX from 'xlsx';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 
