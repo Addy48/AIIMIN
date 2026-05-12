@@ -332,31 +332,44 @@ const Sports = () => {
             </div>
           )}
 
-          {activeTab === 'Cricket' && (
-            data.cricket?.length > 0
-              ? data.cricket.map((l, li) => {
-                  const matchRank = ev => ev.isLive ? 0 : ev.isFinished ? 1 : 2;
-                  const sorted = [...l.events].sort((a, b) => matchRank(a) - matchRank(b));
-                  return (
-                    <div key={li} style={{ marginBottom: '24px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.1em' }}>{l.league?.flag} {l.league?.name}</div>
-                      {sorted.some(ev => ev.isLive) && (
-                        <div style={{ fontSize: '10px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1s infinite' }} /> Live Now
-                        </div>
-                      )}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
-                        {sorted.map(ev => (
-                          <div key={ev.id} onClick={() => setSelectedMatch({ sport: 'cricket', id: ev.id })} style={{ cursor: 'pointer' }}>
-                            <MatchCard event={ev} leagueName={l.league?.name} leagueFlag={l.league?.flag} />
-                          </div>
-                        ))}
-                      </div>
+          {activeTab === 'Cricket' && (() => {
+            const allCricket = data.cricket || [];
+            if (!allCricket.length) return <EmptyState icon="🏏" title="No live cricket right now" sub="IPL & international fixtures appear here" />;
+
+            // Flatten all matches, rank by priority
+            const allMatches = allCricket.flatMap(l => (l.events || []).map(ev => ({ ...ev, leagueName: l.league?.name, leagueFlag: l.league?.flag })));
+            const rankMatch = ev => ev.isLive ? 0 : ev.isFinished ? 2 : 1;
+            const sorted = [...allMatches].sort((a, b) => rankMatch(a) - rankMatch(b));
+            
+            // Take top 6 matches max
+            const topMatches = sorted.slice(0, 6);
+            const liveCount = topMatches.filter(ev => ev.isLive).length;
+            const totalHidden = allMatches.length - topMatches.length;
+
+            return (
+              <div>
+                {liveCount > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', padding: '8px 14px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', width: 'fit-content' }}>
+                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#ef4444', display: 'inline-block', animation: 'pulse 1s infinite' }} />
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.12em' }}>{liveCount} Live Match{liveCount > 1 ? 'es' : ''}</span>
+                  </div>
+                )}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+                  {topMatches.map(ev => (
+                    <div key={ev.id} onClick={() => setSelectedMatch({ sport: 'cricket', id: ev.id })} style={{ cursor: 'pointer' }}>
+                      <MatchCard event={ev} leagueName={ev.leagueName} leagueFlag={ev.leagueFlag} />
                     </div>
-                  );
-                })
-              : <EmptyState icon="🏏" title="No live cricket right now" sub="IPL & international fixtures appear here" />
-          )}
+                  ))}
+                </div>
+                {totalHidden > 0 && (
+                  <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '12px', color: 'var(--color-text-3)', fontWeight: 600 }}>
+                    +{totalHidden} more fixtures · Showing top {topMatches.length} by priority
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
 
           {/* Match Details Modal Overlay */}
           <AnimatePresence>

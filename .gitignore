@@ -19,3 +19,6 @@ frontend/tools/
 .env*.local
 
 .claude/
+.sst/
+.sst
+

@@ -16,8 +16,7 @@ import {
   Cell, PieChart as RePieChart, Pie
 } from 'recharts';
 
-// XLSX is loaded via CDN in index.html to avoid build-time dependency issues
-const XLSX = typeof window !== 'undefined' ? (window.XLSX || null) : null;
+
 
 const Finance = () => {
   const { user } = useAuth();
@@ -42,43 +41,7 @@ const Finance = () => {
 
   // New Account State
   const [accountModalOpen, setAccountModalOpen] = useState(false);
-  const [newAccount, setNewAccount] = useState({ name: '', balance: 0, type: 'Checking', icon: '🏦' })  // Excel Import Logic
-  const parseExcelDate = (val) => {
-    if (!val) return new Date().toISOString().split('T')[0];
-    if (typeof val === 'number') {
-      // Excel serial date to JS date
-      const date = new Date((val - 25569) * 86400 * 1000);
-      return date.toISOString().split('T')[0];
-    }
-    if (typeof val === 'string') {
-      const cleanStr = val.trim();
-      // Match DD-MM-YYYY, DD/MM/YYYY, DD.MM.YYYY
-      let parts = cleanStr.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})$/);
-      if (parts) {
-        const d = new Date(parseInt(parts[3], 10), parseInt(parts[2], 10) - 1, parseInt(parts[1], 10));
-        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-      }
-      // Match YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD
-      parts = cleanStr.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})$/);
-      if (parts) {
-        const d = new Date(parseInt(parts[1], 10), parseInt(parts[2], 10) - 1, parseInt(parts[3], 10));
-        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-      }
-      // Match DD-MM-YY or DD/MM/YY
-      parts = cleanStr.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{2})$/);
-      if (parts) {
-        const year = 2000 + parseInt(parts[3], 10);
-        const d = new Date(year, parseInt(parts[2], 10) - 1, parseInt(parts[1], 10));
-        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-      }
-    }
-    // Try parsing standard string
-    try {
-      const d = new Date(val);
-      if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-    } catch (e) {}
-    return new Date().toISOString().split('T')[0];
-  };
+  const [newAccount, setNewAccount] = useState({ name: '', balance: 0, type: 'Checking', icon: '🏦' });
 
   const handleFileUpload = async (file) => {
     if (!file) return;
@@ -86,9 +49,21 @@ const Finance = () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await apiPost('/wealth/import', formData, { json: false });
+
+      // Use raw fetch so we don't set Content-Type (browser auto-sets multipart boundary)
+      const { getCurrentSession, API_URL } = await import('../utils/api');
+      const currentSession = await getCurrentSession();
+      const token = currentSession?.access_token;
+
+      const response = await fetch(`${API_URL}/wealth/import`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+
+      const res = await response.json();
       if (res.success) {
-        toast.success(res.message);
+        toast.success(res.message || `Imported ${res.imported || ''} transactions`);
         setImportStatus('success');
         await loadFinanceData();
         setTimeout(() => {

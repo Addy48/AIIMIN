@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Play, Pause, Square, RotateCcw, Target, Flame } from 'lucide-react';
+import { Play, Pause, Square, RotateCcw, Flame } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useThemeContext } from '../../context/ThemeContext';
 
