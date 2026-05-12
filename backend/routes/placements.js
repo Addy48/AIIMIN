@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
-import { supabase } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
-import { getUploadPresignedUrl } from '../services/s3Service.js';
+import { getUploadPresignedUrl, getDownloadPresignedUrl, deleteS3Object } from '../services/s3Service.js';
 
 const placementsRoutes = new Hono();
 
@@ -26,40 +26,90 @@ placementsRoutes.get('/resumes/upload-ticket', requireAuth, async (c) => {
 placementsRoutes.get('/resumes', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
-        const { data, error } = await supabase
-            .from('resumes')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
+        const res = await pool.query(
+            'SELECT * FROM resumes WHERE user_id = $1 ORDER BY created_at DESC',
+            [userId]
+        );
         
-        if (error) throw error;
-        return c.json(data);
+        // Dynamically append temporary presigned download/view URL for resumes stored on S3
+        const resumesWithUrls = await Promise.all(res.rows.map(async (resume) => {
+            let viewUrl = resume.link_url;
+            if (resume.link_url && resume.link_url.startsWith('users/')) {
+                try {
+                    viewUrl = await getDownloadPresignedUrl(resume.link_url);
+                } catch (s3Err) {
+                    console.error(`Failed to generate view URL for key ${resume.link_url}:`, s3Err);
+                }
+            }
+            return {
+                ...resume,
+                view_url: viewUrl
+            };
+        }));
+        
+        return c.json(resumesWithUrls);
     } catch (err) {
         console.error('Error fetching resumes:', err);
         return c.json({ error: 'Failed to fetch resumes' }, 500);
     }
 });
 
-placementsRoutes.post('/resumes', requireAuth, async (c) => {
+placementsRoutes.post('/resumes/confirm', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
-        const { title, target_role, link_url } = await c.req.json();
-        const { data, error } = await supabase
-            .from('resumes')
-            .insert({
-                user_id: userId,
-                title,
-                target_role,
-                link_url
-            })
-            .select()
-            .single();
-            
-        if (error) throw error;
-        return c.json(data);
+        const { title, target_role, key } = await c.req.json();
+        
+        if (!key) {
+            return c.json({ error: 'S3 key is required' }, 400);
+        }
+
+        const res = await pool.query(
+            `INSERT INTO resumes (user_id, title, target_role, link_url) 
+             VALUES ($1, $2, $3, $4) 
+             RETURNING *`,
+            [userId, title, target_role || 'General', key]
+        );
+        
+        // Generate immediate view_url for convenience
+        let viewUrl = key;
+        try {
+            viewUrl = await getDownloadPresignedUrl(key);
+        } catch (s3Err) {
+            console.error(`Failed to generate initial view URL:`, s3Err);
+        }
+        
+        return c.json({
+            ...res.rows[0],
+            view_url: viewUrl
+        });
     } catch (err) {
-        console.error('Error creating resume:', err);
-        return c.json({ error: 'Failed to create resume' }, 500);
+        console.error('Error confirming resume:', err);
+        return c.json({ error: 'Failed to confirm resume' }, 500);
+    }
+});
+
+placementsRoutes.get('/resumes/:id/view-url', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    try {
+        const res = await pool.query(
+            'SELECT link_url FROM resumes WHERE id = $1 AND user_id = $2',
+            [id, userId]
+        );
+        if (res.rows.length === 0) {
+            return c.json({ error: 'Resume not found' }, 404);
+        }
+        
+        const key = res.rows[0].link_url;
+        let viewUrl = key;
+        if (key && key.startsWith('users/')) {
+            viewUrl = await getDownloadPresignedUrl(key);
+        }
+        
+        return c.json({ viewUrl });
+    } catch (err) {
+        console.error('Error generating view url:', err);
+        return c.json({ error: 'Failed to generate view url' }, 500);
     }
 });
 
@@ -67,17 +117,37 @@ placementsRoutes.delete('/resumes/:id', requireAuth, async (c) => {
     const userId = c.get('userId');
     const id = c.req.param('id');
     try {
-        const { error } = await supabase
-            .from('resumes')
-            .delete()
-            .eq('id', id)
-            .eq('user_id', userId);
-            
-        if (error) throw error;
+        // 1. Fetch the resume's key/link_url
+        const fetchRes = await pool.query(
+            'SELECT link_url FROM resumes WHERE id = $1 AND user_id = $2',
+            [id, userId]
+        );
+        if (fetchRes.rows.length === 0) {
+            return c.json({ error: 'Resume not found' }, 404);
+        }
+        
+        const fileKey = fetchRes.rows[0].link_url;
+        
+        // 2. Delete from S3 (only if it looks like an S3 key)
+        if (fileKey && fileKey.startsWith('users/')) {
+            try {
+                await deleteS3Object(fileKey);
+            } catch (s3Err) {
+                console.error(`S3 clean-up failed for key ${fileKey}:`, s3Err);
+                // Continue with database deletion even if S3 delete fails
+            }
+        }
+        
+        // 3. Delete from database
+        await pool.query(
+            'DELETE FROM resumes WHERE id = $1 AND user_id = $2',
+            [id, userId]
+        );
+        
         return c.json({ success: true });
     } catch (err) {
         console.error('Error deleting resume:', err);
-        return c.json({ error: 'Failed to delete resume' }, 500);
+        return c.json({ error: 'Failed to delete resume', message: err.message }, 500);
     }
 });
 
@@ -88,24 +158,15 @@ placementsRoutes.delete('/resumes/:id', requireAuth, async (c) => {
 placementsRoutes.get('/applications', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
-        const { data, error } = await supabase
-            .from('job_applications')
-            .select(`
-                *,
-                resume:resumes(title)
-            `)
-            .eq('user_id', userId)
-            .order('updated_at', { ascending: false });
-            
-        if (error) throw error;
-        
-        // Transform resume object to resume_title to maintain compatibility with frontend
-        const transformedData = data.map(app => ({
-            ...app,
-            resume_title: app.resume?.title || null
-        }));
-        
-        return c.json(transformedData);
+        const res = await pool.query(
+            `SELECT ja.*, r.title AS resume_title
+             FROM job_applications ja
+             LEFT JOIN resumes r ON ja.resume_id = r.id
+             WHERE ja.user_id = $1
+             ORDER BY ja.updated_at DESC`,
+            [userId]
+        );
+        return c.json(res.rows);
     } catch (err) {
         console.error('Error fetching applications:', err);
         return c.json({ error: 'Failed to fetch applications' }, 500);
@@ -118,24 +179,25 @@ placementsRoutes.post('/applications', requireAuth, async (c) => {
         const body = await c.req.json();
         const { company_name, role_title, status, resume_id, linkedin_url, job_post_url, notes, applied_at } = body;
         
-        const { data, error } = await supabase
-            .from('job_applications')
-            .insert({
-                user_id: userId,
+        const res = await pool.query(
+            `INSERT INTO job_applications (
+                user_id, company_name, role_title, status, resume_id, linkedin_url, job_post_url, notes, applied_at
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             RETURNING *`,
+            [
+                userId,
                 company_name,
                 role_title,
-                status: status || 'wishlist',
-                resume_id,
-                linkedin_url,
-                job_post_url,
-                notes,
-                applied_at
-            })
-            .select()
-            .single();
-            
-        if (error) throw error;
-        return c.json(data);
+                status || 'wishlist',
+                resume_id || null,
+                linkedin_url || null,
+                job_post_url || null,
+                notes || null,
+                applied_at || null
+            ]
+        );
+        
+        return c.json(res.rows[0]);
     } catch (err) {
         console.error('Error creating application:', err);
         return c.json({ error: 'Failed to create application' }, 500);
@@ -149,26 +211,38 @@ placementsRoutes.put('/applications/:id', requireAuth, async (c) => {
         const updates = await c.req.json();
         const { company_name, role_title, status, resume_id, linkedin_url, job_post_url, notes, applied_at } = updates;
         
-        const { data, error } = await supabase
-            .from('job_applications')
-            .update({
+        const res = await pool.query(
+            `UPDATE job_applications
+             SET company_name = $1,
+                 role_title = $2,
+                 status = $3,
+                 resume_id = $4,
+                 linkedin_url = $5,
+                 job_post_url = $6,
+                 notes = $7,
+                 applied_at = $8,
+                 updated_at = NOW()
+             WHERE id = $9 AND user_id = $10
+             RETURNING *`,
+            [
                 company_name,
                 role_title,
                 status,
-                resume_id,
-                linkedin_url,
-                job_post_url,
-                notes,
-                applied_at,
-                updated_at: new Date().toISOString()
-            })
-            .eq('id', id)
-            .eq('user_id', userId)
-            .select()
-            .single();
-            
-        if (error) throw error;
-        return c.json(data);
+                resume_id || null,
+                linkedin_url || null,
+                job_post_url || null,
+                notes || null,
+                applied_at || null,
+                id,
+                userId
+            ]
+        );
+        
+        if (res.rows.length === 0) {
+            return c.json({ error: 'Application not found' }, 404);
+        }
+        
+        return c.json(res.rows[0]);
     } catch (err) {
         console.error('Error updating application:', err);
         return c.json({ error: 'Failed to update application' }, 500);
@@ -179,13 +253,13 @@ placementsRoutes.delete('/applications/:id', requireAuth, async (c) => {
     const userId = c.get('userId');
     const id = c.req.param('id');
     try {
-        const { error } = await supabase
-            .from('job_applications')
-            .delete()
-            .eq('id', id)
-            .eq('user_id', userId);
-            
-        if (error) throw error;
+        const res = await pool.query(
+            'DELETE FROM job_applications WHERE id = $1 AND user_id = $2 RETURNING *',
+            [id, userId]
+        );
+        if (res.rows.length === 0) {
+            return c.json({ error: 'Application not found or unauthorized' }, 404);
+        }
         return c.json({ success: true });
     } catch (err) {
         console.error('Error deleting application:', err);
@@ -193,18 +267,40 @@ placementsRoutes.delete('/applications/:id', requireAuth, async (c) => {
     }
 });
 
+// ==========================================
+// HABIT LOGS
+// ==========================================
+
+placementsRoutes.get('/habit-logs', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const res = await pool.query(
+            'SELECT id, completed_at, created_at, status FROM habit_logs WHERE user_id = $1',
+            [userId]
+        );
+        return c.json(res.rows);
+    } catch (err) {
+        console.error('Error fetching habit logs:', err);
+        return c.json({ error: 'Failed to fetch habit logs', message: err.message }, 500);
+    }
+});
+
+// ==========================================
+// READINESS
+// ==========================================
+
 placementsRoutes.get('/readiness', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
         const [dsaRes, speakingRes, resumesRes] = await Promise.all([
-            supabase.from('dsa_logs').select('id').eq('user_id', userId),
-            supabase.from('lab_speaking_logs').select('confidence_score, clarity_score, pace_score').eq('user_id', userId),
-            supabase.from('resumes').select('id').eq('user_id', userId)
+            pool.query('SELECT id FROM dsa_logs WHERE user_id = $1', [userId]),
+            pool.query('SELECT confidence_score, clarity_score, pace_score FROM lab_speaking_logs WHERE user_id = $1', [userId]),
+            pool.query('SELECT id FROM resumes WHERE user_id = $1', [userId])
         ]);
 
-        const dsaCount = dsaRes.data ? dsaRes.data.length : 0;
-        const speakingLogs = speakingRes.data || [];
-        const resumeCount = resumesRes.data ? resumesRes.data.length : 0;
+        const dsaCount = dsaRes.rows.length;
+        const speakingLogs = speakingRes.rows;
+        const resumeCount = resumesRes.rows.length;
 
         // Calculate DSA score
         const dsaScore = Math.min(100, Math.max(35, 35 + dsaCount * 5));
@@ -245,3 +341,4 @@ placementsRoutes.get('/readiness', requireAuth, async (c) => {
 });
 
 export default placementsRoutes;
+

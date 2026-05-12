@@ -233,7 +233,7 @@ export default function FocusRoom() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
           {/* Preset Pills */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
             {PRESETS.map(p => (
               <button key={p.label} onClick={() => changePreset(p)} style={{
                 padding: '8px 18px', borderRadius: '99px',
@@ -246,6 +246,44 @@ export default function FocusRoom() {
                 {p.icon} {p.label}
               </button>
             ))}
+            {/* Custom adjustment buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '2px 8px', gap: '4px' }}>
+              <button 
+                onClick={() => {
+                  const newWork = Math.max(1, preset.work - 5);
+                  changePreset({ label: `${newWork}m`, work: newWork, break: Math.round(newWork * 0.2) || 1, long: Math.round(newWork * 0.6) || 5, icon: '⚙️' });
+                }} 
+                style={{
+                  background: 'none', border: 'none', color: 'var(--color-text-2)', 
+                  cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', padding: '2px 6px',
+                  fontFamily: 'inherit', transition: 'color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = phaseInfo.color}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-2)'}
+                title="Decrease duration by 5m"
+              >
+                -
+              </button>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', padding: '0 2px', userSelect: 'none' }}>
+                {preset.work}m
+              </span>
+              <button 
+                onClick={() => {
+                  const newWork = Math.min(180, preset.work + 5);
+                  changePreset({ label: `${newWork}m`, work: newWork, break: Math.round(newWork * 0.2) || 1, long: Math.round(newWork * 0.6) || 5, icon: '⚙️' });
+                }} 
+                style={{
+                  background: 'none', border: 'none', color: 'var(--color-text-2)', 
+                  cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', padding: '2px 6px',
+                  fontFamily: 'inherit', transition: 'color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = phaseInfo.color}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-2)'}
+                title="Increase duration by 5m"
+              >
+                +
+              </button>
+            </div>
             {/* Phase pills */}
             <div style={{ flex: 1 }} />
             {Object.entries(PHASES).map(([k, v]) => (

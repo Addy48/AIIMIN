@@ -6,8 +6,7 @@
  */
 import { Hono } from 'hono';
 import { google } from 'googleapis';
-import { supabase } from '../lib/db.js';
-import { supabaseAdmin } from '../supabase.js';
+import { pool, supabaseAdmin } from '../lib/db.js';
 import { encrypt } from '../lib/crypto.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -24,18 +23,26 @@ const SCOPES = [
     'https://www.googleapis.com/auth/youtube.readonly',
 ];
 
-const createOAuthClient = () => new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_CALLBACK_URL || 'https://api.aiimin.in/api/google/auth/callback'
-);
+const createOAuthClient = () => {
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || 'https://api.aiimin.in/api/google/auth/callback';
+    return new google.auth.OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        redirectUri
+    );
+};
 
 app.get('/auth/google', async (c) => {
     const client = createOAuthClient();
     const state = crypto.randomUUID().replace(/-/g, '');
     const expiresAt = new Date(Date.now() + STATE_TTL_MS).toISOString();
 
-    await supabase.from('oauth_states').upsert({ state, is_login: true, expires_at: expiresAt });
+    await pool.query(
+        `INSERT INTO public.oauth_states (state, is_login, expires_at) 
+         VALUES ($1, $2, $3)
+         ON CONFLICT (state) DO UPDATE SET is_login = EXCLUDED.is_login, expires_at = EXCLUDED.expires_at`,
+        [state, true, expiresAt]
+    );
 
     const authUrl = client.generateAuthUrl({ access_type: 'offline', prompt: 'consent', scope: SCOPES, state });
     return c.redirect(authUrl);
@@ -47,7 +54,12 @@ app.get('/auth/init', requireAuth, async (c) => {
     const state = crypto.randomUUID().replace(/-/g, '');
     const expiresAt = new Date(Date.now() + STATE_TTL_MS).toISOString();
 
-    await supabase.from('oauth_states').upsert({ state, user_id: userId, is_login: false, expires_at: expiresAt });
+    await pool.query(
+        `INSERT INTO public.oauth_states (state, user_id, is_login, expires_at) 
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (state) DO UPDATE SET user_id = EXCLUDED.user_id, is_login = EXCLUDED.is_login, expires_at = EXCLUDED.expires_at`,
+        [state, userId, false, expiresAt]
+    );
 
     const authUrl = client.generateAuthUrl({ access_type: 'offline', prompt: 'consent', scope: SCOPES, state });
     return c.redirect(authUrl);
@@ -61,14 +73,19 @@ app.get('/auth/callback', async (c) => {
         return c.redirect(`${frontendUrl}/auth/callback?status=error&reason=${encodeURIComponent(googleError)}`);
     }
 
-    const { data: stateData, error: stateErr } = await supabase
-        .from('oauth_states')
-        .delete()
-        .eq('state', state)
-        .select()
-        .maybeSingle();
+    // Atomic verify and consume the state row from oauth_states
+    let stateData = null;
+    try {
+        const stateRes = await pool.query(
+            'DELETE FROM public.oauth_states WHERE state = $1 RETURNING *',
+            [state]
+        );
+        stateData = stateRes.rows[0];
+    } catch (err) {
+        console.error('[googleAuth/callback] State verification error:', err);
+    }
 
-    if (stateErr || !stateData || new Date(stateData.expires_at) < new Date()) {
+    if (!stateData || new Date(stateData.expires_at) < new Date()) {
         return c.redirect(`${frontendUrl}/auth/callback?status=error&reason=invalid_or_expired_state`);
     }
 
@@ -91,8 +108,8 @@ app.get('/auth/callback', async (c) => {
             });
 
             if (createError) {
-                const { data: existing } = await supabase.from('users').select('id').eq('email', email).maybeSingle();
-                if (existing) userId = existing.id;
+                const existingRes = await pool.query('SELECT id FROM public.users WHERE email = $1', [email]);
+                if (existingRes.rows[0]) userId = existingRes.rows[0].id;
             } else {
                 userId = newUser.user.id;
             }
@@ -102,16 +119,39 @@ app.get('/auth/callback', async (c) => {
             const accessEnc = encrypt(tokens.access_token);
             const refreshEnc = tokens.refresh_token ? encrypt(tokens.refresh_token) : null;
 
-            await supabase.from('user_oauth_tokens').upsert({
-                user_id: userId,
-                provider: 'google',
-                access_token_enc: accessEnc,
-                refresh_token_enc: refreshEnc,
-                expiry_date: tokens.expiry_date,
-                scope: tokens.scope || '',
-                last_refresh_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id,provider' });
+            await pool.query(`
+                INSERT INTO public.user_oauth_tokens (
+                    user_id,
+                    provider,
+                    access_token,
+                    access_token_enc,
+                    refresh_token,
+                    refresh_token_enc,
+                    expiry_date,
+                    scope,
+                    last_refresh_at,
+                    updated_at
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+                ON CONFLICT (user_id, provider) DO UPDATE SET
+                    access_token = EXCLUDED.access_token,
+                    access_token_enc = EXCLUDED.access_token_enc,
+                    refresh_token = COALESCE(EXCLUDED.refresh_token, public.user_oauth_tokens.refresh_token),
+                    refresh_token_enc = COALESCE(EXCLUDED.refresh_token_enc, public.user_oauth_tokens.refresh_token_enc),
+                    expiry_date = EXCLUDED.expiry_date,
+                    scope = EXCLUDED.scope,
+                    last_refresh_at = NOW(),
+                    updated_at = NOW(),
+                    refresh_error = NULL
+            `, [
+                userId,
+                'google',
+                tokens.access_token,
+                accessEnc,
+                tokens.refresh_token || null,
+                refreshEnc,
+                tokens.expiry_date ? String(tokens.expiry_date) : null,
+                tokens.scope || ''
+            ]);
         }
 
         if (stateData.is_login) {
@@ -133,7 +173,10 @@ app.get('/auth/callback', async (c) => {
 
 app.post('/auth/disconnect', requireAuth, async (c) => {
     const userId = c.get('userId');
-    await supabase.from('user_oauth_tokens').delete().eq('user_id', userId).eq('provider', 'google');
+    await pool.query(
+        'DELETE FROM public.user_oauth_tokens WHERE user_id = $1 AND provider = $2',
+        [userId, 'google']
+    );
     return c.json({ success: true });
 });
 

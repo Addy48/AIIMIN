@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 // S3 Client automatically inherits credentials from the Lambda execution role in AWS
@@ -40,4 +40,43 @@ export const getUploadPresignedUrl = async (userId, fileKey, contentType) => {
     fileUrl: `https://${BUCKET_NAME}.s3.ap-south-1.amazonaws.com/${secureKey}`, 
     key: secureKey 
   };
+};
+
+/**
+ * Generates a temporary secure GET presigned URL for downloading/viewing a file from S3.
+ * 
+ * @param {string} fileKey - The S3 object key (e.g. 'users/123/resumes/filename.pdf')
+ * @returns {Promise<string>} Dynamic 15-minute presigned GET URL
+ */
+export const getDownloadPresignedUrl = async (fileKey) => {
+  if (!BUCKET_NAME) {
+    throw new Error('AWS_S3_BUCKET_NAME environment variable is not defined.');
+  }
+
+  const command = new GetObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: fileKey,
+  });
+
+  // URL expires in 15 minutes (900 seconds)
+  return getSignedUrl(s3, command, { expiresIn: 900 });
+};
+
+/**
+ * Deletes an object from the S3 bucket.
+ * 
+ * @param {string} fileKey - The S3 object key to delete
+ * @returns {Promise<void>}
+ */
+export const deleteS3Object = async (fileKey) => {
+  if (!BUCKET_NAME) {
+    throw new Error('AWS_S3_BUCKET_NAME environment variable is not defined.');
+  }
+
+  const command = new DeleteObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: fileKey,
+  });
+
+  await s3.send(command);
 };

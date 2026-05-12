@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../utils/supabase';
 import toast from '../utils/toast';
-import { apiGet } from '../utils/api';
+import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
 import { X } from 'lucide-react';
 
 const STATUS_CONFIG = {
@@ -59,19 +58,13 @@ export default function Placements() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [appsRes, resumesRes, dsaRes, speakingRes, habitsRes] = await Promise.all([
-        supabase.from('job_applications').select('*').order('applied_at', { ascending: false }),
-        supabase.from('resumes').select('*').order('updated_at', { ascending: false }),
-        supabase.from('dsa_logs').select('*'),
-        supabase.from('lab_speaking_logs').select('*'),
-        supabase.from('habit_logs').select('*')
+      const [appsData, resumesData, habitsData] = await Promise.all([
+        apiGet('/placements/applications'),
+        apiGet('/placements/resumes'),
+        apiGet('/placements/habit-logs')
       ]);
-      setApplications(appsRes.data || []);
-      setResumes(resumesRes.data || []);
-
-      const dsaCount = dsaRes.data ? dsaRes.data.length : 0;
-      const speakingLogs = speakingRes.data || [];
-      const resumeCount = resumesRes.data ? resumesRes.data.length : 0;
+      setApplications(appsData || []);
+      setResumes(resumesData || []);
 
       try {
         const readinessData = await apiGet('/placements/readiness');
@@ -83,40 +76,14 @@ export default function Placements() {
           throw new Error('Invalid response structure');
         }
       } catch (err) {
-        console.warn('Failed to fetch backend readiness metrics, using client-side calculations', err);
-        // Calculate DSA score
-        const calculatedDsaScore = Math.min(100, Math.max(35, 35 + dsaCount * 5));
-        const calculatedDsaDesc = dsaCount > 0 ? `${dsaCount} problems solved this period` : 'No solved problems logged yet';
-        setDsaMetrics({ score: calculatedDsaScore, desc: calculatedDsaDesc });
-
-        // Calculate speaking/communication score
-        let calculatedCommScore = 60; // baseline
-        if (speakingLogs.length > 0) {
-          const totalSum = speakingLogs.reduce((acc, log) => {
-            const conf = Number(log.confidence_score || 0);
-            const clar = Number(log.clarity_score || 0);
-            const pace = Number(log.pace_score || 0);
-            return acc + (conf + clar + pace) / 3;
-          }, 0);
-          const rawAvg = totalSum / speakingLogs.length;
-          calculatedCommScore = rawAvg <= 10 ? Math.round(rawAvg * 10) : Math.round(rawAvg);
-          calculatedCommScore = Math.min(100, Math.max(0, calculatedCommScore));
-        }
-        const calculatedCommDesc = speakingLogs.length > 0 
-          ? `Based on ${speakingLogs.length} speech logs` 
-          : 'Record speaking logs to benchmark';
-        setCommunicationMetrics({ score: calculatedCommScore, desc: calculatedCommDesc });
-
-        // Calculate System Design score
-        const calculatedSysScore = Math.min(100, Math.max(40, 40 + resumeCount * 15));
-        const calculatedSysDesc = resumeCount > 0 
-          ? `${resumeCount} active resumes mapped` 
-          : 'Target key systems in resumes';
-        setSystemDesignMetrics({ score: calculatedSysScore, desc: calculatedSysDesc });
+        console.warn('Failed to fetch backend readiness metrics, using static calculations', err);
+        setDsaMetrics({ score: 65, desc: 'No solved problems logged yet' });
+        setCommunicationMetrics({ score: 60, desc: 'Record speaking logs to benchmark' });
+        setSystemDesignMetrics({ score: 40, desc: 'Target key systems in resumes' });
       }
 
       // Momentum Status & Trajectory Analytics
-      const completedLogs = (habitsRes.data || []).filter(h => h.status === 'done' || h.completed_at);
+      const completedLogs = (habitsData || []).filter(h => h.status === 'done' || h.completed_at);
       const now = new Date();
       const oneDayMs = 24 * 60 * 60 * 1000;
       const last7DaysCount = completedLogs.filter(h => {
@@ -160,21 +127,56 @@ export default function Placements() {
     }
   };
 
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadMode, setUploadMode] = useState('file'); // 'file' | 'link'
+
   const handleCreateResume = async (e) => {
     e.preventDefault();
     const tid = toast.loading('Archiving resume version...');
     try {
-      const { data, error } = await supabase.from('resumes').insert([{
-        user_id: user.id,
-        ...resumeForm
-      }]).select().single();
+      let key = '';
       
-      if (error) throw error;
+      if (uploadMode === 'file') {
+        if (!selectedFile) {
+          toast.update(tid, 'Please select a file to upload', 'error');
+          return;
+        }
+        
+        // 1. Get S3 upload ticket
+        const ticket = await apiGet(`/placements/resumes/upload-ticket?filename=${encodeURIComponent(selectedFile.name)}&contentType=${encodeURIComponent(selectedFile.type)}`);
+        
+        // 2. Direct binary PUT upload to S3
+        const uploadResponse = await fetch(ticket.uploadUrl, {
+          method: 'PUT',
+          body: selectedFile,
+          headers: {
+            'Content-Type': selectedFile.type
+          }
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('S3 upload failed');
+        }
+        
+        key = ticket.key;
+      } else {
+        key = resumeForm.link_url;
+      }
+      
+      // 3. Confirm metadata to backend
+      const data = await apiPost('/placements/resumes/confirm', {
+        title: resumeForm.title,
+        target_role: resumeForm.target_role,
+        key
+      });
+      
       setResumes([data, ...resumes]);
       setShowResumeModal(false);
       setResumeForm({ title: '', target_role: '', link_url: '' });
+      setSelectedFile(null);
       toast.update(tid, 'Resume archived ✓', 'success');
     } catch (err) {
+      console.error('Resume upload/archive failed:', err);
       toast.update(tid, 'Archive failed', 'error');
     }
   };
@@ -184,19 +186,13 @@ export default function Placements() {
     const tid = toast.loading(editingApp ? 'Updating application...' : 'Tracking application...');
     try {
       if (editingApp) {
-        const { data, error } = await supabase.from('job_applications')
-          .update(appForm)
-          .eq('id', editingApp.id)
-          .select().single();
-        if (error) throw error;
+        const data = await apiPut(`/placements/applications/${editingApp.id}`, appForm);
         setApplications(applications.map(a => a.id === data.id ? data : a));
       } else {
-        const { data, error } = await supabase.from('job_applications').insert([{
-          user_id: user.id,
+        const data = await apiPost('/placements/applications', {
           ...appForm,
-          applied_at: new Date().toISOString().split('T')[0]
-        }]).select().single();
-        if (error) throw error;
+          applied_at: appForm.applied_at || new Date().toISOString().split('T')[0]
+        });
         setApplications([data, ...applications]);
       }
       
@@ -205,17 +201,23 @@ export default function Placements() {
       setAppForm({ company_name: '', role_title: '', status: 'wishlist', resume_id: '', linkedin_url: '', job_post_url: '', notes: '', last_contacted: '' });
       toast.update(tid, 'Application synchronized ✓', 'success');
     } catch (err) {
+      console.error('Save application failed:', err);
       toast.update(tid, 'Sync failed', 'error');
     }
   };
 
   const updateStatus = async (id, newStatus) => {
+    const app = applications.find(a => a.id === id);
+    if (!app) return;
     try {
-      const { error } = await supabase.from('job_applications').update({ status: newStatus }).eq('id', id);
-      if (error) throw error;
-      setApplications(applications.map(a => a.id === id ? { ...a, status: newStatus } : a));
+      const data = await apiPut(`/placements/applications/${id}`, {
+        ...app,
+        status: newStatus
+      });
+      setApplications(applications.map(a => a.id === id ? data : a));
       toast.success(`Moved to ${newStatus.toUpperCase()}`);
     } catch (err) {
+      console.error('Update status failed:', err);
       toast.error('Move failed');
     }
   };
@@ -223,10 +225,11 @@ export default function Placements() {
   const deleteApplication = async (id) => {
     if (!window.confirm("Abandon this application track?")) return;
     try {
-      await supabase.from('job_applications').delete().eq('id', id);
+      await apiDelete(`/placements/applications/${id}`);
       setApplications(applications.filter(a => a.id !== id));
       toast.success("Track removed");
     } catch (err) {
+      console.error('Delete application failed:', err);
       toast.error("Removal failed");
     }
   };
@@ -800,28 +803,46 @@ export default function Placements() {
                         {resume.target_role || 'General'}
                       </div>
                     </div>
-                    <button onClick={async () => { if(window.confirm('Delete this version?')){ await supabase.from('resumes').delete().eq('id', resume.id); setResumes(resumes.filter(r => r.id !== resume.id)); }}} style={{ background: 'none', border: 'none', opacity: 0.3, cursor: 'pointer' }}>❌</button>
+                    <button 
+                      onClick={async () => { 
+                        if (window.confirm('Delete this version?')) { 
+                          const tid = toast.loading('Deleting resume...');
+                          try {
+                            await apiDelete(`/placements/resumes/${resume.id}`);
+                            setResumes(resumes.filter(r => r.id !== resume.id)); 
+                            toast.update(tid, 'Resume deleted ✓', 'success');
+                          } catch (err) {
+                            toast.update(tid, 'Failed to delete resume', 'error');
+                          }
+                        } 
+                      }} 
+                      style={{ background: 'none', border: 'none', opacity: 0.3, cursor: 'pointer' }}
+                    >
+                      ❌
+                    </button>
                   </div>
 
                   <div className="resume-preview-container">
-                    {resume.link_url ? (
+                    {resume.view_url ? (
                       <iframe 
-                        src={getDrivePreviewUrl(resume.link_url)} 
+                        src={resume.view_url.includes('drive.google.com') ? getDrivePreviewUrl(resume.view_url) : resume.view_url} 
                         style={{ width: '100%', height: '400px', border: 'none', borderRadius: '8px' }} 
                         title={resume.title}
                       />
                     ) : (
                       <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: '12px', border: '1px dashed var(--border)', borderRadius: '8px' }}>
-                        No Link Provided
+                        No Preview Available
                       </div>
                     )}
                     <div className="preview-overlay">
-                      <a href={resume.link_url} target="_blank" rel="noopener noreferrer" className="preview-btn">Open Full Document ↗</a>
+                      {resume.view_url && (
+                        <a href={resume.view_url} target="_blank" rel="noopener noreferrer" className="preview-btn">Open Full Document ↗</a>
+                      )}
                     </div>
                   </div>
                   
                   <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Updated {new Date(resume.updated_at).toLocaleDateString()}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Updated {new Date(resume.updated_at || resume.created_at).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>
@@ -907,11 +928,7 @@ export default function Placements() {
                 </form>
               </div>
             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Resume Modal */}
+               {/* Resume Modal */}
       <AnimatePresence>
         {showResumeModal && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -920,7 +937,43 @@ export default function Placements() {
               <button type="button" onClick={() => setShowResumeModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}>
                 <X size={20} />
               </button>
-              <h2 style={{ fontSize: '28px', fontWeight: 500, fontFamily: 'var(--font-serif)', marginBottom: '32px' }}>Archive Version</h2>
+              <h2 style={{ fontSize: '28px', fontWeight: 500, fontFamily: 'var(--font-serif)', marginBottom: '16px' }}>Archive Version</h2>
+              
+              <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '24px', gap: '16px' }}>
+                <button 
+                  type="button" 
+                  onClick={() => setUploadMode('file')}
+                  style={{
+                    padding: '8px 16px',
+                    border: 'none',
+                    background: 'none',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: uploadMode === 'file' ? 'var(--color-rust)' : 'var(--text-3)',
+                    borderBottom: uploadMode === 'file' ? '2px solid var(--color-rust)' : 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📁 Upload PDF File
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setUploadMode('link')}
+                  style={{
+                    padding: '8px 16px',
+                    border: 'none',
+                    background: 'none',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: uploadMode === 'link' ? 'var(--color-rust)' : 'var(--text-3)',
+                    borderBottom: uploadMode === 'link' ? '2px solid var(--color-rust)' : 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔗 Shareable Link
+                </button>
+              </div>
+
               <form onSubmit={handleCreateResume} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div className="input-group">
                   <label>Version Descriptor</label>
@@ -930,18 +983,69 @@ export default function Placements() {
                   <label>Target Role / Industry</label>
                   <input required value={resumeForm.target_role} onChange={e => setResumeForm({...resumeForm, target_role: e.target.value})} placeholder="e.g. Web3, Backend, Product" />
                 </div>
-                <div className="input-group">
-                  <label>Google Drive Share Link</label>
-                  <input required value={resumeForm.link_url} onChange={e => setResumeForm({...resumeForm, link_url: e.target.value})} placeholder="https://drive.google.com/..." />
-                  <p style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '6px' }}>Ensure link is set to "Anyone with the link can view" for the preview to work.</p>
-                </div>
+
+                {uploadMode === 'file' ? (
+                  <div className="input-group">
+                    <label>PDF Document</label>
+                    <div style={{
+                      border: '2px dashed var(--border)',
+                      borderRadius: '12px',
+                      padding: '24px',
+                      textAlign: 'center',
+                      background: 'var(--bg-elevated)',
+                      cursor: 'pointer',
+                      position: 'relative'
+                    }}>
+                      <input 
+                        type="file" 
+                        accept="application/pdf" 
+                        required={uploadMode === 'file'}
+                        onChange={e => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setSelectedFile(file);
+                            if (!resumeForm.title || resumeForm.title === '') {
+                              const baseName = file.name.replace(/\.[^/.]+$/, "");
+                              setResumeForm(prev => ({ ...prev, title: baseName }));
+                            }
+                          }
+                        }}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          opacity: 0,
+                          cursor: 'pointer',
+                          width: '100%',
+                          height: '100%'
+                        }}
+                      />
+                      <span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>📄</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-1)', display: 'block' }}>
+                        {selectedFile ? selectedFile.name : 'Select or drop resume PDF'}
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-3)', display: 'block', marginTop: '4px' }}>
+                        {selectedFile ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB` : 'PDF only, max 10MB'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="input-group">
+                    <label>Google Drive Share Link</label>
+                    <input required={uploadMode === 'link'} value={resumeForm.link_url} onChange={e => setResumeForm({...resumeForm, link_url: e.target.value})} placeholder="https://drive.google.com/..." />
+                    <p style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '6px' }}>Ensure link is set to "Anyone with the link can view" for the preview to work.</p>
+                  </div>
+                )}
+
                 <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                  <button type="button" onClick={() => setShowResumeModal(false)} className="btn-secondary">Cancel</button>
+                  <button type="button" onClick={() => { setShowResumeModal(false); setSelectedFile(null); }} className="btn-secondary">Cancel</button>
                   <button type="submit" className="btn-primary">Archive to Vault</button>
                 </div>
               </form>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+   </div>
         )}
       </AnimatePresence>
 
