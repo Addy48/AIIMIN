@@ -19,50 +19,60 @@ import wealthRoutes from './routes/wealth.js';
 import sportsRoutes from './routes/sports.js';
 import intelligenceRoutes from './routes/intelligence.js';
 
-const app = new Hono().basePath('/api');
+const api = new Hono();
 
 // ─── Middleware ─────────────────────────────────────────────
 // Only use verbose logger in non-production environments to avoid log noise and costs
 if (process.env.NODE_ENV !== 'production') {
     const { logger } = await import('hono/logger');
-    app.use('*', logger());
+    api.use('*', logger());
 }
-app.use('*', secureHeaders());
+api.use('*', secureHeaders());
 
 // ─── CORS ─────────────────────────────────────────────────────
-app.use('*', cors({
+api.use('*', cors({
     origin: (origin) => origin,
     credentials: true,
 }));
 
 // ─── Fast Health Check ────────────────────────────
-app.route('/health', healthRoutes);
+api.route('/health', healthRoutes);
 
 // ─── Routes ───────────────────────────────────────────────────
-app.route('/auth', authRoutes);
-app.route('/daily-logs', dailyLogsRoutes);
-app.route('/dashboard', dashboardRoutes);
-app.route('/tasks', tasksRoutes);
-app.route('/google', googleAuthRoutes);
-app.route('/calendar', calendarRoutes);
-app.route('/notifications', notificationRoutes);
-app.route('/account', accountRoutes);
-app.route('/habits', habitsRoutes);
-app.route('/lab', labRoutes);
-app.route('/placements', placementsRoutes);
-app.route('/wealth', wealthRoutes);
-app.route('/sports', sportsRoutes);
-app.route('/intelligence', intelligenceRoutes);
+api.route('/auth', authRoutes);
+api.route('/daily-logs', dailyLogsRoutes);
+api.route('/dashboard', dashboardRoutes);
+api.route('/tasks', tasksRoutes);
+api.route('/google', googleAuthRoutes);
+api.route('/calendar', calendarRoutes);
+api.route('/notifications', notificationRoutes);
+api.route('/account', accountRoutes);
+api.route('/habits', habitsRoutes);
+api.route('/lab', labRoutes);
+api.route('/placements', placementsRoutes);
+api.route('/wealth', wealthRoutes);
+api.route('/sports', sportsRoutes);
+api.route('/intelligence', intelligenceRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────
-app.notFound((c) => {
+api.notFound((c) => {
     return c.json({ error: 'Route not found' }, 404);
 });
 
 // ─── Global error handler ─────────────────────────────────────
-app.onError((err, c) => {
+api.onError((err, c) => {
     console.error('[SERVER ERROR]:', err);
     return c.json({ error: 'Internal Server Error', message: err.message }, 500);
+});
+
+// ─── Root App mounting api ───────────────────────────────────
+const app = new Hono();
+app.route('/api', api);
+
+// Redirect root-level /google/auth/callback to /api/google/auth/callback
+app.get('/google/auth/callback', async (c) => {
+    const query = c.req.url.split('?')[1] || '';
+    return c.redirect(`/api/google/auth/callback${query ? '?' + query : ''}`);
 });
 
 // ─── AWS Lambda Handler ────────────────────────────────────────────
@@ -80,8 +90,9 @@ export default {
 // ─── Local Server Execution (npm run dev) ─────────────────────────
 if (process.env.NODE_ENV !== 'production' && typeof process !== 'undefined' && process.release) {
     const { serve } = await import('@hono/node-server');
-    const port = process.env.PORT || 5000;
+    const port = process.env.PORT || 5002;
     console.log(`[LOCAL DEV] Starting Node API server on port ${port}...`);
     serve({ fetch: app.fetch, port });
 }
+
 

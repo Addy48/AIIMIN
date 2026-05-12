@@ -1,11 +1,6 @@
-/**
- * routes/calendar.js
- *
- * Unified Life OS Calendar — Refactored for Hono / Cloudflare Workers.
- */
 import { Hono } from 'hono';
 import { google } from 'googleapis';
-import { supabase } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { decrypt } from '../lib/crypto.js';
 import { requireAuth } from '../middleware/auth.js';
 
@@ -14,20 +9,21 @@ const app = new Hono();
 const SYSTEM_TYPES = ['physical', 'cognitive', 'behavior', 'finance', 'reflection', 'general'];
 
 const createGoogleCalendar = async (userId) => {
-    const { data: tokenRow, error } = await supabase
-        .from('user_oauth_tokens')
-        .select('access_token_enc, refresh_token_enc, access_token, refresh_token, expiry_date, scope, refresh_error, updated_at')
-        .eq('user_id', userId)
-        .eq('provider', 'google')
-        .maybeSingle();
+    const tokenRes = await pool.query(
+        `SELECT access_token_enc, refresh_token_enc, access_token, refresh_token, expiry_date, scope, refresh_error, updated_at 
+         FROM public.user_oauth_tokens 
+         WHERE user_id = $1 AND provider = $2`,
+        [userId, 'google']
+    );
 
-    if (error) throw error;
+    const tokenRow = tokenRes.rows[0];
     if (!tokenRow) throw Object.assign(new Error('Google account not connected'), { code: 'NOT_CONNECTED' });
 
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || 'https://api.aiimin.in/api/google/auth/callback';
     const client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
-        process.env.GOOGLE_CALLBACK_URL || 'https://api.aiimin.in/api/google/auth/callback'
+        redirectUri
     );
 
     client.setCredentials({
@@ -64,17 +60,14 @@ app.get('/events', requireAuth, async (c) => {
         if (!start || !end) return c.json({ error: 'start and end query params required' }, 400);
         const userId = c.get('userId');
 
-        const { data, error } = await supabase
-            .from('calendar_events')
-            .select('*')
-            .eq('user_id', userId)
-            .gte('start_time', start)
-            .lte('start_time', end)
-            .is('deleted_at', null)
-            .order('start_time', { ascending: true });
+        const eventsRes = await pool.query(
+            `SELECT * FROM public.calendar_events 
+             WHERE user_id = $1 AND start_time >= $2 AND start_time <= $3 AND deleted_at IS NULL
+             ORDER BY start_time ASC`,
+            [userId, start, end]
+        );
 
-        if (error) throw error;
-        return c.json(data);
+        return c.json(eventsRes.rows || []);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
@@ -83,13 +76,13 @@ app.get('/events', requireAuth, async (c) => {
 app.get('/sync/status', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
-        const { data, error } = await supabase
-            .from('user_oauth_tokens')
-            .select('scope, refresh_error, updated_at, last_refresh_at')
-            .eq('user_id', userId)
-            .eq('provider', 'google')
-            .maybeSingle();
-        if (error) throw error;
+        const tokenRes = await pool.query(
+            `SELECT scope, refresh_error, updated_at, last_refresh_at 
+             FROM public.user_oauth_tokens 
+             WHERE user_id = $1 AND provider = $2`,
+            [userId, 'google']
+        );
+        const data = tokenRes.rows[0];
         return c.json({
             connected: !!data && !data.refresh_error,
             scopes: data?.scope?.split(' ') || [],
@@ -123,10 +116,35 @@ app.post('/sync/pull', requireAuth, async (c) => {
             .map(ev => mapGoogleEvent(userId, ev));
 
         if (rows.length) {
-            const { error } = await supabase
-                .from('calendar_events')
-                .upsert(rows, { onConflict: 'user_id,google_event_id' });
-            if (error) throw error;
+            const columns = ['user_id', 'google_event_id', 'title', 'description', 'start_time', 'end_time', 'all_day', 'event_type', 'source_type', 'location', 'updated_at'];
+            const valuePlaceholders = [];
+            const values = [];
+
+            rows.forEach((row) => {
+                const placeholders = [];
+                columns.forEach(col => {
+                    values.push(row[col]);
+                    placeholders.push(`$${values.length}`);
+                });
+                valuePlaceholders.push(`(${placeholders.join(', ')})`);
+            });
+
+            const query = `
+                INSERT INTO public.calendar_events (${columns.join(', ')})
+                VALUES ${valuePlaceholders.join(', ')}
+                ON CONFLICT (user_id, google_event_id) DO UPDATE SET
+                    title = EXCLUDED.title,
+                    description = EXCLUDED.description,
+                    start_time = EXCLUDED.start_time,
+                    end_time = EXCLUDED.end_time,
+                    all_day = EXCLUDED.all_day,
+                    event_type = EXCLUDED.event_type,
+                    source_type = EXCLUDED.source_type,
+                    location = EXCLUDED.location,
+                    updated_at = EXCLUDED.updated_at,
+                    deleted_at = NULL
+            `;
+            await pool.query(query, values);
         }
 
         return c.json({ imported: rows.length });
@@ -148,17 +166,14 @@ app.get('/day/:date', requireAuth, async (c) => {
         const startOfDay = `${date}T00:00:00.000Z`;
         const endOfDay = `${date}T23:59:59.999Z`;
 
-        const { data, error } = await supabase
-            .from('calendar_events')
-            .select('*')
-            .eq('user_id', userId)
-            .gte('start_time', startOfDay)
-            .lte('start_time', endOfDay)
-            .is('deleted_at', null)
-            .order('start_time', { ascending: true });
+        const eventsRes = await pool.query(
+            `SELECT * FROM public.calendar_events 
+             WHERE user_id = $1 AND start_time >= $2 AND start_time <= $3 AND deleted_at IS NULL
+             ORDER BY start_time ASC`,
+            [userId, startOfDay, endOfDay]
+        );
 
-        if (error) throw error;
-        return c.json(data || []);
+        return c.json(eventsRes.rows || []);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
@@ -173,29 +188,30 @@ app.post('/events', requireAuth, async (c) => {
 
         if (!title || !start_time) return c.json({ error: 'title and start_time required' }, 400);
 
-        const { data, error } = await supabase
-            .from('calendar_events')
-            .insert({
-                user_id: userId,
-                title,
-                description: description || null,
-                start_time,
-                end_time: end_time || start_time,
-                all_day: all_day || false,
-                system_type: system_type || 'general',
-                tags: tags || [],
-                color: color || null,
-                location: location || null,
-                reminder_minutes: reminder_minutes || null,
-                recurrence_rule: recurrence_rule ? JSON.stringify(recurrence_rule) : null,
-                event_type: event_type || 'event',
-                source_type: 'user'
-            })
-            .select()
-            .single();
+        const insertRes = await pool.query(`
+            INSERT INTO public.calendar_events (
+                user_id, title, description, start_time, end_time, all_day, 
+                system_type, tags, color, location, reminder_minutes, 
+                recurrence_rule, event_type, source_type
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'user')
+            RETURNING *
+        `, [
+            userId,
+            title,
+            description || null,
+            start_time,
+            end_time || start_time,
+            all_day || false,
+            system_type || 'general',
+            tags || [],
+            color || null,
+            location || null,
+            reminder_minutes || null,
+            recurrence_rule ? JSON.stringify(recurrence_rule) : null,
+            event_type || 'event'
+        ]);
 
-        if (error) throw error;
-        return c.json(data, 201);
+        return c.json(insertRes.rows[0], 201);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
@@ -209,26 +225,31 @@ app.patch('/events/:id', requireAuth, async (c) => {
         const body = await c.req.json();
         const allowedFields = ['title', 'description', 'start_time', 'end_time', 'all_day', 'system_type', 'tags', 'color', 'location', 'reminder_minutes', 'recurrence_rule', 'event_type', 'completed'];
 
-        const updates = {};
+        const updates = [];
+        const values = [id, userId];
+
         for (const key of allowedFields) {
             if (body[key] !== undefined) {
-                updates[key] = key === 'recurrence_rule' && body[key] ? JSON.stringify(body[key]) : body[key];
+                values.push(key === 'recurrence_rule' && body[key] ? JSON.stringify(body[key]) : body[key]);
+                updates.push(`${key} = $${values.length}`);
             }
         }
-        updates.updated_at = new Date().toISOString();
 
-        const { data, error } = await supabase
-            .from('calendar_events')
-            .update(updates)
-            .eq('id', id)
-            .eq('user_id', userId)
-            .is('deleted_at', null)
-            .select()
-            .maybeSingle();
+        if (updates.length === 0) {
+            return c.json({ error: 'No fields to update' }, 400);
+        }
 
-        if (error) throw error;
-        if (!data) return c.json({ error: 'Event not found' }, 404);
-        return c.json(data);
+        updates.push(`updated_at = NOW()`);
+
+        const updateQuery = `
+            UPDATE public.calendar_events 
+            SET ${updates.join(', ')} 
+            WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+            RETURNING *
+        `;
+        const updateRes = await pool.query(updateQuery, values);
+        if (updateRes.rows.length === 0) return c.json({ error: 'Event not found' }, 404);
+        return c.json(updateRes.rows[0]);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
@@ -239,14 +260,12 @@ app.delete('/events/:id', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const id = c.req.param('id');
-        const { error } = await supabase
-            .from('calendar_events')
-            .update({ deleted_at: new Date().toISOString() })
-            .eq('id', id)
-            .eq('user_id', userId)
-            .is('deleted_at', null);
 
-        if (error) throw error;
+        await pool.query(
+            'UPDATE public.calendar_events SET deleted_at = NOW() WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL',
+            [id, userId]
+        );
+
         return c.json({ deleted: true, id });
     } catch (err) {
         return c.json({ error: err.message }, 500);
@@ -265,24 +284,33 @@ app.get('/heatmap', requireAuth, async (c) => {
 
         // Fetch logs, sessions, and commitments in parallel
         const [logsRes, sessionsRes, commitsRes] = await Promise.all([
-            supabase.from('daily_logs').select('date, mood_before, mood_after').eq('user_id', userId).gte('date', startDate).lte('date', endDate),
-            supabase.from('pomodoro_sessions').select('date, cycles_completed, total_focus_minutes').eq('user_id', userId).gte('date', startDate).lte('date', endDate),
-            supabase.from('daily_commitments').select('date, fulfillment_pct').eq('user_id', userId).gte('date', startDate).lte('date', endDate)
+            pool.query(
+                'SELECT date::text, mood_before, mood_after FROM public.daily_logs WHERE user_id = $1 AND date >= $2 AND date <= $3',
+                [userId, startDate, endDate]
+            ),
+            pool.query(
+                'SELECT date::text, cycles_completed, total_focus_minutes FROM public.pomodoro_sessions WHERE user_id = $1 AND date >= $2 AND date <= $3',
+                [userId, startDate, endDate]
+            ),
+            pool.query(
+                'SELECT date::text, fulfillment_pct FROM public.daily_commitments WHERE user_id = $1 AND date >= $2 AND date <= $3',
+                [userId, startDate, endDate]
+            )
         ]);
 
         // Merge in JS
         const dataMap = {};
-        (logsRes.data || []).forEach(l => {
+        (logsRes.rows || []).forEach(l => {
             const moodCount = (l.mood_before !== null ? 1 : 0) + (l.mood_after !== null ? 1 : 0);
             const moodAvg = moodCount > 0 ? ((l.mood_before || 0) + (l.mood_after || 0)) / moodCount : 0;
             dataMap[l.date] = { date: l.date, session_count: 0, focus_minutes: 0, commitment_pct: 0, mood_avg: parseFloat(moodAvg.toFixed(1)) };
         });
-        (sessionsRes.data || []).forEach(s => {
+        (sessionsRes.rows || []).forEach(s => {
             if (!dataMap[s.date]) dataMap[s.date] = { date: s.date, session_count: 0, focus_minutes: 0, commitment_pct: 0, mood_avg: 0 };
             dataMap[s.date].session_count += (s.cycles_completed || 0);
             dataMap[s.date].focus_minutes += (s.total_focus_minutes || 0);
         });
-        (commitsRes.data || []).forEach(dc => {
+        (commitsRes.rows || []).forEach(dc => {
             if (!dataMap[dc.date]) dataMap[dc.date] = { date: dc.date, session_count: 0, focus_minutes: 0, commitment_pct: 0, mood_avg: 0 };
             dataMap[dc.date].commitment_pct = parseFloat(dc.fulfillment_pct || 0);
         });

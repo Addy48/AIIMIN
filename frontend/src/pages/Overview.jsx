@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight, Keyboard, Mic, Timer } from 'lucide-react';
+import { Plus, X, ChevronRight, Keyboard, Mic } from 'lucide-react';
 import TypingTest from '../components/lab/TypingTest';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
-import PomodoroTimer from '../components/productivity/PomodoroTimer';
 import DesktopWindow from '../components/ui/DesktopWindow';
 
 const STATES = ['clarity','scarcity','abundance','fear','growth','aimlessness','focus','noise'];
@@ -331,14 +330,7 @@ const Overview = () => {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
               <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Productivity Labs</div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'20px' }}>
-              <button onClick={() => setActiveModal('pomodoro')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#EF4444'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
-                <div style={{ background:'rgba(239, 68, 68, 0.1)', color:'#EF4444', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Timer size={24} /></div>
-                <div>
-                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Focus Timer</div>
-                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Deep work pomodoro</div>
-                </div>
-              </button>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:'20px' }}>
               <button onClick={() => setActiveModal('typing')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#10B981'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
                 <div style={{ background:'rgba(16, 185, 129, 0.1)', color:'#10B981', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Keyboard size={24} /></div>
                 <div>
@@ -399,11 +391,7 @@ const Overview = () => {
         </DesktopWindow>
       )}
 
-      {activeModal === 'pomodoro' && (
-        <DesktopWindow title="Focus Timer" subtitle="single-task pomodoro workspace" onClose={() => setActiveModal(null)} width="1040px">
-          <PomodoroTimer onComplete={() => {}} onClose={() => setActiveModal(null)} />
-        </DesktopWindow>
-      )}
+
 
 
       {/* Responsive */}
