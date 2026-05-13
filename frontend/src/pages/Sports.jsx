@@ -52,6 +52,8 @@ const SportsPage = () => {
 
   // Live Data State
   const [footballLive, setFootballLive] = useState([]);
+  const [footballRecent, setFootballRecent] = useState([]);
+  const [footballUpcoming, setFootballUpcoming] = useState([]);
   const [f1Standings, setF1Standings] = useState([]);
   const [cricketLive, setCricketLive] = useState([]);
   const [loadingLive, setLoadingLive] = useState(false);
@@ -72,9 +74,22 @@ const SportsPage = () => {
         sportsService.fetchF1Standings(),
         sportsService.fetchCricketLive()
       ]);
-      setFootballLive(fb.slice(0, 5)); // Limit to top 5 live matches
-      setF1Standings(f1.slice(0, 10)); // Top 10 drivers
+      setFootballLive(fb.slice(0, 5));
+      setF1Standings(f1.slice(0, 10));
       setCricketLive(cr.slice(0, 5));
+
+      // If no live football, fetch recent results and upcoming fixtures
+      if (fb.length === 0) {
+        const [recent, upcoming] = await Promise.all([
+          sportsService.fetchFootballRecent(),
+          sportsService.fetchFootballUpcoming()
+        ]);
+        setFootballRecent(recent.slice(0, 5));
+        setFootballUpcoming(upcoming.slice(0, 5));
+      } else {
+        setFootballRecent([]);
+        setFootballUpcoming([]);
+      }
     } catch (err) {
       console.error('Failed to fetch live sports:', err);
     } finally {
@@ -228,25 +243,78 @@ const SportsPage = () => {
                   {loadingLive && <span style={{ fontSize: '10px', color: 'var(--color-accent)' }}>Updating...</span>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {footballLive.length > 0 ? footballLive.map((match, i) => (
-                    <div key={i} className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ flex: 1, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: 600 }}>{match.teams.home.name}</span>
-                        <img src={match.teams.home.logo} alt="" style={{ width: '24px', height: '24px' }} />
-                      </div>
-                      <div style={{ width: '100px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
-                          {match.goals.home} - {match.goals.away}
+                  {footballLive.length > 0 ? (
+                    footballLive.map((match, i) => (
+                      <div key={i} className="glass-panel" style={{ padding: '20px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ flex: 1, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 600 }}>{match.teams.home.name}</span>
+                          <img src={match.teams.home.logo} alt="" style={{ width: '24px', height: '24px' }} />
                         </div>
-                        <div style={{ fontSize: '10px', color: 'var(--color-accent)', fontWeight: 700 }}>{match.fixture.status.elapsed}'</div>
+                        <div style={{ width: '100px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
+                            {match.goals.home} - {match.goals.away}
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--color-accent)', fontWeight: 700 }}>{match.fixture.status.elapsed}'</div>
+                        </div>
+                        <div style={{ flex: 1, textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <img src={match.teams.away.logo} alt="" style={{ width: '24px', height: '24px' }} />
+                          <span style={{ fontSize: '14px', fontWeight: 600 }}>{match.teams.away.name}</span>
+                        </div>
                       </div>
-                      <div style={{ flex: 1, textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <img src={match.teams.away.logo} alt="" style={{ width: '24px', height: '24px' }} />
-                        <span style={{ fontSize: '14px', fontWeight: 600 }}>{match.teams.away.name}</span>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: text3 }}>No matches live currently.</div>
+                    ))
+                  ) : (
+                    <>
+                      {/* Recent Results */}
+                      {footballRecent.length > 0 && (
+                        <div style={{ marginBottom: '12px' }}>
+                          <div style={{ fontSize: '11px', fontWeight: 800, color: text3, marginBottom: '8px', textTransform: 'uppercase' }}>Recent Results</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {footballRecent.map((match, i) => (
+                              <div key={i} className="glass-panel" style={{ padding: '14px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: 0.8 }}>
+                                <div style={{ flex: 1, textAlign: 'right', fontSize: '13px', fontWeight: 600 }}>{match.teams.home.name}</div>
+                                <div style={{ width: '80px', textAlign: 'center', fontSize: '14px', fontWeight: 800, color: 'var(--color-accent)' }}>
+                                  {match.goals.home} - {match.goals.away}
+                                </div>
+                                <div style={{ flex: 1, textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>{match.teams.away.name}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Upcoming Fixtures */}
+                      {footballUpcoming.length > 0 && (
+                        <div>
+                          <div style={{ fontSize: '11px', fontWeight: 800, color: text3, marginBottom: '8px', textTransform: 'uppercase' }}>Upcoming Fixtures</div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {footballUpcoming.map((match, i) => {
+                              const matchDate = new Date(match.fixture.date);
+                              const now = new Date();
+                              const diffMs = matchDate - now;
+                              const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+                              const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                              
+                              return (
+                                <div key={i} className="glass-panel" style={{ padding: '14px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <div style={{ flex: 1, textAlign: 'right', fontSize: '13px', fontWeight: 600 }}>{match.teams.home.name}</div>
+                                  <div style={{ width: '120px', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-accent)' }}>
+                                      {diffHrs > 0 ? `In ${diffHrs}h ${diffMins}m` : `Starting Soon`}
+                                    </div>
+                                    <div style={{ fontSize: '9px', color: text3 }}>{matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                  </div>
+                                  <div style={{ flex: 1, textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>{match.teams.away.name}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {footballRecent.length === 0 && footballUpcoming.length === 0 && (
+                        <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: text3 }}>No matches currently scheduled.</div>
+                      )}
+                    </>
                   )}
                 </div>
               </section>

@@ -22,6 +22,28 @@ export const sportsService = {
     }
   },
 
+  fetchFootballRecent: async () => {
+    try {
+      const res = await fetch(`${FOOTBALL_BASE}/fixtures?last=10`, { headers });
+      const data = await res.json();
+      return data.response || [];
+    } catch (err) {
+      console.error('Football Recent Fetch Error:', err);
+      return [];
+    }
+  },
+
+  fetchFootballUpcoming: async () => {
+    try {
+      const res = await fetch(`${FOOTBALL_BASE}/fixtures?next=10`, { headers });
+      const data = await res.json();
+      return data.response || [];
+    } catch (err) {
+      console.error('Football Upcoming Fetch Error:', err);
+      return [];
+    }
+  },
+
   fetchFootballLeagues: async () => {
     try {
       const res = await fetch(`${FOOTBALL_BASE}/leagues?current=true`, { headers });
