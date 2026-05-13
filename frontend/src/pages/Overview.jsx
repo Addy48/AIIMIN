@@ -41,6 +41,8 @@ const GOALS_2026 = [
   { id: 4, title: 'Skills Mastery', emoji: '🧠', target: 'DSA + System Design', progress: 55, color: '#A855F7' },
 ];
 
+const ONE_PRIORITY = 'Solve 2 Leetcode mediums before 2pm';
+
 /* ── sub-components ──────────────────────────── */
 const DayProgressBar = ({ isDark }) => {
   const [pct, setPct] = useState(0);
@@ -82,9 +84,9 @@ const WeekGrid = ({ isDark }) => {
         const bg = isToday ? 'var(--color-accent)' : isPast && s > 0 ? (isDark ? 'rgba(34,197,94,0.12)' : 'rgba(30,92,58,0.08)') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)');
         const textColor = isToday ? '#fff' : isPast && s > 0 ? 'var(--color-accent)' : 'var(--color-text-3)';
         return (
-          <div key={d} style={{ background: bg, border:`1px solid ${isToday ? 'transparent' : 'var(--color-border)'}`, borderRadius:'10px', padding:'12px 8px', textAlign:'center', transition:'all 200ms' }}>
-            <div style={{ fontSize:'10px', fontWeight:700, color: isToday ? 'rgba(255,255,255,0.7)' : 'var(--color-text-3)', textTransform:'uppercase', marginBottom:'6px' }}>{d}</div>
-            <div style={{ fontSize:'15px', fontWeight:800, color: textColor }}>{isToday ? '→' : s > 0 ? `${s}%` : '·'}</div>
+          <div key={d} style={{ background: bg, border:`1px solid ${isToday ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius:'10px', padding:'12px 8px', textAlign:'center', transition:'all 200ms' }}>
+            <div style={{ fontSize:'10px', fontWeight:700, color: isToday ? 'rgba(255,255,255,0.8)' : 'var(--color-text-3)', textTransform:'uppercase', marginBottom:'6px' }}>{d}</div>
+            <div style={{ fontSize:'15px', fontWeight:800, color: textColor }}>{isToday ? '→' : isPast && s > 0 ? `${s}%` : '·'}</div>
           </div>
         );
       })}
@@ -199,15 +201,25 @@ const Overview = ({ user }) => {
       <DayProgressBar isDark={isDark} />
 
       {/* ── HERO HEADER ── */}
-      <div style={{ marginBottom:'40px' }}>
-        <div style={{ fontSize:'11px', fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--color-text-3)', marginBottom:'10px' }}>
-          {dateStr} · {daysToPlacement}d to placement
+      <div style={{ marginBottom:'36px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'14px' }}>
+          <div style={{ fontSize:'11px', fontWeight:700, letterSpacing:'0.18em', textTransform:'uppercase', color:'var(--color-text-3)' }}>{dateStr}</div>
+          <div style={{ padding:'3px 10px', borderRadius:'99px', background: isDark?'rgba(34,197,94,0.12)':'rgba(30,92,58,0.08)', border:'1px solid var(--color-accent)', fontSize:'10px', fontWeight:800, color:'var(--color-accent)', letterSpacing:'0.08em' }}>
+            {daysToPlacement}d to placement
+          </div>
         </div>
-        <h1 style={{ fontSize:'52px', fontWeight:500, color:'var(--color-text-1)', margin:0, letterSpacing:'-0.03em', lineHeight:1.05, fontFamily:'var(--font-serif)' }}>
+        <h1 style={{ fontSize:'48px', fontWeight:500, color:'var(--color-text-1)', margin:'0 0 14px', letterSpacing:'-0.03em', lineHeight:1.05, fontFamily:'var(--font-serif)' }}>
           {greeting} {firstName}.
         </h1>
-        <p style={{ fontSize:'15px', color:'var(--color-text-3)', marginTop:'12px', fontStyle:'italic', fontFamily:'var(--font-serif)', letterSpacing:'-0.01em' }}>
-          "{DAILY_QUOTES[quoteIdx]}"
+        <div style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', background: isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.025)', border:'1px solid var(--color-border)', borderLeft:'3px solid var(--color-accent)', borderRadius:'0 10px 10px 0' }}>
+          <span style={{ fontSize:'16px' }}>⚡</span>
+          <div>
+            <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-3)', marginBottom:'2px' }}>One Priority</div>
+            <div style={{ fontSize:'14px', fontWeight:600, color:'var(--color-text-1)', fontFamily:'var(--font-sans)' }}>{ONE_PRIORITY}</div>
+          </div>
+        </div>
+        <p style={{ fontSize:'14px', color:'var(--color-text-3)', marginTop:'14px', fontStyle:'italic', fontFamily:'var(--font-serif)', letterSpacing:'-0.01em', margin:'14px 0 0' }}>
+          &ldquo;{DAILY_QUOTES[quoteIdx]}&rdquo;
         </p>
       </div>
 
@@ -228,7 +240,7 @@ const Overview = ({ user }) => {
       </div>
 
       {/* ── MAIN GRID: Left col (tasks + habits) | Right col (goals + weekly) ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 380px', gap:'24px', alignItems:'start' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 360px', gap:'24px', alignItems:'start' }}>
 
         {/* LEFT */}
         <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
