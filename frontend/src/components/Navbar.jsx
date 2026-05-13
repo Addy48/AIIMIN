@@ -4,6 +4,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { useThemeContext } from '../context/ThemeContext';
 import NotificationBell from './notifications/NotificationBell';
 import AccountModal from './account/AccountModal';
+import Logo from './Logo';
 
 /* ── Slim nav — 6 primary links ───────────────────────────── */
 const NAV_LINKS = [
@@ -49,19 +50,11 @@ const Navbar = ({ user }) => {
 
         {/* LEFT: Brand */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <Link to="/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '24px', height: '24px', background: '#23503B', borderRadius: '6px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              <svg width="12" height="12" viewBox="0 0 18 18" fill="none">
-                <path d="M9 2.5 L3.5 14.5 L5.5 14.5 L6.8 11.2 L11.2 11.2 L12.5 14.5 L14.5 14.5 Z" fill="white" fillOpacity="0.95" />
-                <path d="M7.5 9.5 L9 6 L10.5 9.5 Z" fill="#23503B" />
-              </svg>
-            </div>
+          <Link to="/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Logo size={28} />
             <span style={{
-              fontSize: '14px', fontWeight: 600, letterSpacing: '-0.02em', fontStyle: 'italic',
-              color: isDark ? '#EDEDED' : '#1A1A1A', fontFamily: 'var(--font-sans)',
+              fontSize: '16px', fontWeight: 700, letterSpacing: '-0.03em',
+              color: isDark ? '#FFFFFF' : '#000000', fontFamily: 'var(--font-sans)',
             }}>AIIMIN</span>
           </Link>
         </div>

@@ -267,81 +267,107 @@ export default function Placements() {
           {/* Kanban Board */}
           <div style={{ 
             display: 'flex', 
-            gap: '20px', 
+            gap: '24px', 
             overflowX: 'auto', 
             paddingBottom: '32px', 
             minHeight: '60vh',
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'var(--border) transparent'
+            padding: '4px',
+            scrollbarWidth: 'none'
           }}>
             {Object.keys(STATUS_CONFIG).map(statusKey => {
               const columnApps = filteredApps.filter(a => a.status === statusKey);
               const config = STATUS_CONFIG[statusKey];
               
               return (
-                <div key={statusKey} style={{ flex: '0 0 320px', display: 'flex', flexDirection: 'column' }}>
+                <div key={statusKey} style={{ flex: '0 0 340px', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'space-between',
-                    padding: '12px 16px',
+                    padding: '16px 20px',
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px 12px 0 0',
                     borderBottom: `2px solid ${config.color}`,
                     marginBottom: '16px'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px' }}>{config.icon}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{config.label}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '16px' }}>{config.icon}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-1)' }}>{config.label}</span>
                     </div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 700, background: 'var(--bg-elevated)', padding: '2px 8px', borderRadius: '10px' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 800, background: 'var(--color-elevated)', padding: '2px 8px', borderRadius: '20px', border: '1px solid var(--color-border)' }}>
                       {columnApps.length}
                     </span>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {columnApps.map(app => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {columnApps.length === 0 ? (
+                      <div style={{ padding: '40px 20px', textAlign: 'center', border: '1px dashed var(--color-border)', borderRadius: '12px', color: 'var(--color-text-3)', fontSize: '12px' }}>
+                        No tracks here
+                      </div>
+                    ) : columnApps.map(app => (
                       <motion.div 
                         layout
                         key={app.id} 
                         className="kanban-card"
-                        whileHover={{ y: -4 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ y: -4, borderColor: 'var(--color-text-1)', boxShadow: '0 12px 24px rgba(0,0,0,0.05)' }}
+                        style={{
+                          background: 'var(--color-surface)',
+                          border: '1px solid var(--color-border)',
+                          borderRadius: '12px',
+                          padding: '20px',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                          <div>
-                            <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-1)' }}>{app.company_name}</div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-2)', marginTop: '2px' }}>{app.role_title}</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)', letterSpacing: '-0.01em' }}>{app.company_name}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--color-text-2)', marginTop: '4px', fontWeight: 500 }}>{app.role_title}</div>
                           </div>
                           <button 
                             onClick={() => { setEditingApp(app); setAppForm(app); setShowAppModal(true); }}
-                            style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}
+                            style={{ background: 'none', border: 'none', opacity: 0.4, cursor: 'pointer', fontSize: '14px' }}
                           >
                             ⚙️
                           </button>
                         </div>
 
                         {app.notes && (
-                          <div style={{ fontSize: '11px', color: 'var(--text-3)', marginBottom: '16px', fontStyle: 'italic', lineHeight: '1.4' }}>
-                            "{app.notes.length > 80 ? app.notes.substring(0, 80) + '...' : app.notes}"
-                          </div>
+                          <p style={{ fontSize: '11px', color: 'var(--color-text-3)', marginBottom: '16px', lineHeight: '1.5', fontStyle: 'italic' }}>
+                            "{app.notes.length > 60 ? app.notes.substring(0, 60) + '...' : app.notes}"
+                          </p>
                         )}
 
-                        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                          {app.linkedin_url && <a href={app.linkedin_url} target="_blank" rel="noreferrer" className="app-link">LinkedIn</a>}
-                          {app.job_post_url && <a href={app.job_post_url} target="_blank" rel="noreferrer" className="app-link">Posting</a>}
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                          {app.job_post_url && (
+                             <a href={app.job_post_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '4px 8px', borderRadius: '4px', textDecoration: 'none', border: '1px solid var(--color-border)' }}>
+                               Posting ↗
+                             </a>
+                          )}
+                          {app.linkedin_url && (
+                             <a href={app.linkedin_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '4px 8px', borderRadius: '4px', textDecoration: 'none', border: '1px solid var(--color-border)' }}>
+                               LinkedIn ↗
+                             </a>
+                          )}
                         </div>
 
-                        <div className="card-actions">
+                        <div style={{ display: 'flex', gap: '6px', paddingTop: '12px', borderTop: '1px solid var(--color-border)' }}>
                           {Object.keys(STATUS_CONFIG).filter(s => s !== statusKey).map(s => (
                             <button 
                               key={s} 
-                              onClick={() => updateStatus(app.id, s)}
-                              style={{ color: STATUS_CONFIG[s].color }}
+                              onClick={e => { e.stopPropagation(); updateStatus(app.id, s); }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', filter: 'grayscale(1)', opacity: 0.3 }}
                               title={`Move to ${s}`}
                             >
                               {STATUS_CONFIG[s].icon}
                             </button>
                           ))}
                           <div style={{ flex: 1 }} />
-                          <button onClick={() => deleteApplication(app.id)} style={{ color: 'var(--color-rust)', opacity: 0.5 }}>🗑️</button>
+                          <button onClick={e => { e.stopPropagation(); deleteApplication(app.id); }} style={{ background: 'none', border: 'none', opacity: 0.3, cursor: 'pointer', fontSize: '12px' }}>🗑️</button>
                         </div>
                       </motion.div>
                     ))}
