@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
+import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 import TypingTest from '../components/lab/TypingTest';
 import ReactionTest from '../components/lab/ReactionTest';

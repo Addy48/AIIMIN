@@ -1,10 +1,23 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Upload, X, CheckCircle2, AlertCircle, FileSpreadsheet, Plus } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { 
+  Plus, Upload, Filter, Search, Download, Calendar, ArrowUpRight, ArrowDownLeft, 
+  Wallet, CreditCard, PieChart, TrendingUp, CheckCircle2, ChevronRight, X, 
+  AlertCircle, FileText, Settings, HelpCircle, Activity, Heart, Flame, Timer, Zap, MapPin,
+  FileSpreadsheet
+} from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
+import toast from '../utils/toast';
+import { insertRow, getRows } from '../services/dbService';
+import { EXPENSE_CATS } from '../components/money/MoneyShared';
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, Cell, PieChart as RePieChart, Pie 
+} from 'recharts';
+
+// XLSX is loaded via CDN in index.html to avoid build-time dependency issues
+const XLSX = typeof window !== 'undefined' ? (window.XLSX || null) : null;
 
 const Finance = () => {
   const { user } = useAuth();
@@ -15,14 +28,35 @@ const Finance = () => {
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Import State
+  // Import & Entry State
   const [importOpen, setImportOpen] = useState(false);
+  const [entryOpen, setEntryOpen] = useState(false);
+  const [entryType, setEntryType] = useState('expense'); // Default type for the modal
   const [importStatus, setImportStatus] = useState('idle'); // idle | processing | success | error
   const [dragActive, setDragActive] = useState(false);
 
   // Excel Import Logic
+  const parseExcelDate = (val) => {
+    if (!val) return new Date().toISOString().split('T')[0];
+    if (typeof val === 'number') {
+      // Excel serial date to JS date
+      const date = new Date((val - 25569) * 86400 * 1000);
+      return date.toISOString().split('T')[0];
+    }
+    // Try parsing string
+    try {
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+    } catch (e) {}
+    return new Date().toISOString().split('T')[0];
+  };
+
   const handleFileUpload = (file) => {
     if (!file) return;
+    if (!XLSX) {
+      toast.error('Excel engine is still initializing. Please wait a moment.');
+      return;
+    }
     setImportStatus('processing');
     
     const reader = new FileReader();
@@ -37,10 +71,10 @@ const Finance = () => {
         // Transform Excel data to transaction objects
         const newTransactions = jsonData.map((row, i) => ({
           id: `import-${Date.now()}-${i}`,
-          date: row.Date || row.date || new Date().toISOString().split('T')[0],
-          amount: Math.abs(parseFloat(row.Amount || row.amount || 0)),
-          category: row.Category || row.category || 'Other',
-          description: row.Note || row.note || row.Description || row.description || '',
+          date: parseExcelDate(row.Date || row.date || row.DATE),
+          amount: Math.abs(parseFloat(row.Amount || row.amount || row.AMOUNT || 0)),
+          category: row.Category || row.category || row.CATEGORY || 'Other',
+          description: row.Note || row.note || row.Description || row.description || row.NOTE || '',
           type: (row.Type || row.type || row.Category || '').toLowerCase().includes('inc') ? 'income' : 'expense'
         })).filter(t => t.amount > 0);
 
@@ -216,30 +250,35 @@ const Finance = () => {
             >
               <Upload size={16} /> Import Sheet
             </button>
-            <button style={{
-              background: 'var(--color-text-1)',
-              color: 'var(--color-base)',
-              border: 'none',
-              padding: '12px 24px',
-              borderRadius: '12px',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            }}
-            onMouseEnter={e => {
-                e.currentTarget.style.opacity = '0.9';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
-            }}
-            onMouseLeave={e => {
-                e.currentTarget.style.opacity = '1';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-            }}
+            <button 
+              onClick={() => {
+                setEntryType('expense');
+                setEntryOpen(true);
+              }}
+              style={{
+                background: 'var(--color-text-1)',
+                color: 'var(--color-base)',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '12px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              }}
+              onMouseEnter={e => {
+                  e.currentTarget.style.opacity = '0.9';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
+              }}
+              onMouseLeave={e => {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+              }}
             >
               <Plus size={18} /> New Entry
             </button>
@@ -355,6 +394,30 @@ const Finance = () => {
 
           {activeTab === 'TRANSACTIONS' && (
             <motion.div key="transactions" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>Recent Activity</h3>
+                <button 
+                  onClick={() => {
+                    setEntryType('expense');
+                    setEntryOpen(true);
+                  }}
+                  style={{
+                    background: 'var(--bg-elevated)',
+                    border: '1px solid var(--color-border)',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    color: 'var(--text-1)'
+                  }}
+                >
+                  <Plus size={14} /> Add Transaction
+                </button>
+              </div>
               <div className="nordic-card" style={{ padding: '0', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
@@ -576,6 +639,48 @@ const Finance = () => {
         </AnimatePresence>
       )}
 
+      {/* Manual Entry Modal */}
+      <AnimatePresence>
+        {entryOpen && (
+          <div 
+            onClick={() => setEntryOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '500px', background: 'var(--color-base)', borderRadius: '24px', border: '1px solid var(--color-border)',
+                padding: '40px', position: 'relative', boxShadow: '0 30px 60px rgba(0,0,0,0.3)',
+                maxHeight: '90vh', overflowY: 'auto'
+              }}
+            >
+              <button onClick={() => setEntryOpen(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+
+              <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-text-1)', marginBottom: '32px', fontFamily: 'var(--font-serif)' }}>Record Entry</h2>
+
+              <EntryForm 
+                user={user} 
+                accounts={accounts} 
+                initialType={entryType}
+                onSuccess={() => {
+                  setEntryOpen(false);
+                  loadFinanceData();
+                  toast.success('Entry synchronized.');
+                }} 
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Excel Import Modal */}
       <AnimatePresence>
         {importOpen && (
@@ -677,6 +782,259 @@ const Finance = () => {
         div::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
+  );
+};
+
+const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
+  const [type, setType] = useState(initialType || 'expense');
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
+  const [note, setNote] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [accountId, setAccountId] = useState('');
+  const [targetAccountId, setTargetAccountId] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // Sync default account when accounts load
+  useEffect(() => {
+    if (accounts?.length > 0 && !accountId) {
+      setAccountId(accounts[0].id);
+    }
+  }, [accounts]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!amount || isNaN(amount)) {
+      toast.error('Valid amount required.');
+      return;
+    }
+    setSaving(true);
+
+    const hourIST = new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata', hour: 'numeric', hour12: false });
+
+    try {
+      if (type === 'transfer') {
+        if (!accountId || !targetAccountId) {
+          toast.error('Source and target accounts required.');
+          setSaving(false);
+          return;
+        }
+        
+        const transferAmt = Math.abs(parseFloat(amount));
+        const refNote = note.trim() || 'Internal Transfer';
+
+        // Log outflow from source
+        await insertRow('money_transactions', {
+          user_id: user.id,
+          date: date,
+          category: 'Transfer',
+          description: `To: ${accounts.find(a => a.id === targetAccountId)?.name} — ${refNote}`,
+          amount: -transferAmt,
+          source: 'manual',
+          currency: 'INR',
+          type: 'transfer',
+          account_id: accountId,
+          time_of_day: hourIST,
+        });
+
+        // Log inflow to target
+        await insertRow('money_transactions', {
+          user_id: user.id,
+          date: date,
+          category: 'Transfer',
+          description: `From: ${accounts.find(a => a.id === accountId)?.name} — ${refNote}`,
+          amount: transferAmt,
+          source: 'manual',
+          currency: 'INR',
+          type: 'transfer',
+          account_id: targetAccountId,
+          time_of_day: hourIST,
+        });
+      } else {
+        let finalAmount = parseFloat(amount);
+        if (type === 'expense') finalAmount = -Math.abs(finalAmount);
+        else finalAmount = Math.abs(finalAmount);
+
+        await insertRow('money_transactions', {
+          user_id: user.id,
+          date: date,
+          category: category || (type === 'income' ? 'Income' : 'Other'),
+          description: note.trim() || null,
+          amount: finalAmount,
+          source: 'manual',
+          currency: 'INR',
+          type: type,
+          account_id: accountId || null,
+          time_of_day: hourIST,
+        });
+      }
+
+      onSuccess();
+    } catch (err) {
+      console.error(err);
+      toast.error('Synchronization failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Type Toggle */}
+      <div style={{ display: 'flex', background: 'var(--bg-elevated)', borderRadius: '12px', padding: '4px', border: '1px solid var(--color-border)' }}>
+        {['expense', 'income', 'transfer'].map(t => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setType(t)}
+            style={{
+              flex: 1, padding: '10px', borderRadius: '8px', border: 'none',
+              background: type === t ? 'var(--color-text-1)' : 'transparent',
+              color: type === t ? 'var(--color-base)' : 'var(--color-text-3)',
+              fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s'
+            }}
+          >
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Amount and Date row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '16px' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>Amount (INR)</label>
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', opacity: 0.3 }}>₹</span>
+            <input 
+              type="number" step="0.01" autoFocus placeholder="0.00"
+              value={amount} onChange={e => setAmount(e.target.value)}
+              style={{
+                width: '100%', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px',
+                padding: '14px 16px 14px 36px', fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-serif)', color: 'var(--color-text-1)',
+                outline: 'none'
+              }}
+            />
+          </div>
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>Date</label>
+          <input 
+            type="date"
+            value={date} onChange={e => setDate(e.target.value)}
+            style={{
+              width: '100%', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px',
+              padding: '14px 12px', fontSize: '14px', color: 'var(--color-text-1)', outline: 'none'
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Account Selection */}
+      <div>
+        <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '12px' }}>
+          {type === 'transfer' ? 'Source Account' : 'Account'}
+        </label>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {accounts.map(a => (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => setAccountId(a.id)}
+              style={{
+                padding: '8px 16px', borderRadius: '10px', border: '1px solid',
+                borderColor: accountId === a.id ? 'var(--color-text-1)' : 'var(--color-border)',
+                background: accountId === a.id ? 'var(--color-text-1)' : 'var(--bg-elevated)',
+                color: accountId === a.id ? 'var(--color-base)' : 'var(--color-text-2)',
+                fontSize: '12px', fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s',
+                display: 'flex', alignItems: 'center', gap: '6px'
+              }}
+            >
+              <span style={{ fontSize: '14px' }}>{a.icon || '🏦'}</span> {a.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Target Account (Transfers Only) */}
+      {type === 'transfer' && (
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '12px' }}>Target Account</label>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {accounts.filter(a => a.id !== accountId).map(a => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => setTargetAccountId(a.id)}
+                style={{
+                  padding: '8px 16px', borderRadius: '10px', border: '1px solid',
+                  borderColor: targetAccountId === a.id ? 'var(--color-accent)' : 'var(--color-border)',
+                  background: targetAccountId === a.id ? 'var(--color-accent)' : 'var(--bg-elevated)',
+                  color: targetAccountId === a.id ? '#fff' : 'var(--color-text-2)',
+                  fontSize: '12px', fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: '6px'
+                }}
+              >
+                <span style={{ fontSize: '14px' }}>{a.icon || '🏦'}</span> {a.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Category Selection (Expenses) */}
+      {type === 'expense' && (
+        <div>
+          <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '12px' }}>Category</label>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+            {EXPENSE_CATS.map(cat => (
+              <button
+                key={cat.name}
+                type="button"
+                onClick={() => setCategory(cat.name)}
+                style={{
+                  padding: '12px 8px', borderRadius: '12px', border: '1px solid',
+                  borderColor: category === cat.name ? cat.color : 'var(--color-border)',
+                  background: category === cat.name ? `${cat.color}15` : 'var(--bg-elevated)',
+                  color: category === cat.name ? cat.color : 'var(--color-text-2)',
+                  cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <span style={{ fontSize: '20px' }}>{cat.icon}</span>
+                <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cat.name.split(' ')[0]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Note */}
+      <div>
+        <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>Reference Note</label>
+        <input 
+          type="text" placeholder="Swiggy, Amazon, Rent..."
+          value={note} onChange={e => setNote(e.target.value)}
+          style={{
+            width: '100%', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px',
+            padding: '12px 16px', fontSize: '14px', color: 'var(--color-text-1)', outline: 'none'
+          }}
+        />
+      </div>
+
+      <button 
+        type="submit" disabled={saving}
+        style={{
+          marginTop: '8px', padding: '16px', borderRadius: '16px', border: 'none',
+          background: 'var(--color-text-1)', color: 'var(--color-base)',
+          fontSize: '15px', fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer',
+          transition: 'all 0.3s', opacity: saving ? 0.7 : 1,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px'
+        }}
+      >
+        {saving ? <div className="spinner" style={{ width: '16px', height: '16px', borderColor: 'var(--color-base)', borderTopColor: 'transparent' }} /> : <CheckCircle2 size={18} />}
+        Sync to Ledger
+      </button>
+    </form>
   );
 };
 

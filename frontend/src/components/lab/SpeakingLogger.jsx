@@ -296,7 +296,7 @@ export default function SpeakingLogger({ onComplete }) {
                             maxWidth: '400px',
                             margin: '0 auto 40px'
                         }}>
-                            "{SPEAKING_PROMPTS[promptIndex]}"
+                            "{prompts[promptIndex]}"
                         </p>
                         <button 
                             onClick={stopRecording} 
