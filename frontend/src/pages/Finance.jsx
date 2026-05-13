@@ -1,7 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../utils/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const Finance = () => {
   const { user } = useAuth();
@@ -150,7 +148,7 @@ const Finance = () => {
         overflowX: 'auto',
         scrollbarWidth: 'none',
       }}>
-        {['OVERVIEW', 'ACCOUNTS', 'TRANSACTIONS'].map(tab => (
+        {['OVERVIEW', 'ACCOUNTS', 'TRANSACTIONS', 'BUDGETS', 'WEALTH'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -335,8 +333,30 @@ const Finance = () => {
                 {/* Detailed Asset Breakdown */}
                 <div className="nordic-card" style={{ padding: '40px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-serif)' }}>Asset Allocation</h3>
-                    <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Target: 60% Equity / 40% Safe</div>
+                    <h3 style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-serif)' }}>Portfolio Allocation</h3>
+                    <div style={{ height: '200px', width: '200px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Mutual Funds', value: assetBreakdown.mutual_fund },
+                              { name: 'Gold', value: assetBreakdown.gold },
+                              { name: 'Equity', value: assetBreakdown.stock },
+                              { name: 'Bank', value: assetBreakdown.bank },
+                              { name: 'Cash', value: assetBreakdown.cash + assetBreakdown.crypto },
+                            ]}
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {['#10B981', '#D4AF37', '#8B5CF6', '#3B82F6', '#059669'].map((col, i) => (
+                              <Cell key={i} fill={col} stroke="none" />
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
                   
                   <div style={{ display: 'grid', gap: '32px' }}>
@@ -370,17 +390,9 @@ const Finance = () => {
                             </div>
                             <div style={{ textAlign: 'right' }}>
                               <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: 'var(--font-serif)' }}>{formatCurrency(item.value)}</div>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                                <div style={{ display: 'flex', gap: '2px', alignItems: 'flex-end', height: '12px', marginBottom: '2px' }}>
-                                  {[3, 5, 4, 7, 6, 8, 9].map((h, i) => (
-                                    <div key={i} style={{ width: '2px', height: `${h * 10}%`, background: item.trend.startsWith('+') ? '#10B981' : 'var(--text-3)', opacity: 0.5 }} />
-                                  ))}
-                                </div>
-                                <div style={{ fontSize: '10px', color: item.trend.startsWith('+') ? '#10B981' : 'var(--text-3)', fontWeight: 700 }}>{item.trend}</div>
-                              </div>
+                              <div style={{ fontSize: '10px', color: item.trend.startsWith('+') ? '#10B981' : 'var(--text-3)', fontWeight: 700 }}>{item.trend}</div>
                             </div>
                           </div>
-                          {/* Mini Progress Bar */}
                           <div style={{ height: '6px', background: 'var(--bg-elevated)', borderRadius: '3px', overflow: 'hidden', marginTop: '12px' }}>
                             <motion.div 
                               initial={{ width: 0 }}
@@ -395,33 +407,32 @@ const Finance = () => {
                   </div>
                 </div>
 
-                {/* Right Column: Strategy & Growth */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                  {/* Wealth Trend Sparkline Card */}
-                  <div className="nordic-card" style={{ padding: '32px' }}>
+                  <div className="nordic-card" style={{ padding: '32px', height: '300px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                      <h3 style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)' }}>30D Net Worth Trend</h3>
-                      <span style={{ fontSize: '12px', color: '#10B981', fontWeight: 600 }}>↗ 4.2%</span>
+                      <h3 style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)' }}>Net Worth Projection</h3>
                     </div>
-                    <div style={{ height: '80px', display: 'flex', alignItems: 'flex-end', gap: '4px', padding: '0 4px' }}>
-                      {[40, 45, 42, 48, 55, 52, 58, 62, 60, 65, 70, 68, 75, 82, 85, 80, 88, 92, 95, 90, 98, 100].map((h, i) => (
-                        <motion.div 
-                          key={i}
-                          initial={{ height: 0 }}
-                          animate={{ height: `${h}%` }}
-                          transition={{ delay: i * 0.02, duration: 0.5 }}
-                          style={{ 
-                            flex: 1, 
-                            background: i === 21 ? 'var(--accent)' : 'var(--accent-dim)', 
-                            borderRadius: '2px 2px 0 0',
-                            opacity: 0.3 + (h / 150)
-                          }} 
-                        />
-                      ))}
-                    </div>
+                    <ResponsiveContainer width="100%" height="80%">
+                      <AreaChart data={[
+                        { name: 'Jan', value: totalNetWorth * 0.8 },
+                        { name: 'Feb', value: totalNetWorth * 0.85 },
+                        { name: 'Mar', value: totalNetWorth * 0.92 },
+                        { name: 'Apr', value: totalNetWorth },
+                        { name: 'May', value: totalNetWorth * 1.05 },
+                        { name: 'Jun', value: totalNetWorth * 1.15 },
+                      ]}>
+                        <defs>
+                          <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <Tooltip />
+                        <Area type="monotone" dataKey="value" stroke="var(--color-accent)" fillOpacity={1} fill="url(#colorVal)" />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   </div>
 
-                  {/* Freshman Strategy Card */}
                   <div className="nordic-card" style={{ 
                     padding: '32px', 
                     background: 'var(--color-card-dark-green)', 
@@ -431,7 +442,7 @@ const Finance = () => {
                     overflow: 'hidden'
                   }}>
                     <div style={{ position: 'relative', zIndex: 1 }}>
-                      <h3 style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '24px', opacity: 0.8 }}>Strategic Insight · Age 23</h3>
+                      <h3 style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '24px', opacity: 0.8 }}>Strategic Insight</h3>
                       <div style={{ fontSize: '18px', fontFamily: 'var(--font-serif)', lineHeight: '1.5', marginBottom: '24px' }}>
                         "Your current savings rate is <b>32%</b>. Increasing this to 40% will shorten your financial freedom timeline by <b>4.5 years</b>."
                       </div>
@@ -443,33 +454,11 @@ const Finance = () => {
                             <span style={{ color: 'var(--accent)' }}>●</span> Start a recurring SIP for Gold (min ₹5k)
                           </li>
                           <li style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
-                            <span style={{ color: 'var(--accent)' }}>●</span> Maximize 80C benefits before March
-                          </li>
-                          <li style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
                             <span style={{ color: 'var(--accent)' }}>●</span> Move excess cash to Liquid Funds
                           </li>
                         </ul>
                       </div>
                     </div>
-                    {/* Decorative element */}
-                    <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', background: 'var(--accent)', filter: 'blur(60px)', opacity: 0.3 }} />
-                  </div>
-
-                  {/* Diversification Score */}
-                  <div className="nordic-card" style={{ padding: '32px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                      <h3 style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)' }}>Diversification</h3>
-                      <span style={{ fontSize: '12px', fontWeight: 700, color: '#10B981' }}>OPTIMAL</span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px', height: '40px', marginBottom: '24px' }}>
-                      <div style={{ flex: (assetBreakdown.stock / totalNetWorth) * 10, background: '#8B5CF6', borderRadius: '4px' }} title="Stocks" />
-                      <div style={{ flex: (assetBreakdown.mutual_fund / totalNetWorth) * 10, background: '#10B981', borderRadius: '4px' }} title="MF" />
-                      <div style={{ flex: (assetBreakdown.gold / totalNetWorth) * 10, background: '#D4AF37', borderRadius: '4px' }} title="Gold" />
-                      <div style={{ flex: (assetBreakdown.bank / totalNetWorth) * 10, background: '#3B82F6', borderRadius: '4px' }} title="Cash" />
-                    </div>
-                    <p style={{ fontSize: '12px', color: 'var(--text-2)', lineHeight: '1.6', margin: 0 }}>
-                      Your portfolio has a strong bias towards <b>Equity ({((assetBreakdown.stock + assetBreakdown.mutual_fund) / totalNetWorth * 100).toFixed(0)}%)</b>, which is ideal for your age group to maximize compounding.
-                    </p>
                   </div>
                 </div>
               </div>
