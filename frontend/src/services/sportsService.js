@@ -2,7 +2,7 @@ const FOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const F1_BASE = 'https://v1.formula-1.api-sports.io';
 const CRICKET_BASE = 'https://api.cricapi.com/v1'; // Assuming cricapi/cricketdata
 
-const SPORTS_KEY = process.env.REACT_APP_SPORTS_API_KEY;
+const SPORTS_KEY = process.env.REACT_APP_SPORTS_API_KEY || '67254d96ff7b92022b8fbc9382a293b3';
 const CRICKET_KEY = process.env.REACT_APP_CRICKET_API_KEY;
 
 const headers = {
