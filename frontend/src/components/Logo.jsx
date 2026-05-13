@@ -1,29 +1,27 @@
 import React from 'react';
 
+/**
+ * AIIMIN Logo — uses the official A-mark from logo-symbol.svg
+ * The mark is a bold geometric "A" with a crossbar gap, representing
+ * Adaptive Intelligence & Identity Management.
+ */
 export default function Logo({ size = 36 }) {
     return (
-        <svg 
-            width={size} 
-            height={size} 
-            viewBox="0 0 100 100" 
-            fill="none" 
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 512 512"
+            fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ display: "block" }}
+            style={{ display: 'block', flexShrink: 0 }}
         >
-            {/* Stylized A - Left Pillar */}
-            <path 
-                d="M32 85L48 20H40L24 85H32Z" 
-                fill="currentColor" 
-            />
-            {/* Stylized A - Right Pillar */}
-            <path 
-                d="M68 85L52 20H60L76 85H68Z" 
-                fill="currentColor" 
-            />
-            {/* Central Sparkle/Star */}
-            <path 
-                d="M50 32C50 42 54 45 62 45C54 45 50 48 50 58C50 48 46 45 38 45C46 45 50 42 50 32Z" 
-                fill="currentColor" 
+            {/* Green rounded square background */}
+            <rect width="512" height="512" rx="120" fill="#23503B" />
+
+            {/* White A mark — clean geometric letterform */}
+            <path
+                d="M256 88L96 424h72l28-64h120l28 64h72L256 88zm-36 218l36-84 36 84H220z"
+                fill="#FFFFFF"
             />
         </svg>
     );

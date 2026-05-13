@@ -359,7 +359,6 @@ export default function LabFullPage() {
   const [todayMindset, setTodayMindset] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const bg = isDark ? '#0A0A0A' : '#F9FAFB';
   const cardBg = isDark ? '#111' : '#fff';
   const border = isDark ? '#222' : '#e5e7eb';
   const text1 = isDark ? '#ededed' : '#111';
@@ -370,24 +369,14 @@ export default function LabFullPage() {
     if (!user) return;
     setLoading(true);
     try {
-      // Typing stats — last 7 days
-      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
       const [typingRes, mindsetRes] = await Promise.all([
-        supabase
-          .from('lab_typing_tests')
-          .select('wpm, accuracy_pct, day_of, test_invalid')
-          .eq('user_id', user.id)
-          .gte('day_of', weekAgo)
-          .order('wpm', { ascending: false }),
-        supabase
-          .from('lab_mindset_logs')
-          .select('state, logged_at, day_of')
-          .eq('user_id', user.id)
-          .eq('day_of', new Date().toISOString().split('T')[0])
-          .order('logged_at', { ascending: false })
-          .limit(1),
+        supabase.from("lab_typing_tests").select("wpm,accuracy_pct,day_of,test_invalid")
+          .eq("user_id", user.id).gte("day_of", weekAgo).order("wpm", { ascending: false }),
+        supabase.from("lab_mindset_logs").select("state,logged_at,day_of")
+          .eq("user_id", user.id).eq("day_of", new Date().toISOString().split("T")[0])
+          .order("logged_at", { ascending: false }).limit(1),
       ]);
-
       const validTests = (typingRes.data || []).filter(t => !t.test_invalid);
       const bestWpm = validTests.length > 0 ? Math.max(...validTests.map(t => t.wpm)) : null;
       const avgAccuracy = validTests.length > 0
@@ -395,120 +384,86 @@ export default function LabFullPage() {
         : null;
       setTypingStats({ bestWpm, avgAccuracy, testsThisWeek: validTests.length, totalTests: typingRes.data?.length || 0 });
       setTodayMindset((mindsetRes.data || [])[0] || null);
-    } catch (e) {
-      // silent fail — show empty state
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+    } catch (e) { /* silent */ }
+    finally { setLoading(false); }
+  }, [user]); // eslint-disable-line
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
   if (!user) return null;
 
   const modules = [
-    { key: 'typing',    emoji: '⌨️', label: 'Typing Speed',      desc: 'WPM & accuracy benchmark', color: '#3B82F6' },
-    { key: 'reaction',  emoji: '⚡', label: 'Reaction Time',      desc: '5 trials per session',     color: '#F59E0B' },
-    { key: 'speaking',  emoji: '🎙️', label: 'Speaking Logger',   desc: '60-second vocal response',  color: '#8B5CF6' },
-    { key: 'decisions', emoji: '🎯', label: 'Decision Scenario',  desc: '90-second reasoning test',  color: '#EC4899' },
-    { key: 'mindset',   emoji: '🧠', label: 'Mindset State',      desc: 'Today\'s mental state',     color: '#10B981' },
-    { key: 'beliefs',   emoji: '📋', label: 'Belief Inventory',   desc: 'Quarterly audit',           color: '#EF4444' },
+    { key: "typing",     emoji: "⌨️",  label: "Typing Speed",    desc: "WPM & accuracy benchmark",        color: "#3B82F6" },
+    { key: "speaking",   emoji: "🎙️", label: "Speaking Logger",  desc: "60-sec vocal response & review",  color: "#8B5CF6" },
+    { key: "reflection", emoji: "🪞",  label: "Daily Reflection", desc: "3-prompt end-of-day review",      color: "#22C55E" },
+    { key: "mood",       emoji: "🌡️", label: "Mood & Energy",    desc: "Rate mood, energy, focus (1-10)", color: "#F59E0B" },
+    { key: "habits",     emoji: "🔥",  label: "Habit Streaks",    desc: "Binary check-in & streak count",  color: "#EF4444" },
+    { key: "reading",    emoji: "📖",  label: "Reading Log",      desc: "Log books, articles & ratings",   color: "#10B981" },
   ];
 
   return (
     <div style={{ flex: 1 }}>
-      {/* Header */}
-      <div style={{ marginBottom: '36px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div style={{ marginBottom: "36px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div>
-          <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: text3, fontFamily: 'var(--font-sans)', marginBottom: '8px' }}>
-            Lab · Cognitive Benchmarks
+          <div style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: text3, marginBottom: "8px" }}>
+            Lab · Personal Development
           </div>
-          <h1 style={{ font: 'var(--text-hero)', color: text1, margin: 0, letterSpacing: '-0.02em' }}>
+          <h1 style={{ font: "var(--text-hero)", color: text1, margin: 0, letterSpacing: "-0.02em" }}>
             Iteration on self.
           </h1>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '11px', color: text3, fontFamily: 'var(--font-sans)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{modules.length} modules</div>
-        </div>
       </div>
 
-      {/* Quick stats strip */}
       {!loading && typingStats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "32px" }}>
           {[
-            { label: 'Best WPM (7d)', value: typingStats.bestWpm ?? '—', color: '#3B82F6' },
-            { label: 'Avg Accuracy', value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : '—', color: '#10B981' },
-            { label: 'Tests This Week', value: typingStats.testsThisWeek, color: '#F59E0B' },
-            { label: 'Mindset Today', value: todayMindset?.state ?? '—', color: '#8B5CF6' },
+            { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#3B82F6" },
+            { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#22C55E" },
+            { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#F59E0B" },
+            { label: "Mindset Today", value: todayMindset?.state ?? "—", color: "#8B5CF6" },
           ].map(stat => (
-            <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: '10px', padding: '16px', borderTop: `3px solid ${stat.color}` }}>
-              <div style={{ fontSize: '10px', fontWeight: 600, color: text3, fontFamily: 'var(--font-sans)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>{stat.label}</div>
-              <div style={{ fontSize: '22px', fontWeight: 700, color: text1, fontFamily: 'var(--font-sans)', letterSpacing: '-0.02em', lineHeight: 1, textTransform: 'capitalize' }}>{stat.value}</div>
+            <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "10px", padding: "16px", borderTop: `3px solid ${stat.color}` }}>
+              <div style={{ fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{stat.label}</div>
+              <div style={{ fontSize: "22px", fontWeight: 700, color: text1, letterSpacing: "-0.02em", lineHeight: 1, textTransform: "capitalize" }}>{stat.value}</div>
             </div>
           ))}
         </div>
       )}
-      {loading && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
-          {[1,2,3,4].map(i => <div key={i} style={{ height: '80px', background: cardBg, border: `1px solid ${border}`, borderRadius: '10px' }} />)}
-        </div>
-      )}
 
-      {/* Module grid */}
-      <div style={{ marginBottom: '24px', fontSize: '11px', fontWeight: 600, color: text3, fontFamily: 'var(--font-sans)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-        Modules
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+      <div style={{ marginBottom: "16px", fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em" }}>Modules</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
         {modules.map(m => (
-          <button
-            key={m.key}
-            onClick={() => setActiveModule(m.key)}
-            style={{
-              background: cardBg, border: `1px solid ${border}`, borderRadius: '12px',
-              padding: '20px', textAlign: 'left', cursor: 'pointer',
-              transition: 'all 150ms ease', borderLeft: `4px solid ${m.color}`,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = m.color; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = border; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderLeftColor = m.color; }}
-          >
-            <div style={{ fontSize: '22px', marginBottom: '10px' }}>{m.emoji}</div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '4px' }}>{m.label}</div>
-            <div style={{ fontSize: '11px', color: text2, fontFamily: 'var(--font-sans)' }}>{m.desc}</div>
+          <button key={m.key} onClick={() => setActiveModule(m.key)}
+            style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "14px", padding: "24px", textAlign: "left", cursor: "pointer", transition: "all 150ms ease", borderLeft: `4px solid ${m.color}` }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+            <div style={{ fontSize: "26px", marginBottom: "12px" }}>{m.emoji}</div>
+            <div style={{ fontSize: "14px", fontWeight: 700, color: text1, marginBottom: "5px" }}>{m.label}</div>
+            <div style={{ fontSize: "12px", color: text2 }}>{m.desc}</div>
           </button>
         ))}
       </div>
 
-      {/* Recent typing history */}
       {!loading && typingStats && typingStats.totalTests > 0 && (
-        <div style={{ marginTop: '32px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: text3, fontFamily: 'var(--font-sans)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '16px' }}>
-            Recent Tests This Week
-          </div>
+        <div style={{ marginTop: "32px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>Recent Typing Tests</div>
           <TypingHistory userId={user.id} isDark={isDark} cardBg={cardBg} border={border} text1={text1} text2={text2} text3={text3} />
         </div>
       )}
 
-      {/* Module modal */}
       {activeModule && (
-        <div
-          onClick={() => setActiveModule(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: '16px', width: '520px', maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.6)', position: 'relative' }}
-          >
-            <button
-              onClick={() => setActiveModule(null)}
-              style={{ position: 'absolute', top: '16px', right: '16px', width: '28px', height: '28px', borderRadius: '50%', border: `1px solid ${border}`, background: 'transparent', color: text2, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', zIndex: 1 }}
-            >✕</button>
-
-            {activeModule === 'typing' && <TypingTestSupabase userId={user.id} onComplete={() => { fetchStats(); }} />}
-            {activeModule === 'mindset' && <MindsetLoggerSupabase userId={user.id} currentState={todayMindset?.state} onComplete={() => { fetchStats(); setActiveModule(null); }} />}
-            {activeModule === 'reaction' && <ReactionTest onComplete={() => fetchStats()} />}
-            {activeModule === 'speaking' && <SpeakingLogger onComplete={() => fetchStats()} />}
-            {activeModule === 'decisions' && <DecisionScenario onComplete={() => fetchStats()} />}
-            {activeModule === 'beliefs' && <BeliefEntry onComplete={() => fetchStats()} />}
+        <div onClick={() => setActiveModule(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "18px", width: "560px", maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", position: "relative" }}>
+            <button onClick={() => setActiveModule(null)}
+              style={{ position: "absolute", top: "16px", right: "16px", width: "28px", height: "28px", borderRadius: "50%", border: `1px solid ${border}`, background: "transparent", color: text2, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", zIndex: 1 }}>✕</button>
+            {activeModule === "typing"     && <TypingTestSupabase userId={user.id} onComplete={() => fetchStats()} />}
+            {activeModule === "speaking"   && <SpeakingLogger onComplete={() => fetchStats()} />}
+            {activeModule === "reflection" && <DailyReflection isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+            {activeModule === "mood"       && <MoodEnergyTracker isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+            {activeModule === "habits"     && <HabitStreaks isDark={isDark} />}
+            {activeModule === "reading"    && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
           </div>
         </div>
       )}
@@ -516,45 +471,212 @@ export default function LabFullPage() {
   );
 }
 
-/* ── Typing history sub-component ───────────────────────────── */
-function TypingHistory({ userId, isDark, cardBg, border, text1, text2, text3 }) {
+function TypingHistory({ userId, cardBg, border, text1, text2, text3 }) {
   const [rows, setRows] = useState([]);
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
-
   useEffect(() => {
-    supabase
-      .from('lab_typing_tests')
-      .select('id, wpm, accuracy_pct, day_of, test_invalid')
-      .eq('user_id', userId)
-      .gte('day_of', weekAgo)
-      .order('day_of', { ascending: false })
-      .limit(10)
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
+    supabase.from("lab_typing_tests").select("id,wpm,accuracy_pct,day_of,test_invalid")
+      .eq("user_id", userId).gte("day_of", weekAgo).order("day_of", { ascending: false }).limit(10)
       .then(({ data }) => setRows(data || []));
   }, [userId]);
-
-  if (rows.length === 0) return null;
-
+  if (!rows.length) return null;
   return (
-    <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: '12px', overflow: 'hidden' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', padding: '10px 16px', borderBottom: `1px solid ${border}` }}>
-        {['Date', 'WPM', 'Accuracy', 'Status'].map(h => (
-          <div key={h} style={{ fontSize: '10px', fontWeight: 600, color: text3, fontFamily: 'var(--font-sans)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</div>
-        ))}
+    <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 80px 80px", padding: "10px 16px", borderBottom: `1px solid ${border}` }}>
+        {["Date","WPM","Accuracy","Status"].map(h => <div key={h} style={{ fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</div>)}
       </div>
       {rows.map(r => (
-        <div key={r.id} style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px', padding: '10px 16px', borderBottom: `1px solid ${border}` }}>
-          <div style={{ fontSize: '12px', color: text2, fontFamily: 'var(--font-sans)' }}>
-            {new Date(r.day_of).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
-          </div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>{r.wpm}</div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: Number(r.accuracy_pct) >= 95 ? '#22C55E' : '#f59e0b', fontFamily: 'var(--font-sans)' }}>
-            {Number(r.accuracy_pct).toFixed(1)}%
-          </div>
-          <div style={{ fontSize: '11px', color: r.test_invalid ? '#ef4444' : '#22C55E', fontFamily: 'var(--font-sans)', fontWeight: 500 }}>
-            {r.test_invalid ? 'Invalid' : 'Valid'}
-          </div>
+        <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1fr 80px 80px 80px", padding: "10px 16px", borderBottom: `1px solid ${border}` }}>
+          <div style={{ fontSize: "12px", color: text2 }}>{new Date(r.day_of).toLocaleDateString("en-IN",{month:"short",day:"numeric"})}</div>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: text1 }}>{r.wpm}</div>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: Number(r.accuracy_pct)>=95?"#22C55E":"#f59e0b" }}>{Number(r.accuracy_pct).toFixed(1)}%</div>
+          <div style={{ fontSize: "11px", color: r.test_invalid?"#ef4444":"#22C55E", fontWeight: 500 }}>{r.test_invalid?"Invalid":"Valid"}</div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function DailyReflection({ isDark, onClose }) {
+  const PROMPTS = [
+    { key: "win",       q: "What did I do really well today?", emoji: "🏆" },
+    { key: "improve",   q: "What could I have done better?",   emoji: "📈" },
+    { key: "gratitude", q: "What am I grateful for today?",    emoji: "🙏" },
+  ];
+  const [answers, setAnswers] = useState({ win: "", improve: "", gratitude: "" });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const border = isDark ? "#2a2a2a" : "#e5e7eb";
+  const text1 = isDark ? "#ededed" : "#111";
+  const text3 = isDark ? "#52525b" : "#9ca3af";
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("lab_reflections").insert({ user_id: user.id, date: new Date().toISOString().split("T")[0], ...answers });
+      setSaved(true); setTimeout(onClose, 1200);
+    } catch { setSaving(false); }
+  };
+  return (
+    <div style={{ padding: "32px" }}>
+      <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Daily Reflection</div>
+      <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 24px" }}>End of day review</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {PROMPTS.map(p => (
+          <div key={p.key}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: 600, color: text1, marginBottom: "8px" }}>
+              <span>{p.emoji}</span>{p.q}
+            </label>
+            <textarea value={answers[p.key]} onChange={e => setAnswers(a => ({ ...a, [p.key]: e.target.value }))}
+              rows={3} placeholder="Write freely..."
+              style={{ width: "100%", padding: "12px", borderRadius: "10px", border: `1px solid ${border}`, background: isDark?"#1a1a1a":"#f9fafb", color: text1, fontSize: "13px", resize: "vertical", lineHeight: 1.6 }} />
+          </div>
+        ))}
+      </div>
+      <button onClick={handleSave} disabled={saving||saved||!Object.values(answers).some(v=>v.trim())}
+        style={{ marginTop: "20px", width: "100%", padding: "14px", background: saved?"#22C55E":"var(--color-accent)", color: "#fff", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
+        {saved ? "✓ Saved!" : saving ? "Saving..." : "Save Reflection"}
+      </button>
+    </div>
+  );
+}
+
+function MoodEnergyTracker({ isDark, onClose }) {
+  const [vals, setVals] = useState({ mood: 7, energy: 7, focus: 7, stress: 3 });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const border = isDark ? "#2a2a2a" : "#e5e7eb";
+  const text1 = isDark ? "#ededed" : "#111";
+  const text3 = isDark ? "#52525b" : "#9ca3af";
+  const METRICS = [
+    { key: "mood",   label: "Mood",   emoji: "😊", lo: "Low",      hi: "Euphoric",    color: "#F59E0B" },
+    { key: "energy", label: "Energy", emoji: "⚡", lo: "Drained",  hi: "Charged",     color: "#22C55E" },
+    { key: "focus",  label: "Focus",  emoji: "🎯", lo: "Scattered",hi: "Locked in",   color: "#3B82F6" },
+    { key: "stress", label: "Stress", emoji: "😤", lo: "Calm",     hi: "Overwhelmed", color: "#EF4444" },
+  ];
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("lab_mood_logs").insert({ user_id: user.id, logged_at: new Date().toISOString(), ...vals });
+      setSaved(true); setTimeout(onClose, 1200);
+    } catch { setSaving(false); }
+  };
+  return (
+    <div style={{ padding: "32px" }}>
+      <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Mood & Energy</div>
+      <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 28px" }}>How are you right now?</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {METRICS.map(m => (
+          <div key={m.key}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: text1 }}>{m.emoji} {m.label}</span>
+              <span style={{ fontSize: "22px", fontWeight: 800, color: m.color, fontFamily: "var(--font-mono)" }}>{vals[m.key]}</span>
+            </div>
+            <input type="range" min={1} max={10} value={vals[m.key]} onChange={e => setVals(v => ({ ...v, [m.key]: Number(e.target.value) }))}
+              style={{ width: "100%", accentColor: m.color }} />
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: text3, marginTop: "4px" }}>
+              <span>{m.lo}</span><span>{m.hi}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <button onClick={handleSave} disabled={saving||saved}
+        style={{ marginTop: "24px", width: "100%", padding: "14px", background: saved?"#22C55E":"var(--color-accent)", color: "#fff", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
+        {saved ? "✓ Logged!" : saving ? "Saving..." : "Log State"}
+      </button>
+    </div>
+  );
+}
+
+function HabitStreaks({ isDark }) {
+  const HABITS = ["Morning workout","Read 20 min","No phone until 10am","Cold shower","Journaled","DSA practice","No junk food","Slept before midnight"];
+  const [checked, setChecked] = useState({});
+  const border = isDark ? "#2a2a2a" : "#e5e7eb";
+  const text1 = isDark ? "#ededed" : "#111";
+  const text3 = isDark ? "#52525b" : "#9ca3af";
+  const done = Object.values(checked).filter(Boolean).length;
+  return (
+    <div style={{ padding: "32px" }}>
+      <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Habit Streaks</div>
+      <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 8px" }}>Today's check-in</h2>
+      <div style={{ fontSize: "13px", color: text3, marginBottom: "16px" }}>{done} of {HABITS.length} done</div>
+      <div style={{ height: "4px", background: isDark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.06)", borderRadius: "9999px", overflow: "hidden", marginBottom: "20px" }}>
+        <div style={{ height: "100%", width: `${(done/HABITS.length)*100}%`, background: "#22C55E", borderRadius: "9999px", transition: "width 300ms ease" }} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        {HABITS.map(h => (
+          <button key={h} onClick={() => setChecked(c => ({ ...c, [h]: !c[h] }))}
+            style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", background: checked[h]?(isDark?"rgba(34,197,94,0.08)":"rgba(30,92,58,0.06)"):(isDark?"#1a1a1a":"#f9fafb"), border: `1px solid ${checked[h]?"#22C55E":border}`, borderRadius: "10px", cursor: "pointer", textAlign: "left", transition: "all 150ms" }}>
+            <div style={{ width: "20px", height: "20px", borderRadius: "50%", border: `2px solid ${checked[h]?"#22C55E":"rgba(255,255,255,0.2)"}`, background: checked[h]?"#22C55E":"transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {checked[h] && <span style={{ color: "#fff", fontSize: "11px" }}>✓</span>}
+            </div>
+            <span style={{ fontSize: "13px", fontWeight: 600, color: checked[h]?"#22C55E":text1, textDecoration: checked[h]?"line-through":"none" }}>{h}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReadingLog({ userId, isDark, onClose }) {
+  const [form, setForm] = useState({ title: "", author: "", type: "book", pages: "", rating: 4, notes: "" });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [recent, setRecent] = useState([]);
+  const border = isDark ? "#2a2a2a" : "#e5e7eb";
+  const text1 = isDark ? "#ededed" : "#111";
+  const text3 = isDark ? "#52525b" : "#9ca3af";
+  const inp = { width: "100%", padding: "10px 12px", borderRadius: "8px", border: `1px solid ${border}`, background: isDark?"#1a1a1a":"#f9fafb", color: text1, fontSize: "13px" };
+  useEffect(() => {
+    supabase.from("lab_reading_log").select("title,author,rating,logged_at").eq("user_id", userId)
+      .order("logged_at", { ascending: false }).limit(5).then(({ data }) => setRecent(data || []));
+  }, [userId]);
+  const handleSave = async () => {
+    if (!form.title.trim()) return;
+    setSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from("lab_reading_log").insert({ user_id: user.id, ...form, pages: Number(form.pages)||0, logged_at: new Date().toISOString() });
+      setSaved(true); setTimeout(onClose, 1200);
+    } catch { setSaving(false); }
+  };
+  return (
+    <div style={{ padding: "32px" }}>
+      <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Reading Log</div>
+      <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 24px" }}>Log what you read</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <input placeholder="Title *" value={form.title} onChange={e => setForm(f=>({...f,title:e.target.value}))} style={inp} />
+        <input placeholder="Author" value={form.author} onChange={e => setForm(f=>({...f,author:e.target.value}))} style={inp} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+          <select value={form.type} onChange={e => setForm(f=>({...f,type:e.target.value}))} style={inp}>
+            <option value="book">📚 Book</option>
+            <option value="article">📰 Article</option>
+            <option value="paper">📄 Paper</option>
+          </select>
+          <input type="number" placeholder="Pages / mins" value={form.pages} onChange={e => setForm(f=>({...f,pages:e.target.value}))} style={inp} />
+        </div>
+        <div>
+          <div style={{ fontSize: "12px", color: text3, marginBottom: "8px" }}>Rating: {"⭐".repeat(form.rating)}</div>
+          <input type="range" min={1} max={5} value={form.rating} onChange={e => setForm(f=>({...f,rating:Number(e.target.value)}))} style={{ width: "100%", accentColor: "#F59E0B" }} />
+        </div>
+        <textarea placeholder="Key takeaways..." value={form.notes} onChange={e => setForm(f=>({...f,notes:e.target.value}))} rows={3} style={{ ...inp, resize: "vertical" }} />
+      </div>
+      <button onClick={handleSave} disabled={saving||saved||!form.title.trim()}
+        style={{ marginTop: "16px", width: "100%", padding: "14px", background: saved?"#22C55E":"var(--color-accent)", color: "#fff", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
+        {saved ? "✓ Logged!" : saving ? "Saving..." : "Log Reading"}
+      </button>
+      {recent.length > 0 && (
+        <div style={{ marginTop: "20px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: text3, marginBottom: "10px" }}>Recent</div>
+          {recent.map((r,i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${border}` }}>
+              <span style={{ fontSize: "13px", color: text1, fontWeight: 600 }}>{r.title}</span>
+              <span style={{ fontSize: "12px", color: text3 }}>{"⭐".repeat(r.rating)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

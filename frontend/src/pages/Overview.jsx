@@ -6,200 +6,134 @@ import { supabase } from '../utils/supabase';
 import api from '../utils/api';
 import { motion } from 'framer-motion';
 
-const ProgressBar = ({ value, color, isDark }) => {
-  const percentage = Math.min(100, Math.max(0, (value / 10) * 100)); // Normalized to 10
-  return (
-    <div style={{ height: '4px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
-      <motion.div 
-        initial={{ width: 0 }}
-        animate={{ width: `${percentage}%` }}
-        transition={{ duration: 1, ease: 'easeOut' }}
-        style={{ height: '100%', background: color || 'var(--color-accent)', borderRadius: '2px' }}
-      />
-    </div>
-  );
+/* ── helpers ─────────────────────────────────── */
+const getDaysToPlacement = () => {
+  const placementStart = new Date('2026-07-04');
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.max(0, Math.ceil((placementStart - today) / 86400000));
 };
-
-/*
- * Overview (Today) — matching the reference design.
- * Greeting → metric tiles → task list (left) + morning note (right)
- */
 
 const calcScore = (log) => {
   if (!log) return 0;
-  let score = 0;
-  if ((log.sleep_hours || 0) >= 7) score += 20;
-  else if ((log.sleep_hours || 0) >= 6) score += 10;
-  if (log.gym_done) score += 20;
-  if (log.breakfast_done) score += 10;
-  if ((log.steps || 0) >= 10000) score += 15;
-  else if ((log.steps || 0) >= 5000) score += 8;
-  if ((log.water_bottles || 0) >= 3) score += 10;
-  else if ((log.water_bottles || 0) >= 2) score += 5;
-  if (log.learning_done) score += 15;
-  if (log.journal_entry?.trim()) score += 10;
-  return Math.min(score, 100);
+  let s = 0;
+  if ((log.sleep_hours||0) >= 7) s += 20; else if ((log.sleep_hours||0) >= 6) s += 10;
+  if (log.gym_done) s += 20;
+  if (log.breakfast_done) s += 10;
+  if ((log.steps||0) >= 10000) s += 15; else if ((log.steps||0) >= 5000) s += 8;
+  if ((log.water_bottles||0) >= 3) s += 10; else if ((log.water_bottles||0) >= 2) s += 5;
+  if (log.learning_done) s += 15;
+  if (log.journal_entry?.trim()) s += 10;
+  return Math.min(s, 100);
 };
 
-const getDaysToPlacement = () => {
-  const placementStart = new Date('2026-07-04');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.max(0, Math.ceil((placementStart - today) / (1000 * 60 * 60 * 24)));
-};
+const DAILY_QUOTES = [
+  "Do the work. The rest is noise.",
+  "Discipline is choosing between what you want now and what you want most.",
+  "You don't rise to the level of your goals. You fall to the level of your systems.",
+  "Clarity comes from engagement, not from thought.",
+  "The mind is not a vessel to be filled, but a fire to be kindled.",
+];
 
-const DayProgress = ({ isDark }) => {
-  const [progress, setProgress] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState('');
+const GOALS_2026 = [
+  { id: 1, title: 'Land Placement', emoji: '🎯', target: 'Offer by Aug 2026', progress: 62, color: '#22C55E' },
+  { id: 2, title: 'Health & Fitness', emoji: '💪', target: '80kg lean mass', progress: 45, color: '#3B82F6' },
+  { id: 3, title: 'Financial Growth', emoji: '₹', target: '₹5L savings', progress: 38, color: '#F59E0B' },
+  { id: 4, title: 'Skills Mastery', emoji: '🧠', target: 'DSA + System Design', progress: 55, color: '#A855F7' },
+];
 
+/* ── sub-components ──────────────────────────── */
+const DayProgressBar = ({ isDark }) => {
+  const [pct, setPct] = useState(0);
+  const [rem, setRem] = useState('');
   useEffect(() => {
-    const update = () => {
+    const upd = () => {
       const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-      const totalSeconds = 24 * 60 * 60;
-      const elapsedSeconds = (now - startOfDay) / 1000;
-      const pct = (elapsedSeconds / totalSeconds) * 100;
-      setProgress(pct);
-
-      const hoursLeft = 23 - now.getHours();
-      const minsLeft = 59 - now.getMinutes();
-      setTimeRemaining(`${hoursLeft}h ${minsLeft}m remaining`);
+      const elapsed = (now - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 1000;
+      setPct((elapsed / 86400) * 100);
+      setRem(`${23 - now.getHours()}h ${59 - now.getMinutes()}m left today`);
     };
-    update();
-    const interval = setInterval(update, 60000);
-    return () => clearInterval(interval);
+    upd(); const t = setInterval(upd, 60000); return () => clearInterval(t);
   }, []);
-
   return (
-    <div style={{ marginBottom: '48px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
-        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-          Day Progress · {progress.toFixed(1)}%
-        </div>
-        <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)', opacity: 0.7 }}>
-          {timeRemaining}
-        </div>
+    <div style={{ marginBottom: '32px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'8px' }}>
+        <span style={{ fontSize:'11px', fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase', color:'var(--color-text-3)' }}>Day Progress · {pct.toFixed(1)}%</span>
+        <span style={{ fontSize:'11px', color:'var(--color-text-3)', fontFamily:'var(--font-mono)' }}>{rem}</span>
       </div>
-      <div style={{ height: '4px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
-        <motion.div 
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          style={{ height: '100%', background: 'var(--color-accent)', borderRadius: '2px' }}
-        />
+      <div style={{ height:'3px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)', borderRadius:'9999px', overflow:'hidden' }}>
+        <motion.div initial={{ width:0 }} animate={{ width:`${pct}%` }} transition={{ duration:1.2, ease:'easeOut' }}
+          style={{ height:'100%', background:'var(--color-accent)', borderRadius:'9999px' }} />
       </div>
     </div>
   );
 };
 
-const MetricCard = ({ label, value, sub, icon, progress, progressColor, isDark, style = {} }) => (
-  <div style={{
-    background: 'transparent',
-    padding: '0',
-    ...style,
-  }}>
-    <div style={{
-      fontSize: '10px',
-      fontWeight: 700,
-      color: 'var(--color-text-3)',
-      textTransform: 'uppercase',
-      letterSpacing: '0.15em',
-      marginBottom: '16px',
-      fontFamily: 'var(--font-sans)',
-    }}>{label}</div>
-    <div style={{
-      fontSize: '36px',
-      fontWeight: 500,
-      color: 'var(--color-text-1)',
-      lineHeight: 1,
-      fontFamily: 'var(--font-serif)',
-      marginBottom: '12px',
-      display: 'flex',
-      alignItems: 'baseline',
-      gap: '8px'
-    }}>
-      {value ?? '—'}
+const WeekGrid = ({ isDark }) => {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const scores = [88, 72, 91, 65, 84, 0, 0]; // TODO: pull from DB
+  const today = new Date().getDay(); // 0=Sun
+  const todayIdx = today === 0 ? 6 : today - 1;
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:'8px' }}>
+      {days.map((d, i) => {
+        const isPast = i < todayIdx;
+        const isToday = i === todayIdx;
+        const s = scores[i];
+        const bg = isToday ? 'var(--color-accent)' : isPast && s > 0 ? (isDark ? 'rgba(34,197,94,0.12)' : 'rgba(30,92,58,0.08)') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)');
+        const textColor = isToday ? '#fff' : isPast && s > 0 ? 'var(--color-accent)' : 'var(--color-text-3)';
+        return (
+          <div key={d} style={{ background: bg, border:`1px solid ${isToday ? 'transparent' : 'var(--color-border)'}`, borderRadius:'10px', padding:'12px 8px', textAlign:'center', transition:'all 200ms' }}>
+            <div style={{ fontSize:'10px', fontWeight:700, color: isToday ? 'rgba(255,255,255,0.7)' : 'var(--color-text-3)', textTransform:'uppercase', marginBottom:'6px' }}>{d}</div>
+            <div style={{ fontSize:'15px', fontWeight:800, color: textColor }}>{isToday ? '→' : s > 0 ? `${s}%` : '·'}</div>
+          </div>
+        );
+      })}
     </div>
-    {sub && (
-      <div style={{
-        fontSize: '11px',
-        color: 'var(--color-text-3)',
-        fontFamily: 'var(--font-sans)',
-        opacity: 0.6,
-        fontWeight: 500
-      }}>{sub}</div>
-    )}
-    {progress !== undefined && (
-      <div style={{ marginTop: '16px' }}>
-        <ProgressBar value={progress} color={progressColor} isDark={isDark} />
+  );
+};
+
+const GoalCard = ({ goal, isDark }) => (
+  <div style={{ background: isDark ? 'var(--color-surface)' : '#fff', border:'1px solid var(--color-border)', borderRadius:'12px', padding:'16px 20px' }}>
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
+      <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+        <span style={{ fontSize:'20px' }}>{goal.emoji}</span>
+        <div>
+          <div style={{ fontSize:'13px', fontWeight:700, color:'var(--color-text-1)' }}>{goal.title}</div>
+          <div style={{ fontSize:'11px', color:'var(--color-text-3)', marginTop:'2px' }}>{goal.target}</div>
+        </div>
       </div>
-    )}
+      <div style={{ fontSize:'18px', fontWeight:800, color: goal.color, fontFamily:'var(--font-mono)' }}>{goal.progress}%</div>
+    </div>
+    <div style={{ height:'5px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius:'9999px', overflow:'hidden' }}>
+      <motion.div initial={{ width:0 }} animate={{ width:`${goal.progress}%` }} transition={{ duration:1, ease:'easeOut' }}
+        style={{ height:'100%', background: goal.color, borderRadius:'9999px' }} />
+    </div>
   </div>
 );
 
 const TaskRow = ({ task, onToggle, isDark }) => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-    padding: '16px 0',
-    borderBottom: `1px solid var(--color-border)`,
-  }}>
-    <button
-      onClick={() => onToggle(task.id)}
-      style={{
-        width: '20px', height: '20px',
-        borderRadius: '6px',
-        border: `1.5px solid ${task.completed ? 'var(--color-accent)' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}`,
-        background: task.completed ? 'var(--color-accent)' : 'transparent',
-        cursor: 'pointer',
-        flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-      }}
-    >
-      {task.completed && (
-        <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
-          <path d="M1 5L4.5 8.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      )}
+  <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 0', borderBottom:`1px solid var(--color-border)` }}>
+    <button onClick={() => onToggle(task.id)} style={{
+      width:'18px', height:'18px', borderRadius:'50%', border:`2px solid ${task.completed ? 'var(--color-accent)' : 'var(--color-border-lit)'}`,
+      background: task.completed ? 'var(--color-accent)' : 'transparent', cursor:'pointer', flexShrink:0,
+      display:'flex', alignItems:'center', justifyContent:'center',
+    }}>
+      {task.completed && <span style={{ color:'#fff', fontSize:'10px', lineHeight:1 }}>✓</span>}
     </button>
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{
-        fontSize: '15px',
-        color: task.completed ? 'var(--color-text-3)' : 'var(--color-text-1)',
-        textDecoration: task.completed ? 'line-through' : 'none',
-        fontFamily: 'var(--font-sans)',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-        fontWeight: task.completed ? 400 : 500,
-      }}>{task.title}</div>
-    </div>
-    {task.source && (
-      <span style={{
-        fontSize: '9px',
-        fontWeight: 800,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        color: 'var(--color-text-3)',
-        fontFamily: 'var(--font-sans)',
-        opacity: 0.5
-      }}>{task.source}</span>
-    )}
+    <span style={{ fontSize:'14px', fontFamily:'var(--font-sans)', color: task.completed ? 'var(--color-text-3)' : 'var(--color-text-1)', textDecoration: task.completed ? 'line-through' : 'none', flex:1 }}>{task.title}</span>
+    {task.source && <span style={{ fontSize:'9px', fontWeight:800, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--color-text-3)', opacity:0.5 }}>{task.source}</span>}
   </div>
 );
 
+/* ── Main Component ──────────────────────────── */
 const Overview = ({ user }) => {
   const { session } = useAuth();
   const { theme } = useThemeContext();
   const isDark = theme === 'dark';
-  const { loading: statsLoading, todayLog = {}, computed = {} } = useDailyStats(user) || {};
-  const { gymDaysThisWeek = 0 } = computed || {};
+  const { todayLog = {} } = useDailyStats(user) || {};
 
   const [tasks, setTasks] = useState([]);
   const [habits, setHabits] = useState([]);
-  const [netWorth, setNetWorth] = useState(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [insight, setInsight] = useState(null);
 
@@ -207,50 +141,27 @@ const Overview = ({ user }) => {
 
   useEffect(() => {
     if (!session) return;
-    const loadData = async () => {
+    const load = async () => {
       try {
         const todayStr = new Date().toLocaleDateString('en-CA');
-        const userId = session?.user?.id;
-
-        const [taskRes, habitRes, habitLogRes, accRes, assetRes, insightRes] = await Promise.all([
-          supabase.from('tasks').select('id, title, due_date, completed, source')
-            .eq('user_id', userId).gte('due_date', todayStr).lte('due_date', todayStr)
+        const uid = session?.user?.id;
+        const [taskRes, habitRes, habitLogRes, insightRes] = await Promise.all([
+          supabase.from('tasks').select('id,title,due_date,completed,source')
+            .eq('user_id', uid).gte('due_date', todayStr).lte('due_date', todayStr)
             .order('completed', { ascending: true }).limit(10),
-          supabase.from('habits').select('id, name, active')
-            .eq('user_id', userId).eq('active', true).limit(8),
-          supabase.from('habit_logs').select('habit_id, completed')
-            .eq('user_id', userId).eq('date', todayStr),
-          supabase.from('accounts').select('balance').eq('user_id', userId),
-          supabase.from('wealth_assets').select('value').eq('user_id', userId),
-          supabase.from('lab_correlations').select('signal_a, signal_b, rho')
-            .eq('user_id', userId).order('rho', { ascending: false }).limit(1),
+          supabase.from('habits').select('id,name,active').eq('user_id', uid).eq('active', true).limit(8),
+          supabase.from('habit_logs').select('habit_id,completed').eq('user_id', uid).eq('date', todayStr),
+          supabase.from('lab_correlations').select('signal_a,signal_b,rho').eq('user_id', uid).order('rho', { ascending: false }).limit(1),
         ]);
-
         const logMap = {};
         (habitLogRes.data || []).forEach(l => { logMap[l.habit_id] = l.completed; });
-
-        const totalAccounts = (accRes.data || []).reduce((s, a) => s + (Number(a.balance) || 0), 0);
-        const totalAssets = (assetRes.data || []).reduce((s, a) => s + (Number(a.value) || 0), 0);
-        const nw = totalAccounts + totalAssets;
-
-        if (nw === 0) {
-          const { data: nwData } = await supabase.from('net_worth_snapshots').select('total_inr')
-            .eq('user_id', userId).order('snapshot_date', { ascending: false }).limit(1).single();
-          setNetWorth(nwData?.total_inr ?? 0);
-        } else {
-          setNetWorth(nw);
-        }
-
         setTasks(taskRes.data || []);
         setHabits((habitRes.data || []).map(h => ({ ...h, completed: logMap[h.id] || false })));
         setInsight(insightRes.data?.[0] || null);
-      } catch (err) {
-        console.error('Overview load error:', err);
-      } finally {
-        setDataLoading(false);
-      }
+      } catch (err) { console.error('Overview load:', err); }
+      finally { setDataLoading(false); }
     };
-    loadData();
+    load();
   }, [session]);
 
   const handleTaskToggle = async (id) => {
@@ -264,308 +175,153 @@ const Overview = ({ user }) => {
     setHabits(prev => prev.map(h => h.id === id ? { ...h, completed: newDone } : h));
     try {
       const todayStr = new Date().toLocaleDateString('en-CA');
-      await supabase.from('habit_logs').upsert({
-        user_id: session.user.id, habit_id: id, date: todayStr, completed: newDone,
-      }, { onConflict: 'user_id,habit_id,date' });
+      await supabase.from('habit_logs').upsert({ user_id: session.user.id, habit_id: id, date: todayStr, completed: newDone }, { onConflict: 'user_id,habit_id,date' });
     } catch {}
   };
 
-  const loading = statsLoading || dataLoading;
   const s = todayLog || {};
-  const score = React.useMemo(() => calcScore(s), [s]);
+  const score = calcScore(s);
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'you';
-
-  const sleepHours = typeof s?.sleep_hours === 'number' ? s.sleep_hours : 0;
-  const steps = s?.steps || 0;
-  const water = s?.water_bottles || 0;
-  const streak = 112; // TODO: pull from DB
-
-  // Date / time
   const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  const dayNum = now.getDate();
-  const monthName = now.toLocaleDateString('en-US', { month: 'long' });
-  const weekday = now.toLocaleDateString('en-US', { weekday: 'short' });
   const hour = now.getHours();
-  const greeting = hour < 12 ? 'Focus, ' : hour < 17 ? 'Execute, ' : 'Review, ';
-
-  const formatINR = (v) => {
-    if (!v && v !== 0) return '—';
-    if (Math.abs(v) >= 1e7) return `₹${(v / 1e7).toFixed(1)}Cr`;
-    if (Math.abs(v) >= 1e5) return `₹${(v / 1e5).toFixed(0)}L`;
-    return `₹${Math.round(v).toLocaleString('en-IN')}`;
-  };
-
+  const greeting = hour < 12 ? 'Good morning,' : hour < 17 ? 'Good afternoon,' : 'Good evening,';
+  const dateStr = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  const quoteIdx = now.getDate() % DAILY_QUOTES.length;
   const pendingTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
-
-  const cardBg = isDark ? 'var(--color-surface)' : '#FFFFFF';
-  const cardBorder = `1px solid var(--color-border)`;
+  const doneTasks = tasks.filter(t => t.completed);
+  const cardBg = isDark ? 'var(--color-surface)' : '#fff';
+  const border = '1px solid var(--color-border)';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', maxWidth: '1100px', margin: '0 auto' }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:'0' }}>
 
-      {/* ── Day Progress ─────────────────────────────── */}
-      <DayProgress isDark={isDark} />
+      {/* Day progress bar */}
+      <DayProgressBar isDark={isDark} />
 
-      {/* ── Greeting ─────────────────────────────────── */}
-      <div style={{ marginBottom: '24px' }}>
-        <div style={{
-          fontSize: '11px',
-          fontWeight: 700,
-          letterSpacing: '0.2em',
-          textTransform: 'uppercase',
-          color: 'var(--color-text-3)',
-          fontFamily: 'var(--font-sans)',
-          marginBottom: '12px',
-          opacity: 0.6
-        }}>
-          {weekday} · {monthName} {dayNum} · Day {streak}
+      {/* ── HERO HEADER ── */}
+      <div style={{ marginBottom:'40px' }}>
+        <div style={{ fontSize:'11px', fontWeight:700, letterSpacing:'0.2em', textTransform:'uppercase', color:'var(--color-text-3)', marginBottom:'10px' }}>
+          {dateStr} · {daysToPlacement}d to placement
         </div>
-        <h1 style={{
-          fontSize: '56px',
-          fontWeight: 500,
-          color: 'var(--color-text-1)',
-          margin: 0,
-          letterSpacing: '-0.04em',
-          lineHeight: 1,
-          fontFamily: 'var(--font-serif)',
-        }}>
-          {greeting}{firstName}.
+        <h1 style={{ fontSize:'52px', fontWeight:500, color:'var(--color-text-1)', margin:0, letterSpacing:'-0.03em', lineHeight:1.05, fontFamily:'var(--font-serif)' }}>
+          {greeting} {firstName}.
         </h1>
+        <p style={{ fontSize:'15px', color:'var(--color-text-3)', marginTop:'12px', fontStyle:'italic', fontFamily:'var(--font-serif)', letterSpacing:'-0.01em' }}>
+          "{DAILY_QUOTES[quoteIdx]}"
+        </p>
       </div>
 
-      {/* ── Hero Metric Row (4 tiles) ─────────────────── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '40px',
-        padding: '40px 0',
-        borderBottom: `1px solid var(--color-border)`,
-        marginBottom: '20px'
-      }}>
-        <MetricCard
-          label="Sleep"
-          value={sleepHours > 0 ? `${Math.floor(sleepHours)}h` : '—'}
-          sub={sleepHours >= 7 ? 'RESTORATIVE' : 'DEFICIT'}
-          progress={sleepHours}
-          progressColor={sleepHours >= 7 ? 'var(--color-accent)' : 'var(--color-warning)'}
-          isDark={isDark}
-        />
-        <MetricCard
-          label="Vitality"
-          value={steps ? `${(steps / 1000).toFixed(1)}k` : '—'}
-          sub={`${steps.toLocaleString()} STEPS`}
-          progress={steps}
-          progressColor="var(--color-accent)"
-          isDark={isDark}
-        />
-        <MetricCard
-          label="Hydration"
-          value={water ? `${water}L` : '—'}
-          sub={`3.0L TARGET`}
-          progress={water}
-          progressColor="#3B82F6"
-          isDark={isDark}
-        />
-        <MetricCard
-          label="Momentum"
-          value={`${streak}d`}
-          sub="ACTIVE STREAK"
-          isDark={isDark}
-        />
-      </div>
-
-      {/* ── Two-column layout ─────────────────────────── */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 340px',
-        gap: '20px',
-        alignItems: 'start',
-      }}>
-
-        {/* LEFT: Intentions (Tasks) */}
-        <div>
-          <div style={{
-            padding: '0 0 20px 0',
-            borderBottom: `1px solid var(--color-border)`,
-            marginBottom: '16px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'baseline',
-          }}>
-            <div style={{
-              fontSize: '12px',
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: 'var(--color-text-2)',
-              fontFamily: 'var(--font-sans)',
-            }}>Intentions</div>
-            <div style={{
-              fontSize: '11px',
-              color: 'var(--color-text-3)',
-              fontFamily: 'var(--font-mono)',
-            }}>
-              {completedTasks.length} / {tasks.length}
-            </div>
+      {/* ── TOP STATS ROW ── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:'12px', marginBottom:'32px' }}>
+        {[
+          { label:'Day Score', value:`${score}%`, color: score >= 70 ? 'var(--color-accent)' : 'var(--color-warning)' },
+          { label:'Sleep', value: s.sleep_hours ? `${Math.floor(s.sleep_hours)}h` : '—', color:'var(--color-text-1)' },
+          { label:'Steps', value: s.steps ? `${Math.round(s.steps/1000*10)/10}k` : '—', color:'var(--color-text-1)' },
+          { label:'Water', value: s.water_bottles ? `${s.water_bottles}L` : '—', color:'#3B82F6' },
+          { label:'Streak', value:'112d', color:'#F59E0B' },
+        ].map(m => (
+          <div key={m.label} style={{ background: cardBg, border, borderRadius:'12px', padding:'16px', textAlign:'center' }}>
+            <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'6px' }}>{m.label}</div>
+            <div style={{ fontSize:'22px', fontWeight:800, color: m.color, fontFamily:'var(--font-mono)' }}>{m.value}</div>
           </div>
+        ))}
+      </div>
 
-          <div style={{ padding: '0' }}>
+      {/* ── MAIN GRID: Left col (tasks + habits) | Right col (goals + weekly) ── */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 380px', gap:'24px', alignItems:'start' }}>
+
+        {/* LEFT */}
+        <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+
+          {/* Today's Intentions */}
+          <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
+              <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-2)' }}>Today's Intentions</div>
+              <div style={{ fontSize:'11px', color:'var(--color-text-3)', fontFamily:'var(--font-mono)' }}>{doneTasks.length}/{tasks.length} done</div>
+            </div>
             {tasks.length === 0 ? (
-              <div style={{
-                padding: '40px 0',
-                color: 'var(--color-text-3)',
-                fontSize: '14px',
-                fontFamily: 'var(--font-sans)',
-                fontStyle: 'italic'
-              }}>No intentions set for today.</div>
+              <div style={{ padding:'24px 0', color:'var(--color-text-3)', fontSize:'14px', fontStyle:'italic', textAlign:'center' }}>
+                No tasks for today. Add some in Calendar.
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {pendingTasks.map(task => (
-                  <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
-                ))}
-                {completedTasks.length > 0 && (
-                  <div style={{ marginTop: '20px', opacity: 0.4 }}>
-                    {completedTasks.map(task => (
-                      <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
-                    ))}
+              <>
+                {pendingTasks.map(t => <TaskRow key={t.id} task={t} onToggle={handleTaskToggle} isDark={isDark} />)}
+                {doneTasks.length > 0 && (
+                  <div style={{ opacity:0.4, marginTop:'8px' }}>
+                    {doneTasks.map(t => <TaskRow key={t.id} task={t} onToggle={handleTaskToggle} isDark={isDark} />)}
                   </div>
                 )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT: Morning note + Insight */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-          {/* Morning note */}
-          <div style={{
-            background: cardBg,
-            border: cardBorder,
-            borderRadius: '8px',
-            padding: '20px',
-          }}>
-            <div style={{
-              fontSize: '10px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--color-text-3)',
-              fontFamily: 'var(--font-sans)',
-              marginBottom: '12px',
-            }}>Morning Note</div>
-            {s.journal_entry ? (
-              <>
-                <div style={{
-                  fontSize: '14px',
-                  fontStyle: 'italic',
-                  color: 'var(--color-text-1)',
-                  lineHeight: 1.6,
-                  fontFamily: 'var(--font-sans)',
-                }}>"{s.journal_entry}"</div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '8px', fontFamily: 'var(--font-sans)' }}>
-                  from your journal
-                </div>
               </>
-            ) : (
-              <div style={{ fontSize: '14px', color: 'var(--color-text-3)', fontStyle: 'italic', fontFamily: 'var(--font-sans)' }}>
-                No note logged yet.
-              </div>
             )}
-          </div>
-
-          {/* Insight */}
-          <div style={{
-            background: isDark ? 'rgba(34,197,94,0.04)' : 'rgba(30,92,58,0.04)',
-            border: `1px solid ${isDark ? 'rgba(34,197,94,0.12)' : 'rgba(30,92,58,0.12)'}`,
-            borderRadius: '8px',
-            padding: '20px',
-          }}>
-            <div style={{
-              fontSize: '10px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: isDark ? '#22C55E' : 'var(--color-accent)',
-              fontFamily: 'var(--font-sans)',
-              marginBottom: '8px',
-            }}>
-              New Pattern · {insight?.rho?.toFixed(2) ?? '0.72'} corr
-            </div>
-            <div style={{
-              fontSize: '13px',
-              color: 'var(--color-text-1)',
-              lineHeight: 1.55,
-              fontFamily: 'var(--font-sans)',
-            }}>
-              {insight
-                ? `${insight.signal_a} correlates with ${insight.signal_b}`
-                : 'Sleep drops 20% on nights you log RC after 22:30.'}
-            </div>
-            <button style={{
-              marginTop: '12px',
-              fontSize: '11px',
-              fontWeight: 500,
-              color: isDark ? '#22C55E' : 'var(--color-accent)',
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: 'pointer',
-              fontFamily: 'var(--font-sans)',
-              textDecoration: 'underline',
-              textUnderlineOffset: '3px',
-            }}>View Insights →</button>
           </div>
 
           {/* Habits */}
           {habits.length > 0 && (
-            <div style={{
-              background: cardBg,
-              border: cardBorder,
-              borderRadius: '8px',
-              padding: '20px',
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div style={{
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: 'var(--color-text-3)',
-                  fontFamily: 'var(--font-sans)',
-                }}>Habits</div>
-                <span style={{ fontSize: '11px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
-                  {habits.filter(h => h.completed).length}/{habits.length}
-                </span>
+            <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
+                <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-2)' }}>Daily Habits</div>
+                <span style={{ fontSize:'11px', color:'var(--color-text-3)' }}>{habits.filter(h => h.completed).length}/{habits.length}</span>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {habits.map(habit => (
-                  <button
-                    key={habit.id}
-                    onClick={() => handleHabitToggle(habit.id)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: `1px solid ${habit.completed ? 'var(--color-accent)' : (isDark ? 'var(--color-border)' : 'var(--color-border)')}`,
-                      background: habit.completed
-                        ? (isDark ? 'rgba(34,197,94,0.1)' : 'rgba(30,92,58,0.08)')
-                        : 'transparent',
-                      color: habit.completed ? 'var(--color-accent)' : 'var(--color-text-2)',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      fontFamily: 'var(--font-sans)',
-                      transition: 'all 150ms ease',
-                    }}
-                  >
-                    {habit.completed ? '✓ ' : ''}{habit.name}
+              <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
+                {habits.map(h => (
+                  <button key={h.id} onClick={() => handleHabitToggle(h.id)} style={{
+                    padding:'8px 14px', borderRadius:'8px', fontSize:'12px', fontWeight:600, cursor:'pointer',
+                    border:`1px solid ${h.completed ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    background: h.completed ? (isDark ? 'rgba(34,197,94,0.1)' : 'rgba(30,92,58,0.07)') : 'transparent',
+                    color: h.completed ? 'var(--color-accent)' : 'var(--color-text-2)',
+                    transition:'all 150ms ease',
+                  }}>
+                    {h.completed ? '✓ ' : ''}{h.name}
                   </button>
                 ))}
               </div>
             </div>
           )}
+
+          {/* Morning Note */}
+          <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
+            <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-3)', marginBottom:'12px' }}>Morning Note</div>
+            {s.journal_entry ? (
+              <div style={{ fontSize:'15px', fontStyle:'italic', color:'var(--color-text-1)', lineHeight:1.65, fontFamily:'var(--font-serif)' }}>"{s.journal_entry}"</div>
+            ) : (
+              <div style={{ fontSize:'14px', color:'var(--color-text-3)', fontStyle:'italic' }}>No note yet — write in Journal.</div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+
+          {/* Weekly view */}
+          <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
+            <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-2)', marginBottom:'16px' }}>This Week</div>
+            <WeekGrid isDark={isDark} />
+          </div>
+
+          {/* 2026 Goals */}
+          <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
+            <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-2)', marginBottom:'16px' }}>2026 Goals</div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              {GOALS_2026.map(g => <GoalCard key={g.id} goal={g} isDark={isDark} />)}
+            </div>
+          </div>
+
+          {/* Insight card */}
+          <div style={{
+            background: isDark ? 'rgba(34,197,94,0.05)' : 'rgba(30,92,58,0.04)',
+            border:`1px solid ${isDark ? 'rgba(34,197,94,0.15)' : 'rgba(30,92,58,0.12)'}`,
+            borderRadius:'16px', padding:'20px',
+          }}>
+            <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.15em', color:'var(--color-accent)', marginBottom:'8px' }}>
+              Pattern Detected
+            </div>
+            <div style={{ fontSize:'14px', color:'var(--color-text-1)', lineHeight:1.55 }}>
+              {insight ? `${insight.signal_a} correlates with ${insight.signal_b}` : 'Sleep drops 20% on nights you log RC after 22:30.'}
+            </div>
+            <div style={{ fontSize:'11px', color:'var(--color-text-3)', marginTop:'8px' }}>
+              correlation · {insight?.rho?.toFixed(2) ?? '0.72'}
+            </div>
+          </div>
         </div>
       </div>
     </div>
