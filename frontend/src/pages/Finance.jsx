@@ -1,5 +1,8 @@
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useAuth } from '../hooks/useAuth';
+import supabase from '../utils/supabase';
 
 const Finance = () => {
   const { user } = useAuth();
