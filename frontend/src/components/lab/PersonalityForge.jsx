@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
+import { supabase } from '../../utils/supabase';
 
 const TRAITS = [
   { key: 'openness', label: 'Openness', desc: 'Curiosity and creativity vs. consistency and caution', color: '#8B5CF6' },

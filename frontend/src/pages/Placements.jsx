@@ -279,7 +279,7 @@ export default function Placements() {
               const config = STATUS_CONFIG[statusKey];
               
               return (
-                <div key={statusKey} style={{ flex: '0 0 340px', display: 'flex', flexDirection: 'column' }}>
+                <div key={statusKey} style={{ flex: '0 0 380px', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
