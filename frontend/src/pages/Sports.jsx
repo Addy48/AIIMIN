@@ -124,7 +124,7 @@ const SportsPage = () => {
   const totalMin = MOCK_SESSIONS.reduce((a, b) => a + b.duration, 0);
 
   return (
-    <div style={{ flex: 1, paddingBottom: '80px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ flex: 1, paddingBottom: '80px' }}>
       {/* Header */}
       <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
