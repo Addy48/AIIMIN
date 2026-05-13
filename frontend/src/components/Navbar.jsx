@@ -12,7 +12,7 @@ const NAV_LINKS = [
   { to: '/finance',    label: 'Finance' },
   { to: '/calendar',   label: 'Calendar' },
   { to: '/journal',    label: 'Journal' },
-  { to: '/lab',        label: 'Lab', hasNew: true },
+  { to: '/lab',        label: 'Lab' },
   { to: '/sports',     label: 'Sports' },
   { to: '/placements', label: 'Placement' },
   { to: '/insights',   label: 'Skills' },

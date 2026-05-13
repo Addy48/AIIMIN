@@ -53,41 +53,45 @@ const ProgressBar = ({ value, max = 100, color = 'var(--color-accent)', isDark }
 
 const MetricCard = ({ label, value, sub, icon, progress, progressColor, isDark, style = {} }) => (
   <div style={{
-    background: isDark ? 'var(--color-surface)' : '#FFFFFF',
-    border: `1px solid ${isDark ? 'var(--color-border)' : 'var(--color-border)'}`,
-    borderRadius: '8px',
-    padding: '20px',
+    background: 'transparent',
+    padding: '24px 0',
     ...style,
   }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-      <div style={{
-        fontSize: '10px',
-        fontWeight: 600,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: 'var(--color-text-3)',
-        fontFamily: 'var(--font-sans)',
-      }}>{label}</div>
-      {icon && <span style={{ fontSize: '18px', opacity: 0.7 }}>{icon}</span>}
-    </div>
     <div style={{
-      fontSize: '28px',
+      fontSize: '11px',
+      fontWeight: 600,
+      color: 'var(--color-text-3)',
+      textTransform: 'uppercase',
+      letterSpacing: '0.15em',
+      marginBottom: '12px',
+      fontFamily: 'var(--font-sans)',
+    }}>{label}</div>
+    <div style={{
+      fontSize: '42px',
       fontWeight: 700,
-      letterSpacing: '-0.03em',
       color: 'var(--color-text-1)',
       lineHeight: 1,
-      fontFamily: 'var(--font-sans)',
-    }}>{value ?? '—'}</div>
+      fontFamily: 'var(--font-mono)',
+      marginBottom: '8px',
+      display: 'flex',
+      alignItems: 'baseline',
+      gap: '8px'
+    }}>
+      {value ?? '—'}
+      {icon && <span style={{ fontSize: '16px', opacity: 0.5 }}>{icon}</span>}
+    </div>
     {sub && (
       <div style={{
         fontSize: '12px',
         color: 'var(--color-text-3)',
-        marginTop: '4px',
         fontFamily: 'var(--font-sans)',
+        opacity: 0.8
       }}>{sub}</div>
     )}
     {progress !== undefined && (
-      <ProgressBar value={progress} color={progressColor} isDark={isDark} />
+      <div style={{ marginTop: '16px' }}>
+        <ProgressBar value={progress} color={progressColor} isDark={isDark} />
+      </div>
     )}
   </div>
 );
@@ -285,45 +289,44 @@ const Overview = ({ user }) => {
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '16px',
+        gap: '40px',
+        padding: '20px 0',
+        borderBottom: `1px solid var(--color-border)`,
+        marginBottom: '20px'
       }}>
         <MetricCard
-          label="Sleep"
-          value={sleepHours > 0 ? `${Math.floor(sleepHours)}h ${Math.round((sleepHours % 1) * 60)}m` : '—'}
-          sub={sleepHours >= 7 ? 'Well rested' : sleepHours > 0 ? `${(7 - sleepHours).toFixed(1)}h deficit` : 'Not logged'}
+          label="Focus / Sleep"
+          value={sleepHours > 0 ? `${Math.floor(sleepHours)}h` : '—'}
+          sub={sleepHours >= 7 ? 'Optimal' : 'Deficit'}
           icon="🌙"
           progress={sleepHours}
           progressColor={sleepHours >= 7 ? 'var(--color-accent)' : 'var(--color-warning)'}
           isDark={isDark}
-          style={{ borderTop: `2px solid ${isDark ? 'rgba(250,204,21,0.3)' : 'rgba(183,134,10,0.3)'}` }}
         />
         <MetricCard
-          label="Steps"
-          value={steps ? steps.toLocaleString('en-IN') : '—'}
-          sub={`of 10,000`}
+          label="Vitality / Steps"
+          value={steps ? `${(steps / 1000).toFixed(1)}k` : '—'}
+          sub={`${steps.toLocaleString()} / 10k`}
           icon="👟"
           progress={steps}
           progressColor="var(--color-accent)"
           isDark={isDark}
-          style={{ borderTop: `2px solid rgba(34,197,94,0.3)` }}
         />
         <MetricCard
-          label="Water"
-          value={water ? `${water} L` : '—'}
-          sub={`of 3.0 L`}
+          label="Hydration"
+          value={water ? `${water}L` : '—'}
+          sub={`Target 3.0L`}
           icon="💧"
           progress={water}
-          progressColor="var(--color-info, #3B82F6)"
+          progressColor="#3B82F6"
           isDark={isDark}
-          style={{ borderTop: `2px solid rgba(59,130,246,0.3)` }}
         />
         <MetricCard
-          label="Streak"
+          label="Momentum"
           value={`${streak}d`}
-          sub="days running"
+          sub="Current Streak"
           icon="🔥"
           isDark={isDark}
-          style={{ borderTop: `2px solid rgba(249,115,22,0.4)` }}
         />
       </div>
 

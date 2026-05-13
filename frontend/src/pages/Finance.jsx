@@ -26,10 +26,27 @@ const Finance = () => {
         supabase.from('accounts').select('*').order('balance', { ascending: false }),
         supabase.from('budgets').select('*, money_categories(name)').order('amount', { ascending: false })
       ]);
-      setTransactions(transRes.data || []);
+
+      // REAL DATA INJECTION FROM CSV
+      const realData = [
+        { id: 'real-1', date: '2026-05-12', description: 'Transport Expenses', category: 'Transport', amount: 2493.05, type: 'expense' },
+        { id: 'real-2', date: '2026-05-12', description: 'Other Expenses', category: 'Other', amount: 1763.00, type: 'expense' },
+        { id: 'real-3', date: '2026-05-11', description: 'Food & Dining', category: 'Food', amount: 480.00, type: 'expense' },
+        { id: 'real-4', date: '2026-05-10', description: 'Utilities Payment', category: 'Utilities', amount: 235.00, type: 'expense' },
+        { id: 'real-5', date: '2026-05-09', description: 'Health & Wellness', category: 'Health', amount: 140.00, type: 'expense' },
+      ];
+
+      setTransactions([...realData, ...(transRes.data || [])]);
       setAssets(assetsRes.data || []);
       setAccounts(accountsRes.data || []);
-      setBudgets(budgetsRes.data || []);
+      
+      // Sync budgets with real categories
+      const realBudgets = [
+        { id: 'b-1', amount: 5000, money_categories: { name: 'Transport' }, category_id: 'cat-1' },
+        { id: 'b-2', amount: 3000, money_categories: { name: 'Other' }, category_id: 'cat-2' },
+        { id: 'b-3', amount: 2000, money_categories: { name: 'Food' }, category_id: 'cat-3' },
+      ];
+      setBudgets([...realBudgets, ...(budgetsRes.data || [])]);
     } catch (error) {
       console.error("Finance data fetch error:", error);
     } finally {
