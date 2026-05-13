@@ -4,6 +4,21 @@ import { useDailyStats } from '../hooks/useDailyStats';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
 import api from '../utils/api';
+import { motion } from 'framer-motion';
+
+const ProgressBar = ({ value, color, isDark }) => {
+  const percentage = Math.min(100, Math.max(0, (value / 10) * 100)); // Normalized to 10
+  return (
+    <div style={{ height: '4px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+      <motion.div 
+        initial={{ width: 0 }}
+        animate={{ width: `${percentage}%` }}
+        transition={{ duration: 1, ease: 'easeOut' }}
+        style={{ height: '100%', background: color || 'var(--color-accent)', borderRadius: '2px' }}
+      />
+    </div>
+  );
+};
 
 /*
  * Overview (Today) — matching the reference design.

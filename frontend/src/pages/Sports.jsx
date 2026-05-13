@@ -521,11 +521,45 @@ const SportsPage = () => {
                 </select>
               </div>
               
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Duration (min)</label>
+                  <input
+                    type="number" placeholder="45"
+                    value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
+                    style={{
+                      width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${border}`,
+                      background: 'var(--color-surface)', color: text1, fontSize: '14px', outline: 'none',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Rating (1-5)</label>
+                  <div style={{ display: 'flex', gap: '8px', padding: '8px 0' }}>
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setForm(f => ({ ...f, rating: star }))}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          fontSize: '20px', color: star <= form.rating ? 'var(--color-accent)' : border,
+                          padding: 0, transition: 'all 0.2s'
+                        }}
+                      >
+                        ★
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Duration (min)</label>
+                <label style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', marginBottom: '8px', display: 'block' }}>Date</label>
                 <input
-                  type="number" placeholder="45"
-                  value={form.duration} onChange={e => setForm(f => ({ ...f, duration: e.target.value }))}
+                  type="date"
+                  value={form.date || new Date().toISOString().split('T')[0]}
+                  onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                   style={{
                     width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${border}`,
                     background: 'var(--color-surface)', color: text1, fontSize: '14px', outline: 'none',
