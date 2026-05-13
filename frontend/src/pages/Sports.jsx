@@ -14,6 +14,24 @@ const SPORTS = [
   { key: 'gym', label: 'Gym', emoji: '🏋️', color: '#EC4899' },
 ];
 
+
+class SportsBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { crashed: false }; }
+  static getDerivedStateFromError() { return { crashed: true }; }
+  componentDidCatch(err) { console.error('Sports crash:', err); }
+  render() {
+    if (this.state.crashed) return (
+      <div style={{ padding: '60px', textAlign: 'center' }}>
+        <div style={{ fontSize: '32px', marginBottom: '16px' }}>🏟️</div>
+        <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Sports data temporarily unavailable</h2>
+        <p style={{ color: 'var(--color-text-3)', marginBottom: '20px' }}>Live scores and standings couldn't load right now.</p>
+        <button onClick={() => this.setState({ crashed: false })} style={{ padding: '10px 24px', background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600 }}>Try Again</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
 const MOCK_SESSIONS = [
   { sport: 'cricket', note: 'Net practice – 45 min', date: '2026-05-03', duration: 45, rating: 4 },
   { sport: 'gym', note: 'Chest & triceps', date: '2026-05-03', duration: 60, rating: 5 },
@@ -468,21 +486,29 @@ const SportsPage = () => {
               <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
                 <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '24px' }}>🏎️ F1 Schedule</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {f1Races.map((race, i) => (
+                  {f1Races.map((race, i) => {
+                    const raceDate = race.date ? new Date(race.date) : null;
+                    const raceName = race?.competition?.name || race?.name || 'Grand Prix';
+                    const circuitName = race?.circuit?.name || '';
+                    const city = race?.competition?.location?.city || race?.circuit?.city || '';
+                    return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingBottom: '16px', borderBottom: i < f1Races.length - 1 ? `1px solid ${border}` : 'none' }}>
                       <div style={{ 
                         width: '50px', height: '50px', borderRadius: '12px', background: 'var(--bg-elevated)', 
                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: `1px solid ${border}`
                       }}>
-                        <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-accent)', textTransform: 'uppercase' }}>{new Date(race.date).toLocaleDateString('en-US', { month: 'short' })}</div>
-                        <div style={{ fontSize: '18px', fontWeight: 800 }}>{new Date(race.date).getDate()}</div>
+                        {raceDate ? (<>
+                          <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-accent)', textTransform: 'uppercase' }}>{raceDate.toLocaleDateString('en-US', { month: 'short' })}</div>
+                          <div style={{ fontSize: '18px', fontWeight: 800 }}>{raceDate.getDate()}</div>
+                        </>) : <div style={{ fontSize: '20px' }}>🏎️</div>}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '14px', fontWeight: 700, color: text1 }}>{race.competition.name}</div>
-                        <div style={{ fontSize: '11px', color: text3, marginTop: '2px' }}>{race.circuit.name} · {race.competition.location.city}</div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: text1 }}>{raceName}</div>
+                        {(circuitName || city) && <div style={{ fontSize: '11px', color: text3, marginTop: '2px' }}>{[circuitName, city].filter(Boolean).join(' · ')}</div>}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                   {f1Races.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: text3, fontSize: '13px' }}>No upcoming races.</div>}
                 </div>
               </section>
@@ -491,17 +517,24 @@ const SportsPage = () => {
               <section className="glass-panel" style={{ padding: '24px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
                 <h3 style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: text1, marginBottom: '24px' }}>🏆 F1 Standings</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {f1Standings.map((driver, i) => (
+                  {f1Standings.map((driver, i) => {
+                    const driverName = driver?.driver?.name || driver?.name || 'Driver';
+                    const teamName = driver?.team?.name || driver?.constructor?.name || '';
+                    const driverImg = driver?.driver?.image || null;
+                    const pts = driver?.points ?? driver?.pts ?? '—';
+                    const pos = driver?.position ?? (i + 1);
+                    return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px', borderRadius: '12px', background: i < 3 ? 'rgba(226,183,20,0.05)' : 'transparent' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: text3, width: '24px' }}>{driver.position}</span>
-                      <img src={driver.driver.image} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', objectFit: 'contain', border: `1px solid ${border}` }} />
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: text3, width: '24px' }}>{pos}</span>
+                      {driverImg ? <img src={driverImg} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', objectFit: 'contain', border: `1px solid ${border}` }} /> : <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', border: `1px solid ${border}` }}>🏎️</div>}
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: text1 }}>{driver.driver.name}</div>
-                        <div style={{ fontSize: '10px', color: text3 }}>{driver.team.name}</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: text1 }}>{driverName}</div>
+                        {teamName && <div style={{ fontSize: '10px', color: text3 }}>{teamName}</div>}
                       </div>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>{driver.points}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>{pts}</div>
                     </div>
-                  ))}
+                    );
+                  })}
                   {f1Standings.length === 0 && <div style={{ textAlign: 'center', padding: '20px', color: text3, fontSize: '13px' }}>Standings unavailable.</div>}
                 </div>
               </section>
@@ -609,4 +642,9 @@ const SportsPage = () => {
   );
 };
 
-export default SportsPage;
+const SportsPageWrapped = () => (
+  <SportsBoundary>
+    <SportsPage />
+  </SportsBoundary>
+);
+export default SportsPageWrapped;
