@@ -75,14 +75,44 @@ export const sportsService = {
         sportsService.fetchF1Races(),
         sportsService.fetchCricketLive()
       ]);
+      
+      // Map some football as "recentMatches" for the sidebar
+      const recentMatches = football.length > 0 ? football.slice(0, 3).map(m => ({
+        title: `${m.teams?.home?.name} vs ${m.teams?.away?.name}`,
+        score: `${m.goals?.home} - ${m.goals?.away}`,
+        status: 'Finished'
+      })) : [
+        { title: 'Real Madrid vs Barcelona', score: '3 - 2', status: 'Finished' },
+        { title: 'Man City vs Arsenal', score: '1 - 1', status: 'Finished' }
+      ];
+
+      const news = [
+        { title: 'New track records expected at Monaco GP', time: '2h ago', source: 'F1 Official', image: '' },
+        { title: 'Transfer rumors: Mbappe to Real Madrid finalized?', time: '4h ago', source: 'Sky Sports', image: '' },
+        { title: 'Cricket World Cup qualifiers begin next week', time: '6h ago', source: 'ESPN', image: '' }
+      ];
+
       return { 
         football: football.length > 0 ? football : MOCK_FOOTBALL, 
         f1: f1, 
-        cricket: cricket 
+        cricket: cricket,
+        recentMatches,
+        news
       };
     } catch (err) {
       console.error("Aggregation failed", err);
-      return { football: MOCK_FOOTBALL, f1: MOCK_F1_RACES, cricket: [] };
+      return { 
+        football: MOCK_FOOTBALL, 
+        f1: MOCK_F1_RACES, 
+        cricket: [],
+        recentMatches: [
+          { title: 'Real Madrid vs Barcelona', score: '3 - 2', status: 'Finished' },
+          { title: 'Man City vs Arsenal', score: '1 - 1', status: 'Finished' }
+        ],
+        news: [
+          { title: 'New track records expected at Monaco GP', time: '2h ago', source: 'F1 Official', image: '' }
+        ]
+      };
     }
   }
 };

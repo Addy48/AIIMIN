@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
+import { supabase } from '../../utils/supabase';
 
 const CHALLENGES = [
   { id: 'cold_shower', label: 'Cold Shower', icon: '❄️', xp: 50 },

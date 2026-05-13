@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import supabase from '../utils/supabase';
@@ -194,8 +196,58 @@ const Overview = () => {
             <MetricStrip label="REPORTS" value="12" color="#8B5CF6" />
           </div>
 
+          {/* Intelligence Radar */}
+          <div style={{ background: 'var(--color-bg-2)', border: '1px solid var(--color-border)', borderRadius: '32px', padding: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <div style={{ fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-1)' }}>Life Balance Radar</div>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-accent)', background:'var(--color-accent-dim)', padding:'4px 10px', borderRadius:'100px' }}>PROTOCOL: BALANCED</div>
+            </div>
+            <div style={{ height: '240px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={[
+                  { subject: 'Focus', A: 85, fullMark: 100 },
+                  { subject: 'Vitality', A: 72, fullMark: 100 },
+                  { subject: 'Wealth', A: 65, fullMark: 100 },
+                  { subject: 'Mastery', A: 90, fullMark: 100 },
+                  { subject: 'Social', A: 58, fullMark: 100 },
+                  { subject: 'Discipline', A: 95, fullMark: 100 },
+                ]}>
+                  <PolarGrid stroke="var(--color-border)" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--color-text-3)', fontSize: 10, fontWeight: 700 }} />
+                  <Radar
+                    name="LifeBalance"
+                    dataKey="A"
+                    stroke="var(--color-accent)"
+                    fill="var(--color-accent)"
+                    fillOpacity={0.15}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-3)', textAlign: 'center', lineHeight: 1.5, fontWeight: 500 }}>
+              Your discipline is at a peak (95%). Focus on social integration (58%) to maintain neural harmony.
+            </div>
+          </div>
         </div>
 
+        {/* Status Protocol decorative footer */}
+        <div style={{ marginTop: '48px', padding: '32px', background: 'var(--color-bg-2)', borderRadius: '32px', border: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+           <div style={{ position:'absolute', left:0, top:0, bottom:0, width:'4px', background:'var(--color-accent)' }} />
+           <div>
+             <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-3)', marginBottom: '4px' }}>System Integrity</div>
+             <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)' }}>All systems operational. Life OS v2.1 active.</div>
+           </div>
+           <div style={{ display:'flex', gap:'24px' }}>
+              <div style={{ textAlign:'right' }}>
+                <div style={{ fontSize:'10px', fontWeight:800, opacity:0.5 }}>UPTIME</div>
+                <div style={{ fontSize:'14px', fontWeight:900 }}>100%</div>
+              </div>
+              <div style={{ textAlign:'right' }}>
+                <div style={{ fontSize:'10px', fontWeight:800, opacity:0.5 }}>NEURAL SYNC</div>
+                <div style={{ fontSize:'14px', fontWeight:900 }}>OPTIMAL</div>
+              </div>
+           </div>
+        </div>
       </div>
     </div>
   );
