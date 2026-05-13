@@ -5,41 +5,25 @@ export default function Logo({ size = 36 }) {
         <svg 
             width={size} 
             height={size} 
-            viewBox="0 0 512 512" 
+            viewBox="0 0 100 100" 
             fill="none" 
             xmlns="http://www.w3.org/2000/svg"
-            style={{ 
-                display: "block",
-                filter: "drop-shadow(0 4px 12px rgba(35, 80, 59, 0.2))"
-            }}
+            style={{ display: "block" }}
         >
-            {/* Background Shape: Soft Hexagon/Nordic Shield */}
+            {/* Stylized A - Left Pillar */}
             <path 
-                d="M256 32L448 128V384L256 480L64 384V128L256 32Z" 
-                fill="#23503B" 
+                d="M32 85L48 20H40L24 85H32Z" 
+                fill="currentColor" 
             />
-            
-            {/* Inner A-Symbol */}
+            {/* Stylized A - Right Pillar */}
             <path 
-                d="M256 140L360 360H310L256 240L202 360H152L256 140Z" 
-                fill="white" 
+                d="M68 85L52 20H60L76 85H68Z" 
+                fill="currentColor" 
             />
-            
-            {/* Decorative Geometric Line */}
+            {/* Central Sparkle/Star */}
             <path 
-                d="M180 300H332" 
-                stroke="white" 
-                strokeWidth="12" 
-                strokeLinecap="round" 
-                strokeOpacity="0.4"
-            />
-            
-            {/* Subtle Outer Ring */}
-            <path 
-                d="M256 32L448 128V384L256 480L64 384V128L256 32Z" 
-                stroke="white" 
-                strokeWidth="4" 
-                strokeOpacity="0.1"
+                d="M50 32C50 42 54 45 62 45C54 45 50 48 50 58C50 48 46 45 38 45C46 45 50 42 50 32Z" 
+                fill="currentColor" 
             />
         </svg>
     );

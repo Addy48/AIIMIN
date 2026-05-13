@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Upload, X, CheckCircle2, AlertCircle, FileSpreadsheet, Plus } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 
@@ -12,6 +14,67 @@ const Finance = () => {
   const [accounts, setAccounts] = useState([]);
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Import State
+  const [importOpen, setImportOpen] = useState(false);
+  const [importStatus, setImportStatus] = useState('idle'); // idle | processing | success | error
+  const [dragActive, setDragActive] = useState(false);
+
+  // Excel Import Logic
+  const handleFileUpload = (file) => {
+    if (!file) return;
+    setImportStatus('processing');
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // Transform Excel data to transaction objects
+        const newTransactions = jsonData.map((row, i) => ({
+          id: `import-${Date.now()}-${i}`,
+          date: row.Date || row.date || new Date().toISOString().split('T')[0],
+          amount: Math.abs(parseFloat(row.Amount || row.amount || 0)),
+          category: row.Category || row.category || 'Other',
+          description: row.Note || row.note || row.Description || row.description || '',
+          type: (row.Type || row.type || row.Category || '').toLowerCase().includes('inc') ? 'income' : 'expense'
+        })).filter(t => t.amount > 0);
+
+        if (newTransactions.length === 0) throw new Error("No valid transactions found");
+
+        setTransactions(prev => [...newTransactions, ...prev]);
+        setImportStatus('success');
+        setTimeout(() => {
+          setImportOpen(false);
+          setImportStatus('idle');
+        }, 2000);
+      } catch (err) {
+        console.error("Excel Import Error:", err);
+        setImportStatus('error');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileUpload(e.dataTransfer.files[0]);
+    }
+  };
 
   useEffect(() => {
     if (user) loadFinanceData();
@@ -27,26 +90,10 @@ const Finance = () => {
         supabase.from('budgets').select('*, money_categories(name)').order('amount', { ascending: false })
       ]);
 
-      // REAL DATA INJECTION FROM CSV
-      const realData = [
-        { id: 'real-1', date: '2026-05-12', description: 'Transport Expenses', category: 'Transport', amount: 2493.05, type: 'expense' },
-        { id: 'real-2', date: '2026-05-12', description: 'Other Expenses', category: 'Other', amount: 1763.00, type: 'expense' },
-        { id: 'real-3', date: '2026-05-11', description: 'Food & Dining', category: 'Food', amount: 480.00, type: 'expense' },
-        { id: 'real-4', date: '2026-05-10', description: 'Utilities Payment', category: 'Utilities', amount: 235.00, type: 'expense' },
-        { id: 'real-5', date: '2026-05-09', description: 'Health & Wellness', category: 'Health', amount: 140.00, type: 'expense' },
-      ];
-
-      setTransactions([...realData, ...(transRes.data || [])]);
+      setTransactions(transRes.data || []);
       setAssets(assetsRes.data || []);
       setAccounts(accountsRes.data || []);
-      
-      // Sync budgets with real categories
-      const realBudgets = [
-        { id: 'b-1', amount: 5000, money_categories: { name: 'Transport' }, category_id: 'cat-1' },
-        { id: 'b-2', amount: 3000, money_categories: { name: 'Other' }, category_id: 'cat-2' },
-        { id: 'b-3', amount: 2000, money_categories: { name: 'Food' }, category_id: 'cat-3' },
-      ];
-      setBudgets([...realBudgets, ...(budgetsRes.data || [])]);
+      setBudgets(budgetsRes.data || []);
     } catch (error) {
       console.error("Finance data fetch error:", error);
     } finally {
@@ -111,53 +158,95 @@ const Finance = () => {
   const monthStr = new Date().toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
 
   return (
-    <div style={{ paddingBottom: '80px' }}>
+    <div style={{ paddingBottom: '80px', maxWidth: '1200px', margin: '0 auto' }}>
 
       {/* Header */}
-      <header style={{ marginBottom: '32px' }}>
-        <div style={{
-          fontSize: '10px',
-          fontWeight: 600,
-          color: 'var(--color-text-3)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.1em',
-          marginBottom: '8px',
-          fontFamily: 'var(--font-sans)',
-        }}>
-          Finance · {monthStr}
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <h1 style={{
-            font: 'var(--text-hero)',
-            color: 'var(--color-text-1)',
-            margin: 0,
-            letterSpacing: '-0.02em',
-          }}>
-            Watch the curve.
-          </h1>
-          <button style={{
-            background: 'var(--color-accent)',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '6px',
-            fontSize: '12px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: 'var(--font-sans)',
-            letterSpacing: '0.01em',
-            transition: 'opacity 0.15s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-          onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-          >
-            + Add Transaction
-          </button>
+      <header style={{ marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 800,
+              color: 'var(--color-accent)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
+              marginBottom: '12px',
+            }}>
+              Capital Allocation · {monthStr}
+            </div>
+            <h1 style={{
+              fontSize: '42px',
+              fontWeight: 800,
+              color: 'var(--color-text-1)',
+              margin: 0,
+              letterSpacing: '-0.03em',
+              fontFamily: 'var(--font-serif)',
+            }}>
+              Watch the curve.
+            </h1>
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <button 
+              onClick={() => setImportOpen(true)}
+              style={{
+                background: 'var(--glass-bg)',
+                color: 'var(--color-text-1)',
+                border: '1px solid var(--color-border)',
+                padding: '12px 24px',
+                borderRadius: '12px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                backdropFilter: 'blur(10px)'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'var(--bg-elevated)';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'var(--glass-bg)';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <Upload size={16} /> Import Sheet
+            </button>
+            <button style={{
+              background: 'var(--color-text-1)',
+              color: 'var(--color-base)',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '12px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+            onMouseEnter={e => {
+                e.currentTarget.style.opacity = '0.9';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
+            }}
+            onMouseLeave={e => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
+            }}
+            >
+              <Plus size={18} /> New Entry
+            </button>
+          </div>
         </div>
       </header>
+
 
       {/* Navigation Tabs */}
       <div style={{
@@ -487,15 +576,86 @@ const Finance = () => {
         </AnimatePresence>
       )}
 
-      {/* Growth Engine Footer */}
-      <footer style={{ marginTop: 'var(--space-9)', padding: '48px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)', textAlign: 'center' }}>
-        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '16px' }}>
-          AIIMIN CAPITAL ENGINE · VERSION 2.0
-        </div>
-        <div style={{ fontSize: '13px', color: 'var(--text-2)', maxWidth: '500px', margin: '0 auto', lineHeight: '1.6' }}>
-          "Compound interest is the eighth wonder of the world. He who understands it, earns it; he who doesn't, pays it."
-        </div>
-      </footer>
+      {/* Excel Import Modal */}
+      <AnimatePresence>
+        {importOpen && (
+          <div 
+            onClick={() => setImportOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '440px', background: 'var(--color-base)', borderRadius: '24px', border: '1px solid var(--color-border)',
+                padding: '40px', position: 'relative', boxShadow: '0 30px 60px rgba(0,0,0,0.3)'
+              }}
+            >
+              <button onClick={() => setImportOpen(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}>
+                <X size={20} />
+              </button>
+
+              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--color-accent-dim)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                  <FileSpreadsheet size={30} />
+                </div>
+                <h2 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--color-text-1)', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>Import Spreadsheet</h2>
+                <p style={{ fontSize: '13px', color: 'var(--color-text-3)', lineHeight: 1.6 }}>Sync your 'Money Manager' transactions instantly.</p>
+              </div>
+
+              {importStatus === 'idle' && (
+                <div 
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                  style={{
+                    height: '180px', border: `2px dashed ${dragActive ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    borderRadius: '16px', background: dragActive ? 'var(--color-accent-dim)' : 'var(--bg-elevated)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', transition: 'all 0.2s ease'
+                  }}
+                  onClick={() => document.getElementById('excel-input').click()}
+                >
+                  <input id="excel-input" type="file" accept=".xlsx,.xls,.csv" onChange={e => handleFileUpload(e.target.files[0])} style={{ display: 'none' }} />
+                  <Upload size={28} style={{ color: 'var(--color-text-3)', marginBottom: '12px', opacity: 0.5 }} />
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-2)' }}>Drop file or <span style={{ color: 'var(--color-accent)' }}>browse</span></span>
+                  <span style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: '6px' }}>Excel or CSV formats supported</span>
+                </div>
+              )}
+
+              {importStatus === 'processing' && (
+                <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                  <div className="spinner" style={{ margin: '0 auto 24px' }} />
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-1)' }}>Parsing spreadsheet...</span>
+                </div>
+              )}
+
+              {importStatus === 'success' && (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#10B981' }}>
+                  <CheckCircle2 size={44} style={{ margin: '0 auto 16px' }} />
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>Sync Complete</div>
+                  <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginTop: '6px' }}>Your portfolio is up to date.</div>
+                </div>
+              )}
+
+              {importStatus === 'error' && (
+                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-rust)' }}>
+                  <AlertCircle size={44} style={{ margin: '0 auto 16px' }} />
+                  <div style={{ fontSize: '16px', fontWeight: 600 }}>Sync Error</div>
+                  <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginTop: '6px' }}>Could not read file. Check the format.</div>
+                  <button onClick={() => setImportStatus('idle')} style={{ marginTop: '20px', background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Try Again</button>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .nordic-card {

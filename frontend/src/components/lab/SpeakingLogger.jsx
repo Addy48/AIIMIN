@@ -2,20 +2,41 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import supabase from '../../utils/supabase';
 
+const TOPICS = [
+    { label: 'Technology', color: 'rgba(139, 92, 246, 0.2)' },
+    { label: 'Business', color: 'rgba(59, 130, 246, 0.2)' },
+    { label: 'Education', color: 'rgba(16, 185, 129, 0.2)' },
+    { label: 'Culture', color: 'rgba(245, 158, 11, 0.2)' },
+    { label: 'Sports', color: 'rgba(239, 68, 68, 0.2)' },
+    { label: 'Philosophy', color: 'rgba(107, 114, 128, 0.2)' },
+    { label: 'Politics', color: 'rgba(75, 85, 99, 0.2)' },
+    { label: 'Health', color: 'rgba(236, 72, 153, 0.2)' },
+    { label: 'Environment', color: 'rgba(34, 197, 94, 0.2)' },
+];
+
 const SLIDERS = [
     { key: 'confidence_score', label: 'Confidence', desc: 'Self-perceived delivery strength' },
     { key: 'clarity_score', label: 'Clarity', desc: 'Articulation and structure' },
     { key: 'pace_score', label: 'Pace', desc: 'Rhythm and flow control' },
 ];
 
-const SPEAKING_PROMPTS = [
-    "Explain your primary career objective as if you were talking to a 50-year-old mentor.",
-    "Describe a complex technical concept you recently learned to a non-technical friend.",
-    "Walk through your decision process for your most significant purchase recently.",
-    "What is the single most important habit you've formed in 2026? Why?",
-    "Pitch AIIMIN's core value proposition to a high-performer in 60 seconds.",
-    "Describe a time you failed to communicate clearly. What was the impact?"
-];
+const CATEGORIZED_PROMPTS = {
+    'Technology': [
+        "Explain your primary career objective as if you were talking to a 50-year-old mentor.",
+        "Describe a complex technical concept you recently learned to a non-technical friend.",
+        "Pitch AIIMIN's core value proposition to a high-performer in 60 seconds."
+    ],
+    'Business': [
+        "Walk through your decision process for your most significant purchase recently.",
+        "Describe a time you failed to communicate clearly. What was the impact?",
+        "How would you handle a conflict between two high-performing team members?"
+    ],
+    'Philosophy': [
+        "What is the single most important habit you've formed in 2026? Why?",
+        "If you could have a 30-minute conversation with any historical figure, who would it be and why?",
+        "Is it better to be a master of one or a jack of all trades in 2026?"
+    ]
+};
 
 const Visualizer = ({ isRecording }) => (
     <div style={{ display: 'flex', gap: '4px', height: '80px', alignItems: 'center', justifyContent: 'center', marginBottom: '40px' }}>
@@ -41,6 +62,7 @@ const Visualizer = ({ isRecording }) => (
 );
 
 export default function SpeakingLogger({ onComplete }) {
+    const [selectedTopic, setSelectedTopic] = useState('Technology');
     const [promptIndex, setPromptIndex] = useState(0);
     const [scores, setScores] = useState({ confidence_score: 50, clarity_score: 50, pace_score: 50 });
     const [notes, setNotes] = useState('');
@@ -48,7 +70,20 @@ export default function SpeakingLogger({ onComplete }) {
     const [timeLeft, setTimeLeft] = useState(60);
     const [saving, setSaving] = useState(false);
     const [result, setResult] = useState(null);
+    const [isSpinning, setIsSpinning] = useState(false);
     const timerRef = useRef(null);
+
+    const prompts = CATEGORIZED_PROMPTS[selectedTopic] || CATEGORIZED_PROMPTS['Technology'];
+
+    const spinTopic = () => {
+        setIsSpinning(true);
+        setTimeout(() => {
+            const randomTopic = TOPICS[Math.floor(Math.random() * TOPICS.length)].label;
+            setSelectedTopic(randomTopic);
+            setPromptIndex(Math.floor(Math.random() * (CATEGORIZED_PROMPTS[randomTopic]?.length || 1)));
+            setIsSpinning(false);
+        }, 800);
+    };
 
     const startRecording = () => {
         setPhase('recording');
@@ -105,77 +140,125 @@ export default function SpeakingLogger({ onComplete }) {
     const border = 'var(--color-border)';
 
     return (
-        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 0' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px 0' }}>
             <AnimatePresence mode="wait">
                 {phase === 'ready' && (
                     <motion.div 
                         key="ready" 
-                        initial={{ opacity: 0, scale: 0.98 }} 
-                        animate={{ opacity: 1, scale: 1 }} 
-                        exit={{ opacity: 0, scale: 1.02 }}
+                        initial={{ opacity: 0, y: 20 }} 
+                        animate={{ opacity: 1, y: 0 }} 
+                        exit={{ opacity: 0, scale: 0.95 }}
                         style={{ textAlign: 'center' }}
                     >
-                        <div style={{ 
-                            background: 'var(--color-surface)', 
-                            borderRadius: '24px', 
-                            padding: '40px', 
-                            border: `1px solid ${border}`, 
-                            marginBottom: '40px',
-                            boxShadow: 'var(--shadow-sm)'
+                        <h1 style={{ 
+                            fontSize: '48px', 
+                            fontWeight: 400, 
+                            color: text1, 
+                            marginBottom: '16px',
+                            fontFamily: 'var(--font-serif)',
+                            letterSpacing: '-0.02em'
                         }}>
-                            <div style={{ 
-                                fontSize: '11px', 
-                                color: accent, 
-                                fontWeight: 700, 
-                                textTransform: 'uppercase', 
-                                letterSpacing: '0.15em',
-                                marginBottom: '20px' 
-                            }}>Active Prompt</div>
-                            <h2 style={{ 
-                                fontSize: '24px', 
-                                fontWeight: 600, 
-                                color: text1, 
-                                lineHeight: 1.4, 
-                                fontStyle: 'italic', 
-                                margin: 0,
-                                fontFamily: 'var(--font-sans)'
-                            }}>
-                                "{SPEAKING_PROMPTS[promptIndex]}"
-                            </h2>
+                            Spin for a <i style={{ color: 'var(--color-accent)' }}>topic</i>
+                        </h1>
+                        <p style={{ color: text3, fontSize: '14px', marginBottom: '40px', maxWidth: '500px', margin: '0 auto 40px', lineHeight: 1.6 }}>
+                            Every day of the challenge starts like this — pick categories, spin, and you've got sixty seconds to speak.
+                        </p>
+
+                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px', marginBottom: '48px', maxWidth: '600px', margin: '0 auto 48px' }}>
+                            {TOPICS.map(t => (
+                                <button
+                                    key={t.label}
+                                    onClick={() => setSelectedTopic(t.label)}
+                                    style={{
+                                        padding: '8px 20px',
+                                        borderRadius: '99px',
+                                        border: `1px solid ${selectedTopic === t.label ? accent : 'rgba(255,255,255,0.1)'}`,
+                                        background: selectedTopic === t.label ? 'rgba(255,255,255,0.05)' : 'transparent',
+                                        color: selectedTopic === t.label ? text1 : text3,
+                                        fontSize: '13px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        fontFamily: 'var(--font-sans)'
+                                    }}
+                                >
+                                    {t.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div style={{ 
+                            background: 'rgba(255,255,255,0.03)', 
+                            backdropFilter: 'blur(10px)',
+                            borderRadius: '32px', 
+                            padding: '64px 40px', 
+                            border: `1px solid rgba(255,255,255,0.05)`, 
+                            marginBottom: '40px',
+                            minHeight: '200px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={selectedTopic + promptIndex}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                >
+                                    <h2 style={{ 
+                                        fontSize: '28px', 
+                                        fontWeight: 500, 
+                                        color: text1, 
+                                        lineHeight: 1.4, 
+                                        margin: 0,
+                                        fontFamily: 'var(--font-serif)',
+                                        maxWidth: '500px',
+                                        margin: '0 auto'
+                                    }}>
+                                        {isSpinning ? '...' : `"${prompts[promptIndex] || 'Choose a topic to begin'}"`}
+                                    </h2>
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
                             <button 
-                                onClick={() => setPromptIndex(prev => (prev + 1) % SPEAKING_PROMPTS.length)} 
+                                onClick={spinTopic}
+                                disabled={isSpinning}
                                 style={{ 
-                                    background: 'none', 
-                                    border: 'none', 
-                                    color: text3, 
-                                    cursor: 'pointer', 
-                                    fontSize: '11px', 
-                                    fontWeight: 700, 
-                                    marginTop: '24px', 
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em'
+                                    background: 'rgba(167, 139, 250, 0.3)',
+                                    color: '#fff',
+                                    border: '1px solid rgba(167, 139, 250, 0.5)',
+                                    padding: '12px 32px',
+                                    borderRadius: '99px',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
                                 }}
                             >
-                                Next Prompt →
+                                <span style={{ fontSize: '18px' }}>✨</span> Spin
+                            </button>
+                            <button 
+                                onClick={startRecording} 
+                                style={{ 
+                                    background: accent,
+                                    color: '#fff',
+                                    border: 'none',
+                                    padding: '12px 40px',
+                                    borderRadius: '99px',
+                                    fontSize: '14px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Start Speaking
                             </button>
                         </div>
-                        <button 
-                            onClick={startRecording} 
-                            style={{ 
-                                background: accent,
-                                color: '#fff',
-                                border: 'none',
-                                padding: '16px 48px',
-                                borderRadius: '12px',
-                                fontSize: '15px',
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s var(--ease)',
-                                boxShadow: 'var(--shadow-md)'
-                            }}
-                        >
-                            Begin Session
-                        </button>
                     </motion.div>
                 )}
 
