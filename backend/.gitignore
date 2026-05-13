@@ -12,3 +12,6 @@ logs/
 
 # misc
 .DS_Store
+
+# local storage uploads
+uploads/

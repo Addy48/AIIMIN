@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import toast from '../utils/toast';
-import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
+import { apiGet, apiPost, apiPut, apiDelete, API_URL } from '../utils/api';
 import { X } from 'lucide-react';
 
 const STATUS_CONFIG = {
@@ -145,8 +145,29 @@ export default function Placements() {
         // 1. Get S3 upload ticket
         const ticket = await apiGet(`/placements/resumes/upload-ticket?filename=${encodeURIComponent(selectedFile.name)}&contentType=${encodeURIComponent(selectedFile.type)}`);
         
-        // 2. Direct binary PUT upload to S3
-        const uploadResponse = await fetch(ticket.uploadUrl, {
+        let uploadUrl = ticket.uploadUrl;
+        if (uploadUrl.startsWith('/')) {
+          const apiBase = API_URL || 'http://localhost:5002/api';
+          const host = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase;
+          uploadUrl = `${host}${uploadUrl}`;
+        } else {
+          // Make sure the port and host of local uploads matches the current API_URL in local dev
+          try {
+            const apiBase = API_URL || 'http://localhost:5002/api';
+            const apiBaseUrlObj = new URL(apiBase);
+            const uploadUrlObj = new URL(uploadUrl);
+            if (uploadUrlObj.hostname === 'localhost' || uploadUrlObj.hostname === '127.0.0.1') {
+              uploadUrlObj.protocol = apiBaseUrlObj.protocol;
+              uploadUrlObj.host = apiBaseUrlObj.host;
+              uploadUrl = uploadUrlObj.toString();
+            }
+          } catch (e) {
+            console.warn('Failed to parse URL for local host alignment:', e);
+          }
+        }
+
+        // 2. Direct binary PUT upload to S3 or local directory
+        const uploadResponse = await fetch(uploadUrl, {
           method: 'PUT',
           body: selectedFile,
           headers: {
@@ -928,7 +949,11 @@ export default function Placements() {
                 </form>
               </div>
             </motion.div>
-               {/* Resume Modal */}
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Resume Modal */}
       <AnimatePresence>
         {showResumeModal && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -1043,9 +1068,6 @@ export default function Placements() {
               </form>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
-   </div>
         )}
       </AnimatePresence>
 

@@ -24,13 +24,22 @@ async function run() {
       return;
     }
 
-    console.log('Inserting mock user...');
+    // Insert into auth.users first to satisfy foreign keys
+    console.log('Inserting mock user into auth.users...');
+    await pool.query(
+      `INSERT INTO auth.users (id, email)
+       VALUES ($1, $2)
+       ON CONFLICT (id) DO NOTHING`,
+      [userId, email]
+    );
+
+    console.log('Inserting mock user into public.users...');
     await pool.query(
       `INSERT INTO public.users (id, email, username, full_name, role, onboarding_stage)
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [userId, email, username, fullName, 'user', 1]
     );
-    console.log('Successfully created mock user in public.users!');
+    console.log('Successfully created mock user in public.users and auth.users!');
   } catch (err) {
     console.error('Error creating mock user:', err);
   } finally {
