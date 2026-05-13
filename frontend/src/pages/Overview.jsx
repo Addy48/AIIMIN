@@ -1,340 +1,201 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useDailyStats } from '../hooks/useDailyStats';
 import { useThemeContext } from '../context/ThemeContext';
-import { supabase } from '../utils/supabase';
-import api from '../utils/api';
-import { motion } from 'framer-motion';
+import supabase from '../utils/supabase';
+import { motion, AnimatePresence } from 'framer-motion';
 
-/* ── helpers ─────────────────────────────────── */
-const getDaysToPlacement = () => {
-  const placementStart = new Date('2026-07-04');
-  const today = new Date(); today.setHours(0,0,0,0);
-  return Math.max(0, Math.ceil((placementStart - today) / 86400000));
-};
+/* ── Components ── */
 
-const calcScore = (log) => {
-  if (!log) return 0;
-  let s = 0;
-  if ((log.sleep_hours||0) >= 7) s += 20; else if ((log.sleep_hours||0) >= 6) s += 10;
-  if (log.gym_done) s += 20;
-  if (log.breakfast_done) s += 10;
-  if ((log.steps||0) >= 10000) s += 15; else if ((log.steps||0) >= 5000) s += 8;
-  if ((log.water_bottles||0) >= 3) s += 10; else if ((log.water_bottles||0) >= 2) s += 5;
-  if (log.learning_done) s += 15;
-  if (log.journal_entry?.trim()) s += 10;
-  return Math.min(s, 100);
-};
-
-const DAILY_QUOTES = [
-  "Do the work. The rest is noise.",
-  "Discipline is choosing between what you want now and what you want most.",
-  "You don't rise to the level of your goals. You fall to the level of your systems.",
-  "Clarity comes from engagement, not from thought.",
-  "The mind is not a vessel to be filled, but a fire to be kindled.",
-];
-
-const GOALS_2026 = [
-  { id: 1, title: 'Land Placement', emoji: '🎯', target: 'Offer by Aug 2026', progress: 62, color: '#22C55E' },
-  { id: 2, title: 'Health & Fitness', emoji: '💪', target: '80kg lean mass', progress: 45, color: '#3B82F6' },
-  { id: 3, title: 'Financial Growth', emoji: '₹', target: '₹5L savings', progress: 38, color: '#F59E0B' },
-  { id: 4, title: 'Skills Mastery', emoji: '🧠', target: 'DSA + System Design', progress: 55, color: '#A855F7' },
-];
-
-const ONE_PRIORITY = 'Solve 2 Leetcode mediums before 2pm';
-
-/* ── sub-components ──────────────────────────── */
-const DayProgressBar = ({ isDark }) => {
-  const [pct, setPct] = useState(0);
-  const [rem, setRem] = useState('');
-  useEffect(() => {
-    const upd = () => {
-      const now = new Date();
-      const elapsed = (now - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 1000;
-      setPct((elapsed / 86400) * 100);
-      setRem(`${23 - now.getHours()}h ${59 - now.getMinutes()}m left today`);
-    };
-    upd(); const t = setInterval(upd, 60000); return () => clearInterval(t);
-  }, []);
-  return (
-    <div style={{ marginBottom: '32px' }}>
-      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'8px' }}>
-        <span style={{ fontSize:'11px', fontWeight:700, letterSpacing:'0.15em', textTransform:'uppercase', color:'var(--color-text-3)' }}>Day Progress · {pct.toFixed(1)}%</span>
-        <span style={{ fontSize:'11px', color:'var(--color-text-3)', fontFamily:'var(--font-mono)' }}>{rem}</span>
-      </div>
-      <div style={{ height:'3px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.07)', borderRadius:'9999px', overflow:'hidden' }}>
-        <motion.div initial={{ width:0 }} animate={{ width:`${pct}%` }} transition={{ duration:1.2, ease:'easeOut' }}
-          style={{ height:'100%', background:'var(--color-accent)', borderRadius:'9999px' }} />
-      </div>
-    </div>
-  );
-};
-
-const WeekGrid = ({ isDark }) => {
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const scores = [88, 72, 91, 65, 84, 0, 0]; // TODO: pull from DB
-  const today = new Date().getDay(); // 0=Sun
-  const todayIdx = today === 0 ? 6 : today - 1;
-  return (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:'8px' }}>
-      {days.map((d, i) => {
-        const isPast = i < todayIdx;
-        const isToday = i === todayIdx;
-        const s = scores[i];
-        const bg = isToday ? 'var(--color-accent)' : isPast && s > 0 ? (isDark ? 'rgba(34,197,94,0.12)' : 'rgba(30,92,58,0.08)') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)');
-        const textColor = isToday ? '#fff' : isPast && s > 0 ? 'var(--color-accent)' : 'var(--color-text-3)';
-        return (
-          <div key={d} style={{ background: bg, border:`1px solid ${isToday ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius:'10px', padding:'12px 8px', textAlign:'center', transition:'all 200ms' }}>
-            <div style={{ fontSize:'10px', fontWeight:700, color: isToday ? 'rgba(255,255,255,0.8)' : 'var(--color-text-3)', textTransform:'uppercase', marginBottom:'6px' }}>{d}</div>
-            <div style={{ fontSize:'15px', fontWeight:800, color: textColor }}>{isToday ? '→' : isPast && s > 0 ? `${s}%` : '·'}</div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
-
-const GoalCard = ({ goal, isDark }) => (
-  <div style={{ background: isDark ? 'var(--color-surface)' : '#fff', border:'1px solid var(--color-border)', borderRadius:'12px', padding:'16px 20px' }}>
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'10px' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-        <span style={{ fontSize:'20px' }}>{goal.emoji}</span>
-        <div>
-          <div style={{ fontSize:'13px', fontWeight:700, color:'var(--color-text-1)' }}>{goal.title}</div>
-          <div style={{ fontSize:'11px', color:'var(--color-text-3)', marginTop:'2px' }}>{goal.target}</div>
-        </div>
-      </div>
-      <div style={{ fontSize:'18px', fontWeight:800, color: goal.color, fontFamily:'var(--font-mono)' }}>{goal.progress}%</div>
-    </div>
-    <div style={{ height:'5px', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)', borderRadius:'9999px', overflow:'hidden' }}>
-      <motion.div initial={{ width:0 }} animate={{ width:`${goal.progress}%` }} transition={{ duration:1, ease:'easeOut' }}
-        style={{ height:'100%', background: goal.color, borderRadius:'9999px' }} />
-    </div>
-  </div>
-);
-
-const TaskRow = ({ task, onToggle, isDark }) => (
-  <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 0', borderBottom:`1px solid var(--color-border)` }}>
-    <button onClick={() => onToggle(task.id)} style={{
-      width:'18px', height:'18px', borderRadius:'50%', border:`2px solid ${task.completed ? 'var(--color-accent)' : 'var(--color-border-lit)'}`,
-      background: task.completed ? 'var(--color-accent)' : 'transparent', cursor:'pointer', flexShrink:0,
-      display:'flex', alignItems:'center', justifyContent:'center',
-    }}>
-      {task.completed && <span style={{ color:'#fff', fontSize:'10px', lineHeight:1 }}>✓</span>}
-    </button>
-    <span style={{ fontSize:'14px', fontFamily:'var(--font-sans)', color: task.completed ? 'var(--color-text-3)' : 'var(--color-text-1)', textDecoration: task.completed ? 'line-through' : 'none', flex:1 }}>{task.title}</span>
-    {task.source && <span style={{ fontSize:'9px', fontWeight:800, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--color-text-3)', opacity:0.5 }}>{task.source}</span>}
-  </div>
-);
-
-/* ── Main Component ──────────────────────────── */
-const Overview = ({ user }) => {
-  const { session } = useAuth();
-  const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
-  const { todayLog = {} } = useDailyStats(user) || {};
-
-  const [tasks, setTasks] = useState([]);
-  const [habits, setHabits] = useState([]);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [insight, setInsight] = useState(null);
-
-  const daysToPlacement = getDaysToPlacement();
-
-  useEffect(() => {
-    if (!session) return;
-    const load = async () => {
-      try {
-        const todayStr = new Date().toLocaleDateString('en-CA');
-        const uid = session?.user?.id;
-        const [taskRes, habitRes, habitLogRes, insightRes] = await Promise.all([
-          supabase.from('tasks').select('id,title,due_date,completed,source')
-            .eq('user_id', uid).gte('due_date', todayStr).lte('due_date', todayStr)
-            .order('completed', { ascending: true }).limit(10),
-          supabase.from('habits').select('id,name,active').eq('user_id', uid).eq('active', true).limit(8),
-          supabase.from('habit_logs').select('habit_id,completed').eq('user_id', uid).eq('date', todayStr),
-          supabase.from('lab_correlations').select('signal_a,signal_b,rho').eq('user_id', uid).order('rho', { ascending: false }).limit(1),
-        ]);
-        const logMap = {};
-        (habitLogRes.data || []).forEach(l => { logMap[l.habit_id] = l.completed; });
-        setTasks(taskRes.data || []);
-        setHabits((habitRes.data || []).map(h => ({ ...h, completed: logMap[h.id] || false })));
-        setInsight(insightRes.data?.[0] || null);
-      } catch (err) { console.error('Overview load:', err); }
-      finally { setDataLoading(false); }
-    };
-    load();
-  }, [session]);
-
-  const handleTaskToggle = async (id) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
-    try { await api.patch(`/tasks/${id}`, { completed: true }); } catch {}
+const QuickCheckIn = ({ user, isDark }) => {
+  const [vals, setVals] = useState({ mood: 7, energy: 7, focus: 7 });
+  const [note, setNote] = useState('');
+  const [saved, setSaved] = useState(false);
+  
+  const save = async () => {
+    if (!user) return;
+    const { error } = await supabase.from('lab_mood_logs').insert({
+      user_id: user.id,
+      logged_at: new Date().toISOString(),
+      ...vals,
+      note: note.trim()
+    });
+    if (!error) {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      setNote('');
+    }
   };
 
-  const handleHabitToggle = async (id) => {
-    const habit = habits.find(h => h.id === id);
-    const newDone = !habit?.completed;
-    setHabits(prev => prev.map(h => h.id === id ? { ...h, completed: newDone } : h));
-    try {
-      const todayStr = new Date().toLocaleDateString('en-CA');
-      await supabase.from('habit_logs').upsert({ user_id: session.user.id, habit_id: id, date: todayStr, completed: newDone }, { onConflict: 'user_id,habit_id,date' });
-    } catch {}
-  };
-
-  const s = todayLog || {};
-  const score = calcScore(s);
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'you';
-  const now = new Date();
-  const hour = now.getHours();
-  const greeting = hour < 12 ? 'Good morning,' : hour < 17 ? 'Good afternoon,' : 'Good evening,';
-  const dateStr = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-  const quoteIdx = now.getDate() % DAILY_QUOTES.length;
-  const pendingTasks = tasks.filter(t => !t.completed);
-  const doneTasks = tasks.filter(t => t.completed);
-  const cardBg = isDark ? 'var(--color-surface)' : '#fff';
-  const border = '1px solid var(--color-border)';
-
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:'0' }}>
-
-      {/* Day progress bar */}
-      <DayProgressBar isDark={isDark} />
-
-      {/* ── HERO HEADER ── */}
-      <div style={{ marginBottom:'36px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'14px' }}>
-          <div style={{ fontSize:'11px', fontWeight:700, letterSpacing:'0.18em', textTransform:'uppercase', color:'var(--color-text-3)' }}>{dateStr}</div>
-          <div style={{ padding:'3px 10px', borderRadius:'99px', background: isDark?'rgba(34,197,94,0.12)':'rgba(30,92,58,0.08)', border:'1px solid var(--color-accent)', fontSize:'10px', fontWeight:800, color:'var(--color-accent)', letterSpacing:'0.08em' }}>
-            {daysToPlacement}d to placement
-          </div>
-        </div>
-        <h1 style={{ fontSize:'48px', fontWeight:500, color:'var(--color-text-1)', margin:'0 0 14px', letterSpacing:'-0.03em', lineHeight:1.05, fontFamily:'var(--font-serif)' }}>
-          {greeting} {firstName}.
-        </h1>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px', padding:'14px 18px', background: isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.025)', border:'1px solid var(--color-border)', borderLeft:'3px solid var(--color-accent)', borderRadius:'0 10px 10px 0' }}>
-          <span style={{ fontSize:'16px' }}>⚡</span>
-          <div>
-            <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-3)', marginBottom:'2px' }}>One Priority</div>
-            <div style={{ fontSize:'14px', fontWeight:600, color:'var(--color-text-1)', fontFamily:'var(--font-sans)' }}>{ONE_PRIORITY}</div>
-          </div>
-        </div>
-        <p style={{ fontSize:'14px', color:'var(--color-text-3)', marginTop:'14px', fontStyle:'italic', fontFamily:'var(--font-serif)', letterSpacing:'-0.01em', margin:'14px 0 0' }}>
-          &ldquo;{DAILY_QUOTES[quoteIdx]}&rdquo;
-        </p>
+    <div style={{ background: isDark?'var(--color-surface)':'#fff', border: '1px solid var(--color-border)', borderRadius:'20px', padding:'24px' }}>
+      <div style={{ fontSize:'12px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.12em', color:isDark?'#fff':'#000', marginBottom:'20px', display:'flex', alignItems:'center', gap:'8px' }}>
+        <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'var(--color-accent)' }} /> 
+        Daily Pulse
       </div>
-
-      {/* ── TOP STATS ROW ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:'12px', marginBottom:'32px' }}>
-        {[
-          { label:'Day Score', value:`${score}%`, color: score >= 70 ? 'var(--color-accent)' : 'var(--color-warning)' },
-          { label:'Sleep', value: s.sleep_hours ? `${Math.floor(s.sleep_hours)}h` : '—', color:'var(--color-text-1)' },
-          { label:'Steps', value: s.steps ? `${Math.round(s.steps/1000*10)/10}k` : '—', color:'var(--color-text-1)' },
-          { label:'Water', value: s.water_bottles ? `${s.water_bottles}L` : '—', color:'#3B82F6' },
-          { label:'Streak', value:'112d', color:'#F59E0B' },
-        ].map(m => (
-          <div key={m.label} style={{ background: cardBg, border, borderRadius:'12px', padding:'16px', textAlign:'center' }}>
-            <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'6px' }}>{m.label}</div>
-            <div style={{ fontSize:'22px', fontWeight:800, color: m.color, fontFamily:'var(--font-mono)' }}>{m.value}</div>
+      <div style={{ display:'flex', flexDirection:'column', gap:'18px' }}>
+        {['mood', 'energy', 'focus'].map(k => (
+          <div key={k}>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'8px' }}>
+              <span style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', color:'var(--color-text-3)' }}>{k}</span>
+              <span style={{ fontSize:'11px', fontWeight:900, color:'var(--color-accent)' }}>{vals[k]}</span>
+            </div>
+            <input type="range" min={1} max={10} value={vals[k]} onChange={e => setVals(v=>({...v, [k]: Number(e.target.value)}))}
+              style={{ width:'100%', height:'4px', appearance:'none', background:'var(--color-border)', borderRadius:'10px', outline:'none', cursor:'pointer' }} />
           </div>
         ))}
+        <textarea placeholder="Quick reflection..." value={note} onChange={e=>setNote(e.target.value)}
+          style={{ width:'100%', background:isDark?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.02)', border:'1px solid var(--color-border)', borderRadius:'12px', padding:'12px', fontSize:'13px', color:'var(--color-text-1)', outline:'none', resize:'none', height:'80px', fontFamily:'inherit' }} />
+        <button onClick={save} disabled={saved}
+          style={{ padding:'14px', borderRadius:'14px', background:saved?'var(--color-accent-dim)':'var(--color-accent)', color:saved?'var(--color-accent)':'#fff', border:'none', fontSize:'13px', fontWeight:900, cursor:'pointer', transition:'all 0.2s' }}>
+          {saved ? '✓ DATA SYNCED' : 'LOG SESSION'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const MetricStrip = ({ label, value, color }) => (
+  <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'16px', padding:'16px' }}>
+    <div style={{ fontSize:'10px', fontWeight:800, color:'var(--color-text-3)', textTransform:'uppercase', marginBottom:'4px' }}>{label}</div>
+    <div style={{ fontSize:'20px', fontWeight:900, color }}>{value}</div>
+  </div>
+);
+
+const Overview = () => {
+  const { user } = useAuth();
+  const { theme } = useThemeContext();
+  const isDark = theme === 'dark';
+  
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    // Initial fetch of tasks / stats would go here
+    setLoading(false);
+  }, [user]);
+
+  if (!user) return null;
+
+  const targetDate = new Date('2026-07-26');
+  const now = new Date();
+  const daysLeft = Math.floor((targetDate - now) / (1000 * 60 * 60 * 24));
+
+  // Dynamic Week & Month
+  const getWeekNumber = (d) => {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  };
+  const weekNum = getWeekNumber(now);
+  const monthName = now.toLocaleString('en-US', { month: 'long' });
+  const yearNum = now.getFullYear();
+
+  return (
+    <div style={{ maxWidth: 'var(--content-max)', margin: '0 auto', padding: '0 var(--content-pad)' }}>
+      
+      {/* Header Area */}
+      <div style={{ marginBottom: '48px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.25em', color: 'var(--color-accent)', marginBottom: '12px' }}>Operational Intelligence</div>
+          <h1 style={{ fontSize: '56px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.04em', fontFamily: 'var(--font-serif)' }}>Day Control.</h1>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-2)' }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+          <div style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '4px' }}>AIIMIN v2.5 Protocol</div>
+        </div>
       </div>
 
-      {/* ── MAIN GRID: Left col (tasks + habits) | Right col (goals + weekly) ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 360px', gap:'24px', alignItems:'start' }}>
-
-        {/* LEFT */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
-
-          {/* Today's Intentions */}
-          <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
-              <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-2)' }}>Today's Intentions</div>
-              <div style={{ fontSize:'11px', color:'var(--color-text-3)', fontFamily:'var(--font-mono)' }}>{doneTasks.length}/{tasks.length} done</div>
-            </div>
-            {tasks.length === 0 ? (
-              <div style={{ padding:'24px 0', color:'var(--color-text-3)', fontSize:'14px', fontStyle:'italic', textAlign:'center' }}>
-                No tasks for today. Add some in Calendar.
-              </div>
-            ) : (
-              <>
-                {pendingTasks.map(t => <TaskRow key={t.id} task={t} onToggle={handleTaskToggle} isDark={isDark} />)}
-                {doneTasks.length > 0 && (
-                  <div style={{ opacity:0.4, marginTop:'8px' }}>
-                    {doneTasks.map(t => <TaskRow key={t.id} task={t} onToggle={handleTaskToggle} isDark={isDark} />)}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Habits */}
-          {habits.length > 0 && (
-            <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
-                <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-2)' }}>Daily Habits</div>
-                <span style={{ fontSize:'11px', color:'var(--color-text-3)' }}>{habits.filter(h => h.completed).length}/{habits.length}</span>
-              </div>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:'8px' }}>
-                {habits.map(h => (
-                  <button key={h.id} onClick={() => handleHabitToggle(h.id)} style={{
-                    padding:'8px 14px', borderRadius:'8px', fontSize:'12px', fontWeight:600, cursor:'pointer',
-                    border:`1px solid ${h.completed ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                    background: h.completed ? (isDark ? 'rgba(34,197,94,0.1)' : 'rgba(30,92,58,0.07)') : 'transparent',
-                    color: h.completed ? 'var(--color-accent)' : 'var(--color-text-2)',
-                    transition:'all 150ms ease',
-                  }}>
-                    {h.completed ? '✓ ' : ''}{h.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Morning Note */}
-          <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
-            <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-3)', marginBottom:'12px' }}>Morning Note</div>
-            {s.journal_entry ? (
-              <div style={{ fontSize:'15px', fontStyle:'italic', color:'var(--color-text-1)', lineHeight:1.65, fontFamily:'var(--font-serif)' }}>"{s.journal_entry}"</div>
-            ) : (
-              <div style={{ fontSize:'14px', color:'var(--color-text-3)', fontStyle:'italic' }}>No note yet — write in Journal.</div>
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
-
-          {/* Weekly view */}
-          <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
-            <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-2)', marginBottom:'16px' }}>This Week</div>
-            <WeekGrid isDark={isDark} />
-          </div>
-
-          {/* 2026 Goals */}
-          <div style={{ background: cardBg, border, borderRadius:'16px', padding:'24px' }}>
-            <div style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-2)', marginBottom:'16px' }}>2026 Goals</div>
-            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-              {GOALS_2026.map(g => <GoalCard key={g.id} goal={g} isDark={isDark} />)}
-            </div>
-          </div>
-
-          {/* Insight card */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '32px' }}>
+        
+        {/* Main Column */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          
+          {/* Hero Widget: Placement Countdown */}
           <div style={{
-            background: isDark ? 'rgba(34,197,94,0.05)' : 'rgba(30,92,58,0.04)',
-            border:`1px solid ${isDark ? 'rgba(34,197,94,0.15)' : 'rgba(30,92,58,0.12)'}`,
-            borderRadius:'16px', padding:'20px',
+            background: 'linear-gradient(135deg, var(--color-accent) 0%, #064e3b 100%)',
+            borderRadius: '32px', padding: '40px', color: '#fff',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            boxShadow: '0 30px 60px rgba(22, 163, 74, 0.2)', position: 'relative', overflow: 'hidden'
           }}>
-            <div style={{ fontSize:'10px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.15em', color:'var(--color-accent)', marginBottom:'8px' }}>
-              Pattern Detected
+            <div style={{ position: 'absolute', top: '-40px', right: '-20px', fontSize: '180px', opacity: 0.08, pointerEvents: 'none' }}>🎯</div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.3em', opacity: 0.8, marginBottom: '12px' }}>Placement Target Launch</div>
+              <div style={{ fontSize: '96px', fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.06em' }}>{daysLeft}</div>
+              <div style={{ fontSize: '18px', fontWeight: 700, marginTop: '12px', opacity: 0.9 }}>Days Until July 26, {yearNum}</div>
             </div>
-            <div style={{ fontSize:'14px', color:'var(--color-text-1)', lineHeight:1.55 }}>
-              {insight ? `${insight.signal_a} correlates with ${insight.signal_b}` : 'Sleep drops 20% on nights you log RC after 22:30.'}
-            </div>
-            <div style={{ fontSize:'11px', color:'var(--color-text-3)', marginTop:'8px' }}>
-              correlation · {insight?.rho?.toFixed(2) ?? '0.72'}
+            <div style={{ textAlign: 'right', display:'flex', flexDirection:'column', gap:'8px' }}>
+               <div style={{ padding:'10px 20px', background:'rgba(255,255,255,0.15)', backdropFilter:'blur(10px)', borderRadius:'16px', fontWeight:800, fontSize:'13px' }}>PROTOCOL: ACTIVE</div>
+               <div style={{ padding:'10px 20px', background:'rgba(0,0,0,0.2)', borderRadius:'16px', fontWeight:700, fontSize:'11px', opacity:0.8 }}>SYSTEM HYDRATION: 94%</div>
             </div>
           </div>
+
+          {/* Weekly Grid */}
+          <div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px' }}>
+              <div style={{ fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-1)' }}>Master Planner</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-3)' }}>Week {weekNum} · {monthName} {yearNum}</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '12px' }}>
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                <div key={day} style={{ 
+                  background: 'var(--color-surface)', 
+                  border: '1px solid var(--color-border)', 
+                  borderRadius: '20px', 
+                  padding: '16px', 
+                  minHeight: '240px',
+                  display:'flex',
+                  flexDirection:'column'
+                }}>
+                  <div style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', color: 'var(--color-text-3)', marginBottom: '16px', borderBottom: '1px solid var(--color-border)', paddingBottom: '10px', letterSpacing:'0.1em' }}>{day}</div>
+                  <div style={{ flex: 1, display:'flex', flexDirection:'column', gap:'8px' }}>
+                    {/* Placeholder for tasks */}
+                    <div style={{ width: '100%', height: '40px', borderRadius: '10px', border: '1.5px dashed var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'var(--color-text-3)', cursor: 'pointer', fontWeight:800 }}>+</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
+
+        {/* Sidebar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+          
+          <QuickCheckIn user={user} isDark={isDark} />
+
+          {/* Progress Indicators */}
+          <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'24px' }}>
+            <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', color:'var(--color-text-3)', marginBottom:'20px' }}>Trajectory</div>
+            {[
+              { label:'Yearly', val: 34, color: 'var(--color-accent)' },
+              { label:'Monthly', val: 42, color: '#3B82F6' },
+              { label:'Weekly', val: 68, color: '#F59E0B' },
+              { label:'Daily', val: 72, color: '#EC4899' },
+            ].map(p => (
+              <div key={p.label} style={{ marginBottom:'20px' }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'8px', fontSize:'11px', fontWeight:800 }}>
+                  <span style={{ color:'var(--color-text-2)' }}>{p.label}</span>
+                  <span style={{ color:p.color }}>{p.val}%</span>
+                </div>
+                <div style={{ height:'6px', background:'var(--color-border)', borderRadius:'3px', overflow:'hidden' }}>
+                  <div style={{ height:'100%', width:`${p.val}%`, background:p.color, borderRadius:'3px' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Metrics */}
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+            <MetricStrip label="DSA" value="142" color="#3B82F6" />
+            <MetricStrip label="TYPING" value="84" color="#10B981" />
+            <MetricStrip label="NOTES" value="1,204" color="#F59E0B" />
+            <MetricStrip label="REPORTS" value="12" color="#8B5CF6" />
+          </div>
+
+        </div>
+
       </div>
     </div>
   );

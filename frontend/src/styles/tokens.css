@@ -105,8 +105,8 @@
   /* Type Scale */
   --text-hero:    italic 700 48px/1.05 var(--font-serif);
   --text-metric:  700 36px/1 var(--font-sans);
-  --text-heading: 500 15px/1.4 var(--font-sans);
-  --text-body:    400 14px/1.6 var(--font-sans);
+  --text-heading: 500 16px/1.4 var(--font-sans);
+  --text-body:    400 15px/1.6 var(--font-sans);
   --text-label:   500 10px/1 var(--font-mono);
   --text-subtext: 400 12px/1.5 var(--font-sans);
 
@@ -136,8 +136,8 @@
   /* ── Layout ─────────────────────────────────────── */
   --nav-height:      56px;
   --nav-height-mob:  50px;
-  --content-max:     1260px;
-  --content-pad:     32px;
+  --content-max:     1320px;
+  --content-pad:     40px;
   --section-gap:     var(--space-6);
 
   /* ── Component heights ──────────────────────────── */

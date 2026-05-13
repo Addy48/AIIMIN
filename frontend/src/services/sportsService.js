@@ -1,3 +1,4 @@
+
 const FOOTBALL_BASE = 'https://v3.football.api-sports.io';
 const F1_BASE = 'https://v1.formula-1.api-sports.io';
 const CRICKET_BASE = 'https://api.cricapi.com/v1';
@@ -9,104 +10,79 @@ const headers = {
   'x-apisports-key': SPORTS_KEY,
 };
 
-// Mock data for fallback when APIs fail or are empty
 const MOCK_FOOTBALL = [
-  {
-    fixture: { id: 1, status: { short: 'FT' }, date: new Date().toISOString() },
-    teams: { home: { name: 'Real Madrid', logo: 'https://media.api-sports.io/football/teams/541.png' }, away: { name: 'Barcelona', logo: 'https://media.api-sports.io/football/teams/529.png' } },
-    goals: { home: 3, away: 2 }
-  },
-  {
-    fixture: { id: 2, status: { short: 'FT' }, date: new Date().toISOString() },
-    teams: { home: { name: 'Man City', logo: 'https://media.api-sports.io/football/teams/50.png' }, away: { name: 'Arsenal', logo: 'https://media.api-sports.io/football/teams/42.png' } },
-    goals: { home: 1, away: 1 }
-  }
+  { fixture: { id: 1, status: { short: 'FT' }, date: new Date().toISOString() }, teams: { home: { name: 'Real Madrid', logo: '' }, away: { name: 'Barcelona', logo: '' } }, goals: { home: 3, away: 2 } },
+  { fixture: { id: 2, status: { short: 'FT' }, date: new Date().toISOString() }, teams: { home: { name: 'Man City', logo: '' }, away: { name: 'Arsenal', logo: '' } }, goals: { home: 1, away: 1 } }
 ];
 
-const MOCK_CRICKET = [
-  {
-    id: "mock-1",
-    name: "India vs Australia - 2nd Test",
-    matchType: "Test",
-    status: "Stumps - Day 3",
-    score: [
-      { inning: "India 1st Inn", r: 345, w: 10, o: 102.4 },
-      { inning: "Australia 1st Inn", r: 289, w: 10, o: 95.2 },
-      { inning: "India 2nd Inn", r: 120, w: 3, o: 42.0 }
-    ]
-  }
+const MOCK_F1_STANDINGS = [
+  { position: 1, driver: { name: 'Max Verstappen' }, team: { name: 'Red Bull' }, points: 194 },
+  { position: 2, driver: { name: 'Charles Leclerc' }, team: { name: 'Ferrari' }, points: 138 },
+  { position: 3, driver: { name: 'Lando Norris' }, team: { name: 'McLaren' }, points: 131 },
+];
+
+const MOCK_F1_RACES = [
+  { name: 'Monaco Grand Prix', date: '2026-05-24', circuit: { name: 'Circuit de Monaco' } },
+  { name: 'Spanish Grand Prix', date: '2026-06-07', circuit: { name: 'Circuit de Barcelona-Catalunya' } },
 ];
 
 export const sportsService = {
-  // FOOTBALL
   fetchFootballLive: async () => {
     try {
       const res = await fetch(`${FOOTBALL_BASE}/fixtures?live=all`, { headers });
+      if (!res.ok) throw new Error('Football API error');
       const data = await res.json();
-      const results = data.response || [];
-      return results.length > 0 ? results : []; // Don't fallback to mock here, let the UI handle it
+      return data.response && data.response.length > 0 ? data.response : [];
     } catch (err) {
-      console.error('Football Live Fetch Error:', err);
+      console.warn('Football Live Fallback');
       return [];
     }
   },
-
-  fetchFootballRecent: async () => {
-    try {
-      const res = await fetch(`${FOOTBALL_BASE}/fixtures?last=10`, { headers });
-      const data = await res.json();
-      return data.response && data.response.length > 0 ? data.response : MOCK_FOOTBALL;
-    } catch (err) {
-      console.error('Football Recent Fetch Error:', err);
-      return MOCK_FOOTBALL;
-    }
-  },
-
-  fetchFootballUpcoming: async () => {
-    try {
-      const res = await fetch(`${FOOTBALL_BASE}/fixtures?next=10`, { headers });
-      const data = await res.json();
-      return data.response || [];
-    } catch (err) {
-      console.error('Football Upcoming Fetch Error:', err);
-      return [];
-    }
-  },
-
-  // F1
-  fetchF1Standings: async (season = new Date().getFullYear()) => {
+  fetchF1Standings: async (season = 2026) => {
     try {
       const res = await fetch(`${F1_BASE}/rankings/drivers?season=${season}`, { headers });
+      if (!res.ok) throw new Error('F1 API error');
       const data = await res.json();
-      return data.response || [];
+      return data.response && data.response.length > 0 ? data.response : MOCK_F1_STANDINGS;
     } catch (err) {
-      console.error('F1 Standings Fetch Error:', err);
-      return [];
+      return MOCK_F1_STANDINGS;
     }
   },
-
-  fetchF1Races: async (season = new Date().getFullYear()) => {
+  fetchF1Races: async (season = 2026) => {
     try {
       const res = await fetch(`${F1_BASE}/races?season=${season}&next=5`, { headers });
+      if (!res.ok) throw new Error('F1 API error');
       const data = await res.json();
-      return data.response || [];
+      return data.response && data.response.length > 0 ? data.response : MOCK_F1_RACES;
     } catch (err) {
-      console.error('F1 Races Fetch Error:', err);
-      return [];
+      return MOCK_F1_RACES;
     }
   },
-
-  // CRICKET
   fetchCricketLive: async () => {
     try {
       const res = await fetch(`${CRICKET_BASE}/currentMatches?apikey=${CRICKET_KEY}`);
+      if (!res.ok) throw new Error('Cricket API error');
       const data = await res.json();
-      const results = data.data || [];
-      return results.length > 0 ? results : MOCK_CRICKET;
+      return data.data && data.data.length > 0 ? data.data : [];
     } catch (err) {
-      console.error('Cricket Live Fetch Error:', err);
-      return MOCK_CRICKET;
+      return [];
+    }
+  },
+  getAggregatedSports: async () => {
+    try {
+      const [football, f1, cricket] = await Promise.all([
+        sportsService.fetchFootballLive(),
+        sportsService.fetchF1Races(),
+        sportsService.fetchCricketLive()
+      ]);
+      return { 
+        football: football.length > 0 ? football : MOCK_FOOTBALL, 
+        f1: f1, 
+        cricket: cricket 
+      };
+    } catch (err) {
+      console.error("Aggregation failed", err);
+      return { football: MOCK_FOOTBALL, f1: MOCK_F1_RACES, cricket: [] };
     }
   }
 };
-
