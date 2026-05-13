@@ -192,7 +192,7 @@ const Finance = () => {
   const monthStr = new Date().toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
 
   return (
-    <div style={{ paddingBottom: '80px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ paddingBottom: '80px' }}>
 
       {/* Header */}
       <header style={{ marginBottom: '40px' }}>
