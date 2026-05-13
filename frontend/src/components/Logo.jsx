@@ -33,7 +33,7 @@ export default function Logo({ size = 36, withBg = true }) {
   const isDark = theme === 'dark';
 
   if (withBg) {
-    // Navbar variant: white mark on green rounded square
+    // Navbar variant: premium gradient on green rounded square
     return (
       <svg
         width={size}
@@ -41,10 +41,16 @@ export default function Logo({ size = 36, withBg = true }) {
         viewBox="0 0 512 512"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ display: 'block', flexShrink: 0 }}
+        style={{ display: 'block', flexShrink: 0, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}
       >
-        <rect width="512" height="512" rx="110" fill="#23503B" />
-        <path d={LOGO_PATH} fill="#FFFFFF" />
+        <defs>
+          <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#2D6A4F" />
+            <stop offset="100%" stopColor="#1B4332" />
+          </linearGradient>
+        </defs>
+        <rect width="512" height="512" rx="120" fill="url(#logoGrad)" />
+        <path d={LOGO_PATH} fill="#FFFFFF" fillOpacity="0.95" />
       </svg>
     );
   }

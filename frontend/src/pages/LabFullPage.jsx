@@ -6,9 +6,8 @@ import { supabase } from '../utils/supabase';
 import TypingTest from '../components/lab/TypingTest';
 import ReactionTest from '../components/lab/ReactionTest';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
-import DecisionScenario from '../components/lab/DecisionScenario';
-import MindsetLogger from '../components/lab/MindsetLogger';
-import BeliefEntry from '../components/lab/BeliefEntry';
+import PersonalityForge from '../components/lab/PersonalityForge';
+import ThePit from '../components/lab/ThePit';
 import './lab/lab.css';
 
 /* ─────────────────────────────────────────────────────────────
@@ -294,60 +293,7 @@ function TypingTestSupabase({ userId, onComplete }) {
   );
 }
 
-/* ── Mindset Logger that saves to Supabase ──────────────────── */
-function MindsetLoggerSupabase({ userId, currentState, onComplete }) {
-  const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
-  const STATES = ['focused', 'neutral', 'distracted', 'anxious', 'energized', 'drained', 'creative', 'productive'];
-  const [selected, setSelected] = useState(currentState || null);
-  const [note, setNote] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  const border = isDark ? '#222' : '#e5e7eb';
-  const text1 = isDark ? '#ededed' : '#111';
-  const text2 = isDark ? '#a1a1aa' : '#6b7280';
-
-  const handleSave = async () => {
-    if (!selected) return;
-    setSaving(true);
-    const today = new Date().toISOString().split('T')[0];
-    const { error } = await supabase.from('lab_mindset_logs').insert({
-      user_id: userId,
-      state: selected,
-      note: note.trim() || null,
-      day_of: today,
-    });
-    setSaving(false);
-    if (!error) { setSaved(true); onComplete?.(); }
-  };
-
-  return (
-    <div style={{ padding: '24px' }}>
-      <div style={{ fontSize: '15px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '18px' }}>Mindset State</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
-        {STATES.map(s => (
-          <button key={s} onClick={() => setSelected(s)} style={{
-            padding: '7px 16px', borderRadius: '9999px', border: `1px solid ${s === selected ? '#22C55E' : border}`,
-            background: s === selected ? 'rgba(34,197,94,0.12)' : 'transparent',
-            color: s === selected ? '#22C55E' : text2, fontSize: '12px', fontWeight: 500, cursor: 'pointer',
-            fontFamily: 'var(--font-sans)', transition: 'all 120ms ease', textTransform: 'capitalize',
-          }}>{s}</button>
-        ))}
-      </div>
-      <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Optional note…"
-        style={{ width: '100%', minHeight: '70px', resize: 'none', fontFamily: 'var(--font-sans)', fontSize: '13px', color: text1, background: isDark ? '#161616' : '#f9fafb', border: `1px solid ${border}`, borderRadius: '8px', padding: '10px', outline: 'none', boxSizing: 'border-box', marginBottom: '14px' }} />
-      {saved ? (
-        <p style={{ color: '#22C55E', fontSize: '13px', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>✓ Logged</p>
-      ) : (
-        <button onClick={handleSave} disabled={!selected || saving} style={{
-          padding: '9px 24px', background: selected ? '#22C55E' : '#3f3f3f', color: '#fff',
-          border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: selected ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-sans)',
-        }}>{saving ? 'Saving…' : 'Log State'}</button>
-      )}
-    </div>
-  );
-}
+// MindsetLoggerSupabase and others removed as they are redundant with Quick Pulse on Overview
 
 /* ── Main Lab Page ──────────────────────────────────────────── */
 export default function LabFullPage() {
@@ -393,12 +339,11 @@ export default function LabFullPage() {
   if (!user) return null;
 
   const modules = [
-    { key: "typing",     emoji: "⌨️",  label: "Typing Speed",    desc: "WPM & accuracy benchmark",        color: "#3B82F6" },
-    { key: "speaking",   emoji: "🎙️", label: "Speaking Logger",  desc: "60-sec vocal response & review",  color: "#8B5CF6" },
-    { key: "reflection", emoji: "🪞",  label: "Daily Reflection", desc: "3-prompt end-of-day review",      color: "#22C55E" },
-    { key: "mood",       emoji: "🌡️", label: "Mood & Energy",    desc: "Rate mood, energy, focus (1-10)", color: "#F59E0B" },
-    { key: "habits",     emoji: "🔥",  label: "Habit Streaks",    desc: "Binary check-in & streak count",  color: "#EF4444" },
-    { key: "reading",    emoji: "📖",  label: "Reading Log",      desc: "Log books, articles & ratings",   color: "#10B981" },
+    { key: "typing",     emoji: "⌨️",  label: "Typing Speed",   desc: "WPM & accuracy benchmark",       color: "#3B82F6" },
+    { key: "speaking",   emoji: "🎙️", label: "Speaking Logger", desc: "60-sec vocal response & review", color: "#8B5CF6" },
+    { key: "personality",emoji: "🧬",  label: "Personality Forge",desc: "Core trait & value alignment",  color: "#EC4899" },
+    { key: "pit",       emoji: "⛓️",  label: "The Pit",        desc: "Hard-mode & resilience logs",   color: "#EF4444" },
+    { key: "reading",    emoji: "📖",  label: "Reading Log",    desc: "Log books, articles & ratings",  color: "#10B981" },
   ];
 
   return (
@@ -458,12 +403,11 @@ export default function LabFullPage() {
             style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "18px", width: "560px", maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", position: "relative" }}>
             <button onClick={() => setActiveModule(null)}
               style={{ position: "absolute", top: "16px", right: "16px", width: "28px", height: "28px", borderRadius: "50%", border: `1px solid ${border}`, background: "transparent", color: text2, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", zIndex: 1 }}>✕</button>
-            {activeModule === "typing"     && <TypingTestSupabase userId={user.id} onComplete={() => fetchStats()} />}
-            {activeModule === "speaking"   && <SpeakingLogger onComplete={() => fetchStats()} />}
-            {activeModule === "reflection" && <DailyReflection isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-            {activeModule === "mood"       && <MoodEnergyTracker isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-            {activeModule === "habits"     && <HabitStreaks isDark={isDark} />}
-            {activeModule === "reading"    && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+            {activeModule === "typing"      && <TypingTestSupabase userId={user.id} onComplete={() => fetchStats()} />}
+            {activeModule === "speaking"    && <SpeakingLogger onComplete={() => fetchStats()} />}
+            {activeModule === "personality" && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+            {activeModule === "pit"         && <ThePit userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+            {activeModule === "reading"     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
           </div>
         </div>
       )}
@@ -497,127 +441,7 @@ function TypingHistory({ userId, cardBg, border, text1, text2, text3 }) {
   );
 }
 
-function DailyReflection({ isDark, onClose }) {
-  const PROMPTS = [
-    { key: "win",       q: "What did I do really well today?", emoji: "🏆" },
-    { key: "improve",   q: "What could I have done better?",   emoji: "📈" },
-    { key: "gratitude", q: "What am I grateful for today?",    emoji: "🙏" },
-  ];
-  const [answers, setAnswers] = useState({ win: "", improve: "", gratitude: "" });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const border = isDark ? "#2a2a2a" : "#e5e7eb";
-  const text1 = isDark ? "#ededed" : "#111";
-  const text3 = isDark ? "#52525b" : "#9ca3af";
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from("lab_reflections").insert({ user_id: user.id, date: new Date().toISOString().split("T")[0], ...answers });
-      setSaved(true); setTimeout(onClose, 1200);
-    } catch { setSaving(false); }
-  };
-  return (
-    <div style={{ padding: "32px" }}>
-      <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Daily Reflection</div>
-      <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 24px" }}>End of day review</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        {PROMPTS.map(p => (
-          <div key={p.key}>
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: 600, color: text1, marginBottom: "8px" }}>
-              <span>{p.emoji}</span>{p.q}
-            </label>
-            <textarea value={answers[p.key]} onChange={e => setAnswers(a => ({ ...a, [p.key]: e.target.value }))}
-              rows={3} placeholder="Write freely..."
-              style={{ width: "100%", padding: "12px", borderRadius: "10px", border: `1px solid ${border}`, background: isDark?"#1a1a1a":"#f9fafb", color: text1, fontSize: "13px", resize: "vertical", lineHeight: 1.6 }} />
-          </div>
-        ))}
-      </div>
-      <button onClick={handleSave} disabled={saving||saved||!Object.values(answers).some(v=>v.trim())}
-        style={{ marginTop: "20px", width: "100%", padding: "14px", background: saved?"#22C55E":"var(--color-accent)", color: "#fff", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
-        {saved ? "✓ Saved!" : saving ? "Saving..." : "Save Reflection"}
-      </button>
-    </div>
-  );
-}
-
-function MoodEnergyTracker({ isDark, onClose }) {
-  const [vals, setVals] = useState({ mood: 7, energy: 7, focus: 7, stress: 3 });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const border = isDark ? "#2a2a2a" : "#e5e7eb";
-  const text1 = isDark ? "#ededed" : "#111";
-  const text3 = isDark ? "#52525b" : "#9ca3af";
-  const METRICS = [
-    { key: "mood",   label: "Mood",   emoji: "😊", lo: "Low",      hi: "Euphoric",    color: "#F59E0B" },
-    { key: "energy", label: "Energy", emoji: "⚡", lo: "Drained",  hi: "Charged",     color: "#22C55E" },
-    { key: "focus",  label: "Focus",  emoji: "🎯", lo: "Scattered",hi: "Locked in",   color: "#3B82F6" },
-    { key: "stress", label: "Stress", emoji: "😤", lo: "Calm",     hi: "Overwhelmed", color: "#EF4444" },
-  ];
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from("lab_mood_logs").insert({ user_id: user.id, logged_at: new Date().toISOString(), ...vals });
-      setSaved(true); setTimeout(onClose, 1200);
-    } catch { setSaving(false); }
-  };
-  return (
-    <div style={{ padding: "32px" }}>
-      <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Mood & Energy</div>
-      <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 28px" }}>How are you right now?</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {METRICS.map(m => (
-          <div key={m.key}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-              <span style={{ fontSize: "13px", fontWeight: 600, color: text1 }}>{m.emoji} {m.label}</span>
-              <span style={{ fontSize: "22px", fontWeight: 800, color: m.color, fontFamily: "var(--font-mono)" }}>{vals[m.key]}</span>
-            </div>
-            <input type="range" min={1} max={10} value={vals[m.key]} onChange={e => setVals(v => ({ ...v, [m.key]: Number(e.target.value) }))}
-              style={{ width: "100%", accentColor: m.color }} />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: text3, marginTop: "4px" }}>
-              <span>{m.lo}</span><span>{m.hi}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <button onClick={handleSave} disabled={saving||saved}
-        style={{ marginTop: "24px", width: "100%", padding: "14px", background: saved?"#22C55E":"var(--color-accent)", color: "#fff", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
-        {saved ? "✓ Logged!" : saving ? "Saving..." : "Log State"}
-      </button>
-    </div>
-  );
-}
-
-function HabitStreaks({ isDark }) {
-  const HABITS = ["Morning workout","Read 20 min","No phone until 10am","Cold shower","Journaled","DSA practice","No junk food","Slept before midnight"];
-  const [checked, setChecked] = useState({});
-  const border = isDark ? "#2a2a2a" : "#e5e7eb";
-  const text1 = isDark ? "#ededed" : "#111";
-  const text3 = isDark ? "#52525b" : "#9ca3af";
-  const done = Object.values(checked).filter(Boolean).length;
-  return (
-    <div style={{ padding: "32px" }}>
-      <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Habit Streaks</div>
-      <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 8px" }}>Today's check-in</h2>
-      <div style={{ fontSize: "13px", color: text3, marginBottom: "16px" }}>{done} of {HABITS.length} done</div>
-      <div style={{ height: "4px", background: isDark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.06)", borderRadius: "9999px", overflow: "hidden", marginBottom: "20px" }}>
-        <div style={{ height: "100%", width: `${(done/HABITS.length)*100}%`, background: "#22C55E", borderRadius: "9999px", transition: "width 300ms ease" }} />
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        {HABITS.map(h => (
-          <button key={h} onClick={() => setChecked(c => ({ ...c, [h]: !c[h] }))}
-            style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 16px", background: checked[h]?(isDark?"rgba(34,197,94,0.08)":"rgba(30,92,58,0.06)"):(isDark?"#1a1a1a":"#f9fafb"), border: `1px solid ${checked[h]?"#22C55E":border}`, borderRadius: "10px", cursor: "pointer", textAlign: "left", transition: "all 150ms" }}>
-            <div style={{ width: "20px", height: "20px", borderRadius: "50%", border: `2px solid ${checked[h]?"#22C55E":"rgba(255,255,255,0.2)"}`, background: checked[h]?"#22C55E":"transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {checked[h] && <span style={{ color: "#fff", fontSize: "11px" }}>✓</span>}
-            </div>
-            <span style={{ fontSize: "13px", fontWeight: 600, color: checked[h]?"#22C55E":text1, textDecoration: checked[h]?"line-through":"none" }}>{h}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
+// DailyReflection, MoodEnergyTracker, HabitStreaks removed as they are redundant
 
 function ReadingLog({ userId, isDark, onClose }) {
   const [form, setForm] = useState({ title: "", author: "", type: "book", pages: "", rating: 4, notes: "" });
