@@ -1,39 +1,51 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const SAMPLE_TEXTS = [
-    "The mind is not a vessel to be filled, but a fire to be kindled. Every small discipline compounds into something greater than the sum of its parts.",
-    "Clarity comes from engagement, not from thought. The person who waits for perfect conditions will never begin. Start before you are ready.",
-    "Discipline is choosing between what you want now and what you want most. The gap between knowing and doing is where character lives.",
-    "Your habits are the architecture of your daily life. Each routine is a brick, each decision is mortar. Build with intention.",
-    "Focus is not about saying yes to the right thing. It is about saying no to the hundred other good ideas. Guard your attention fiercely.",
+const COMMON_WORDS = [
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at", 
+    "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what",
+    "so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know", "take",
+    "people", "into", "year", "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also",
+    "back", "after", "use", "two", "how", "our", "work", "first", "well", "way", "even", "new", "want", "because", "any", "these", "give", "day", "most", "us"
 ];
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
+const generateWords = (count = 100) => {
+    let result = [];
+    for (let i = 0; i < count; i++) {
+        result.push(COMMON_WORDS[Math.floor(Math.random() * COMMON_WORDS.length)]);
+    }
+    return result.join(' ');
+};
+
 export default function TypingTest({ onComplete }) {
     const [phase, setPhase] = useState('ready'); // ready | running | done
+    const [config, setConfig] = useState({ time: 30 }); // 15 | 30 | 60
     const [text, setText] = useState('');
     const [input, setInput] = useState('');
-    const [timeLeft, setTimeLeft] = useState(60);
+    const [timeLeft, setTimeLeft] = useState(30);
     const [wpm, setWpm] = useState(0);
     const [accuracy, setAccuracy] = useState(100);
+    const [isFocused, setIsFocused] = useState(true);
     const [saving, setSaving] = useState(false);
     const [result, setResult] = useState(null);
+
     const inputRef = useRef(null);
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
 
     const resetTest = useCallback(() => {
-        setText(SAMPLE_TEXTS[Math.floor(Math.random() * SAMPLE_TEXTS.length)]);
+        setText(generateWords(80));
         setPhase('ready');
         setInput('');
-        setTimeLeft(60);
+        setTimeLeft(config.time);
         setWpm(0);
         setAccuracy(100);
         setResult(null);
         startTimeRef.current = null;
-    }, []);
+        if (timerRef.current) clearInterval(timerRef.current);
+    }, [config.time]);
 
     useEffect(() => {
         resetTest();
@@ -42,10 +54,10 @@ export default function TypingTest({ onComplete }) {
     const startTest = useCallback(() => {
         setPhase('running');
         setInput('');
-        setTimeLeft(60);
+        setTimeLeft(config.time);
         startTimeRef.current = Date.now();
-        setTimeout(() => inputRef.current?.focus(), 100);
-    }, []);
+        setTimeout(() => inputRef.current?.focus(), 10);
+    }, [config.time]);
 
     useEffect(() => {
         if (phase !== 'running') return;
@@ -64,25 +76,26 @@ export default function TypingTest({ onComplete }) {
 
     const handleInput = (e) => {
         const val = e.target.value;
-        if (phase !== 'running') return;
+        if (phase === 'ready') {
+            startTest();
+        }
+        if (phase !== 'running' && phase !== 'ready') return;
 
         setInput(val);
 
-        // Calculate Accuracy
-        const textChars = text.slice(0, val.length).split('');
-        const inputChars = val.split('');
-        let correct = 0;
-        inputChars.forEach((c, i) => { if (c === textChars[i]) correct++; });
-        const calcAccuracy = val.length > 0 ? (correct / val.length) * 100 : 100;
-        setAccuracy(Number(calcAccuracy.toFixed(1)));
+        // Calculate Stats
+        const correctChars = val.split('').filter((c, i) => c === text[i]).length;
+        const calcAccuracy = val.length > 0 ? (correctChars / val.length) * 100 : 100;
+        setAccuracy(Math.round(calcAccuracy));
 
-        // Calculate WPM
-        const elapsed = (Date.now() - startTimeRef.current) / 60000;
-        if (elapsed > 0) {
-            setWpm(Math.round((val.length / 5) / elapsed));
+        const elapsedSeconds = (Date.now() - startTimeRef.current) / 1000;
+        if (elapsedSeconds > 0) {
+            // WPM formula: (chars / 5) / (seconds / 60)
+            const currentWpm = Math.round((correctChars / 5) / (elapsedSeconds / 60));
+            setWpm(currentWpm);
         }
 
-        if (val.length === text.length) {
+        if (val.length >= text.length) {
             setPhase('done');
             clearInterval(timerRef.current);
         }
@@ -95,7 +108,7 @@ export default function TypingTest({ onComplete }) {
             const res = await fetch(`${API_BASE}/lab/practice/typing`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ wpm, accuracy_pct: accuracy, duration_sec: 60 - timeLeft }),
+                body: JSON.stringify({ wpm, accuracy_pct: accuracy, duration_sec: config.time - timeLeft }),
             });
             const data = await res.json();
             setResult(data);
@@ -111,56 +124,91 @@ export default function TypingTest({ onComplete }) {
     const text2 = 'var(--color-text-2)';
     const text3 = 'var(--color-text-3)';
     const accent = 'var(--color-accent)';
-    const border = 'var(--color-border)';
+    const errorColor = '#ca4754';
 
     return (
-        <div style={{ padding: '24px' }}>
-            {/* Header Metrics */}
-            <div style={{ display: 'flex', gap: '40px', marginBottom: '40px', fontFamily: 'var(--font-mono)', alignItems: 'flex-end' }}>
-                <div>
-                    <div style={{ fontSize: '10px', color: text3, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.1em' }}>Time</div>
-                    <div style={{ fontSize: '32px', fontWeight: 800, color: timeLeft <= 10 ? '#EF4444' : accent }}>{timeLeft}s</div>
+        <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
+            {/* Monkeytype Style Toolbar */}
+            {phase !== 'done' && (
+                <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    gap: '24px', 
+                    marginBottom: '40px',
+                    background: 'rgba(0,0,0,0.03)',
+                    padding: '8px 24px',
+                    borderRadius: '12px',
+                    width: 'fit-content',
+                    margin: '0 auto 40px'
+                }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        {[15, 30, 60].map(t => (
+                            <button
+                                key={t}
+                                onClick={() => setConfig({ ...config, time: t })}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: config.time === t ? accent : text3,
+                                    fontSize: '12px',
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    transition: 'color 0.2s'
+                                }}
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-                <div>
-                    <div style={{ fontSize: '10px', color: text3, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.1em' }}>WPM</div>
-                    <div style={{ fontSize: '32px', fontWeight: 800, color: text1 }}>{wpm}</div>
-                </div>
-                <div>
-                    <div style={{ fontSize: '10px', color: text3, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.1em' }}>Accuracy</div>
-                    <div style={{ fontSize: '32px', fontWeight: 800, color: accuracy >= 95 ? '#10B981' : '#F59E0B' }}>{accuracy}%</div>
-                </div>
-                <button 
-                    onClick={resetTest}
-                    style={{ marginLeft: 'auto', background: 'none', border: 'none', color: text3, cursor: 'pointer', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
-                >
-                    Restart
-                </button>
-            </div>
+            )}
 
-            {/* Test Area */}
-            <div style={{ position: 'relative', minHeight: '180px' }}>
+            <div style={{ position: 'relative' }}>
                 <AnimatePresence mode="wait">
-                    {phase === 'ready' ? (
+                    {phase === 'done' ? (
                         <motion.div
-                            key="ready"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+                            key="done"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
                             style={{ textAlign: 'center', padding: '40px 0' }}
                         >
-                            <p style={{ color: text2, marginBottom: '24px', fontSize: '15px' }}>
-                                A 60-second test to measure your focus and speed.
-                            </p>
-                            <button onClick={startTest} className="lab-retry-btn" style={{ padding: '12px 32px' }}>
-                                Start Session
-                            </button>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '60px', marginBottom: '40px' }}>
+                                <div>
+                                    <div style={{ fontSize: '14px', color: text3, marginBottom: '8px' }}>wpm</div>
+                                    <div style={{ fontSize: '64px', fontWeight: 800, color: accent, lineHeight: 1 }}>{wpm}</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '14px', color: text3, marginBottom: '8px' }}>acc</div>
+                                    <div style={{ fontSize: '64px', fontWeight: 800, color: accent, lineHeight: 1 }}>{accuracy}%</div>
+                                </div>
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+                                <button onClick={handleSave} disabled={saving} className="lab-retry-btn" style={{ padding: '14px 32px' }}>
+                                    {saving ? 'Saving...' : 'Sync Session'}
+                                </button>
+                                <button onClick={resetTest} style={{ 
+                                    background: 'none', 
+                                    border: '1px solid var(--color-border)', 
+                                    padding: '14px 32px', 
+                                    borderRadius: '12px', 
+                                    color: text2, 
+                                    fontWeight: 600,
+                                    cursor: 'pointer'
+                                }}>
+                                    Restart
+                                </button>
+                            </div>
                         </motion.div>
-                    ) : phase === 'running' ? (
+                    ) : (
                         <motion.div
-                            key="running"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            style={{ position: 'relative' }}
+                            key="test"
+                            style={{ 
+                                position: 'relative', 
+                                cursor: 'text',
+                                filter: isFocused ? 'none' : 'blur(4px)',
+                                transition: 'filter 0.3s ease'
+                            }}
                             onClick={() => inputRef.current?.focus()}
                         >
                             <input
@@ -168,52 +216,64 @@ export default function TypingTest({ onComplete }) {
                                 type="text"
                                 value={input}
                                 onChange={handleInput}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setIsFocused(false)}
                                 style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
                                 autoFocus
                             />
+
+                            {/* Live Timer (Monkeytype style) */}
                             <div style={{ 
-                                fontSize: '28px', 
+                                position: 'absolute', 
+                                top: '-30px', 
+                                left: '0', 
+                                fontSize: '24px', 
+                                fontWeight: 700, 
+                                color: accent,
+                                opacity: phase === 'running' ? 1 : 0,
+                                transition: 'opacity 0.3s'
+                            }}>
+                                {timeLeft}
+                            </div>
+
+                            <div style={{ 
+                                fontSize: '24px', 
                                 lineHeight: '1.5', 
                                 fontFamily: 'var(--font-mono)', 
                                 color: text3, 
                                 whiteSpace: 'pre-wrap',
-                                letterSpacing: '-0.02em',
-                                filter: phase === 'running' ? 'none' : 'blur(4px)',
-                                transition: 'filter 0.3s ease'
+                                letterSpacing: '0.02em',
+                                wordBreak: 'break-word',
+                                textAlign: 'left'
                             }}>
                                 {text.split('').map((char, i) => {
                                     let color = text3;
-                                    let background = 'transparent';
                                     if (i < input.length) {
-                                        if (input[i] === char) {
-                                            color = text1;
-                                        } else {
-                                            color = '#EF4444';
-                                            background = 'rgba(239, 68, 68, 0.15)';
-                                        }
+                                        color = input[i] === char ? text1 : errorColor;
                                     }
+                                    
+                                    const isCurrent = i === input.length;
+
                                     return (
                                         <span key={i} style={{ 
                                             color, 
-                                            background, 
-                                            position: 'relative', 
-                                            borderRadius: '2px',
-                                            transition: 'color 0.1s ease'
+                                            position: 'relative',
+                                            transition: 'color 0.1s'
                                         }}>
-                                            {i === input.length && (
+                                            {isCurrent && phase !== 'done' && (
                                                 <motion.div
-                                                    layoutId="cursor"
+                                                    layoutId="caret"
+                                                    style={{
+                                                        position: 'absolute',
+                                                        left: '-1px',
+                                                        top: '15%',
+                                                        width: '2px',
+                                                        height: '70%',
+                                                        background: accent,
+                                                        boxShadow: `0 0 10px ${accent}`
+                                                    }}
                                                     animate={{ opacity: [1, 0, 1] }}
                                                     transition={{ repeat: Infinity, duration: 0.8 }}
-                                                    style={{
-                                                        position: 'absolute', 
-                                                        left: '-1px', 
-                                                        top: '10%', 
-                                                        width: '2px', 
-                                                        height: '80%', 
-                                                        background: accent,
-                                                        boxShadow: `0 0 8px ${accent}`
-                                                    }}
                                                 />
                                             )}
                                             {char}
@@ -221,36 +281,20 @@ export default function TypingTest({ onComplete }) {
                                     );
                                 })}
                             </div>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="done"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            style={{ textAlign: 'center', padding: '20px 0' }}
-                        >
-                            <h3 style={{ fontSize: '24px', fontWeight: 800, color: text1, marginBottom: '8px' }}>Test Complete</h3>
-                            <p style={{ color: text2, marginBottom: '32px' }}>
-                                You achieved {wpm} WPM with {accuracy}% accuracy.
-                            </p>
-                            
-                            {result ? (
-                                <div style={{ padding: '20px', background: 'var(--color-surface)', borderRadius: '16px', border: `1px solid ${border}`, display: 'inline-block' }}>
-                                    <span style={{ fontSize: '14px', color: accent, fontWeight: 700 }}>
-                                        {result.mastery_change ? `🏅 ${result.mastery_change.toUpperCase()} earned!` : `Result synchronized.`}
-                                    </span>
-                                </div>
-                            ) : (
-                                <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                                    <button onClick={handleSave} disabled={saving} className="lab-retry-btn">
-                                        {saving ? 'Saving...' : 'Sync Result'}
-                                    </button>
-                                    <button 
-                                        onClick={resetTest}
-                                        style={{ background: 'none', border: `1px solid ${border}`, padding: '12px 24px', borderRadius: '12px', color: text2, cursor: 'pointer', fontWeight: 600 }}
-                                    >
-                                        Try Again
-                                    </button>
+
+                            {!isFocused && phase === 'running' && (
+                                <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    zIndex: 10,
+                                    color: text2,
+                                    fontWeight: 600,
+                                    pointerEvents: 'none'
+                                }}>
+                                    Click here to resume focus
                                 </div>
                             )}
                         </motion.div>
