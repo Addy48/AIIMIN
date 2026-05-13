@@ -172,12 +172,14 @@ export default function TypingTest({ onComplete }) {
                                 autoFocus
                             />
                             <div style={{ 
-                                fontSize: '24px', 
-                                lineHeight: '1.6', 
+                                fontSize: '28px', 
+                                lineHeight: '1.5', 
                                 fontFamily: 'var(--font-mono)', 
                                 color: text3, 
                                 whiteSpace: 'pre-wrap',
-                                letterSpacing: '-0.01em'
+                                letterSpacing: '-0.02em',
+                                filter: phase === 'running' ? 'none' : 'blur(4px)',
+                                transition: 'filter 0.3s ease'
                             }}>
                                 {text.split('').map((char, i) => {
                                     let color = text3;
@@ -187,17 +189,30 @@ export default function TypingTest({ onComplete }) {
                                             color = text1;
                                         } else {
                                             color = '#EF4444';
-                                            background = 'rgba(239, 68, 68, 0.1)';
+                                            background = 'rgba(239, 68, 68, 0.15)';
                                         }
                                     }
                                     return (
-                                        <span key={i} style={{ color, background, position: 'relative', borderRadius: '2px' }}>
+                                        <span key={i} style={{ 
+                                            color, 
+                                            background, 
+                                            position: 'relative', 
+                                            borderRadius: '2px',
+                                            transition: 'color 0.1s ease'
+                                        }}>
                                             {i === input.length && (
                                                 <motion.div
+                                                    layoutId="cursor"
                                                     animate={{ opacity: [1, 0, 1] }}
-                                                    transition={{ repeat: Infinity, duration: 1 }}
+                                                    transition={{ repeat: Infinity, duration: 0.8 }}
                                                     style={{
-                                                        position: 'absolute', left: 0, top: '10%', width: '2px', height: '80%', background: accent
+                                                        position: 'absolute', 
+                                                        left: '-1px', 
+                                                        top: '10%', 
+                                                        width: '2px', 
+                                                        height: '80%', 
+                                                        background: accent,
+                                                        boxShadow: `0 0 8px ${accent}`
                                                     }}
                                                 />
                                             )}

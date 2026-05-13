@@ -18,13 +18,20 @@ const SPEAKING_PROMPTS = [
 ];
 
 const Visualizer = () => (
-    <div style={{ display: 'flex', gap: '4px', height: '40px', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
-        {[...Array(12)].map((_, i) => (
+    <div style={{ display: 'flex', gap: '3px', height: '60px', alignItems: 'center', justifyContent: 'center', marginBottom: '32px' }}>
+        {[...Array(24)].map((_, i) => (
             <motion.div
                 key={i}
-                animate={{ height: [10, 40, 15, 30, 10] }}
-                transition={{ repeat: Infinity, duration: 0.5 + Math.random(), ease: "easeInOut" }}
-                style={{ width: '4px', background: 'var(--color-accent)', borderRadius: '2px' }}
+                animate={{ 
+                    height: [15, 60, 20, 45, 15],
+                    opacity: [0.3, 1, 0.5, 0.8, 0.3]
+                }}
+                transition={{ 
+                    repeat: Infinity, 
+                    duration: 0.6 + (i * 0.05), 
+                    ease: "easeInOut" 
+                }}
+                style={{ width: '3px', background: 'var(--color-accent)', borderRadius: '4px' }}
             />
         ))}
     </div>
