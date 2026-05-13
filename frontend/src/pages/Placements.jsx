@@ -19,6 +19,7 @@ export default function Placements() {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Modals
   const [showAppModal, setShowAppModal] = useState(false);
@@ -130,9 +131,25 @@ export default function Placements() {
   };
 
   const roles = useMemo(() => ['All', ...new Set(applications.map(a => a.role_title))].filter(Boolean), [applications]);
-  const filteredApps = useMemo(() => 
-    selectedRole === 'All' ? applications : applications.filter(a => a.role_title === selectedRole)
-  , [applications, selectedRole]);
+  
+  const filteredApps = useMemo(() => {
+    let filtered = applications;
+    
+    if (selectedRole !== 'All') {
+      filtered = filtered.filter(a => a.role_title === selectedRole);
+    }
+    
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(a => 
+        a.company_name?.toLowerCase().includes(term) ||
+        a.role_title?.toLowerCase().includes(term) ||
+        a.notes?.toLowerCase().includes(term)
+      );
+    }
+    
+    return filtered;
+  }, [applications, selectedRole, searchTerm]);
 
   const stats = useMemo(() => {
     const total = applications.length;
@@ -238,29 +255,62 @@ export default function Placements() {
             </div>
           </div>
 
-          {/* Filtering */}
-          <div style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>Filter by Role:</span>
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' }}>
-              {roles.map(r => (
+          {/* Search & Filtering */}
+          <div style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ position: 'relative', maxWidth: '500px' }}>
+              <input 
+                type="text"
+                placeholder="Search companies, roles, or notes..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ 
+                  width: '100%',
+                  padding: '14px 20px 14px 44px',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '14px',
+                  fontSize: '13px',
+                  color: 'var(--text-1)',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+              />
+              <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px', opacity: 0.5 }}>🔍</span>
+              {searchTerm && (
                 <button 
-                  key={r}
-                  onClick={() => setSelectedRole(r)}
-                  style={{ 
-                    padding: '6px 14px', 
-                    borderRadius: '20px', 
-                    fontSize: '12px', 
-                    border: '1px solid',
-                    borderColor: selectedRole === r ? 'var(--text-1)' : 'var(--border)',
-                    background: selectedRole === r ? 'var(--text-1)' : 'var(--bg-surface)',
-                    color: selectedRole === r ? 'var(--bg-primary)' : 'var(--text-2)',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap'
-                  }}
+                  onClick={() => setSearchTerm('')}
+                  style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.5 }}
                 >
-                  {r}
+                  ✕
                 </button>
-              ))}
+              )}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Roles:</span>
+              <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none', flex: 1 }}>
+                {roles.map(r => (
+                  <button 
+                    key={r}
+                    onClick={() => setSelectedRole(r)}
+                    style={{ 
+                      padding: '6px 14px', 
+                      borderRadius: '20px', 
+                      fontSize: '12px', 
+                      fontWeight: 600,
+                      border: '1px solid',
+                      borderColor: selectedRole === r ? 'var(--text-1)' : 'var(--border)',
+                      background: selectedRole === r ? 'var(--text-1)' : 'var(--bg-surface)',
+                      color: selectedRole === r ? 'var(--bg-primary)' : 'var(--text-2)',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
