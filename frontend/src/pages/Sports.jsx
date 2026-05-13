@@ -59,48 +59,59 @@ const SportsPage = () => {
   const [cricketLive, setCricketLive] = useState([]);
   const [loadingLive, setLoadingLive] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [liveError, setLiveError] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'live') {
       fetchLiveData();
-      const interval = setInterval(fetchLiveData, 60000); // Refresh every minute
+      const interval = setInterval(fetchLiveData, 60000);
       return () => clearInterval(interval);
     }
-  }, [activeTab]);
+  }, [activeTab]); // eslint-disable-line
+
+  const safeSlice = (arr, n) => (Array.isArray(arr) ? arr.slice(0, n) : []);
 
   const fetchLiveData = async () => {
     setLoadingLive(true);
+    setLiveError(null);
     try {
-      const [fb, f1S, f1R, cr] = await Promise.all([
+      const results = await Promise.allSettled([
         sportsService.fetchFootballLive(),
         sportsService.fetchF1Standings(),
         sportsService.fetchF1Races(),
-        sportsService.fetchCricketLive()
+        sportsService.fetchCricketLive(),
       ]);
-      setFootballLive(fb.slice(0, 5));
-      setF1Standings(f1S.slice(0, 10));
-      setF1Races(f1R);
-      setCricketLive(cr.slice(0, 5));
+      const [fb, f1S, f1R, cr] = results.map(r => r.status === 'fulfilled' ? r.value : []);
+      setFootballLive(safeSlice(fb, 5));
+      setF1Standings(safeSlice(f1S, 10));
+      setF1Races(Array.isArray(f1R) ? f1R : []);
+      setCricketLive(safeSlice(cr, 5));
       setLastUpdated(new Date());
 
-      // If no live football, fetch recent results and upcoming fixtures
-      if (fb.length === 0) {
-        const [recent, upcoming] = await Promise.all([
-          sportsService.fetchFootballRecent(),
-          sportsService.fetchFootballUpcoming()
-        ]);
-        setFootballRecent(recent.slice(0, 5));
-        setFootballUpcoming(upcoming.slice(0, 5));
+      if (!Array.isArray(fb) || fb.length === 0) {
+        try {
+          const [recent, upcoming] = await Promise.all([
+            sportsService.fetchFootballRecent(),
+            sportsService.fetchFootballUpcoming(),
+          ]);
+          setFootballRecent(safeSlice(recent, 5));
+          setFootballUpcoming(safeSlice(upcoming, 5));
+        } catch {
+          setFootballRecent([]);
+          setFootballUpcoming([]);
+        }
       } else {
         setFootballRecent([]);
         setFootballUpcoming([]);
       }
     } catch (err) {
       console.error('Failed to fetch live sports:', err);
+      setLiveError('Live data temporarily unavailable. Showing cached data.');
     } finally {
       setLoadingLive(false);
     }
   };
+
 
   if (!user) return null;
 

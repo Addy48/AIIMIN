@@ -134,10 +134,10 @@
   --space-9: 64px;
 
   /* ── Layout ─────────────────────────────────────── */
-  --nav-height:      52px;
+  --nav-height:      56px;
   --nav-height-mob:  50px;
-  --content-max:     1100px;
-  --content-pad:     40px;
+  --content-max:     1400px;
+  --content-pad:     28px;
   --section-gap:     var(--space-6);
 
   /* ── Component heights ──────────────────────────── */
