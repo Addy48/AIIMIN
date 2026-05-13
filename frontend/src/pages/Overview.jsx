@@ -263,25 +263,30 @@ const Overview = ({ user }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
 
       {/* ── Greeting ─────────────────────────────────── */}
-      <div>
+      {/* ── Greeting ─────────────────────────────────── */}
+      <div style={{ marginBottom: '40px' }}>
         <div style={{
-          fontSize: '11px',
-          fontWeight: 500,
-          letterSpacing: '0.06em',
+          fontSize: '12px',
+          fontWeight: 600,
+          letterSpacing: '0.15em',
           textTransform: 'uppercase',
           color: 'var(--color-text-3)',
           fontFamily: 'var(--font-sans)',
-          marginBottom: '6px',
+          marginBottom: '8px',
+          opacity: 0.8
         }}>
-          {greeting} · {weekday} {monthName} {dayNum} · Day {streak}
+          {weekday} {monthName} {dayNum} · Day {streak}
         </div>
         <h1 style={{
-          font: 'var(--text-hero)',
+          fontSize: '48px',
+          fontWeight: 700,
           color: 'var(--color-text-1)',
           margin: 0,
-          letterSpacing: '-0.02em',
+          letterSpacing: '-0.04em',
+          lineHeight: 1.1,
+          fontFamily: 'var(--font-sans)',
         }}>
-          Hey, {firstName}.
+          Focus, {firstName}.
         </h1>
       </div>
 
@@ -338,57 +343,55 @@ const Overview = ({ user }) => {
         alignItems: 'start',
       }}>
 
-        {/* LEFT: Tasks */}
-        <div style={{
-          background: cardBg,
-          border: cardBorder,
-          borderRadius: '8px',
-          overflow: 'hidden',
-        }}>
-          {/* Card header */}
+        {/* LEFT: Intentions (Tasks) */}
+        <div>
           <div style={{
-            padding: '16px 20px',
-            borderBottom: cardBorder,
+            padding: '0 0 20px 0',
+            borderBottom: `1px solid var(--color-border)`,
+            marginBottom: '16px',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: 'baseline',
           }}>
             <div style={{
-              fontSize: '11px',
-              fontWeight: 600,
-              letterSpacing: '0.06em',
+              fontSize: '12px',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
               textTransform: 'uppercase',
-              color: 'var(--color-text-3)',
+              color: 'var(--color-text-2)',
               fontFamily: 'var(--font-sans)',
-            }}>Today · {pendingTasks.length} intentions</div>
+            }}>Intentions</div>
             <div style={{
               fontSize: '11px',
               color: 'var(--color-text-3)',
-              fontFamily: 'var(--font-sans)',
+              fontFamily: 'var(--font-mono)',
             }}>
-              {completedTasks.length}/{tasks.length} done
+              {completedTasks.length} / {tasks.length}
             </div>
           </div>
 
-          {/* Task list */}
-          <div style={{ padding: '0 20px' }}>
+          <div style={{ padding: '0' }}>
             {tasks.length === 0 ? (
               <div style={{
                 padding: '40px 0',
-                textAlign: 'center',
                 color: 'var(--color-text-3)',
                 fontSize: '14px',
                 fontFamily: 'var(--font-sans)',
-              }}>No tasks for today</div>
+                fontStyle: 'italic'
+              }}>No intentions set for today.</div>
             ) : (
-              <>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {pendingTasks.map(task => (
                   <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
                 ))}
-                {completedTasks.map(task => (
-                  <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
-                ))}
-              </>
+                {completedTasks.length > 0 && (
+                  <div style={{ marginTop: '20px', opacity: 0.4 }}>
+                    {completedTasks.map(task => (
+                      <TaskRow key={task.id} task={task} onToggle={handleTaskToggle} isDark={isDark} />
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
