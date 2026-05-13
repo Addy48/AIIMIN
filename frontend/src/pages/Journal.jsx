@@ -1,327 +1,564 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
+import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, ChevronRight, Hash, Type, Trash2, Save, FileText } from 'lucide-react';
 
-/* ── Real schema:
-   id, user_id, date (DATE), encrypted_content (TEXT),
-   mood (INTEGER 1-5), sleep_hours, energy_level, created_at
-─────────────────────────────────────────────── */
-
+/* ── Configuration & Constants ── */
 const MOODS = [
-  { val: 1, emoji: '😞', label: 'Rough' },
-  { val: 2, emoji: '😐', label: 'Meh' },
-  { val: 3, emoji: '😊', label: 'Okay' },
-  { val: 4, emoji: '😄', label: 'Good' },
-  { val: 5, emoji: '🔥', label: 'Great' },
+  { val: 1, emoji: '😞', label: 'Rough', color: '#ef4444' },
+  { val: 2, emoji: '😐', label: 'Meh', color: '#f59e0b' },
+  { val: 3, emoji: '😊', label: 'Okay', color: '#10b981' },
+  { val: 4, emoji: '😄', label: 'Good', color: '#3b82f6' },
+  { val: 5, emoji: '🔥', label: 'Great', color: '#8b5cf6' },
 ];
 
-const moodEmoji = (val) => MOODS.find(m => m.val === val)?.emoji || '😊';
+const COVERS = [
+  'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&q=80&w=2000',
+  'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=2000',
+  'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=2000',
+  'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=2000',
+  'https://images.unsplash.com/photo-1500627845662-01210452945d?auto=format&fit=crop&q=80&w=2000',
+];
 
 const JournalPage = () => {
   const { user } = useAuth();
   const { theme } = useThemeContext();
   const isDark = theme === 'dark';
 
+  // State
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [drafting, setDrafting] = useState(false);
-  const [body, setBody] = useState('');
-  const [mood, setMood] = useState(3);
-  const [sleepHours, setSleepHours] = useState('');
-  const [energyLevel, setEnergyLevel] = useState(3);
-  const [saving, setSaving] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [search, setSearch] = useState('');
-  const [error, setError] = useState(null);
+  
+  // Editor State
+  const [content, setContent] = useState('');
+  const [mood, setMood] = useState(3);
+  const [energy, setEnergy] = useState(3);
+  const [sleep, setSleep] = useState(7);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSlashMenu, setShowSlashMenu] = useState(false);
+  const [slashMenuPos, setSlashMenuPos] = useState({ top: 0, left: 0 });
+  const saveTimeoutRef = useRef(null);
+  const editorRef = useRef(null);
 
+  // Styling Tokens
   const border = 'var(--color-border)';
   const text1 = 'var(--color-text-1)';
   const text2 = 'var(--color-text-2)';
   const text3 = 'var(--color-text-3)';
+  const accent = 'var(--color-accent)';
 
   useEffect(() => {
-    if (!user) return;
-    fetchEntries();
+    if (user) fetchEntries();
   }, [user]);
 
   const fetchEntries = async () => {
     setLoading(true);
-    setError(null);
     try {
-      const { data, error: fetchErr } = await supabase
+      const { data, error } = await supabase
         .from('journal_entries')
-        .select('id, date, encrypted_content, mood, sleep_hours, energy_level, created_at')
+        .select('*')
         .eq('user_id', user.id)
-        .order('date', { ascending: false })
-        .limit(50);
-      if (fetchErr) throw fetchErr;
+        .order('date', { ascending: false });
+      
+      if (error) throw error;
       setEntries(data || []);
+      if (data?.length > 0 && !selectedEntry) {
+        setSelectedEntry(data[0]);
+        syncEditor(data[0]);
+      }
     } catch (e) {
-      setError('Could not load entries.');
-      setEntries([]);
+      console.error("Journal fetch error:", e);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSave = async () => {
-    if (!body.trim()) return;
-    setSaving(true);
+  const syncEditor = (entry) => {
+    setContent(entry.encrypted_content || '');
+    setMood(entry.mood || 3);
+    setEnergy(entry.energy_level || 3);
+    setSleep(entry.sleep_hours || 7);
+  };
+
+  const handleEntrySelect = (entry) => {
+    setIsCreating(false);
+    setSelectedEntry(entry);
+    syncEditor(entry);
+  };
+
+  const handleNewEntry = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const newEntry = {
+      id: 'temp-' + Date.now(),
+      date: today,
+      encrypted_content: '',
+      mood: 3,
+      energy_level: 3,
+      sleep_hours: 7
+    };
+    setIsCreating(true);
+    setSelectedEntry(newEntry);
+    syncEditor(newEntry);
+  };
+
+  const deleteEntry = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this entry?")) return;
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const payload = {
-        user_id: user.id,
-        date: today,
-        encrypted_content: body.trim(),
-        mood: mood,
-        energy_level: energyLevel,
-        ...(sleepHours ? { sleep_hours: parseFloat(sleepHours) } : {}),
-      };
-      const { data, error: insertErr } = await supabase
-        .from('journal_entries')
-        .insert(payload)
-        .select()
-        .single();
-      if (insertErr) throw insertErr;
-      setEntries(prev => [data, ...prev]);
-      setBody('');
-      setMood(3);
-      setSleepHours('');
-      setEnergyLevel(3);
-      setDrafting(false);
+      const { error } = await supabase.from('journal_entries').delete().eq('id', id);
+      if (error) throw error;
+      setEntries(entries.filter(e => e.id !== id));
+      if (selectedEntry?.id === id) {
+        setSelectedEntry(entries[0] || null);
+        if (entries[0]) syncEditor(entries[0]);
+      }
     } catch (e) {
-      setError('Failed to save. Try again.');
-      setTimeout(() => setError(null), 3000);
+      console.error("Delete error:", e);
     }
-    setSaving(false);
+  };
+
+  // Auto-save logic
+  useEffect(() => {
+    if (!selectedEntry || selectedEntry.id.toString().startsWith('temp')) return;
+
+    const hasChanged = 
+      content !== (selectedEntry.encrypted_content || '') ||
+      mood !== (selectedEntry.mood || 3) ||
+      energy !== (selectedEntry.energy_level || 3) ||
+      sleep !== (selectedEntry.sleep_hours || 7);
+
+    if (!hasChanged) return;
+
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    
+    saveTimeoutRef.current = setTimeout(() => {
+      saveEntry();
+    }, 1500);
+
+    return () => clearTimeout(saveTimeoutRef.current);
+  }, [content, mood, energy, sleep]);
+
+  const saveEntry = async () => {
+    if (!selectedEntry || !user) return;
+    setIsSaving(true);
+    
+    try {
+      const payload = {
+        encrypted_content: content,
+        mood,
+        energy_level: energy,
+        sleep_hours: sleep,
+        user_id: user.id,
+        date: selectedEntry.date
+      };
+
+      if (selectedEntry.id.toString().startsWith('temp')) {
+        const { data, error } = await supabase
+          .from('journal_entries')
+          .insert(payload)
+          .select()
+          .single();
+        if (error) throw error;
+        setEntries([data, ...entries]);
+        setSelectedEntry(data);
+        setIsCreating(false);
+      } else {
+        const { error } = await supabase
+          .from('journal_entries')
+          .update(payload)
+          .eq('id', selectedEntry.id);
+        if (error) throw error;
+        setEntries(entries.map(e => e.id === selectedEntry.id ? { ...e, ...payload } : e));
+      }
+    } catch (e) {
+      console.error("Save error:", e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const insertCommand = (type) => {
+    if (!editorRef.current) return;
+    const start = editorRef.current.selectionStart;
+    const end = editorRef.current.selectionEnd;
+    const currentVal = content;
+    
+    // Remove the '/' that triggered the menu
+    const beforeSlash = currentVal.substring(0, start - 1);
+    const afterSlash = currentVal.substring(end);
+    
+    let insertion = '';
+    let newCursorPos = start;
+
+    switch (type) {
+      case 'h1':
+        insertion = '# ';
+        break;
+      case 'h2':
+        insertion = '## ';
+        break;
+      case 'hr':
+        insertion = '\n---\n';
+        break;
+      case 'template':
+        insertion = '\n### Daily Intentions\n- \n\n### What went well?\n- \n\n### What could be better?\n- \n';
+        break;
+      case 'list':
+        insertion = '- ';
+        break;
+      default:
+        insertion = '';
+    }
+
+    const newVal = beforeSlash + insertion + afterSlash;
+    setContent(newVal);
+    setShowSlashMenu(false);
+    
+    // Restore focus and set cursor (needs timeout to let React update)
+    setTimeout(() => {
+      editorRef.current.focus();
+      const pos = beforeSlash.length + insertion.length;
+      editorRef.current.setSelectionRange(pos, pos);
+    }, 10);
+  };
+
+  const handleTextareaChange = (e) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart;
+    setContent(value);
+
+    // Simple Slash Command Detection
+    const lastChar = value[cursorPos - 1];
+    if (lastChar === '/') {
+      // Calculate a rough position for the menu
+      // In a real app, we'd use a hidden mirror div to get exact pixel coordinates
+      const lines = value.substring(0, cursorPos).split('\n');
+      const currentLine = lines.length;
+      setSlashMenuPos({ top: Math.min(currentLine * 36, 400), left: 0 }); 
+      setShowSlashMenu(true);
+    } else {
+      setShowSlashMenu(false);
+    }
   };
 
   const filteredEntries = entries.filter(e =>
     !search || e.encrypted_content?.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (!user) return null;
-
-  const inputStyle = {
-    padding: '10px 14px', borderRadius: '10px', border: `1px solid ${border}`,
-    background: 'var(--color-surface)', color: text1,
-    fontFamily: 'var(--font-sans)', fontSize: '13px', outline: 'none',
-    transition: 'all 200ms var(--ease)',
-  };
+  const groupedEntries = filteredEntries.reduce((acc, entry) => {
+    const date = new Date(entry.date);
+    const key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(entry);
+    return acc;
+  }, {});
 
   return (
-    <div style={{ flex: 1, paddingBottom: '80px' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-accent)', fontFamily: 'var(--font-mono)', marginBottom: '8px' }}>
-            Journal · Private
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: '320px 1fr', 
+      height: 'calc(100vh - var(--nav-height) - 40px)',
+      background: isDark ? 'var(--color-base)' : '#FBFBFA',
+      margin: '-20px -24px',
+      overflow: 'hidden',
+    }}>
+      
+      {/* ── SIDEBAR ── */}
+      <aside style={{ 
+        borderRight: `1px solid ${border}`,
+        background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <div style={{ padding: '32px 24px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '11px', fontWeight: 800, color: text3, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Notebook</h2>
+            <button 
+              onClick={handleNewEntry}
+              style={{ 
+                background: 'var(--color-accent-dim)', border: `1px solid var(--color-accent-soft)`, 
+                color: 'var(--color-accent)', cursor: 'pointer', padding: '6px', borderRadius: '8px',
+                display: 'flex', alignItems: 'center', transition: 'all 200ms ease'
+              }}
+              className="hover-glow"
+            ><Plus size={16} /></button>
           </div>
-          <h1 style={{ font: 'var(--text-hero)', color: text1, margin: 0, letterSpacing: '-0.03em' }}>
-            What's on your mind?
-          </h1>
-        </div>
-        <span style={{ fontSize: '12px', color: text3, fontFamily: 'var(--font-sans)', fontStyle: 'italic', opacity: 0.8 }}>
-          {entries.length} reflections logged
-        </span>
-      </div>
-
-      {/* Error banner */}
-      {error && (
-        <div style={{ padding: '12px 16px', background: 'var(--color-danger-dim)', border: '1px solid var(--color-danger)', borderRadius: '12px', color: 'var(--color-danger)', fontSize: '13px', fontFamily: 'var(--font-sans)', marginBottom: '24px' }}>
-          {error}
-        </div>
-      )}
-
-      {/* Compose */}
-      {!drafting ? (
-        <button
-          onClick={() => setDrafting(true)}
-          className="glass-panel"
-          style={{
-            width: '100%', padding: '24px', borderRadius: '16px',
-            border: `1px dashed ${border}`, background: 'var(--glass-bg)',
-            color: text3, fontFamily: 'var(--font-sans)', fontSize: '15px',
-            cursor: 'pointer', textAlign: 'left', marginBottom: '32px',
-            transition: 'all 200ms var(--ease)',
-            display: 'flex', alignItems: 'center', gap: '12px',
-          }}
-        >
-          <span style={{ fontSize: '20px', opacity: 0.6 }}>✍️</span>
-          <span>Start today's entry…</span>
-        </button>
-      ) : (
-        <div className="glass-panel" style={{ background: 'var(--glass-bg)', border: `1px solid ${border}`, borderRadius: '20px', padding: '28px', marginBottom: '32px', boxShadow: 'var(--glass-shadow-md)' }}>
-          {/* Mood row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', marginRight: '6px' }}>Mood</span>
-            {MOODS.map(m => (
-              <button
-                key={m.val}
-                onClick={() => setMood(m.val)}
-                title={m.label}
-                style={{
-                  width: '40px', height: '40px', borderRadius: '12px',
-                  border: `1px solid ${m.val === mood ? 'var(--color-accent)' : border}`,
-                  background: m.val === mood ? 'var(--color-accent-dim)' : 'transparent',
-                  fontSize: '20px', cursor: 'pointer', transition: 'all 200ms var(--ease)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-              >{m.emoji}</button>
-            ))}
-            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-accent)', fontFamily: 'var(--font-sans)', marginLeft: '8px' }}>
-              {MOODS.find(m => m.val === mood)?.label}
-            </span>
+          <div style={{ position: 'relative' }}>
+            <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: text3, opacity: 0.6 }} />
+            <input 
+              type="text"
+              placeholder="Search reflections..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{
+                width: '100%', padding: '10px 12px 10px 36px', borderRadius: '10px',
+                border: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.03)' : '#fff',
+                fontSize: '13px', outline: 'none', color: text1, transition: 'all 0.2s'
+              }}
+            />
           </div>
+        </div>
 
-          {/* Quick metrics */}
-          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            <div>
-              <label style={{ fontSize: '10px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '6px' }}>Sleep (hrs)</label>
-              <input
-                type="number" min="0" max="24" step="0.5" placeholder="7.5"
-                value={sleepHours} onChange={e => setSleepHours(e.target.value)}
-                style={{ ...inputStyle, width: '90px' }}
-              />
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 40px' }} className="custom-scrollbar">
+          {Object.keys(groupedEntries).length === 0 && !loading && (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: text3, fontSize: '12px', fontStyle: 'italic' }}>
+              Your story begins here.
             </div>
-            <div>
-              <label style={{ fontSize: '10px', fontWeight: 700, color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '6px' }}>Energy (1–5)</label>
-              <select value={energyLevel} onChange={e => setEnergyLevel(Number(e.target.value))} style={{ ...inputStyle, width: '90px' }}>
-                {[1,2,3,4,5].map(v => <option key={v} value={v}>{v}</option>)}
-              </select>
+          )}
+          {Object.keys(groupedEntries).map(group => (
+            <div key={group} style={{ marginTop: '24px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: text3, padding: '0 12px 10px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{group}</div>
+              {groupedEntries[group].map(entry => {
+                const active = selectedEntry?.id === entry.id;
+                const firstLine = entry.encrypted_content?.trim().split('\n')[0] || 'Untitled Reflection';
+                const dateObj = new Date(entry.date);
+                return (
+                  <motion.div
+                    layout
+                    key={entry.id}
+                    onClick={() => handleEntrySelect(entry)}
+                    style={{
+                      padding: '12px', borderRadius: '10px', cursor: 'pointer',
+                      background: active ? (isDark ? 'rgba(255,255,255,0.06)' : '#fff') : 'transparent',
+                      marginBottom: '4px',
+                      border: active ? `1px solid ${border}` : '1px solid transparent',
+                      boxShadow: active ? 'var(--shadow-sm)' : 'none',
+                      transition: 'all 200ms ease',
+                    }}
+                    whileHover={{ x: 2, background: active ? (isDark ? 'rgba(255,255,255,0.08)' : '#fff') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)') }}
+                  >
+                    <div style={{ 
+                      fontSize: '13px', fontWeight: active ? 700 : 500, color: active ? text1 : text2,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px'
+                    }}>
+                      {firstLine}
+                    </div>
+                    <div style={{ fontSize: '11px', color: text3, display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-mono)' }}>
+                      <span>{dateObj.getDate()} {dateObj.toLocaleString('default', { month: 'short' })}</span>
+                      <span style={{ opacity: 0.3 }}>|</span>
+                      <span>{MOODS.find(m => m.val === entry.mood)?.emoji}</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
-          </div>
-
-          {/* Text area */}
-          <textarea
-            value={body}
-            onChange={e => setBody(e.target.value)}
-            placeholder="Write freely. This is encrypted and private."
-            autoFocus
-            style={{
-              width: '100%', minHeight: '180px', background: 'transparent',
-              border: 'none', outline: 'none', resize: 'vertical',
-              fontFamily: 'var(--font-sans)', fontSize: '16px', lineHeight: 1.8,
-              color: text1, boxSizing: 'border-box',
-              padding: '12px 0',
-            }}
-          />
-
-          {/* Actions */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '20px', borderTop: `1px solid ${border}` }}>
-            <span style={{ fontSize: '12px', color: text3, fontFamily: 'var(--font-mono)', opacity: 0.7 }}>
-              {body.length > 0 ? `${body.trim().split(/\s+/).filter(Boolean).length} words recorded` : 'Capture your thoughts…'}
-            </span>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => { setDrafting(false); setBody(''); }} style={{
-                padding: '8px 16px', borderRadius: '10px', border: `1px solid ${border}`,
-                background: 'transparent', color: text2, fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-                transition: 'all 200ms var(--ease)',
-              }}>Discard</button>
-              <button
-                onClick={handleSave}
-                disabled={!body.trim() || saving}
-                style={{
-                  padding: '8px 24px', borderRadius: '10px', border: 'none',
-                  background: body.trim() ? 'var(--color-accent)' : 'var(--color-text-3)',
-                  color: '#fff', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600,
-                  cursor: body.trim() ? 'pointer' : 'not-allowed',
-                  transition: 'all 200ms var(--ease)',
-                  opacity: body.trim() ? 1 : 0.4,
-                }}
-              >{saving ? 'Saving…' : 'Save Reflection'}</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Search */}
-      {entries.length > 3 && (
-        <div style={{ position: 'relative', marginBottom: '24px' }}>
-          <input
-            type="text" value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search through your history…"
-            style={{ ...inputStyle, width: '100%', paddingLeft: '40px', boxSizing: 'border-box' }}
-          />
-          <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }}>🔍</span>
-        </div>
-      )}
-
-      {/* Entries list */}
-      {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {[1,2,3].map(i => (
-            <div key={i} className="glass-panel" style={{ height: '120px', borderRadius: '16px', background: 'var(--glass-bg)', opacity: 0.5 }} />
           ))}
         </div>
-      ) : filteredEntries.length === 0 ? (
-        <div className="glass-panel" style={{ background: 'var(--glass-bg)', border: `1px solid ${border}`, borderRadius: '20px', padding: '60px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.6 }}>📖</div>
-          <div style={{ fontSize: '16px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '6px' }}>
-            {search ? 'No matches found' : 'The page is blank'}
-          </div>
-          <div style={{ fontSize: '13px', color: text3, fontFamily: 'var(--font-sans)', maxWidth: '280px', margin: '0 auto' }}>
-            {search ? 'Try searching for a different keyword or date.' : 'Your personal log is completely private and encrypted.'}
-          </div>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {filteredEntries.map(entry => {
-            const dateObj = new Date(entry.date || entry.created_at);
-            const dateStr = dateObj.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
-            const preview = entry.encrypted_content?.slice(0, 280).replace(/\n/g, ' ');
-            const moodVal = typeof entry.mood === 'number' ? entry.mood : 3;
+      </aside>
 
-            return (
-              <div
-                key={entry.id}
-                className="glass-panel"
-                style={{ 
-                  background: 'var(--glass-bg)', border: `1px solid ${border}`, borderRadius: '16px', padding: '24px', 
-                  transition: 'all 200ms var(--ease)', cursor: 'default',
-                  boxShadow: 'var(--glass-shadow-sm)',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'var(--color-accent)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = border;
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ 
-                      width: '32px', height: '32px', background: 'var(--color-surface)', borderRadius: '8px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
-                      border: `1px solid ${border}`
-                    }}>
-                      {moodEmoji(moodVal)}
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>{dateStr}</div>
-                      <div style={{ fontSize: '10px', color: text3, fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '1px' }}>
-                        {entry.sleep_hours && `💤 ${entry.sleep_hours}h`}
-                        {entry.sleep_hours && entry.energy_level && ' · '}
-                        {entry.energy_level && `⚡ Energy: ${entry.energy_level}/5`}
-                      </div>
-                    </div>
+      {/* ── EDITOR ── */}
+      <main style={{ overflowY: 'auto', background: isDark ? 'var(--color-base)' : '#fff', position: 'relative' }} className="custom-scrollbar">
+        {selectedEntry ? (
+          <div style={{ paddingBottom: '120px' }}>
+            {/* Cover Area */}
+            <div style={{ 
+              height: '340px', width: '100%', position: 'relative',
+              background: `url(${COVERS[new Date(selectedEntry.date).getDate() % COVERS.length]}) center/cover no-repeat`,
+            }}>
+              <div style={{ 
+                position: 'absolute', inset: 0, 
+                background: isDark ? 'linear-gradient(to bottom, transparent 40%, var(--color-base) 100%)' : 'linear-gradient(to bottom, transparent 40%, #fff 100%)'
+              }} />
+              
+              {/* Floating Action Menu */}
+              <div style={{ position: 'absolute', top: '24px', right: '40px', display: 'flex', gap: '8px' }}>
+                 <button onClick={saveEntry} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: '#fff', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                   <Save size={14} /> Save
+                 </button>
+                 <button onClick={() => deleteEntry(selectedEntry.id)} style={{ background: 'rgba(239, 68, 68, 0.3)', border: 'none', color: '#ff8080', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+                   <Trash2 size={16} />
+                 </button>
+              </div>
+
+              <div style={{ 
+                position: 'absolute', bottom: '0px', left: 'max(40px, 15%)',
+                fontSize: '84px', filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.3))',
+                transform: 'translateY(30%)'
+              }}>
+                {MOODS.find(m => m.val === mood)?.emoji || '📓'}
+              </div>
+            </div>
+
+            {/* Content Container */}
+            <div style={{ maxWidth: '800px', margin: '80px auto 0', padding: '0 60px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Calendar size={14} style={{ color: accent }} />
+                  <span style={{ fontSize: '13px', color: text3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                    {new Date(selectedEntry.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+                {isSaving && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: accent }}>
+                    <div className="spinner-small" style={{ width: '12px', height: '12px', border: `2px solid ${accent}`, borderTopColor: 'transparent' }} />
+                    <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.1em' }}>SYNCING</span>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Properties Grid — Notion Style */}
+              <div style={{ 
+                padding: '32px 0', borderTop: `1px solid ${border}`, borderBottom: `1px solid ${border}`,
+                marginBottom: '56px', display: 'flex', flexDirection: 'column', gap: '20px'
+              }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', alignItems: 'center' }}>
+                  <div style={{ color: text3, fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Smile size={16} /> Mood
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {MOODS.map(m => (
+                      <button
+                        key={m.val}
+                        onClick={() => setMood(m.val)}
+                        style={{
+                          background: mood === m.val ? m.color + '15' : 'transparent',
+                          border: mood === m.val ? `1.5px solid ${m.color}` : `1px solid ${border}`,
+                          color: mood === m.val ? m.color : text2,
+                          padding: '5px 14px', borderRadius: '20px', cursor: 'pointer',
+                          fontSize: '12px', fontWeight: 700, transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                          display: 'flex', alignItems: 'center', gap: '6px'
+                        }}
+                      ><span>{m.emoji}</span> {m.label}</button>
+                    ))}
                   </div>
                 </div>
-                <div style={{ 
-                  fontSize: '14px', color: text2, fontFamily: 'var(--font-sans)', lineHeight: 1.75, 
-                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' 
-                }}>
-                  {preview}{entry.encrypted_content?.length > 280 ? '…' : ''}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', alignItems: 'center' }}>
+                  <div style={{ color: text3, fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Zap size={16} /> Energy Level
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <input 
+                      type="range" min="1" max="5" value={energy} 
+                      onChange={e => setEnergy(parseInt(e.target.value))}
+                      style={{ width: '160px', accentColor: accent }}
+                    />
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: text2 }}>{energy}/5</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', alignItems: 'center' }}>
+                  <div style={{ color: text3, fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Moon size={16} /> Sleep Quality
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input 
+                      type="number" value={sleep} step="0.5"
+                      onChange={e => setSleep(parseFloat(e.target.value))}
+                      style={{ 
+                        width: '60px', background: 'transparent', border: `1px solid ${border}`,
+                        color: text1, padding: '6px 10px', borderRadius: '8px', fontSize: '14px', fontWeight: 600
+                      }}
+                    />
+                    <span style={{ fontSize: '13px', color: text3 }}>hours</span>
+                  </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+
+              {/* Writing Area */}
+              <div style={{ position: 'relative' }}>
+                <textarea
+                  ref={editorRef}
+                  value={content}
+                  onChange={handleTextareaChange}
+                  placeholder="Press '/' for commands or just start typing..."
+                  style={{
+                    width: '100%',
+                    minHeight: '600px',
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: text1,
+                    fontSize: '20px',
+                    lineHeight: '1.8',
+                    fontFamily: '"Lora", "Georgia", serif',
+                    resize: 'none',
+                    padding: '0',
+                    fontWeight: 400,
+                  }}
+                />
+
+                {/* Slash Menu Simulation */}
+                <AnimatePresence>
+                  {showSlashMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                      style={{
+                        position: 'absolute', top: slashMenuPos.top, left: slashMenuPos.left,
+                        background: isDark ? 'var(--bg-elevated)' : '#fff',
+                        border: `1px solid ${border}`, borderRadius: '12px',
+                        boxShadow: 'var(--shadow-xl)', padding: '8px', zIndex: 100, width: '240px'
+                      }}
+                    >
+                      <div style={{ fontSize: '10px', fontWeight: 800, color: text3, padding: '8px 12px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Commands</div>
+                      {[
+                        { icon: <FileText size={14}/>, label: 'Standard Template', cmd: 'template', desc: 'Add structure to your day' },
+                        { icon: <Hash size={14}/>, label: 'Heading 1', cmd: 'h1', desc: 'Large section heading' },
+                        { icon: <Type size={14}/>, label: 'Heading 2', cmd: 'h2', desc: 'Medium section heading' },
+                        { icon: <MoreHorizontal size={14}/>, label: 'Divider', cmd: 'hr', desc: 'Visual separation' },
+                        { icon: <Plus size={14}/>, label: 'Bulleted List', cmd: 'list', desc: 'Simple bullet point' },
+                      ].map(item => (
+                        <div 
+                          key={item.cmd}
+                          onClick={() => insertCommand(item.cmd)}
+                          style={{ 
+                            padding: '10px 12px', borderRadius: '8px', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 200ms ease'
+                          }}
+                          className="hover-bg-notion"
+                        >
+                          <div style={{ 
+                            width: '32px', height: '32px', borderRadius: '6px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: accent, border: `1px solid ${border}`
+                          }}>{item.icon}</div>
+                          <div>
+                            <div style={{ fontSize: '13px', fontWeight: 600, color: text1 }}>{item.label}</div>
+                            <div style={{ fontSize: '10px', color: text3, marginTop: '2px' }}>{item.desc}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div style={{ 
+            height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: text3, textAlign: 'center', padding: '40px'
+          }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div style={{ fontSize: '64px', marginBottom: '24px', filter: 'grayscale(0.5)' }}>📝</div>
+              <h3 style={{ fontSize: '20px', color: text1, marginBottom: '12px', fontWeight: 700 }}>Choose a page to write</h3>
+              <p style={{ fontSize: '15px', maxWidth: '340px', margin: '0 auto', color: text3, lineHeight: 1.6 }}>
+                "The pages of your journal are the only place where you can be completely yourself."
+              </p>
+              <button 
+                onClick={handleNewEntry}
+                style={{ 
+                  marginTop: '32px', background: 'var(--color-accent)', color: '#fff',
+                  border: 'none', padding: '12px 32px', borderRadius: '12px', fontWeight: 700,
+                  cursor: 'pointer', boxShadow: 'var(--shadow-lg)'
+                }}
+                className="hover-glow"
+              >Start New Entry</button>
+            </motion.div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
 
 export default JournalPage;
+

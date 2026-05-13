@@ -25,43 +25,77 @@ function TypingTestSupabase({ userId, onComplete }) {
   const { theme } = useThemeContext();
   const isDark = theme === 'dark';
   const [phase, setPhase] = useState('ready');
-  const [text] = useState(() => SAMPLE_TEXTS[Math.floor(Math.random() * SAMPLE_TEXTS.length)]);
+  const [words, setWords] = useState([]);
   const [input, setInput] = useState('');
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(30);
   const [wpm, setWpm] = useState(null);
   const [accuracy, setAccuracy] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [rawWpm, setRawWpm] = useState(0);
   const timerRef = React.useRef(null);
   const inputRef = React.useRef(null);
 
-  const border = isDark ? '#222' : '#e5e7eb';
-  const text1 = isDark ? '#ededed' : '#111';
-  const text2 = isDark ? '#a1a1aa' : '#6b7280';
-  const cardBg = isDark ? '#111' : '#fff';
+  // Monkeytype Colors
+  const mtBg = isDark ? '#323437' : '#ffffff';
+  const mtText = isDark ? '#646669' : '#9ca3af';
+  const mtActive = isDark ? '#d1d0c5' : '#111827';
+  const mtError = '#ca4754';
+  const mtAccent = '#e2b714';
 
-  React.useEffect(() => {
+  const WORD_POOL = [
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know", "take", "people", "into", "year", "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also", "back", "after", "use", "two", "how", "our", "work", "first", "well", "even", "new", "want", "because", "any", "these", "give", "day", "most", "us"
+  ];
+
+  const generateWords = () => {
+    const arr = [];
+    for (let i = 0; i < 100; i++) {
+      arr.push(WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)]);
+    }
+    setWords(arr);
+  };
+
+  useEffect(() => {
+    generateWords();
+  }, []);
+
+  const startTest = () => {
+    setPhase('running');
+    setInput('');
+    setTimeLeft(30);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
+  useEffect(() => {
     if (phase !== 'running') return;
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
-        if (t <= 1) { clearInterval(timerRef.current); setPhase('done'); return 0; }
+        if (t <= 1) {
+          clearInterval(timerRef.current);
+          setPhase('done');
+          return 0;
+        }
         return t - 1;
       });
     }, 1000);
     return () => clearInterval(timerRef.current);
   }, [phase]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (phase !== 'done') return;
-    const words = input.trim().split(/\s+/).filter(Boolean).length;
-    const elapsed = 60 - timeLeft || 60;
-    setWpm(Math.round((words / elapsed) * 60));
-    const textChars = text.slice(0, input.length).split('');
-    const inputChars = input.split('');
+    const wordsTyped = input.trim().split(/\s+/).filter(Boolean).length;
+    const elapsed = 30; // fixed duration
+    const calculatedWpm = Math.round((wordsTyped / (elapsed / 60)));
+    setWpm(calculatedWpm);
+    
+    const targetString = words.join(' ');
     let correct = 0;
-    inputChars.forEach((c, i) => { if (c === textChars[i]) correct++; });
+    const inputChars = input.split('');
+    inputChars.forEach((c, i) => {
+      if (c === targetString[i]) correct++;
+    });
     setAccuracy(inputChars.length > 0 ? Number(((correct / inputChars.length) * 100).toFixed(1)) : 0);
-  }, [phase]);
+  }, [phase, input, words]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -70,79 +104,189 @@ function TypingTestSupabase({ userId, onComplete }) {
       user_id: userId,
       wpm: wpm,
       accuracy_pct: accuracy,
-      duration_sec: 60,
-      test_invalid: accuracy < 95,
+      duration_sec: 30,
+      test_invalid: accuracy < 90,
       day_of: today,
     });
     setSaving(false);
-    if (!error) { setSaved(true); onComplete?.(); }
+    if (!error) {
+      setSaved(true);
+      onComplete?.();
+    }
   };
 
-  const getCharStyle = (i) => {
-    if (i >= input.length) return { color: isDark ? '#52525b' : '#9ca3af' };
-    return input[i] === text[i] ? { color: isDark ? '#ededed' : '#111' } : { color: '#ef4444', textDecoration: 'underline' };
-  };
+  // Calculate cursor position for Monkeytype feel
+  const currentWordIndex = input.split(' ').length - 1;
+  const currentWordChars = input.split(' ')[currentWordIndex] || '';
 
   return (
-    <div style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <span style={{ fontSize: '15px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>Typing Test</span>
+    <div style={{ 
+      padding: '60px 40px', 
+      background: mtBg, 
+      borderRadius: '24px',
+      color: mtText,
+      fontFamily: '"JetBrains Mono", monospace',
+      minHeight: '400px',
+      display: 'flex',
+      flexDirection: 'column',
+      position: 'relative',
+      transition: 'all 0.3s ease'
+    }}>
+      {/* Header Stats */}
+      <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '40px' }}>
+        <div style={{ fontSize: '32px', color: mtAccent, fontWeight: 700, minWidth: '40px' }}>
+          {phase === 'running' ? timeLeft : (phase === 'done' ? '0' : '30')}
+        </div>
         {phase === 'running' && (
-          <span style={{ fontSize: '20px', fontWeight: 700, color: timeLeft <= 10 ? '#ef4444' : text2, fontFamily: 'var(--font-mono)' }}>{timeLeft}s</span>
+          <div style={{ display: 'flex', gap: '20px', fontSize: '14px', color: mtAccent, opacity: 0.8 }}>
+            <span>typing...</span>
+          </div>
         )}
       </div>
 
       {phase === 'ready' && (
-        <div style={{ textAlign: 'center', padding: '20px 0' }}>
-          <p style={{ color: text2, fontFamily: 'var(--font-sans)', fontSize: '14px', marginBottom: '20px' }}>60-second test. Type the text as accurately as possible.</p>
-          <button onClick={() => { setPhase('running'); setTimeout(() => inputRef.current?.focus(), 100); }}
-            style={{ padding: '10px 28px', background: '#22C55E', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-            Start Test
+        <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ fontSize: '20px', marginBottom: '32px', color: mtActive, opacity: 0.8 }}>
+            the lab. test your focus.
+          </div>
+          <button 
+            onClick={startTest}
+            style={{ 
+              background: 'transparent', 
+              border: `2px solid ${mtAccent}`, 
+              color: mtAccent, 
+              padding: '14px 40px', 
+              borderRadius: '8px', 
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 700,
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = mtAccent; e.currentTarget.style.color = mtBg; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = mtAccent; }}
+          >
+            start test
           </button>
+          <div style={{ marginTop: '24px', fontSize: '12px', opacity: 0.5 }}>30 second duration · top focus words</div>
         </div>
       )}
 
       {phase === 'running' && (
-        <>
-          <div style={{ fontSize: '15px', lineHeight: 1.8, background: isDark ? '#1a1a1a' : '#f9fafb', border: `1px solid ${border}`, borderRadius: '8px', padding: '16px', marginBottom: '14px', userSelect: 'none', fontFamily: 'var(--font-sans)' }}>
-            {text.split('').map((ch, i) => <span key={i} style={getCharStyle(i)}>{ch}</span>)}
-          </div>
-          <textarea
+        <div 
+          onClick={() => inputRef.current?.focus()}
+          style={{ cursor: 'text', position: 'relative', fontSize: '28px', lineHeight: '1.6', userSelect: 'none', height: '160px', overflow: 'hidden' }}
+        >
+          {/* Hidden input */}
+          <input
             ref={inputRef}
+            type="text"
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Start typing here..."
+            style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
             autoFocus
-            style={{ width: '100%', minHeight: '80px', resize: 'none', fontFamily: 'var(--font-sans)', fontSize: '15px', color: text1, background: isDark ? '#161616' : '#f9fafb', border: `1px solid ${border}`, borderRadius: '8px', padding: '12px', outline: 'none', boxSizing: 'border-box' }}
           />
-        </>
+          
+          {/* Render text with active highlighting */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6em', position: 'relative' }}>
+            {words.map((word, wIdx) => {
+              const isCurrentWord = currentWordIndex === wIdx;
+              const wordsBefore = input.split(' ').slice(0, wIdx);
+              const targetString = word;
+              const inputForThisWord = input.split(' ')[wIdx] || '';
+              
+              // Only show a few lines
+              if (wIdx < currentWordIndex - 10) return null;
+              if (wIdx > currentWordIndex + 20) return null;
+
+              return (
+                <span key={wIdx} style={{ position: 'relative', display: 'flex' }}>
+                  {word.split('').map((char, cIdx) => {
+                    let color = mtText;
+                    let isCorrect = false;
+                    if (inputForThisWord.length > cIdx) {
+                      isCorrect = inputForThisWord[cIdx] === char;
+                      color = isCorrect ? mtActive : mtError;
+                    }
+                    
+                    return (
+                      <span key={cIdx} style={{ color, position: 'relative' }}>
+                        {char}
+                        {isCurrentWord && cIdx === inputForThisWord.length && (
+                          <motion.div 
+                            layoutId="cursor"
+                            style={{ 
+                              position: 'absolute', left: 0, top: '10%', bottom: '10%', width: '2px', background: mtAccent 
+                            }}
+                            animate={{ opacity: [1, 0, 1] }}
+                            transition={{ duration: 0.8, repeat: Infinity }}
+                          />
+                        )}
+                      </span>
+                    );
+                  })}
+                  {/* Extra chars */}
+                  {inputForThisWord.length > word.length && (
+                    <span style={{ color: mtError }}>
+                      {inputForThisWord.slice(word.length)}
+                    </span>
+                  )}
+                  {/* Handle space cursor */}
+                  {isCurrentWord && inputForThisWord.length === word.length && (
+                    <motion.div 
+                      layoutId="cursor"
+                      style={{ 
+                        position: 'absolute', right: -2, top: '10%', bottom: '10%', width: '2px', background: mtAccent 
+                      }}
+                      animate={{ opacity: [1, 0, 1] }}
+                      transition={{ duration: 0.8, repeat: Infinity }}
+                    />
+                  )}
+                </span>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {phase === 'done' && (
-        <div style={{ textAlign: 'center', padding: '16px 0' }}>
-          <div style={{ display: 'flex', gap: '48px', justifyContent: 'center', marginBottom: '20px' }}>
+        <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '80px', justifyContent: 'center', marginBottom: '48px' }}>
             <div>
-              <div style={{ fontSize: '42px', fontWeight: 700, color: text1, fontFamily: 'var(--font-sans)', lineHeight: 1 }}>{wpm}</div>
-              <div style={{ fontSize: '11px', color: text2, marginTop: '4px', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em' }}>WPM</div>
+              <div style={{ fontSize: '16px', color: mtAccent, marginBottom: '12px', textTransform: 'lowercase', letterSpacing: '0.1em' }}>wpm</div>
+              <div style={{ fontSize: '80px', color: mtActive, fontWeight: 700, lineHeight: 1 }}>{wpm}</div>
             </div>
             <div>
-              <div style={{ fontSize: '42px', fontWeight: 700, color: accuracy >= 95 ? '#22C55E' : '#f59e0b', fontFamily: 'var(--font-sans)', lineHeight: 1 }}>{accuracy}%</div>
-              <div style={{ fontSize: '11px', color: text2, marginTop: '4px', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em' }}>ACCURACY</div>
+              <div style={{ fontSize: '16px', color: mtAccent, marginBottom: '12px', textTransform: 'lowercase', letterSpacing: '0.1em' }}>accuracy</div>
+              <div style={{ fontSize: '80px', color: accuracy >= 95 ? mtActive : mtError, fontWeight: 700, lineHeight: 1 }}>{accuracy}%</div>
             </div>
           </div>
-          {accuracy < 95 && <p style={{ color: '#f59e0b', fontSize: '12px', fontFamily: 'var(--font-sans)', marginBottom: '16px' }}>Below 95% accuracy — result marked invalid.</p>}
-          {saved ? (
-            <p style={{ color: '#22C55E', fontSize: '13px', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>✓ Result saved</p>
-          ) : (
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={handleSave} disabled={saving} style={{ padding: '9px 22px', background: '#22C55E', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                {saving ? 'Saving…' : 'Save Result'}
+          
+          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+            {!saved && (
+              <button 
+                onClick={handleSave} 
+                disabled={saving} 
+                style={{ 
+                  background: mtAccent, color: mtBg, border: 'none', padding: '14px 40px', 
+                  borderRadius: '8px', fontWeight: 700, cursor: 'pointer', transition: 'transform 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                {saving ? 'saving...' : 'save reflection'}
               </button>
-              <button onClick={() => { setPhase('ready'); setInput(''); setSaved(false); }} style={{ padding: '9px 18px', background: 'transparent', color: text2, border: `1px solid ${border}`, borderRadius: '8px', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
-                Retry
-              </button>
-            </div>
-          )}
+            )}
+            <button 
+              onClick={startTest}
+              style={{ 
+                background: 'transparent', color: mtText, border: `2px solid ${mtText}`, 
+                padding: '14px 40px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' 
+              }}
+            >
+              restart test
+            </button>
+          </div>
+          {saved && <div style={{ marginTop: '24px', color: mtAccent, fontSize: '14px', fontWeight: 600 }}>✓ Result archived to your growth metrics</div>}
         </div>
       )}
     </div>
