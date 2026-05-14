@@ -5,6 +5,7 @@
  * Attaches c.set('user', ...) and c.set('userId', ...) on success.
  */
 import { supabaseAdmin as supabase } from '../supabase.js';
+import { pool } from '../lib/db.js';
 
 const profileCache = new Map();
 const CACHE_TTL = 10000; // 10s cache for roles/onboarding
@@ -45,17 +46,20 @@ export const requireAuth = async (c, next) => {
         let profile = profileCache.get(user.id);
 
         if (!profile || (now - profile.timestamp > CACHE_TTL)) {
-            const { data: publicUser, error: pgError } = await supabase
-                .from('users')
-                .select('role, onboarding_stage, username')
-                .eq('id', user.id)
-                .single();
-
-            if (!pgError && publicUser) {
-                profile = { ...publicUser, timestamp: now };
-                profileCache.set(user.id, profile);
+            try {
+                const { rows } = await pool.query(
+                    'SELECT role, onboarding_stage, username FROM users WHERE id = $1',
+                    [user.id]
+                );
+                if (rows.length > 0) {
+                    profile = { ...rows[0], timestamp: now };
+                    profileCache.set(user.id, profile);
+                }
+            } catch (pgError) {
+                console.error('[auth middleware] DB profile enrich error:', pgError.message);
             }
         }
+
 
         c.set('user', {
             ...user,

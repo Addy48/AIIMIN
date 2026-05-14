@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { supabase } from '../lib/db.js';
+import { supabase, pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
 
@@ -107,10 +107,10 @@ app.post('/', requireAuth, async (c) => {
 
             const currentStage = c.get('user')?.onboarding_stage || 0;
             if (newStage > currentStage) {
-                await supabase
-                    .from('users')
-                    .update({ onboarding_stage: newStage, updated_at: new Date().toISOString() })
-                    .eq('id', userId);
+                await pool.query(
+                    'UPDATE public.users SET onboarding_stage = $1, updated_at = $2 WHERE id = $3',
+                    [newStage, new Date().toISOString(), userId]
+                );
             }
         } catch (stageErr) {
             console.error('[Stage Progression Error]', stageErr);
