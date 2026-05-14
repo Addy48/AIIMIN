@@ -301,13 +301,19 @@ const Login = () => {
                     <label style={labelStyle}>Username or Email</label>
                     <input
                       type="text" required value={identifier} autoFocus
-                      onChange={e => setIdentifier(e.target.value)}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setIdentifier(val.includes('@') ? val : val.toUpperCase());
+                      }}
                       autoCapitalize="none"
                       autoComplete="off"
                       autoCorrect="off"
                       spellCheck="false"
                       placeholder="Enter username or email"
-                      style={inputStyle}
+                      style={{
+                        ...inputStyle,
+                        textTransform: identifier.includes('@') ? 'none' : 'uppercase'
+                      }}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                       onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
                     />
