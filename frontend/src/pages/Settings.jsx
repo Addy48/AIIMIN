@@ -11,6 +11,8 @@ import {
   Globe, Lock, ChevronRight, Check, X, Edit2,
   Download, Trash2, Eye, EyeOff
 } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
+
 
 
 // ── Section wrapper ──────────────────────────────────────────────────────────
@@ -87,15 +89,10 @@ const StatMini = ({ icon, value, label, color }) => (
 );
 
 const THEMES = [
-  { id: 'nordic', label: 'Nordic', colors: ['#1E5C3A', '#2D7A55', '#F0EDE8'], dark: false },
-  { id: 'vercel', label: 'Vercel', colors: ['#00B37E', '#111111', '#F5F5F5'], dark: true },
-  { id: 'studio', label: 'Studio', colors: ['#666', '#333', '#ccc'], dark: true },
-  { id: 'midnight', label: 'Midnight', colors: ['#3B82F6', '#0B1120', '#1E3A5F'], dark: true },
-  { id: 'solar', label: 'Solar', colors: ['#F59E0B', '#1A1A2E', '#16213E'], dark: true },
-  { id: 'neon', label: 'Neon', colors: ['#EC4899', '#09090B', '#18181B'], dark: true },
-  { id: 'monokai', label: 'Monokai', colors: ['#A6E22E', '#272822', '#383830'], dark: true },
-  { id: 'graphite', label: 'Graphite', colors: ['#D4A84B', '#1A1A1A', '#2A2A2A'], dark: true },
-  { id: 'sakura', label: 'Sakura', colors: ['#EC4899', '#FFF0F3', '#FFD6E0'], dark: false },
+  { id: 'normal', label: 'Normal', colors: ['#FAFAF9', '#1A1A1A', '#1E5C3A'], dark: false },
+  { id: 'dark', label: 'Dark', colors: ['#0A0A0A', '#EDEDED', '#22C55E'], dark: true },
+  { id: 'notion', label: 'Notion', colors: ['#FFFFFF', '#37352F', '#EBEBEA'], dark: false },
+  { id: 'internet', label: 'Internet', colors: ['#0A0D10', '#00F0FF', '#161B22'], dark: true },
 ];
 
 /**
@@ -117,7 +114,7 @@ const Settings = () => {
 
   // Username editing
   const [editingName, setEditingName] = useState(false);
-  const [nameVal, setNameVal] = useState(user?.user_metadata?.username || user?.email?.split('@')[0] || 'User');
+  const [nameVal, setNameVal] = useState((user?.user_metadata?.username || user?.email?.split('@')[0] || 'User').toUpperCase());
 
   // Account stats (simulated from localStorage + session)
   const focusMins = parseInt(localStorage.getItem('aiimin_focus_mins') || '0', 10);
@@ -162,7 +159,7 @@ const Settings = () => {
 
   const handleNameSave = async () => {
     try {
-      await supabase.auth.updateUser({ data: { username: nameVal } });
+      await supabase.auth.updateUser({ data: { username: nameVal.toUpperCase() } });
       toast.success('Username updated');
       setEditingName(false);
     } catch {
@@ -212,26 +209,24 @@ const Settings = () => {
   if (!user) return null;
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div className="page-container">
       {/* Header */}
-      <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <div style={{
-          width: '64px', height: '64px', borderRadius: '20px',
-          background: 'linear-gradient(135deg, var(--color-accent), #059669)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '28px', fontWeight: 900, color: '#fff',
-          flexShrink: 0,
-        }}>
-          {(nameVal?.[0] || 'A').toUpperCase()}
-        </div>
-        <div>
-          <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--color-accent)', marginBottom: '4px' }}>Account</div>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.03em' }}>
-            {nameVal}
-          </h1>
-          <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginTop: '2px' }}>{user.email} · {isAdmin ? '⚡ Admin' : 'Member'}</div>
-        </div>
-      </div>
+      <PageHeader 
+        title={nameVal}
+        subtitle="Account Settings"
+        rightContent={
+          <div style={{
+            width: '64px', height: '64px', borderRadius: '20px',
+            background: 'linear-gradient(135deg, var(--color-accent), #059669)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px', fontWeight: 900, color: '#fff',
+            flexShrink: 0,
+            boxShadow: 'var(--shadow-md)'
+          }}>
+            {(nameVal?.[0] || 'A').toUpperCase()}
+          </div>
+        }
+      />
 
       {/* Account Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '28px' }}>
@@ -251,7 +246,7 @@ const Settings = () => {
             control={
               editingName ? (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <input value={nameVal} onChange={e => setNameVal(e.target.value)} autoFocus
+                  <input value={nameVal} onChange={e => setNameVal(e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 20))} autoFocus
                     style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--color-accent)', background: 'var(--color-elevated)', color: 'var(--color-text-1)', fontSize: '13px', outline: 'none', fontFamily: 'inherit', width: '160px' }}
                     onKeyDown={e => e.key === 'Enter' && handleNameSave()}
                   />
@@ -416,7 +411,7 @@ const Settings = () => {
             },
             {
               icon: '🗄️',
-              name: 'Neon PostgreSQL',
+              name: 'Supabase PostgreSQL',
               desc: 'All data stored securely in your personal database',
               status: 'Connected',
               color: '#10B981',
@@ -424,9 +419,9 @@ const Settings = () => {
             },
             {
               icon: '☁️',
-              name: 'AWS Lambda',
-              desc: 'Serverless backend for all API calls — zero server cost',
-              status: 'ap-south-1 · Active',
+              name: 'Vercel Functions',
+              desc: 'Serverless backend for all API calls',
+              status: 'Production · Active',
               color: '#F59E0B',
               active: true,
             },
@@ -510,8 +505,8 @@ const Settings = () => {
         <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
           {[
             { label: 'App Version', value: 'AIIMIN v3.1' },
-            { label: 'Backend', value: 'AWS Lambda · Hono' },
-            { label: 'Database', value: 'Neon PostgreSQL' },
+            { label: 'Backend', value: 'Vercel · Hono' },
+            { label: 'Database', value: 'Supabase PostgreSQL' },
           ].map((info, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-3)', marginBottom: '4px' }}>{info.label}</div>
