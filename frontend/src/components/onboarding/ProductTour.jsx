@@ -87,7 +87,10 @@ export default function ProductTour() {
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
 
+    const [showPill, setShowPill] = useState(false);
+
     const startTour = useCallback(() => {
+        setShowPill(false);
         setIsOpen(true);
         setCurrentStep(0);
         navigate(TOUR_STEPS[0].target);
@@ -95,6 +98,7 @@ export default function ProductTour() {
 
     const endTour = () => {
         setIsOpen(false);
+        setShowPill(false);
         localStorage.setItem('aiimin_tour_completed', 'true');
     };
 
@@ -116,16 +120,16 @@ export default function ProductTour() {
         }
     };
 
-    // Auto-start guided tour if not seen yet
+    // Auto-show guided tour pill if not seen yet
     useEffect(() => {
         const completed = localStorage.getItem('aiimin_tour_completed');
         if (!completed) {
             const timer = setTimeout(() => {
-                startTour();
+                setShowPill(true);
             }, 2000); // 2-second buffer to allow UI to mount fully
             return () => clearTimeout(timer);
         }
-    }, [startTour]);
+    }, []);
 
     // Expose global trigger for manual settings retakes
     useEffect(() => {
@@ -142,16 +146,49 @@ export default function ProductTour() {
     return (
         <>
             <AnimatePresence>
+                {showPill && !isOpen && (
+                    <motion.button
+                        key="pill"
+                        initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 30, scale: 0.9 }}
+                        onClick={startTour}
+                        style={{
+                            position: 'fixed',
+                            bottom: '32px',
+                            right: '32px',
+                            zIndex: 9999,
+                            background: accent,
+                            color: '#fff',
+                            border: 'none',
+                            padding: '12px 20px',
+                            borderRadius: '99px',
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            boxShadow: '0 10px 25px rgba(30,92,58,0.25)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            fontFamily: 'var(--font-sans)'
+                        }}
+                    >
+                        <span style={{ 
+                            width: '8px', height: '8px', borderRadius: '50%', background: '#fff', 
+                            boxShadow: '0 0 8px #fff', animation: 'pulse 2s infinite' 
+                        }} />
+                        Take a Quick Tour
+                        <div 
+                            onClick={(e) => { e.stopPropagation(); endTour(); }}
+                            style={{ marginLeft: '6px', opacity: 0.7, padding: '2px', display: 'flex' }}
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </div>
+                    </motion.button>
+                )}
+
                 {isOpen && (
                     <div style={{ position: 'fixed', inset: 0, zIndex: 10000, pointerEvents: 'none' }}>
-                        {/* Backdrop */}
-                        <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            style={{ position: 'absolute', inset: 0, background: 'rgba(25, 26, 24, 0.45)', backdropFilter: 'blur(3px)', pointerEvents: 'auto' }}
-                            onClick={endTour}
-                        />
 
                         {/* Dialog */}
                         <motion.div
@@ -162,36 +199,35 @@ export default function ProductTour() {
                             transition={{ type: 'spring', damping: 26, stiffness: 280 }}
                             style={{
                                 position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
+                                bottom: '32px',
+                                right: '32px',
                                 width: '100%',
-                                maxWidth: '440px',
+                                maxWidth: '340px',
                                 background: bg,
                                 border: `1px solid ${border}`,
-                                borderRadius: '28px',
-                                padding: '36px',
+                                borderRadius: '24px',
+                                padding: '24px',
                                 boxShadow: isDark ? '0 30px 80px rgba(0,0,0,0.6)' : '0 30px 80px rgba(30,32,29,0.12)',
                                 pointerEvents: 'auto'
                             }}
                         >
                             {/* Step Count indicator */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                <span style={{ fontSize: '11px', fontWeight: 800, color: accent, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                                    Interactive Walkthrough
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                <span style={{ fontSize: '10px', fontWeight: 800, color: accent, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                                    Walkthrough
                                 </span>
-                                <span style={{ fontSize: '11px', fontWeight: 700, color: text2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                <span style={{ fontSize: '10px', fontWeight: 700, color: text2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                     Step {currentStep + 1} of {TOUR_STEPS.length}
                                 </span>
                             </div>
 
                             {/* Step Title */}
-                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, marginBottom: '16px', letterSpacing: '-0.02em', fontFamily: 'var(--font-sans)', lineHeight: 1.2 }}>
+                            <h2 style={{ fontSize: '18px', fontWeight: 800, color: text1, marginBottom: '12px', letterSpacing: '-0.02em', fontFamily: 'var(--font-sans)', lineHeight: 1.2 }}>
                                 {TOUR_STEPS[currentStep].title}
                             </h2>
 
                             {/* Step Content */}
-                            <p style={{ fontSize: '14.5px', color: text2, lineHeight: 1.6, marginBottom: '36px', fontFamily: 'var(--font-sans)' }}>
+                            <p style={{ fontSize: '13px', color: text2, lineHeight: 1.5, marginBottom: '24px', fontFamily: 'var(--font-sans)' }}>
                                 {TOUR_STEPS[currentStep].content}
                             </p>
 

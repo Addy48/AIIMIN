@@ -43,7 +43,11 @@ const parseESPNEvents = (data) => {
       name: ev.name,
       shortName: ev.shortName,
       status: status.name,
-      statusShort: status.completed ? '' : statusDetail,
+      statusShort: status.completed ? '' : (
+        status.state === 'pre' && ev.date
+          ? new Date(ev.date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' IST'
+          : statusDetail
+      ),
       statusDetail: comp.status?.type?.detail || '',
       clock: comp.status?.displayClock,
       period: comp.status?.period,
@@ -79,30 +83,54 @@ const parseESPNEvents = (data) => {
   });
 };
 
-/* ── Date helper for fixture navigation ── */
-const getDateStr = (offset = 0) => {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d.toISOString().split('T')[0].replace(/-/g, '');
-};
 
-const getYesterdayTodayRange = () => {
-  return `${getDateStr(-1)}-${getDateStr(0)}`;
-};
+/* Date helpers removed */
 
 /* ── Football (Soccer) ────────────────────────────────────── */
 export const fetchFootball = async () => {
-  const dateRange = getYesterdayTodayRange();
+/* dateRange removed */
   const leagues = [
+    { slug: 'fifa.world', name: 'World Cup', flag: '🏆' },
+    { slug: 'conmebol.america', name: 'Copa America', flag: '🌎' },
     { slug: 'eng.1', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
     { slug: 'esp.1', name: 'La Liga', flag: '🇪🇸' },
     { slug: 'UEFA.CHAMPIONS', name: 'UCL', flag: '⭐' },
+    { slug: 'usa.1', name: 'MLS', flag: '🇺🇸' },
   ];
+
+  const favoriteTeams = ['real madrid', 'arsenal', 'manchester united', 'man united'];
 
   const results = await Promise.allSettled(
     leagues.map(l =>
-      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard?dates=${dateRange}`)
-        .then(d => ({ league: l, events: parseESPNEvents(d) }))
+      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
+        .then(d => {
+          let events = parseESPNEvents(d);
+          
+          events.sort((a, b) => {
+            const aFav = favoriteTeams.some(t => a.home.name.toLowerCase().includes(t) || a.away.name.toLowerCase().includes(t));
+            const bFav = favoriteTeams.some(t => b.home.name.toLowerCase().includes(t) || b.away.name.toLowerCase().includes(t));
+            
+            // 1. Live matches first
+            if (a.isLive && !b.isLive) return -1;
+            if (!a.isLive && b.isLive) return 1;
+            
+            // 2. Favorite teams second
+            if (aFav && !bFav) return -1;
+            if (!aFav && bFav) return 1;
+            
+            // 3. Upcoming before Finished
+            if (!a.isFinished && b.isFinished) return -1;
+            if (a.isFinished && !b.isFinished) return 1;
+            
+            // 4. Sort by date
+            return new Date(a.date) - new Date(b.date);
+          });
+          
+          // Filter to show ONLY favorite team matches or Live matches
+          let filtered = events.filter(e => e.isLive || favoriteTeams.some(t => e.home.name.toLowerCase().includes(t) || e.away.name.toLowerCase().includes(t)));
+
+          return { league: l, events: filtered };
+        })
     )
   );
 
@@ -151,15 +179,81 @@ const IPL_ABBR = {
   'lucknow super giants': 'LSG',
   'gujarat titans': 'GT',
 };
+
 const getTeamShort = (name) => {
   if (!name) return '???';
   const lower = name.toLowerCase().trim();
   if (IPL_ABBR[lower]) return IPL_ABBR[lower];
-  // Check for partial matches (e.g. "Royal Challengers Bengaluru [RCB]")
   for (const [key, abbr] of Object.entries(IPL_ABBR)) {
     if (lower.includes(key)) return abbr;
   }
   return name.substring(0, 3).toUpperCase();
+};
+
+const isIPLTeam = (teamName) => {
+  if (!teamName) return false;
+  const name = teamName.toLowerCase().replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+  const iplKeywords = [
+    'mumbai indians', 'chennai super kings', 'royal challengers', 'kolkata knight riders',
+    'sunrisers hyderabad', 'delhi capitals', 'punjab kings', 'rajasthan royals',
+    'lucknow super giants', 'gujarat titans', 'rcb', 'csk', 'mi', 'kkr', 'srh', 'dc',
+    'pbks', 'rr', 'lsg', 'gt'
+  ];
+  return iplKeywords.some(keyword => {
+    if (name === keyword) return true;
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    return regex.test(name);
+  });
+};
+
+const isNationalTeam = (teamName) => {
+  if (!teamName) return false;
+  const name = teamName.toLowerCase().replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+  
+  // Exclude 'A' teams, Lions, U19, emerging, academy etc.
+  if (
+    name.includes(' emerging') || 
+    name.includes(' academy') || 
+    name.includes(' u19') || 
+    name.includes('under-19') ||
+    name.includes(' u-19') ||
+    name.includes('under 19') ||
+    name.includes(' xi') || 
+    /\b(a|lions|emerg|u19|u-19|academy)\b/.test(name)
+  ) {
+    return null;
+  }
+
+  const nationalTeams = {
+    india: ['india', 'ind'],
+    australia: ['australia', 'aus'],
+    england: ['england', 'eng'],
+    south_africa: ['south africa', 'rsa', 'sa'],
+    pakistan: ['pakistan', 'pak'],
+    new_zealand: ['new zealand', 'nz'],
+    west_indies: ['west indies', 'wi', 'windies'],
+    sri_lanka: ['sri lanka', 'sl']
+  };
+
+  for (const [key, aliases] of Object.entries(nationalTeams)) {
+    if (aliases.some(alias => name === alias || new RegExp(`\\b${alias}\\b`, 'i').test(name))) {
+      return key;
+    }
+  }
+
+  return null;
+};
+
+const deduplicateMatches = (events) => {
+  const seen = new Set();
+  return events.filter(e => {
+    const t1 = (e.home?.name || '').toLowerCase().replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+    const t2 = (e.away?.name || '').toLowerCase().replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+    const pair = [t1, t2].sort().join(' vs ');
+    if (seen.has(pair)) return false;
+    seen.add(pair);
+    return true;
+  });
 };
 
 /* ── Cricket via cricapi.com (UPDATED) ── */
@@ -168,10 +262,7 @@ export const fetchCricket = async () => {
     const res = await fetchJSON(`https://api.cricapi.com/v1/cricScore?apikey=${CRICKET_KEY}`);
     if (res.status !== 'success') throw new Error(res.info || 'Cricket API failed');
 
-    const TOP_8 = ['India', 'Australia', 'England', 'South Africa', 'Pakistan', 'New Zealand', 'West Indies', 'Sri Lanka'];
-    const IPL_TEAMS = ['MI', 'CSK', 'RCB', 'KKR', 'SRH', 'DC', 'PBKS', 'RR', 'LSG', 'GT', 'Mumbai Indians', 'Chennai Super Kings', 'Royal Challengers', 'Kolkata Knight Riders', 'Sunrisers', 'Delhi Capitals', 'Punjab Kings', 'Rajasthan Royals', 'Lucknow Super Giants', 'Gujarat Titans'];
-
-    const events = res.data
+    let events = res.data
       .filter(match => {
         const t1 = (match.t1 || '').toLowerCase();
         const t2 = (match.t2 || '').toLowerCase();
@@ -180,78 +271,134 @@ export const fetchCricket = async () => {
         const matchStatus = (match.status || '').toLowerCase();
         const title = `${t1} ${t2} ${series} ${type} ${matchStatus}`.toLowerCase();
 
-        // 1. Strictly No Women's cricket (Aggressive check)
-        if (title.includes('women') || title.includes('wpl') || title.includes('wbbl') || title.includes('wt20')) return false;
-        
-        // 2. IPL Check (Highest priority for domestic)
-        const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
-        
-        // 3. Indian National Team Check (Highest priority for international)
-        const involvesIndia = t1 === 'india' || t2 === 'india' || t1 === 'ind' || t2 === 'ind' || t1.includes('(ind)') || t2.includes('(ind)');
+        // 1. Aggressive bans for women's and minor cricket
+        if (
+          title.includes('women') || 
+          title.includes('wpl') || 
+          title.includes('wbbl') || 
+          title.includes('wt20') || 
+          title.includes('county') || 
+          title.includes('vitality') || 
+          title.includes('blast') || 
+          title.includes('hundred') || 
+          title.includes('sheffield') ||
+          title.includes('plunket') ||
+          title.includes('u19') ||
+          title.includes('under-19') ||
+          title.includes('u-19') ||
+          title.includes('under 19') ||
+          title.includes('development') ||
+          title.includes('emerging') ||
+          title.includes('academy') ||
+          title.includes(' xi') ||
+          /\b(a|lions|emerg|u19|u-19)\b/.test(title) ||
+          /\[w(t(20)?)?\]/i.test(match.t1 || '') ||
+          /\[w(t(20)?)?\]/i.test(match.t2 || '') ||
+          /\(w(t(20)?)?\)/i.test(match.t1 || '') ||
+          /\(w(t(20)?)?\)/i.test(match.t2 || '')
+        ) {
+          return false;
+        }
 
-        // 4. Top 8 Nations (Men's International)
-        const involvesTop8 = TOP_8.some(t => {
-          const name = t.toLowerCase();
-          // Ensure we match the main team, not 'A' teams or 'U19' if possible
-          const isMainTeam1 = t1 === name || t1.startsWith(`${name} `) || t1.endsWith(` ${name}`);
-          const isMainTeam2 = t2 === name || t2.startsWith(`${name} `) || t2.endsWith(` ${name}`);
-          return (isMainTeam1 || isMainTeam2) && !title.includes('u19') && !title.includes('under-19');
-        });
+        // 2. Classify teams
+        const nat1 = isNationalTeam(match.t1);
+        const nat2 = isNationalTeam(match.t2);
 
-        // 5. IPL Team Check
-        const involvesIPLTeam = IPL_TEAMS.some(t => {
-            const team = t.toLowerCase();
-            return t1.includes(team) || t2.includes(team);
-        });
+        const involvesIndia = nat1 === 'india' || nat2 === 'india';
+        const involvesPak = nat1 === 'pakistan' || nat2 === 'pakistan';
 
-        // 6. Explicitly exclude English counties
-        const englishCounties = ['middlesex', 'yorkshire', 'surrey', 'somerset', 'lancashire', 'essex', 'warwickshire', 'hampshire', 'sussex', 'kent', 'nottinghamshire', 'glamorgan', 'leicestershire', 'derbyshire', 'worcestershire', 'gloucestershire', 'durham', 'northamptonshire', 'county', 'vitality blast'];
-        const isCounty = englishCounties.some(c => title.includes(c));
-        if (isCounty) return false;
-        
-        // Final Filter: Must be IPL, India, or Top 8 International
-        // We include IPL and India always (Men's), and Top 8 if it's a recognized match type
-        return isIPL || involvesIndia || (involvesTop8 && (type === 't20' || type === 'odi' || type === 'test' || type === 'm' || type === 't10')) || involvesIPLTeam;
+        // Block Pakistan unless playing India
+        if (involvesPak && !involvesIndia) return false;
+
+        // International senior men check (India vs anyone, or other top 8 vs each other)
+        const isHighProfileInternational = 
+          (involvesIndia && (nat1 || nat2)) ||
+          (nat1 && nat2 && nat1 !== 'pakistan' && nat2 !== 'pakistan');
+
+        // IPL senior check
+        const isIPLMatch = isIPLTeam(match.t1) && isIPLTeam(match.t2);
+
+        return isHighProfileInternational || isIPLMatch;
       })
       .map(match => {
-      const isLive = match.ms === 'live';
-      const isFinished = match.ms === 'result';
-      
-      return {
-        id: match.id,
-        date: match.dateTimeGMT,
-        name: `${match.t1} vs ${match.t2}`,
-        status: match.status,
-        statusShort: isLive
-          ? (match.status || 'Live')
-          : isFinished
-            ? (match.status || 'Result')
-            : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(match.dateTimeGMT).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
-        statusDetail: match.t1s || match.t2s || '',
-        isLive,
-        isFinished,
-        venue: '', // cricScore doesn't always provide venue in simple format
-        notes: [match.matchType?.toUpperCase()].filter(Boolean),
-        home: {
-          name: match.t1,
-          short: getTeamShort(match.t1),
-          score: match.t1s || '0',
-          logo: match.t1img || '',
-        },
-        away: {
-          name: match.t2,
-          short: getTeamShort(match.t2),
-          score: match.t2s || '0',
-          logo: match.t2img || '',
-        }
-      };
+        const isLive = match.ms === 'live';
+        const isFinished = match.ms === 'result';
+        const gmtDate = match.dateTimeGMT?.endsWith('Z') ? match.dateTimeGMT : `${match.dateTimeGMT}Z`;
+        
+        return {
+          id: match.id,
+          date: match.dateTimeGMT,
+          name: `${match.t1} vs ${match.t2}`,
+          status: match.status,
+          statusShort: isLive
+            ? (match.status || 'Live')
+            : isFinished
+              ? (match.status || 'Result')
+              : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(gmtDate).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
+          statusDetail: match.t1s || match.t2s || '',
+          isLive,
+          isFinished,
+          venue: '',
+          notes: [match.matchType?.toUpperCase()].filter(Boolean),
+          home: {
+            name: match.t1,
+            short: getTeamShort(match.t1),
+            score: match.t1s || '0',
+            logo: match.t1img || '',
+          },
+          away: {
+            name: match.t2,
+            short: getTeamShort(match.t2),
+            score: match.t2s || '0',
+            logo: match.t2img || '',
+          }
+        };
+      });
+
+    // Sort cricket events: Live > Upcoming > Finished
+    events.sort((a, b) => {
+      if (a.isLive && !b.isLive) return -1;
+      if (!a.isLive && b.isLive) return 1;
+      if (!a.isFinished && b.isFinished) return -1;
+      if (a.isFinished && !b.isFinished) return 1;
+      return new Date(a.date) - new Date(b.date);
     });
+
+    events = deduplicateMatches(events);
+    events = events.slice(0, 6); // Top 6 most relevant matches
+
     return [{ league: { name: 'Cricket Scores', flag: '🏏' }, events }];
   } catch (err) {
     console.warn('Cricket API failed, falling back to ESPN:', err);
     try {
       const general = await fetchJSON(`${ESPN}/cricket/scoreboard`);
-      return [{ league: { name: 'Cricket (Fallback)', flag: '🏏' }, events: parseESPNEvents(general) }];
+      let events = parseESPNEvents(general).filter(ev => {
+        const nat1 = isNationalTeam(ev.home?.name);
+        const nat2 = isNationalTeam(ev.away?.name);
+
+        const involvesIndia = nat1 === 'india' || nat2 === 'india';
+        const involvesPak = nat1 === 'pakistan' || nat2 === 'pakistan';
+
+        if (involvesPak && !involvesIndia) return false;
+
+        const isHighProfileInternational = 
+          (involvesIndia && (nat1 || nat2)) ||
+          (nat1 && nat2 && nat1 !== 'pakistan' && nat2 !== 'pakistan');
+
+        const isIPLMatch = isIPLTeam(ev.home?.name) && isIPLTeam(ev.away?.name);
+
+        return isHighProfileInternational || isIPLMatch;
+      });
+      events.sort((a, b) => {
+        if (a.isLive && !b.isLive) return -1;
+        if (!a.isLive && b.isLive) return 1;
+        if (!a.isFinished && b.isFinished) return -1;
+        if (a.isFinished && !b.isFinished) return 1;
+        return new Date(a.date) - new Date(b.date);
+      });
+      events = deduplicateMatches(events);
+      events = events.slice(0, 4);
+      return [{ league: { name: 'Cricket (Fallback)', flag: '🏏' }, events }];
     } catch (e) { return []; }
   }
 };
@@ -284,9 +431,8 @@ export const fetchF1 = async () => {
 
 /* ── Basketball ───────────────────────────────────────────── */
 export const fetchBasketball = async (dateOffset = 0) => {
-  const dateStr = getDateStr(dateOffset);
   try {
-    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard?dates=${dateStr}`);
+    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard`);
     return [{ league: { name: 'NBA', flag: '🏀' }, events: parseESPNEvents(data) }];
   } catch (err) {
     console.warn('NBA API failed:', err);
