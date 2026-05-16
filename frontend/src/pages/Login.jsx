@@ -1,18 +1,16 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Check, X } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import Numpad from '../components/common/Numpad';
 import Logo from '../components/Logo';
-import { apiGet } from '../utils/api';
 
 /**
  * AIIMIN Identity Portal v3
  * - Clean geometric background (no colored glow blobs)
- * - Multi-stage sign-up wizard (Name/Gmail -> Username Selection -> PIN -> PIN Verify)
- * - usernames are stored and displayed in uppercase
- * - username + PIN and Gmail + PIN both resolve through Supabase Auth
+ * - Multi-stage sign-up wizard (Email & Name -> Username Selection -> PIN -> PIN Verify)
+ * - visual uppercase transformation for usernames
+ * - Strict username rules: max 4 letters, max 2 numbers, symbols allowed, exactly 8 characters
  * - Zero remembered or pre-filled logins (blank fields always)
  */
 
@@ -28,35 +26,20 @@ const GridBg = ({ isDark }) => (
 );
 
 const Login = () => {
-  const { signInWithUsername, signUpWithUsername, signInWithGoogle } = useAuth();
-  const navigate = useNavigate();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
   const isDark = false;
 
-  const [mode, setMode]             = useState('login'); // 'login' or 'signup' or 'forgot'
-  const [step, setStep]             = useState(1);       // login: 1=id, 2=pin; signup: 1=name, 2=username, 3=pin, 4=pinVerify; forgot: 1=email
+  const [mode, setMode]             = useState('login'); // 'login' or 'signup'
+  const [step, setStep]             = useState(1);       // login: 1=id, 2=pin; signup: 1=email/name, 2=username, 3=pin, 4=pinVerify
   const [identifier, setIdentifier] = useState('');      // Email or Username for Login
   const [fullName, setFullName]     = useState('');
-  const [email, setEmail]           = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
   const [usernameVal, setUsernameVal] = useState('');
   const [pin, setPin]               = useState('');
   const [confirmPin, setConfirmPin] = useState('');
-  const [forgotIdentifier, setForgotIdentifier] = useState('');
   const [error, setError]           = useState(null);
   const [loading, setLoading]       = useState(false);
-  const [loadingText, setLoadingText] = useState('Verifying...');
   const [shake, setShake]           = useState(false);
-
-  React.useEffect(() => {
-    let timer;
-    if (loading) {
-      timer = setTimeout(() => {
-        setLoadingText('Waking up secure servers (may take ~50s)...');
-      }, 3500);
-    } else {
-      setLoadingText('Verifying...');
-    }
-    return () => clearTimeout(timer);
-  }, [loading]);
 
   // Clear inputs when changing mode
   const toggleMode = () => {
@@ -64,11 +47,10 @@ const Login = () => {
     setStep(1);
     setIdentifier('');
     setFullName('');
-    setEmail('');
+    setSignupEmail('');
     setUsernameVal('');
     setPin('');
     setConfirmPin('');
-    setForgotIdentifier('');
     setError(null);
   };
 
@@ -79,20 +61,11 @@ const Login = () => {
     if (mode === 'login') {
       if (!identifier.trim()) { setError('Identifier required.'); return; }
       setStep(2);
-    } else if (mode === 'forgot') {
-      if (!forgotIdentifier.trim()) { setError('Username or Email required.'); return; }
-      setStep(2);
-      // Simulate sending email since we don't have a backend endpoint implemented yet
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-      }, 1500);
     } else {
+      // Signup Stage 1: Email & Full Name
+      if (!signupEmail.trim()) { setError('Email required.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupEmail.trim())) { setError('Enter a valid email address.'); return; }
       if (!fullName.trim()) { setError('Full name required.'); return; }
-      if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        setError('Enter a valid Gmail address or leave it blank.');
-        return;
-      }
       setStep(2);
     }
   };
@@ -102,14 +75,6 @@ const Login = () => {
     if (mode === 'login') {
       setStep(1);
       setPin('');
-    } else if (mode === 'forgot') {
-      if (step === 2) {
-        setMode('login');
-        setStep(2);
-      } else {
-        setMode('login');
-        setStep(2);
-      }
     } else {
       if (step > 1) {
         if (step === 2) {
@@ -184,17 +149,16 @@ const Login = () => {
     }
   };
 
-  const handleSubmitLogin = async (finalPin, loginId = identifier) => {
+  const handleSubmitLogin = async (finalPin) => {
     setError(null);
     setLoading(true);
     try {
-      await signInWithUsername(loginId.trim(), finalPin);
-      // Explicitly navigate for immediate feedback
-      navigate('/overview');
+      await signInWithEmail(identifier.trim(), finalPin);
     } catch (err) {
       setError(err.message || 'Verification failure. Try again.');
       setPin('');
       triggerShake();
+    } finally {
       setLoading(false);
     }
   };
@@ -210,57 +174,36 @@ const Login = () => {
     setError(null);
     setLoading(true);
     try {
-      const registeredPin = pin;
-      const registeredUsername = usernameVal.toUpperCase();
-      const authEmail = email.trim() || `${registeredUsername.toLowerCase()}@aiimin.com`;
-
-      await signUpWithUsername(registeredUsername, registeredPin, fullName.trim(), authEmail);
-      
-      // signUpWithUsername already calls signInWithPassword and populates the session!
-      // The AuthContext will detect the user and the router will auto-redirect to /overview.
-      // We do not need to manually call handleSubmitLogin here.
+      await signUpWithEmail(signupEmail.trim(), pin, fullName.trim(), usernameVal.trim());
     } catch (err) {
       setError(err.message || 'Signup failed. Try again.');
       setConfirmPin('');
       setStep(3); // Send them back to enter PIN
       setPin('');
       triggerShake();
+    } finally {
       setLoading(false);
     }
   };
 
   // Username validation constraints checks
-  const isUsernameValid = usernameVal.length >= 3 && usernameVal.length <= 20 && /^[A-Z0-9_.-]+$/.test(usernameVal);
+  const uLettersCount = (usernameVal.match(/[A-Z]/g) || []).length;
+  const uNumbersCount = (usernameVal.match(/[0-9]/g) || []).length;
+  const isUsernameValid = usernameVal.length >= 4 && usernameVal.length <= 8 && uLettersCount <= 4 && uNumbersCount <= 2;
 
-  const handleUsernameNext = async (e) => {
+  const handleUsernameNext = (e) => {
     if (e) e.preventDefault();
     if (!isUsernameValid) {
       setError('Username does not meet the strict requirements.');
       return;
     }
     setError(null);
-    setLoading(true);
-    try {
-      const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(usernameVal.trim())}`, { auth: false });
-      if (data && data.email) {
-        setError('Username is already taken.');
-      } else {
-        setStep(3);
-      }
-    } catch (err) {
-      if (err.response && err.response.status === 404) {
-        setStep(3);
-      } else {
-        setError(err.message || 'Error checking username availability. Please try again.');
-      }
-    } finally {
-      setLoading(false);
-    }
+    setStep(3);
   };
 
   const handleUsernameChange = (e) => {
-    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '');
-    if (val.length <= 20) {
+    const val = e.target.value.toUpperCase();
+    if (val.length <= 8) {
       setUsernameVal(val);
     }
   };
@@ -277,17 +220,6 @@ const Login = () => {
     outline: 'none',
     fontFamily: 'var(--font-sans)',
     transition: 'border-color 0.2s, box-shadow 0.2s',
-  };
-
-  const labelStyle = {
-    display: 'block',
-    fontSize: '12px',
-    fontWeight: 600,
-    color: 'var(--text-2)',
-    marginBottom: '8px',
-    fontFamily: 'var(--font-sans)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em'
   };
 
   return (
@@ -328,7 +260,7 @@ const Login = () => {
             style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 8px', color: isDark ? '#EDEDED' : '#111111' }}
           >
             {mode === 'login' ? (
-            step === 1 ? 'Welcome back' : 'Enter your PIN'
+              step === 1 ? 'Welcome back' : 'Enter your PIN'
             ) : (
               step === 1 ? 'Create account' :
               step === 2 ? 'Choose Username' :
@@ -343,10 +275,10 @@ const Login = () => {
             style={{ fontSize: '14px', color: 'var(--text-3)', margin: 0, lineHeight: '1.5' }}
           >
             {mode === 'login' ? (
-              step === 1 ? 'Use Google, Gmail + PIN, or username + PIN' : `Verifying identity for ${identifier}`
+              step === 1 ? 'Sign in to your personal OS' : `Verifying identity for ${identifier}`
             ) : (
-              step === 1 ? 'Add Gmail for email login, or leave it blank for username-only' :
-              step === 2 ? 'Usernames are saved in uppercase automatically' :
+              step === 1 ? 'Join the AIIMIN network' :
+              step === 2 ? 'Visually uppercase, 4-8 character constraint' :
               step === 3 ? 'Choose a secure 6-digit PIN' : 'Confirm your 6-digit PIN'
             )}
           </motion.p>
@@ -354,113 +286,7 @@ const Login = () => {
 
         {/* ── Steps ── */}
         <AnimatePresence mode="wait">
-          {mode === 'forgot' ? (
-            /* ==================== FORGOT FLOW ==================== */
-            step === 1 ? (
-              <motion.div
-                key="forgot-step1"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <button
-                    type="button"
-                    onClick={handleBack}
-                    style={{
-                      alignSelf: 'flex-start',
-                      display: 'flex', alignItems: 'center', gap: '6px',
-                      background: 'rgba(0,0,0,0.04)',
-                      border: '1px solid rgba(0,0,0,0.08)',
-                      borderRadius: '99px', padding: '6px 14px',
-                      fontSize: '12px', fontWeight: 600, color: 'var(--text-2)',
-                      cursor: 'pointer', fontFamily: 'var(--font-sans)', marginBottom: '8px', width: 'fit-content'
-                    }}
-                  >
-                    <ArrowLeft size={13} /> Back
-                  </button>
-                  <div>
-                    <label style={labelStyle}>Username or Account Email</label>
-                    <input
-                      type="text" required value={forgotIdentifier} autoFocus
-                      onChange={e => setForgotIdentifier(e.target.value)}
-                      placeholder="Enter username or email"
-                      style={inputStyle}
-                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
-                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
-                    />
-                  </div>
-                  {error && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                      style={{ color: 'var(--color-danger)', fontSize: '13px', fontWeight: 500 }}>
-                      {error}
-                    </motion.div>
-                  )}
-                  <motion.button
-                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-                    type="submit"
-                    style={{
-                      height: '52px', marginTop: '4px',
-                      background: isDark ? '#EDEDED' : '#111111',
-                      color: isDark ? '#111111' : '#FFFFFF',
-                      border: 'none', borderRadius: '12px',
-                      fontSize: '15px', fontWeight: 700, cursor: 'pointer',
-                      fontFamily: 'var(--font-sans)', transition: 'opacity 0.2s',
-                    }}
-                  >
-                    Send Recovery Email →
-                  </motion.button>
-                </form>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="forgot-step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-                style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}
-              >
-                {loading ? (
-                  <div style={{ padding: '24px', textAlign: 'center' }}>
-                    <div className="aiimin-spinner" />
-                    <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
-                      {loadingText}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Check size={32} color="#22C55E" />
-                    </div>
-                    <div>
-                      <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 700 }}>Check your inbox</h3>
-                      <p style={{ margin: 0, color: 'var(--text-3)', fontSize: '14px', lineHeight: '1.5' }}>
-                        If an account exists for that identifier, we've sent an email with a secure link to reset your PIN.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => { setMode('login'); setStep(1); }}
-                      style={{
-                        height: '44px', padding: '0 24px',
-                        background: 'transparent',
-                        color: '#111111',
-                        border: '1px solid rgba(0,0,0,0.12)',
-                        borderRadius: '12px',
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontFamily: 'var(--font-sans)',
-                      }}
-                    >
-                      Return to Login
-                    </button>
-                  </>
-                )}
-              </motion.div>
-            )
-          ) : mode === 'login' ? (
+          {mode === 'login' ? (
             /* ==================== LOGIN FLOW ==================== */
             step === 1 ? (
               <motion.div
@@ -472,18 +298,18 @@ const Login = () => {
               >
                 <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={labelStyle}>Username or Gmail</label>
+                    <label style={labelStyle}>Username or Email</label>
                     <input
                       type="text" required value={identifier} autoFocus
                       onChange={e => {
-                        const val = e.target.value.trim();
-                        setIdentifier(val.includes('@') ? val.toLowerCase() : val.toUpperCase());
+                        const val = e.target.value;
+                        setIdentifier(val.includes('@') ? val : val.toUpperCase());
                       }}
                       autoCapitalize="none"
                       autoComplete="off"
                       autoCorrect="off"
                       spellCheck="false"
-                      placeholder="USERNAME or name@gmail.com"
+                      placeholder="Enter username or email"
                       style={{
                         ...inputStyle,
                         textTransform: identifier.includes('@') ? 'none' : 'uppercase'
@@ -541,15 +367,6 @@ const Login = () => {
                   >
                     Continue with Google
                   </button>
-
-                  {/* Divider */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }} />
-                    <span style={{ fontSize: '11px', color: '#aaa', fontWeight: 600, fontFamily: 'var(--font-sans)' }}>OR</span>
-                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }} />
-                  </div>
-
-
                 </form>
               </motion.div>
             ) : (
@@ -604,35 +421,18 @@ const Login = () => {
                   <div style={{ padding: '24px', textAlign: 'center' }}>
                     <div className="aiimin-spinner" />
                     <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
-                      {loadingText}
+                      Verifying...
                     </p>
                   </div>
                 ) : (
-                  <>
-                    <Numpad
-                      onEntry={handlePinEntry}
-                      onDelete={handlePinDelete}
-                      onClear={handlePinClear}
-                      maxLength={6}
-                      currentLength={pin.length}
-                      isDark={false}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode('forgot');
-                        setStep(1);
-                        setError(null);
-                      }}
-                      style={{
-                        background: 'none', border: 'none', color: 'var(--text-3)',
-                        fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-sans)',
-                        textDecoration: 'underline', marginTop: '8px'
-                      }}
-                    >
-                      Forgot PIN / Username?
-                    </button>
-                  </>
+                  <Numpad
+                    onEntry={handlePinEntry}
+                    onDelete={handlePinDelete}
+                    onClear={handlePinClear}
+                    maxLength={6}
+                    currentLength={pin.length}
+                    isDark={false}
+                  />
                 )}
 
                 {error && (
@@ -646,7 +446,7 @@ const Login = () => {
           ) : (
             /* ==================== SIGNUP FLOW ==================== */
             step === 1 ? (
-              /* Signup Stage 1: Gmail & Full Name */
+              /* Signup Stage 1: Email & Full Name */
               <motion.div
                 key="signup-step1"
                 initial={{ opacity: 0, x: -20 }}
@@ -656,11 +456,11 @@ const Login = () => {
               >
                 <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={labelStyle}>Full Name</label>
+                    <label style={labelStyle}>Email Address (Mail ID)</label>
                     <input
-                      type="text" required value={fullName} autoFocus
-                      onChange={e => setFullName(e.target.value)}
-                      placeholder="e.g. Aaditya Upadhyay"
+                      type="email" required value={signupEmail} autoFocus
+                      onChange={e => setSignupEmail(e.target.value)}
+                      placeholder="Enter email address"
                       style={inputStyle}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                       onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
@@ -668,15 +468,11 @@ const Login = () => {
                   </div>
 
                   <div>
-                    <label style={labelStyle}>Gmail address optional</label>
+                    <label style={labelStyle}>Full Name</label>
                     <input
-                      type="email" value={email}
-                      onChange={e => setEmail(e.target.value.trim().toLowerCase())}
-                      placeholder="name@gmail.com"
-                      autoCapitalize="none"
-                      autoComplete="email"
-                      autoCorrect="off"
-                      spellCheck="false"
+                      type="text" required value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                      placeholder="e.g. Aaditya Upadhyay"
                       style={inputStyle}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                       onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
@@ -702,7 +498,7 @@ const Login = () => {
                       fontFamily: 'var(--font-sans)', transition: 'opacity 0.2s',
                     }}
                   >
-                    Continue to Username →
+                    Continue to Username Selection →
                   </motion.button>
 
                   <div style={{ textAlign: 'center' }}>
@@ -747,7 +543,7 @@ const Login = () => {
                     <input
                       type="text" required value={usernameVal} autoFocus
                       onChange={handleUsernameChange}
-                      placeholder="e.g. AADIYA10"
+                      placeholder="e.g. A@B12C-D"
                       style={{ ...inputStyle, textTransform: 'uppercase', fontStyle: 'normal', letterSpacing: '0.05em' }}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                       onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
@@ -764,21 +560,40 @@ const Login = () => {
                     </div>
                     {/* Character limit */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: (usernameVal.length >= 3 && usernameVal.length <= 20) ? '#16a34a' : 'var(--text-2)' }}>
-                        {(usernameVal.length >= 3 && usernameVal.length <= 20) ? <Check size={13} /> : <X size={13} style={{ color: '#ef4444' }} />}
-                        <span>Between 3 and 20 characters</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: (usernameVal.length >= 4 && usernameVal.length <= 8) ? '#16a34a' : 'var(--text-2)' }}>
+                        {(usernameVal.length >= 4 && usernameVal.length <= 8) ? <Check size={13} /> : <X size={13} style={{ color: '#ef4444' }} />}
+                        <span>Between 4 and 8 characters</span>
                       </div>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: (usernameVal.length >= 3 && usernameVal.length <= 20) ? '#16a34a' : 'var(--text-3)' }}>
-                        {usernameVal.length} / 20
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: (usernameVal.length >= 4 && usernameVal.length <= 8) ? '#16a34a' : 'var(--text-3)' }}>
+                        {usernameVal.length} / 8
                       </span>
                     </div>
 
-                    {/* Character types */}
+                    {/* Letters limit */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: /^[A-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? '#16a34a' : '#ef4444' }}>
-                        {/^[A-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? <Check size={13} /> : <X size={13} />}
-                        <span>Letters, numbers, _, ., - only</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: uLettersCount <= 4 ? '#16a34a' : '#ef4444' }}>
+                        {uLettersCount <= 4 ? <Check size={13} /> : <X size={13} />}
+                        <span>At most 4 letters (A-Z)</span>
                       </div>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: uLettersCount <= 4 ? '#16a34a' : '#ef4444' }}>
+                        {uLettersCount} / 4
+                      </span>
+                    </div>
+
+                    {/* Numbers limit */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: uNumbersCount <= 2 ? '#16a34a' : '#ef4444' }}>
+                        {uNumbersCount <= 2 ? <Check size={13} /> : <X size={13} />}
+                        <span>At most 2 numbers (0-9)</span>
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: uNumbersCount <= 2 ? '#16a34a' : '#ef4444' }}>
+                        {uNumbersCount} / 2
+                      </span>
+                    </div>
+
+                    {/* Symbols context */}
+                    <div style={{ fontSize: '11px', color: 'var(--text-3)', fontStyle: 'italic', marginTop: '2px' }}>
+                      Remainder can be any special symbols (e.g. @, #, $, -, _, !, etc.)
                     </div>
                   </div>
 
@@ -918,7 +733,7 @@ const Login = () => {
                   <div style={{ padding: '24px', textAlign: 'center' }}>
                     <div className="aiimin-spinner" />
                     <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
-                      {loadingText === 'Verifying...' ? 'Registering and setting up OS...' : loadingText}
+                      Registering and setting up OS...
                     </p>
                   </div>
                 ) : (
@@ -966,6 +781,13 @@ const Login = () => {
       `}</style>
     </div>
   );
+};
+
+const labelStyle = {
+  fontSize: '11px', color: 'var(--text-3)', fontWeight: 600,
+  display: 'block', marginBottom: '8px',
+  textTransform: 'uppercase', letterSpacing: '0.08em',
+  fontFamily: 'var(--font-sans)',
 };
 
 export default Login;

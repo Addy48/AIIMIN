@@ -1,0 +1,418 @@
+import { Hono } from 'hono';
+import { pool } from '../lib/db.js';
+import { requireAuth } from '../middleware/auth.js';
+import { getUploadPresignedUrl, getDownloadPresignedUrl, deleteS3Object } from '../services/s3Service.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads', 'resumes');
+if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+const placementsRoutes = new Hono();
+
+// ==========================================
+// RESUMES
+// ==========================================
+
+placementsRoutes.get('/resumes/upload-ticket', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const fileKey = c.req.query('filename') || 'resume.pdf';
+    const contentType = c.req.query('contentType') || 'application/pdf';
+    
+    try {
+        const reqUrl = new URL(c.req.url);
+        const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
+        const ticket = await getUploadPresignedUrl(userId, fileKey, contentType, baseUrl);
+        return c.json(ticket);
+    } catch (err) {
+        console.error('Error generating upload ticket:', err);
+        return c.json({ error: 'Failed to generate upload ticket', message: err.message }, 500);
+    }
+});
+
+// Serve Local Uploads
+placementsRoutes.put('/resumes/upload-local', async (c) => {
+    const key = c.req.query('key');
+    if (!key || (!key.startsWith('local/') && !key.startsWith('users/'))) {
+        return c.json({ error: 'Invalid key' }, 400);
+    }
+    
+    const baseName = path.basename(key);
+    const filePath = path.join(UPLOADS_DIR, baseName);
+    
+    try {
+        const bodyBuffer = await c.req.arrayBuffer();
+        await fs.promises.writeFile(filePath, Buffer.from(bodyBuffer));
+        console.info(`[Storage] Saved resume locally at: ${filePath}`);
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('Local upload failed:', err);
+        return c.json({ error: 'Failed to write file locally' }, 500);
+    }
+});
+
+// View Local Resumes (must be public to load in iframe without Auth headers)
+placementsRoutes.get('/resumes/local-view', async (c) => {
+    const key = c.req.query('key');
+    if (!key || (!key.startsWith('local/') && !key.startsWith('users/'))) {
+        return c.json({ error: 'Invalid key' }, 400);
+    }
+    
+    const baseName = path.basename(key);
+    const filePath = path.join(UPLOADS_DIR, baseName);
+    
+    if (!fs.existsSync(filePath)) {
+        return c.text('File not found', 404);
+    }
+    
+    try {
+        const fileContent = await fs.promises.readFile(filePath);
+        c.header('Content-Type', 'application/pdf');
+        c.header('Content-Disposition', 'inline');
+        return c.body(fileContent);
+    } catch (err) {
+        console.error('Error serving local file:', err);
+        return c.text('Error serving file', 500);
+    }
+});
+
+placementsRoutes.get('/resumes', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const res = await pool.query(
+            'SELECT * FROM resumes WHERE user_id = $1 ORDER BY created_at DESC',
+            [userId]
+        );
+        
+        // Dynamically append temporary presigned download/view URL for resumes stored on S3
+        const reqUrl = new URL(c.req.url);
+        const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
+        const resumesWithUrls = await Promise.all(res.rows.map(async (resume) => {
+            let viewUrl = resume.link_url;
+            if (resume.link_url && (resume.link_url.startsWith('users/') || resume.link_url.startsWith('local/'))) {
+                try {
+                    viewUrl = await getDownloadPresignedUrl(resume.link_url, baseUrl);
+                } catch (s3Err) {
+                    console.error(`Failed to generate view URL for key ${resume.link_url}:`, s3Err);
+                }
+            }
+            return {
+                ...resume,
+                view_url: viewUrl
+            };
+        }));
+        
+        return c.json(resumesWithUrls);
+    } catch (err) {
+        console.error('Error fetching resumes:', err);
+        return c.json({ error: 'Failed to fetch resumes' }, 500);
+    }
+});
+
+placementsRoutes.post('/resumes/confirm', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const { title, target_role, key } = await c.req.json();
+        
+        if (!key) {
+            return c.json({ error: 'S3 key is required' }, 400);
+        }
+
+        const res = await pool.query(
+            `INSERT INTO resumes (user_id, title, target_role, link_url) 
+             VALUES ($1, $2, $3, $4) 
+             RETURNING *`,
+            [userId, title, target_role || 'General', key]
+        );
+        
+        // Generate immediate view_url for convenience
+        let viewUrl = key;
+        try {
+            const reqUrl = new URL(c.req.url);
+            const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
+            viewUrl = await getDownloadPresignedUrl(key, baseUrl);
+        } catch (s3Err) {
+            console.error(`Failed to generate initial view URL:`, s3Err);
+        }
+        
+        return c.json({
+            ...res.rows[0],
+            view_url: viewUrl
+        });
+    } catch (err) {
+        console.error('Error confirming resume:', err);
+        return c.json({ error: 'Failed to confirm resume' }, 500);
+    }
+});
+
+placementsRoutes.get('/resumes/:id/view-url', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    try {
+        const res = await pool.query(
+            'SELECT link_url FROM resumes WHERE id = $1 AND user_id = $2',
+            [id, userId]
+        );
+        if (res.rows.length === 0) {
+            return c.json({ error: 'Resume not found' }, 404);
+        }
+        
+        const key = res.rows[0].link_url;
+        let viewUrl = key;
+        if (key && (key.startsWith('users/') || key.startsWith('local/'))) {
+            const reqUrl = new URL(c.req.url);
+            const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
+            viewUrl = await getDownloadPresignedUrl(key, baseUrl);
+        }
+        
+        return c.json({ viewUrl });
+    } catch (err) {
+        console.error('Error generating view url:', err);
+        return c.json({ error: 'Failed to generate view url' }, 500);
+    }
+});
+
+placementsRoutes.delete('/resumes/:id', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    try {
+        // 1. Fetch the resume's key/link_url
+        const fetchRes = await pool.query(
+            'SELECT link_url FROM resumes WHERE id = $1 AND user_id = $2',
+            [id, userId]
+        );
+        if (fetchRes.rows.length === 0) {
+            return c.json({ error: 'Resume not found' }, 404);
+        }
+        
+        const fileKey = fetchRes.rows[0].link_url;
+        
+        // 2. Delete from S3 (only if it looks like an S3 key)
+        if (fileKey && fileKey.startsWith('users/')) {
+            try {
+                await deleteS3Object(fileKey);
+            } catch (s3Err) {
+                console.error(`S3 clean-up failed for key ${fileKey}:`, s3Err);
+                // Continue with database deletion even if S3 delete fails
+            }
+        } else if (fileKey && fileKey.startsWith('local/')) {
+            try {
+                const baseName = path.basename(fileKey);
+                const filePath = path.join(UPLOADS_DIR, baseName);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                    console.info(`[Storage] Deleted local resume at: ${filePath}`);
+                }
+            } catch (fsErr) {
+                console.error(`Local file cleanup failed for key ${fileKey}:`, fsErr);
+            }
+        }
+        
+        // 3. Delete from database
+        await pool.query(
+            'DELETE FROM resumes WHERE id = $1 AND user_id = $2',
+            [id, userId]
+        );
+        
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting resume:', err);
+        return c.json({ error: 'Failed to delete resume', message: err.message }, 500);
+    }
+});
+
+// ==========================================
+// JOB APPLICATIONS
+// ==========================================
+
+placementsRoutes.get('/applications', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const res = await pool.query(
+            `SELECT ja.*, r.title AS resume_title
+             FROM job_applications ja
+             LEFT JOIN resumes r ON ja.resume_id = r.id
+             WHERE ja.user_id = $1
+             ORDER BY ja.updated_at DESC`,
+            [userId]
+        );
+        return c.json(res.rows);
+    } catch (err) {
+        console.error('Error fetching applications:', err);
+        return c.json({ error: 'Failed to fetch applications' }, 500);
+    }
+});
+
+placementsRoutes.post('/applications', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const body = await c.req.json();
+        const { company_name, role_title, status, resume_id, linkedin_url, job_post_url, notes, applied_at } = body;
+        
+        const res = await pool.query(
+            `INSERT INTO job_applications (
+                user_id, company_name, role_title, status, resume_id, linkedin_url, job_post_url, notes, applied_at
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             RETURNING *`,
+            [
+                userId,
+                company_name,
+                role_title,
+                status || 'wishlist',
+                resume_id || null,
+                linkedin_url || null,
+                job_post_url || null,
+                notes || null,
+                applied_at || null
+            ]
+        );
+        
+        return c.json(res.rows[0]);
+    } catch (err) {
+        console.error('Error creating application:', err);
+        return c.json({ error: 'Failed to create application' }, 500);
+    }
+});
+
+placementsRoutes.put('/applications/:id', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    try {
+        const updates = await c.req.json();
+        const { company_name, role_title, status, resume_id, linkedin_url, job_post_url, notes, applied_at } = updates;
+        
+        const res = await pool.query(
+            `UPDATE job_applications
+             SET company_name = $1,
+                 role_title = $2,
+                 status = $3,
+                 resume_id = $4,
+                 linkedin_url = $5,
+                 job_post_url = $6,
+                 notes = $7,
+                 applied_at = $8,
+                 updated_at = NOW()
+             WHERE id = $9 AND user_id = $10
+             RETURNING *`,
+            [
+                company_name,
+                role_title,
+                status,
+                resume_id || null,
+                linkedin_url || null,
+                job_post_url || null,
+                notes || null,
+                applied_at || null,
+                id,
+                userId
+            ]
+        );
+        
+        if (res.rows.length === 0) {
+            return c.json({ error: 'Application not found' }, 404);
+        }
+        
+        return c.json(res.rows[0]);
+    } catch (err) {
+        console.error('Error updating application:', err);
+        return c.json({ error: 'Failed to update application' }, 500);
+    }
+});
+
+placementsRoutes.delete('/applications/:id', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    try {
+        const res = await pool.query(
+            'DELETE FROM job_applications WHERE id = $1 AND user_id = $2 RETURNING *',
+            [id, userId]
+        );
+        if (res.rows.length === 0) {
+            return c.json({ error: 'Application not found or unauthorized' }, 404);
+        }
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting application:', err);
+        return c.json({ error: 'Failed to delete application' }, 500);
+    }
+});
+
+// ==========================================
+// HABIT LOGS
+// ==========================================
+
+placementsRoutes.get('/habit-logs', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const res = await pool.query(
+            'SELECT id, completed_at, created_at, status FROM habit_logs WHERE user_id = $1',
+            [userId]
+        );
+        return c.json(res.rows);
+    } catch (err) {
+        console.error('Error fetching habit logs:', err);
+        return c.json({ error: 'Failed to fetch habit logs', message: err.message }, 500);
+    }
+});
+
+// ==========================================
+// READINESS
+// ==========================================
+
+placementsRoutes.get('/readiness', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const [dsaRes, speakingRes, resumesRes] = await Promise.all([
+            pool.query('SELECT id FROM dsa_logs WHERE user_id = $1', [userId]),
+            pool.query('SELECT confidence_score, clarity_score, pace_score FROM lab_speaking_logs WHERE user_id = $1', [userId]),
+            pool.query('SELECT id FROM resumes WHERE user_id = $1', [userId])
+        ]);
+
+        const dsaCount = dsaRes.rows.length;
+        const speakingLogs = speakingRes.rows;
+        const resumeCount = resumesRes.rows.length;
+
+        // Calculate DSA score
+        const dsaScore = Math.min(100, Math.max(35, 35 + dsaCount * 5));
+        const dsaDesc = dsaCount > 0 ? `${dsaCount} problems solved this period` : 'No solved problems logged yet';
+
+        // Calculate speaking/communication score
+        let communicationScore = 60; // baseline
+        if (speakingLogs.length > 0) {
+            const totalSum = speakingLogs.reduce((acc, log) => {
+                const conf = Number(log.confidence_score || 0);
+                const clar = Number(log.clarity_score || 0);
+                const pace = Number(log.pace_score || 0);
+                return acc + (conf + clar + pace) / 3;
+            }, 0);
+            const rawAvg = totalSum / speakingLogs.length;
+            communicationScore = rawAvg <= 10 ? Math.round(rawAvg * 10) : Math.round(rawAvg);
+            communicationScore = Math.min(100, Math.max(0, communicationScore));
+        }
+        const communicationDesc = speakingLogs.length > 0 
+            ? `Based on ${speakingLogs.length} speech logs` 
+            : 'Record speaking logs to benchmark';
+
+        // Calculate System Design score
+        const systemDesignScore = Math.min(100, Math.max(40, 40 + resumeCount * 15));
+        const systemDesignDesc = resumeCount > 0 
+            ? `${resumeCount} active resumes mapped` 
+            : 'Target key systems in resumes';
+
+        return c.json({
+            dsa: { score: dsaScore, desc: dsaDesc },
+            communication: { score: communicationScore, desc: communicationDesc },
+            systemDesign: { score: systemDesignScore, desc: systemDesignDesc }
+        });
+    } catch (err) {
+        console.error('Error fetching readiness metrics:', err);
+        return c.json({ error: 'Failed to fetch readiness metrics', message: err.message }, 500);
+    }
+});
+
+export default placementsRoutes;
+

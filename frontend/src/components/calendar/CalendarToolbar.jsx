@@ -79,8 +79,8 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
           ))}
         </div>
         <button onClick={() => {
-          if (session) {
-            redirectToGoogle();
+          if (session?.access_token) {
+            redirectToGoogle(session.access_token);
           } else {
             alert('Please sign in to sync with Google Calendar.');
           }
