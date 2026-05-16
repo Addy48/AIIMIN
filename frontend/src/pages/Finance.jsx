@@ -11,7 +11,6 @@ import toast from '../utils/toast';
 import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
 import { EXPENSE_CATS } from '../components/money/MoneyShared';
 import DesktopWindow from '../components/ui/DesktopWindow';
-import PageHeader from '../components/layout/PageHeader';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, PieChart as RePieChart, Pie
@@ -27,8 +26,6 @@ const Finance = () => {
   const [accounts, setAccounts] = useState([]);
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [aiSummary, setAiSummary] = useState(null);
-  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
   // Import & Entry State
   const [importOpen, setImportOpen] = useState(false);
@@ -100,16 +97,7 @@ const Finance = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      loadFinanceData();
-      // Lazy-load AI summary after initial data
-      if (!user.isGuest) {
-        setAiSummaryLoading(true);
-        apiGet('/wealth/ai-summary').then(data => {
-          setAiSummary(data);
-        }).catch(() => {}).finally(() => setAiSummaryLoading(false));
-      }
-    }
+    if (user) loadFinanceData();
   }, [user]);
 
   const loadFinanceData = async () => {
@@ -304,18 +292,38 @@ savingsRate: (sRate * 100).toFixed(1),
   ];
 
   return (
-    <div className="page-container">
+    <div style={{ paddingBottom: '80px' }}>
 
       {/* Header */}
-      <PageHeader 
-        title={
-          <span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            Wealth Vault<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
-          </span>
-        }
-        subtitle={`Capital Allocation · ${monthStr}`}
-        rightContent={
-          <>
+      <header style={{ marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 800,
+              color: 'var(--color-accent)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.2em',
+              marginBottom: '12px',
+            }}>
+              Capital Allocation · {monthStr}
+            </div>
+            <h1 style={{
+              fontSize: '48px',
+              fontWeight: 800,
+              color: 'var(--color-text-1)',
+              margin: 0,
+              letterSpacing: '-0.04em',
+              fontFamily: 'var(--font-serif)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
+            }}>
+              Wealth Vault<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
+            </h1>
+
+          </div>
+          <div style={{ display: 'flex', gap: '16px' }}>
             <button 
               onClick={() => setImportOpen(true)}
               style={{
@@ -378,9 +386,9 @@ savingsRate: (sRate * 100).toFixed(1),
             >
               <Plus size={18} /> New Entry
             </button>
-          </>
-        }
-      />
+          </div>
+        </div>
+      </header>
 
 
       {/* Navigation Tabs */}
@@ -465,77 +473,10 @@ savingsRate: (sRate * 100).toFixed(1),
                       </div>
                   </div>
                   {/* Decorative background element */}
-                  <div style={{ position: 'absolute', right: '-5%', bottom: '-10%', width: '40%', height: '80%', background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)', opacity: 0.1, pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', right: '-5%', bottom: '-10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
               </div>
-
-              {/* AI Finance Summary Card */}
-              {(aiSummaryLoading || aiSummary) && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  style={{
-                    background: aiSummary?.sentiment === 'positive'
-                      ? 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%)'
-                      : aiSummary?.sentiment === 'warning'
-                      ? 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.02) 100%)'
-                      : 'var(--color-surface)',
-                    border: `1px solid ${aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.2)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.2)' : 'var(--color-border)'}`,
-                    borderRadius: '20px',
-                    padding: '28px 32px',
-                    marginBottom: '32px',
-                  }}
-                >
-                  {aiSummaryLoading ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {[180, 300, 220].map((w, i) => (
-                        <div key={i} style={{ height: '14px', background: 'var(--color-border)', borderRadius: '8px', width: `${w}px`, opacity: 0.5 }} />
-                      ))}
-                    </div>
-                  ) : (
-                    <div>
-                      {aiSummary?.aiStatus && aiSummary.aiStatus !== 'success' && (
-                        <div style={{
-                          display: 'flex', alignItems: 'center', gap: '8px',
-                          padding: '10px 14px', borderRadius: '8px', marginBottom: '16px',
-                          background: 'var(--color-warning-dim)',
-                          border: '1px solid rgba(245,158,11,0.2)'
-                        }}>
-                          <span style={{ fontSize: '14px' }}>⚠</span>
-                          <span style={{ fontSize: '12px', color: 'var(--color-warning)', fontWeight: 500 }}>
-                            {aiSummary.aiStatus === 'limit_reached'
-                              ? 'AI limit reached. Showing statistical fallback summary.'
-                              : 'API key expired. Showing statistical fallback summary.'}
-                          </span>
-                        </div>
-                      )}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: aiSummary?.sentiment === 'positive' ? '#10B981' : aiSummary?.sentiment === 'warning' ? '#F59E0B' : 'var(--color-text-3)', background: aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.12)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.12)' : 'var(--bg-elevated)', border: '1px solid var(--color-border)', padding: '4px 10px', borderRadius: '99px' }}>
-                          {aiSummary?.sentiment === 'positive' ? '✦ AI Insight' : aiSummary?.sentiment === 'warning' ? '⚠ AI Alert' : '◆ AI Summary'}
-                        </div>
-                        <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>30-day analysis · just now</div>
-                      </div>
-                      <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '10px', fontFamily: 'var(--font-serif)', lineHeight: 1.4 }}>
-                        {aiSummary?.headline}
-                      </div>
-                      <p style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px', lineHeight: 1.65 }}>
-                        {aiSummary?.summary}
-                      </p>
-                      {aiSummary?.recommendations?.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                          {aiSummary.recommendations.map((rec, i) => (
-                            <div key={i} style={{ fontSize: '12px', padding: '5px 12px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', color: 'var(--color-text-2)', fontWeight: 500 }}>
-                              → {rec}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
+                  
               {/* 6-Stat Hero Strip - BREAKTHROUGH UPGRADE */}
-
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px', marginBottom: '32px' }}>
                 {[
                   { label: 'Freedom Velocity', val: `${savingsRate}%`, trend: `FI in ${fiYears}y`, icon: <Zap size={14} />, color: '#10B981', detail: 'Efficiency' },
@@ -555,7 +496,7 @@ savingsRate: (sRate * 100).toFixed(1),
                       padding: '24px', 
                       position: 'relative', 
                       overflow: 'hidden',
-                      background: 'var(--bg-elevated)',
+                      background: 'rgba(255,255,255,0.02)',
                       border: '1px solid var(--color-border)',
                       backdropFilter: 'blur(10px)',
                       borderRadius: '20px'
@@ -649,7 +590,7 @@ savingsRate: (sRate * 100).toFixed(1),
                             <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
                         <XAxis dataKey="name" stroke="var(--text-3)" fontSize={11} tickLine={false} axisLine={false} />
                         <YAxis hide />
                         <Tooltip 
@@ -809,7 +750,7 @@ savingsRate: (sRate * 100).toFixed(1),
 
           {activeTab === 'ACCOUNTS' && (
             <motion.div key="accounts" initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }}>
-              <div style={{ marginBottom: '32px', padding: '32px', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '32px', padding: '32px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '8px' }}>Total Liquid Balance</div>
                   <div style={{ fontSize: '48px', fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>{formatCurrency(totalBalance)}</div>
@@ -824,19 +765,19 @@ savingsRate: (sRate * 100).toFixed(1),
                     key={acc.id} 
                     style={{ 
                       padding: '32px', 
-                      background: 'var(--bg-elevated)', 
+                      background: 'rgba(255,255,255,0.02)', 
                       backdropFilter: 'blur(16px)', 
-                      border: '1px solid var(--color-border)', 
+                      border: '1px solid rgba(255,255,255,0.05)', 
                       borderRadius: '24px', 
                       transition: 'all 0.2s', 
                       position: 'relative'
                     }} 
-                    onMouseEnter={e => {e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'var(--color-border-lit)';}} 
-                    onMouseLeave={e => {e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'var(--color-border)';}}
+                    onMouseEnter={e => {e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)';}} 
+                    onMouseLeave={e => {e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)';}}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                           {acc.icon || '🏦'}
                         </div>
                         <div>
@@ -866,7 +807,7 @@ savingsRate: (sRate * 100).toFixed(1),
                     <div style={{ fontSize: '32px', fontFamily: 'var(--font-serif)', fontWeight: 600, letterSpacing: '-0.02em' }}>{formatCurrency(acc.balance)}</div>
                     
                     {/* Visual bar */}
-                    <div style={{ height: '4px', background: 'var(--color-border)', borderRadius: '2px', marginTop: '24px', overflow: 'hidden' }}>
+                    <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', marginTop: '24px', overflow: 'hidden' }}>
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: '100%' }}
@@ -1051,7 +992,7 @@ savingsRate: (sRate * 100).toFixed(1),
                   { label: 'Unrealized Gain', value: totalReturns, icon: <Activity size={16} />, color: '#8B5CF6', sub: `+${returnPct}% ROI` },
                   { label: 'Freedom Progress', value: `${Math.round((totalNetWorth / (monthlyExpenses * 12 * 25 || 1)) * 100)}%`, icon: <Trophy size={16} />, color: '#F59E0B', isPct: true, sub: 'To 25x Burn' }
                 ].map((stat, i) => (
-                  <div key={i} className="nordic-card" style={{ padding: '24px', background: 'var(--bg-elevated)' }}>
+                  <div key={i} className="nordic-card" style={{ padding: '24px', background: 'rgba(255,255,255,0.02)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: stat.color }}>
                       {stat.icon}
                       <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)' }}>{stat.label}</span>
@@ -1066,7 +1007,7 @@ savingsRate: (sRate * 100).toFixed(1),
 
               <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '24px' }}>
                 {/* Main Asset Distribution */}
-                <div className="nordic-card" style={{ padding: '40px', background: 'var(--bg-elevated)' }}>
+                <div className="nordic-card" style={{ padding: '40px', background: 'rgba(255,255,255,0.01)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
                     <div>
                       <h3 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 4px 0', fontFamily: 'var(--font-serif)' }}>Portfolio Matrix</h3>
@@ -1114,7 +1055,7 @@ savingsRate: (sRate * 100).toFixed(1),
                         { label: 'Defensive Assets', val: assetBreakdown.gold, color: '#F59E0B', icon: '🛡️' },
                         { label: 'Liquid Capital', val: assetBreakdown.bank + assetBreakdown.cash, color: '#3B82F6', icon: '💧' }
                       ].map((cat, i) => (
-                        <div key={i} style={{ padding: '16px', background: 'var(--color-base)', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
+                        <div key={i} style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span style={{ fontSize: '16px' }}>{cat.icon}</span>
@@ -1122,7 +1063,7 @@ savingsRate: (sRate * 100).toFixed(1),
                             </div>
                             <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{((cat.val / totalNetWorth) * 100).toFixed(1)}%</span>
                           </div>
-                          <div style={{ height: '4px', background: 'var(--color-border)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${(cat.val / totalNetWorth) * 100}%` }}
@@ -1152,7 +1093,7 @@ savingsRate: (sRate * 100).toFixed(1),
                         'Increase Gold SIP by 10%',
                         'Check Tax Harvesting'
                       ].map((action, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px' }}>
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', background: 'rgba(255,255,255,0.08)', padding: '12px', borderRadius: '8px' }}>
                           <CheckCircle2 size={12} color="#10B981" />
                           <span>{action}</span>
                         </div>
@@ -1160,7 +1101,7 @@ savingsRate: (sRate * 100).toFixed(1),
                     </div>
                   </div>
 
-                  <div className="nordic-card" style={{ padding: '32px', background: 'var(--bg-elevated)' }}>
+                  <div className="nordic-card" style={{ padding: '32px', background: 'rgba(255,255,255,0.02)' }}>
                     <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '16px' }}>Projected Net Worth (2026)</div>
                     <div style={{ fontSize: '32px', fontWeight: 600, fontFamily: 'var(--font-serif)', marginBottom: '8px' }}>{formatCurrency(totalNetWorth * 1.25)}</div>
                     <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 700 }}>↗ EST. +25% YEARLY YIELD</div>
@@ -1185,7 +1126,7 @@ savingsRate: (sRate * 100).toFixed(1),
                   { label: 'Capital', val: assetBreakdown.bank, icon: '🏦', color: '#3B82F6' },
                   { label: 'Other', val: assetBreakdown.cash, icon: '💵', color: '#EC4899' }
                 ].map((item, i) => (
-                  <div key={i} className="nordic-card" style={{ padding: '20px', textAlign: 'center', background: 'var(--bg-elevated)' }}>
+                  <div key={i} className="nordic-card" style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.01)' }}>
                     <div style={{ fontSize: '24px', marginBottom: '12px' }}>{item.icon}</div>
                     <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{item.label}</div>
                     <div style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{formatCurrency(item.val)}</div>
@@ -1235,8 +1176,8 @@ savingsRate: (sRate * 100).toFixed(1),
       {/* Entry Modal */}
       <AnimatePresence>
         {entryOpen && (
-          <DesktopWindow title="Record Finance Entry" subtitle="transactions.finance" onClose={() => setEntryOpen(false)} width="560px" maxHeight="88vh">
-            <div style={{ padding: '24px' }}>
+          <DesktopWindow title="Record Finance Entry" subtitle="transactions.finance" onClose={() => setEntryOpen(false)} width="620px" maxHeight="90vh">
+            <div style={{ padding: '34px' }}>
               <EntryForm 
                 user={user} 
                 accounts={accounts} 
@@ -1255,8 +1196,8 @@ savingsRate: (sRate * 100).toFixed(1),
       {/* Excel Import Modal */}
       <AnimatePresence>
         {importOpen && (
-          <DesktopWindow title="Import Spreadsheet" subtitle="money-import.finance" onClose={() => setImportOpen(false)} width="520px">
-            <div style={{ padding: '28px' }}>
+          <DesktopWindow title="Import Spreadsheet" subtitle="money-import.finance" onClose={() => setImportOpen(false)} width="560px">
+            <div style={{ padding: '36px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--color-accent-dim)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <FileSpreadsheet size={30} />

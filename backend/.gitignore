@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+
+# environment
+.env
+.env.local
+.env.*
+
+# logs
+logs/
+*.log
+
+# misc
+.DS_Store
+
+# local storage uploads
+uploads/
