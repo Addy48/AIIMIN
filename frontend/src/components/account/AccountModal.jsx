@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // Added for Portal
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import toast from '../../utils/toast';
 import supabase from '../../utils/supabase';
 import { apiDelete, apiGet, apiPatch } from '../../utils/api';
+import { useThemeContext } from '../../context/ThemeContext';
 
 
 const Section = ({ title, children }) => (
@@ -97,6 +97,7 @@ const ChangePassword = () => {
 
 const AccountModal = ({ isOpen, onClose }) => {
     const { session, signOut } = useAuth();
+    const { theme, setTheme } = useThemeContext();
     const [profile, setProfile] = useState(null);
     const [draftProfile, setDraftProfile] = useState(null);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -328,6 +329,41 @@ const AccountModal = ({ isOpen, onClose }) => {
                                         </div>
                                     </div>
                                 )}
+                            </Section>
+
+                            <Section title="Appearance">
+                                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px' }}>
+                                    {[
+                                        { id: 'dark', label: 'Dark', color: '#0A0A0A' },
+                                        { id: 'light', label: 'Light', color: '#F0EDE8' },
+                                        { id: 'notion', label: 'Notion', color: '#FFFFFF' },
+                                        { id: 'midnight', label: 'Midnight', color: '#0B1120' },
+                                        { id: 'solarized', label: 'Solarized', color: '#002B36' },
+                                        { id: 'cyberpunk', label: 'Cyberpunk', color: '#09090B' },
+                                        { id: 'monokai', label: 'Monokai', color: '#272822' }
+                                    ].map(t => (
+                                        <div 
+                                            key={t.id}
+                                            onClick={() => setTheme(t.id)}
+                                            style={{
+                                                padding: '12px',
+                                                borderRadius: '12px',
+                                                background: t.color,
+                                                border: `2px solid ${theme === t.id ? 'var(--color-accent)' : 'var(--border)'}`,
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                transition: 'all 0.2s ease',
+                                                opacity: theme === t.id ? 1 : 0.7,
+                                                boxShadow: theme === t.id ? '0 0 0 2px var(--color-surface)' : 'none'
+                                            }}
+                                        >
+                                            <span style={{ fontSize: '13px', fontWeight: 600, color: t.id === 'light' || t.id === 'notion' ? '#111' : '#EEE' }}>{t.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </Section>
 
                             <Section title="Reports &amp; Analytics">
