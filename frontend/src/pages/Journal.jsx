@@ -23,6 +23,53 @@ const COVERS = [
   'https://images.unsplash.com/photo-1500627845662-01210452945d?auto=format&fit=crop&q=80&w=2000',
 ];
 
+const MoodHeatmap = ({ entries, onSelectEntry }) => {
+  const { theme } = useThemeContext();
+  const isDark = theme === 'dark';
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const days = Array.from({ length: 30 }).map((_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (29 - i));
+    return d;
+  });
+
+  return (
+    <div style={{ padding: '0 24px 20px' }}>
+      <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>30-Day Trajectory</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: '4px' }}>
+        {days.map(d => {
+          // Adjust timezone offset to get YYYY-MM-DD locally
+          const dateStr = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+          const entry = entries.find(e => e.date === dateStr);
+          const moodObj = entry ? MOODS.find(m => m.val === entry.mood) : null;
+          
+          return (
+            <div 
+              key={dateStr}
+              onClick={() => { if(entry) onSelectEntry(entry); }}
+              title={`${dateStr} ${moodObj ? '- ' + moodObj.label + ' ' + moodObj.emoji : ''}`}
+              style={{
+                aspectRatio: '1',
+                borderRadius: '4px',
+                background: moodObj ? moodObj.color : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
+                opacity: moodObj ? 0.8 : 1,
+                cursor: entry ? 'pointer' : 'default',
+                transition: 'all 0.2s',
+                border: entry ? `1px solid ${moodObj.color}` : '1px solid transparent'
+              }}
+              onMouseEnter={e => { if(entry) e.currentTarget.style.opacity = 1; }}
+              onMouseLeave={e => { if(entry) e.currentTarget.style.opacity = 0.8; }}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const JournalPage = () => {
   const { user } = useAuth();
   const { theme } = useThemeContext();
@@ -345,6 +392,8 @@ const JournalPage = () => {
             />
           </div>
         </div>
+
+        <MoodHeatmap entries={entries} onSelectEntry={handleEntrySelect} />
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 40px' }} className="custom-scrollbar">
           {Object.keys(groupedEntries).length === 0 && !loading && (
