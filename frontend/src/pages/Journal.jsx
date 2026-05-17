@@ -83,6 +83,8 @@ const MoodHeatmap = ({ entries, onSelectEntry }) => {
           const moodObj = entry ? MOODS.find(m => m.val === entry.mood) : null;
           const isToday = dateStr === new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
           
+          const dayNumber = d.getDate();
+          
           return (
             <div 
               key={dateStr}
@@ -90,16 +92,31 @@ const MoodHeatmap = ({ entries, onSelectEntry }) => {
               title={`${dateStr} ${moodObj ? '- ' + moodObj.label + ' ' + moodObj.emoji : ''}`}
               style={{
                 aspectRatio: '1',
-                borderRadius: '4px',
-                background: moodObj ? moodObj.color : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'),
-                opacity: moodObj ? 0.8 : 1,
+                borderRadius: '6px',
+                background: moodObj ? moodObj.color : (isDark ? 'rgba(255,255,255,0.03)' : '#fff'),
+                opacity: moodObj ? 0.9 : 1,
                 cursor: entry ? 'pointer' : 'default',
-                transition: 'all 0.2s',
-                border: isToday ? '1px solid var(--color-text-3)' : (entry ? `1px solid ${moodObj.color}` : '1px solid transparent')
+                transition: 'all 0.2s ease',
+                border: isToday ? '1px solid var(--color-text-3)' : (entry ? `1px solid ${moodObj.color}` : `1px solid ${isDark ? 'transparent' : 'var(--border)'}`),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '10px',
+                fontWeight: moodObj ? 800 : 600,
+                color: moodObj ? '#fff' : 'var(--color-text-3)',
+                boxShadow: entry ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
               }}
-              onMouseEnter={e => { if(entry) e.currentTarget.style.opacity = 1; }}
-              onMouseLeave={e => { if(entry) e.currentTarget.style.opacity = 0.8; }}
-            />
+              onMouseEnter={e => { 
+                e.currentTarget.style.opacity = 1; 
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={e => { 
+                e.currentTarget.style.opacity = moodObj ? 0.9 : 1;
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              {dayNumber}
+            </div>
           );
         })}
       </div>
