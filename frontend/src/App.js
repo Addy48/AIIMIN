@@ -39,6 +39,7 @@ const GoalsPage     = React.lazy(() => import('./pages/Goals'));
 const IdentityPage  = React.lazy(() => import('./pages/Identity'));
 const NotesPage     = React.lazy(() => import('./pages/Notes'));
 const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
+const FocusRoom     = React.lazy(() => import('./pages/FocusRoom'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -112,6 +113,7 @@ function AppContent({ user }) {
           <Route path="/identity"    element={<Lazy><IdentityPage /></Lazy>} />
           <Route path="/notes"       element={<Lazy><NotesPage /></Lazy>} />
           <Route path="/discipline"  element={<Lazy><DisciplinePage /></Lazy>} />
+          <Route path="/focus"       element={<Lazy><FocusRoom /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}

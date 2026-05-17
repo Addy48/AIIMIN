@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { SettingsPanelSection } from '../components/system/DashboardSections';
 import { useAuth } from '../hooks/useAuth';
+import { useThemeContext } from '../context/ThemeContext';
 import { apiDelete } from '../utils/api';
 import toast from '../utils/toast';
 import { useMockData } from '../providers/MockDataProvider';
@@ -12,6 +13,7 @@ import { supabase } from '../utils/supabase';
  */
 const Settings = () => {
     const { user, session } = useAuth();
+    const { theme, setTheme } = useThemeContext();
     const [notifReminders, setNotifReminders] = useState(() => localStorage.getItem('aiimin_notif_reminders') === 'true');
     const [notifInsights, setNotifInsights] = useState(() => localStorage.getItem('aiimin_notif_insights') === 'true');
     const { isUsingMock, mockData } = useMockData() || {};
@@ -102,6 +104,41 @@ const Settings = () => {
                 onDeleteData={handleDeleteAllData}
                 onDelete={handleDeleteAccount}
             />
+
+            <div style={{ marginTop: 'var(--space-6)', padding: 'var(--space-5)', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '24px' }}>Appearance</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '16px' }}>
+                    {[
+                        { id: 'dark', label: 'Default Dark', color: '#0A0A0A' },
+                        { id: 'light', label: 'Vercel Light', color: '#F0EDE8' },
+                        { id: 'notion', label: 'Notion B&W', color: '#FFFFFF' },
+                        { id: 'midnight', label: 'Midnight Blue', color: '#0B1120' },
+                        { id: 'solarized', label: 'Solarized', color: '#002B36' },
+                        { id: 'cyberpunk', label: 'Cyberpunk', color: '#09090B' },
+                        { id: 'monokai', label: 'Monokai', color: '#272822' }
+                    ].map(t => (
+                        <div 
+                            key={t.id}
+                            onClick={() => setTheme(t.id)}
+                            style={{
+                                padding: '16px',
+                                borderRadius: '12px',
+                                background: t.color,
+                                border: `2px solid ${theme === t.id ? 'var(--accent)' : 'var(--border)'}`,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s ease',
+                                opacity: theme === t.id ? 1 : 0.7,
+                            }}
+                        >
+                            <span style={{ fontSize: '14px', fontWeight: 500, color: t.id === 'light' || t.id === 'notion' ? '#111' : '#EEE' }}>{t.label}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 };

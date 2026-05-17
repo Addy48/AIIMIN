@@ -261,3 +261,96 @@
   --border:      var(--color-border);
   --success:     var(--color-success);
 }
+
+/* ────────────────────────────────────────────────────────
+   THEME: NOTION B&W
+───────────────────────────────────────────────────────── */
+[data-theme="notion"] {
+  color-scheme: light;
+  --color-base: #FFFFFF;
+  --color-surface: #F7F7F5;
+  --color-elevated: #EBEBEA;
+  --color-border: #E1E1E1;
+  --color-border-lit: #D4D4D4;
+  --color-text-1: #37352F;
+  --color-text-2: #787774;
+  --color-text-3: #9F9E9B;
+  --color-accent: #000000;
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: rgba(0, 0, 0, 0.06);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: MIDNIGHT BLUE
+───────────────────────────────────────────────────────── */
+[data-theme="midnight"] {
+  color-scheme: dark;
+  --color-base: #0B1120;
+  --color-surface: #0F172A;
+  --color-elevated: #1E293B;
+  --color-border: #1E293B;
+  --color-border-lit: #334155;
+  --color-text-1: #F8FAFC;
+  --color-text-2: #94A3B8;
+  --color-text-3: #64748B;
+  --color-accent: #38BDF8;
+  --glass-bg: rgba(15, 23, 42, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: SOLARIZED DARK
+───────────────────────────────────────────────────────── */
+[data-theme="solarized"] {
+  color-scheme: dark;
+  --color-base: #002B36;
+  --color-surface: #073642;
+  --color-elevated: #002B36;
+  --color-border: #586E75;
+  --color-border-lit: #657B83;
+  --color-text-1: #839496;
+  --color-text-2: #93A1A1;
+  --color-text-3: #586E75;
+  --color-accent: #2AA198;
+  --glass-bg: rgba(7, 54, 66, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.06);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: NEON CYBERPUNK
+───────────────────────────────────────────────────────── */
+[data-theme="cyberpunk"] {
+  color-scheme: dark;
+  --color-base: #09090B;
+  --color-surface: #18181B;
+  --color-elevated: #27272A;
+  --color-border: #27272A;
+  --color-border-lit: #3F3F46;
+  --color-text-1: #F4F4F5;
+  --color-text-2: #A1A1AA;
+  --color-text-3: #71717A;
+  --color-accent: #F43F5E;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --glass-bg: rgba(24, 24, 27, 0.88);
+  --glass-border: rgba(244, 63, 94, 0.15);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: MONOKAI
+───────────────────────────────────────────────────────── */
+[data-theme="monokai"] {
+  color-scheme: dark;
+  --color-base: #272822;
+  --color-surface: #3E3D32;
+  --color-elevated: #49483E;
+  --color-border: #49483E;
+  --color-border-lit: #75715E;
+  --color-text-1: #F8F8F2;
+  --color-text-2: #E6DB74;
+  --color-text-3: #75715E;
+  --color-accent: #A6E22E;
+  --glass-bg: rgba(62, 61, 50, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.06);
+}

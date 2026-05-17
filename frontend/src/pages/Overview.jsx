@@ -171,7 +171,37 @@ const Overview = () => {
   const { user } = useAuth();
   const { theme } = useThemeContext();
 
-  const [progress, setProgress] = useState({ year:34, month:42, week:68, day:72 });
+  const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
+
+  useEffect(() => {
+    const updateProgress = () => {
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const dayPercent = ((now - startOfDay) / (24 * 60 * 60 * 1000)) * 100;
+
+      const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; // 0=Mon, 6=Sun
+      const startOfWeek = new Date(startOfDay.getTime() - dayOfWeek * 24 * 60 * 60 * 1000);
+      const weekPercent = ((now - startOfWeek) / (7 * 24 * 60 * 60 * 1000)) * 100;
+
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const monthPercent = ((now - startOfMonth) / (nextMonth - startOfMonth)) * 100;
+
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      const nextYear = new Date(now.getFullYear() + 1, 0, 1);
+      const yearPercent = ((now - startOfYear) / (nextYear - startOfYear)) * 100;
+
+      setProgress({
+        year: Math.floor(yearPercent),
+        month: Math.floor(monthPercent),
+        week: Math.floor(weekPercent),
+        day: Math.floor(dayPercent)
+      });
+    };
+    updateProgress();
+    const interval = setInterval(updateProgress, 60000); // update every minute
+    return () => clearInterval(interval);
+  }, []);
   const [activeModal, setActiveModal] = useState(null);
 
   const targetDate = new Date('2026-07-26');
