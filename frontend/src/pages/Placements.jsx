@@ -434,7 +434,6 @@ export default function Placements() {
             })}
           </div>
         </motion.div>
-        </motion.div>
       ) : activeTab === 'timeline' ? (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '20px 0' }}>
           <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '32px' }}>Career Timeline</h2>

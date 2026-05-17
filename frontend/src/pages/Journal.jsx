@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
-import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, ChevronRight, Hash, Type, Trash2, Save, FileText, X } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, ChevronRight, Hash, Type, Trash2, Save, FileText, X, BookOpen, Feather } from 'lucide-react';
+import Notes from './Notes';
 
 /* ── Configuration & Constants ── */
 const MOODS = [
@@ -33,6 +34,7 @@ const JournalPage = () => {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('mindset'); // 'mindset' | 'notes'
   
   // Editor State
   const [content, setContent] = useState('');
@@ -260,15 +262,55 @@ const JournalPage = () => {
 
   return (
     <div style={{ 
-      display: 'grid', 
-      gridTemplateColumns: '320px 1fr', 
+      display: 'flex', flexDirection: 'column', 
       height: 'calc(100vh - var(--nav-height) - 40px)',
       background: isDark ? 'var(--color-base)' : '#FBFBFA',
       margin: '-20px -24px',
-      overflow: 'hidden',
     }}>
-      
-      {/* ── SIDEBAR ── */}
+      {/* ── TOP NAV ── */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '16px', borderBottom: `1px solid ${border}` }}>
+        <div style={{ display: 'flex', background: 'var(--bg-elevated)', borderRadius: '12px', padding: '4px' }}>
+          <button 
+            onClick={() => setActiveTab('mindset')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              fontWeight: 600, fontSize: '13px',
+              background: activeTab === 'mindset' ? 'var(--color-accent)' : 'transparent',
+              color: activeTab === 'mindset' ? '#fff' : text2,
+              transition: 'all 0.2s'
+            }}
+          >
+            <Feather size={16} /> Journal
+          </button>
+          <button 
+            onClick={() => setActiveTab('notes')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+              fontWeight: 600, fontSize: '13px',
+              background: activeTab === 'notes' ? 'var(--color-accent)' : 'transparent',
+              color: activeTab === 'notes' ? '#fff' : text2,
+              transition: 'all 0.2s'
+            }}
+          >
+            <BookOpen size={16} /> Notes
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'notes' ? (
+        <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
+          <Notes />
+        </div>
+      ) : (
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '320px 1fr', 
+          flex: 1,
+          background: isDark ? 'var(--color-base)' : '#FBFBFA',
+          overflow: 'hidden',
+        }}>
+          
+          {/* ── SIDEBAR ── */}
       <aside style={{ 
         borderRight: `1px solid ${border}`,
         background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)',
@@ -560,6 +602,8 @@ const JournalPage = () => {
           </div>
         )}
       </main>
+    </div>
+    )}
     </div>
   );
 };
