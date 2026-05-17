@@ -12,7 +12,6 @@ const NAV_LINKS = [
   { to: '/habits',      label: 'Habits' },
   { to: '/goals',       label: 'Goals' },
   { to: '/journal',     label: 'Journal' },
-  { to: '/notes',       label: 'Notes' },
   { to: '/finance',     label: 'Finance' },
   { to: '/calendar',    label: 'Calendar' },
   { to: '/placements',  label: 'Placement' },
