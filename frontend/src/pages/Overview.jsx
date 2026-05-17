@@ -393,7 +393,7 @@ const Overview = () => {
               <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Master Planner</div>
               <div style={{ fontSize:'12px', color:'var(--color-text-3)', fontWeight:700, padding: '4px 12px', background: 'var(--color-elevated)', borderRadius: '99px' }}>Week {weekNum}</div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:'12px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px' }}>
               {DAYS.map((day, i) => <WeekCell key={day} day={day} isToday={i===todayIdx} />)}
             </div>
           </div>
