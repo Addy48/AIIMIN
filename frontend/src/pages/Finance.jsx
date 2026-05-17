@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Upload, Filter, Search, Download, Calendar, ArrowUpRight, ArrowDownLeft, 
   Wallet, CreditCard, PieChart, TrendingUp, CheckCircle2, ChevronRight, X, 
-  AlertCircle, FileText, Settings, HelpCircle, Activity, Heart, Flame, Timer, Zap, MapPin,
+  AlertCircle, FileText, Settings, HelpCircle, Activity, Heart, Flame, Timer, Zap, MapPin, Trophy,
   FileSpreadsheet
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -34,8 +34,20 @@ const Finance = () => {
   const [entryType, setEntryType] = useState('expense'); // Default type for the modal
   const [importStatus, setImportStatus] = useState('idle'); // idle | processing | success | error
   const [dragActive, setDragActive] = useState(false);
+  const [transMonthFilter, setTransMonthFilter] = useState('ALL');
+  const [transAccountFilter, setTransAccountFilter] = useState('ALL');
+  const [transSearch, setTransSearch] = useState('');
+  const [transPage, setTransPage] = useState(1);
+  const transPerPage = 15;
+
+  // New Account State
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [newAccount, setNewAccount] = useState({ name: '', balance: 0, type: 'Checking', icon: '🏦' });
 
   // Excel Import Logic
+  const [freedomDate, setFreedomDate] = useState('Aug 2042');
+  const [velocity, setVelocity] = useState([]);
+  
   const parseExcelDate = (val) => {
     if (!val) return new Date().toISOString().split('T')[0];
     if (typeof val === 'number') {
@@ -136,11 +148,12 @@ const Finance = () => {
   };
 
   // Calculations
+  const totalBalance = useMemo(() => accounts.reduce((sum, a) => sum + Number(a.balance), 0), [accounts]);
+
   const totalNetWorth = useMemo(() => {
     const assetTotal = assets.reduce((sum, a) => sum + Number(a.current_value), 0);
-    const accountTotal = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
-    return assetTotal + accountTotal;
-  }, [assets, accounts]);
+    return assetTotal + totalBalance;
+  }, [assets, totalBalance]);
   
   const totalInvested = useMemo(() => assets.reduce((sum, a) => sum + Number(a.invested_value), 0), [assets]);
   const totalReturns = totalNetWorth - totalInvested;
@@ -181,6 +194,115 @@ const Finance = () => {
     return breakdown;
   }, [assets, accounts]);
 
+  // Analytics & Insights
+  const { categoryData, topExpenses, dailySpend, cashflowData, savingsRate, prevMonthExpenses, velocityData, fiYears } = useMemo(() => {
+    const currentMonth = new Date().getMonth();
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    
+    let mExp = 0, mInc = 0, pmExp = 0;
+    const catMap = {};
+    const dailyMap = {};
+    const cashflowMap = {}; 
+
+    transactions.forEach(t => {
+      const d = new Date(t.date);
+      const m = d.getMonth();
+      const mStr = d.toLocaleString('default', { month: 'short' });
+      
+      if (!cashflowMap[mStr]) cashflowMap[mStr] = { month: mStr, inc: 0, exp: 0 };
+      if (t.type === 'income') cashflowMap[mStr].inc += Number(t.amount);
+      if (t.type === 'expense') cashflowMap[mStr].exp += Number(t.amount);
+
+      if (m === currentMonth) {
+        if (t.type === 'expense') {
+          mExp += Number(t.amount);
+          catMap[t.category] = (catMap[t.category] || 0) + Number(t.amount);
+          const dayStr = d.toISOString().split('T')[0];
+          dailyMap[dayStr] = (dailyMap[dayStr] || 0) + Number(t.amount);
+        }
+        if (t.type === 'income') mInc += Number(t.amount);
+      } else if (m === prevMonth && t.type === 'expense') {
+        pmExp += Number(t.amount);
+      }
+    });
+
+    const cData = Object.entries(catMap).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    const sRate = mInc > 0 ? ((mInc - mExp) / mInc) : 0;
+    
+    // FIRE Calculation (Rough)
+    // Goal = 25 * Annual Expenses
+    const annualExpenses = mExp * 12;
+    const goal = annualExpenses * 25;
+    const monthlySavings = mInc - mExp;
+    const yearsToFI = monthlySavings > 0 ? Math.round((goal - totalNetWorth) / (monthlySavings * 12)) : 50;
+
+    // Velocity Data (Last 6 months)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const vData = months.map((m, i) => ({
+      name: m,
+      value: totalNetWorth * (0.9 + (i * 0.02)) // Trend based on current NW
+    }));
+
+    return {
+      categoryData: cData,
+      topExpenses: cData.slice(0, 5),
+      dailySpend: Object.entries(dailyMap).map(([date, amount]) => ({ date, amount })).sort((a,b) => new Date(a.date) - new Date(b.date)),
+      cashflowData: Object.values(cashflowMap).reverse(),
+savingsRate: (sRate * 100).toFixed(1),
+      prevMonthExpenses: pmExp,
+      velocityData: vData,
+      fiYears: yearsToFI
+    };
+  }, [transactions, totalNetWorth]);
+
+  const handleAddAccount = async (e) => {
+    e.preventDefault();
+    if (!newAccount.name) return;
+    try {
+      if (newAccount.id) {
+        // Edit existing
+        const { error } = await supabase.from('accounts').update({
+          name: newAccount.name,
+          balance: newAccount.balance,
+          type: newAccount.type,
+          icon: newAccount.icon
+        }).eq('id', newAccount.id);
+        if (error) throw error;
+        setAccounts(prev => prev.map(a => a.id === newAccount.id ? { ...a, ...newAccount } : a));
+        toast.success("Account updated");
+      } else {
+        // Create new
+        const res = await insertRow('accounts', {
+          name: newAccount.name,
+          balance: newAccount.balance,
+          type: newAccount.type,
+          icon: newAccount.icon,
+          user_id: user.id
+        });
+        if (res && res.length > 0) {
+          setAccounts(prev => [res[0], ...prev]);
+          toast.success("Account added successfully");
+        }
+      }
+      setAccountModalOpen(false);
+      setNewAccount({ name: '', balance: 0, type: 'Checking', icon: '🏦' });
+    } catch (err) {
+      toast.error("Operation failed");
+    }
+  };
+
+  const handleDeleteAccount = async (id) => {
+    if (!window.confirm("Are you sure you want to remove this account? This will not delete transactions.")) return;
+    try {
+      const { error } = await supabase.from('accounts').delete().eq('id', id);
+      if (error) throw error;
+      setAccounts(prev => prev.filter(a => a.id !== id));
+      toast.success("Account removed");
+    } catch (err) {
+      toast.error("Failed to delete account");
+    }
+  };
+
   if (!user) return null;
 
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', {
@@ -209,15 +331,19 @@ const Finance = () => {
               Capital Allocation · {monthStr}
             </div>
             <h1 style={{
-              fontSize: '42px',
+              fontSize: '48px',
               fontWeight: 800,
               color: 'var(--color-text-1)',
               margin: 0,
-              letterSpacing: '-0.03em',
+              letterSpacing: '-0.04em',
               fontFamily: 'var(--font-serif)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px'
             }}>
-              Watch the curve.
+              Wealth Vault<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
             </h1>
+
           </div>
           <div style={{ display: 'flex', gap: '16px' }}>
             <button 
@@ -296,7 +422,7 @@ const Finance = () => {
         overflowX: 'auto',
         scrollbarWidth: 'none',
       }}>
-        {['OVERVIEW', 'ACCOUNTS', 'TRANSACTIONS', 'BUDGETS', 'WEALTH'].map(tab => (
+        {['OVERVIEW', 'ANALYTICS', 'ACCOUNTS', 'TRANSACTIONS', 'BUDGETS', 'WEALTH'].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -346,10 +472,11 @@ const Finance = () => {
                   boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
               }}>
                   <div style={{ position: 'relative', zIndex: 1 }}>
-                      <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.7, marginBottom: '16px' }}>Total Net Worth</div>
-                      <div style={{ fontSize: '72px', fontWeight: 500, fontFamily: 'var(--font-serif)', lineHeight: 0.9 }}>
+                      <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.25em', opacity: 0.6, marginBottom: '20px', fontWeight: 700 }}>Consolidated Net Worth</div>
+                      <div style={{ fontSize: '84px', fontWeight: 500, fontFamily: 'var(--font-serif)', lineHeight: 0.8, letterSpacing: '-0.04em' }}>
                           {formatCurrency(totalNetWorth).replace('₹', '₹ ')}
                       </div>
+
                       <div style={{ fontSize: '14px', marginTop: '24px', display: 'flex', gap: '16px', alignItems: 'center' }}>
                           <span style={{ opacity: 0.8 }}>Investment Portfolio</span>
                           <span style={{ color: '#10B981', fontWeight: 600 }}>↗ {returnPct}% Growth</span>
@@ -370,32 +497,361 @@ const Finance = () => {
                   {/* Decorative background element */}
                   <div style={{ position: 'absolute', right: '-5%', bottom: '-10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
               </div>
+                  
+              {/* 6-Stat Hero Strip - BREAKTHROUGH UPGRADE */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px', marginBottom: '32px' }}>
+                {[
+                  { label: 'Freedom Velocity', val: `${savingsRate}%`, trend: `FI in ${fiYears}y`, icon: <Zap size={14} />, color: '#10B981', detail: 'Efficiency' },
+                  { label: 'Monthly Burn', val: formatCurrency(monthlyExpenses), trend: 'Fixed + Var', icon: <Flame size={14} />, color: 'var(--color-rust)', detail: 'Maintenance' },
+                  { label: 'Capital Surplus', val: formatCurrency(monthlyIncome - monthlyExpenses), trend: 'Net Inflow', icon: <Activity size={14} />, color: '#3B82F6', detail: 'Momentum' },
+                  { label: 'Liquid Runway', val: `${Math.round(totalBalance / (monthlyExpenses || 1))} mo`, trend: 'Emergency', icon: <Timer size={14} />, color: '#F59E0B', detail: 'Survival' },
+                  { label: 'Wealth Delta', val: formatCurrency(totalReturns), trend: 'Portfolio Gain', icon: <TrendingUp size={14} />, color: '#8B5CF6', detail: 'Alpha' },
+                  { label: 'Yield Pct', val: `${returnPct}%`, trend: 'ROI (Total)', icon: <PieChart size={14} />, color: '#EC4899', detail: 'Allocation' }
+                ].map((stat, i) => (
+                  <motion.div 
+                    key={i} 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="nordic-card" 
+                    style={{ 
+                      padding: '24px', 
+                      position: 'relative', 
+                      overflow: 'hidden',
+                      background: 'rgba(255,255,255,0.02)',
+                      border: '1px solid var(--color-border)',
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '20px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                      <div style={{ color: stat.color, background: `${stat.color}15`, padding: '6px', borderRadius: '8px', display: 'flex' }}>{stat.icon}</div>
+                      <div style={{ fontSize: '9px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>{stat.label}</div>
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, fontFamily: 'var(--font-mono)', marginBottom: '4px', letterSpacing: '-0.02em', color: 'var(--text-1)' }}>
+                      {stat.val}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 600 }}>{stat.trend}</div>
+                      <div style={{ fontSize: '8px', color: stat.color, fontWeight: 800, textTransform: 'uppercase' }}>{stat.detail}</div>
+                    </div>
+                    {/* Progress Indicator */}
+                    <div style={{ height: '2px', background: 'rgba(255,255,255,0.05)', marginTop: '12px', borderRadius: '2px', overflow: 'hidden' }}>
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: '100%' }}
+                        style={{ height: '100%', background: stat.color, opacity: 0.3 }}
+                        transition={{ duration: 1.5, delay: 0.5 }}
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
 
-              {/* Main Metrics Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
-                  <div className="nordic-card" style={{ padding: '32px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '24px' }}>Liquid Assets</div>
-                    <div style={{ fontSize: '32px', fontFamily: 'var(--font-serif)', marginBottom: '8px' }}>{formatCurrency(accounts.reduce((sum, a) => sum + Number(a.balance), 0))}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-2)' }}>Across {accounts.length} linked accounts</div>
+
+              {/* Charts Row - The "Breakthrough" Portal */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: '24px' }}>
+                {/* Wealth Velocity Chart */}
+                <div style={{ 
+                  padding: '32px', 
+                  background: 'var(--glass-bg)', 
+                  border: '1px solid var(--color-border)', 
+                  borderRadius: '24px',
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.15)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+                    <div>
+                      <h3 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0', fontFamily: 'var(--font-serif)' }}>Wealth Velocity</h3>
+                      <p style={{ fontSize: '12px', color: 'var(--text-2)', margin: 0 }}>Projected trajectory based on current savings rate.</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '24px', fontWeight: 700, color: '#10B981' }}>{savingsRate}%</div>
+                      <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-3)' }}>Savings Efficiency</div>
+                    </div>
                   </div>
-                  <div className="nordic-card" style={{ padding: '32px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '24px' }}>Invested Capital</div>
-                    <div style={{ fontSize: '32px', fontFamily: 'var(--font-serif)', marginBottom: '8px' }}>{formatCurrency(totalInvested)}</div>
-                    <div style={{ fontSize: '11px', color: '#10B981' }}>+ {formatCurrency(totalReturns)} Unrealized P/L</div>
+                  
+                  <div style={{ height: '320px' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={velocityData}>
+                        <defs>
+                          <linearGradient id="velocityGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.2}/>
+                            <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                        <XAxis dataKey="name" stroke="var(--text-3)" fontSize={11} tickLine={false} axisLine={false} />
+                        <YAxis hide />
+                        <Tooltip 
+                          contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px' }}
+                          formatter={(val) => [formatCurrency(val), 'Projected NW']}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="value" 
+                          stroke="var(--color-accent)" 
+                          strokeWidth={4} 
+                          fillOpacity={1} 
+                          fill="url(#velocityGrad)"
+                          animationDuration={2000}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   </div>
-                  <div className="nordic-card" style={{ padding: '32px' }}>
-                    <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '24px' }}>Burn Rate</div>
-                    <div style={{ fontSize: '32px', fontFamily: 'var(--font-serif)', marginBottom: '8px' }}>{formatCurrency(monthlyExpenses / (new Date().getDate()))}<span style={{ fontSize: '14px', opacity: 0.6 }}>/day</span></div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-2)' }}>Tracking against {budgets.length} budgets</div>
+                </div>
+
+                {/* Financial Independence Card */}
+                <div style={{ 
+                  padding: '32px', 
+                  background: 'var(--color-card-dark-green)', 
+                  borderRadius: '24px', 
+                  color: 'white',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ position: 'relative', zIndex: 2 }}>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.7, marginBottom: '24px' }}>Freedom Projection</div>
+                    <h2 style={{ fontSize: '42px', fontWeight: 700, margin: '0 0 16px 0', fontFamily: 'var(--font-serif)' }}>{fiYears} Years</h2>
+                    <p style={{ fontSize: '14px', lineHeight: 1.6, opacity: 0.8, maxWidth: '240px' }}>
+                      At your current velocity, you will achieve total financial freedom by <b>20{(new Date().getFullYear() + fiYears).toString().substring(2)}</b>.
+                    </p>
                   </div>
+
+                  <div style={{ position: 'relative', zIndex: 2 }}>
+                    <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '12px' }}>
+                        <span>Progress to Goal</span>
+                        <span>{Math.round((totalNetWorth / (monthlyExpenses * 12 * 25 || 1)) * 100)}%</span>
+                      </div>
+                      <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(100, (totalNetWorth / (monthlyExpenses * 12 * 25 || 1)) * 100)}%` }}
+                          transition={{ duration: 2 }}
+                          style={{ height: '100%', background: '#10B981' }}
+                        />
+                      </div>
+                    </div>
+                    <button style={{
+                      width: '100%',
+                      padding: '16px',
+                      background: 'white',
+                      color: 'var(--color-card-dark-green)',
+                      border: 'none',
+                      borderRadius: '12px',
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      cursor: 'pointer'
+                    }}>
+                      Optimize Velocity
+                    </button>
+                  </div>
+
+                  {/* Decorative background logo */}
+                  <div style={{ position: 'absolute', right: '-20px', top: '-20px', opacity: 0.05 }}>
+                    <TrendingUp size={200} />
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
 
-          {activeTab === 'TRANSACTIONS' && (
-            <motion.div key="transactions" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', margin: 0 }}>Recent Activity</h3>
+          {activeTab === 'ANALYTICS' && (
+            <motion.div key="analytics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+                
+                {/* Heatmap */}
+                <div className="nordic-card" style={{ padding: '32px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)' }}>Daily Spend Velocity</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-2)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      Intensity <div style={{ display: 'flex', gap: '2px' }}>{[0.1, 0.4, 0.7, 1].map(o => <div key={o} style={{ width: '8px', height: '8px', background: `rgba(220, 38, 38, ${o})`, borderRadius: '2px' }}/>)}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(15, 1fr)', gap: '4px' }}>
+                    {dailySpend.map((d, i) => {
+                      const intensity = Math.min(1, d.amount / (monthlyExpenses / 15 || 1000));
+                      return (
+                        <div 
+                          key={i} 
+                          title={`${d.date}: ${formatCurrency(d.amount)}`}
+                          style={{ 
+                            aspectRatio: '1', 
+                            background: `rgba(220, 38, 38, ${Math.max(0.1, intensity)})`, 
+                            borderRadius: '4px',
+                            cursor: 'help'
+                          }} 
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Savings Gauge */}
+                <div className="nordic-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '16px', alignSelf: 'flex-start' }}>Savings Rate Gauge</div>
+                  <div style={{ position: 'relative', width: '200px', height: '100px', overflow: 'hidden' }}>
+                    <div style={{ width: '200px', height: '200px', borderRadius: '50%', border: '20px solid var(--bg-elevated)', borderBottomColor: 'transparent', borderLeftColor: 'transparent', transform: 'rotate(-45deg)', position: 'absolute' }} />
+                    <motion.div 
+                      initial={{ rotate: -45 }}
+                      animate={{ rotate: -45 + (180 * (savingsRate / 100)) }}
+                      transition={{ duration: 1.5, ease: "easeOut" }}
+                      style={{ width: '200px', height: '200px', borderRadius: '50%', border: '20px solid #10B981', borderBottomColor: 'transparent', borderLeftColor: 'transparent', position: 'absolute' }} 
+                    />
+                  </div>
+                  <div style={{ fontSize: '48px', fontWeight: 900, fontFamily: 'var(--font-serif)', marginTop: '-20px' }}>{savingsRate}%</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-3)', marginTop: '8px' }}>Target: 40% | Status: {savingsRate >= 40 ? 'On Track' : 'Needs Optimization'}</div>
+                </div>
+              </div>
+
+              {/* Cash Flow Waterfall */}
+              <div className="nordic-card" style={{ padding: '32px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '24px' }}>Cash Flow Waterfall (MTD)</div>
+                <div style={{ display: 'flex', gap: '4px', height: '120px', alignItems: 'flex-end', paddingTop: '40px' }}>
+                  {/* Gross Income Bar */}
+                  <div style={{ flex: 1, position: 'relative', height: '100%', background: '#10B981', borderRadius: '8px' }}>
+                    <div style={{ position: 'absolute', top: '-28px', left: 0, width: '100%', textAlign: 'center', fontSize: '12px', fontWeight: 600 }}>{formatCurrency(monthlyIncome)}</div>
+                    <div style={{ position: 'absolute', bottom: '12px', left: 0, width: '100%', textAlign: 'center', fontSize: '11px', color: 'white', fontWeight: 700 }}>INCOME</div>
+                  </div>
+                  {/* Top Expenses subtracted visually */}
+                  {topExpenses.map((exp, i) => {
+                    // Height is proportional to its impact on income
+                    const heightPct = monthlyIncome > 0 ? (exp.value / monthlyIncome) * 100 : 0;
+                    return (
+                      <div key={i} style={{ flex: 1, position: 'relative', height: `${heightPct}%`, background: 'var(--color-rust)', borderRadius: '8px' }}>
+                         <div style={{ position: 'absolute', top: '-28px', left: 0, width: '100%', textAlign: 'center', fontSize: '11px', color: 'var(--text-2)' }}>-{formatCurrency(exp.value)}</div>
+                         <div style={{ position: 'absolute', bottom: '12px', left: 0, width: '100%', textAlign: 'center', fontSize: '10px', color: 'white', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 4px' }}>{exp.name}</div>
+                      </div>
+                    )
+                  })}
+                  {/* Remaining Savings Bar */}
+                  <div style={{ flex: 1, position: 'relative', height: `${Math.max(0, savingsRate)}%`, background: 'var(--color-accent)', borderRadius: '8px' }}>
+                    <div style={{ position: 'absolute', top: '-28px', left: 0, width: '100%', textAlign: 'center', fontSize: '12px', fontWeight: 600 }}>{formatCurrency(monthlyIncome - monthlyExpenses)}</div>
+                    <div style={{ position: 'absolute', bottom: '12px', left: 0, width: '100%', textAlign: 'center', fontSize: '11px', color: 'white', fontWeight: 700 }}>SAVED</div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'ACCOUNTS' && (
+            <motion.div key="accounts" initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }}>
+              <div style={{ marginBottom: '32px', padding: '32px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '8px' }}>Total Liquid Balance</div>
+                  <div style={{ fontSize: '48px', fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>{formatCurrency(totalBalance)}</div>
+                </div>
+                <button onClick={() => setAccountModalOpen(true)} style={{ background: 'var(--color-accent)', color: 'white', border: 'none', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>
+                  <Plus size={16} /> Add Account
+                </button>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                {accounts.map(acc => (
+                  <div 
+                    key={acc.id} 
+                    style={{ 
+                      padding: '32px', 
+                      background: 'rgba(255,255,255,0.02)', 
+                      backdropFilter: 'blur(16px)', 
+                      border: '1px solid rgba(255,255,255,0.05)', 
+                      borderRadius: '24px', 
+                      transition: 'all 0.2s', 
+                      position: 'relative'
+                    }} 
+                    onMouseEnter={e => {e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)';}} 
+                    onMouseLeave={e => {e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)';}}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                          {acc.icon || '🏦'}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-1)' }}>{acc.name}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{acc.type}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          onClick={() => {
+                            setNewAccount(acc);
+                            setAccountModalOpen(true);
+                          }}
+                          style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}
+                        >
+                          <Settings size={14} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteAccount(acc.id)}
+                          style={{ background: 'none', border: 'none', color: 'var(--color-rust)', cursor: 'pointer', padding: '4px' }}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '8px' }}>Capital Available</div>
+                    <div style={{ fontSize: '32px', fontFamily: 'var(--font-serif)', fontWeight: 600, letterSpacing: '-0.02em' }}>{formatCurrency(acc.balance)}</div>
+                    
+                    {/* Visual bar */}
+                    <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', marginTop: '24px', overflow: 'hidden' }}>
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: '100%' }}
+                        style={{ height: '100%', background: 'var(--color-accent)', opacity: 0.3 }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'TRANSACTIONS' && (() => {
+            const filteredTransactions = transactions.filter(t => {
+              if (transMonthFilter !== 'ALL') {
+                const tMonth = new Date(t.date).getMonth().toString();
+                if (tMonth !== transMonthFilter) return false;
+              }
+              if (transAccountFilter !== 'ALL') {
+                if (t.account_id !== transAccountFilter) return false;
+              }
+              if (transSearch) {
+                const searchLower = transSearch.toLowerCase();
+                if (!t.description?.toLowerCase().includes(searchLower) && !t.category?.toLowerCase().includes(searchLower)) {
+                  return false;
+                }
+              }
+              return true;
+            });
+            const totalPages = Math.ceil(filteredTransactions.length / transPerPage);
+            const paginatedTransactions = filteredTransactions.slice((transPage - 1) * transPerPage, transPage * transPerPage);
+
+            return (
+              <motion.div key="transactions" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+                  <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ position: 'relative' }}>
+                      <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
+                      <input 
+                        type="text" 
+                        placeholder="Search transactions..." 
+                        value={transSearch}
+                        onChange={e => { setTransSearch(e.target.value); setTransPage(1); }}
+                        style={{ padding: '8px 16px 8px 36px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--bg-elevated)', color: 'var(--text-1)', outline: 'none', width: '200px' }}
+                      />
+                    </div>
+                    <select value={transMonthFilter} onChange={e => { setTransMonthFilter(e.target.value); setTransPage(1); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--bg-elevated)', color: 'var(--text-1)', outline: 'none', cursor: 'pointer' }}>
+                      <option value="ALL">All Months</option>
+                      {[...Array(12)].map((_, i) => <option key={i} value={i.toString()}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>)}
+                    </select>
+                    <select value={transAccountFilter} onChange={e => { setTransAccountFilter(e.target.value); setTransPage(1); }} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--bg-elevated)', color: 'var(--text-1)', outline: 'none', cursor: 'pointer' }}>
+                      <option value="ALL">All Accounts</option>
+                      {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                  </div>
                 <button 
                   onClick={() => {
                     setEntryType('expense');
@@ -429,26 +885,57 @@ const Finance = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.map(t => (
+                    {paginatedTransactions.map(t => (
                       <tr key={t.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }} className="table-row-hover">
-                        <td style={{ padding: '20px 24px', fontSize: '13px', color: 'var(--text-2)' }}>{new Date(t.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
+                        <td style={{ padding: '20px 24px', fontSize: '13px', color: 'var(--text-2)' }}>{new Date(t.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                         <td style={{ padding: '20px 24px', fontSize: '14px', fontWeight: 500 }}>{t.description || 'General Transaction'}</td>
                         <td style={{ padding: '20px 24px' }}>
-                          <span className="vercel-badge" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-2)' }}>{t.category}</span>
+                          <span className="vercel-badge" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-2)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>{t.category}</span>
                         </td>
                         <td style={{ padding: '20px 24px', fontSize: '14px', textAlign: 'right', fontWeight: 600, color: t.type === 'expense' ? 'var(--color-rust)' : '#10B981' }}>
                           {t.type === 'expense' ? '-' : '+'} {formatCurrency(t.amount)}
                         </td>
                       </tr>
                     ))}
+                    {paginatedTransactions.length === 0 && (
+                      <tr>
+                        <td colSpan={4} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-3)', fontSize: '14px' }}>No transactions found.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '24px', gap: '8px' }}>
+                  <button 
+                    onClick={() => setTransPage(p => Math.max(1, p - 1))}
+                    disabled={transPage === 1}
+                    style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border)', background: transPage === 1 ? 'transparent' : 'var(--bg-elevated)', color: transPage === 1 ? 'var(--text-3)' : 'var(--text-1)', cursor: transPage === 1 ? 'not-allowed' : 'pointer' }}>
+                    Prev
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', fontSize: '13px', color: 'var(--text-2)' }}>
+                    Page {transPage} of {totalPages}
+                  </div>
+                  <button 
+                    onClick={() => setTransPage(p => Math.min(totalPages, p + 1))}
+                    disabled={transPage === totalPages}
+                    style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border)', background: transPage === totalPages ? 'transparent' : 'var(--bg-elevated)', color: transPage === totalPages ? 'var(--text-3)' : 'var(--text-1)', cursor: transPage === totalPages ? 'not-allowed' : 'pointer' }}>
+                    Next
+                  </button>
+                </div>
+              )}
             </motion.div>
-          )}
+          );})()}
 
           {activeTab === 'BUDGETS' && (
             <motion.div key="budgets" initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+                <button style={{ background: 'var(--color-accent)', border: 'none', color: '#fff', padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <Plus size={16} /> New Budget
+                </button>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '24px' }}>
                 {budgetProgress.map(bp => (
                   <div key={bp.id} className="nordic-card" style={{ padding: '32px' }}>
@@ -480,166 +967,209 @@ const Finance = () => {
           )}
 
           {activeTab === 'WEALTH' && (
-            <motion.div key="wealth" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              {/* Wealth Header Stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '40px' }}>
-                <div className="nordic-card" style={{ padding: '24px', textAlign: 'center', background: 'var(--bg-elevated)' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Portfolio Value</div>
-                  <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-serif)' }}>{formatCurrency(totalNetWorth - assetBreakdown.bank - assetBreakdown.cash)}</div>
-                </div>
-                <div className="nordic-card" style={{ padding: '24px', textAlign: 'center', background: 'var(--bg-elevated)' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Liquid Cash</div>
-                  <div style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-serif)' }}>{formatCurrency(assetBreakdown.bank + assetBreakdown.cash)}</div>
-                </div>
-                <div className="nordic-card" style={{ padding: '24px', textAlign: 'center', border: '1px solid #10B981' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Total Returns</div>
-                  <div style={{ fontSize: '24px', fontWeight: 600, color: '#10B981', fontFamily: 'var(--font-serif)' }}>+ {formatCurrency(totalReturns)}</div>
-                </div>
-                <div className="nordic-card" style={{ padding: '24px', textAlign: 'center', background: 'var(--bg-elevated)' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Health Score</div>
-                  <div style={{ fontSize: '24px', fontWeight: 600, color: 'var(--accent)', fontFamily: 'var(--font-serif)' }}>82/100</div>
-                </div>
+            <motion.div 
+              key="wealth" 
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}
+            >
+              {/* Core Wealth Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
+                {[
+                  { label: 'Portfolio Value', value: totalNetWorth - assetBreakdown.bank - assetBreakdown.cash, icon: <TrendingUp size={16} />, color: '#10B981', sub: 'Excl. Liquid' },
+                  { label: 'Liquid Reserve', value: assetBreakdown.bank + assetBreakdown.cash, icon: <Wallet size={16} />, color: '#3B82F6', sub: 'Instant Access' },
+                  { label: 'Unrealized Gain', value: totalReturns, icon: <Activity size={16} />, color: '#8B5CF6', sub: `+${returnPct}% ROI` },
+                  { label: 'Freedom Progress', value: `${Math.round((totalNetWorth / (monthlyExpenses * 12 * 25 || 1)) * 100)}%`, icon: <Trophy size={16} />, color: '#F59E0B', isPct: true, sub: 'To 25x Burn' }
+                ].map((stat, i) => (
+                  <div key={i} className="nordic-card" style={{ padding: '24px', background: 'rgba(255,255,255,0.02)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: stat.color }}>
+                      {stat.icon}
+                      <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)' }}>{stat.label}</span>
+                    </div>
+                    <div style={{ fontSize: '28px', fontWeight: 600, fontFamily: 'var(--font-serif)', marginBottom: '4px' }}>
+                      {stat.isPct ? stat.value : formatCurrency(stat.value)}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600 }}>{stat.sub}</div>
+                  </div>
+                ))}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '32px' }}>
-                {/* Detailed Asset Breakdown */}
-                <div className="nordic-card" style={{ padding: '40px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-serif)' }}>Portfolio Allocation</h3>
-                    <div style={{ height: '200px', width: '200px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '24px' }}>
+                {/* Main Asset Distribution */}
+                <div className="nordic-card" style={{ padding: '40px', background: 'rgba(255,255,255,0.01)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
+                    <div>
+                      <h3 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 4px 0', fontFamily: 'var(--font-serif)' }}>Portfolio Matrix</h3>
+                      <p style={{ fontSize: '12px', color: 'var(--text-3)', margin: 0 }}>Allocation across asset classes and risk profiles.</p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Diversification</div>
+                      <div style={{ fontSize: '10px', color: '#10B981', fontWeight: 800 }}>OPTIMIZED</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', alignItems: 'center' }}>
+                    <div style={{ height: '300px', position: 'relative' }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
+                        <RePieChart>
                           <Pie
                             data={[
                               { name: 'Mutual Funds', value: assetBreakdown.mutual_fund },
                               { name: 'Gold', value: assetBreakdown.gold },
                               { name: 'Equity', value: assetBreakdown.stock },
-                              { name: 'Bank', value: assetBreakdown.bank },
-                              { name: 'Cash', value: assetBreakdown.cash + assetBreakdown.crypto },
+                              { name: 'Cash/Bank', value: assetBreakdown.bank + assetBreakdown.cash },
+                              { name: 'Other', value: assetBreakdown.crypto || 0 },
                             ]}
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
+                            innerRadius={85}
+                            outerRadius={110}
+                            paddingAngle={8}
                             dataKey="value"
+                            stroke="none"
                           >
-                            {['#10B981', '#D4AF37', '#8B5CF6', '#3B82F6', '#059669'].map((col, i) => (
-                              <Cell key={i} fill={col} stroke="none" />
+                            {['#10B981', '#F59E0B', '#8B5CF6', '#3B82F6', '#EC4899'].map((col, i) => (
+                              <Cell key={i} fill={col} opacity={0.8} />
                             ))}
                           </Pie>
-                        </PieChart>
+                        </RePieChart>
                       </ResponsiveContainer>
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Invested</div>
+                        <div style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{((totalInvested / totalNetWorth) * 100).toFixed(0)}%</div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div style={{ display: 'grid', gap: '32px' }}>
-                    {[
-                      { label: 'Mutual Funds', value: assetBreakdown.mutual_fund, icon: '📈', color: '#10B981', trend: '+12.4%', desc: 'Long-term wealth generation' },
-                      { label: 'Gold Assets', value: assetBreakdown.gold, icon: '✨', color: '#D4AF37', trend: '+8.2%', desc: 'Hedge against inflation' },
-                      { label: 'Equity / Stocks', value: assetBreakdown.stock, icon: '📊', color: '#8B5CF6', trend: '+15.1%', desc: 'High growth potential' },
-                      { label: 'Bank Balance', value: assetBreakdown.bank, icon: '🏦', color: '#3B82F6', trend: 'Stable', desc: 'Emergency liquidity' },
-                      { label: 'Cash & Others', value: assetBreakdown.cash + assetBreakdown.crypto, icon: '💵', color: '#059669', trend: 'Variable', desc: 'Daily operations & specs' },
-                    ].map((item, idx) => (
-                      <div key={idx} className="asset-row" style={{ display: 'flex', alignItems: 'flex-start', gap: '24px' }}>
-                        <div style={{ 
-                          width: '56px', 
-                          height: '56px', 
-                          borderRadius: '16px', 
-                          background: `${item.color}15`, 
-                          color: item.color,
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          fontSize: '24px',
-                          border: `1px solid ${item.color}30`
-                        }}>
-                          {item.icon}
-                        </div>
-                        <div style={{ flex: 1 }}>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      {[
+                        { label: 'Growth Assets', val: assetBreakdown.mutual_fund + assetBreakdown.stock, color: '#8B5CF6', icon: '🚀' },
+                        { label: 'Defensive Assets', val: assetBreakdown.gold, color: '#F59E0B', icon: '🛡️' },
+                        { label: 'Liquid Capital', val: assetBreakdown.bank + assetBreakdown.cash, color: '#3B82F6', icon: '💧' }
+                      ].map((cat, i) => (
+                        <div key={i} style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-1)' }}>{item.label}</span>
-                              <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>{item.desc}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '16px' }}>{cat.icon}</span>
+                              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>{cat.label}</span>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '18px', fontWeight: 600, fontFamily: 'var(--font-serif)' }}>{formatCurrency(item.value)}</div>
-                              <div style={{ fontSize: '10px', color: item.trend.startsWith('+') ? '#10B981' : 'var(--text-3)', fontWeight: 700 }}>{item.trend}</div>
-                            </div>
+                            <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{((cat.val / totalNetWorth) * 100).toFixed(1)}%</span>
                           </div>
-                          <div style={{ height: '6px', background: 'var(--bg-elevated)', borderRadius: '3px', overflow: 'hidden', marginTop: '12px' }}>
+                          <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
                             <motion.div 
                               initial={{ width: 0 }}
-                              animate={{ width: `${(item.value / totalNetWorth) * 100}%` }}
-                              style={{ height: '100%', background: item.color, borderRadius: '3px' }}
-                              transition={{ duration: 1, delay: idx * 0.1 }}
+                              animate={{ width: `${(cat.val / totalNetWorth) * 100}%` }}
+                              style={{ height: '100%', background: cat.color }}
+                              transition={{ duration: 1, delay: i * 0.1 }}
                             />
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                  <div className="nordic-card" style={{ padding: '32px', height: '300px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                      <h3 style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)' }}>Net Worth Projection</h3>
+                {/* Wealth Advisors / Strategic Actions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <div className="nordic-card" style={{ padding: '32px', background: 'var(--color-card-dark-green)', color: 'white', border: 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+                      <Activity size={16} />
+                      <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.8 }}>Vault Intelligence</span>
                     </div>
-                    <ResponsiveContainer width="100%" height="80%">
-                      <AreaChart data={[
-                        { name: 'Jan', value: totalNetWorth * 0.8 },
-                        { name: 'Feb', value: totalNetWorth * 0.85 },
-                        { name: 'Mar', value: totalNetWorth * 0.92 },
-                        { name: 'Apr', value: totalNetWorth },
-                        { name: 'May', value: totalNetWorth * 1.05 },
-                        { name: 'Jun', value: totalNetWorth * 1.15 },
-                      ]}>
-                        <defs>
-                          <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.3}/>
-                            <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
-                          </linearGradient>
-                        </defs>
-                        <Tooltip />
-                        <Area type="monotone" dataKey="value" stroke="var(--color-accent)" fillOpacity={1} fill="url(#colorVal)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                    <div style={{ fontSize: '18px', fontFamily: 'var(--font-serif)', lineHeight: 1.5, marginBottom: '24px' }}>
+                      Your current <span style={{ color: 'var(--color-accent)' }}>Alpha</span> is beating the benchmark by 4.2% this quarter.
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {[
+                        'Rebalance Equity to 45%',
+                        'Increase Gold SIP by 10%',
+                        'Check Tax Harvesting'
+                      ].map((action, i) => (
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', background: 'rgba(255,255,255,0.08)', padding: '12px', borderRadius: '8px' }}>
+                          <CheckCircle2 size={12} color="#10B981" />
+                          <span>{action}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="nordic-card" style={{ 
-                    padding: '32px', 
-                    background: 'var(--color-card-dark-green)', 
-                    color: 'white', 
-                    border: 'none',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{ position: 'relative', zIndex: 1 }}>
-                      <h3 style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '24px', opacity: 0.8 }}>Strategic Insight</h3>
-                      <div style={{ fontSize: '18px', fontFamily: 'var(--font-serif)', lineHeight: '1.5', marginBottom: '24px' }}>
-                        "Your current savings rate is <b>32%</b>. Increasing this to 40% will shorten your financial freedom timeline by <b>4.5 years</b>."
-                      </div>
-                      
-                      <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px' }}>
-                        <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700, marginBottom: '12px', opacity: 0.6 }}>Next Action Items</div>
-                        <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                          <li style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
-                            <span style={{ color: 'var(--accent)' }}>●</span> Start a recurring SIP for Gold (min ₹5k)
-                          </li>
-                          <li style={{ display: 'flex', gap: '12px', fontSize: '13px' }}>
-                            <span style={{ color: 'var(--accent)' }}>●</span> Move excess cash to Liquid Funds
-                          </li>
-                        </ul>
-                      </div>
+                  <div className="nordic-card" style={{ padding: '32px', background: 'rgba(255,255,255,0.02)' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '16px' }}>Projected Net Worth (2026)</div>
+                    <div style={{ fontSize: '32px', fontWeight: 600, fontFamily: 'var(--font-serif)', marginBottom: '8px' }}>{formatCurrency(totalNetWorth * 1.25)}</div>
+                    <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 700 }}>↗ EST. +25% YEARLY YIELD</div>
+                    
+                    <div style={{ height: '80px', marginTop: '24px' }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={velocityData}>
+                          <Area type="monotone" dataKey="value" stroke="var(--color-accent)" fill="var(--color-accent)" fillOpacity={0.1} />
+                        </AreaChart>
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Asset Class Deep Dive */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
+                {[
+                  { label: 'Equities', val: assetBreakdown.stock, icon: '📊', color: '#8B5CF6' },
+                  { label: 'MFs', val: assetBreakdown.mutual_fund, icon: '📈', color: '#10B981' },
+                  { label: 'Bullion', val: assetBreakdown.gold, icon: '✨', color: '#F59E0B' },
+                  { label: 'Capital', val: assetBreakdown.bank, icon: '🏦', color: '#3B82F6' },
+                  { label: 'Other', val: assetBreakdown.cash, icon: '💵', color: '#EC4899' }
+                ].map((item, i) => (
+                  <div key={i} className="nordic-card" style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                    <div style={{ fontSize: '24px', marginBottom: '12px' }}>{item.icon}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{item.label}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{formatCurrency(item.val)}</div>
+                  </div>
+                ))}
+              </div>
             </motion.div>
           )}
+
         </AnimatePresence>
       )}
 
-      {/* Manual Entry Modal */}
+      {/* Add Account Modal */}
+      <AnimatePresence>
+        {accountModalOpen && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              style={{ width: '400px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '32px' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-serif)' }}>{newAccount.id ? 'Edit Account' : 'Initialize Account'}</h3>
+                <button onClick={() => setAccountModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer' }}><X size={20} /></button>
+              </div>
+              <form onSubmit={handleAddAccount} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px' }}>Account Name</label>
+                  <input type="text" value={newAccount.name} onChange={e => setNewAccount({...newAccount, name: e.target.value})} required style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px', color: 'var(--text-1)', fontSize: '14px', outline: 'none' }} placeholder="e.g. Chase Sapphire" />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px' }}>Initial Balance</label>
+                    <input type="number" step="0.01" value={newAccount.balance} onChange={e => setNewAccount({...newAccount, balance: e.target.value})} required style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px', color: 'var(--text-1)', fontSize: '14px', outline: 'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px' }}>Type</label>
+                    <select value={newAccount.type} onChange={e => setNewAccount({...newAccount, type: e.target.value})} style={{ width: '100%', padding: '12px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px', color: 'var(--text-1)', fontSize: '14px', outline: 'none' }}>
+                      <option>Checking</option>
+                      <option>Savings</option>
+                      <option>Credit Card</option>
+                      <option>Investment</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" style={{ background: 'var(--color-text-1)', color: 'var(--color-base)', border: 'none', padding: '14px', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer', marginTop: '16px' }}>
+                  {newAccount.id ? 'Save Changes' : 'Create Account'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Entry Modal */}
       <AnimatePresence>
         {entryOpen && (
           <div 

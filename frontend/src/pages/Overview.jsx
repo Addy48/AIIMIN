@@ -4,7 +4,10 @@ import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight } from 'lucide-react';
+import { Plus, X, ChevronRight, Keyboard, Mic, Activity, Timer } from 'lucide-react';
+import TypingTest from '../components/lab/TypingTest';
+import SpeakingLogger from '../components/lab/SpeakingLogger';
+import PomodoroTimer from '../components/productivity/PomodoroTimer';
 
 const STATES = ['clarity','scarcity','abundance','fear','growth','aimlessness','focus','noise'];
 const STATE_ICONS = { clarity:'🔍', scarcity:'🪨', abundance:'🌊', fear:'🌑', growth:'🌱', aimlessness:'🌫️', focus:'🎯', noise:'📡' };
@@ -111,12 +114,12 @@ const WeekCell = ({ day, isToday }) => {
     <div style={{
       background: isToday ? 'var(--color-accent-dim)' : 'var(--color-surface)',
       border: `1px solid ${isToday ? 'var(--color-accent)' : 'var(--color-border)'}`,
-      borderRadius:'16px', padding:'12px', minHeight:'160px', display:'flex', flexDirection:'column'
+      borderRadius:'16px', padding:'12px', minHeight:'160px', maxHeight: '250px', display:'flex', flexDirection:'column'
     }}>
-      <div style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)', marginBottom:'10px', borderBottom:'1px solid var(--color-border)', paddingBottom:'8px' }}>
+      <div style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)', marginBottom:'10px', borderBottom:'1px solid var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
         {day}
       </div>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'5px' }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'5px', overflowY:'auto', scrollbarWidth:'none', minHeight: 0 }}>
         {tasks.map(t => (
           <div key={t.id} style={{ display:'flex', alignItems:'center', gap:'6px' }}>
             <input type="checkbox" checked={t.done} onChange={() => setTasks(p=>p.map(x=>x.id===t.id?{...x,done:!x.done}:x))}
@@ -134,7 +137,7 @@ const WeekCell = ({ day, isToday }) => {
             onKeyDown={e=>{if(e.key==='Enter')addTask();if(e.key==='Escape'){setAdding(false);setInput('');}}}
             onBlur={addTask}
             placeholder="Add task..."
-            style={{ fontSize:'11px', background:'var(--color-elevated)', border:'1px solid var(--color-accent)', borderRadius:'6px', padding:'4px 8px', color:'var(--color-text-1)', outline:'none', fontFamily:'inherit' }}
+            style={{ fontSize:'11px', background:'var(--color-elevated)', border:'1px solid var(--color-accent)', borderRadius:'6px', padding:'4px 8px', color:'var(--color-text-1)', outline:'none', fontFamily:'inherit', width:'100%', boxSizing:'border-box', flexShrink: 0 }}
           />
         ) : (
           <button onClick={() => setAdding(true)} style={{
@@ -169,6 +172,7 @@ const Overview = () => {
   const { theme } = useThemeContext();
 
   const [progress, setProgress] = useState({ year:34, month:42, week:68, day:72 });
+  const [activeModal, setActiveModal] = useState(null);
 
   const targetDate = new Date('2026-07-26');
   const now = new Date();
@@ -185,30 +189,40 @@ const Overview = () => {
   const todayIdx = (now.getDay() + 6) % 7;
 
   useEffect(() => {
-    if (!user) return;
-    const fetchProgress = async () => {
-      try {
-        const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-        const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - todayIdx); startOfWeek.setHours(0,0,0,0);
+    const updateProgress = () => {
+      const now = new Date();
+      
+      const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+      const nextYear = new Date(now.getFullYear() + 1, 0, 1).getTime();
+      const yearElapsed = ((now.getTime() - startOfYear) / (nextYear - startOfYear)) * 100;
+      
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+      const monthElapsed = ((now.getTime() - startOfMonth) / (nextMonth - startOfMonth)) * 100;
 
-        const { data: yearData } = await supabase.from('daily_logs').select('id').gte('logged_at', startOfYear).eq('user_id', user.id);
-        const { data: monthData } = await supabase.from('daily_logs').select('id').gte('logged_at', startOfMonth).eq('user_id', user.id);
-        const { data: weekData } = await supabase.from('daily_logs').select('id').gte('logged_at', startOfWeek.toISOString()).eq('user_id', user.id);
+      const dayOfWeek = (now.getDay() + 6) % 7; 
+      const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+      startOfWeek.setHours(0, 0, 0, 0);
+      const nextWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const weekElapsed = ((now.getTime() - startOfWeek.getTime()) / (nextWeek.getTime() - startOfWeek.getTime())) * 100;
 
-        const dayOfYear = Math.ceil((now - new Date(now.getFullYear(),0,1)) / 86400000);
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      startOfDay.setHours(0, 0, 0, 0);
+      const nextDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+      const dayElapsed = ((now.getTime() - startOfDay.getTime()) / (nextDay.getTime() - startOfDay.getTime())) * 100;
 
-        setProgress({
-          year:  Math.min(100, Math.round(((yearData?.length||0) / dayOfYear) * 100)),
-          month: Math.min(100, Math.round(((monthData?.length||0) / now.getDate()) * 100)),
-          week:  Math.min(100, Math.round(((weekData?.length||0) / (todayIdx+1)) * 100)),
-          day:   weekData?.some(d => new Date(d.logged_at).toDateString() === now.toDateString()) ? 100 : 0,
-        });
-      } catch (e) { /* keep defaults */ }
+      setProgress({
+        year: yearElapsed.toFixed(4),
+        month: monthElapsed.toFixed(4),
+        week: weekElapsed.toFixed(4),
+        day: dayElapsed.toFixed(4)
+      });
     };
-    fetchProgress();
-  }, [user]);
+
+    updateProgress();
+    const interval = setInterval(updateProgress, 100);
+    return () => clearInterval(interval);
+  }, []);
 
   if (!user) return null;
 
@@ -234,95 +248,179 @@ const Overview = () => {
         </div>
       </div>
 
-      {/* Two-column layout */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 300px', gap:'24px' }}>
+      {/* Main Grid */}
+      <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px' }} className="overview-grid">
 
         {/* LEFT column */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'24px' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
+          
+          {/* Quick Access Horizontal Strip */}
+          <div style={{ display:'flex', gap:'12px', overflowX:'auto', paddingBottom:'4px', scrollbarWidth: 'none' }}>
+            {[
+              { to:'/journal',     label:'Journal',     icon:'📓', color:'#F59E0B' },
+              { to:'/finance',     label:'Wealth',      icon:'💰', color:'#22C55E' },
+              { to:'/habits',      label:'Habits',      icon:'✅', color:'#3B82F6' },
+              { to:'/notes',       label:'Notes',       icon:'🗒️', color:'#8B5CF6' },
+              { to:'/sports',      label:'Sports',      icon:'⚽', color:'#EF4444' },
+              { to:'/placements',  label:'Career',      icon:'🎯', color:'#14B8A6' },
+            ].map(item => (
+              <Link key={item.to} to={item.to} style={{ textDecoration:'none', flex: 1, minWidth: '100px' }}>
+                <motion.div 
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    display:'flex', flexDirection: 'column', alignItems:'center', gap:'8px', padding:'16px 12px',
+                    background:'var(--color-surface)', border:'1px solid var(--color-border)',
+                    borderRadius:'20px', cursor:'pointer', transition:'border-color 0.2s',
+                    textAlign: 'center'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = item.color}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
+                >
+                  <div style={{ background: `${item.color}15`, color: item.color, width: '44px', height: '44px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '4px' }}>
+                    {item.icon}
+                  </div>
+                  <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-text-1)', letterSpacing: '0.02em' }}>{item.label}</div>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
 
           {/* Countdown Hero */}
           <div style={{
-            background:'linear-gradient(135deg, #1E5C3A 0%, #0D3B26 100%)',
-            borderRadius:'20px', padding:'28px 32px', color:'#fff',
+            background:'linear-gradient(135deg, rgba(30,92,58,0.95) 0%, rgba(13,59,38,1) 100%)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius:'28px', padding:'40px', color:'#fff',
             display:'flex', justifyContent:'space-between', alignItems:'center',
-            position:'relative', overflow:'hidden'
+            position:'relative', overflow:'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)'
           }}>
-            <div style={{ position:'absolute', right:'-8px', top:'-12px', fontSize:'120px', opacity:0.07, pointerEvents:'none' }}>🎯</div>
-            <div>
-              <div style={{ fontSize:'10px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.2em', opacity:0.7, marginBottom:'6px' }}>Placement Target</div>
-              <div style={{ fontSize:'64px', fontWeight:900, lineHeight:0.9, letterSpacing:'-0.04em' }}>{daysLeft}</div>
-              <div style={{ fontSize:'14px', fontWeight:700, marginTop:'8px', opacity:0.85 }}>Days Until July 26, 2026</div>
-            </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:'8px', alignItems:'flex-end' }}>
-              <div style={{ padding:'7px 14px', background:'rgba(255,255,255,0.12)', borderRadius:'10px', fontSize:'10px', fontWeight:800, letterSpacing:'0.1em' }}>
-                PROTOCOL ACTIVE
+            <div style={{ position:'absolute', right:'-20px', bottom:'-20px', fontSize:'200px', opacity:0.03, pointerEvents:'none', rotate: '-15deg' }}>🏆</div>
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <div style={{ fontSize:'10px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.25em', color: '#10B981', marginBottom:'12px' }}>EXECUTION WINDOW</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <div style={{ fontSize:'84px', fontWeight:900, lineHeight:0.8, letterSpacing:'-0.05em', color: '#fff' }}>{daysLeft}</div>
+                <div style={{ fontSize:'18px', fontWeight:800, opacity: 0.6 }}>DAYS</div>
               </div>
-              <Link to="/placements" style={{ textDecoration:'none', padding:'7px 14px', background:'rgba(255,255,255,0.08)', borderRadius:'10px', fontSize:'10px', fontWeight:700, color:'rgba(255,255,255,0.8)', display:'flex', alignItems:'center', gap:'4px' }}>
-                View Board <ChevronRight size={12} />
+              <div style={{ fontSize:'14px', fontWeight:700, marginTop:'16px', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.02em' }}>UNTIL JULY 26 · <span style={{ color: '#10B981' }}>PLACEMENTS V1</span></div>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'16px', alignItems:'flex-end', position: 'relative', zIndex: 2 }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 10px #10B981' }} />
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', opacity: 0.3 }} />
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', opacity: 0.1 }} />
+              </div>
+              <Link to="/placements" style={{ textDecoration:'none', padding:'12px 24px', background:'#fff', borderRadius:'14px', fontSize:'13px', fontWeight:900, color:'#064e3b', display:'flex', alignItems:'center', gap:'8px', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}
+                onMouseEnter={e => e.currentTarget.style.transform='translateY(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform='translateY(0)'}
+              >
+                Launch Portal <ChevronRight size={16} />
               </Link>
+            </div>
+          </div>
+
+          {/* Action Center */}
+          <div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
+              <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Productivity Labs</div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'20px' }}>
+              <button onClick={() => setActiveModal('pomodoro')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#EF4444'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+                <div style={{ background:'rgba(239, 68, 68, 0.1)', color:'#EF4444', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Timer size={24} /></div>
+                <div>
+                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Focus Timer</div>
+                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Deep work pomodoro</div>
+                </div>
+              </button>
+              <button onClick={() => setActiveModal('typing')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#10B981'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+                <div style={{ background:'rgba(16, 185, 129, 0.1)', color:'#10B981', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Keyboard size={24} /></div>
+                <div>
+                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Typing Lab</div>
+                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Speed & accuracy</div>
+                </div>
+              </button>
+              <button onClick={() => setActiveModal('speaking')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#8B5CF6'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+                <div style={{ background:'rgba(139, 92, 246, 0.1)', color:'#8B5CF6', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Mic size={24} /></div>
+                <div>
+                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Speaking Lab</div>
+                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Communication mastery</div>
+                </div>
+              </button>
             </div>
           </div>
 
           {/* Weekly Planner */}
           <div>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
-              <div style={{ fontSize:'13px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Master Planner</div>
-              <div style={{ fontSize:'11px', color:'var(--color-text-3)', fontWeight:600 }}>Week {weekNum}</div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
+              <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Master Planner</div>
+              <div style={{ fontSize:'12px', color:'var(--color-text-3)', fontWeight:700, padding: '4px 12px', background: 'var(--color-elevated)', borderRadius: '99px' }}>Week {weekNum}</div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:'8px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:'12px' }}>
               {DAYS.map((day, i) => <WeekCell key={day} day={day} isToday={i===todayIdx} />)}
             </div>
           </div>
 
-          {/* Quick metrics row */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'10px' }}>
-            <MetricTile label="DSA" value="142" color="#3B82F6" to="/lab" />
-            <MetricTile label="Typing WPM" value="84" color="#10B981" to="/lab" />
-            <MetricTile label="Finance" value="₹" color="#F59E0B" to="/finance" />
-            <MetricTile label="Habits" value="5/7" color="#8B5CF6" to="/habits" />
-          </div>
         </div>
 
         {/* RIGHT sidebar */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
 
           <QuickCheckIn user={user} />
 
           {/* Trajectory */}
-          <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'20px' }}>
-            <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'18px' }}>Trajectory</div>
+          <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
+            <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'24px' }}>Trajectory Execution</div>
             <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" />
             <ProgressRow label="Monthly" val={progress.month} color="#3B82F6" />
             <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B" />
             <ProgressRow label="Daily"   val={progress.day}   color="#EC4899" />
           </div>
 
-          {/* Quick nav */}
-          <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'20px' }}>
-            <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'14px' }}>Quick Access</div>
-            {[
-              { to:'/journal', label:'Journal', icon:'📓', sub:'Write today\'s entry' },
-              { to:'/finance', label:'Finance', icon:'💰', sub:'Track expenses' },
-              { to:'/habits',  label:'Habits',  icon:'✅', sub:'Mark daily habits' },
-              { to:'/sports',  label:'Sports',  icon:'⚽', sub:'Live scores' },
-            ].map(item => (
-              <Link key={item.to} to={item.to} style={{ textDecoration:'none' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 0', borderBottom:'1px solid var(--color-border)' }}
-                  onMouseEnter={e=>e.currentTarget.style.opacity='0.7'}
-                  onMouseLeave={e=>e.currentTarget.style.opacity='1'}
-                >
-                  <span style={{ fontSize:'16px' }}>{item.icon}</span>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:'13px', fontWeight:600, color:'var(--color-text-1)' }}>{item.label}</div>
-                    <div style={{ fontSize:'11px', color:'var(--color-text-3)' }}>{item.sub}</div>
-                  </div>
-                  <ChevronRight size={14} color="var(--color-text-3)" />
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
       </div>
+
+      {/* Modals */}
+      {activeModal === 'typing' && (
+        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.85)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'40px', backdropFilter:'blur(5px)' }}>
+          <div style={{ background:'var(--color-background)', width:'100%', maxWidth:'1000px', height:'85vh', borderRadius:'24px', overflow:'hidden', position:'relative', border:'1px solid var(--color-border)', display:'flex', flexDirection:'column', boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+            <div style={{ padding:'20px 30px', borderBottom:'1px solid var(--color-border)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'var(--color-surface)' }}>
+              <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Typing Lab</div>
+              <button onClick={() => setActiveModal(null)} style={{ background:'var(--color-elevated)', border:'1px solid var(--color-border)', borderRadius:'50%', width:'32px', height:'32px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--color-text-1)', transition:'all 0.2s' }}>✕</button>
+            </div>
+            <div style={{ flex:1, overflowY:'auto', padding:'40px', background:'var(--color-background)' }}>
+              <TypingTest userId={user.id} onComplete={() => {}} onClose={() => setActiveModal(null)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeModal === 'speaking' && (
+        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.85)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'40px', backdropFilter:'blur(5px)' }}>
+          <div style={{ background:'var(--color-background)', width:'100%', maxWidth:'1000px', height:'85vh', borderRadius:'24px', overflow:'hidden', position:'relative', border:'1px solid var(--color-border)', display:'flex', flexDirection:'column', boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+            <div style={{ padding:'20px 30px', borderBottom:'1px solid var(--color-border)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'var(--color-surface)' }}>
+              <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Speaking Lab</div>
+              <button onClick={() => setActiveModal(null)} style={{ background:'var(--color-elevated)', border:'1px solid var(--color-border)', borderRadius:'50%', width:'32px', height:'32px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--color-text-1)', transition:'all 0.2s' }}>✕</button>
+            </div>
+            <div style={{ flex:1, overflowY:'auto', padding:'40px', background:'var(--color-background)' }}>
+              <SpeakingLogger onComplete={() => {}} onClose={() => setActiveModal(null)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeModal === 'pomodoro' && (
+        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.85)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'40px', backdropFilter:'blur(5px)' }}>
+          <div style={{ background:'var(--color-background)', width:'100%', maxWidth:'500px', borderRadius:'24px', overflow:'hidden', position:'relative', border:'1px solid var(--color-border)', display:'flex', flexDirection:'column', boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+            <div style={{ padding:'20px 30px', borderBottom:'1px solid var(--color-border)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'var(--color-surface)' }}>
+              <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Pomodoro Focus</div>
+              <button onClick={() => setActiveModal(null)} style={{ background:'var(--color-elevated)', border:'1px solid var(--color-border)', borderRadius:'50%', width:'32px', height:'32px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--color-text-1)', transition:'all 0.2s' }}>✕</button>
+            </div>
+            <div style={{ flex:1, padding:'40px', background:'var(--color-background)', display: 'flex', justifyContent: 'center' }}>
+              <PomodoroTimer onComplete={() => {}} onClose={() => setActiveModal(null)} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Responsive */}
       <style>{`

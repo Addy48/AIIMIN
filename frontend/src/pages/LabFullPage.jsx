@@ -4,6 +4,7 @@ import { useThemeContext } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
 import { supabase } from '../utils/supabase';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
+import TypingTest from '../components/lab/TypingTest';
 import PersonalityForge from '../components/lab/PersonalityForge';
 import ThePit from '../components/lab/ThePit';
 import './lab/lab.css';
@@ -18,278 +19,7 @@ const SAMPLE_TEXTS = [
   "Discipline is choosing between what you want now and what you want most.",
 ];
 
-/* ── Typing test that saves to Supabase ─────────────────────── */
-function TypingTestSupabase({ userId, onComplete }) {
-  const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
-  const [phase, setPhase] = useState('ready');
-  const [words, setWords] = useState([]);
-  const [input, setInput] = useState('');
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [wpm, setWpm] = useState(null);
-  const [accuracy, setAccuracy] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [rawWpm, setRawWpm] = useState(0);
-  const timerRef = React.useRef(null);
-  const inputRef = React.useRef(null);
-
-  // Monkeytype Colors
-  const mtBg = isDark ? '#323437' : '#ffffff';
-  const mtText = isDark ? '#646669' : '#9ca3af';
-  const mtActive = isDark ? '#d1d0c5' : '#111827';
-  const mtError = '#ca4754';
-  const mtAccent = '#e2b714';
-
-  const WORD_POOL = [
-    "the", "be", "to", "of", "and", "a", "in", "that", "have", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know", "take", "people", "into", "year", "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also", "back", "after", "use", "two", "how", "our", "work", "first", "well", "even", "new", "want", "because", "any", "these", "give", "day", "most", "us"
-  ];
-
-  const generateWords = () => {
-    const arr = [];
-    for (let i = 0; i < 100; i++) {
-      arr.push(WORD_POOL[Math.floor(Math.random() * WORD_POOL.length)]);
-    }
-    setWords(arr);
-  };
-
-  useEffect(() => {
-    generateWords();
-  }, []);
-
-  const startTest = () => {
-    setPhase('running');
-    setInput('');
-    setTimeLeft(30);
-    setTimeout(() => inputRef.current?.focus(), 50);
-  };
-
-  useEffect(() => {
-    if (phase !== 'running') return;
-    timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(timerRef.current);
-          setPhase('done');
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timerRef.current);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase !== 'done') return;
-    const wordsTyped = input.trim().split(/\s+/).filter(Boolean).length;
-    const elapsed = 30; // fixed duration
-    const calculatedWpm = Math.round((wordsTyped / (elapsed / 60)));
-    setWpm(calculatedWpm);
-    
-    const targetString = words.join(' ');
-    let correct = 0;
-    const inputChars = input.split('');
-    inputChars.forEach((c, i) => {
-      if (c === targetString[i]) correct++;
-    });
-    setAccuracy(inputChars.length > 0 ? Number(((correct / inputChars.length) * 100).toFixed(1)) : 0);
-  }, [phase, input, words]);
-
-  const handleSave = async () => {
-    setSaving(true);
-    const today = new Date().toISOString().split('T')[0];
-    const { error } = await supabase.from('lab_typing_tests').insert({
-      user_id: userId,
-      wpm: wpm,
-      accuracy_pct: accuracy,
-      duration_sec: 30,
-      test_invalid: accuracy < 90,
-      day_of: today,
-    });
-    setSaving(false);
-    if (!error) {
-      setSaved(true);
-      onComplete?.();
-    }
-  };
-
-  // Calculate cursor position for Monkeytype feel
-  const currentWordIndex = input.split(' ').length - 1;
-  const currentWordChars = input.split(' ')[currentWordIndex] || '';
-
-  return (
-    <div style={{ 
-      padding: '60px 40px', 
-      background: mtBg, 
-      borderRadius: '24px',
-      color: mtText,
-      fontFamily: '"JetBrains Mono", monospace',
-      minHeight: '400px',
-      display: 'flex',
-      flexDirection: 'column',
-      position: 'relative',
-      transition: 'all 0.3s ease'
-    }}>
-      {/* Header Stats */}
-      <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '40px' }}>
-        <div style={{ fontSize: '32px', color: mtAccent, fontWeight: 700, minWidth: '40px' }}>
-          {phase === 'running' ? timeLeft : (phase === 'done' ? '0' : '30')}
-        </div>
-        {phase === 'running' && (
-          <div style={{ display: 'flex', gap: '20px', fontSize: '14px', color: mtAccent, opacity: 0.8 }}>
-            <span>typing...</span>
-          </div>
-        )}
-      </div>
-
-      {phase === 'ready' && (
-        <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ fontSize: '20px', marginBottom: '32px', color: mtActive, opacity: 0.8 }}>
-            the lab. test your focus.
-          </div>
-          <button 
-            onClick={startTest}
-            style={{ 
-              background: 'transparent', 
-              border: `2px solid ${mtAccent}`, 
-              color: mtAccent, 
-              padding: '14px 40px', 
-              borderRadius: '8px', 
-              cursor: 'pointer',
-              fontSize: '16px',
-              fontWeight: 700,
-              transition: 'all 0.2s ease',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = mtAccent; e.currentTarget.style.color = mtBg; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = mtAccent; }}
-          >
-            start test
-          </button>
-          <div style={{ marginTop: '24px', fontSize: '12px', opacity: 0.5 }}>30 second duration · top focus words</div>
-        </div>
-      )}
-
-      {phase === 'running' && (
-        <div 
-          onClick={() => inputRef.current?.focus()}
-          style={{ cursor: 'text', position: 'relative', fontSize: '28px', lineHeight: '1.6', userSelect: 'none', height: '160px', overflow: 'hidden' }}
-        >
-          {/* Hidden input */}
-          <input
-            ref={inputRef}
-            type="text"
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-            autoFocus
-          />
-          
-          {/* Render text with active highlighting */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6em', position: 'relative' }}>
-            {words.map((word, wIdx) => {
-              const isCurrentWord = currentWordIndex === wIdx;
-              const wordsBefore = input.split(' ').slice(0, wIdx);
-              const targetString = word;
-              const inputForThisWord = input.split(' ')[wIdx] || '';
-              
-              // Only show a few lines
-              if (wIdx < currentWordIndex - 10) return null;
-              if (wIdx > currentWordIndex + 20) return null;
-
-              return (
-                <span key={wIdx} style={{ position: 'relative', display: 'flex' }}>
-                  {word.split('').map((char, cIdx) => {
-                    let color = mtText;
-                    let isCorrect = false;
-                    if (inputForThisWord.length > cIdx) {
-                      isCorrect = inputForThisWord[cIdx] === char;
-                      color = isCorrect ? mtActive : mtError;
-                    }
-                    
-                    return (
-                      <span key={cIdx} style={{ color, position: 'relative' }}>
-                        {char}
-                        {isCurrentWord && cIdx === inputForThisWord.length && (
-                          <motion.div 
-                            layoutId="cursor"
-                            style={{ 
-                              position: 'absolute', left: 0, top: '10%', bottom: '10%', width: '2px', background: mtAccent 
-                            }}
-                            animate={{ opacity: [1, 0, 1] }}
-                            transition={{ duration: 0.8, repeat: Infinity }}
-                          />
-                        )}
-                      </span>
-                    );
-                  })}
-                  {/* Extra chars */}
-                  {inputForThisWord.length > word.length && (
-                    <span style={{ color: mtError }}>
-                      {inputForThisWord.slice(word.length)}
-                    </span>
-                  )}
-                  {/* Handle space cursor */}
-                  {isCurrentWord && inputForThisWord.length === word.length && (
-                    <motion.div 
-                      layoutId="cursor"
-                      style={{ 
-                        position: 'absolute', right: -2, top: '10%', bottom: '10%', width: '2px', background: mtAccent 
-                      }}
-                      animate={{ opacity: [1, 0, 1] }}
-                      transition={{ duration: 0.8, repeat: Infinity }}
-                    />
-                  )}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {phase === 'done' && (
-        <div style={{ textAlign: 'center', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', gap: '80px', justifyContent: 'center', marginBottom: '48px' }}>
-            <div>
-              <div style={{ fontSize: '16px', color: mtAccent, marginBottom: '12px', textTransform: 'lowercase', letterSpacing: '0.1em' }}>wpm</div>
-              <div style={{ fontSize: '80px', color: mtActive, fontWeight: 700, lineHeight: 1 }}>{wpm}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '16px', color: mtAccent, marginBottom: '12px', textTransform: 'lowercase', letterSpacing: '0.1em' }}>accuracy</div>
-              <div style={{ fontSize: '80px', color: accuracy >= 95 ? mtActive : mtError, fontWeight: 700, lineHeight: 1 }}>{accuracy}%</div>
-            </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-            {!saved && (
-              <button 
-                onClick={handleSave} 
-                disabled={saving} 
-                style={{ 
-                  background: mtAccent, color: mtBg, border: 'none', padding: '14px 40px', 
-                  borderRadius: '8px', fontWeight: 700, cursor: 'pointer', transition: 'transform 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                {saving ? 'saving...' : 'save reflection'}
-              </button>
-            )}
-            <button 
-              onClick={startTest}
-              style={{ 
-                background: 'transparent', color: mtText, border: `2px solid ${mtText}`, 
-                padding: '14px 40px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' 
-              }}
-            >
-              restart test
-            </button>
-          </div>
-          {saved && <div style={{ marginTop: '24px', color: mtAccent, fontSize: '14px', fontWeight: 600 }}>✓ Result archived to your growth metrics</div>}
-        </div>
-      )}
-    </div>
-  );
-}
+// TypingTestSupabase removed and replaced by premium component from ../components/lab/TypingTest
 
 // MindsetLoggerSupabase and others removed as they are redundant with Quick Pulse on Overview
 
@@ -303,11 +33,11 @@ export default function LabFullPage() {
   const [todayMindset, setTodayMindset] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const cardBg = isDark ? '#111' : '#fff';
-  const border = isDark ? '#222' : '#e5e7eb';
-  const text1 = isDark ? '#ededed' : '#111';
-  const text2 = isDark ? '#a1a1aa' : '#6b7280';
-  const text3 = isDark ? '#52525b' : '#9ca3af';
+  const cardBg = 'var(--color-surface)';
+  const border = 'var(--color-border)';
+  const text1 = 'var(--color-text-1)';
+  const text2 = 'var(--color-text-2)';
+  const text3 = 'var(--color-text-3)';
 
   const fetchStats = useCallback(async () => {
     if (!user) return;
@@ -394,21 +124,88 @@ export default function LabFullPage() {
         </div>
       )}
 
-      {activeModule && (
-        <div onClick={() => setActiveModule(null)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-          <div onClick={e => e.stopPropagation()}
-            style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "18px", width: "560px", maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.6)", position: "relative" }}>
-            <button onClick={() => setActiveModule(null)}
-              style={{ position: "absolute", top: "16px", right: "16px", width: "28px", height: "28px", borderRadius: "50%", border: `1px solid ${border}`, background: "transparent", color: text2, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", zIndex: 1 }}>✕</button>
-            {activeModule === "typing"      && <TypingTestSupabase userId={user.id} onComplete={() => fetchStats()} />}
-            {activeModule === "speaking"    && <SpeakingLogger onComplete={() => fetchStats()} />}
-            {activeModule === "personality" && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-            {activeModule === "pit"         && <ThePit userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-            {activeModule === "reading"     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+      {activeModule && (() => {
+        const config = {
+          typing: { title: "Improvement Lab — Keyboard Dexterity & Speed Test", width: "1150px" },
+          speaking: { title: "Improvement Lab — Vocal Resonance Speech Logger", width: "1150px" },
+          personality: { title: "Improvement Lab — Identity & Trait Sculptor", width: "780px" },
+          pit: { title: "Improvement Lab — Self-Honesty Ledger & Challenges", width: "950px" },
+          reading: { title: "Improvement Lab — Intellect & Reading Log", width: "780px" }
+        }[activeModule] || { title: "Improvement Lab module", width: "780px" };
+
+        const winBg = isDark ? 'var(--color-surface)' : 'var(--color-overlay)';
+        const headerBg = isDark ? 'var(--color-elevated)' : 'var(--color-surface)';
+        const winBorder = 'var(--color-border)';
+
+        return (
+          <div onClick={() => setActiveModule(null)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", backdropFilter: "blur(8px)" }}>
+            <div onClick={e => e.stopPropagation()}
+              style={{
+                background: winBg,
+                border: `1px solid ${winBorder}`,
+                borderRadius: "16px",
+                width: config.width,
+                maxWidth: "95vw",
+                height: "82vh",
+                maxHeight: "85vh",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+                boxShadow: isDark ? "0 24px 64px rgba(0,0,0,0.7)" : "0 24px 64px rgba(0,0,0,0.15)",
+                backdropFilter: "blur(20px)"
+              }}>
+              
+              {/* macOS Browser Title Bar Mock */}
+              <div style={{
+                height: '48px',
+                minHeight: '48px',
+                padding: '0 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: `1px solid ${winBorder}`,
+                background: headerBg
+              }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span onClick={() => setActiveModule(null)} style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56', cursor: 'pointer', transition: 'opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 0.8} onMouseLeave={e => e.currentTarget.style.opacity = 1} title="Close" />
+                  <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e', opacity: 0.6 }} />
+                  <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f', opacity: 0.6 }} />
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: text2, letterSpacing: '0.02em', textTransform: 'uppercase', font: '600 11px/1 var(--font-mono)' }}>
+                  {config.title}
+                </div>
+                <button onClick={() => setActiveModule(null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: text2,
+                    cursor: 'pointer',
+                    fontSize: '15px',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = text1}
+                  onMouseLeave={e => e.currentTarget.style.color = text2}
+                >✕</button>
+              </div>
+
+              {/* Scrollable Contents */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "32px 40px" }}>
+                {activeModule === "typing"      && <TypingTest userId={user.id} onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
+                {activeModule === "speaking"    && <SpeakingLogger onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
+                {activeModule === "personality" && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+                {activeModule === "pit"         && <ThePit userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+                {activeModule === "reading"     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+              </div>
+
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

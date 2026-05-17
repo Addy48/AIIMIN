@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
-import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, ChevronRight, Hash, Type, Trash2, Save, FileText } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, ChevronRight, Hash, Type, Trash2, Save, FileText, X } from 'lucide-react';
 
 /* ── Configuration & Constants ── */
 const MOODS = [
@@ -371,6 +371,9 @@ const JournalPage = () => {
                  </button>
                  <button onClick={() => deleteEntry(selectedEntry.id)} style={{ background: 'rgba(239, 68, 68, 0.3)', border: 'none', color: '#ff8080', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
                    <Trash2 size={16} />
+                 </button>
+                 <button onClick={() => setSelectedEntry(null)} style={{ background: 'rgba(0, 0, 0, 0.3)', border: 'none', color: '#fff', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+                   <X size={16} />
                  </button>
               </div>
 

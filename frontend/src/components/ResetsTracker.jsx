@@ -95,16 +95,16 @@ const ResetsTracker = ({ user }) => {
 
     const inputStyle = {
         width: '100%',
-        background: 'var(--bg-secondary)',
+        background: 'var(--bg-elevated)',
         border: '1px solid var(--border)',
         borderRadius: '8px',
         padding: '10px 14px',
         fontSize: '14px',
-        color: 'var(--text-1)',
+        color: 'var(--color-text-1)',
         outline: 'none',
         transition: 'all 0.12s ease',
     };
-    const labelStyle = { fontSize: '12px', fontWeight: 500, color: 'var(--text-2)', marginBottom: '7px', display: 'block' };
+    const labelStyle = { fontSize: '12px', fontWeight: 500, color: 'var(--color-text-2)', marginBottom: '7px', display: 'block' };
 
     const resetCount = entries.filter(e => e.type !== 'urge').length;
     const urgeCount = entries.filter(e => e.type === 'urge').length;
@@ -119,16 +119,16 @@ const ResetsTracker = ({ user }) => {
             flexDirection: 'column',
             animation: 'slideUp 0.3s ease forwards'
         }}>
-            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '16px' }}>Resets & Urges</h3>
+            <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '16px' }}>Resets & Urges</h3>
 
             <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
                 <div style={{ flex: 1, padding: '12px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 700 }}>Resets</div>
-                    <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--danger)' }}>{resetCount}</div>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-text-3)', fontWeight: 700 }}>Resets</div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-danger)' }}>{resetCount}</div>
                 </div>
                 <div style={{ flex: 1, padding: '12px', background: 'var(--bg-elevated)', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                    <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-3)', fontWeight: 700 }}>Urges</div>
-                    <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--warning)' }}>{urgeCount}</div>
+                    <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-text-3)', fontWeight: 700 }}>Urges</div>
+                    <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--color-warning)' }}>{urgeCount}</div>
                 </div>
             </div>
 
@@ -137,8 +137,8 @@ const ResetsTracker = ({ user }) => {
                     onClick={() => setActiveForm(activeForm === 'reset' ? null : 'reset')}
                     style={{
                         flex: 1, padding: '10px', borderRadius: '10px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s',
-                        background: activeForm === 'reset' ? 'var(--danger)' : 'var(--danger-dim)',
-                        color: activeForm === 'reset' ? 'white' : 'var(--danger)',
+                        background: activeForm === 'reset' ? 'var(--color-danger)' : 'var(--color-danger-dim)',
+                        color: activeForm === 'reset' ? 'white' : 'var(--color-danger)',
                         border: `1px solid ${activeForm === 'reset' ? 'transparent' : 'rgba(255,68,102,0.2)'}`
                     }}
                 >
@@ -148,8 +148,8 @@ const ResetsTracker = ({ user }) => {
                     onClick={() => setActiveForm(activeForm === 'urge' ? null : 'urge')}
                     style={{
                         flex: 1, padding: '10px', borderRadius: '10px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s',
-                        background: activeForm === 'urge' ? 'var(--warning)' : 'var(--warning-dim)',
-                        color: activeForm === 'urge' ? 'white' : 'var(--warning)',
+                        background: activeForm === 'urge' ? 'var(--color-warning)' : 'var(--color-warning-dim)',
+                        color: activeForm === 'urge' ? 'white' : 'var(--color-warning)',
                         border: `1px solid ${activeForm === 'urge' ? 'transparent' : 'rgba(255,170,0,0.2)'}`
                     }}
                 >
@@ -163,7 +163,7 @@ const ResetsTracker = ({ user }) => {
                     borderRadius: '12px', padding: '16px', marginBottom: '16px',
                     animation: 'slideDown 0.2s ease forwards'
                 }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '14px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '14px' }}>
                         Logging {activeForm === 'reset' ? 'a Reset' : 'an Urge'}
                     </div>
 
@@ -180,9 +180,9 @@ const ResetsTracker = ({ user }) => {
                                     key={ct} type="button" onClick={() => setContentType(ct)}
                                     style={{
                                         padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 500, cursor: 'pointer',
-                                        background: contentType === ct ? 'var(--text-1)' : 'var(--bg-secondary)',
-                                        color: contentType === ct ? 'var(--bg-primary)' : 'var(--text-2)',
-                                        border: contentType === ct ? '1px solid var(--text-1)' : '1px solid var(--border)',
+                                        background: contentType === ct ? 'var(--color-text-1)' : 'var(--bg-elevated)',
+                                        color: contentType === ct ? 'var(--color-base)' : 'var(--color-text-2)',
+                                        border: contentType === ct ? '1px solid var(--color-text-1)' : '1px solid var(--border)',
                                     }}
                                 >
                                     {ct}
@@ -212,11 +212,11 @@ const ResetsTracker = ({ user }) => {
                                 );
                             })}
                         </div>
-                        {momentMood && <div style={{ fontSize: '12px', color: 'var(--text-2)' }}>{RC_MOOD_LABELS[momentMood]}</div>}
+                        {momentMood && <div style={{ fontSize: '12px', color: 'var(--color-text-2)' }}>{RC_MOOD_LABELS[momentMood]}</div>}
                     </div>
 
                     <div style={{ marginBottom: '16px' }}>
-                        <label style={labelStyle}>Notes {activeForm === 'urge' && <span style={{ color: 'var(--danger)' }}>*</span>}</label>
+                        <label style={labelStyle}>Notes {activeForm === 'urge' && <span style={{ color: 'var(--color-danger)' }}>*</span>}</label>
                         <textarea
                             rows={3} value={notes} onChange={e => setNotes(e.target.value)}
                             placeholder={activeForm === 'urge' ? "Why are you facing this urge? What triggered it?" : "What were you thinking? Any trigger? Context..."}
@@ -227,13 +227,13 @@ const ResetsTracker = ({ user }) => {
                     <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                             type="button" onClick={resetForm}
-                            style={{ flex: 1, height: '38px', justifySelf: 'flex-end', borderRadius: '8px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)' }}
+                            style={{ flex: 1, height: '38px', justifySelf: 'flex-end', borderRadius: '8px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', background: 'transparent', border: '1px solid var(--border)', color: 'var(--color-text-2)' }}
                         >
                             Cancel
                         </button>
                         <button
                             type="button" onClick={handleLog} disabled={loading || (activeForm === 'urge' && !notes.trim())}
-                            style={{ flex: 1, height: '38px', borderRadius: '8px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', background: activeForm === 'reset' ? 'var(--danger)' : 'var(--warning)', border: 'none', color: 'white', opacity: (loading || (activeForm === 'urge' && !notes.trim())) ? 0.5 : 1 }}
+                            style={{ flex: 1, height: '38px', borderRadius: '8px', fontWeight: 600, fontSize: '13px', cursor: 'pointer', background: activeForm === 'reset' ? 'var(--color-danger)' : 'var(--color-warning)', border: 'none', color: 'white', opacity: (loading || (activeForm === 'urge' && !notes.trim())) ? 0.5 : 1 }}
                         >
                             {loading ? 'Saving...' : 'Save Entry'}
                         </button>
@@ -249,20 +249,20 @@ const ResetsTracker = ({ user }) => {
 
                         return (
                             <div key={i} style={{
-                                padding: '12px', background: 'var(--bg-secondary)', borderRadius: '10px',
-                                borderLeft: `3px solid ${isUrge ? 'var(--warning)' : 'var(--danger)'}`, display: 'flex', flexDirection: 'column', gap: '6px'
+                                padding: '12px', background: 'var(--bg-elevated)', borderRadius: '10px',
+                                borderLeft: `3px solid ${isUrge ? 'var(--color-warning)' : 'var(--color-danger)'}`, display: 'flex', flexDirection: 'column', gap: '6px'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: isUrge ? 'var(--warning-dim)' : 'var(--danger-dim)', color: isUrge ? 'var(--warning)' : 'var(--danger)', textTransform: 'uppercase' }}>
+                                        <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: isUrge ? 'var(--color-warning-dim)' : 'var(--color-danger-dim)', color: isUrge ? 'var(--color-warning)' : 'var(--color-danger)', textTransform: 'uppercase' }}>
                                             {isUrge ? 'Urge' : 'Reset'}
                                         </span>
-                                        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-1)' }}>{entry.contentType} {entry.website && `· ${entry.website}`}</span>
+                                        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-1)' }}>{entry.contentType} {entry.website && `· ${entry.website}`}</span>
                                     </div>
-                                    <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>{time}</span>
+                                    <span style={{ fontSize: '11px', color: 'var(--color-text-3)' }}>{time}</span>
                                 </div>
                                 {entry.notes && (
-                                    <div style={{ fontSize: '12px', color: 'var(--text-2)', background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                                    <div style={{ fontSize: '12px', color: 'var(--color-text-2)', background: 'var(--bg-card)', padding: '8px', borderRadius: '6px', border: '1px solid var(--border)' }}>
                                         "{entry.notes}"
                                     </div>
                                 )}
