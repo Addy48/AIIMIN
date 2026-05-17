@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom'; // Added for Portal
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import toast from '../../utils/toast';
 import supabase from '../../utils/supabase';
 import { apiDelete, apiGet, apiPatch } from '../../utils/api';
 import { useThemeContext } from '../../context/ThemeContext';
