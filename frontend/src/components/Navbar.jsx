@@ -18,6 +18,7 @@ const NAV_LINKS = [
   { to: '/placements',  label: 'Placement' },
   { to: '/sports',      label: 'Sports' },
   { to: '/discipline',  label: 'Discipline' },
+  { to: '/focus',       label: 'Focus' },
 ];
 
 const Navbar = ({ user }) => {

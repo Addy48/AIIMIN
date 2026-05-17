@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../utils/supabase';
 import toast from '../utils/toast';
+import { X } from 'lucide-react';
 
 const STATUS_CONFIG = {
   wishlist: { label: 'Wishlist', color: '#8C8C8C', icon: '📝' },
@@ -14,7 +15,7 @@ const STATUS_CONFIG = {
 
 export default function Placements() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('kanban'); // kanban | resumes | trajectory
+  const [activeTab, setActiveTab] = useState('kanban'); // kanban | timeline | resources | resumes | trajectory
   const [applications, setApplications] = useState([]);
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -186,7 +187,7 @@ export default function Placements() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '20px' }}>
           <div>
             <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-rust)', textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '12px' }}>
-              Career Architect / {activeTab === 'kanban' ? 'Application Engine' : activeTab === 'resumes' ? 'Resume Vault' : 'Trajectory Analysis'}
+              Career Architect / {activeTab === 'kanban' ? 'Application Engine' : activeTab === 'timeline' ? 'Event Timeline' : activeTab === 'resources' ? 'Resource Library' : activeTab === 'resumes' ? 'Resume Vault' : 'Trajectory Analysis'}
             </div>
             <h1 style={{ 
               fontFamily: 'var(--font-serif)', 
@@ -202,7 +203,7 @@ export default function Placements() {
           </div>
           
           <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-surface)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-             {['kanban', 'resumes', 'trajectory'].map(tab => (
+             {['kanban', 'timeline', 'resources', 'resumes', 'trajectory'].map(tab => (
                <button 
                 key={tab}
                 onClick={() => setActiveTab(tab)} 
@@ -219,7 +220,7 @@ export default function Placements() {
                   textTransform: 'capitalize'
                 }}
                >
-                 {tab === 'kanban' ? 'Board' : tab === 'resumes' ? 'Vault' : 'Trajectory'}
+                 {tab === 'kanban' ? 'Board' : tab === 'timeline' ? 'Timeline' : tab === 'resources' ? 'Resources' : tab === 'resumes' ? 'Vault' : 'Trajectory'}
                </button>
              ))}
           </div>
@@ -431,6 +432,61 @@ export default function Placements() {
                 </div>
               );
             })}
+          </div>
+        </motion.div>
+        </motion.div>
+      ) : activeTab === 'timeline' ? (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '20px 0' }}>
+          <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '32px' }}>Career Timeline</h2>
+          <div style={{ position: 'relative', paddingLeft: '40px' }}>
+            <div style={{ position: 'absolute', left: '11px', top: '0', bottom: '0', width: '2px', background: 'var(--border)' }} />
+            
+            {applications.slice(0, 5).map((app, i) => (
+              <div key={app.id} style={{ position: 'relative', marginBottom: '32px' }}>
+                <div style={{ position: 'absolute', left: '-40px', width: '24px', height: '24px', borderRadius: '50%', background: 'var(--bg-surface)', border: `2px solid ${STATUS_CONFIG[app.status]?.color || 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: STATUS_CONFIG[app.status]?.color || 'var(--text-3)' }} />
+                </div>
+                <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', marginLeft: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-1)' }}>{app.company_name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{new Date(app.applied_at).toLocaleDateString()}</div>
+                  </div>
+                  <div style={{ fontSize: '14px', color: 'var(--text-2)', marginBottom: '12px' }}>{app.role_title}</div>
+                  <div style={{ display: 'inline-block', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: `${STATUS_CONFIG[app.status]?.color}15`, color: STATUS_CONFIG[app.status]?.color }}>
+                    Status: {STATUS_CONFIG[app.status]?.label}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      ) : activeTab === 'resources' ? (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '20px 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-1)' }}>Resource Library</h2>
+            <button className="btn-primary" style={{ padding: '10px 20px', borderRadius: '12px', fontSize: '13px' }}>+ Add Resource</button>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+            {[
+              { title: 'System Design Primer', type: 'GitHub Repo', tag: 'High Priority', url: 'https://github.com/donnemartin/system-design-primer' },
+              { title: 'LeetCode Patterns', type: 'Article', tag: 'Review', url: '#' },
+              { title: 'Behavioral Prep (STAR)', type: 'Google Doc', tag: 'Drafts', url: '#' },
+              { title: 'Frontend Interview Guide', type: 'Website', tag: 'Reading', url: '#' }
+            ].map((res, idx) => (
+              <div key={idx} className="card-hover" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-1)' }}>{res.title}</div>
+                  <div style={{ fontSize: '11px', padding: '4px 8px', background: 'var(--accent-dim)', color: 'var(--accent)', borderRadius: '6px', fontWeight: 600 }}>{res.tag}</div>
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--text-3)', marginBottom: '24px' }}>{res.type}</div>
+                <div style={{ marginTop: 'auto' }}>
+                  <a href={res.url} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: 'var(--color-rust)', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    Open Resource ↗
+                  </a>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       ) : activeTab === 'trajectory' ? (
@@ -681,7 +737,10 @@ export default function Placements() {
         {showAppModal && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAppModal(false)} style={{ position: 'absolute', inset: 0, background: 'var(--glass-bg)', backdropFilter: 'blur(10px)' }} />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="modal-content">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="modal-content" style={{ position: 'relative' }}>
+              <button type="button" onClick={() => setShowAppModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}>
+                <X size={20} />
+              </button>
               <h2 style={{ fontSize: '28px', fontWeight: 500, fontFamily: 'var(--font-serif)', marginBottom: '32px' }}>{editingApp ? 'Update Application' : 'Track Opportunity'}</h2>
               <form onSubmit={handleSaveApplication} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -746,7 +805,10 @@ export default function Placements() {
         {showResumeModal && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowResumeModal(false)} style={{ position: 'absolute', inset: 0, background: 'var(--glass-bg)', backdropFilter: 'blur(10px)' }} />
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="modal-content" style={{ maxWidth: '440px' }}>
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="modal-content" style={{ maxWidth: '440px', position: 'relative' }}>
+              <button type="button" onClick={() => setShowResumeModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}>
+                <X size={20} />
+              </button>
               <h2 style={{ fontSize: '28px', fontWeight: 500, fontFamily: 'var(--font-serif)', marginBottom: '32px' }}>Archive Version</h2>
               <form onSubmit={handleCreateResume} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div className="input-group">

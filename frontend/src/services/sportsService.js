@@ -201,6 +201,11 @@ export const fetchCricket = async () => {
             const team = t.toLowerCase();
             return t1.includes(team) || t2.includes(team);
         });
+
+        // 6. Explicitly exclude English counties
+        const englishCounties = ['middlesex', 'yorkshire', 'surrey', 'somerset', 'lancashire', 'essex', 'warwickshire', 'hampshire', 'sussex', 'kent', 'nottinghamshire', 'glamorgan', 'leicestershire', 'derbyshire', 'worcestershire', 'gloucestershire', 'durham', 'northamptonshire', 'county', 'vitality blast'];
+        const isCounty = englishCounties.some(c => title.includes(c));
+        if (isCounty) return false;
         
         // Final Filter: Must be IPL, India, or Top 8 International
         // We include IPL and India always (Men's), and Top 8 if it's a recognized match type

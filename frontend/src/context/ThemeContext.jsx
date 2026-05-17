@@ -29,7 +29,7 @@ export function ThemeProvider({ children }) {
         setTheme(prev => prev === 'dark' ? 'light' : 'dark');
     }, []);
 
-    const value = { theme, toggleTheme };
+    const value = { theme, setTheme, toggleTheme };
 
     return (
         <ThemeContext.Provider value={value}>
