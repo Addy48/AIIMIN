@@ -21,9 +21,9 @@ export default function PersonalityForge({ userId, isDark, onClose }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const border = isDark ? '#222' : '#e5e7eb';
-  const text1 = isDark ? '#ededed' : '#111';
-  const text2 = isDark ? '#a1a1aa' : '#6b7280';
+  const border = 'var(--color-border)';
+  const text1 = 'var(--color-text-1)';
+  const text2 = 'var(--color-text-2)';
 
   useEffect(() => {
     async function loadLatest() {
@@ -92,7 +92,7 @@ export default function PersonalityForge({ userId, isDark, onClose }) {
           placeholder="What are the non-negotiables that drive you?"
           style={{ 
             width: '100%', minHeight: '100px', padding: '12px', borderRadius: '12px', 
-            border: `1px solid ${border}`, background: isDark ? '#111' : '#f9fafb',
+            border: `1px solid ${border}`, background: 'var(--color-surface)',
             color: text1, fontSize: '13px', fontFamily: 'var(--font-sans)', resize: 'none', outline: 'none'
           }}
         />

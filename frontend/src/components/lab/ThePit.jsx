@@ -15,9 +15,9 @@ export default function ThePit({ userId, isDark, onClose }) {
   const [loading, setLoading] = useState(true);
   const [logging, setLogging] = useState(null);
 
-  const border = isDark ? '#222' : '#e5e7eb';
-  const text1 = isDark ? '#ededed' : '#111';
-  const text2 = isDark ? '#a1a1aa' : '#6b7280';
+  const border = 'var(--color-border)';
+  const text1 = 'var(--color-text-1)';
+  const text2 = 'var(--color-text-2)';
 
   useEffect(() => {
     fetchTodayLogs();
@@ -69,7 +69,7 @@ export default function ThePit({ userId, isDark, onClose }) {
               disabled={done || logging === c.id}
               style={{
                 padding: '20px', borderRadius: '16px', border: `1px solid ${done ? '#22C55E' : border}`,
-                background: done ? 'rgba(34,197,94,0.08)' : (isDark ? '#111' : '#f9fafb'),
+                background: done ? 'rgba(34,197,94,0.08)' : 'var(--color-surface)',
                 cursor: done ? 'default' : 'pointer', textAlign: 'left', transition: 'all 200ms ease',
                 display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative', overflow: 'hidden'
               }}

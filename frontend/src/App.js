@@ -14,6 +14,8 @@ import Contact from './pages/legal/Contact';
 // Layout & eager components
 import MobileApp from './components/mobile/MobileApp';
 import DashboardLayout from './components/layout/DashboardLayout';
+import FeedbackWidget from './components/FeedbackWidget';
+import ProductTour from './components/onboarding/ProductTour';
 
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
@@ -32,7 +34,11 @@ const LabFullPage = React.lazy(() => import('./pages/LabFullPage'));
 const Placements = React.lazy(() => import('./pages/Placements'));
 const SportsPage = React.lazy(() => import('./pages/Sports'));
 const JournalPage = React.lazy(() => import('./pages/Journal'));
-const HabitsPage  = React.lazy(() => import('./pages/Habits'));
+const HabitsPage    = React.lazy(() => import('./pages/Habits'));
+const GoalsPage     = React.lazy(() => import('./pages/Goals'));
+const IdentityPage  = React.lazy(() => import('./pages/Identity'));
+const NotesPage     = React.lazy(() => import('./pages/Notes'));
+const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -102,6 +108,10 @@ function AppContent({ user }) {
           <Route path="/lab" element={<Lazy><LabFullPage /></Lazy>} />
           <Route path="/placements" element={<Lazy><Placements /></Lazy>} />
           <Route path="/habits"     element={<Lazy><HabitsPage /></Lazy>} />
+          <Route path="/goals"       element={<Lazy><GoalsPage /></Lazy>} />
+          <Route path="/identity"    element={<Lazy><IdentityPage /></Lazy>} />
+          <Route path="/notes"       element={<Lazy><NotesPage /></Lazy>} />
+          <Route path="/discipline"  element={<Lazy><DisciplinePage /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}
@@ -141,6 +151,10 @@ function AppContent({ user }) {
           </div>
         </footer>
       )}
+
+      {/* Global Widgets */}
+      {!isMobile && user && <ProductTour />}
+      {!isMobile && user && <FeedbackWidget />}
     </div>
   );
 }

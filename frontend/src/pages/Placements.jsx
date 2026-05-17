@@ -34,7 +34,8 @@ export default function Placements() {
     resume_id: '', 
     linkedin_url: '', 
     job_post_url: '', 
-    notes: '' 
+    notes: '',
+    last_contacted: ''
   });
   const [resumeForm, setResumeForm] = useState({ title: '', target_role: '', link_url: '' });
 
@@ -101,7 +102,7 @@ export default function Placements() {
       
       setShowAppModal(false);
       setEditingApp(null);
-      setAppForm({ company_name: '', role_title: '', status: 'wishlist', resume_id: '', linkedin_url: '', job_post_url: '', notes: '' });
+      setAppForm({ company_name: '', role_title: '', status: 'wishlist', resume_id: '', linkedin_url: '', job_post_url: '', notes: '', last_contacted: '' });
       toast.update(tid, 'Application synchronized ✓', 'success');
     } catch (err) {
       toast.update(tid, 'Sync failed', 'error');
@@ -247,7 +248,7 @@ export default function Placements() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <button 
-                onClick={() => { setEditingApp(null); setAppForm({ company_name: '', role_title: '', status: 'wishlist', resume_id: '', linkedin_url: '', job_post_url: '', notes: '' }); setShowAppModal(true); }} 
+                onClick={() => { setEditingApp(null); setAppForm({ company_name: '', role_title: '', status: 'wishlist', resume_id: '', linkedin_url: '', job_post_url: '', notes: '', last_contacted: '' }); setShowAppModal(true); }} 
                 style={{ background: 'var(--text-1)', color: 'var(--bg-primary)', border: 'none', height: '100%', borderRadius: '12px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
               >
                 + Track New Opening
@@ -377,6 +378,11 @@ export default function Placements() {
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)', letterSpacing: '-0.01em' }}>{app.company_name}</div>
                             <div style={{ fontSize: '12px', color: 'var(--color-text-2)', marginTop: '4px', fontWeight: 500 }}>{app.role_title}</div>
+                            {app.last_contacted && (
+                              <div style={{ fontSize: '11px', color: 'var(--color-rust)', marginTop: '6px', fontWeight: 600 }}>
+                                ⏱ Last Contact: {new Date(app.last_contacted).toLocaleDateString()}
+                              </div>
+                            )}
                           </div>
                           <button 
                             onClick={() => { setEditingApp(app); setAppForm(app); setShowAppModal(true); }}
@@ -592,6 +598,26 @@ export default function Placements() {
                   ))}
                 </div>
               </div>
+
+              {/* Interview Prep Quests */}
+              <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
+                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '32px' }}>Interview Prep Quests</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {[
+                    { label: 'System Design Mock', type: 'Technical', status: 'Pending', color: 'var(--color-rust)' },
+                    { label: 'Behavioral Stories (STAR)', type: 'Soft Skills', status: 'In Progress', color: '#3B82F6' },
+                    { label: 'LeetCode Hard Array/String', type: 'Coding', status: 'Completed', color: '#10B981' }
+                  ].map((s, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-1)' }}>{s.label}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', marginTop: '4px' }}>{s.type}</div>
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: s.color, background: `${s.color}15`, padding: '4px 12px', borderRadius: '12px' }}>{s.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
           </div>
         </motion.div>
       ) : (
@@ -693,6 +719,11 @@ export default function Placements() {
                     <label>Job Post URL</label>
                     <input value={appForm.job_post_url || ''} onChange={e => setAppForm({...appForm, job_post_url: e.target.value})} placeholder="https://..." />
                   </div>
+                </div>
+
+                <div className="input-group">
+                  <label>Last Contacted Date</label>
+                  <input type="date" value={appForm.last_contacted || ''} onChange={e => setAppForm({...appForm, last_contacted: e.target.value})} />
                 </div>
 
                 <div className="input-group">

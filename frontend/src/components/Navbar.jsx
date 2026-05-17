@@ -10,12 +10,14 @@ import Logo from './Logo';
 const NAV_LINKS = [
   { to: '/overview',    label: 'Today' },
   { to: '/habits',      label: 'Habits' },
+  { to: '/goals',       label: 'Goals' },
   { to: '/journal',     label: 'Journal' },
+  { to: '/notes',       label: 'Notes' },
   { to: '/finance',     label: 'Finance' },
   { to: '/calendar',    label: 'Calendar' },
   { to: '/placements',  label: 'Placement' },
   { to: '/sports',      label: 'Sports' },
-  { to: '/insights',    label: 'Skills' },
+  { to: '/discipline',  label: 'Discipline' },
 ];
 
 const Navbar = ({ user }) => {
@@ -50,13 +52,17 @@ const Navbar = ({ user }) => {
 
         {/* LEFT: Brand */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <Link to="/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Logo size={28} />
-            <span style={{
-              fontSize: '16px', fontWeight: 700, letterSpacing: '-0.03em',
-              color: isDark ? '#FFFFFF' : '#000000', fontFamily: 'var(--font-sans)',
-            }}>AIIMIN</span>
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Link to="/identity" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <Logo size={28} />
+            </Link>
+            <Link to="/overview" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+              <span style={{
+                fontSize: '16px', fontWeight: 700, letterSpacing: '-0.03em',
+                color: isDark ? '#FFFFFF' : '#000000', fontFamily: 'var(--font-sans)',
+              }}>AIIMIN</span>
+            </Link>
+          </div>
         </div>
 
         {/* CENTER: Nav links — centered perfectly */}

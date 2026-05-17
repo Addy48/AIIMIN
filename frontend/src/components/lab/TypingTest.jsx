@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Settings, RefreshCw, Trophy, Target, Clock, AlertCircle, X, Zap } from 'lucide-react';
+import { useThemeContext } from '../../context/ThemeContext';
 
 const COMMON_WORDS = [
     "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at", 
@@ -11,7 +13,7 @@ const COMMON_WORDS = [
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
-const generateWords = (count = 100) => {
+const generateWords = (count = 120) => {
     let result = [];
     for (let i = 0; i < count; i++) {
         result.push(COMMON_WORDS[Math.floor(Math.random() * COMMON_WORDS.length)]);
@@ -19,9 +21,13 @@ const generateWords = (count = 100) => {
     return result.join(' ');
 };
 
-export default function TypingTest({ onComplete }) {
+export default function TypingTest({ onComplete, onClose }) {
+    const { theme } = useThemeContext();
+    const isDark = theme === 'dark';
+    
     const [phase, setPhase] = useState('ready'); // ready | running | done
-    const [config, setConfig] = useState({ time: 30 }); // 15 | 30 | 60
+    const [config, setConfig] = useState({ time: 30, isCustom: false });
+    const [customTime, setCustomTime] = useState(30);
     const [text, setText] = useState('');
     const [input, setInput] = useState('');
     const [timeLeft, setTimeLeft] = useState(30);
@@ -34,18 +40,19 @@ export default function TypingTest({ onComplete }) {
     const inputRef = useRef(null);
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
+    const scrollRef = useRef(null);
 
     const resetTest = useCallback(() => {
-        setText(generateWords(80));
+        setText(generateWords(150));
         setPhase('ready');
         setInput('');
-        setTimeLeft(config.time);
+        setTimeLeft(config.isCustom ? customTime : config.time);
         setWpm(0);
         setAccuracy(100);
         setResult(null);
         startTimeRef.current = null;
         if (timerRef.current) clearInterval(timerRef.current);
-    }, [config.time]);
+    }, [config.time, config.isCustom, customTime]);
 
     useEffect(() => {
         resetTest();
@@ -54,10 +61,10 @@ export default function TypingTest({ onComplete }) {
     const startTest = useCallback(() => {
         setPhase('running');
         setInput('');
-        setTimeLeft(config.time);
+        setTimeLeft(config.isCustom ? customTime : config.time);
         startTimeRef.current = Date.now();
         setTimeout(() => inputRef.current?.focus(), 10);
-    }, [config.time]);
+    }, [config.time, config.isCustom, customTime]);
 
     useEffect(() => {
         if (phase !== 'running') return;
@@ -76,7 +83,7 @@ export default function TypingTest({ onComplete }) {
 
     const handleInput = (e) => {
         const val = e.target.value;
-        if (phase === 'ready') {
+        if (phase === 'ready' && val.length > 0) {
             startTest();
         }
         if (phase !== 'running' && phase !== 'ready') return;
@@ -90,7 +97,6 @@ export default function TypingTest({ onComplete }) {
 
         const elapsedSeconds = (Date.now() - startTimeRef.current) / 1000;
         if (elapsedSeconds > 0) {
-            // WPM formula: (chars / 5) / (seconds / 60)
             const currentWpm = Math.round((correctChars / 5) / (elapsedSeconds / 60));
             setWpm(currentWpm);
         }
@@ -108,7 +114,11 @@ export default function TypingTest({ onComplete }) {
             const res = await fetch(`${API_BASE}/lab/practice/typing`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ wpm, accuracy_pct: accuracy, duration_sec: config.time - timeLeft }),
+                body: JSON.stringify({ 
+                    wpm, 
+                    accuracy_pct: accuracy, 
+                    duration_sec: (config.isCustom ? customTime : config.time) - timeLeft 
+                }),
             });
             const data = await res.json();
             setResult(data);
@@ -124,79 +134,190 @@ export default function TypingTest({ onComplete }) {
     const text2 = 'var(--color-text-2)';
     const text3 = 'var(--color-text-3)';
     const accent = 'var(--color-accent)';
-    const errorColor = '#ca4754';
+    const surface = 'var(--color-surface)';
+    const border = 'var(--color-border)';
+    const errorColor = '#ff4d4d';
 
     return (
-        <div style={{ padding: '20px', maxWidth: '900px', margin: '0 auto' }}>
-            {/* Monkeytype Style Toolbar */}
-            {phase !== 'done' && (
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    gap: '24px', 
-                    marginBottom: '40px',
-                    background: 'rgba(0,0,0,0.03)',
-                    padding: '8px 24px',
-                    borderRadius: '12px',
-                    width: 'fit-content',
-                    margin: '0 auto 40px'
-                }}>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                        {[15, 30, 60].map(t => (
-                            <button
-                                key={t}
-                                onClick={() => setConfig({ ...config, time: t })}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: config.time === t ? accent : text3,
-                                    fontSize: '12px',
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    transition: 'color 0.2s'
-                                }}
-                            >
-                                {t}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+        <div style={{ 
+            padding: '40px 20px', 
+            maxWidth: '1000px', 
+            margin: '0 auto',
+            minHeight: '400px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '40px'
+        }}>
+
+            {/* Heat Indicator Background */}
+            {phase === 'running' && (
+                <motion.div 
+                    animate={{ 
+                        opacity: [0.02, 0.05 + (wpm / 200) * 0.1, 0.02],
+                        scale: [1, 1.05, 1]
+                    }}
+                    transition={{
+                        duration: Math.max(0.5, 2 - (wpm / 50)),
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: `radial-gradient(circle at center, ${accent} 0%, transparent 70%)`,
+                        pointerEvents: 'none',
+                        zIndex: -1
+                    }}
+                />
             )}
 
-            <div style={{ position: 'relative' }}>
+            {/* Header & Controls */}
+            <AnimatePresence>
+                {phase !== 'done' && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            background: surface,
+                            backdropFilter: 'blur(20px)',
+                            padding: '12px 24px',
+                            borderRadius: '20px',
+                            border: `1px solid ${border}`
+                        }}
+                    >
+                        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', gap: '8px', color: text3, fontSize: '12px', fontWeight: 700 }}>
+                                <Clock size={14} /> Time
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                {[15, 30, 60].map(t => (
+                                    <button
+                                        key={t}
+                                        onClick={() => setConfig({ time: t, isCustom: false })}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: !config.isCustom && config.time === t ? accent : text3,
+                                            fontSize: '13px',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            transform: !config.isCustom && config.time === t ? 'scale(1.1)' : 'scale(1)'
+                                        }}
+                                    >
+                                        {t}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => setConfig({ ...config, isCustom: true })}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: config.isCustom ? accent : text3,
+                                        fontSize: '13px',
+                                        fontWeight: 700,
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Custom
+                                </button>
+                                {config.isCustom && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                        <input 
+                                            type="number"
+                                            value={customTime}
+                                            onChange={(e) => setCustomTime(Math.max(5, parseInt(e.target.value) || 5))}
+                                            style={{
+                                                width: '50px',
+                                                background: 'transparent',
+                                                border: `1px solid ${accent}`,
+                                                borderRadius: '4px',
+                                                color: accent,
+                                                fontSize: '12px',
+                                                textAlign: 'center',
+                                                padding: '2px',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                        <button onClick={() => setConfig({ ...config, isCustom: false, time: 60 })} style={{ background:'transparent', border:'none', color:text3, cursor:'pointer', padding:'2px', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:'4px' }}>
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                         <div style={{ display: 'flex', gap: '24px' }}>
+                           <button onClick={resetTest} style={{ background: 'var(--color-surface)', border: `1px solid ${border}`, color: text3, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 600, padding: '8px 16px', borderRadius: '10px' }}>
+                               <RefreshCw size={14} /> Reset
+                           </button>
+                         </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <div style={{ position: 'relative', flex: 1 }}>
                 <AnimatePresence mode="wait">
                     {phase === 'done' ? (
                         <motion.div
                             key="done"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            style={{ textAlign: 'center', padding: '40px 0' }}
+                            initial={{ opacity: 0, scale: 0.98 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            style={{ 
+                                background: surface,
+                                backdropFilter: 'blur(30px)',
+                                borderRadius: '32px',
+                                border: `1px solid ${border}`,
+                                padding: '64px',
+                                textAlign: 'center',
+                                boxShadow: '0 24px 64px rgba(0,0,0,0.4)'
+                            }}
                         >
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '60px', marginBottom: '40px' }}>
-                                <div>
-                                    <div style={{ fontSize: '14px', color: text3, marginBottom: '8px' }}>wpm</div>
-                                    <div style={{ fontSize: '64px', fontWeight: 800, color: accent, lineHeight: 1 }}>{wpm}</div>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '14px', color: text3, marginBottom: '8px' }}>acc</div>
-                                    <div style={{ fontSize: '64px', fontWeight: 800, color: accent, lineHeight: 1 }}>{accuracy}%</div>
-                                </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '80px', marginBottom: '48px' }}>
+                                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                                    <div style={{ fontSize: '14px', color: text3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>WPM</div>
+                                    <div style={{ fontSize: '84px', fontWeight: 900, color: accent, lineHeight: 1, letterSpacing: '-0.04em' }}>{wpm}</div>
+                                </motion.div>
+                                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                                    <div style={{ fontSize: '14px', color: text3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Accuracy</div>
+                                    <div style={{ fontSize: '84px', fontWeight: 900, color: text1, lineHeight: 1, letterSpacing: '-0.04em' }}>{accuracy}<span style={{ fontSize: '32px', color: text3 }}>%</span></div>
+                                </motion.div>
                             </div>
                             
                             <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-                                <button onClick={handleSave} disabled={saving} className="lab-retry-btn" style={{ padding: '14px 32px' }}>
-                                    {saving ? 'Saving...' : 'Sync Session'}
+                                <button 
+                                    onClick={handleSave} 
+                                    disabled={saving}
+                                    style={{ 
+                                        background: accent,
+                                        color: '#fff',
+                                        border: 'none',
+                                        padding: '16px 40px',
+                                        borderRadius: '16px',
+                                        fontWeight: 800,
+                                        fontSize: '15px',
+                                        cursor: 'pointer',
+                                        boxShadow: `0 8px 24px ${accent}40`,
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {saving ? 'Syncing...' : 'Log Practice'}
                                 </button>
                                 <button onClick={resetTest} style={{ 
-                                    background: 'none', 
-                                    border: '1px solid var(--color-border)', 
-                                    padding: '14px 32px', 
-                                    borderRadius: '12px', 
-                                    color: text2, 
-                                    fontWeight: 600,
-                                    cursor: 'pointer'
+                                    background: 'var(--color-elevated)', 
+                                    border: `1px solid ${border}`, 
+                                    padding: '16px 40px', 
+                                    borderRadius: '16px', 
+                                    color: text1, 
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    fontSize: '15px'
                                 }}>
-                                    Restart
+                                    Try Again
                                 </button>
                             </div>
                         </motion.div>
@@ -206,8 +327,13 @@ export default function TypingTest({ onComplete }) {
                             style={{ 
                                 position: 'relative', 
                                 cursor: 'text',
-                                filter: isFocused ? 'none' : 'blur(4px)',
-                                transition: 'filter 0.3s ease'
+                                background: 'var(--color-elevated)',
+                                border: `1px solid ${border}`,
+                                borderRadius: '24px',
+                                padding: '40px 48px',
+                                boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.3)' : '0 4px 24px rgba(0,0,0,0.06)',
+                                filter: (phase === 'running' && !isFocused) ? 'blur(4px)' : 'none',
+                                transition: 'filter 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                             }}
                             onClick={() => inputRef.current?.focus()}
                         >
@@ -222,34 +348,80 @@ export default function TypingTest({ onComplete }) {
                                 autoFocus
                             />
 
-                            {/* Live Timer (Monkeytype style) */}
+                            {/* Live Metrics Float */}
                             <div style={{ 
-                                position: 'absolute', 
-                                top: '-30px', 
-                                left: '0', 
-                                fontSize: '24px', 
-                                fontWeight: 700, 
-                                color: accent,
+                                display: 'flex',
+                                gap: '32px',
+                                marginBottom: '32px',
                                 opacity: phase === 'running' ? 1 : 0,
-                                transition: 'opacity 0.3s'
+                                transition: 'opacity 0.5s',
+                                height: phase === 'running' ? 'auto' : 0,
+                                overflow: 'hidden'
                             }}>
-                                {timeLeft}
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                                    <span style={{ fontSize: '32px', fontWeight: 800, color: accent, fontFamily: 'var(--font-mono)' }}>{timeLeft}</span>
+                                    <span style={{ fontSize: '12px', color: text3, fontWeight: 700 }}>SEC</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                                    <span style={{ fontSize: '32px', fontWeight: 800, color: accuracy < 95 ? errorColor : '#10b981', fontFamily: 'var(--font-mono)' }}>{accuracy}%</span>
+                                    <span style={{ fontSize: '12px', color: text3, fontWeight: 700 }}>ACC</span>
+                                </div>
+                                {wpm > 80 && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#f59e0b', fontSize: '12px', fontWeight: 900, textTransform: 'uppercase' }}
+                                    >
+                                        <Zap size={14} fill="#f59e0b" /> Heat Streak
+                                    </motion.div>
+                                )}
                             </div>
 
+                            {/* Ready state — click to start overlay */}
+                            {phase === 'ready' && (
+                                <div style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '24px',
+                                    background: isDark ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.6)',
+                                    backdropFilter: 'blur(2px)',
+                                    zIndex: 5,
+                                    gap: '12px',
+                                    pointerEvents: 'none'
+                                }}>
+                                    <div style={{ fontSize: '32px' }}>⌨️</div>
+                                    <div style={{ fontSize: '18px', fontWeight: 800, color: text1 }}>Start typing to begin</div>
+                                    <div style={{ fontSize: '13px', color: text3, fontWeight: 600 }}>The timer starts with your first keystroke</div>
+                                </div>
+                            )}
+
                             <div style={{ 
-                                fontSize: '24px', 
-                                lineHeight: '1.5', 
-                                fontFamily: 'var(--font-mono)', 
-                                color: text3, 
+                                fontSize: '22px', 
+                                lineHeight: '2.0', 
+                                fontFamily: '"Fira Code", "Roboto Mono", monospace', 
+                                color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.35)', 
                                 whiteSpace: 'pre-wrap',
-                                letterSpacing: '0.02em',
+                                letterSpacing: '0.01em',
                                 wordBreak: 'break-word',
-                                textAlign: 'left'
+                                textAlign: 'left',
+                                maxWidth: '100%',
+                                userSelect: 'none'
                             }}>
                                 {text.split('').map((char, i) => {
-                                    let color = text3;
+                                    let color = isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.5)';
+                                    let decoration = 'none';
+                                    
                                     if (i < input.length) {
-                                        color = input[i] === char ? text1 : errorColor;
+                                        if (input[i] === char) {
+                                            color = isDark ? '#ffffff' : 'var(--color-text-1)';
+                                        } else {
+                                            color = errorColor;
+                                            decoration = 'underline';
+                                        }
                                     }
                                     
                                     const isCurrent = i === input.length;
@@ -258,7 +430,8 @@ export default function TypingTest({ onComplete }) {
                                         <span key={i} style={{ 
                                             color, 
                                             position: 'relative',
-                                            transition: 'color 0.1s'
+                                            transition: 'color 0.1s',
+                                            textDecoration: decoration
                                         }}>
                                             {isCurrent && phase !== 'done' && (
                                                 <motion.div
@@ -266,14 +439,15 @@ export default function TypingTest({ onComplete }) {
                                                     style={{
                                                         position: 'absolute',
                                                         left: '-1px',
-                                                        top: '15%',
-                                                        width: '2px',
-                                                        height: '70%',
+                                                        top: '10%',
+                                                        width: '2.5px',
+                                                        height: '80%',
                                                         background: accent,
-                                                        boxShadow: `0 0 10px ${accent}`
+                                                        boxShadow: `0 0 15px ${accent}`,
+                                                        borderRadius: '2px'
                                                     }}
                                                     animate={{ opacity: [1, 0, 1] }}
-                                                    transition={{ repeat: Infinity, duration: 0.8 }}
+                                                    transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
                                                 />
                                             )}
                                             {char}
@@ -287,20 +461,36 @@ export default function TypingTest({ onComplete }) {
                                     position: 'absolute',
                                     inset: 0,
                                     display: 'flex',
+                                    flexDirection: 'column',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     zIndex: 10,
-                                    color: text2,
-                                    fontWeight: 600,
+                                    color: 'var(--color-text-1)',
+                                    background: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.75)',
+                                    borderRadius: '24px',
+                                    backdropFilter: 'blur(4px)',
                                     pointerEvents: 'none'
                                 }}>
-                                    Click here to resume focus
+                                    <AlertCircle size={32} style={{ marginBottom: '16px', color: accent }} />
+                                    <div style={{ fontSize: '18px', fontWeight: 700 }}>Paused</div>
+                                    <div style={{ fontSize: '14px', color: text3, marginTop: '4px' }}>Click to resume</div>
                                 </div>
                             )}
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* Bottom Tip */}
+            {phase === 'ready' && (
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    style={{ textAlign: 'center', color: text3, fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em' }}
+                >
+                    TYPE TO START
+                </motion.div>
+            )}
         </div>
     );
 }
