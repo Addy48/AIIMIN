@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Square, AlertTriangle, TreePine, Leaf, Info } from 'lucide-react';
+import { Play, Square, AlertTriangle, TreePine, Leaf, Info, Music, SkipForward, Volume2 } from 'lucide-react';
 import toast from '../utils/toast';
 
 export default function FocusRoom() {
@@ -9,8 +9,38 @@ export default function FocusRoom() {
     const [duration, setDuration] = useState(25 * 60);
     const [treeLevel, setTreeLevel] = useState(0); // 0 (seed) to 4 (full tree)
     
+    // Audio Player State
+    const [audioFiles, setAudioFiles] = useState([]);
+    const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
+    
     const intervalRef = useRef(null);
     const visibilityTimeoutRef = useRef(null);
+    const audioRef = useRef(null);
+
+    const handleAudioUpload = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            const urls = files.map(f => ({ name: f.name, url: URL.createObjectURL(f) }));
+            setAudioFiles(urls);
+            setCurrentAudioIndex(0);
+            if (audioRef.current) {
+                audioRef.current.load();
+                audioRef.current.play().catch(err => console.log('Auto-play prevented', err));
+            }
+        }
+    };
+
+    const playNextAudio = () => {
+        if (audioFiles.length > 0) {
+            setCurrentAudioIndex(prev => (prev + 1) % audioFiles.length);
+        }
+    };
+    
+    useEffect(() => {
+        if (audioRef.current && audioFiles.length > 0) {
+            audioRef.current.play().catch(e => console.log('Auto-play prevented', e));
+        }
+    }, [currentAudioIndex]);
 
     // Handle visibility change
     useEffect(() => {
@@ -198,6 +228,55 @@ export default function FocusRoom() {
                 <p style={{ fontSize: '13px', color: 'var(--text-2)', margin: 0, lineHeight: 1.5 }}>
                     <strong>How it works:</strong> The Focus Room forces you to concentrate. Once you start the timer, you cannot navigate to another tab or app. If the window loses focus for more than 5 seconds, your tree will die. Use this for deep, uninterrupted work sessions.
                 </p>
+            </div>
+
+            {/* Audio Player Section */}
+            <div style={{ marginTop: '24px', padding: '24px', borderRadius: '24px', background: 'var(--bg-surface)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-1)', fontWeight: 600 }}>
+                        <Music size={18} />
+                        Ambient Playlist
+                    </div>
+                    <label style={{ cursor: 'pointer', fontSize: '12px', fontWeight: 600, padding: '8px 16px', background: 'var(--bg-elevated)', borderRadius: '12px', color: 'var(--text-2)', border: '1px solid var(--border)' }}>
+                        Add Local Songs
+                        <input type="file" accept="audio/*" multiple onChange={handleAudioUpload} style={{ display: 'none' }} />
+                    </label>
+                </div>
+                
+                {audioFiles.length > 0 ? (
+                    <div style={{ background: 'var(--bg-elevated)', padding: '16px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)' }}>
+                                <Volume2 size={20} />
+                            </div>
+                            <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '200px' }}>
+                                <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {audioFiles[currentAudioIndex].name}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-3)' }}>
+                                    Track {currentAudioIndex + 1} of {audioFiles.length}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <audio 
+                                ref={audioRef}
+                                src={audioFiles[currentAudioIndex].url} 
+                                controls 
+                                onEnded={playNextAudio}
+                                style={{ height: '32px', width: '200px' }}
+                            />
+                            <button onClick={playNextAudio} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-2)' }}>
+                                <SkipForward size={20} />
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div style={{ fontSize: '13px', color: 'var(--text-3)', textAlign: 'center', padding: '20px' }}>
+                        No songs loaded. Add some calm local music to stay focused.
+                    </div>
+                )}
             </div>
         </div>
     );

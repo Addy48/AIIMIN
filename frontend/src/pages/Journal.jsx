@@ -93,10 +93,11 @@ const JournalPage = () => {
 
   const handleNewEntry = () => {
     const today = new Date().toISOString().split('T')[0];
+    const initialTemplate = `# Mindset & Momentum\n\n## 🎯 Core Aims & Focus for Today\n- \n\n## 🔥 Achievements & Wins\n- \n\n## 🌱 Approach to Life & Reflections\n- \n`;
     const newEntry = {
       id: 'temp-' + Date.now(),
       date: today,
-      encrypted_content: '',
+      encrypted_content: initialTemplate,
       mood: 3,
       energy_level: 3,
       sleep_hours: 7
@@ -205,7 +206,7 @@ const JournalPage = () => {
         insertion = '\n---\n';
         break;
       case 'template':
-        insertion = '\n### Daily Intentions\n- \n\n### What went well?\n- \n\n### What could be better?\n- \n';
+        insertion = '\n# Mindset & Momentum\n\n## 🎯 Core Aims & Focus\n- \n\n## 🔥 Achievements & Wins\n- \n\n## 🌱 Approach to Life\n- \n';
         break;
       case 'list':
         insertion = '- ';
@@ -542,9 +543,9 @@ const JournalPage = () => {
               animate={{ opacity: 1, y: 0 }}
             >
               <div style={{ fontSize: '64px', marginBottom: '24px', filter: 'grayscale(0.5)' }}>📝</div>
-              <h3 style={{ fontSize: '20px', color: text1, marginBottom: '12px', fontWeight: 700 }}>Choose a page to write</h3>
+              <h3 style={{ fontSize: '20px', color: text1, marginBottom: '12px', fontWeight: 700 }}>Architect Your Mindset</h3>
               <p style={{ fontSize: '15px', maxWidth: '340px', margin: '0 auto', color: text3, lineHeight: 1.6 }}>
-                "The pages of your journal are the only place where you can be completely yourself."
+                "This isn't a diary. It's a structured log of your ambitions, momentum, and approach to life."
               </p>
               <button 
                 onClick={handleNewEntry}
