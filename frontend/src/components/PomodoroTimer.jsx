@@ -7,8 +7,12 @@ import toast from '../utils/toast';
 import { playSound, sendNotification, requestNotificationPermission } from '../utils/soundEngine';
 import { POMODORO_XP, getRank } from '../utils/xpEngine';
 import PomodoroReflection from './pomodoro/PomodoroReflection';
+import { useThemeContext } from '../context/ThemeContext';
 
 const PomodoroTimer = ({ user, onClose }) => {
+    const { theme } = useThemeContext();
+    const isDark = theme === 'dark';
+
     const PRESETS = [
         { work: 15, rest: 5, label: 'Quick' },
         { work: 25, rest: 5, label: 'Standard' },
@@ -135,7 +139,7 @@ const PomodoroTimer = ({ user, onClose }) => {
     };
 
     const totalDuration = isBreak ? breakDuration * 60 : workDuration * 60;
-    const accentColor = isBreak ? '#10b981' : '#f59e0b';
+    const accentColor = isBreak ? 'var(--color-success)' : 'var(--color-rust)';
 
     const handleDurationEdit = (type, val) => {
         let n = parseInt(val, 10);
@@ -226,7 +230,7 @@ const PomodoroTimer = ({ user, onClose }) => {
 
                         <div style={{ position: 'relative', width: '180px', height: '180px', margin: '0 auto 32px' }}>
                             <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
-                                <circle cx="90" cy="90" r="84" stroke="rgba(255,255,255,0.03)" strokeWidth="6" fill="none" />
+                                <circle cx="90" cy="90" r="84" stroke="var(--color-border)" strokeWidth="6" fill="none" />
                                 <motion.circle
                                     cx="90" cy="90" r="84" 
                                     stroke={accentColor} 
@@ -252,20 +256,24 @@ const PomodoroTimer = ({ user, onClose }) => {
 
 
                         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '32px' }}>
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => { if (!isRunning) requestNotificationPermission(); setIsRunning(!isRunning); }}
                                 style={{
                                     width: '64px', height: '64px', borderRadius: '24px', border: 'none',
-                                    background: isRunning ? 'rgba(255,255,255,0.05)' : accentColor,
-                                    color: isRunning ? 'var(--color-text-1)' : '#fff',
+                                    background: isRunning ? 'var(--color-elevated)' : accentColor,
+                                    color: isRunning ? 'var(--color-text-1)' : '#ffffff',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     cursor: 'pointer', transition: 'all 0.2s',
-                                    boxShadow: isRunning ? 'none' : `0 8px 24px ${accentColor}40`,
+                                    boxShadow: isRunning ? 'none' : '0 8px 24px var(--color-accent-glow)',
                                 }}
                             >
                                 {isRunning ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" style={{ marginLeft: '4px' }} />}
-                            </button>
-                            <button
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05, background: 'var(--color-elevated)' }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={handleReset}
                                 style={{
                                     width: '64px', height: '64px', borderRadius: '24px', 
@@ -277,20 +285,23 @@ const PomodoroTimer = ({ user, onClose }) => {
                                 }}
                             >
                                 <RotateCcw size={20} />
-                            </button>
-                            <button
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                                 onClick={() => setShowConfig(!showConfig)}
                                 style={{
                                     width: '64px', height: '64px', borderRadius: '24px', 
                                     background: showConfig ? 'var(--color-elevated)' : 'var(--color-surface)',
-                                    border: `1px solid ${showConfig ? accentColor : 'var(--color-border)'}`,
+                                    border: '1px solid var(--color-border)',
+                                    borderColor: showConfig ? accentColor : 'var(--color-border)',
                                     color: showConfig ? accentColor : 'var(--color-text-3)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     cursor: 'pointer', transition: 'all 0.2s'
                                 }}
                             >
                                 <Settings size={20} />
-                            </button>
+                            </motion.button>
                         </div>
 
                         <AnimatePresence>
@@ -311,22 +322,25 @@ const PomodoroTimer = ({ user, onClose }) => {
 
                                         <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                                             {PRESETS.map((p, i) => (
-                                                <button
+                                                <motion.button
                                                     key={i}
+                                                    whileHover={isRunning ? {} : { scale: 1.05 }}
+                                                    whileTap={isRunning ? {} : { scale: 0.95 }}
                                                     onClick={() => handlePresetSelect(i)}
                                                     disabled={isRunning}
                                                     style={{
-                                                        flex: 1, padding: '16px 8px', borderRadius: '32px', fontSize: '18px', fontWeight: 800,
-                                                        border: 'none',
+                                                        flex: 1, padding: '16px 8px', borderRadius: '32px', fontSize: '16px', fontWeight: 800,
+                                                        border: selectedPreset === i ? 'none' : '1px solid var(--color-border)',
                                                         background: selectedPreset === i ? accentColor : 'var(--color-surface)',
-                                                        color: selectedPreset === i ? '#fff' : 'var(--color-text-1)',
+                                                        color: selectedPreset === i ? '#ffffff' : 'var(--color-text-2)',
                                                         cursor: isRunning ? 'not-allowed' : 'pointer',
                                                         transition: 'all 0.2s',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        boxShadow: selectedPreset === i ? '0 4px 12px var(--color-accent-glow)' : 'none',
                                                     }}
                                                 >
                                                     {p.work}m
-                                                </button>
+                                                </motion.button>
                                             ))}
                                         </div>
                                         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -367,13 +381,16 @@ const PomodoroTimer = ({ user, onClose }) => {
                     animate={{ opacity: 1 }}
                     style={{
                         position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.8)',
-                        backdropFilter: 'blur(10px)', zIndex: 100, borderRadius: '24px'
+                        alignItems: 'center', justifyContent: 'center', 
+                        background: 'var(--glass-bg)',
+                        border: '1px solid var(--color-border)',
+                        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+                        zIndex: 100, borderRadius: '24px'
                     }}
                 >
                     <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} style={{ fontSize: '64px', marginBottom: '16px' }}>🎯</motion.div>
-                    <div style={{ fontSize: '24px', fontWeight: 900, color: '#fff' }}>Session Complete</div>
-                    <div style={{ color: 'rgba(255,255,255,0.6)', marginTop: '8px' }}>Rest for {breakDuration} minutes</div>
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-text-1)' }}>Session Complete</div>
+                    <div style={{ color: 'var(--color-text-2)', marginTop: '8px', fontWeight: 600 }}>Rest for {breakDuration} minutes</div>
                 </motion.div>
             )}
         </div>

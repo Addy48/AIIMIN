@@ -355,3 +355,45 @@
   --glass-bg: rgba(62, 61, 50, 0.88);
   --glass-border: rgba(255, 255, 255, 0.06);
 }
+
+/* ────────────────────────────────────────────────────────
+   THEME: GRAPHITE GOLD
+───────────────────────────────────────────────────────── */
+[data-theme="graphite"] {
+  color-scheme: dark;
+  --color-base: #151515;
+  --color-surface: #202020;
+  --color-elevated: #2B2B2B;
+  --color-border: #343434;
+  --color-border-lit: #4A4A4A;
+  --color-text-1: #F3F0E8;
+  --color-text-2: #C2BBAE;
+  --color-text-3: #7B756B;
+  --color-accent: #D4AF37;
+  --color-success: #7FB069;
+  --color-warning: #D4AF37;
+  --color-danger: #C85C5C;
+  --glass-bg: rgba(32, 32, 32, 0.88);
+  --glass-border: rgba(212, 175, 55, 0.16);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: SAKURA LIGHT
+───────────────────────────────────────────────────────── */
+[data-theme="sakura"] {
+  color-scheme: light;
+  --color-base: #FFF7F8;
+  --color-surface: #FFFFFF;
+  --color-elevated: #FCE7EB;
+  --color-border: #F3CCD4;
+  --color-border-lit: #EAAEBB;
+  --color-text-1: #2A171C;
+  --color-text-2: #6D3B47;
+  --color-text-3: #A06A76;
+  --color-accent: #BE3455;
+  --color-success: #2F7D5A;
+  --color-warning: #B8872D;
+  --color-danger: #B4233F;
+  --glass-bg: rgba(255, 247, 248, 0.88);
+  --glass-border: rgba(190, 52, 85, 0.12);
+}

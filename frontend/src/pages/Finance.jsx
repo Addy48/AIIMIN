@@ -310,6 +310,13 @@ savingsRate: (sRate * 100).toFixed(1),
   }).format(val);
 
   const monthStr = new Date().toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
+  const runwayMonths = monthlyExpenses > 0 ? Math.round(totalBalance / monthlyExpenses) : 0;
+  const financeChecks = [
+    { label: 'Emergency runway', value: `${runwayMonths} months`, ok: runwayMonths >= 6, fix: 'Target 6+ months in liquid accounts.' },
+    { label: 'Savings rate', value: `${savingsRate}%`, ok: Number(savingsRate) >= 30, fix: 'Raise income-minus-expense efficiency above 30%.' },
+    { label: 'Budget coverage', value: `${budgets.length} budgets`, ok: budgets.length >= 3, fix: 'Create budgets for food, transport, and subscriptions.' },
+    { label: 'Account map', value: `${accounts.length} accounts`, ok: accounts.length > 0, fix: 'Add your active bank, wallet, and investment accounts.' },
+  ];
 
   return (
     <div style={{ paddingBottom: '80px' }}>
@@ -543,6 +550,39 @@ savingsRate: (sRate * 100).toFixed(1),
                       />
                     </div>
                   </motion.div>
+                ))}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+                {financeChecks.map((check) => (
+                  <div key={check.label} style={{
+                    background: 'var(--color-surface)',
+                    border: `1px solid ${check.ok ? 'rgba(16,185,129,0.24)' : 'rgba(226,114,91,0.32)'}`,
+                    borderRadius: '16px',
+                    padding: '18px 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '18px'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em' }}>{check.label}</div>
+                      <div style={{ fontSize: '18px', color: 'var(--color-text-1)', fontWeight: 800, marginTop: '6px' }}>{check.value}</div>
+                      {!check.ok && <div style={{ fontSize: '11px', color: 'var(--color-rust)', marginTop: '6px', lineHeight: 1.4 }}>{check.fix}</div>}
+                    </div>
+                    <div style={{
+                      width: '34px',
+                      height: '34px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: check.ok ? 'rgba(16,185,129,0.12)' : 'rgba(226,114,91,0.12)',
+                      color: check.ok ? '#10B981' : 'var(--color-rust)'
+                    }}>
+                      {check.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+                    </div>
+                  </div>
                 ))}
               </div>
 

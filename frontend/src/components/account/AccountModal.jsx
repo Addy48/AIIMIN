@@ -229,23 +229,24 @@ const AccountModal = ({ isOpen, onClose }) => {
                     from { transform: rotate(0deg); }
                     to { transform: rotate(360deg); }
                 }
-                .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+                .settings-grid { display: block; }
+                .settings-panel-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr); gap: 24px; align-items: start; }
                 @media (max-width: 800px) {
-                    .settings-grid { grid-template-columns: 1fr; gap: 24px; }
+                    .settings-panel-grid { grid-template-columns: 1fr; }
                 }
             `}</style>
             <div ref={modalRef} className="no-scrollbar" style={{
                 background: 'var(--bg-primary)',
                 border: '1px solid var(--border)',
-                borderRadius: '32px',
-                width: '480px', // Fixed width as requested
-                maxWidth: '90vw',
-                maxHeight: '90vh',
+                borderRadius: '28px',
+                width: 'min(1080px, 94vw)',
+                maxWidth: '94vw',
+                maxHeight: '88vh',
                 overflowY: 'auto',
                 msOverflowStyle: 'none',
                 scrollbarWidth: 'none',
                 boxShadow: '0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08)',
-                padding: '40px',
+                padding: '34px',
                 animation: 'modalEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                 position: 'relative',
                 display: 'flex',
@@ -275,8 +276,8 @@ const AccountModal = ({ isOpen, onClose }) => {
                         <span style={{ fontSize: '13px', color: 'var(--text-3)', fontWeight: 600 }}>Loading state...</span>
                     </div>
                 ) : (
-                    <div className="settings-grid" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div className="settings-grid">
+                        <div className="settings-panel-grid">
                             <Section title="Profile">
                                 <Row label="Name" border={false}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -333,15 +334,17 @@ const AccountModal = ({ isOpen, onClose }) => {
                             </Section>
 
                             <Section title="Appearance">
-                                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px' }}>
+                                <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
                                     {[
-                                        { id: 'dark', label: 'Dark', color: '#0A0A0A' },
-                                        { id: 'light', label: 'Light', color: '#F0EDE8' },
-                                        { id: 'notion', label: 'Notion', color: '#FFFFFF' },
-                                        { id: 'midnight', label: 'Midnight', color: '#0B1120' },
-                                        { id: 'solarized', label: 'Solarized', color: '#002B36' },
-                                        { id: 'cyberpunk', label: 'Cyberpunk', color: '#09090B' },
-                                        { id: 'monokai', label: 'Monokai', color: '#272822' }
+                                        { id: 'light', label: 'Nordic', colors: ['#F0EDE8', '#FAFAF9', '#1E5C3A'], darkText: true },
+                                        { id: 'dark', label: 'Vercel', colors: ['#0A0A0A', '#111111', '#22C55E'] },
+                                        { id: 'notion', label: 'Studio', colors: ['#FFFFFF', '#F7F6F3', '#37352F'], darkText: true },
+                                        { id: 'midnight', label: 'Midnight', colors: ['#0B1120', '#0F172A', '#38BDF8'] },
+                                        { id: 'solarized', label: 'Solar', colors: ['#002B36', '#073642', '#2AA198'] },
+                                        { id: 'cyberpunk', label: 'Neon', colors: ['#09090B', '#18181B', '#F43F5E'] },
+                                        { id: 'monokai', label: 'Monokai', colors: ['#272822', '#3E3D32', '#A6E22E'] },
+                                        { id: 'graphite', label: 'Graphite', colors: ['#151515', '#242424', '#D4AF37'] },
+                                        { id: 'sakura', label: 'Sakura', colors: ['#FFF7F8', '#FCE7EB', '#BE3455'], darkText: true }
                                     ].map(t => (
                                         <div 
                                             key={t.id}
@@ -349,19 +352,21 @@ const AccountModal = ({ isOpen, onClose }) => {
                                             style={{
                                                 padding: '12px',
                                                 borderRadius: '12px',
-                                                background: t.color,
+                                                background: t.colors[0],
                                                 border: `2px solid ${theme === t.id ? 'var(--color-accent)' : 'var(--border)'}`,
                                                 cursor: 'pointer',
                                                 display: 'flex',
                                                 flexDirection: 'column',
-                                                alignItems: 'center',
-                                                gap: '8px',
+                                                gap: '10px',
                                                 transition: 'all 0.2s ease',
-                                                opacity: theme === t.id ? 1 : 0.7,
+                                                opacity: theme === t.id ? 1 : 0.82,
                                                 boxShadow: theme === t.id ? '0 0 0 2px var(--color-surface)' : 'none'
                                             }}
                                         >
-                                            <span style={{ fontSize: '13px', fontWeight: 600, color: t.id === 'light' || t.id === 'notion' ? '#111' : '#EEE' }}>{t.label}</span>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', height: '28px' }}>
+                                                {t.colors.map(color => <span key={color} style={{ background: color, borderRadius: '6px', border: '1px solid rgba(0,0,0,0.08)' }} />)}
+                                            </div>
+                                            <span style={{ fontSize: '12px', fontWeight: 800, color: t.darkText ? '#151515' : '#EEE' }}>{t.label}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -448,7 +453,8 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 flexDirection: 'column',
                                 gap: '16px', // 16px spacing as requested
                                 marginTop: '16px',
-                                padding: '12px 0 20px'
+                                padding: '12px 0 20px',
+                                gridColumn: '1 / -1'
                             }}>
                                 <button onClick={signOut} style={{
                                     width: '100%', padding: '16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
@@ -461,7 +467,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 </button>
 
                                 <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                    AIIMIN v2.1 · Life OS · March 2026
+                                    Account settings · Theme saved locally · Secure session active
                                 </p>
                             </div>
                         </div>

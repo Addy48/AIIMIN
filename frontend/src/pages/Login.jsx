@@ -35,7 +35,7 @@ const GridBg = ({ isDark }) => (
 );
 
 const Login = () => {
-  const { signInWithEmail, signUpWithEmail } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
   const isDark = false;
 
   const [mode, setMode]       = useState('login');
@@ -59,7 +59,9 @@ const Login = () => {
 
   const handleNext = (e) => {
     if (e) e.preventDefault();
+    const resolved = resolveEmail(identifier);
     if (!identifier.trim()) { setError('Identifier required.'); return; }
+    if (resolved.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resolved)) { setError('Enter a valid email address.'); return; }
     if (mode === 'signup' && !fullName.trim()) { setError('Full name required.'); return; }
     setError(null);
     setStep(2);
@@ -235,11 +237,15 @@ const Login = () => {
                 )}
 
                 <div>
-                  <label style={labelStyle}>Username</label>
+                  <label style={labelStyle}>Username or email</label>
                   <input
                     type="text" required value={identifier} autoFocus
                     onChange={e => setIdentifier(e.target.value)}
-                    placeholder="Username"
+                    placeholder="au48 or you@email.com"
+                    autoCapitalize="none"
+                    autoComplete="username"
+                    autoCorrect="off"
+                    spellCheck="false"
                     style={inputStyle}
                     onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                     onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
@@ -279,6 +285,23 @@ const Login = () => {
                       : <>Have an account? <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Sign in</span></>}
                   </button>
                 </div>
+                <button
+                  type="button"
+                  onClick={signInWithGoogle}
+                  style={{
+                    height: '48px',
+                    background: 'rgba(255,255,255,0.45)',
+                    color: '#111111',
+                    border: '1px solid rgba(0,0,0,0.12)',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)'
+                  }}
+                >
+                  Continue with Google
+                </button>
               </form>
             </motion.div>
           ) : (
@@ -343,6 +366,7 @@ const Login = () => {
                   onClear={handlePinClear}
                   maxLength={6}
                   currentLength={pin.length}
+                  isDark={false}
                 />
               )}
 
@@ -376,28 +400,6 @@ const Login = () => {
           animation: aiimin-spin 0.7s linear infinite;
         }
         @keyframes aiimin-spin { to { transform: rotate(360deg); } }
-
-        .numpad-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-        }
-        .numpad-grid button {
-          background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'} !important;
-          border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'} !important;
-          color: ${isDark ? '#EDEDED' : '#111111'} !important;
-          width: 70px !important; height: 70px !important;
-          border-radius: 50% !important;
-          font-size: 22px !important; font-weight: 600 !important;
-          transition: all 0.15s ease !important;
-          cursor: pointer !important;
-          font-family: var(--font-sans) !important;
-        }
-        .numpad-grid button:hover {
-          background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'} !important;
-          transform: scale(1.05);
-        }
-        .numpad-grid button:active { transform: scale(0.92) !important; }
       `}</style>
     </div>
   );
