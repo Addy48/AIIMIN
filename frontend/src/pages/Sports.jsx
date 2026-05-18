@@ -16,6 +16,7 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numer
 const MatchCard = ({ event, leagueName, leagueFlag }) => {
   const st = getStatus(event.status);
   const hasScore = event.isFinished || event.isLive;
+  const kickoff = fmt(event.date);
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -2 }}
       style={{ background: 'var(--color-surface)', border: `1px solid ${event.isLive ? 'rgba(239,68,68,0.35)' : 'var(--color-border)'}`, borderRadius: '20px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -36,11 +37,15 @@ const MatchCard = ({ event, leagueName, leagueFlag }) => {
             <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)', flex: 1 }}>{team.short || team.name}</span>
             {hasScore
               ? <span style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-text-1)', fontFamily: 'monospace' }}>{team.score ?? '—'}</span>
-              : <span style={{ fontSize: '11px', color: 'var(--color-text-3)' }}>{fmt(event.date)}</span>}
+              : i === 0 ? <span style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 700 }}>{kickoff}</span> : <span style={{ width: '72px' }} />}
           </div>
         ))}
       </div>
-      {event.statusShort && <div style={{ fontSize: '11px', color: event.isLive ? '#ef4444' : 'var(--color-text-3)', fontWeight: 600, borderTop: '1px solid var(--color-border)', paddingTop: '8px' }}>{event.statusShort}</div>}
+      {event.statusShort && (
+        <div style={{ fontSize: '11px', color: event.isLive ? '#ef4444' : 'var(--color-text-3)', fontWeight: 600, borderTop: '1px solid var(--color-border)', paddingTop: '8px' }}>
+          {event.statusShort}
+        </div>
+      )}
       {event.venue && <div style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: event.statusShort ? '4px' : '0', borderTop: event.statusShort ? 'none' : '1px solid var(--color-border)', paddingTop: event.statusShort ? '0' : '8px' }}>{event.venue}{event.location ? ` · ${event.location}` : ''}</div>}
     </motion.div>
   );
@@ -275,7 +280,7 @@ const Sports = () => {
             {usingFallback
               ? <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '8px', fontSize: '10px', fontWeight: 800, color: '#f59e0b' }}><WifiOff size={11} /> Offline</div>
               : !loading && <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: '8px', fontSize: '10px', fontWeight: 800, color: '#22c55e' }}><Wifi size={11} /> ESPN Live</div>}
-            <button onClick={loadData} disabled={refreshing}
+            <button onClick={() => loadData(dateOffset)} disabled={refreshing}
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '10px 16px', fontSize: '11px', fontWeight: 800, color: 'var(--color-text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <RefreshCw size={12} style={{ animation: refreshing ? 'aiimin-spin 0.7s linear infinite' : 'none' }} />
               {refreshing ? 'Refreshing...' : 'Refresh'}

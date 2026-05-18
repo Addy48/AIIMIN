@@ -6,7 +6,7 @@ import { Delete } from 'lucide-react';
  * Numpad — Nordic Calm Edition
  * Minimalist circular keys with organic feedback.
  */
-const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0 }) => {
+const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0, isDark = true }) => {
 
     const handleKeyPress = useCallback((e) => {
         if (e.key >= '0' && e.key <= '9') {
@@ -46,23 +46,40 @@ const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0 }
 
     const getButtonStyle = (btn) => {
         const isSpecial = btn === '⌫' || btn === 'C';
+        let color;
+        let border;
+        let background;
+        const fontW = 700; // Extra prominent bold weight for supreme visibility
+        
+        if (isDark) {
+            color = isSpecial && btn === 'C' ? 'rgba(255, 255, 255, 0.4)' : '#FFFFFF';
+            border = '1px solid rgba(255, 255, 255, 0.08)';
+            background = 'rgba(255, 255, 255, 0.03)';
+        } else {
+            // Nordic light theme: High contrast deep black text against solid white circular key
+            color = isSpecial && btn === 'C' ? 'rgba(31, 32, 29, 0.5)' : '#000000';
+            border = '1px solid rgba(31, 32, 29, 0.12)';
+            background = '#ffffff';
+        }
+
         return {
-            width: '64px',
-            height: '64px',
-            background: 'transparent',
-            border: '1px solid var(--color-border)',
+            width: '68px',
+            height: '68px',
+            background: background,
+            border: border,
             borderRadius: '50%',
-            color: isSpecial && btn === 'C' ? 'var(--color-text-3)' : 'var(--color-text-1)',
-            fontSize: isSpecial ? '14px' : '20px',
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 300,
+            color: color,
+            fontSize: isSpecial ? '16px' : '26px', // Bold, extra-large for maximum readability
+            fontFamily: 'var(--font-sans)',
+            fontWeight: fontW,
             cursor: 'pointer',
-            transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             userSelect: 'none',
             outline: 'none',
+            boxShadow: isDark ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 12px rgba(31,32,29,0.05)',
         };
     };
 
@@ -82,16 +99,18 @@ const Numpad = ({ onEntry, onDelete, onClear, maxLength = 6, currentLength = 0 }
                     onClick={() => handleClick(btn)}
                     style={getButtonStyle(btn)}
                     whileHover={{
-                        borderColor: 'var(--color-accent)',
-                        color: 'var(--color-accent)',
-                        background: 'rgba(68, 99, 79, 0.05)'
+                        borderColor: isDark ? 'var(--color-accent)' : '#1E5C3A', // Nordic forest green for hover accent
+                        color: isDark ? 'var(--color-accent)' : '#1E5C3A',
+                        background: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(30, 92, 58, 0.08)',
+                        boxShadow: isDark ? '0 6px 16px rgba(0,0,0,0.5)' : '0 6px 16px rgba(30,92,58,0.12)',
+                        scale: 1.06,
                     }}
                     whileTap={{
-                        scale: 0.92,
-                        background: 'rgba(68, 99, 79, 0.1)'
+                        scale: 0.94,
+                        background: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(30, 92, 58, 0.14)'
                     }}
                 >
-                    {btn === '⌫' ? <Delete size={18} strokeWidth={1.5} /> : btn}
+                    {btn === '⌫' ? <Delete size={20} strokeWidth={2} /> : btn}
                 </motion.button>
             ))}
         </div>

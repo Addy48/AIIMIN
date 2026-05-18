@@ -236,7 +236,7 @@ const Overview = () => {
   return (
     <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
       {/* Header */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:'32px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:'32px', gap: '24px', flexWrap: 'wrap' }}>
         <div>
           <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--color-accent)', marginBottom:'6px' }}>
             Operational Intelligence
@@ -309,7 +309,7 @@ const Overview = () => {
                 <div style={{ fontSize:'84px', fontWeight:900, lineHeight:0.8, letterSpacing:'-0.05em', color: '#fff' }}>{daysLeft}</div>
                 <div style={{ fontSize:'18px', fontWeight:800, opacity: 0.6 }}>DAYS</div>
               </div>
-              <div style={{ fontSize:'14px', fontWeight:700, marginTop:'16px', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.02em' }}>UNTIL JULY 26 · <span style={{ color: '#10B981' }}>PLACEMENTS V1</span></div>
+              <div style={{ fontSize:'14px', fontWeight:700, marginTop:'16px', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.02em' }}>UNTIL JULY 26 · <span style={{ color: '#10B981' }}>PLACEMENTS</span></div>
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:'16px', alignItems:'flex-end', position: 'relative', zIndex: 2 }}>
               <div style={{ display: 'flex', gap: '8px' }}>
