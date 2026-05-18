@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Delete, X } from 'lucide-react';
+import { Delete } from 'lucide-react';
 
 /**
  * Numpad — Nordic Calm Edition

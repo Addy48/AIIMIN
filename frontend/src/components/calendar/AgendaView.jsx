@@ -20,7 +20,6 @@ const AgendaView = ({ events, onEventClick }) => {
     const border = 'var(--color-border)';
     const text1 = 'var(--color-text-1)';
     const text2 = 'var(--color-text-2)';
-    const bg = 'var(--color-base)';
 
     if (!dateGroups.length) {
         return (

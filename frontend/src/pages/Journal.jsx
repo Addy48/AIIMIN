@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
-import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, ChevronRight, Hash, Type, Trash2, Save, FileText, X, BookOpen, Feather } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, Hash, Type, Trash2, Save, FileText, X, BookOpen, Feather } from 'lucide-react';
 import Notes from './Notes';
 
 /* ── Configuration & Constants ── */
@@ -133,7 +133,6 @@ const JournalPage = () => {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEntry, setSelectedEntry] = useState(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('mindset'); // 'mindset' | 'notes'
   
@@ -155,11 +154,15 @@ const JournalPage = () => {
   const text3 = 'var(--color-text-3)';
   const accent = 'var(--color-accent)';
 
-  useEffect(() => {
-    if (user) fetchEntries();
-  }, [user]);
+  const syncEditor = useCallback((entry) => {
+    setContent(entry.encrypted_content || '');
+    setMood(entry.mood || 3);
+    setEnergy(entry.energy_level || 3);
+    setSleep(entry.sleep_hours || 7);
+  }, []);
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -170,26 +173,23 @@ const JournalPage = () => {
       
       if (error) throw error;
       setEntries(data || []);
-      if (data?.length > 0 && !selectedEntry) {
-        setSelectedEntry(data[0]);
+      setSelectedEntry(prev => {
+        if (prev || !data?.length) return prev;
         syncEditor(data[0]);
-      }
+        return data[0];
+      });
     } catch (e) {
       console.error("Journal fetch error:", e);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, syncEditor]);
 
-  const syncEditor = (entry) => {
-    setContent(entry.encrypted_content || '');
-    setMood(entry.mood || 3);
-    setEnergy(entry.energy_level || 3);
-    setSleep(entry.sleep_hours || 7);
-  };
+  useEffect(() => {
+    fetchEntries();
+  }, [fetchEntries]);
 
   const handleEntrySelect = (entry) => {
-    setIsCreating(false);
     setSelectedEntry(entry);
     syncEditor(entry);
   };
@@ -205,7 +205,6 @@ const JournalPage = () => {
       energy_level: 3,
       sleep_hours: 7
     };
-    setIsCreating(true);
     setSelectedEntry(newEntry);
     syncEditor(newEntry);
   };
@@ -225,28 +224,7 @@ const JournalPage = () => {
     }
   };
 
-  // Auto-save logic
-  useEffect(() => {
-    if (!selectedEntry || selectedEntry.id.toString().startsWith('temp')) return;
-
-    const hasChanged = 
-      content !== (selectedEntry.encrypted_content || '') ||
-      mood !== (selectedEntry.mood || 3) ||
-      energy !== (selectedEntry.energy_level || 3) ||
-      sleep !== (selectedEntry.sleep_hours || 7);
-
-    if (!hasChanged) return;
-
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    
-    saveTimeoutRef.current = setTimeout(() => {
-      saveEntry();
-    }, 1500);
-
-    return () => clearTimeout(saveTimeoutRef.current);
-  }, [content, mood, energy, sleep]);
-
-  const saveEntry = async () => {
+  const saveEntry = useCallback(async () => {
     if (!selectedEntry || !user) return;
     setIsSaving(true);
     
@@ -267,23 +245,44 @@ const JournalPage = () => {
           .select()
           .single();
         if (error) throw error;
-        setEntries([data, ...entries]);
+        setEntries(prev => [data, ...prev]);
         setSelectedEntry(data);
-        setIsCreating(false);
       } else {
         const { error } = await supabase
           .from('journal_entries')
           .update(payload)
           .eq('id', selectedEntry.id);
         if (error) throw error;
-        setEntries(entries.map(e => e.id === selectedEntry.id ? { ...e, ...payload } : e));
+        setEntries(prev => prev.map(e => e.id === selectedEntry.id ? { ...e, ...payload } : e));
+        setSelectedEntry(prev => prev?.id === selectedEntry.id ? { ...prev, ...payload } : prev);
       }
     } catch (e) {
       console.error("Save error:", e);
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [selectedEntry, user, content, mood, energy, sleep]);
+
+  // Auto-save logic
+  useEffect(() => {
+    if (!selectedEntry || selectedEntry.id.toString().startsWith('temp')) return;
+
+    const hasChanged =
+      content !== (selectedEntry.encrypted_content || '') ||
+      mood !== (selectedEntry.mood || 3) ||
+      energy !== (selectedEntry.energy_level || 3) ||
+      sleep !== (selectedEntry.sleep_hours || 7);
+
+    if (!hasChanged) return;
+
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+
+    saveTimeoutRef.current = setTimeout(() => {
+      saveEntry();
+    }, 1500);
+
+    return () => clearTimeout(saveTimeoutRef.current);
+  }, [content, mood, energy, sleep, selectedEntry, saveEntry]);
 
   const insertCommand = (type) => {
     if (!editorRef.current) return;
@@ -296,8 +295,6 @@ const JournalPage = () => {
     const afterSlash = currentVal.substring(end);
     
     let insertion = '';
-    let newCursorPos = start;
-
     switch (type) {
       case 'h1':
         insertion = '# ';
@@ -460,7 +457,16 @@ const JournalPage = () => {
               <div style={{ fontSize: '10px', fontWeight: 700, color: text3, padding: '0 12px 10px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{group}</div>
               {groupedEntries[group].map(entry => {
                 const active = selectedEntry?.id === entry.id;
-                const firstLine = entry.encrypted_content?.trim().split('\n')[0] || 'Untitled Reflection';
+                const isRelapse = entry.encrypted_content?.includes('#relapse-reflection');
+                const isUrge = entry.encrypted_content?.includes('#urge-surfed');
+                
+                let firstLine = entry.encrypted_content?.trim().split('\n')[0] || 'Untitled Reflection';
+                if (firstLine.startsWith('#')) firstLine = firstLine.replace(/^#+\s*/, '');
+                
+                let title = firstLine;
+                if (isRelapse) title = '⚠️ Relapse Reflection';
+                if (isUrge) title = '🛡️ Urge Surfed';
+
                 const dateObj = new Date(entry.date);
                 return (
                   <motion.div
@@ -469,19 +475,20 @@ const JournalPage = () => {
                     onClick={() => handleEntrySelect(entry)}
                     style={{
                       padding: '12px', borderRadius: '10px', cursor: 'pointer',
-                      background: active ? (isDark ? 'rgba(255,255,255,0.06)' : '#fff') : 'transparent',
+                      background: active ? (isDark ? 'rgba(255,255,255,0.06)' : '#fff') : (isRelapse ? 'rgba(239, 68, 68, 0.05)' : isUrge ? 'rgba(16, 185, 129, 0.05)' : 'transparent'),
                       marginBottom: '4px',
-                      border: active ? `1px solid ${border}` : '1px solid transparent',
+                      border: active ? `1px solid ${border}` : (isRelapse ? '1px solid rgba(239, 68, 68, 0.2)' : isUrge ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid transparent'),
                       boxShadow: active ? 'var(--shadow-sm)' : 'none',
                       transition: 'all 200ms ease',
                     }}
-                    whileHover={{ x: 2, background: active ? (isDark ? 'rgba(255,255,255,0.08)' : '#fff') : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)') }}
+                    whileHover={{ x: 2, background: active ? (isDark ? 'rgba(255,255,255,0.08)' : '#fff') : (isRelapse ? 'rgba(239, 68, 68, 0.1)' : isUrge ? 'rgba(16, 185, 129, 0.1)' : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')) }}
                   >
                     <div style={{ 
-                      fontSize: '13px', fontWeight: active ? 700 : 500, color: active ? text1 : text2,
+                      fontSize: '13px', fontWeight: active ? 700 : 600, 
+                      color: isRelapse ? '#ef4444' : isUrge ? '#10b981' : (active ? text1 : text2),
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px'
                     }}>
-                      {firstLine}
+                      {title}
                     </div>
                     <div style={{ fontSize: '11px', color: text3, display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-mono)' }}>
                       <span>{dateObj.getDate()} {dateObj.toLocaleString('default', { month: 'short' })}</span>
@@ -712,4 +719,3 @@ const JournalPage = () => {
 };
 
 export default JournalPage;
-

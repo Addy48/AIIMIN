@@ -37,7 +37,6 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
   }, [events]);
 
   const bg = 'var(--color-base)';
-  const bgElevated = 'var(--color-elevated)';
   const border = 'var(--color-border)';
   const text1 = 'var(--color-text-1)';
   const text2 = 'var(--color-text-2)';

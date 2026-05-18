@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import toast from '../utils/toast';
-import { apiGet } from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
-import { useMockData } from '../providers/MockDataProvider';
 import { REPORT_MODES, PAGE_TITLES, drawHeader, addFooter, getDateRange } from './reports/ReportPdfUtils';
 import { SECTION_RENDERERS } from './reports/ReportSections';
 import ReportPreviewModal from './reports/ReportPreviewModal';
@@ -16,7 +14,6 @@ import { useLHSData } from '../hooks/useLHSData';
  */
 const Reports = ({ user }) => {
     const { session } = useAuth();
-    const { isUsingMock, mockData } = useMockData() || {};
     const today = new Date().toLocaleDateString('en-CA');
     const [rangeMode, setRangeMode] = useState('week');
     const [reportMode, setReportMode] = useState('standard');

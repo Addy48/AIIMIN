@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Square, AlertTriangle, TreePine, Leaf, Info, Music, SkipForward, Volume2 } from 'lucide-react';
+import { Play, Square, AlertTriangle, Info, Music, SkipForward, Volume2 } from 'lucide-react';
 import toast from '../utils/toast';
 
 export default function FocusRoom() {
@@ -40,7 +40,7 @@ export default function FocusRoom() {
         if (audioRef.current && audioFiles.length > 0) {
             audioRef.current.play().catch(e => console.log('Auto-play prevented', e));
         }
-    }, [currentAudioIndex]);
+    }, [currentAudioIndex, audioFiles.length]);
 
     // Handle visibility change
     useEffect(() => {

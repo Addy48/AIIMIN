@@ -163,6 +163,7 @@
   --bg-surface:    var(--color-surface);
   --accent:        var(--color-accent);
   --accent-dim:    var(--color-accent-dim);
+  --accent-alpha:  color-mix(in srgb, var(--color-accent) 15%, transparent);
   --text-1:        var(--color-text-1);
   --text-2:        var(--color-text-2);
   --text-3:        var(--color-text-3);

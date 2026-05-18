@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, RotateCcw, Play, Check, ChevronRight, BarChart3, Info, Globe, Code, Heart, Coffee, Zap, MessageSquare, X } from 'lucide-react';
+import { Mic, RotateCcw, Play, Check, BarChart3, Globe, Code, Heart, Coffee, Zap, MessageSquare, X } from 'lucide-react';
 import supabase from '../../utils/supabase';
 import { useThemeContext } from '../../context/ThemeContext';
 
@@ -158,7 +158,6 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     const [phase, setPhase] = useState('ready'); // ready | recording | scoring | done
     const [timeLeft, setTimeLeft] = useState(60);
     const [saving, setSaving] = useState(false);
-    const [result, setResult] = useState(null);
     const [isSpinning, setIsSpinning] = useState(false);
     const timerRef = useRef(null);
 
@@ -223,7 +222,6 @@ export default function SpeakingLogger({ onComplete, onClose }) {
 
             if (error) throw error;
             
-            setResult(data);
             onComplete?.(data);
             setPhase('done');
         } catch (err) {
@@ -236,7 +234,6 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     const text1 = 'var(--color-text-1)';
     const text2 = 'var(--color-text-2)';
     const text3 = 'var(--color-text-3)';
-    const accent = 'var(--color-accent)';
     const border = 'var(--color-border)';
     const surface = 'var(--color-surface)';
 
@@ -262,9 +259,12 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                                 color: text1, 
                                 marginBottom: '16px',
                                 fontFamily: 'var(--font-serif)',
-                                letterSpacing: '-0.03em'
+                                letterSpacing: '-0.03em',
+                                background: `linear-gradient(135deg, ${text1} 0%, ${activeTopic.color} 100%)`,
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
                             }}>
-                                Vocal <span style={{ color: activeTopic.color }}>Mastery</span>
+                                Vocal Mastery
                             </h1>
                             <p style={{ color: text3, fontSize: '15px', maxWidth: '500px', margin: '0 auto', lineHeight: 1.6, fontWeight: 500 }}>
                                 Refine your delivery, articulation, and confidence. Spin for a prompt, speak for 60 seconds, and reflect.
@@ -319,8 +319,9 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                         </div>
 
                         <div style={{ 
-                            background: isDark ? 'var(--color-surface)' : 'var(--color-elevated)', 
-                            backdropFilter: 'blur(30px)',
+                            background: isDark ? 'linear-gradient(145deg, rgba(30,30,30,0.8) 0%, rgba(15,15,15,0.9) 100%)' : 'linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(240,240,240,0.9) 100%)', 
+                            backdropFilter: 'blur(40px)',
+                            WebkitBackdropFilter: 'blur(40px)',
                             borderRadius: '32px', 
                             padding: '80px 48px', 
                             border: `1px solid ${border}`, 
@@ -355,7 +356,6 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                                         fontWeight: 600, 
                                         color: text1, 
                                         lineHeight: 1.4, 
-                                        margin: 0,
                                         fontFamily: 'var(--font-serif)',
                                         maxWidth: '600px',
                                         margin: '0 auto'

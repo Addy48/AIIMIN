@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, RefreshCw, Trophy, Target, Clock, AlertCircle, X, Zap } from 'lucide-react';
+import { RefreshCw, Clock, AlertCircle, Zap } from 'lucide-react';
 import { useThemeContext } from '../../context/ThemeContext';
 
 const COMMON_WORDS = [
@@ -35,12 +35,10 @@ export default function TypingTest({ onComplete, onClose }) {
     const [accuracy, setAccuracy] = useState(100);
     const [isFocused, setIsFocused] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [result, setResult] = useState(null);
 
     const inputRef = useRef(null);
     const timerRef = useRef(null);
     const startTimeRef = useRef(null);
-    const scrollRef = useRef(null);
 
     const resetTest = useCallback(() => {
         setText(generateWords(150));
@@ -49,7 +47,6 @@ export default function TypingTest({ onComplete, onClose }) {
         setTimeLeft(config.isCustom ? customTime : config.time);
         setWpm(0);
         setAccuracy(100);
-        setResult(null);
         startTimeRef.current = null;
         if (timerRef.current) clearInterval(timerRef.current);
     }, [config.time, config.isCustom, customTime]);
@@ -121,7 +118,6 @@ export default function TypingTest({ onComplete, onClose }) {
                 }),
             });
             const data = await res.json();
-            setResult(data);
             onComplete?.(data);
         } catch (err) {
             console.error('[TypingTest] Save error:', err);
@@ -131,7 +127,6 @@ export default function TypingTest({ onComplete, onClose }) {
     };
 
     const text1 = 'var(--color-text-1)';
-    const text2 = 'var(--color-text-2)';
     const text3 = 'var(--color-text-3)';
     const accent = 'var(--color-accent)';
     const surface = 'var(--color-surface)';

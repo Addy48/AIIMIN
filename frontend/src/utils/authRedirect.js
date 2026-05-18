@@ -10,6 +10,10 @@
 import { API_URL } from './api';
 
 // Used only for Calendar/YouTube integration (not login — login uses Supabase native OAuth)
-export const redirectToGoogle = (scope = 'calendar') => {
-    window.location.href = `${API_URL}/auth/init`;
+export const redirectToGoogle = (accessToken) => {
+    if (!accessToken) {
+        console.error('redirectToGoogle called without active session access token');
+        return;
+    }
+    window.location.href = `${API_URL}/google/auth/init?token=${accessToken}`;
 };
