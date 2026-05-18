@@ -4,6 +4,7 @@ import { ArrowLeft, Shield, Check, X } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import Numpad from '../components/common/Numpad';
 import Logo from '../components/Logo';
+import { apiGet } from '../utils/api';
 
 /**
  * AIIMIN Identity Portal v3
@@ -191,14 +192,30 @@ const Login = () => {
   const uNumbersCount = (usernameVal.match(/[0-9]/g) || []).length;
   const isUsernameValid = usernameVal.length >= 4 && usernameVal.length <= 8 && uLettersCount <= 4 && uNumbersCount <= 2;
 
-  const handleUsernameNext = (e) => {
+  const handleUsernameNext = async (e) => {
     if (e) e.preventDefault();
     if (!isUsernameValid) {
       setError('Username does not meet the strict requirements.');
       return;
     }
     setError(null);
-    setStep(3);
+    setLoading(true);
+    try {
+      const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(usernameVal.trim())}`, { auth: false });
+      if (data && data.email) {
+        setError('Username is already taken.');
+      } else {
+        setStep(3);
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        setStep(3);
+      } else {
+        setError(err.message || 'Error checking username availability. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUsernameChange = (e) => {
