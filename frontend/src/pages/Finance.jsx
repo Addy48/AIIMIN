@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Plus, Upload, Filter, Search, Download, Calendar, ArrowUpRight, ArrowDownLeft, 
-  Wallet, CreditCard, PieChart, TrendingUp, CheckCircle2, ChevronRight, X, 
-  AlertCircle, FileText, Settings, HelpCircle, Activity, Heart, Flame, Timer, Zap, MapPin, Trophy,
+  Plus, Upload, Search,
+  Wallet, PieChart, TrendingUp, CheckCircle2, X,
+  AlertCircle, Settings, Activity, Flame, Timer, Zap, Trophy,
   FileSpreadsheet
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import toast from '../utils/toast';
-import { insertRow, getRows } from '../services/dbService';
+import { insertRow } from '../services/dbService';
 import { EXPENSE_CATS } from '../components/money/MoneyShared';
+import DesktopWindow from '../components/ui/DesktopWindow';
 import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  BarChart, Bar, Cell, PieChart as RePieChart, Pie 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  Cell, PieChart as RePieChart, Pie
 } from 'recharts';
 
 // XLSX is loaded via CDN in index.html to avoid build-time dependency issues
@@ -45,9 +46,6 @@ const Finance = () => {
   const [newAccount, setNewAccount] = useState({ name: '', balance: 0, type: 'Checking', icon: '🏦' });
 
   // Excel Import Logic
-  const [freedomDate, setFreedomDate] = useState('Aug 2042');
-  const [velocity, setVelocity] = useState([]);
-  
   const parseExcelDate = (val) => {
     if (!val) return new Date().toISOString().split('T')[0];
     if (typeof val === 'number') {
@@ -195,7 +193,7 @@ const Finance = () => {
   }, [assets, accounts]);
 
   // Analytics & Insights
-  const { categoryData, topExpenses, dailySpend, cashflowData, savingsRate, prevMonthExpenses, velocityData, fiYears } = useMemo(() => {
+  const { topExpenses, dailySpend, savingsRate, velocityData, fiYears } = useMemo(() => {
     const currentMonth = new Date().getMonth();
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
     
@@ -1131,15 +1129,8 @@ savingsRate: (sRate * 100).toFixed(1),
       {/* Add Account Modal */}
       <AnimatePresence>
         {accountModalOpen && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              style={{ width: '400px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '32px' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800, fontFamily: 'var(--font-serif)' }}>{newAccount.id ? 'Edit Account' : 'Initialize Account'}</h3>
-                <button onClick={() => setAccountModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer' }}><X size={20} /></button>
-              </div>
+          <DesktopWindow title={newAccount.id ? 'Edit Account' : 'New Bank Account'} subtitle="accounts.finance" onClose={() => setAccountModalOpen(false)} width="520px">
+            <div style={{ padding: '32px' }}>
               <form onSubmit={handleAddAccount} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px' }}>Account Name</label>
@@ -1164,38 +1155,16 @@ savingsRate: (sRate * 100).toFixed(1),
                   {newAccount.id ? 'Save Changes' : 'Create Account'}
                 </button>
               </form>
-            </motion.div>
-          </div>
+            </div>
+          </DesktopWindow>
         )}
       </AnimatePresence>
 
       {/* Entry Modal */}
       <AnimatePresence>
         {entryOpen && (
-          <div 
-            onClick={() => setEntryOpen(false)}
-            style={{
-              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)'
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              onClick={e => e.stopPropagation()}
-              style={{
-                width: '500px', background: 'var(--color-base)', borderRadius: '24px', border: '1px solid var(--color-border)',
-                padding: '40px', position: 'relative', boxShadow: '0 30px 60px rgba(0,0,0,0.3)',
-                maxHeight: '90vh', overflowY: 'auto'
-              }}
-            >
-              <button onClick={() => setEntryOpen(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}>
-                <X size={20} />
-              </button>
-
-              <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-text-1)', marginBottom: '32px', fontFamily: 'var(--font-serif)' }}>Record Entry</h2>
-
+          <DesktopWindow title="Record Finance Entry" subtitle="transactions.finance" onClose={() => setEntryOpen(false)} width="620px" maxHeight="90vh">
+            <div style={{ padding: '34px' }}>
               <EntryForm 
                 user={user} 
                 accounts={accounts} 
@@ -1206,35 +1175,16 @@ savingsRate: (sRate * 100).toFixed(1),
                   toast.success('Entry synchronized.');
                 }} 
               />
-            </motion.div>
-          </div>
+            </div>
+          </DesktopWindow>
         )}
       </AnimatePresence>
 
       {/* Excel Import Modal */}
       <AnimatePresence>
         {importOpen && (
-          <div 
-            onClick={() => setImportOpen(false)}
-            style={{
-              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 3000,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(12px)'
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              onClick={e => e.stopPropagation()}
-              style={{
-                width: '440px', background: 'var(--color-base)', borderRadius: '24px', border: '1px solid var(--color-border)',
-                padding: '40px', position: 'relative', boxShadow: '0 30px 60px rgba(0,0,0,0.3)'
-              }}
-            >
-              <button onClick={() => setImportOpen(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}>
-                <X size={20} />
-              </button>
-
+          <DesktopWindow title="Import Spreadsheet" subtitle="money-import.finance" onClose={() => setImportOpen(false)} width="560px">
+            <div style={{ padding: '36px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--color-accent-dim)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <FileSpreadsheet size={30} />
@@ -1287,8 +1237,8 @@ savingsRate: (sRate * 100).toFixed(1),
                   <button onClick={() => setImportStatus('idle')} style={{ marginTop: '20px', background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Try Again</button>
                 </div>
               )}
-            </motion.div>
-          </div>
+            </div>
+          </DesktopWindow>
         )}
       </AnimatePresence>
 
@@ -1330,7 +1280,7 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
     if (accounts?.length > 0 && !accountId) {
       setAccountId(accounts[0].id);
     }
-  }, [accounts]);
+  }, [accounts, accountId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

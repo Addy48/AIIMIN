@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw, Settings, Check, Zap, Coffee, Bell, Info, X } from 'lucide-react';
+import { Play, Pause, RotateCcw, Settings, Zap, Coffee, X } from 'lucide-react';
 import supabase from '../utils/supabase';
 import { upsertRow, insertRow } from '../services/dbService';
 import toast from '../utils/toast';
@@ -135,9 +135,7 @@ const PomodoroTimer = ({ user, onClose }) => {
     };
 
     const totalDuration = isBreak ? breakDuration * 60 : workDuration * 60;
-    const strokeDashoffset = (timeLeft / totalDuration) * 440;
     const accentColor = isBreak ? '#10b981' : '#f59e0b';
-    const bgDimm = isBreak ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)';
 
     const handleDurationEdit = (type, val) => {
         let n = parseInt(val, 10);
@@ -187,32 +185,7 @@ const PomodoroTimer = ({ user, onClose }) => {
             position: 'relative',
             overflow: 'hidden'
         }}>
-            {onClose && (
-                <button 
-                    onClick={onClose}
-                    style={{
-                        position: 'absolute', 
-                        top: '20px', 
-                        right: '20px', 
-                        width: '40px',
-                        height: '40px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'var(--color-surface)', 
-                        border: '1px solid var(--color-border)', 
-                        color: 'var(--color-text-3)', 
-                        cursor: 'pointer', 
-                        borderRadius: '12px',
-                        zIndex: 100,
-                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-elevated)'; e.currentTarget.style.color = 'var(--color-text-1)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
-                >
-                    <X size={20} />
-                </button>
-            )}
+
 
             <AnimatePresence mode="wait">
                 {showReflection ? (

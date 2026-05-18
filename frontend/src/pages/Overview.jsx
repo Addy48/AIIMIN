@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useThemeContext } from '../context/ThemeContext';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight, Keyboard, Mic, Activity, Timer } from 'lucide-react';
+import { Plus, X, ChevronRight, Keyboard, Mic, Timer } from 'lucide-react';
 import TypingTest from '../components/lab/TypingTest';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
 import PomodoroTimer from '../components/productivity/PomodoroTimer';
+import DesktopWindow from '../components/ui/DesktopWindow';
 
 const STATES = ['clarity','scarcity','abundance','fear','growth','aimlessness','focus','noise'];
 const STATE_ICONS = { clarity:'🔍', scarcity:'🪨', abundance:'🌊', fear:'🌑', growth:'🌱', aimlessness:'🌫️', focus:'🎯', noise:'📡' };
@@ -161,56 +161,25 @@ const WeekCell = ({ day, isToday }) => {
   );
 };
 
-/* ── Quick metric tile ── */
-const MetricTile = ({ label, value, color, to }) => (
-  <Link to={to} style={{ textDecoration:'none' }}>
-    <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'14px', padding:'14px', transition:'all 0.15s', cursor:'pointer' }}
-      onMouseEnter={e=>e.currentTarget.style.borderColor='var(--color-accent)'}
-      onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}
-    >
-      <div style={{ fontSize:'9px', fontWeight:800, color:'var(--color-text-3)', textTransform:'uppercase', marginBottom:'6px', letterSpacing:'0.06em' }}>{label}</div>
-      <div style={{ fontSize:'22px', fontWeight:900, color }}>{value}</div>
-    </div>
-  </Link>
-);
-
 /* ── Main Overview ── */
 const Overview = () => {
   const { user } = useAuth();
-  const { theme } = useThemeContext();
 
   const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
 
-  useEffect(() => {
-    const updateProgress = () => {
-      const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const dayPercent = ((now - startOfDay) / (24 * 60 * 60 * 1000)) * 100;
 
-      const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; // 0=Mon, 6=Sun
-      const startOfWeek = new Date(startOfDay.getTime() - dayOfWeek * 24 * 60 * 60 * 1000);
-      const weekPercent = ((now - startOfWeek) / (7 * 24 * 60 * 60 * 1000)) * 100;
-
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-      const monthPercent = ((now - startOfMonth) / (nextMonth - startOfMonth)) * 100;
-
-      const startOfYear = new Date(now.getFullYear(), 0, 1);
-      const nextYear = new Date(now.getFullYear() + 1, 0, 1);
-      const yearPercent = ((now - startOfYear) / (nextYear - startOfYear)) * 100;
-
-      setProgress({
-        year: Math.floor(yearPercent),
-        month: Math.floor(monthPercent),
-        week: Math.floor(weekPercent),
-        day: Math.floor(dayPercent)
-      });
-    };
-    updateProgress();
-    const interval = setInterval(updateProgress, 60000); // update every minute
-    return () => clearInterval(interval);
-  }, []);
   const [activeModal, setActiveModal] = useState(null);
+
+  useEffect(() => {
+    if (activeModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeModal]);
 
   const targetDate = new Date('2026-07-26');
   const now = new Date();
@@ -258,7 +227,7 @@ const Overview = () => {
     };
 
     updateProgress();
-    const interval = setInterval(updateProgress, 100);
+    const interval = setInterval(updateProgress, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -419,46 +388,23 @@ const Overview = () => {
 
       {/* Modals */}
       {activeModal === 'typing' && (
-        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.85)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'40px', backdropFilter:'blur(5px)' }}>
-          <div style={{ background:'var(--color-background)', width:'100%', maxWidth:'1000px', height:'85vh', borderRadius:'24px', overflow:'hidden', position:'relative', border:'1px solid var(--color-border)', display:'flex', flexDirection:'column', boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
-            <div style={{ padding:'20px 30px', borderBottom:'1px solid var(--color-border)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'var(--color-surface)' }}>
-              <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Typing Lab</div>
-              <button onClick={() => setActiveModal(null)} style={{ background:'var(--color-elevated)', border:'1px solid var(--color-border)', borderRadius:'50%', width:'32px', height:'32px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--color-text-1)', transition:'all 0.2s' }}>✕</button>
-            </div>
-            <div style={{ flex:1, overflowY:'auto', padding:'40px', background:'var(--color-background)' }}>
-              <TypingTest userId={user.id} onComplete={() => {}} onClose={() => setActiveModal(null)} />
-            </div>
-          </div>
-        </div>
+        <DesktopWindow title="Typing Lab" subtitle="monkeytype-style keyboard practice" onClose={() => setActiveModal(null)} width="1180px" height="84vh">
+          <TypingTest userId={user.id} onComplete={() => {}} onClose={() => setActiveModal(null)} />
+        </DesktopWindow>
       )}
 
       {activeModal === 'speaking' && (
-        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.85)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'40px', backdropFilter:'blur(5px)' }}>
-          <div style={{ background:'var(--color-background)', width:'100%', maxWidth:'1000px', height:'85vh', borderRadius:'24px', overflow:'hidden', position:'relative', border:'1px solid var(--color-border)', display:'flex', flexDirection:'column', boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
-            <div style={{ padding:'20px 30px', borderBottom:'1px solid var(--color-border)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'var(--color-surface)' }}>
-              <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Speaking Lab</div>
-              <button onClick={() => setActiveModal(null)} style={{ background:'var(--color-elevated)', border:'1px solid var(--color-border)', borderRadius:'50%', width:'32px', height:'32px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--color-text-1)', transition:'all 0.2s' }}>✕</button>
-            </div>
-            <div style={{ flex:1, overflowY:'auto', padding:'40px', background:'var(--color-background)' }}>
-              <SpeakingLogger onComplete={() => {}} onClose={() => setActiveModal(null)} />
-            </div>
-          </div>
-        </div>
+        <DesktopWindow title="Speaking Lab" subtitle="prompt, record, assess, save" onClose={() => setActiveModal(null)} width="1180px" height="84vh">
+          <SpeakingLogger onComplete={() => {}} onClose={() => setActiveModal(null)} />
+        </DesktopWindow>
       )}
 
       {activeModal === 'pomodoro' && (
-        <div style={{ position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.85)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'40px', backdropFilter:'blur(5px)' }}>
-          <div style={{ background:'var(--color-background)', width:'100%', maxWidth:'500px', borderRadius:'24px', overflow:'hidden', position:'relative', border:'1px solid var(--color-border)', display:'flex', flexDirection:'column', boxShadow:'0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
-            <div style={{ padding:'20px 30px', borderBottom:'1px solid var(--color-border)', display:'flex', justifyContent:'space-between', alignItems:'center', background:'var(--color-surface)' }}>
-              <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Pomodoro Focus</div>
-              <button onClick={() => setActiveModal(null)} style={{ background:'var(--color-elevated)', border:'1px solid var(--color-border)', borderRadius:'50%', width:'32px', height:'32px', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', color:'var(--color-text-1)', transition:'all 0.2s' }}>✕</button>
-            </div>
-            <div style={{ flex:1, padding:'40px', background:'var(--color-background)', display: 'flex', justifyContent: 'center' }}>
-              <PomodoroTimer onComplete={() => {}} onClose={() => setActiveModal(null)} />
-            </div>
-          </div>
-        </div>
+        <DesktopWindow title="Focus Timer" subtitle="single-task pomodoro workspace" onClose={() => setActiveModal(null)} width="1040px">
+          <PomodoroTimer onComplete={() => {}} onClose={() => setActiveModal(null)} />
+        </DesktopWindow>
       )}
+
 
       {/* Responsive */}
       <style>{`

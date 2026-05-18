@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, WifiOff, Wifi, ChevronLeft, ChevronRight, Calendar, X } from 'lucide-react';
+import { RefreshCw, WifiOff, Wifi, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { fetchAllSports, fetchMatchDetails } from '../services/sportsService';
 
 const STATUS_MAP = {
@@ -240,7 +240,7 @@ const Sports = () => {
     loadData(dateOffset);
     intervalRef.current = setInterval(() => loadData(dateOffset), 60000);
     return () => clearInterval(intervalRef.current);
-  }, [dateOffset]);
+  }, [dateOffset, loadData]);
 
   const changeDate = (d) => { setActiveLeague(0); setDateOffset(d); };
   const dateLabelStr = () => {

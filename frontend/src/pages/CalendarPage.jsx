@@ -111,6 +111,7 @@ const CalendarPage = () => {
                 currentDate={currentDate}
                 onDateChange={setCurrentDate}
                 onNewEvent={handleNewEvent}
+                session={session}
             />
 
             <div style={{ display: 'flex', gap: '16px' }}>
