@@ -142,44 +142,21 @@ export default function Placements() {
           return;
         }
         
-        // 1. Get S3 upload ticket
-        const ticket = await apiGet(`/placements/resumes/upload-ticket?filename=${encodeURIComponent(selectedFile.name)}&contentType=${encodeURIComponent(selectedFile.type)}`);
-        
-        let uploadUrl = ticket.uploadUrl;
-        if (uploadUrl.startsWith('/')) {
-          const apiBase = API_URL || 'http://localhost:5002/api';
-          const host = apiBase.endsWith('/api') ? apiBase.slice(0, -4) : apiBase;
-          uploadUrl = `${host}${uploadUrl}`;
-        } else {
-          // Make sure the port and host of local uploads matches the current API_URL in local dev
-          try {
-            const apiBase = API_URL || 'http://localhost:5002/api';
-            const apiBaseUrlObj = new URL(apiBase);
-            const uploadUrlObj = new URL(uploadUrl);
-            if (uploadUrlObj.hostname === 'localhost' || uploadUrlObj.hostname === '127.0.0.1') {
-              uploadUrlObj.protocol = apiBaseUrlObj.protocol;
-              uploadUrlObj.host = apiBaseUrlObj.host;
-              uploadUrl = uploadUrlObj.toString();
-            }
-          } catch (e) {
-            console.warn('Failed to parse URL for local host alignment:', e);
-          }
-        }
+        const formData = new FormData();
+        formData.append('file', selectedFile);
 
-        // 2. Direct binary PUT upload to S3 or local directory
-        const uploadResponse = await fetch(uploadUrl, {
-          method: 'PUT',
-          body: selectedFile,
+        const uploadData = await fetch(`${API_URL}/placements/resumes/upload`, {
+          method: 'POST',
+          body: formData,
           headers: {
-            'Content-Type': selectedFile.type
+            'Authorization': `Bearer ${localStorage.getItem('aiimin_session_fallback') || ''}`
           }
+        }).then(r => {
+            if (!r.ok) throw new Error('Upload failed');
+            return r.json();
         });
         
-        if (!uploadResponse.ok) {
-          throw new Error('S3 upload failed');
-        }
-        
-        key = ticket.key;
+        key = uploadData.url;
       } else {
         key = resumeForm.link_url;
       }
