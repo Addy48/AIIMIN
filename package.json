@@ -13,6 +13,7 @@
     "start": "cd backend && npm start"
   },
   "dependencies": {
+    "@hono/node-server": "^2.0.3",
     "@vercel/blob": "^2.4.0",
     "bcryptjs": "^3.0.3",
     "cookie": "^1.1.1",

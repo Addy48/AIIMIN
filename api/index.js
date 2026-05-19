@@ -2,13 +2,6 @@ import { Hono } from 'hono';
 import { handle } from 'hono/vercel';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.join(__dirname, '.env') });
 
 import authRoutes from './routes/auth.js';
 import dailyLogsRoutes from './routes/dailyLogs.js';
@@ -25,6 +18,7 @@ import placementsRoutes from './routes/placements.js';
 import wealthRoutes from './routes/wealth.js';
 import sportsRoutes from './routes/sports.js';
 import intelligenceRoutes from './routes/intelligence.js';
+import blobService from './services/blobService.js';
 
 export const config = {
     runtime: 'nodejs'
@@ -32,15 +26,13 @@ export const config = {
 
 const app = new Hono().basePath('/api');
 
-// ─── Middleware ─────────────────────────────────────────────
-if (process.env.NODE_ENV !== 'production') {
-    import('hono/logger').then(({ logger }) => {
-        app.use('*', logger());
-    });
-}
+app.use('*', async (c, next) => {
+    console.log(`[HONO REQUEST] ${c.req.method} ${c.req.url} - Path: ${c.req.path}`);
+    await next();
+});
+
 app.use('*', secureHeaders());
 
-// ─── CORS ─────────────────────────────────────────────────────
 app.use('*', cors({
     origin: (origin) => origin,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -48,10 +40,7 @@ app.use('*', cors({
     credentials: true,
 }));
 
-// ─── Fast Health Check ────────────────────────────
 app.route('/health', healthRoutes);
-
-// ─── Routes ───────────────────────────────────────────────────
 app.route('/auth', authRoutes);
 app.route('/daily-logs', dailyLogsRoutes);
 app.route('/dashboard', dashboardRoutes);
@@ -66,22 +55,16 @@ app.route('/placements', placementsRoutes);
 app.route('/wealth', wealthRoutes);
 app.route('/sports', sportsRoutes);
 app.route('/intelligence', intelligenceRoutes);
+app.route('/blob', blobService);
 
-// ─── 404 ──────────────────────────────────────────────────────
 app.notFound((c) => {
     return c.json({ error: 'Route not found' }, 404);
 });
 
-// ─── Global error handler ─────────────────────────────────────
 app.onError((err, c) => {
     console.error('[SERVER ERROR]:', err);
     return c.json({ error: 'Internal Server Error', message: err.message }, 500);
 });
 
-// Redirect root-level /google/auth/callback to /api/google/auth/callback
-app.get('/google/auth/callback', async (c) => {
-    const query = c.req.url.split('?')[1] || '';
-    return c.redirect(`/api/google/auth/callback${query ? '?' + query : ''}`);
-});
-
+export const honoApp = app;
 export default handle(app);

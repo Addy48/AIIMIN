@@ -1,7 +1,7 @@
 /**
  * lib/db.js
  * Central database connector — Neon PostgreSQL via pg Pool.
- * Supabase has been fully removed. Use pool.query() everywhere.
+ * Optimized for Vercel Serverless (short-lived function instances).
  */
 import pg from 'pg';
 
@@ -20,19 +20,23 @@ const getPool = () => {
     _pool = new Pool({
         connectionString,
         ssl: { rejectUnauthorized: false },
-        max: 5,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 20000,
+        // Serverless-optimized: keep connections small and fast
+        max: 3,
+        min: 0,
+        idleTimeoutMillis: 10000,        // Release idle connections quickly
+        connectionTimeoutMillis: 10000,  // Fail fast if Neon is cold (retry on client)
+        allowExitOnIdle: true,           // Let Node exit between invocations
     });
 
     _pool.on('error', (err) => {
-        console.error('[DB Pool] Unexpected error on idle client:', err.message);
+        console.error('[DB Pool] Client error:', err.message);
+        _pool = null; // Reset pool on error so it's recreated fresh
     });
 
     return _pool;
 };
 
-// Lazy proxy so pool is only created on first use
+// Lazy proxy — pool only created on first query
 export const pool = new Proxy({}, {
     get: (target, prop) => {
         const activePool = getPool();
