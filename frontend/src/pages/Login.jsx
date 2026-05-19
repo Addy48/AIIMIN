@@ -239,6 +239,17 @@ const Login = () => {
     transition: 'border-color 0.2s, box-shadow 0.2s',
   };
 
+  const labelStyle = {
+    display: 'block',
+    fontSize: '12px',
+    fontWeight: 600,
+    color: 'var(--text-2)',
+    marginBottom: '8px',
+    fontFamily: 'var(--font-sans)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em'
+  };
+
   return (
     <div style={{
       minHeight: '100vh',

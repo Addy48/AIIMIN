@@ -1,4 +1,7 @@
 node_modules/
+.DS_Store
+
+# Environment files (never commit secrets)
 .env
 .env.local
 .env.production
@@ -12,13 +15,21 @@ frontend/.env.production.local
 backend/.env
 backend/.env.local
 backend/.env.production
-frontend/build/
-.DS_Store
-frontend/tools/
-.vercel
-.env*.local
 
+# Build outputs
+frontend/build/
+
+# Vercel
+.vercel
+
+# Tools & editors
 .claude/
 .sst/
 .sst
 
+# One-time scripts (safe to delete after use)
+create_user.js
+setup_db_script.js
+
+# Render (not in use)
+render.yaml
