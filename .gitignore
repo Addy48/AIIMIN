@@ -33,3 +33,4 @@ setup_db_script.js
 
 # Render (not in use)
 render.yaml
+.env*
