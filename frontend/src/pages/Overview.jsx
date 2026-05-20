@@ -227,7 +227,7 @@ const Overview = () => {
     };
 
     updateProgress();
-    const interval = setInterval(updateProgress, 60000);
+    const interval = setInterval(updateProgress, 1000);
     return () => clearInterval(interval);
   }, []);
 
