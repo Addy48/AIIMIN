@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, RotateCcw, Settings, Zap, Coffee, X } from 'lucide-react';
+import { Play, Pause, RotateCcw, Settings, Zap, Coffee } from 'lucide-react';
 import supabase from '../utils/supabase';
 import { upsertRow, insertRow } from '../services/dbService';
 import toast from '../utils/toast';
 import { playSound, sendNotification, requestNotificationPermission } from '../utils/soundEngine';
 import { POMODORO_XP, getRank } from '../utils/xpEngine';
 import PomodoroReflection from './pomodoro/PomodoroReflection';
-import { useThemeContext } from '../context/ThemeContext';
 
 const PomodoroTimer = ({ user, onClose }) => {
-    const { theme } = useThemeContext();
-    const isDark = theme === 'dark';
+
 
     const PRESETS = [
         { work: 15, rest: 5, label: 'Quick' },
