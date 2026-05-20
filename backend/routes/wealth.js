@@ -522,7 +522,7 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
         const body = await c.req.parseBody();
         const file = body.file;
 
-        if (!file || !(file instanceof File)) {
+        if (!file || typeof file.arrayBuffer !== 'function') {
             return c.json({ error: 'No file uploaded or invalid file object.' }, 400);
         }
 
@@ -555,45 +555,52 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
         let existingTransactions = transactionsRes.rows;
         let existingBudgets = budgetsRes.rows;
 
-        // Dynamic helper to resolve or create accounts
-        const getOrCreateAccount = async (accNameRaw) => {
+        // Tracks queued entities to create
+        const accountsCreatedInThisImport = new Map();
+        const categoriesCreatedInThisImport = new Map();
+
+        // Dynamic helper to resolve accounts locally
+        const resolveAccount = (accNameRaw) => {
             if (!accNameRaw) return null;
             const accName = String(accNameRaw).trim();
             const searchAcc = accName.toLowerCase();
+            
+            // 1. Check existing accounts in DB
             let matchedAcc = userAccounts.find(a =>
                 a.name.toLowerCase().trim() === searchAcc ||
                 a.name.toLowerCase().includes(searchAcc) ||
                 searchAcc.includes(a.name.toLowerCase())
             );
-            if (!matchedAcc) {
-                console.log(`[Auto-Create Account] Creating account: "${accName}" for user ${userId}`);
-                const newAccRes = await pool.query(
-                    `INSERT INTO public.accounts (user_id, name, type, balance, icon, color) 
-                    VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-                    [userId, accName, 'bank', 0, '🏦', '#6b7280']
-                );
-                matchedAcc = newAccRes.rows[0];
-                userAccounts.push(matchedAcc);
-            }
-            return matchedAcc;
+            if (matchedAcc) return { id: matchedAcc.id, name: matchedAcc.name };
+
+            // 2. Check accounts queued for creation in this import
+            let queuedAcc = accountsCreatedInThisImport.get(searchAcc);
+            if (queuedAcc) return { id: queuedAcc.tempId, name: accName };
+
+            // 3. Queue new account
+            const tempId = `temp-acc-${accountsCreatedInThisImport.size}`;
+            accountsCreatedInThisImport.set(searchAcc, { tempId, name: accName });
+            return { id: tempId, name: accName };
         };
 
-        // Dynamic helper to resolve or create categories
-        const getOrCreateCategory = async (catNameRaw, catType = 'expense') => {
+        // Dynamic helper to resolve categories locally
+        const resolveCategory = (catNameRaw, catType = 'expense') => {
             const catName = cleanCategoryName(catNameRaw);
+            if (!catName) return null;
             const searchCat = catName.toLowerCase().trim();
+
+            // 1. Check existing categories in DB
             let matchedCat = userCategories.find(c => c.name.toLowerCase().trim() === searchCat);
-            if (!matchedCat && catName) {
-                console.log(`[Auto-Create Category] Creating category: "${catName}" for user ${userId}`);
-                const newCatRes = await pool.query(
-                    `INSERT INTO public.money_categories (user_id, name, color, icon, type) 
-                    VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-                    [userId, catName, '#6b7280', '📦', catType]
-                );
-                matchedCat = newCatRes.rows[0];
-                userCategories.push(matchedCat);
-            }
-            return matchedCat;
+            if (matchedCat) return { id: matchedCat.id, name: matchedCat.name };
+
+            // 2. Check categories queued for creation in this import
+            let queuedCat = categoriesCreatedInThisImport.get(searchCat);
+            if (queuedCat) return { id: queuedCat.tempId, name: catName };
+
+            // 3. Queue new category
+            const tempId = `temp-cat-${categoriesCreatedInThisImport.size}`;
+            categoriesCreatedInThisImport.set(searchCat, { tempId, name: catName, type: catType });
+            return { id: tempId, name: catName };
         };
 
         // Iterate through all sheets to support multi-sheet or single-sheet files
@@ -693,13 +700,12 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
                         catType = 'income';
                     }
 
-                    const matchedCat = await getOrCreateCategory(categoryVal, catType);
-                    const matchedCategoryId = matchedCat ? matchedCat.id : null;
-                    if (!matchedCategoryId) continue;
+                    const resolvedCat = resolveCategory(categoryVal, catType);
+                    if (!resolvedCat) continue;
 
                     allParsedBudgets.push({
                         user_id: userId,
-                        category_id: matchedCategoryId,
+                        category_id: resolvedCat.id,
                         category_name: categoryVal,
                         amount: Math.abs(budgetAmt),
                         period: 'monthly',
@@ -756,11 +762,11 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
 
                     if (typeVal === 'transfer') {
                         // Transfer-Out: Source is rawAccount, Target/Destination is rawCategory
-                        const sourceAcc = await getOrCreateAccount(rawAccount || 'Cash');
-                        const targetAcc = await getOrCreateAccount(rawCategory);
+                        const sourceAcc = resolveAccount(rawAccount || 'Cash');
+                        const targetAcc = resolveAccount(rawCategory);
 
                         if (sourceAcc && targetAcc) {
-                            const transferCat = await getOrCreateCategory('Transfer', 'transfer');
+                            const transferCat = resolveCategory('Transfer', 'transfer');
                             const transferCatId = transferCat ? transferCat.id : null;
 
                             // 1. Outflow transaction (transfer_out)
@@ -794,11 +800,11 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
                     } else {
                         // Standard transaction logic
                         const categoryVal = cleanCategoryName(rawCategory);
-                        const matchedCat = await getOrCreateCategory(categoryVal, typeVal === 'income' ? 'income' : 'expense');
-                        const matchedCategoryId = matchedCat ? matchedCat.id : null;
+                        const resolvedCat = resolveCategory(categoryVal, typeVal === 'income' ? 'income' : 'expense');
+                        const resolvedCatId = resolvedCat ? resolvedCat.id : null;
 
-                        const matchedAcc = await getOrCreateAccount(rawAccount || 'Cash');
-                        const matchedAccountId = matchedAcc ? matchedAcc.id : null;
+                        const resolvedAcc = resolveAccount(rawAccount || 'Cash');
+                        const resolvedAccId = resolvedAcc ? resolvedAcc.id : null;
 
                         let finalAmount = Math.abs(amountVal);
                         if (typeVal === 'expense') {
@@ -809,13 +815,13 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
                             user_id: userId,
                             date: parsedDate,
                             category: categoryVal,
-                            category_id: matchedCategoryId,
+                            category_id: resolvedCatId,
                             description: descVal || null,
                             amount: finalAmount,
                             source: 'import',
                             currency: 'INR',
                             type: typeVal,
-                            account_id: matchedAccountId
+                            account_id: resolvedAccId
                         });
                     }
                 }
@@ -826,16 +832,10 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
             return c.json({ error: 'No valid data found in the file.' }, 400);
         }
 
-        // Start DB Client for safe Transaction handling
-        dbClient = await pool.connect();
-        await dbClient.query('BEGIN');
-
-        let transactionsImported = 0;
-        let budgetsImported = 0;
-
-        // Process Transactions
+        // Process duplicate checks
+        let duplicateFreeTransactions = [];
         if (allParsedTransactions.length > 0) {
-            const duplicateFreeTransactions = allParsedTransactions.filter(newT => {
+            duplicateFreeTransactions = allParsedTransactions.filter(newT => {
                 const isDup = existingTransactions.some(existing => {
                     const dateMatches = existing.date.split('T')[0] === newT.date;
                     const amountMatches = Math.abs(Number(existing.amount) - Number(newT.amount)) < 0.01;
@@ -845,39 +845,109 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
                 });
                 return !isDup;
             });
+        }
 
-            if (duplicateFreeTransactions.length > 0) {
-                for (const tx of duplicateFreeTransactions) {
-                    await dbClient.query(
-                        `INSERT INTO public.money_transactions 
-                        (user_id, date, category, category_id, description, amount, currency, source, account_id, type) 
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-                        [
-                            tx.user_id,
-                            tx.date,
-                            tx.category,
-                            tx.category_id,
-                            tx.description,
-                            tx.amount,
-                            tx.currency,
-                            tx.source,
-                            tx.account_id,
-                            tx.type
-                        ]
-                    );
+        // Identify which temporary IDs are actually referenced by non-duplicates
+        const activeTempAccountIds = new Set();
+        const activeTempCategoryIds = new Set();
 
-                    if (tx.account_id) {
-                        await dbClient.query(
-                            'UPDATE public.accounts SET balance = balance + $1 WHERE id = $2 AND user_id = $3',
-                            [tx.amount, tx.account_id, userId]
-                        );
-                    }
-                }
-                transactionsImported = duplicateFreeTransactions.length;
+        for (const tx of duplicateFreeTransactions) {
+            if (String(tx.account_id).startsWith('temp-acc-')) {
+                activeTempAccountIds.add(tx.account_id);
+            }
+            if (String(tx.category_id).startsWith('temp-cat-')) {
+                activeTempCategoryIds.add(tx.category_id);
             }
         }
 
-        // Process Budgets
+        for (const b of allParsedBudgets) {
+            if (String(b.category_id).startsWith('temp-cat-')) {
+                activeTempCategoryIds.add(b.category_id);
+            }
+        }
+
+        // Start DB Client for safe Transaction handling
+        dbClient = await pool.connect();
+        await dbClient.query('BEGIN');
+
+        let transactionsImported = 0;
+        let budgetsImported = 0;
+
+        // 1. Create new accounts actually used
+        const tempIdToRealAccountId = {};
+        for (const [key, acc] of accountsCreatedInThisImport) {
+            if (!activeTempAccountIds.has(acc.tempId)) continue;
+            console.log(`[Batch-Create Account] Creating account: "${acc.name}" for user ${userId}`);
+            const newAccRes = await dbClient.query(
+                `INSERT INTO public.accounts (user_id, name, type, balance, icon, color) 
+                VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+                [userId, acc.name, 'bank', 0, '🏦', '#6b7280']
+            );
+            tempIdToRealAccountId[acc.tempId] = newAccRes.rows[0].id;
+        }
+
+        // 2. Create new categories actually used
+        const tempIdToRealCategoryId = {};
+        for (const [key, cat] of categoriesCreatedInThisImport) {
+            if (!activeTempCategoryIds.has(cat.tempId)) continue;
+            console.log(`[Batch-Create Category] Creating category: "${cat.name}" for user ${userId}`);
+            const newCatRes = await dbClient.query(
+                `INSERT INTO public.money_categories (user_id, name, color, icon, type) 
+                VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+                [userId, cat.name, '#6b7280', '📦', cat.type]
+            );
+            tempIdToRealCategoryId[cat.tempId] = newCatRes.rows[0].id;
+        }
+
+        // 3. Resolve temporary IDs in non-duplicate transactions
+        for (const tx of duplicateFreeTransactions) {
+            if (String(tx.account_id).startsWith('temp-acc-')) {
+                tx.account_id = tempIdToRealAccountId[tx.account_id];
+            }
+            if (String(tx.category_id).startsWith('temp-cat-')) {
+                tx.category_id = tempIdToRealCategoryId[tx.category_id];
+            }
+        }
+
+        // 4. Resolve temporary IDs in budgets
+        for (const b of allParsedBudgets) {
+            if (String(b.category_id).startsWith('temp-cat-')) {
+                b.category_id = tempIdToRealCategoryId[b.category_id];
+            }
+        }
+
+        // 5. Insert Transactions
+        if (duplicateFreeTransactions.length > 0) {
+            for (const tx of duplicateFreeTransactions) {
+                await dbClient.query(
+                    `INSERT INTO public.money_transactions 
+                    (user_id, date, category, category_id, description, amount, currency, source, account_id, type) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                    [
+                        tx.user_id,
+                        tx.date,
+                        tx.category,
+                        tx.category_id,
+                        tx.description,
+                        tx.amount,
+                        tx.currency,
+                        tx.source,
+                        tx.account_id,
+                        tx.type
+                    ]
+                );
+
+                if (tx.account_id) {
+                    await dbClient.query(
+                        'UPDATE public.accounts SET balance = balance + $1 WHERE id = $2 AND user_id = $3',
+                        [tx.amount, tx.account_id, userId]
+                    );
+                }
+            }
+            transactionsImported = duplicateFreeTransactions.length;
+        }
+
+        // 6. Process Budgets
         if (allParsedBudgets.length > 0) {
             for (const b of allParsedBudgets) {
                 const existingBudget = existingBudgets.find(exB => exB.category_id === b.category_id && exB.period === b.period);
