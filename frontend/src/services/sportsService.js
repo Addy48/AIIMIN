@@ -3,6 +3,7 @@
  * Cricket now uses ESPN scoreboard (same as football) — reliable, no bot-detection
  * F1 via Ergast mirror (jolpi.ca)
  */
+import { apiGet } from '../utils/api';
 
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports';
 const ERGAST = 'https://api.jolpi.ca/ergast/f1';
@@ -85,21 +86,22 @@ const getDateStr = (offset = 0) => {
   return d.toISOString().split('T')[0].replace(/-/g, '');
 };
 
+const getYesterdayTodayRange = () => {
+  return `${getDateStr(-1)}-${getDateStr(0)}`;
+};
+
 /* ── Football (Soccer) ────────────────────────────────────── */
-export const fetchFootball = async (dateOffset = 0) => {
-  const dateStr = getDateStr(dateOffset);
+export const fetchFootball = async () => {
+  const dateRange = getYesterdayTodayRange();
   const leagues = [
     { slug: 'eng.1', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
     { slug: 'esp.1', name: 'La Liga', flag: '🇪🇸' },
-    { slug: 'ger.1', name: 'Bundesliga', flag: '🇩🇪' },
-    { slug: 'ita.1', name: 'Serie A', flag: '🇮🇹' },
     { slug: 'UEFA.CHAMPIONS', name: 'UCL', flag: '⭐' },
-    { slug: 'ind.super_league', name: 'ISL', flag: '🇮🇳' },
   ];
 
   const results = await Promise.allSettled(
     leagues.map(l =>
-      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard?dates=${dateStr}`)
+      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard?dates=${dateRange}`)
         .then(d => ({ league: l, events: parseESPNEvents(d) }))
     )
   );
@@ -294,19 +296,31 @@ export const fetchBasketball = async (dateOffset = 0) => {
 
 /* ── Aggregated for Sports page ─────────────────────────────── */
 export const fetchAllSports = async (dateOffset = 0) => {
-  const [football, cricket, basketball, f1] = await Promise.allSettled([
-    fetchFootball(dateOffset),
-    fetchCricket(),
-    fetchBasketball(dateOffset),
-    fetchF1(),
-  ]);
+  try {
+    // Attempt to fetch from the server-side Neon cache first
+    const cachedData = await apiGet('/sports');
+    if (cachedData && (cachedData.football || cachedData.cricket || cachedData.basketball || cachedData.f1)) {
+      return cachedData;
+    }
+    throw new Error('Empty or invalid sports cache data from server');
+  } catch (err) {
+    console.warn('Failed to retrieve server-cached sports. Falling back to client-side fetches:', err);
+    
+    // Graceful fallback to raw ESPN / CricAPI / Ergast mirror direct client calls
+    const [football, cricket, basketball, f1] = await Promise.allSettled([
+      fetchFootball(dateOffset),
+      fetchCricket(),
+      fetchBasketball(dateOffset),
+      fetchF1(),
+    ]);
 
-  return {
-    football: football.status === 'fulfilled' ? football.value : [],
-    cricket: cricket.status === 'fulfilled' ? cricket.value : [],
-    basketball: basketball.status === 'fulfilled' ? basketball.value : [],
-    f1: f1.status === 'fulfilled' ? f1.value : { next: null, last: null, standings: null, constructors: null, upcoming: [] },
-  };
+    return {
+      football: football.status === 'fulfilled' ? football.value : [],
+      cricket: cricket.status === 'fulfilled' ? cricket.value : [],
+      basketball: basketball.status === 'fulfilled' ? basketball.value : [],
+      f1: f1.status === 'fulfilled' ? f1.value : { next: null, last: null, standings: null, constructors: null, upcoming: [] },
+    };
+  }
 };
 
 /* ── Match Details (Granular Scorer) ────────────────────────── */

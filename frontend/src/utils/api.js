@@ -63,6 +63,7 @@ export const apiRequest = async (path, options = {}) => {
         auth,
         session,
         responseType,
+        json: options.json,
     });
 
     return response.data;
@@ -70,5 +71,7 @@ export const apiRequest = async (path, options = {}) => {
 
 export const apiGet = (path, options = {}) => apiRequest(path, { ...options, method: 'GET' });
 export const apiPost = (path, data, options = {}) => apiRequest(path, { ...options, method: 'POST', data });
+export const apiPut = (path, data, options = {}) => apiRequest(path, { ...options, method: 'PUT', data });
 export const apiPatch = (path, data, options = {}) => apiRequest(path, { ...options, method: 'PATCH', data });
 export const apiDelete = (path, data, options = {}) => apiRequest(path, { ...options, method: 'DELETE', data });
+

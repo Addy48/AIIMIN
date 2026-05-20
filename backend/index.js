@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
+import { handle } from 'hono/aws-lambda';
 import { cors } from 'hono/cors';
-import { logger } from 'hono/logger';
 import { secureHeaders } from 'hono/secure-headers';
 
 import authRoutes from './routes/auth.js';
@@ -16,21 +16,17 @@ import habitsRoutes from './routes/habits.js';
 import labRoutes from './routes/lab.js';
 import placementsRoutes from './routes/placements.js';
 import wealthRoutes from './routes/wealth.js';
+import sportsRoutes from './routes/sports.js';
+import intelligenceRoutes from './routes/intelligence.js';
 
 const app = new Hono().basePath('/api');
 
-// ─── STARTUP CHECKS ─────
-const requiredEnvVars = [
-    'SUPABASE_URL',
-    'SUPABASE_SERVICE_ROLE_KEY',
-    'DATABASE_URL',
-    'TOKEN_ENCRYPTION_KEY',
-    'GOOGLE_CLIENT_ID',
-    'GOOGLE_CLIENT_SECRET',
-];
-
 // ─── Middleware ─────────────────────────────────────────────
-app.use('*', logger());
+// Only use verbose logger in non-production environments to avoid log noise and costs
+if (process.env.NODE_ENV !== 'production') {
+    const { logger } = await import('hono/logger');
+    app.use('*', logger());
+}
 app.use('*', secureHeaders());
 
 // ─── CORS ─────────────────────────────────────────────────────
@@ -55,6 +51,8 @@ app.route('/habits', habitsRoutes);
 app.route('/lab', labRoutes);
 app.route('/placements', placementsRoutes);
 app.route('/wealth', wealthRoutes);
+app.route('/sports', sportsRoutes);
+app.route('/intelligence', intelligenceRoutes);
 
 // ─── 404 ──────────────────────────────────────────────────────
 app.notFound((c) => {
@@ -67,31 +65,23 @@ app.onError((err, c) => {
     return c.json({ error: 'Internal Server Error', message: err.message }, 500);
 });
 
-// ─── Cloudflare Worker Handler ────────────────────────────────────────────
+// ─── AWS Lambda Handler ────────────────────────────────────────────
+export const handler = handle(app);
+
+// ─── Cloudflare Worker compatibility wrapper ───────────────────────
 export default {
     async fetch(request, env, ctx) {
         globalThis.process = globalThis.process || {};
         globalThis.process.env = { ...globalThis.process.env, ...env };
         return app.fetch(request, env, ctx);
-    },
-    async scheduled(event, env, ctx) {
-        console.log('[CRON] Starting nightly jobs...');
-        try {
-            globalThis.process = globalThis.process || {};
-            globalThis.process.env = { ...globalThis.process.env, ...env };
-
-            const { runCorrelationEngine } = await import('./jobs/correlationEngine.js');
-            const { runRecurringTransactions } = await import('./jobs/recurringTransactions.js');
-            const { supabase } = await import('./lib/db.js');
-
-            await Promise.allSettled([
-                runCorrelationEngine(supabase),
-                runRecurringTransactions(supabase)
-            ]);
-            
-            console.log('[CRON] Finished nightly jobs.');
-        } catch (err) {
-            console.error('[CRON] Jobs failed:', err);
-        }
     }
 };
+
+// ─── Local Server Execution (npm run dev) ─────────────────────────
+if (process.env.NODE_ENV !== 'production' && typeof process !== 'undefined' && process.release) {
+    const { serve } = await import('@hono/node-server');
+    const port = process.env.PORT || 5000;
+    console.log(`[LOCAL DEV] Starting Node API server on port ${port}...`);
+    serve({ fetch: app.fetch, port });
+}
+

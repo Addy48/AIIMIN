@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../utils/supabase';
 import toast from '../utils/toast';
+import { apiGet } from '../utils/api';
 import { X } from 'lucide-react';
 
 const STATUS_CONFIG = {
@@ -27,6 +28,17 @@ export default function Placements() {
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [editingApp, setEditingApp] = useState(null);
 
+  // Trajectory Intelligence Readiness Scorecard States
+  const [dsaMetrics, setDsaMetrics] = useState({ score: 82, desc: 'Top 5% of candidate pool' });
+  const [communicationMetrics, setCommunicationMetrics] = useState({ score: 75, desc: 'Clear & articulate' });
+  const [systemDesignMetrics, setSystemDesignMetrics] = useState({ score: 45, desc: 'Needs targeted review' });
+
+  // Momentum States
+  const [momentumScore, setMomentumScore] = useState(75);
+  const [momentumStatus, setMomentumStatus] = useState('Accelerating');
+  const [momentumGrowth, setMomentumGrowth] = useState('+12.5% vs LW');
+  const [momentumText, setMomentumText] = useState('Your application volume is up, and your response time for interview invites has improved by 4 hours on average.');
+
   // Forms
   const [appForm, setAppForm] = useState({ 
     company_name: '', 
@@ -47,12 +59,99 @@ export default function Placements() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [appsRes, resumesRes] = await Promise.all([
+      const [appsRes, resumesRes, dsaRes, speakingRes, habitsRes] = await Promise.all([
         supabase.from('job_applications').select('*').order('applied_at', { ascending: false }),
-        supabase.from('resumes').select('*').order('updated_at', { ascending: false })
+        supabase.from('resumes').select('*').order('updated_at', { ascending: false }),
+        supabase.from('dsa_logs').select('*'),
+        supabase.from('lab_speaking_logs').select('*'),
+        supabase.from('habit_logs').select('*')
       ]);
       setApplications(appsRes.data || []);
       setResumes(resumesRes.data || []);
+
+      const dsaCount = dsaRes.data ? dsaRes.data.length : 0;
+      const speakingLogs = speakingRes.data || [];
+      const resumeCount = resumesRes.data ? resumesRes.data.length : 0;
+
+      try {
+        const readinessData = await apiGet('/placements/readiness');
+        if (readinessData && readinessData.dsa) {
+          setDsaMetrics(readinessData.dsa);
+          setCommunicationMetrics(readinessData.communication);
+          setSystemDesignMetrics(readinessData.systemDesign);
+        } else {
+          throw new Error('Invalid response structure');
+        }
+      } catch (err) {
+        console.warn('Failed to fetch backend readiness metrics, using client-side calculations', err);
+        // Calculate DSA score
+        const calculatedDsaScore = Math.min(100, Math.max(35, 35 + dsaCount * 5));
+        const calculatedDsaDesc = dsaCount > 0 ? `${dsaCount} problems solved this period` : 'No solved problems logged yet';
+        setDsaMetrics({ score: calculatedDsaScore, desc: calculatedDsaDesc });
+
+        // Calculate speaking/communication score
+        let calculatedCommScore = 60; // baseline
+        if (speakingLogs.length > 0) {
+          const totalSum = speakingLogs.reduce((acc, log) => {
+            const conf = Number(log.confidence_score || 0);
+            const clar = Number(log.clarity_score || 0);
+            const pace = Number(log.pace_score || 0);
+            return acc + (conf + clar + pace) / 3;
+          }, 0);
+          const rawAvg = totalSum / speakingLogs.length;
+          calculatedCommScore = rawAvg <= 10 ? Math.round(rawAvg * 10) : Math.round(rawAvg);
+          calculatedCommScore = Math.min(100, Math.max(0, calculatedCommScore));
+        }
+        const calculatedCommDesc = speakingLogs.length > 0 
+          ? `Based on ${speakingLogs.length} speech logs` 
+          : 'Record speaking logs to benchmark';
+        setCommunicationMetrics({ score: calculatedCommScore, desc: calculatedCommDesc });
+
+        // Calculate System Design score
+        const calculatedSysScore = Math.min(100, Math.max(40, 40 + resumeCount * 15));
+        const calculatedSysDesc = resumeCount > 0 
+          ? `${resumeCount} active resumes mapped` 
+          : 'Target key systems in resumes';
+        setSystemDesignMetrics({ score: calculatedSysScore, desc: calculatedSysDesc });
+      }
+
+      // Momentum Status & Trajectory Analytics
+      const completedLogs = (habitsRes.data || []).filter(h => h.status === 'done' || h.completed_at);
+      const now = new Date();
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      const last7DaysCount = completedLogs.filter(h => {
+        const logDate = new Date(h.completed_at || h.created_at);
+        return (now - logDate) <= 7 * oneDayMs;
+      }).length;
+      const prev7DaysCount = completedLogs.filter(h => {
+        const logDate = new Date(h.completed_at || h.created_at);
+        const diff = now - logDate;
+        return diff > 7 * oneDayMs && diff <= 14 * oneDayMs;
+      }).length;
+
+      const calcMomentumScore = last7DaysCount > 0 ? Math.min(100, 45 + last7DaysCount * 5) : 35;
+      setMomentumScore(calcMomentumScore);
+
+      let pctChange = 0;
+      if (prev7DaysCount > 0) {
+        pctChange = ((last7DaysCount - prev7DaysCount) / prev7DaysCount) * 100;
+      } else if (last7DaysCount > 0) {
+        pctChange = 100;
+      }
+      const pctChangeStr = (pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '% vs LW';
+      setMomentumGrowth(pctChangeStr);
+
+      let status = 'Stagnant';
+      if (calcMomentumScore >= 80) status = 'Peak';
+      else if (calcMomentumScore >= 65) status = 'Accelerating';
+      else if (calcMomentumScore >= 45) status = 'Building';
+      setMomentumStatus(status);
+
+      const text = calcMomentumScore >= 65 
+        ? `Your habit consistency is strong with ${last7DaysCount} checkins. Keep building momentum.` 
+        : "Increase your daily habit completions and speaking practice to drive higher momentum.";
+      setMomentumText(text);
+
     } catch (error) {
       console.error("Placements Load Error:", error);
       toast.error("Failed to load career data");
@@ -508,11 +607,11 @@ export default function Placements() {
               <div style={{ zIndex: 1 }}>
                 <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '12px' }}>Momentum Status</h3>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-                  <span style={{ fontSize: '48px', fontWeight: 400, fontFamily: 'var(--font-serif)', color: 'var(--text-1)' }}>Accelerating</span>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-success)', background: 'var(--color-success)15', padding: '4px 12px', borderRadius: '20px' }}>+12.5% vs LW</span>
+                  <span style={{ fontSize: '48px', fontWeight: 400, fontFamily: 'var(--font-serif)', color: 'var(--text-1)' }}>{momentumStatus}</span>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: momentumGrowth.startsWith('-') ? 'var(--color-rust)' : 'var(--color-success)', background: momentumGrowth.startsWith('-') ? 'var(--color-rust)15' : 'var(--color-success)15', padding: '4px 12px', borderRadius: '20px' }}>{momentumGrowth}</span>
                 </div>
                 <p style={{ fontSize: '13px', color: 'var(--text-2)', marginTop: '16px', maxWidth: '400px', lineHeight: '1.6' }}>
-                  Your application volume is up, and your response time for interview invites has improved by 4 hours on average.
+                  {momentumText}
                 </p>
               </div>
               <div style={{ width: '120px', height: '120px', position: 'relative' }}>
@@ -522,12 +621,12 @@ export default function Placements() {
                       cx="50" cy="50" r="45" fill="none" stroke="var(--color-rust)" strokeWidth="8"
                       strokeDasharray="283"
                       initial={{ strokeDashoffset: 283 }}
-                      animate={{ strokeDashoffset: 283 - (283 * 0.75) }}
+                      animate={{ strokeDashoffset: 283 - (283 * (momentumScore / 100)) }}
                       transition={{ duration: 2, ease: "easeOut" }}
                       strokeLinecap="round"
                     />
                  </svg>
-                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 600 }}>75</div>
+                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 600 }}>{momentumScore}</div>
               </div>
               <div style={{ position: 'absolute', right: '-10%', top: '-20%', width: '200px', height: '200px', background: 'var(--color-rust)', filter: 'blur(80px)', opacity: 0.05 }} />
             </div>
@@ -546,18 +645,18 @@ export default function Placements() {
                   { label: 'Offer', count: stats.offers, color: '#23503B', pct: (stats.offers / (stats.total || 1)) * 100 }
                 ].map((step, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-                    <div style={{ width: '120px', fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>{step.label}</div>
-                    <div style={{ flex: 1, height: '54px', background: 'var(--bg-elevated)', borderRadius: '12px', overflow: 'hidden', position: 'relative', border: '1px solid var(--border)' }}>
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${step.pct}%` }}
-                        transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
-                        style={{ height: '100%', background: step.color, opacity: 0.85 }}
-                      />
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 20px', fontSize: '14px', fontWeight: 700, color: step.pct > 30 ? 'white' : 'var(--text-1)' }}>
-                        {step.count} <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '10px', fontWeight: 500 }}>({step.pct.toFixed(0)}%)</span>
-                      </div>
-                    </div>
+                     <div style={{ width: '120px', fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>{step.label}</div>
+                     <div style={{ flex: 1, height: '54px', background: 'var(--bg-elevated)', borderRadius: '12px', overflow: 'hidden', position: 'relative', border: '1px solid var(--border)' }}>
+                       <motion.div 
+                         initial={{ width: 0 }}
+                         animate={{ width: `${step.pct}%` }}
+                         transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
+                         style={{ height: '100%', background: step.color, opacity: 0.85 }}
+                       />
+                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 20px', fontSize: '14px', fontWeight: 700, color: step.pct > 30 ? 'white' : 'var(--text-1)' }}>
+                         {step.count} <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '10px', fontWeight: 500 }}>({step.pct.toFixed(0)}%)</span>
+                       </div>
+                     </div>
                   </div>
                 ))}
               </div>
@@ -568,9 +667,9 @@ export default function Placements() {
               <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '40px' }}>Market Readiness Scorecard</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px' }}>
                 {[
-                  { label: 'DSA/Algorithms', score: 82, color: 'var(--color-rust)', desc: 'Top 5% of candidate pool' },
-                  { label: 'Communication', score: 75, color: 'var(--accent)', desc: 'Clear & articulate' },
-                  { label: 'System Design', score: 45, color: '#23503B', desc: 'Needs targeted review' }
+                  { label: 'DSA/Algorithms', score: dsaMetrics.score, color: 'var(--color-rust)', desc: dsaMetrics.desc },
+                  { label: 'Communication', score: communicationMetrics.score, color: 'var(--accent)', desc: communicationMetrics.desc },
+                  { label: 'System Design', score: systemDesignMetrics.score, color: '#23503B', desc: systemDesignMetrics.desc }
                 ].map((m, i) => (
                   <div key={i} style={{ textAlign: 'center' }}>
                     <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 24px' }}>

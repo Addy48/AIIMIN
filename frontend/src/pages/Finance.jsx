@@ -7,9 +7,8 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import supabase from '../utils/supabase';
 import toast from '../utils/toast';
-import { insertRow } from '../services/dbService';
+import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
 import { EXPENSE_CATS } from '../components/money/MoneyShared';
 import DesktopWindow from '../components/ui/DesktopWindow';
 import { 
@@ -43,9 +42,7 @@ const Finance = () => {
 
   // New Account State
   const [accountModalOpen, setAccountModalOpen] = useState(false);
-  const [newAccount, setNewAccount] = useState({ name: '', balance: 0, type: 'Checking', icon: '🏦' });
-
-  // Excel Import Logic
+  const [newAccount, setNewAccount] = useState({ name: '', balance: 0, type: 'Checking', icon: '🏦' })  // Excel Import Logic
   const parseExcelDate = (val) => {
     if (!val) return new Date().toISOString().split('T')[0];
     if (typeof val === 'number') {
@@ -53,7 +50,29 @@ const Finance = () => {
       const date = new Date((val - 25569) * 86400 * 1000);
       return date.toISOString().split('T')[0];
     }
-    // Try parsing string
+    if (typeof val === 'string') {
+      const cleanStr = val.trim();
+      // Match DD-MM-YYYY, DD/MM/YYYY, DD.MM.YYYY
+      let parts = cleanStr.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})$/);
+      if (parts) {
+        const d = new Date(parseInt(parts[3], 10), parseInt(parts[2], 10) - 1, parseInt(parts[1], 10));
+        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+      }
+      // Match YYYY-MM-DD, YYYY/MM/DD, YYYY.MM.DD
+      parts = cleanStr.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})$/);
+      if (parts) {
+        const d = new Date(parseInt(parts[1], 10), parseInt(parts[2], 10) - 1, parseInt(parts[3], 10));
+        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+      }
+      // Match DD-MM-YY or DD/MM/YY
+      parts = cleanStr.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{2})$/);
+      if (parts) {
+        const year = 2000 + parseInt(parts[3], 10);
+        const d = new Date(year, parseInt(parts[2], 10) - 1, parseInt(parts[1], 10));
+        if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
+      }
+    }
+    // Try parsing standard string
     try {
       const d = new Date(val);
       if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
@@ -61,47 +80,29 @@ const Finance = () => {
     return new Date().toISOString().split('T')[0];
   };
 
-  const handleFileUpload = (file) => {
+  const handleFileUpload = async (file) => {
     if (!file) return;
-    if (!XLSX) {
-      toast.error('Excel engine is still initializing. Please wait a moment.');
-      return;
-    }
     setImportStatus('processing');
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-        // Transform Excel data to transaction objects
-        const newTransactions = jsonData.map((row, i) => ({
-          id: `import-${Date.now()}-${i}`,
-          date: parseExcelDate(row.Date || row.date || row.DATE),
-          amount: Math.abs(parseFloat(row.Amount || row.amount || row.AMOUNT || 0)),
-          category: row.Category || row.category || row.CATEGORY || 'Other',
-          description: row.Note || row.note || row.Description || row.description || row.NOTE || '',
-          type: (row.Type || row.type || row.Category || '').toLowerCase().includes('inc') ? 'income' : 'expense'
-        })).filter(t => t.amount > 0);
-
-        if (newTransactions.length === 0) throw new Error("No valid transactions found");
-
-        setTransactions(prev => [...newTransactions, ...prev]);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await apiPost('/wealth/import', formData, { json: false });
+      if (res.success) {
+        toast.success(res.message);
         setImportStatus('success');
+        await loadFinanceData();
         setTimeout(() => {
           setImportOpen(false);
           setImportStatus('idle');
         }, 2000);
-      } catch (err) {
-        console.error("Excel Import Error:", err);
-        setImportStatus('error');
+      } else {
+        throw new Error(res.error || 'Import failed');
       }
-    };
-    reader.readAsArrayBuffer(file);
+    } catch (err) {
+      console.error("Excel Import Error:", err);
+      toast.error(err.message || "Failed to process the spreadsheet.");
+      setImportStatus('error');
+    }
   };
 
   const handleDrag = (e) => {
@@ -127,17 +128,17 @@ const Finance = () => {
   const loadFinanceData = async () => {
     setLoading(true);
     try {
-      const [transRes, assetsRes, accountsRes, budgetsRes] = await Promise.all([
-        supabase.from('money_transactions').select('*').order('date', { ascending: false }),
-        supabase.from('wealth_assets').select('*').order('current_value', { ascending: false }),
-        supabase.from('accounts').select('*').order('balance', { ascending: false }),
-        supabase.from('budgets').select('*, money_categories(name)').order('amount', { ascending: false })
+      const [transData, assetsData, accountsData, budgetsData] = await Promise.all([
+        apiGet('/wealth/transactions'),
+        apiGet('/wealth/assets'),
+        apiGet('/wealth/accounts'),
+        apiGet('/wealth/budgets')
       ]);
 
-      setTransactions(transRes.data || []);
-      setAssets(assetsRes.data || []);
-      setAccounts(accountsRes.data || []);
-      setBudgets(budgetsRes.data || []);
+      setTransactions(transData || []);
+      setAssets(assetsData || []);
+      setAccounts(accountsData || []);
+      setBudgets(budgetsData || []);
     } catch (error) {
       console.error("Finance data fetch error:", error);
     } finally {
@@ -259,32 +260,29 @@ savingsRate: (sRate * 100).toFixed(1),
     try {
       if (newAccount.id) {
         // Edit existing
-        const { error } = await supabase.from('accounts').update({
+        const updated = await apiPut('/wealth/accounts/' + newAccount.id, {
           name: newAccount.name,
           balance: newAccount.balance,
           type: newAccount.type,
           icon: newAccount.icon
-        }).eq('id', newAccount.id);
-        if (error) throw error;
-        setAccounts(prev => prev.map(a => a.id === newAccount.id ? { ...a, ...newAccount } : a));
+        });
+        setAccounts(prev => prev.map(a => a.id === newAccount.id ? updated : a));
         toast.success("Account updated");
       } else {
         // Create new
-        const res = await insertRow('accounts', {
+        const created = await apiPost('/wealth/accounts', {
           name: newAccount.name,
           balance: newAccount.balance,
           type: newAccount.type,
-          icon: newAccount.icon,
-          user_id: user.id
+          icon: newAccount.icon
         });
-        if (res && res.length > 0) {
-          setAccounts(prev => [res[0], ...prev]);
-          toast.success("Account added successfully");
-        }
+        setAccounts(prev => [created, ...prev]);
+        toast.success("Account added successfully");
       }
       setAccountModalOpen(false);
       setNewAccount({ name: '', balance: 0, type: 'Checking', icon: '🏦' });
     } catch (err) {
+      console.error(err);
       toast.error("Operation failed");
     }
   };
@@ -292,11 +290,11 @@ savingsRate: (sRate * 100).toFixed(1),
   const handleDeleteAccount = async (id) => {
     if (!window.confirm("Are you sure you want to remove this account? This will not delete transactions.")) return;
     try {
-      const { error } = await supabase.from('accounts').delete().eq('id', id);
-      if (error) throw error;
+      await apiDelete('/wealth/accounts/' + id);
       setAccounts(prev => prev.filter(a => a.id !== id));
       toast.success("Account removed");
     } catch (err) {
+      console.error(err);
       toast.error("Failed to delete account");
     }
   };
@@ -1344,8 +1342,7 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
         const refNote = note.trim() || 'Internal Transfer';
 
         // Log outflow from source
-        await insertRow('money_transactions', {
-          user_id: user.id,
+        await apiPost('/wealth/transactions', {
           date: date,
           category: 'Transfer',
           description: `To: ${accounts.find(a => a.id === targetAccountId)?.name} — ${refNote}`,
@@ -1358,8 +1355,7 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
         });
 
         // Log inflow to target
-        await insertRow('money_transactions', {
-          user_id: user.id,
+        await apiPost('/wealth/transactions', {
           date: date,
           category: 'Transfer',
           description: `From: ${accounts.find(a => a.id === accountId)?.name} — ${refNote}`,
@@ -1375,8 +1371,7 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
         if (type === 'expense') finalAmount = -Math.abs(finalAmount);
         else finalAmount = Math.abs(finalAmount);
 
-        await insertRow('money_transactions', {
-          user_id: user.id,
+        await apiPost('/wealth/transactions', {
           date: date,
           category: category || (type === 'income' ? 'Income' : 'Other'),
           description: note.trim() || null,

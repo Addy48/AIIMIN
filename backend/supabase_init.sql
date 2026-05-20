@@ -7,6 +7,18 @@
 
 
 -- ============================================================
+-- SECTION 0: AUTH COMPATIBILITY FOR NEON DB
+-- ============================================================
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE TABLE IF NOT EXISTS auth.users (
+    id UUID PRIMARY KEY,
+    email TEXT,
+    raw_user_meta_data JSONB,
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+);
+
+-- ============================================================
 -- SECTION 1: FUNCTIONS & TRIGGERS
 -- ============================================================
 
@@ -212,23 +224,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.goals TO authenticated;
 GRANT ALL ON public.goals TO service_role;
 
 
--- pomodoro_sessions: VIEW over sessions (consolidated from legacy table — C-3)
-DROP TABLE IF EXISTS public.pomodoro_sessions CASCADE;
-DROP VIEW IF EXISTS public.pomodoro_sessions CASCADE;
-CREATE OR REPLACE VIEW public.pomodoro_sessions AS
-SELECT
-    user_id,
-    DATE(started_at AT TIME ZONE 'Asia/Kolkata') AS date,
-    COUNT(*)::int AS cycles_completed,
-    COALESCE(SUM(duration_minutes), 0)::int AS total_focus_minutes
-FROM public.sessions
-WHERE deleted_at IS NULL
-  AND session_type = 'focus'
-GROUP BY user_id, DATE(started_at AT TIME ZONE 'Asia/Kolkata');
-
-GRANT SELECT ON public.pomodoro_sessions TO authenticated, service_role;
-
-
 -- Deep-work sessions (used by SessionStats component)
 CREATE TABLE IF NOT EXISTS public.sessions (
     id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -261,6 +256,23 @@ CREATE INDEX IF NOT EXISTS idx_sessions_user_date
 REVOKE ALL ON public.sessions FROM PUBLIC;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.sessions TO authenticated;
 GRANT ALL ON public.sessions TO service_role;
+
+
+-- pomodoro_sessions: VIEW over sessions (consolidated from legacy table — C-3)
+DROP TABLE IF EXISTS public.pomodoro_sessions CASCADE;
+DROP VIEW IF EXISTS public.pomodoro_sessions CASCADE;
+CREATE OR REPLACE VIEW public.pomodoro_sessions AS
+SELECT
+    user_id,
+    DATE(started_at AT TIME ZONE 'Asia/Kolkata') AS date,
+    COUNT(*)::int AS cycles_completed,
+    COALESCE(SUM(duration_minutes), 0)::int AS total_focus_minutes
+FROM public.sessions
+WHERE deleted_at IS NULL
+  AND session_type = 'focus'
+GROUP BY user_id, DATE(started_at AT TIME ZONE 'Asia/Kolkata');
+
+GRANT SELECT ON public.pomodoro_sessions TO authenticated, service_role;
 
 
 -- ============================================================
