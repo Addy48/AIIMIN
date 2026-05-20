@@ -136,49 +136,8 @@ app.post('/sync/pull', requireAuth, async (c) => {
 });
 
 app.post('/sync/push', requireAuth, async (c) => {
-    try {
-        const userId = c.get('userId');
-        const body = await c.req.json().catch(() => ({}));
-        const start = body.start || new Date().toISOString();
-        const end = body.end || new Date(Date.now() + 30 * 86400000).toISOString();
-        const { calendar } = await createGoogleCalendar(userId);
-
-        const { data: events, error } = await supabase
-            .from('calendar_events')
-            .select('*')
-            .eq('user_id', userId)
-            .gte('start_time', start)
-            .lte('start_time', end)
-            .is('deleted_at', null)
-            .in('event_type', ['task', 'todo', 'reminder', 'event']);
-        if (error) throw error;
-
-        let pushed = 0;
-        for (const ev of events || []) {
-            if (ev.google_event_id) continue;
-            const created = await calendar.events.insert({
-                calendarId: 'primary',
-                requestBody: {
-                    summary: ev.title,
-                    description: ev.description || undefined,
-                    location: ev.location || undefined,
-                    start: toGoogleDate(ev.start_time, ev.all_day),
-                    end: toGoogleDate(ev.end_time || ev.start_time, ev.all_day),
-                    extendedProperties: { private: { aiimin_id: ev.id, aiimin_type: ev.event_type || 'event' } },
-                },
-            });
-            await supabase
-                .from('calendar_events')
-                .update({ google_event_id: created.data.id, source_type: 'user', updated_at: new Date().toISOString() })
-                .eq('id', ev.id)
-                .eq('user_id', userId);
-            pushed += 1;
-        }
-
-        return c.json({ pushed });
-    } catch (err) {
-        return c.json({ error: err.message, code: err.code }, err.code === 'NOT_CONNECTED' ? 409 : 500);
-    }
+    // Strictly one-way calendar sync: disable pushing to Google Calendar
+    return c.json({ pushed: 0, message: "Push disabled: Calendar sync is strictly one-way (Google -> Dashboard)" });
 });
 
 /* ── GET /api/calendar/day/:date ─────────────────────────────── */

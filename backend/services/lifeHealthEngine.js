@@ -7,6 +7,7 @@ export function calculateBaseMetrics(record) {
     const steps = Number(record?.steps || 0);
     const focusCycles = Number(record?.focus_cycles || 0);
     const targetCycles = Number(record?.target_cycles || 4) || 4;
+    const focusMinutes = Number(record?.focus_minutes || 0);
     const dailySpend = Number(record?.daily_spend || 0);
     const burnTarget = Number(record?.burn_target || 1500) || 1500;
     const mood = Number(record?.mood || 0);
@@ -14,7 +15,8 @@ export function calculateBaseMetrics(record) {
 
     const sleepScore = pct(100 - (Math.abs(7.5 - sleepHours) * 20));
     const activityScore = pct((record?.gym_done ? 100 : 0) * 0.7 + (Math.min(steps / 10000, 1) * 100) * 0.3);
-    const focusScore = pct(Math.min((focusCycles / targetCycles) * 100, 100));
+    const focusMinutesScore = pct(Math.min((focusMinutes / 120) * 100, 100));
+    const focusScore = pct((Math.min((focusCycles / targetCycles) * 100, 100) * 0.4) + (focusMinutesScore * 0.6));
     const financialScore = pct(Math.max(0, 100 - (((dailySpend / burnTarget) - 1) * 50)));
     const nutritionWaterScore = pct(Math.min((water / 4) * 100, 100));
     const learningScore = record?.learning_done ? 100 : 0;
@@ -47,7 +49,7 @@ export function calculateLifeHealthForRecord(record) {
     const systemScores = {
         physical: pct((baseMetrics.sleepScore * 0.4) + (baseMetrics.activityScore * 0.4) + (baseMetrics.nutritionWaterScore * 0.2)),
         cognitive: pct((baseMetrics.focusScore * 0.7) + (baseMetrics.learningScore * 0.3)),
-        discipline: pct((baseMetrics.habitCompletionScore * 0.6) + (baseMetrics.routineAdherenceScore * 0.4)),
+        discipline: pct((baseMetrics.habitCompletionScore * 0.5) + (baseMetrics.routineAdherenceScore * 0.3) + (baseMetrics.focusScore * 0.2)),
         financial: pct((baseMetrics.budgetAdherenceScore * 0.7) + (baseMetrics.savingsRateScore * 0.3)),
         emotional: pct((baseMetrics.moodStabilityScore * 0.5) + (baseMetrics.journalConsistencyScore * 0.5)),
     };

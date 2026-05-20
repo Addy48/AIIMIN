@@ -54,13 +54,19 @@ export class BehavioralEngine {
         // 4. Recovery Reward
         // If they had a drift period and the last 2 days are high performance, add a boost
         const recoveryBoost = this._calculateRecoveryReward(logs);
-        rawScore = Math.min(100, rawScore + recoveryBoost);
+        
+        // 5. Habit Streak Boost
+        const habitStreak = this._calcHabitStreak(logs);
+        const streakBoost = Math.min(10, habitStreak * 1.5);
+        
+        rawScore = Math.min(100, rawScore + recoveryBoost + streakBoost);
 
         return {
             score: Math.round(rawScore),
             version: ENGINE_VERSION,
             sufficiency: logs.length >= THRESHOLDS.TREND ? 'HIGH' : 'MEDIUM',
-            breakdown: { commitmentScore, sessionScore, sleepScore, moodScore, driftScore, recoveryBoost }
+            habitStreak,
+            breakdown: { commitmentScore, sessionScore, sleepScore, moodScore, driftScore, recoveryBoost, habitStreak, streakBoost }
         };
     }
 
@@ -115,6 +121,19 @@ export class BehavioralEngine {
         const positivityScore = (avg / 5) * 100;
 
         return (positivityScore * 0.5) + (stabilityScore * 0.5);
+    }
+
+    static _calcHabitStreak(logs) {
+        let currentStreak = 0;
+        for (let i = logs.length - 1; i >= 0; i--) {
+            const pct = logs[i].habit_completion_pct || logs[i].commitment_pct || 0;
+            if (pct >= 50) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+        return currentStreak;
     }
 
     static _calculateRecoveryReward(logs) {

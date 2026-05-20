@@ -16,12 +16,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1049.0",
+    "@aws-sdk/s3-request-presigner": "^3.1049.0",
     "@supabase/supabase-js": "^2.98.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "hono": "^4.7.4",
     "googleapis": "^171.4.0",
+    "hono": "^4.7.4",
     "luxon": "^3.7.2",
-    "winston": "^3.19.0"
+    "pg": "^8.21.0",
+    "winston": "^3.19.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@hono/node-server": "^2.0.3",
+    "sst": "^4.14.1"
   }
 }
