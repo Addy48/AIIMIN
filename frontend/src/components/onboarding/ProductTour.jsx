@@ -1,38 +1,80 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Check } from 'lucide-react';
+import { ChevronRight, Check, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useThemeContext } from '../../context/ThemeContext';
 
 const TOUR_STEPS = [
     {
         target: '/overview',
-        title: 'Welcome to AIIMIN',
-        content: 'Your personal operating system for behavior shaping. This Overview gives you a birds-eye view of your day, mood, and upcoming goals.',
+        title: 'Welcome to AIIMIN Dashboard',
+        content: 'This is your central command center. Here you get a birds-eye view of your day\'s schedules, habits completion rate, ongoing focus statistics, and visual mood/productivity patterns.',
         position: 'center'
     },
     {
         target: '/habits',
-        title: 'Build Better Habits',
-        content: 'Track your daily routines and build streaks. Consistency is key to long-term success.',
+        title: 'Habits Tracking System',
+        content: 'Consistency breeds excellence. Create personal habits, track your daily routines, and earn progressive streak milestones to reinforce positive behavioral habits.',
+        position: 'center'
+    },
+    {
+        target: '/goals',
+        title: 'Core Goals & Milestones',
+        content: 'Turn abstract dreams into absolute results. Set long-term life objectives, define key metrics, and break them down into granular, actionable todo checklist items.',
+        position: 'center'
+    },
+    {
+        target: '/journal',
+        title: 'Structured Daily Journaling',
+        content: 'Forge deep self-awareness. Log morning reflections and evening gratitude, rating your daily productivity, focus, and mindfulness scores in your permanent log.',
+        position: 'center'
+    },
+    {
+        target: '/focus',
+        title: 'Deep Focus & Pomodoro Room',
+        content: 'Lock in and tune out distractions. Start custom Pomodoro sessions, play soothing background noise generators (Lofi, Rain, White Noise), and track every block of deep work.',
         position: 'center'
     },
     {
         target: '/placements',
-        title: 'Career & Placements',
-        content: 'Manage your job applications, track interview stages, and prep for technical rounds all in one place.',
-        position: 'center'
-    },
-    {
-        target: '/lab',
-        title: 'The Improvement Lab',
-        content: 'Train your skills. Test your typing speed, log speaking exercises, and forge your core personality traits.',
+        title: 'Placement & Job Tracker',
+        content: 'Supercharge your career prep. A full Kanban board to track job applications, maintain interview steps, log key contacts, and organize resume variants all in one workspace.',
         position: 'center'
     },
     {
         target: '/finance',
-        title: 'Wealth Management',
-        content: 'Keep an eye on your assets. Track Gold, Silver, Mutual Funds, and Foreign Stocks directly from your dashboard.',
+        title: 'Wealth & Asset Ledger',
+        content: 'Take absolute control of your finances. Record dynamic transactions, build monthly budgets, and track live market prices for Gold, Silver, Mutual Funds, and global equities.',
+        position: 'center'
+    },
+    {
+        target: '/sports',
+        title: 'Live Sports scores & Alerts',
+        content: 'Track your favorite sports without leaving your personal OS. Live updates, match results, and custom ESPN-powered schedules for Cricket, Football, Formula 1, and Basketball.',
+        position: 'center'
+    },
+    {
+        target: '/lab',
+        title: 'Self-Improvement Lab',
+        content: 'Train your attributes like an RPG character. Take real-time typing speed speedruns, track verbal practice logs, and structure core identity affirmations.',
+        position: 'center'
+    },
+    {
+        target: '/calendar',
+        title: 'Unified Calendar & Deadlines',
+        content: 'Synchronize your life seamlessly. Full Google Calendar integration combining your tasks, deadlines, schedules, and custom sessions into one responsive calendar view.',
+        position: 'center'
+    },
+    {
+        target: '/insights',
+        title: 'AI Behavioral Insights',
+        content: 'Discover hidden patterns in your life. Our analysis engine correlates your financial habits, productivity sessions, sleep logs, and focus levels into actionable graphs.',
+        position: 'center'
+    },
+    {
+        target: '/settings',
+        title: 'Custom Themes & Preferences',
+        content: 'Make AIIMIN fully yours. Toggle responsive dark/light modes, update credentials, configure active API integrations, and choose from 9 custom-tailored visual themes.',
         position: 'center'
     }
 ];
@@ -53,7 +95,7 @@ export default function ProductTour() {
 
     const endTour = () => {
         setIsOpen(false);
-        localStorage.setItem('aiimin_tour_seen', 'true');
+        localStorage.setItem('aiimin_tour_completed', 'true');
     };
 
     const nextStep = () => {
@@ -66,16 +108,37 @@ export default function ProductTour() {
         }
     };
 
-    // We expose a global window method for easy testing / manual trigger from navbar
+    const prevStep = () => {
+        if (currentStep > 0) {
+            const prev = currentStep - 1;
+            setCurrentStep(prev);
+            navigate(TOUR_STEPS[prev].target);
+        }
+    };
+
+    // Auto-start guided tour if not seen yet
+    useEffect(() => {
+        const completed = localStorage.getItem('aiimin_tour_completed');
+        if (!completed) {
+            const timer = setTimeout(() => {
+                startTour();
+            }, 2000); // 2-second buffer to allow UI to mount fully
+            return () => clearTimeout(timer);
+        }
+    }, [startTour]);
+
+    // Expose global trigger for manual settings retakes
     useEffect(() => {
         window.startProductTour = startTour;
         return () => { delete window.startProductTour; };
     }, [startTour]);
 
-    const bg = isDark ? '#161616' : '#ffffff';
-    const border = isDark ? '#2a2a2a' : '#e5e7eb';
-    const text1 = isDark ? '#ededed' : '#111111';
-    const text2 = isDark ? '#a1a1aa' : '#6b7280';
+    const bg = isDark ? '#1a1a1a' : '#fcfbf9';
+    const border = isDark ? '#2e2e2e' : '#e4e2db';
+    const text1 = isDark ? '#f5f5f5' : '#1e201d';
+    const text2 = isDark ? '#a0a0a0' : '#5a5c59';
+    const accent = 'var(--color-accent)';
+
     return (
         <>
             <AnimatePresence>
@@ -86,67 +149,112 @@ export default function ProductTour() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', pointerEvents: 'auto' }}
+                            style={{ position: 'absolute', inset: 0, background: 'rgba(25, 26, 24, 0.45)', backdropFilter: 'blur(3px)', pointerEvents: 'auto' }}
                             onClick={endTour}
                         />
 
                         {/* Dialog */}
                         <motion.div
                             key={currentStep}
-                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                            initial={{ opacity: 0, y: 30, scale: 0.96 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            exit={{ opacity: 0, y: -30, scale: 0.96 }}
+                            transition={{ type: 'spring', damping: 26, stiffness: 280 }}
                             style={{
                                 position: 'absolute',
                                 top: '50%',
                                 left: '50%',
                                 transform: 'translate(-50%, -50%)',
-                                width: '400px',
+                                width: '100%',
+                                maxWidth: '440px',
                                 background: bg,
                                 border: `1px solid ${border}`,
-                                borderRadius: '24px',
-                                padding: '32px',
-                                boxShadow: isDark ? '0 24px 64px rgba(0,0,0,0.5)' : '0 24px 64px rgba(0,0,0,0.15)',
+                                borderRadius: '28px',
+                                padding: '36px',
+                                boxShadow: isDark ? '0 30px 80px rgba(0,0,0,0.6)' : '0 30px 80px rgba(30,32,29,0.12)',
                                 pointerEvents: 'auto'
                             }}
                         >
-                            <div style={{ fontSize: '12px', fontWeight: 700, color: text2, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
-                                Step {currentStep + 1} of {TOUR_STEPS.length}
+                            {/* Step Count indicator */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 800, color: accent, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                                    Interactive Walkthrough
+                                </span>
+                                <span style={{ fontSize: '11px', fontWeight: 700, color: text2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                    Step {currentStep + 1} of {TOUR_STEPS.length}
+                                </span>
                             </div>
-                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, marginBottom: '16px', letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>
+
+                            {/* Step Title */}
+                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, marginBottom: '16px', letterSpacing: '-0.02em', fontFamily: 'var(--font-sans)', lineHeight: 1.2 }}>
                                 {TOUR_STEPS[currentStep].title}
                             </h2>
-                            <p style={{ fontSize: '15px', color: text2, lineHeight: 1.6, marginBottom: '32px' }}>
+
+                            {/* Step Content */}
+                            <p style={{ fontSize: '14.5px', color: text2, lineHeight: 1.6, marginBottom: '36px', fontFamily: 'var(--font-sans)' }}>
                                 {TOUR_STEPS[currentStep].content}
                             </p>
 
+                            {/* Controls */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <button onClick={endTour} style={{ background: 'none', border: 'none', color: text2, cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}>
-                                    Skip Tour
-                                </button>
                                 <button 
-                                    onClick={nextStep}
-                                    style={{
-                                        background: 'var(--color-accent)',
-                                        color: isDark ? '#000' : '#fff',
-                                        border: 'none',
-                                        padding: '12px 24px',
-                                        borderRadius: '12px',
-                                        fontSize: '14px',
-                                        fontWeight: 700,
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px'
+                                    onClick={endTour} 
+                                    style={{ 
+                                        background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '13px', fontWeight: 700,
+                                        fontFamily: 'var(--font-sans)' 
                                     }}
                                 >
-                                    {currentStep === TOUR_STEPS.length - 1 ? (
-                                        <>Finish <Check size={16} /></>
-                                    ) : (
-                                        <>Next <ChevronRight size={16} /></>
-                                    )}
+                                    Skip Intro
                                 </button>
+
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    {currentStep > 0 && (
+                                        <button
+                                            onClick={prevStep}
+                                            style={{
+                                                background: 'none',
+                                                border: `1px solid ${border}`,
+                                                color: text1,
+                                                padding: '12px 18px',
+                                                borderRadius: '12px',
+                                                fontSize: '13px',
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                fontFamily: 'var(--font-sans)'
+                                            }}
+                                        >
+                                            <ArrowLeft size={14} /> Back
+                                        </button>
+                                    )}
+
+                                    <button 
+                                        onClick={nextStep}
+                                        style={{
+                                            background: accent,
+                                            color: '#fff',
+                                            border: 'none',
+                                            padding: '12px 24px',
+                                            borderRadius: '12px',
+                                            fontSize: '13px',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            fontFamily: 'var(--font-sans)',
+                                            boxShadow: '0 4px 12px rgba(30,92,58,0.15)'
+                                        }}
+                                    >
+                                        {currentStep === TOUR_STEPS.length - 1 ? (
+                                            <>Finish <Check size={14} /></>
+                                        ) : (
+                                            <>Next <ChevronRight size={14} /></>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     </div>
