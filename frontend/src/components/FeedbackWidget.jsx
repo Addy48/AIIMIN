@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { MessageSquare, X, Send } from 'lucide-react';
-import { apiPost } from '../utils/api';
+import { supabase } from '../utils/supabase';
+import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FeedbackWidget() {
+    const { user } = useAuth();
     const { theme } = useThemeContext();
     const isDark = theme === 'dark';
     
@@ -25,12 +27,18 @@ export default function FeedbackWidget() {
 
         setStatus('submitting');
         try {
-            // Call backend API which sends email to developer
-            try {
-                await apiPost('/feedback', { type, message: feedback });
-            } catch (apiError) {
-                console.error("Feedback submit error:", apiError);
-                throw apiError;
+            // Check if table exists, if not we will just log it. (Supabase will throw if table doesn't exist).
+            const { error } = await supabase.from('user_feedback').insert({
+                user_id: user?.id,
+                email: user?.email,
+                type,
+                message: feedback,
+                created_at: new Date().toISOString()
+            });
+
+            if (error) {
+                console.error("Feedback submit error:", error);
+                // Fallback if table doesn't exist yet
             }
             
             setStatus('success');

@@ -1,6 +1,24 @@
 import { Hono } from 'hono';
+import { handle } from 'hono/vercel';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
+
+import authRoutes from '../server/routes/auth.js';
+import dailyLogsRoutes from '../server/routes/dailyLogs.js';
+import dashboardRoutes from '../server/routes/dashboard.js';
+import tasksRoutes from '../server/routes/tasks.js';
+import googleAuthRoutes from '../server/routes/googleAuth.js';
+import calendarRoutes from '../server/routes/calendar.js';
+import notificationRoutes from '../server/routes/notifications.js';
+import accountRoutes from '../server/routes/account.js';
+import healthRoutes from '../server/routes/health.js';
+import habitsRoutes from '../server/routes/habits.js';
+import labRoutes from '../server/routes/lab.js';
+import placementsRoutes from '../server/routes/placements.js';
+import wealthRoutes from '../server/routes/wealth.js';
+import sportsRoutes from '../server/routes/sports.js';
+import intelligenceRoutes from '../server/routes/intelligence.js';
+import blobService from '../server/services/blobService.js';
 
 export const config = {
     runtime: 'nodejs'
@@ -9,7 +27,7 @@ export const config = {
 const app = new Hono().basePath('/api');
 
 app.use('*', async (c, next) => {
-    console.log(`[HONO] ${c.req.method} ${c.req.path}`);
+    console.log(`[HONO REQUEST] ${c.req.method} ${c.req.url} - Path: ${c.req.path}`);
     await next();
 });
 
@@ -22,84 +40,25 @@ app.use('*', cors({
     credentials: true,
 }));
 
-import { pool } from '../server/lib/db.js';
-
-// ── INSTANT health check ──
-app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
-
-// ── Supabase Keepalive (CRON) ──
-import { supabase } from '../server/lib/supabase.js';
-app.get('/keepalive', async (c) => {
-    try {
-        await pool.query('SELECT 1');
-        // Also ping via Supabase client to ensure REST API registers activity
-        const { data, error } = await supabase.from('users').select('id').limit(1);
-        if (error) console.error('Supabase REST ping error:', error);
-        return c.json({ status: 'alive', message: 'Supabase pinged successfully', ts: Date.now() });
-    } catch (err) {
-        return c.json({ status: 'error', message: err.message }, 500);
-    }
-});
-
-// ── Auth routes — loaded eagerly (small, needed first) ──
-import authRoutes from '../server/routes/auth.js';
+app.route('/health', healthRoutes);
 app.route('/auth', authRoutes);
+app.route('/daily-logs', dailyLogsRoutes);
+app.route('/dashboard', dashboardRoutes);
+app.route('/tasks', tasksRoutes);
+app.route('/google', googleAuthRoutes);
+app.route('/calendar', calendarRoutes);
+app.route('/notifications', notificationRoutes);
+app.route('/account', accountRoutes);
+app.route('/habits', habitsRoutes);
+app.route('/lab', labRoutes);
+app.route('/placements', placementsRoutes);
+app.route('/wealth', wealthRoutes);
+app.route('/sports', sportsRoutes);
+app.route('/intelligence', intelligenceRoutes);
+app.route('/blob', blobService);
 
-// ── Lazy route cache ──
-const cache = {};
-const routeMap = {
-    'daily-logs':    () => import('../server/routes/dailyLogs.js'),
-    'dashboard':     () => import('../server/routes/dashboard.js'),
-    'tasks':         () => import('../server/routes/tasks.js'),
-    'google':        () => import('../server/routes/googleAuth.js'),
-    'calendar':      () => import('../server/routes/calendar.js'),
-    'notifications': () => import('../server/routes/notifications.js'),
-    'account':       () => import('../server/routes/account.js'),
-    'habits':        () => import('../server/routes/habits.js'),
-    'lab':           () => import('../server/routes/lab.js'),
-    'placements':    () => import('../server/routes/placements.js'),
-    'wealth':        () => import('../server/routes/wealth.js'),
-    'sports':        () => import('../server/routes/sports.js'),
-    'intelligence':  () => import('../server/routes/intelligence.js'),
-    'ats':           () => import('../server/routes/ats.js'),
-    'blob':          () => import('../server/services/blobService.js'),
-    'feedback':      () => import('../server/routes/feedback.js'),
-    'family':        () => import('../server/routes/family.js'),
-};
-
-async function loadRouter(name) {
-    if (!cache[name]) {
-        const loader = routeMap[name];
-        if (!loader) return null;
-        const mod = await loader();
-        cache[name] = mod.default;
-    }
-    return cache[name];
-}
-
-// Catch-all for lazy routes
-app.all('*', async (c) => {
-    const path = c.req.path; // e.g. /api/wealth/transactions
-    const match = path.match(/^\/api\/([a-z-]+)(\/.*)?$/);
-    if (!match) return c.json({ error: 'Route not found' }, 404);
-
-    const prefix = match[1];
-    const subPath = match[2] || '/';
-
-    const subRouter = await loadRouter(prefix);
-    if (!subRouter) return c.json({ error: 'Route not found' }, 404);
-
-    // Forward request to sub-router with adjusted path
-    const url = new URL(c.req.url);
-    url.pathname = subPath;
-    const newReq = new Request(url.toString(), {
-        method:  c.req.method,
-        headers: c.req.raw.headers,
-        body:    ['GET', 'HEAD'].includes(c.req.method) ? undefined : c.req.raw.body,
-        duplex:  'half',
-    });
-
-    return subRouter.fetch(newReq);
+app.notFound((c) => {
+    return c.json({ error: 'Route not found' }, 404);
 });
 
 app.onError((err, c) => {
@@ -107,45 +66,5 @@ app.onError((err, c) => {
     return c.json({ error: 'Internal Server Error', message: err.message }, 500);
 });
 
-// ── Node.js-compatible handler for @vercel/node ──
-// Converts Web API Request/Response <-> Node.js IncomingMessage/ServerResponse
-export default async function handler(req, res) {
-    try {
-        const protocol = req.headers['x-forwarded-proto'] || 'https';
-        const host = req.headers['x-forwarded-host'] || req.headers.host || 'localhost';
-        const url = `${protocol}://${host}${req.url}`;
-
-        // Read body from Node.js stream
-        const body = await new Promise((resolve, reject) => {
-            const chunks = [];
-            req.on('data', (chunk) => chunks.push(chunk));
-            req.on('end', () => resolve(Buffer.concat(chunks)));
-            req.on('error', reject);
-        });
-
-        // Build Web API Request
-        const webReq = new Request(url, {
-            method:  req.method,
-            headers: req.headers,
-            body:    body.length > 0 ? body : undefined,
-        });
-
-        // Run through Hono
-        const webRes = await app.fetch(webReq);
-
-        // Write status + headers back to Node.js response
-        res.statusCode = webRes.status;
-        webRes.headers.forEach((value, key) => {
-            res.setHeader(key, value);
-        });
-
-        // Write body
-        const arrayBuffer = await webRes.arrayBuffer();
-        res.end(Buffer.from(arrayBuffer));
-    } catch (err) {
-        console.error('[HANDLER ERROR]:', err);
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: 'Internal Server Error', message: err.message }));
-    }
-}
+export const honoApp = app;
+export default handle(app);

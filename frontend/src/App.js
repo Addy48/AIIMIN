@@ -10,23 +10,17 @@ import DataDeletion from './pages/legal/DataDeletion';
 import Security from './pages/legal/Security';
 import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
-import Brand from './pages/legal/Brand';
 
 // Layout & eager components
 import MobileApp from './components/mobile/MobileApp';
 import DashboardLayout from './components/layout/DashboardLayout';
 import FeedbackWidget from './components/FeedbackWidget';
 import ProductTour from './components/onboarding/ProductTour';
-import GuestTour from './components/onboarding/GuestTour';
-
-// Guest mode
-// (Removed unused guest providers)
 
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
 
 // Lazy-loaded Dashboard routes
@@ -46,7 +40,6 @@ const IdentityPage  = React.lazy(() => import('./pages/Identity'));
 const NotesPage     = React.lazy(() => import('./pages/Notes'));
 const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
 const FocusRoom     = React.lazy(() => import('./pages/FocusRoom'));
-const FamilyPage    = React.lazy(() => import('./pages/Family'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -61,11 +54,9 @@ function App() {
     <ErrorBoundary label="Application">
       <ThemeProvider>
         <AuthProvider>
-          <AudioProvider>
-            <BrowserRouter>
-              <AuthedApp />
-            </BrowserRouter>
-          </AudioProvider>
+          <BrowserRouter>
+            <AuthedApp />
+          </BrowserRouter>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
@@ -73,12 +64,12 @@ function App() {
 }
 
 function AuthedApp() {
-  const { user, session, loading } = useAuth();
+  const { user, loading } = useAuth();
   if (loading) return <Fallback />;
-  return <AppContent user={user} session={session} />;
+  return <AppContent user={user} />;
 }
 
-function AppContent({ user, session }) {
+function AppContent({ user }) {
   const location = useLocation();
   const isMobileRoute = location.pathname === '/m';
 
@@ -109,11 +100,8 @@ function AppContent({ user, session }) {
         <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
 
         {/* ── Authenticated shell ── */}
-        <Route element={
-          session ? <DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} /> : 
-          <Navigate to="/login" replace />
-        }>
-          <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />
+        <Route element={user ? <DashboardLayout user={user} /> : <Navigate to="/login" replace />}>
+          <Route path="/overview" element={<Lazy><Overview user={user} /></Lazy>} />
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
           <Route path="/reports" element={<Lazy><ReportsPage /></Lazy>} />
@@ -129,20 +117,18 @@ function AppContent({ user, session }) {
           <Route path="/notes"       element={<Lazy><NotesPage /></Lazy>} />
           <Route path="/discipline"  element={<Lazy><DisciplinePage /></Lazy>} />
           <Route path="/focus"       element={<Lazy><FocusRoom /></Lazy>} />
-          <Route path="/family"      element={<Lazy><FamilyPage /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}
         <Route path="/m" element={user ? <MobileApp user={user} /> : <Navigate to="/login" replace />} />
 
-        {/* ── Public legal & brand ── */}
+        {/* ── Public legal ── */}
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/data-deletion" element={<DataDeletion />} />
         <Route path="/security" element={<Security />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/brand" element={<Brand />} />
 
         {/* ── 404 ── */}
         <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
@@ -172,9 +158,8 @@ function AppContent({ user, session }) {
       )}
 
       {/* Global Widgets */}
-      {!isMobileRoute && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-      {!isMobileRoute && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
-      {!isMobileRoute && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      {!isMobileRoute && user && <ProductTour />}
+      {!isMobileRoute && user && <FeedbackWidget />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 /**
  * routes/notifications.js
- * In-app notification system — uses pool.query() against Supabase PostgreSQL.
+ * In-app notification system — uses pool.query() (Neon PostgreSQL direct).
  */
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';

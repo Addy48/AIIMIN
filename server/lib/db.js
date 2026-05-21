@@ -1,58 +1,42 @@
 /**
  * lib/db.js
- * Supabase PostgreSQL via pg Pool — optimized for Vercel Serverless.
- * Uses the Supabase IPv4 transaction pooler (port 6543).
+ * Central database connector — Neon PostgreSQL via pg Pool.
+ * Optimized for Vercel Serverless (short-lived function instances).
  */
 import pg from 'pg';
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
 
 const { Pool } = pg;
 
 let _pool = null;
 
-export const getPool = () => {
+const getPool = () => {
     if (_pool) return _pool;
 
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
-        const msg = '[DB] FATAL: DATABASE_URL is not set. Cannot initialize database pool.';
-        console.error(msg);
-        throw new Error(msg);
+        throw new Error('DATABASE_URL environment variable is not set');
     }
-
-    // Validate it looks like a postgres URL before trying to connect
-    if (!connectionString.startsWith('postgres://') && !connectionString.startsWith('postgresql://')) {
-        const msg = `[DB] FATAL: DATABASE_URL is malformed. Got: ${connectionString.slice(0, 30)}...`;
-        console.error(msg);
-        throw new Error(msg);
-    }
-
-    console.log(`[DB] Initializing pool. Host prefix: ${connectionString.split('@')[1]?.slice(0, 40) ?? 'unknown'}`);
 
     _pool = new Pool({
         connectionString,
         ssl: { rejectUnauthorized: false },
+        // Serverless-optimized: keep connections small and fast
         max: 2,
         min: 0,
-        idleTimeoutMillis: 5000,
-        connectionTimeoutMillis: 5000,
-        allowExitOnIdle: true,
+        idleTimeoutMillis: 5000,         // Release idle connections quickly
+        connectionTimeoutMillis: 5000,   // Fail fast — must stay well under Vercel 10s limit
+        allowExitOnIdle: true,           // Let Node exit between invocations
     });
 
     _pool.on('error', (err) => {
-        console.error('[DB Pool] Unexpected client error:', err.message);
-        _pool = null; // Force recreation on next call
-    });
-
-    _pool.on('connect', () => {
-        console.log('[DB Pool] New client connected');
+        console.error('[DB Pool] Client error:', err.message);
+        _pool = null; // Reset pool on error so it's recreated fresh
     });
 
     return _pool;
 };
 
-// Lazy proxy — pool only created on first actual query call
+// Lazy proxy — pool only created on first query
 export const pool = new Proxy({}, {
     get: (target, prop) => {
         const activePool = getPool();

@@ -1,33 +1,30 @@
 import { pool } from '../lib/db.js';
+import jwt from 'jsonwebtoken';
 import { getCookie } from 'hono/cookie';
-import * as dotenv from 'dotenv';
-import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
-import { ensureUserProfile } from '../services/userProfileService.js';
-dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
+import { createClient } from '@supabase/supabase-js';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'aiimin_super_secret_dev_key';
 const COOKIE_NAME = 'aiimin_session';
-
-// Profile cache with TTL-based eviction to prevent memory leaks
 const profileCache = new Map();
-const CACHE_TTL_MS = 10_000; // 10 seconds
+const CACHE_TTL = 10000;
 
-// Periodic cleanup: evict expired cache entries every 60 seconds
-setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of profileCache.entries()) {
-        if (now - entry.timestamp > CACHE_TTL_MS) {
-            profileCache.delete(key);
-        }
-    }
-}, 60_000);
+// Initialize Supabase Client for token verification
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 export const requireAuth = async (c, next) => {
-    // 1. Extract token from cookie, then Bearer header, then query param
     let token = getCookie(c, COOKIE_NAME);
+
+    // Fallback to Bearer token in header
     if (!token) {
         const authHeader = c.req.header('authorization');
-        if (authHeader?.startsWith('Bearer ')) token = authHeader.slice(7);
+        if (authHeader?.startsWith('Bearer ')) {
+            token = authHeader.slice(7);
+        }
     }
+
     if (!token) {
         token = c.req.query('token');
     }
@@ -36,73 +33,96 @@ export const requireAuth = async (c, next) => {
         return c.json({ error: 'Unauthorized: missing token' }, 401);
     }
 
-    // Dev-only mock bypass
     if (process.env.NODE_ENV !== 'production' && token === 'mock-test-token') {
-        c.set('user', { id: '88888888-8888-4888-8888-888888888888', email: 'dev@aiimin.in', role: 'user', onboarding_stage: 1, username: 'DEVUSER' });
+        c.set('user', {
+            id: '88888888-8888-4888-8888-888888888888',
+            email: 'aadityaupadhyay10@gmail.com',
+            role: 'user',
+            onboarding_stage: 1,
+            username: 'aaditya'
+        });
         c.set('userId', '88888888-8888-4888-8888-888888888888');
         return await next();
     }
 
     let decoded = null;
-    let authUser = null;
+    let isSupabaseToken = false;
 
-    // 2. Verify Supabase access token first. This is the production source of truth.
+    // Try our local custom JWT verification first
     try {
-        const supabase = getSupabaseAdmin();
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (user && !error) {
-            authUser = user;
-            decoded = { id: user.id, email: user.email };
+        decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+        // Local verification failed, try Supabase verification
+        try {
+            const { data: { user }, error } = await supabase.auth.getUser(token);
+            if (user && !error) {
+                decoded = { id: user.id, email: user.email };
+                isSupabaseToken = true;
+            }
+        } catch (supabaseErr) {
+            console.error('[auth middleware] Supabase token verify error:', supabaseErr.message);
         }
-    } catch (supaErr) {
-        console.error('[auth] Supabase token verify error:', supaErr.message);
     }
 
     if (!decoded) {
         return c.json({ error: 'Unauthorized: invalid or expired token' }, 401);
     }
 
-    // 4. Enrich with profile from DB (cached)
     try {
         const now = Date.now();
-        let cached = profileCache.get(decoded.id);
+        let profile = profileCache.get(decoded.id);
 
-        if (!cached || (now - cached.timestamp > CACHE_TTL_MS)) {
-            const { rows } = await pool.query(
-                'SELECT role, onboarding_stage, username FROM users WHERE id = $1',
-                [decoded.id]
-            );
-
-            if (rows.length > 0) {
-                cached = { ...rows[0], timestamp: now };
-                profileCache.set(decoded.id, cached);
-            } else if (authUser) {
-                const profile = await ensureUserProfile(pool, authUser);
-                cached = {
-                    role: profile.role,
-                    onboarding_stage: profile.onboarding_stage,
-                    username: profile.username,
-                    timestamp: now,
-                };
-                profileCache.set(decoded.id, cached);
-            } else {
-                return c.json({ error: 'User not found' }, 401);
+        if (!profile || (now - profile.timestamp > CACHE_TTL)) {
+            try {
+                const { rows } = await pool.query(
+                    'SELECT role, onboarding_stage, username FROM users WHERE id = $1',
+                    [decoded.id]
+                );
+                if (rows.length > 0) {
+                    profile = { ...rows[0], timestamp: now };
+                    profileCache.set(decoded.id, profile);
+                } else {
+                    // Fallback: If user is validated by Supabase but not in public.users yet,
+                    // create the public record immediately to prevent race conditions or errors
+                    if (isSupabaseToken) {
+                        try {
+                            const { data: { user } } = await supabase.auth.getUser(token);
+                            const name = user.raw_user_meta_data?.full_name || '';
+                            const username = user.raw_user_meta_data?.username || '';
+                            const insertRes = await pool.query(
+                                `INSERT INTO users (id, email, full_name, username, onboarding_stage, role)
+                                 VALUES ($1, $2, $3, $4, 0, 'user')
+                                 ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email
+                                 RETURNING role, onboarding_stage, username`,
+                                [decoded.id, decoded.email, name, username]
+                            );
+                            profile = { ...insertRes.rows[0], timestamp: now };
+                            profileCache.set(decoded.id, profile);
+                        } catch (createErr) {
+                            console.error('[auth middleware] Fallback user creation failed:', createErr.message);
+                            return c.json({ error: 'User not found in profile database' }, 401);
+                        }
+                    } else {
+                        return c.json({ error: 'User not found' }, 401);
+                    }
+                }
+            } catch (pgError) {
+                console.error('[auth middleware] DB profile enrich error:', pgError.message);
             }
         }
 
         c.set('user', {
-            ...(authUser || {}),
             id: decoded.id,
             email: decoded.email,
-            role: cached?.role || 'user',
-            onboarding_stage: cached?.onboarding_stage ?? 0,
-            username: cached?.username,
+            role: profile?.role || 'user',
+            onboarding_stage: profile?.onboarding_stage || 0,
+            username: profile?.username
         });
         c.set('userId', decoded.id);
-    } catch (err) {
-        console.error('[auth middleware] Error:', err.message);
-        return c.json({ error: 'Unauthorized: session error', details: err.message }, 401);
-    }
 
-    await next();
+        await next();
+    } catch (err) {
+        return c.json({ error: 'Unauthorized: invalid or expired token' }, 401);
+    }
 };
+
