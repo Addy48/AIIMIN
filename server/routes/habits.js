@@ -1,5 +1,5 @@
 /**
- * routes/habits.js — uses pool.query() against Supabase PostgreSQL.
+ * routes/habits.js — uses pool.query() (Neon PostgreSQL direct).
  */
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';

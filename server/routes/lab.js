@@ -1,7 +1,7 @@
 /**
  * routes/lab.js
  * The Lab — intelligence dashboard routes.
- * Uses pool.query() against Supabase PostgreSQL.
+ * Fully rewritten to use pool.query() (Neon PostgreSQL direct).
  */
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
