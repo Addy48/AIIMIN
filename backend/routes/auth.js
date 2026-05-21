@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { supabase } from '../lib/db.js';
+import { supabase, pool } from '../lib/db.js';
 
 const app = new Hono();
 
@@ -20,19 +20,17 @@ app.get('/resolve', async (c) => {
     }
 
     try {
-        // Equivalent to SELECT email FROM users WHERE LOWER(username) = LOWER($1)
-        const { data, error } = await supabase
-            .from('users')
-            .select('email')
-            .ilike('username', identifier)
-            .maybeSingle();
+        // Query Neon PG directly via connection pool
+        const { rows } = await pool.query(
+            'SELECT email FROM users WHERE LOWER(username) = LOWER($1)',
+            [identifier]
+        );
 
-        if (error) throw error;
-        if (!data) {
+        if (rows.length === 0) {
             return c.json({ error: 'User not found' }, 404);
         }
 
-        return c.json({ email: data.email });
+        return c.json({ email: rows[0].email });
     } catch (err) {
         console.error('[auth/resolve] error:', err.message);
         return c.json({ error: 'Internal server error' }, 500);
@@ -40,3 +38,4 @@ app.get('/resolve', async (c) => {
 });
 
 export default app;
+

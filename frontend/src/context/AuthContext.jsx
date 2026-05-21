@@ -5,22 +5,7 @@ import { apiGet } from '../utils/api';
 const AuthContext = createContext(null);
 
 async function ensureUserRow(authUser) {
-    if (!authUser) return;
-
-    const meta = authUser.user_metadata || {};
-    const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-
-    await supabase.from('users').upsert(
-        {
-            id: authUser.id,
-            email: authUser.email,
-            full_name: meta.full_name || meta.name || null,
-            username: meta.username || null,
-            avatar_url: meta.avatar_url || meta.picture || null,
-            timezone: meta.timezone || browserTimezone,
-        },
-        { onConflict: 'id', ignoreDuplicates: true }
-    );
+    return;
 }
 
 export function AuthProvider({ children }) {

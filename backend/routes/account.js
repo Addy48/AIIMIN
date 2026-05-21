@@ -5,7 +5,7 @@
  * Refactored for Hono / Cloudflare Workers.
  */
 import { Hono } from 'hono';
-import { supabase } from '../lib/db.js';
+import { supabase, pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { supabaseAdmin as adminSupabase } from '../supabase.js';
 import { decrypt, encrypt } from '../lib/crypto.js';
@@ -20,29 +20,34 @@ app.get('/profile', requireAuth, async (c) => {
         const userId = c.get('userId');
         const user = c.get('user');
 
-        let { data, error } = await supabase
-            .from('users')
-            .select('id, email, full_name, username, role, onboarding_stage, timezone, avatar_url, created_at')
-            .eq('id', userId)
-            .maybeSingle();
+        const { rows } = await pool.query(
+            'SELECT id, email, full_name, username, role, onboarding_stage, timezone, avatar_url, created_at FROM users WHERE id = $1',
+            [userId]
+        );
+        let data = rows[0] || null;
 
         if (!data) {
             const meta = user?.user_metadata || {};
-            const { data: newData, error: insertErr } = await supabase
-                .from('users')
-                .upsert({
-                    id: userId,
-                    email: user?.email,
-                    full_name: meta.full_name || meta.name || null,
-                    username: meta.username || null,
-                    avatar_url: meta.avatar_url || meta.picture || null,
-                    timezone: meta.timezone || 'Asia/Kolkata'
-                }, { onConflict: 'id' })
-                .select()
-                .single();
-
-            if (insertErr) throw insertErr;
-            data = newData;
+            const { rows: newRows } = await pool.query(
+                `INSERT INTO users (id, email, full_name, username, avatar_url, timezone)
+                 VALUES ($1, $2, $3, $4, $5, $6)
+                 ON CONFLICT (id) DO UPDATE SET
+                     email = EXCLUDED.email,
+                     full_name = COALESCE(users.full_name, EXCLUDED.full_name),
+                     username = COALESCE(users.username, EXCLUDED.username),
+                     avatar_url = COALESCE(users.avatar_url, EXCLUDED.avatar_url),
+                     timezone = COALESCE(users.timezone, EXCLUDED.timezone)
+                 RETURNING id, email, full_name, username, role, onboarding_stage, timezone, avatar_url, created_at`,
+                [
+                    userId,
+                    user?.email,
+                    meta.full_name || meta.name || null,
+                    meta.username || null,
+                    meta.avatar_url || meta.picture || null,
+                    meta.timezone || 'Asia/Kolkata'
+                ]
+            );
+            data = newRows[0];
         }
 
         return c.json(data);
@@ -69,14 +74,20 @@ app.patch('/profile', requireAuth, async (c) => {
             return c.json({ error: 'No valid fields to update' }, 400);
         }
 
-        const { data, error } = await supabase
-            .from('users')
-            .update(updates)
-            .eq('id', userId)
-            .select()
-            .single();
+        const keys = Object.keys(updates);
+        const values = Object.values(updates);
+        const setClauses = keys.map((key, idx) => `${key} = $${idx + 2}`).join(', ');
 
-        if (error) throw error;
+        const { rows } = await pool.query(
+            `UPDATE users SET ${setClauses} WHERE id = $1 RETURNING id, email, full_name, username, role, onboarding_stage, timezone, avatar_url, created_at`,
+            [userId, ...values]
+        );
+
+        if (rows.length === 0) {
+            return c.json({ error: 'User not found' }, 404);
+        }
+
+        const data = rows[0];
 
         // Sync to Auth Metadata (Async, non-blocking)
         adminSupabase.auth.admin.updateUserById(userId, {
@@ -100,7 +111,7 @@ app.get('/export', requireAuth, async (c) => {
         const userId = c.get('userId');
 
         const [p, dl, pg, ps, mt, w, dc, ws, n] = await Promise.all([
-            supabase.from('users').select('*').eq('id', userId).single(),
+            pool.query('SELECT * FROM users WHERE id = $1', [userId]).then(res => ({ data: res.rows[0] || null })),
             supabase.from('daily_logs').select('*').eq('user_id', userId).order('date', { ascending: false }),
             supabase.from('personal_goals').select('*').eq('user_id', userId),
             supabase.from('pomodoro_sessions').select('*').eq('user_id', userId).order('date', { ascending: false }),
@@ -151,7 +162,7 @@ app.delete('/', requireAuth, async (c) => {
             fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, { method: 'POST' }).catch(() => { });
         }
 
-        await supabase.from('users').delete().eq('id', userId);
+        await pool.query('DELETE FROM users WHERE id = $1', [userId]);
         await adminSupabase.auth.admin.deleteUser(userId);
 
         return c.json({ success: true, message: 'Account permanently deleted' });

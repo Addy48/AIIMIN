@@ -5,7 +5,7 @@
  * Refactored for Hono / Cloudflare Workers.
  */
 import { Hono } from 'hono';
-import { supabase } from '../lib/db.js';
+import { supabase, pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { getQuarterInfo, getCurrentQuarterAnchor } from '../lib/quarter.js';
 
@@ -140,7 +140,7 @@ app.get('/summary', requireAuth, async (c) => {
             supabase.from('lab_streaks').select('metric, current_streak, longest_streak').eq('user_id', userId),
             supabase.from('lab_mastery_badges').select('metric, tier').eq('user_id', userId).order('granted_at', { ascending: false }),
             supabase.from('lab_mindset_logs').select('state, logged_at').eq('user_id', userId).eq('day_of', todayStr).maybeSingle(),
-            supabase.from('users').select('quarterly_review_anchor, lab_onboarded_at').eq('id', userId).single(),
+            pool.query('SELECT quarterly_review_anchor, lab_onboarded_at FROM public.users WHERE id = $1', [userId]).then(res => ({ data: res.rows[0] })),
             supabase.from('daily_logs').select('rc_entries').eq('user_id', userId).order('date', { ascending: false }).limit(1).maybeSingle(),
             supabase.from('lab_correlations').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('bh_passed', true).gt('computed_at', new Date(Date.now() - 26 * 3600000).toISOString()),
             supabase.from('lab_insights').select('id', { count: 'exact' }).eq('user_id', userId)
@@ -263,8 +263,8 @@ app.post('/beliefs', requireAuth, async (c) => {
     try {
         const { domain, prompt_id, response_text } = await c.req.json();
         const userId = c.get('userId');
-        const anchorRes = await supabase.from('users').select('quarterly_review_anchor').eq('id', userId).single();
-        const qAnchor = getCurrentQuarterAnchor(anchorRes.data?.quarterly_review_anchor || '2026-01-01');
+        const anchorRes = await pool.query('SELECT quarterly_review_anchor FROM public.users WHERE id = $1', [userId]);
+        const qAnchor = getCurrentQuarterAnchor(anchorRes.rows[0]?.quarterly_review_anchor || '2026-01-01');
         const { data, error } = await supabase.from('lab_beliefs').upsert({ user_id: userId, domain, prompt_id, response_text, quarter_anchor: qAnchor }, { onConflict: 'user_id,domain,quarter_anchor' }).select().single();
         if (error) throw error;
         return c.json(data, 201);
@@ -274,7 +274,7 @@ app.post('/beliefs', requireAuth, async (c) => {
 app.post('/onboard', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
-        await supabase.from('users').update({ lab_onboarded_at: new Date().toISOString() }).eq('id', userId).is('lab_onboarded_at', null);
+        await pool.query('UPDATE public.users SET lab_onboarded_at = $1 WHERE id = $2 AND lab_onboarded_at IS NULL', [new Date().toISOString(), userId]);
         return c.json({ success: true }, 204);
     } catch (err) { return c.json({ error: err.message }, 500); }
 });

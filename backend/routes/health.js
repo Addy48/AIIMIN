@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { supabase } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 
 const app = new Hono();
 
@@ -14,8 +14,7 @@ app.get('/', async (c) => {
 
     // Check DB (simple query to verify link)
     try {
-        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-        if (error) throw error;
+        await pool.query('SELECT 1');
     } catch (e) {
         dbStatus = 'error';
         overallStatus = 'degraded';
@@ -47,8 +46,7 @@ app.get('/', async (c) => {
  */
 app.get('/ready', async (c) => {
     try {
-        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-        if (error) throw error;
+        await pool.query('SELECT 1');
         return c.json({ ready: true });
     } catch (e) {
         return c.json({ ready: false }, 503);
