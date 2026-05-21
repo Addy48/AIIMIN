@@ -519,15 +519,23 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
     const userId = c.get('userId');
     let dbClient;
     try {
-        const body = await c.req.parseBody();
-        const file = body.file;
+        let file;
+        try {
+            const formData = await c.req.raw.formData();
+            file = formData.get('file');
+        } catch (formDataErr) {
+            console.warn('Failed to parse via raw.formData(), trying parseBody fallback:', formDataErr);
+            const body = await c.req.parseBody();
+            file = body.file;
+        }
 
         if (!file || typeof file.arrayBuffer !== 'function') {
             return c.json({ error: 'No file uploaded or invalid file object.' }, 400);
         }
 
         const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
+        const buffer = Buffer.from(arrayBuffer);
+        const workbook = XLSX.read(buffer, { type: 'buffer' });
 
         let allParsedTransactions = [];
         let allParsedBudgets = [];
@@ -916,34 +924,50 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
             }
         }
 
-        // 5. Insert Transactions
+        // 5. Insert Transactions in batches
         if (duplicateFreeTransactions.length > 0) {
-            for (const tx of duplicateFreeTransactions) {
-                await dbClient.query(
-                    `INSERT INTO public.money_transactions 
-                    (user_id, date, category, category_id, description, amount, currency, source, account_id, type) 
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-                    [
-                        tx.user_id,
-                        tx.date,
-                        tx.category,
-                        tx.category_id,
-                        tx.description,
-                        tx.amount,
-                        tx.currency,
-                        tx.source,
-                        tx.account_id,
-                        tx.type
-                    ]
-                );
+            const values = [];
+            const valueStrings = [];
+            let paramIndex = 1;
 
+            for (const tx of duplicateFreeTransactions) {
+                valueStrings.push(`($${paramIndex}, $${paramIndex+1}, $${paramIndex+2}, $${paramIndex+3}, $${paramIndex+4}, $${paramIndex+5}, $${paramIndex+6}, $${paramIndex+7}, $${paramIndex+8}, $${paramIndex+9})`);
+                values.push(
+                    tx.user_id,
+                    tx.date,
+                    tx.category,
+                    tx.category_id,
+                    tx.description,
+                    tx.amount,
+                    tx.currency,
+                    tx.source,
+                    tx.account_id,
+                    tx.type
+                );
+                paramIndex += 10;
+            }
+
+            const insertQuery = `INSERT INTO public.money_transactions 
+                (user_id, date, category, category_id, description, amount, currency, source, account_id, type) 
+                VALUES ${valueStrings.join(', ')}`;
+
+            await dbClient.query(insertQuery, values);
+
+            // Aggregate balance changes per account to reduce UPDATE queries
+            const accountBalanceChanges = {};
+            for (const tx of duplicateFreeTransactions) {
                 if (tx.account_id) {
-                    await dbClient.query(
-                        'UPDATE public.accounts SET balance = balance + $1 WHERE id = $2 AND user_id = $3',
-                        [tx.amount, tx.account_id, userId]
-                    );
+                    accountBalanceChanges[tx.account_id] = (accountBalanceChanges[tx.account_id] || 0) + Number(tx.amount);
                 }
             }
+
+            for (const [accountId, changeAmount] of Object.entries(accountBalanceChanges)) {
+                await dbClient.query(
+                    'UPDATE public.accounts SET balance = balance + $1 WHERE id = $2 AND user_id = $3',
+                    [changeAmount, accountId, userId]
+                );
+            }
+
             transactionsImported = duplicateFreeTransactions.length;
         }
 
