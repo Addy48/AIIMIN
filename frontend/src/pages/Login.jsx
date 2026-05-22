@@ -189,7 +189,7 @@ const Login = () => {
   // Username validation constraints checks
   const uLettersCount = (usernameVal.match(/[A-Z]/g) || []).length;
   const uNumbersCount = (usernameVal.match(/[0-9]/g) || []).length;
-  const isUsernameValid = usernameVal.length === 8 && uLettersCount <= 4 && uNumbersCount <= 2;
+  const isUsernameValid = usernameVal.length >= 4 && usernameVal.length <= 8 && uLettersCount <= 4 && uNumbersCount <= 2;
 
   const handleUsernameNext = (e) => {
     if (e) e.preventDefault();
@@ -278,7 +278,7 @@ const Login = () => {
               step === 1 ? 'Sign in to your personal OS' : `Verifying identity for ${identifier}`
             ) : (
               step === 1 ? 'Join the AIIMIN network' :
-              step === 2 ? 'Visually uppercase, strict 8-char constraint' :
+              step === 2 ? 'Visually uppercase, 4-8 character constraint' :
               step === 3 ? 'Choose a secure 6-digit PIN' : 'Confirm your 6-digit PIN'
             )}
           </motion.p>
@@ -560,11 +560,11 @@ const Login = () => {
                     </div>
                     {/* Character limit */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: usernameVal.length === 8 ? '#16a34a' : 'var(--text-2)' }}>
-                        {usernameVal.length === 8 ? <Check size={13} /> : <X size={13} style={{ color: '#ef4444' }} />}
-                        <span>Exactly 8 characters</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: (usernameVal.length >= 4 && usernameVal.length <= 8) ? '#16a34a' : 'var(--text-2)' }}>
+                        {(usernameVal.length >= 4 && usernameVal.length <= 8) ? <Check size={13} /> : <X size={13} style={{ color: '#ef4444' }} />}
+                        <span>Between 4 and 8 characters</span>
                       </div>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: usernameVal.length === 8 ? '#16a34a' : 'var(--text-3)' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: (usernameVal.length >= 4 && usernameVal.length <= 8) ? '#16a34a' : 'var(--text-3)' }}>
                         {usernameVal.length} / 8
                       </span>
                     </div>
