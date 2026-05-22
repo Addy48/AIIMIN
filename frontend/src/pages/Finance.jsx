@@ -26,6 +26,8 @@ const Finance = () => {
   const [accounts, setAccounts] = useState([]);
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aiSummary, setAiSummary] = useState(null);
+  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
   // Import & Entry State
   const [importOpen, setImportOpen] = useState(false);
@@ -97,7 +99,16 @@ const Finance = () => {
   };
 
   useEffect(() => {
-    if (user) loadFinanceData();
+    if (user) {
+      loadFinanceData();
+      // Lazy-load AI summary after initial data
+      if (!user.isGuest) {
+        setAiSummaryLoading(true);
+        apiGet('/wealth/ai-summary').then(data => {
+          setAiSummary(data);
+        }).catch(() => {}).finally(() => setAiSummaryLoading(false));
+      }
+    }
   }, [user]);
 
   const loadFinanceData = async () => {
@@ -475,8 +486,75 @@ savingsRate: (sRate * 100).toFixed(1),
                   {/* Decorative background element */}
                   <div style={{ position: 'absolute', right: '-5%', bottom: '-10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
               </div>
-                  
+
+              {/* AI Finance Summary Card */}
+              {(aiSummaryLoading || aiSummary) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{
+                    background: aiSummary?.sentiment === 'positive'
+                      ? 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%)'
+                      : aiSummary?.sentiment === 'warning'
+                      ? 'linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.02) 100%)'
+                      : 'var(--color-surface)',
+                    border: `1px solid ${aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.2)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.2)' : 'var(--color-border)'}`,
+                    borderRadius: '20px',
+                    padding: '28px 32px',
+                    marginBottom: '32px',
+                  }}
+                >
+                  {aiSummaryLoading ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {[180, 300, 220].map((w, i) => (
+                        <div key={i} style={{ height: '14px', background: 'var(--color-border)', borderRadius: '8px', width: `${w}px`, opacity: 0.5 }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div>
+                      {aiSummary?.aiStatus && aiSummary.aiStatus !== 'success' && (
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: '8px',
+                          padding: '10px 14px', borderRadius: '8px', marginBottom: '16px',
+                          background: 'var(--color-warning-dim)',
+                          border: '1px solid rgba(245,158,11,0.2)'
+                        }}>
+                          <span style={{ fontSize: '14px' }}>⚠</span>
+                          <span style={{ fontSize: '12px', color: 'var(--color-warning)', fontWeight: 500 }}>
+                            {aiSummary.aiStatus === 'limit_reached'
+                              ? 'AI limit reached. Showing statistical fallback summary.'
+                              : 'API key expired. Showing statistical fallback summary.'}
+                          </span>
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                        <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: aiSummary?.sentiment === 'positive' ? '#10B981' : aiSummary?.sentiment === 'warning' ? '#F59E0B' : 'var(--color-text-3)', background: aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.12)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.06)', padding: '4px 10px', borderRadius: '99px' }}>
+                          {aiSummary?.sentiment === 'positive' ? '✦ AI Insight' : aiSummary?.sentiment === 'warning' ? '⚠ AI Alert' : '◆ AI Summary'}
+                        </div>
+                        <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>30-day analysis · just now</div>
+                      </div>
+                      <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '10px', fontFamily: 'var(--font-serif)', lineHeight: 1.4 }}>
+                        {aiSummary?.headline}
+                      </div>
+                      <p style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px', lineHeight: 1.65 }}>
+                        {aiSummary?.summary}
+                      </p>
+                      {aiSummary?.recommendations?.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {aiSummary.recommendations.map((rec, i) => (
+                            <div key={i} style={{ fontSize: '12px', padding: '5px 12px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', color: 'var(--color-text-2)', fontWeight: 500 }}>
+                              → {rec}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
               {/* 6-Stat Hero Strip - BREAKTHROUGH UPGRADE */}
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px', marginBottom: '32px' }}>
                 {[
                   { label: 'Freedom Velocity', val: `${savingsRate}%`, trend: `FI in ${fiYears}y`, icon: <Zap size={14} />, color: '#10B981', detail: 'Efficiency' },

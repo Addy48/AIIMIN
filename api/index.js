@@ -45,6 +45,7 @@ const routeMap = {
     'wealth':        () => import('../server/routes/wealth.js'),
     'sports':        () => import('../server/routes/sports.js'),
     'intelligence':  () => import('../server/routes/intelligence.js'),
+    'ats':           () => import('../server/routes/ats.js'),
     'blob':          () => import('../server/services/blobService.js'),
 };
 
