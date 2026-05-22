@@ -1026,4 +1026,161 @@ wealthRoutes.post('/import', requireAuth, async (c) => {
     }
 });
 
+// ==========================================
+// AI Finance Summary
+// ==========================================
+wealthRoutes.get('/ai-summary', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const dateStr = thirtyDaysAgo.toISOString().split('T')[0];
+
+        const txRes = await pool.query(
+            `SELECT date, category, amount, type, description
+             FROM public.money_transactions
+             WHERE user_id = $1 AND date >= $2
+             ORDER BY date DESC
+             LIMIT 200`,
+            [userId, dateStr]
+        );
+
+        const transactions = txRes.rows;
+
+        if (transactions.length === 0) {
+            return c.json({
+                summary: 'No transactions found in the last 30 days. Start adding your expenses to get AI-powered insights!',
+                categoryBreakdown: [],
+                totalIncome: 0,
+                totalExpense: 0,
+                netFlow: 0,
+                generatedAt: new Date().toISOString(),
+            });
+        }
+
+        // Compute stats server-side
+        let totalIncome = 0, totalExpense = 0;
+        const catTotals = {};
+        for (const tx of transactions) {
+            const amt = parseFloat(tx.amount) || 0;
+            if (tx.type === 'income') totalIncome += amt;
+            else if (tx.type === 'expense') totalExpense += Math.abs(amt);
+            const cat = tx.category || 'Other';
+            catTotals[cat] = (catTotals[cat] || 0) + Math.abs(amt);
+        }
+        const categoryBreakdown = Object.entries(catTotals)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 8)
+            .map(([cat, amt]) => ({ category: cat, amount: amt }));
+
+        const netFlow = totalIncome - totalExpense;
+
+        // Try NVIDIA API for natural language summary
+        const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || 'REDACTED_NVIDIA_API_KEY';
+        let aiSummary = null;
+        let aiStatus = 'success';
+
+        if (NVIDIA_API_KEY) {
+            try {
+                const prompt = `You are a personal finance advisor. Analyze this user's last 30 days of financial data and provide a helpful, conversational summary.
+
+Financial Data:
+- Total Income: ₹${totalIncome.toFixed(2)}
+- Total Expenses: ₹${totalExpense.toFixed(2)}
+- Net Flow: ₹${netFlow.toFixed(2)} (${netFlow >= 0 ? 'surplus' : 'deficit'})
+- Top spending categories: ${categoryBreakdown.map(c => `${c.category}: ₹${c.amount.toFixed(0)}`).join(', ')}
+- Transaction count: ${transactions.length}
+
+Provide a response as JSON with these exact keys:
+{
+  "headline": "one punchy sentence about their financial health (max 15 words)",
+  "summary": "2-3 sentences explaining their spending pattern in plain English",
+  "insights": ["insight 1", "insight 2", "insight 3"],
+  "recommendations": ["action 1", "action 2", "action 3"],
+  "sentiment": "positive|neutral|warning"
+}
+
+Do not include markdown formatting like \`\`\`json.`;
+
+                const nvidiaRes = await fetch(
+                    `https://integrate.api.nvidia.com/v1/chat/completions`,
+                    {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${NVIDIA_API_KEY}`,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: "moonshotai/kimi-k2.6",
+                            messages: [{ role: "user", content: prompt }],
+                            max_tokens: 1000,
+                            temperature: 0.7,
+                            top_p: 1.0,
+                            stream: false,
+                            chat_template_kwargs: { thinking: true }
+                        }),
+                        signal: AbortSignal.timeout(30000)
+                    }
+                );
+
+                if (nvidiaRes.ok) {
+                    const nvidiaData = await nvidiaRes.json();
+                    let rawText = nvidiaData.choices?.[0]?.message?.content;
+                    if (rawText) {
+                        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                        aiSummary = JSON.parse(rawText);
+                    }
+                } else if (nvidiaRes.status === 401 || nvidiaRes.status === 403) {
+                    aiStatus = 'expired';
+                    console.warn('[wealth/ai-summary] NVIDIA key expired or unauthorized');
+                } else if (nvidiaRes.status === 429) {
+                    aiStatus = 'limit_reached';
+                    console.warn('[wealth/ai-summary] NVIDIA API rate limit reached');
+                } else {
+                    console.warn('[wealth/ai-summary] NVIDIA API error:', nvidiaRes.status, await nvidiaRes.text());
+                }
+            } catch (aiErr) {
+                console.warn('[wealth/ai-summary] NVIDIA call failed:', aiErr.message);
+            }
+        }
+
+        // Fallback summary if no NVIDIA key, API call failed, or limit reached
+        if (!aiSummary) {
+            aiSummary = {
+                headline: netFlow >= 0
+                    ? `You're saving ₹${netFlow.toFixed(0)} this month — great work!`
+                    : `You've spent ₹${Math.abs(netFlow).toFixed(0)} more than you earned this month.`,
+                summary: `Over the last 30 days, you recorded ${transactions.length} transactions with ₹${totalIncome.toFixed(0)} income and ₹${totalExpense.toFixed(0)} in expenses.`,
+                insights: [
+                    `Your top spending category is ${categoryBreakdown[0]?.category || 'Other'} at ₹${(categoryBreakdown[0]?.amount || 0).toFixed(0)}.`,
+                    `Net cash flow: ${netFlow >= 0 ? '+' : ''}₹${netFlow.toFixed(0)}.`,
+                    `You have ${categoryBreakdown.length} active spending categories.`,
+                ],
+                recommendations: [
+                    'AI-powered insights are currently unavailable due to API limits.',
+                    'Set budget limits for your top categories.',
+                    'Track daily expenses to stay within your targets.',
+                ],
+                sentiment: netFlow >= 0 ? 'positive' : 'warning',
+            };
+        }
+
+        return c.json({
+            ...aiSummary,
+            aiStatus,
+            categoryBreakdown,
+            totalIncome,
+            totalExpense,
+            netFlow,
+            transactionCount: transactions.length,
+            generatedAt: new Date().toISOString(),
+        });
+    } catch (err) {
+        console.error('[wealth/ai-summary] Error:', err.message);
+        return c.json({ error: 'Failed to generate summary' }, 500);
+    }
+});
+
 export default wealthRoutes;
+

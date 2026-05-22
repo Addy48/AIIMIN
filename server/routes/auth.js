@@ -102,7 +102,11 @@ app.post('/login', async (c) => {
             return c.json({ error: 'Email and password are required' }, 400);
         }
 
-        const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const { rows } = await pool.query(
+            `SELECT id, email, full_name, username, role, password_hash, avatar_url, timezone, onboarding_stage
+             FROM users WHERE email = $1`,
+            [email]
+        );
         if (rows.length === 0) {
             return c.json({ error: 'Invalid credentials' }, 401);
         }
@@ -147,15 +151,16 @@ import { requireAuth } from '../middleware/auth.js';
 app.get('/me', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
-        const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
-        
-        if (rows.length === 0) {
-            return c.json({ user: null }, 401);
-        }
-
-        const { password_hash, ...safeUser } = rows[0];
-        return c.json({ user: safeUser });
+        const { rows } = await pool.query(
+            `SELECT id, email, full_name, username, role, avatar_url, timezone,
+                    onboarding_stage, created_at
+             FROM users WHERE id = $1`,
+            [userId]
+        );
+        if (rows.length === 0) return c.json({ user: null }, 401);
+        return c.json({ user: rows[0] });
     } catch (err) {
+        console.error('[auth/me] error:', err.message);
         return c.json({ user: null }, 401);
     }
 });
