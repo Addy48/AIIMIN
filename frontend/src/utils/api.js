@@ -1,27 +1,22 @@
 import axios from 'axios';
-import supabase from './supabase';
 
-export const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 const api = axios.create({
-    baseURL: API_URL
+    baseURL: API_URL,
+    withCredentials: true
 });
 
-export const buildAuthHeaders = (session, extraHeaders = {}) => ({
+export const buildAuthHeaders = (extraHeaders = {}) => ({
     'Content-Type': 'application/json',
-    ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+    // Fallback if cookies aren't working locally
+    Authorization: `Bearer ${localStorage.getItem('aiimin_session_fallback') || ''}`,
     ...extraHeaders,
 });
 
-export const getCurrentSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session ?? null;
-};
-
-const resolveHeaders = async ({ auth = true, session = null, headers = {}, json = true } = {}) => {
-    const authSession = auth ? (session ?? await getCurrentSession()) : session;
-    const baseHeaders = json ? buildAuthHeaders(authSession, headers) : {
-        ...(authSession?.access_token ? { Authorization: `Bearer ${authSession.access_token}` } : {}),
+const resolveHeaders = async ({ headers = {}, json = true } = {}) => {
+    const baseHeaders = json ? buildAuthHeaders(headers) : {
+        Authorization: `Bearer ${localStorage.getItem('aiimin_session_fallback') || ''}`,
         ...headers,
     };
     return baseHeaders;
@@ -29,8 +24,6 @@ const resolveHeaders = async ({ auth = true, session = null, headers = {}, json 
 
 api.interceptors.request.use(async (config) => {
     const headers = await resolveHeaders({
-        auth: config.auth !== false,
-        session: config.session ?? null,
         headers: config.headers || {},
         json: config.json !== false,
     });
@@ -41,7 +34,7 @@ api.interceptors.request.use(async (config) => {
 
 export default api;
 
-export const getAuthHeaders = (session, extraHeaders = {}) => buildAuthHeaders(session, extraHeaders);
+export const getAuthHeaders = (extraHeaders = {}) => buildAuthHeaders(extraHeaders);
 
 export const apiRequest = async (path, options = {}) => {
     const {
@@ -49,8 +42,6 @@ export const apiRequest = async (path, options = {}) => {
         data,
         params,
         headers,
-        auth = true,
-        session = null,
         responseType = 'json',
     } = options;
 
@@ -60,8 +51,6 @@ export const apiRequest = async (path, options = {}) => {
         data,
         params,
         headers,
-        auth,
-        session,
         responseType,
         json: options.json,
     });
@@ -74,4 +63,3 @@ export const apiPost = (path, data, options = {}) => apiRequest(path, { ...optio
 export const apiPut = (path, data, options = {}) => apiRequest(path, { ...options, method: 'PUT', data });
 export const apiPatch = (path, data, options = {}) => apiRequest(path, { ...options, method: 'PATCH', data });
 export const apiDelete = (path, data, options = {}) => apiRequest(path, { ...options, method: 'DELETE', data });
-

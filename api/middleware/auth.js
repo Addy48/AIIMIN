@@ -1,26 +1,29 @@
-/**
- * middleware/auth.js
- *
- * Validates Supabase JWT from Authorization header.
- * Attaches c.set('user', ...) and c.set('userId', ...) on success.
- */
-import { supabaseAdmin as supabase } from '../supabase.js';
 import { pool } from '../lib/db.js';
+import jwt from 'jsonwebtoken';
+import { getCookie } from 'hono/cookie';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'aiimin_super_secret_dev_key';
+const COOKIE_NAME = 'aiimin_session';
 const profileCache = new Map();
-const CACHE_TTL = 10000; // 10s cache for roles/onboarding
+const CACHE_TTL = 10000;
 
 export const requireAuth = async (c, next) => {
-    const authHeader = c.req.header('authorization');
-    let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    let token = getCookie(c, COOKIE_NAME);
+
+    // Fallback to Bearer token in header
+    if (!token) {
+        const authHeader = c.req.header('authorization');
+        if (authHeader?.startsWith('Bearer ')) {
+            token = authHeader.slice(7);
+        }
+    }
 
     if (!token) {
-        // Fallback: check query parameter "token" (used for direct browser redirects like Google OAuth init)
         token = c.req.query('token');
     }
 
     if (!token) {
-        return c.json({ error: 'Unauthorized: missing Bearer token' }, 401);
+        return c.json({ error: 'Unauthorized: missing token' }, 401);
     }
 
     if (process.env.NODE_ENV !== 'production' && token === 'mock-test-token') {
@@ -36,42 +39,39 @@ export const requireAuth = async (c, next) => {
     }
 
     try {
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (error || !user) {
-            return c.json({ error: 'Unauthorized: invalid or expired token', code: 'INVALID_TOKEN' }, 401);
-        }
-
-        // Enrich with public.users profile (role, onboarding_stage)
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
         const now = Date.now();
-        let profile = profileCache.get(user.id);
+        let profile = profileCache.get(decoded.id);
 
         if (!profile || (now - profile.timestamp > CACHE_TTL)) {
             try {
                 const { rows } = await pool.query(
                     'SELECT role, onboarding_stage, username FROM users WHERE id = $1',
-                    [user.id]
+                    [decoded.id]
                 );
                 if (rows.length > 0) {
                     profile = { ...rows[0], timestamp: now };
-                    profileCache.set(user.id, profile);
+                    profileCache.set(decoded.id, profile);
+                } else {
+                    return c.json({ error: 'User not found' }, 401);
                 }
             } catch (pgError) {
                 console.error('[auth middleware] DB profile enrich error:', pgError.message);
             }
         }
 
-
         c.set('user', {
-            ...user,
+            id: decoded.id,
+            email: decoded.email,
             role: profile?.role || 'user',
             onboarding_stage: profile?.onboarding_stage || 0,
             username: profile?.username
         });
-        c.set('userId', user.id);
+        c.set('userId', decoded.id);
 
         await next();
     } catch (err) {
-        console.error('[auth middleware]', err.message);
-        return c.json({ error: 'Internal Auth Error' }, 500);
+        return c.json({ error: 'Unauthorized: invalid or expired token' }, 401);
     }
 };

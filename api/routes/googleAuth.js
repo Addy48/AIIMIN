@@ -101,18 +101,29 @@ app.get('/auth/callback', async (c) => {
         let userId = stateData.user_id;
 
         if (stateData.is_login) {
-            const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-                email,
-                email_confirm: true,
-                user_metadata: { full_name: userInfo.data.name, avatar_url: userInfo.data.picture }
-            });
-
-            if (createError) {
-                const existingRes = await pool.query('SELECT id FROM public.users WHERE email = $1', [email]);
-                if (existingRes.rows[0]) userId = existingRes.rows[0].id;
-            } else {
-                userId = newUser.user.id;
+            let userResult = await pool.query('SELECT id, email FROM users WHERE email = $1', [email]);
+            if (userResult.rows.length === 0) {
+                userResult = await pool.query(
+                    `INSERT INTO users (email, full_name, username, timezone, avatar_url)
+                     VALUES ($1, $2, $3, $4, $5) RETURNING id, email`,
+                    [email, userInfo.data.name, '', 'Asia/Kolkata', userInfo.data.picture]
+                );
             }
+            const user = userResult.rows[0];
+            userId = user.id;
+            
+            // Generate JWT
+            const jwt = await import('jsonwebtoken');
+            const token = jwt.default.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET || 'aiimin_super_secret_dev_key', { expiresIn: '30d' });
+            
+            const { setCookie } = await import('hono/cookie');
+            setCookie(c, 'aiimin_session', token, {
+                path: '/',
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'Lax',
+                maxAge: 30 * 24 * 60 * 60,
+            });
         }
 
         if (userId) {
@@ -152,16 +163,6 @@ app.get('/auth/callback', async (c) => {
                 tokens.expiry_date ? String(tokens.expiry_date) : null,
                 tokens.scope || ''
             ]);
-        }
-
-        if (stateData.is_login) {
-            const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-                type: 'magiclink',
-                email: email,
-                options: { redirectTo: `${frontendUrl}/auth/callback` }
-            });
-            if (linkError) throw linkError;
-            return c.redirect(linkData.properties.action_link);
         }
 
         return c.redirect(`${frontendUrl}/auth/callback?status=success`);

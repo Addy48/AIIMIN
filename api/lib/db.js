@@ -37,9 +37,9 @@ const getPool = () => {
     _pool = new Pool({
         connectionString,
         ssl: { rejectUnauthorized: false },
-        max: 5,                  // Keep pool size small for AWS Lambda instances
-        idleTimeoutMillis: 15000, // Release connections quickly
-        connectionTimeoutMillis: 5000,
+        max: 10,                 // Increased max connections for concurrent requests
+        idleTimeoutMillis: 30000, // Keep idle connections alive longer in dev
+        connectionTimeoutMillis: 20000, // Handle Neon cold starts (up to 20s)
     });
 
     _pool.on('error', (err) => {
