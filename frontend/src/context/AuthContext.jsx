@@ -1,119 +1,86 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import supabase from '../utils/supabase';
-import { apiGet } from '../utils/api';
+import { apiGet, apiPost } from '../utils/api';
+import toast from '../utils/toast';
 
 const AuthContext = createContext(null);
 
-async function ensureUserRow(authUser) {
-    return;
-}
-
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
-    const [session, setSession] = useState(null);
+    const [session, setSession] = useState(null); // Keep for compatibility if used anywhere
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        let mounted = true;
-
-        const applySession = async (nextSession) => {
-            if (!mounted) return;
-
-            if (!nextSession) {
-                setSession(null);
+    const checkSession = async () => {
+        try {
+            const data = await apiGet('/auth/me');
+            if (data && data.user) {
+                setUser(data.user);
+                setSession({ user: data.user }); // mock session object
+            } else {
                 setUser(null);
-                setLoading(false);
-                return;
+                setSession(null);
             }
+        } catch (error) {
+            setUser(null);
+            setSession(null);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            setSession(nextSession);
-            setUser(nextSession.user);
-
-            try {
-                await ensureUserRow(nextSession.user);
-                const profile = await apiGet('/account/profile', { session: nextSession });
-                if (!mounted) return;
-                setUser((prev) => ({ ...(prev || nextSession.user), ...profile }));
-            } catch (error) {
-                console.error('Failed to hydrate auth profile:', error);
-            } finally {
-                if (mounted) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        supabase.auth.getSession()
-            .then(({ data: { session: initialSession } }) => applySession(initialSession ?? null))
-            .catch((error) => {
-                console.error('Failed to get initial session:', error);
-                if (mounted) {
-                    setLoading(false);
-                }
-            });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-            applySession(nextSession ?? null);
-        });
-
-        return () => {
-            mounted = false;
-            subscription.unsubscribe();
-        };
+    useEffect(() => {
+        checkSession();
     }, []);
 
     const signInWithGoogle = async () => {
-        await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
-                scopes: 'openid email profile',
-            },
-        });
+        // Redirect to backend endpoint
+        const apiBase = process.env.REACT_APP_API_URL || '/api';
+        window.location.href = `${apiBase}/auth/google`;
     };
 
     const signUpWithEmail = async (email, password, fullName = '', username = '') => {
-        const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-        const { error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    full_name: fullName,
-                    username,
-                    timezone: browserTimezone,
-                },
-            },
-        });
-
-        if (error) {
-            console.error('Error signing up:', error.message);
-            throw error;
+        try {
+            const data = await apiPost('/auth/signup', { email, password, fullName, username });
+            setUser(data.user);
+            setSession({ user: data.user });
+            if (data.token) {
+                localStorage.setItem('aiimin_session_fallback', data.token);
+            }
+        } catch (error) {
+            console.error('Error signing up:', error);
+            throw new Error(error.response?.data?.error || 'Signup failed');
         }
     };
 
     const signInWithEmail = async (identifier, password) => {
-        let authEmail = identifier;
+        try {
+            let authEmail = identifier;
+            if (!identifier.includes('@')) {
+                const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
+                authEmail = data.email;
+            }
 
-        if (identifier.includes('@')) {
-            authEmail = identifier.toLowerCase();
-        } else {
-            const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
-            authEmail = data.email;
-        }
-
-        const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password });
-        if (error) {
-            console.error('Error signing in:', error.message);
-            throw error;
+            const data = await apiPost('/auth/login', { email: authEmail, password });
+            setUser(data.user);
+            setSession({ user: data.user });
+            
+            // Set fallback for local dev if cookies are blocked
+            if (data.token) {
+                localStorage.setItem('aiimin_session_fallback', data.token);
+            }
+        } catch (error) {
+            console.error('Error signing in:', error);
+            throw new Error(error.response?.data?.error || 'Invalid credentials');
         }
     };
 
     const signOut = async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error('Error logging out:', error.message);
-            throw error;
+        try {
+            await apiPost('/auth/logout');
+            setUser(null);
+            setSession(null);
+            localStorage.removeItem('aiimin_session_fallback');
+        } catch (error) {
+            console.error('Error logging out:', error);
         }
     };
 
@@ -125,6 +92,7 @@ export function AuthProvider({ children }) {
         signUpWithEmail,
         signInWithEmail,
         signOut,
+        checkSession,
     }), [loading, session, user]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

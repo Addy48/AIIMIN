@@ -1,16 +1,7 @@
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
-import { getUploadPresignedUrl, getDownloadPresignedUrl, deleteS3Object } from '../services/s3Service.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const UPLOADS_DIR = path.join(__dirname, '..', 'uploads', 'resumes');
-if (!fs.existsSync(UPLOADS_DIR)) {
-    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
+import { put, del } from '@vercel/blob';
 
 const placementsRoutes = new Hono();
 
@@ -18,65 +9,24 @@ const placementsRoutes = new Hono();
 // RESUMES
 // ==========================================
 
-placementsRoutes.get('/resumes/upload-ticket', requireAuth, async (c) => {
-    const userId = c.get('userId');
-    const fileKey = c.req.query('filename') || 'resume.pdf';
-    const contentType = c.req.query('contentType') || 'application/pdf';
-    
+placementsRoutes.post('/resumes/upload', requireAuth, async (c) => {
     try {
-        const reqUrl = new URL(c.req.url);
-        const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
-        const ticket = await getUploadPresignedUrl(userId, fileKey, contentType, baseUrl);
-        return c.json(ticket);
-    } catch (err) {
-        console.error('Error generating upload ticket:', err);
-        return c.json({ error: 'Failed to generate upload ticket', message: err.message }, 500);
-    }
-});
+        const body = await c.req.parseBody();
+        const file = body['file'];
+        
+        if (!file) {
+            return c.json({ error: 'No file provided' }, 400);
+        }
 
-// Serve Local Uploads
-placementsRoutes.put('/resumes/upload-local', async (c) => {
-    const key = c.req.query('key');
-    if (!key || (!key.startsWith('local/') && !key.startsWith('users/'))) {
-        return c.json({ error: 'Invalid key' }, 400);
-    }
-    
-    const baseName = path.basename(key);
-    const filePath = path.join(UPLOADS_DIR, baseName);
-    
-    try {
-        const bodyBuffer = await c.req.arrayBuffer();
-        await fs.promises.writeFile(filePath, Buffer.from(bodyBuffer));
-        console.info(`[Storage] Saved resume locally at: ${filePath}`);
-        return c.json({ success: true });
-    } catch (err) {
-        console.error('Local upload failed:', err);
-        return c.json({ error: 'Failed to write file locally' }, 500);
-    }
-});
+        const blob = await put(`resumes/${Date.now()}-${file.name}`, file, { access: 'public' });
 
-// View Local Resumes (must be public to load in iframe without Auth headers)
-placementsRoutes.get('/resumes/local-view', async (c) => {
-    const key = c.req.query('key');
-    if (!key || (!key.startsWith('local/') && !key.startsWith('users/'))) {
-        return c.json({ error: 'Invalid key' }, 400);
-    }
-    
-    const baseName = path.basename(key);
-    const filePath = path.join(UPLOADS_DIR, baseName);
-    
-    if (!fs.existsSync(filePath)) {
-        return c.text('File not found', 404);
-    }
-    
-    try {
-        const fileContent = await fs.promises.readFile(filePath);
-        c.header('Content-Type', 'application/pdf');
-        c.header('Content-Disposition', 'inline');
-        return c.body(fileContent);
+        return c.json({
+            url: blob.url,
+            key: blob.url // For compatibility with the frontend's expected key
+        });
     } catch (err) {
-        console.error('Error serving local file:', err);
-        return c.text('Error serving file', 500);
+        console.error('Error uploading resume:', err);
+        return c.json({ error: 'Failed to upload resume' }, 500);
     }
 });
 
@@ -88,22 +38,10 @@ placementsRoutes.get('/resumes', requireAuth, async (c) => {
             [userId]
         );
         
-        // Dynamically append temporary presigned download/view URL for resumes stored on S3
-        const reqUrl = new URL(c.req.url);
-        const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
-        const resumesWithUrls = await Promise.all(res.rows.map(async (resume) => {
-            let viewUrl = resume.link_url;
-            if (resume.link_url && (resume.link_url.startsWith('users/') || resume.link_url.startsWith('local/'))) {
-                try {
-                    viewUrl = await getDownloadPresignedUrl(resume.link_url, baseUrl);
-                } catch (s3Err) {
-                    console.error(`Failed to generate view URL for key ${resume.link_url}:`, s3Err);
-                }
-            }
-            return {
-                ...resume,
-                view_url: viewUrl
-            };
+        // Vercel blob URLs are public, so view_url is just the link_url
+        const resumesWithUrls = res.rows.map((resume) => ({
+            ...resume,
+            view_url: resume.link_url
         }));
         
         return c.json(resumesWithUrls);
@@ -119,7 +57,7 @@ placementsRoutes.post('/resumes/confirm', requireAuth, async (c) => {
         const { title, target_role, key } = await c.req.json();
         
         if (!key) {
-            return c.json({ error: 'S3 key is required' }, 400);
+            return c.json({ error: 'Key is required' }, 400);
         }
 
         const res = await pool.query(
@@ -129,19 +67,9 @@ placementsRoutes.post('/resumes/confirm', requireAuth, async (c) => {
             [userId, title, target_role || 'General', key]
         );
         
-        // Generate immediate view_url for convenience
-        let viewUrl = key;
-        try {
-            const reqUrl = new URL(c.req.url);
-            const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
-            viewUrl = await getDownloadPresignedUrl(key, baseUrl);
-        } catch (s3Err) {
-            console.error(`Failed to generate initial view URL:`, s3Err);
-        }
-        
         return c.json({
             ...res.rows[0],
-            view_url: viewUrl
+            view_url: key
         });
     } catch (err) {
         console.error('Error confirming resume:', err);
@@ -161,15 +89,7 @@ placementsRoutes.get('/resumes/:id/view-url', requireAuth, async (c) => {
             return c.json({ error: 'Resume not found' }, 404);
         }
         
-        const key = res.rows[0].link_url;
-        let viewUrl = key;
-        if (key && (key.startsWith('users/') || key.startsWith('local/'))) {
-            const reqUrl = new URL(c.req.url);
-            const baseUrl = `${reqUrl.protocol}//${reqUrl.host}`;
-            viewUrl = await getDownloadPresignedUrl(key, baseUrl);
-        }
-        
-        return c.json({ viewUrl });
+        return c.json({ viewUrl: res.rows[0].link_url });
     } catch (err) {
         console.error('Error generating view url:', err);
         return c.json({ error: 'Failed to generate view url' }, 500);
@@ -180,7 +100,6 @@ placementsRoutes.delete('/resumes/:id', requireAuth, async (c) => {
     const userId = c.get('userId');
     const id = c.req.param('id');
     try {
-        // 1. Fetch the resume's key/link_url
         const fetchRes = await pool.query(
             'SELECT link_url FROM resumes WHERE id = $1 AND user_id = $2',
             [id, userId]
@@ -191,28 +110,15 @@ placementsRoutes.delete('/resumes/:id', requireAuth, async (c) => {
         
         const fileKey = fetchRes.rows[0].link_url;
         
-        // 2. Delete from S3 (only if it looks like an S3 key)
-        if (fileKey && fileKey.startsWith('users/')) {
+        // Delete from Vercel Blob
+        if (fileKey && fileKey.includes('public.blob.vercel-storage.com')) {
             try {
-                await deleteS3Object(fileKey);
-            } catch (s3Err) {
-                console.error(`S3 clean-up failed for key ${fileKey}:`, s3Err);
-                // Continue with database deletion even if S3 delete fails
-            }
-        } else if (fileKey && fileKey.startsWith('local/')) {
-            try {
-                const baseName = path.basename(fileKey);
-                const filePath = path.join(UPLOADS_DIR, baseName);
-                if (fs.existsSync(filePath)) {
-                    fs.unlinkSync(filePath);
-                    console.info(`[Storage] Deleted local resume at: ${filePath}`);
-                }
-            } catch (fsErr) {
-                console.error(`Local file cleanup failed for key ${fileKey}:`, fsErr);
+                await del(fileKey);
+            } catch (blobErr) {
+                console.error(`Blob clean-up failed for key ${fileKey}:`, blobErr);
             }
         }
         
-        // 3. Delete from database
         await pool.query(
             'DELETE FROM resumes WHERE id = $1 AND user_id = $2',
             [id, userId]
@@ -342,7 +248,7 @@ placementsRoutes.delete('/applications/:id', requireAuth, async (c) => {
 });
 
 // ==========================================
-// HABIT LOGS
+// HABIT LOGS & READINESS
 // ==========================================
 
 placementsRoutes.get('/habit-logs', requireAuth, async (c) => {
@@ -359,10 +265,6 @@ placementsRoutes.get('/habit-logs', requireAuth, async (c) => {
     }
 });
 
-// ==========================================
-// READINESS
-// ==========================================
-
 placementsRoutes.get('/readiness', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
@@ -376,12 +278,10 @@ placementsRoutes.get('/readiness', requireAuth, async (c) => {
         const speakingLogs = speakingRes.rows;
         const resumeCount = resumesRes.rows.length;
 
-        // Calculate DSA score
         const dsaScore = Math.min(100, Math.max(35, 35 + dsaCount * 5));
         const dsaDesc = dsaCount > 0 ? `${dsaCount} problems solved this period` : 'No solved problems logged yet';
 
-        // Calculate speaking/communication score
-        let communicationScore = 60; // baseline
+        let communicationScore = 60;
         if (speakingLogs.length > 0) {
             const totalSum = speakingLogs.reduce((acc, log) => {
                 const conf = Number(log.confidence_score || 0);
@@ -397,7 +297,6 @@ placementsRoutes.get('/readiness', requireAuth, async (c) => {
             ? `Based on ${speakingLogs.length} speech logs` 
             : 'Record speaking logs to benchmark';
 
-        // Calculate System Design score
         const systemDesignScore = Math.min(100, Math.max(40, 40 + resumeCount * 15));
         const systemDesignDesc = resumeCount > 0 
             ? `${resumeCount} active resumes mapped` 
@@ -415,4 +314,3 @@ placementsRoutes.get('/readiness', requireAuth, async (c) => {
 });
 
 export default placementsRoutes;
-
