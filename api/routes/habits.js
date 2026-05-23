@@ -1,58 +1,44 @@
 /**
- * routes/habits.js
- *
- * Habits CRUD — Refactored for Hono / Cloudflare Workers.
+ * routes/habits.js — uses pool.query() (Neon PostgreSQL direct).
  */
 import { Hono } from 'hono';
-import { supabase } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const app = new Hono();
 
-// GET /api/habits — list all active habits for user
+// GET /api/habits
 app.get('/', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const { status = 'active', category } = c.req.query();
 
-        let query = supabase
-            .from('habits')
-            .select('id, name, emoji, category, frequency, status, created_at')
-            .eq('user_id', userId);
+        let q = 'SELECT id, name, emoji, category, frequency, status, created_at FROM habits WHERE user_id = $1';
+        const params = [userId];
+        if (status) { params.push(status); q += ` AND status = $${params.length}`; }
+        if (category) { params.push(category); q += ` AND category = $${params.length}`; }
+        q += ' ORDER BY created_at ASC';
 
-        if (status) query = query.eq('status', status);
-        if (category) query = query.eq('category', category);
-
-        const { data, error } = await query.order('created_at', { ascending: true });
-
-        if (error) throw error;
-        return c.json(data);
+        const { rows } = await pool.query(q, params);
+        return c.json(rows);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
 });
 
-// POST /api/habits — create a new habit
+// POST /api/habits
 app.post('/', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const { name, emoji = '🎯', category, frequency = 'daily' } = await c.req.json();
         if (!name?.trim()) return c.json({ error: 'name is required' }, 400);
 
-        const { data, error } = await supabase
-            .from('habits')
-            .insert({
-                user_id: userId,
-                name: name.trim(),
-                emoji,
-                category: category || null,
-                frequency
-            })
-            .select()
-            .single();
-
-        if (error) throw error;
-        return c.json(data, 201);
+        const { rows } = await pool.query(
+            `INSERT INTO habits (user_id, name, emoji, category, frequency)
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [userId, name.trim(), emoji, category || null, frequency]
+        );
+        return c.json(rows[0], 201);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
@@ -63,29 +49,24 @@ app.put('/:id', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const id = c.req.param('id');
-        const body = await c.req.json();
-        const { name, emoji, category, frequency, status } = body;
+        const { name, emoji, category, frequency, status } = await c.req.json();
 
-        const updates = {};
-        if (name !== undefined) updates.name = name;
-        if (emoji !== undefined) updates.emoji = emoji;
-        if (category !== undefined) updates.category = category;
-        if (frequency !== undefined) updates.frequency = frequency;
-        if (status !== undefined) updates.status = status;
+        const sets = [];
+        const params = [];
+        if (name !== undefined) { params.push(name); sets.push(`name = $${params.length}`); }
+        if (emoji !== undefined) { params.push(emoji); sets.push(`emoji = $${params.length}`); }
+        if (category !== undefined) { params.push(category); sets.push(`category = $${params.length}`); }
+        if (frequency !== undefined) { params.push(frequency); sets.push(`frequency = $${params.length}`); }
+        if (status !== undefined) { params.push(status); sets.push(`status = $${params.length}`); }
+        if (sets.length === 0) return c.json({ error: 'No fields to update' }, 400);
 
-        if (Object.keys(updates).length === 0) return c.json({ error: 'No fields to update' }, 400);
-
-        const { data, error } = await supabase
-            .from('habits')
-            .update(updates)
-            .eq('id', id)
-            .eq('user_id', userId)
-            .select()
-            .maybeSingle();
-
-        if (error) throw error;
-        if (!data) return c.json({ error: 'Habit not found' }, 404);
-        return c.json(data);
+        params.push(id, userId);
+        const { rows } = await pool.query(
+            `UPDATE habits SET ${sets.join(', ')} WHERE id = $${params.length - 1} AND user_id = $${params.length} RETURNING *`,
+            params
+        );
+        if (rows.length === 0) return c.json({ error: 'Habit not found' }, 404);
+        return c.json(rows[0]);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
@@ -96,14 +77,7 @@ app.delete('/:id', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const id = c.req.param('id');
-
-        const { error } = await supabase
-            .from('habits')
-            .delete()
-            .eq('id', id)
-            .eq('user_id', userId);
-
-        if (error) throw error;
+        await pool.query('DELETE FROM habits WHERE id = $1 AND user_id = $2', [id, userId]);
         return c.json({ deleted: true });
     } catch (err) {
         return c.json({ error: err.message }, 500);
@@ -115,25 +89,19 @@ app.get('/:id/logs', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const id = c.req.param('id');
-        const { date, limit = 30 } = c.req.query();
+        const { date, limit = '30' } = c.req.query();
 
-        let query = supabase
-            .from('habit_logs')
-            .select('id, completed_at, status, session, notes')
-            .eq('habit_id', id)
-            .eq('user_id', userId);
-
+        let q = `SELECT id, completed_at, status, notes FROM habit_logs
+                 WHERE habit_id = $1 AND user_id = $2`;
+        const params = [id, userId];
         if (date) {
-            // Simplistic equality for date part
-            query = query.gte('completed_at', `${date}T00:00:00.000Z`).lte('completed_at', `${date}T23:59:59.999Z`);
+            params.push(`${date}T00:00:00.000Z`, `${date}T23:59:59.999Z`);
+            q += ` AND completed_at >= $${params.length - 1} AND completed_at <= $${params.length}`;
         }
+        q += ` ORDER BY completed_at DESC LIMIT ${parseInt(limit, 10)}`;
 
-        const { data, error } = await query
-            .order('completed_at', { ascending: false })
-            .limit(parseInt(limit, 10));
-
-        if (error) throw error;
-        return c.json(data);
+        const { rows } = await pool.query(q, params);
+        return c.json(rows);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
