@@ -6,7 +6,7 @@
  */
 import { Hono } from 'hono';
 import { requireAuth } from '../middleware/auth.js';
-import { supabase } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { getAnalyticsDataset } from '../services/analyticsData.js';
 import { summarizeLifeHealth } from '../services/lifeHealthEngine.js';
 import { generateWeeklyReview } from '../services/weeklyReviewEngine.js';
@@ -37,15 +37,13 @@ app.get('/report', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
         // Try fetching a pre-calculated weekly summary first
-        const { data: cachedSummary, error: cacheErr } = await supabase
-            .from('weekly_summaries')
-            .select('data')
-            .eq('user_id', userId)
-            .order('generated_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+        const { rows: cachedRows } = await pool.query(
+            `SELECT data FROM weekly_summaries WHERE user_id = $1 ORDER BY generated_at DESC LIMIT 1`,
+            [userId]
+        ).catch(() => ({ rows: [] }));
+        const cachedSummary = cachedRows[0];
 
-        if (cachedSummary && cachedSummary.data) {
+        if (cachedSummary?.data) {
             return c.json(cachedSummary.data);
         }
 

@@ -1,124 +1,87 @@
 import { Hono } from 'hono';
-import { supabase, pool } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
 
 const app = new Hono();
 
 /**
- * POST /api/daily-logs
- * Create or update daily log
+ * POST /api/daily-logs — Create or update daily log
  */
 app.post('/', requireAuth, async (c) => {
     try {
         const body = await c.req.json();
         const {
             date = new Date().toISOString().split('T')[0],
-            sleepStart,
-            sleepEnd,
-            sleepHours,
-            rcCount,
-            gymDone,
-            gymDuration,
-            breakfastDone,
-            steps,
-            proteinGrams,
-            waterBottles,
-            learningDone,
-            learningTopic,
-            journalEntry,
-            mood,
-            moodBefore,
-            moodAfter,
-            energyLevel,
+            sleepStart, sleepEnd, sleepHours, rcCount,
+            gymDone, gymDuration, breakfastDone, steps,
+            waterBottles, learningDone, learningTopic, journalEntry,
+            mood, energyLevel,
         } = body;
         const userId = c.get('userId');
 
-        const { data, error } = await supabase
-            .from('daily_logs')
-            .upsert({
-                user_id: userId,
-                date: date,
-                sleep_start: sleepStart || null,
-                sleep_end: sleepEnd || null,
-                sleep_hours: sleepHours || null,
-                rc_count: rcCount || 0,
-                gym_done: gymDone || false,
-                gym_duration: gymDuration || null,
-                breakfast_done: breakfastDone || false,
-                steps: steps || 0,
-                protein_grams: proteinGrams || 0,
-                water_bottles: waterBottles || 0,
-                learning_done: learningDone || false,
-                learning_topic: learningTopic || null,
-                journal_entry: journalEntry || null,
-                mood: mood || null,
-                mood_before: moodBefore || null,
-                mood_after: moodAfter || null,
-                energy_level: energyLevel || null,
-            }, {
-                onConflict: 'user_id,date'
-            })
-            .select();
+        const { rows } = await pool.query(
+            `INSERT INTO daily_logs (
+                user_id, date, sleep_start, sleep_end, sleep_hours, rc_count,
+                gym_done, gym_duration, breakfast_done, steps, water_bottles,
+                learning_done, learning_topic, journal_entry, mood, energy_level
+             ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+             ON CONFLICT (user_id, date) DO UPDATE SET
+                sleep_start = EXCLUDED.sleep_start,
+                sleep_end = EXCLUDED.sleep_end,
+                sleep_hours = EXCLUDED.sleep_hours,
+                rc_count = EXCLUDED.rc_count,
+                gym_done = EXCLUDED.gym_done,
+                gym_duration = EXCLUDED.gym_duration,
+                breakfast_done = EXCLUDED.breakfast_done,
+                steps = EXCLUDED.steps,
+                water_bottles = EXCLUDED.water_bottles,
+                learning_done = EXCLUDED.learning_done,
+                learning_topic = EXCLUDED.learning_topic,
+                journal_entry = EXCLUDED.journal_entry,
+                mood = EXCLUDED.mood,
+                energy_level = EXCLUDED.energy_level,
+                updated_at = NOW()
+             RETURNING *`,
+            [
+                userId, date,
+                sleepStart || null, sleepEnd || null, sleepHours || null, rcCount || 0,
+                gymDone || false, gymDuration || null, breakfastDone || false, steps || 0,
+                waterBottles || 0, learningDone || false, learningTopic || null,
+                journalEntry || null, mood || null, energyLevel || null,
+            ]
+        );
 
-        if (error) throw error;
-
-        // ─── Automated Stage Progression (Refactored to JS for Workers) ───
+        // Onboarding stage progression
         try {
-            // Fetch recent logs to calculate streak in memory
-            const { data: recentLogs } = await supabase
-                .from('daily_logs')
-                .select('date')
-                .eq('user_id', userId)
-                .is('deleted_at', null)
-                .order('date', { ascending: false })
-                .limit(100);
-
+            const { rows: recentLogs } = await pool.query(
+                `SELECT date FROM daily_logs WHERE user_id = $1 ORDER BY date DESC LIMIT 100`,
+                [userId]
+            );
             let streak = 0;
-            if (recentLogs && recentLogs.length > 0) {
+            if (recentLogs.length > 0) {
                 const todayStr = new Date().toISOString().split('T')[0];
-                const lastLogDate = recentLogs[0].date;
-
-                // If the latest log is today or yesterday, streak continues
-                const diff = (new Date(todayStr) - new Date(lastLogDate)) / (1000 * 60 * 60 * 24);
-
+                const diff = (new Date(todayStr) - new Date(recentLogs[0].date)) / 86400000;
                 if (diff <= 1) {
                     streak = 1;
                     for (let i = 1; i < recentLogs.length; i++) {
-                        const prev = new Date(recentLogs[i - 1].date);
-                        const curr = new Date(recentLogs[i].date);
-                        const gap = (prev - curr) / (1000 * 60 * 60 * 24);
-                        if (gap === 1) streak++;
-                        else break;
+                        const gap = (new Date(recentLogs[i - 1].date) - new Date(recentLogs[i].date)) / 86400000;
+                        if (gap === 1) streak++; else break;
                     }
                 }
             }
-
-            const { count: totalLogs } = await supabase
-                .from('daily_logs')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', userId)
-                .is('deleted_at', null);
-
-            const newStage = BehavioralEngine.determineOnboardingStage({
-                totalLogs: totalLogs || 0,
-                consecutiveDays: streak
-            });
-
+            const newStage = BehavioralEngine.determineOnboardingStage({ totalLogs: recentLogs.length, consecutiveDays: streak });
             const currentStage = c.get('user')?.onboarding_stage || 0;
             if (newStage > currentStage) {
-                await pool.query(
-                    'UPDATE public.users SET onboarding_stage = $1, updated_at = $2 WHERE id = $3',
-                    [newStage, new Date().toISOString(), userId]
-                );
+                await pool.query('UPDATE users SET onboarding_stage = $1 WHERE id = $2', [newStage, userId]);
             }
         } catch (stageErr) {
-            console.error('[Stage Progression Error]', stageErr);
+            console.error('[Stage Progression]', stageErr.message);
         }
 
-        return c.json(data[0], 201);
+        return c.json(rows[0], 201);
     } catch (error) {
-        console.error('Error saving daily log:', error);
+        console.error('[daily-logs POST]', error);
         return c.json({ error: error.message || 'Internal server error' }, 500);
     }
 });
@@ -129,17 +92,13 @@ app.post('/', requireAuth, async (c) => {
 app.get('/:userId/:date', requireAuth, async (c) => {
     try {
         const { userId, date } = c.req.param();
-        const { data, error } = await supabase
-            .from('daily_logs')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('date', date)
-            .maybeSingle();
-
-        if (error) throw error;
-        return c.json(data || {});
+        const { rows } = await pool.query(
+            'SELECT * FROM daily_logs WHERE user_id = $1 AND date = $2',
+            [userId, date]
+        );
+        return c.json(rows[0] || {});
     } catch (error) {
-        console.error('Error fetching daily log:', error);
+        console.error('[daily-logs GET]', error);
         return c.json({ error: error.message || 'Internal server error' }, 500);
     }
 });

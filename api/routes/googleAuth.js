@@ -6,7 +6,7 @@
  */
 import { Hono } from 'hono';
 import { google } from 'googleapis';
-import { pool, supabaseAdmin } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { encrypt } from '../lib/crypto.js';
 import { requireAuth } from '../middleware/auth.js';
 

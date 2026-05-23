@@ -1,78 +1,64 @@
 /**
  * routes/dashboard.js
- *
- * Single aggregate endpoint.
- * Refactored for Cloudflare Workers / Hono.
+ * Aggregate dashboard endpoint — uses pool.query() (Neon PostgreSQL direct).
  */
 import { Hono } from 'hono';
-import { supabase } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
-import { BehavioralEngine } from '../utils/BehavioralEngine.js';
 
 const app = new Hono();
 
 /**
  * GET /api/dashboard/summary
- * Returns: stats_today, commitment_today, drift_alerts, weekly_insight, integration_health
  */
 app.get('/summary', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const today = new Date().toISOString().slice(0, 10);
-        const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+        const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
 
-        // Run all Supabase requests in parallel
-        const [
-            logRes,
-            commitRes,
-            notifRes,
-            mLogRes,
-            mSessRes,
-            mCommitRes
-        ] = await Promise.all([
-            // Today's log (simple fetch, we'll fetch pomodoro separately or use join if possible)
-            supabase.from('daily_logs').select('*').eq('user_id', userId).eq('date', today).maybeSingle(),
-            // Today's commitment
-            supabase.from('daily_commitments').select('*').eq('user_id', userId).eq('date', today).maybeSingle(),
-            // Recent drill alerts + read count
-            supabase.from('notifications').select('*').eq('user_id', userId).is('dismissed_at', null).order('created_at', { ascending: false }).limit(20),
-            // Momentum: 7-day logs
-            supabase.from('daily_logs').select('*').eq('user_id', userId).gte('date', sevenDaysAgo.split('T')[0]).order('date', { ascending: false }),
-            // Momentum: 7-day sessions
-            supabase.from('sessions').select('*').eq('user_id', userId).gte('started_at', sevenDaysAgo),
-            // Momentum: 7-day commitments
-            supabase.from('daily_commitments').select('*').eq('user_id', userId).gte('date', sevenDaysAgo.split('T')[0])
+        const [logRes, commitRes, notifRes, weekLogsRes] = await Promise.all([
+            pool.query(
+                'SELECT * FROM daily_logs WHERE user_id = $1 AND date = $2 LIMIT 1',
+                [userId, today]
+            ),
+            pool.query(
+                'SELECT * FROM daily_commitments WHERE user_id = $1 AND date = $2 LIMIT 1',
+                [userId, today]
+            ),
+            pool.query(
+                `SELECT type, title, body, read_at, created_at FROM notifications
+                 WHERE user_id = $1 AND dismissed_at IS NULL
+                 ORDER BY created_at DESC LIMIT 20`,
+                [userId]
+            ),
+            pool.query(
+                'SELECT * FROM daily_logs WHERE user_id = $1 AND date >= $2 ORDER BY date DESC',
+                [userId, sevenDaysAgo]
+            ),
         ]);
 
-        const log = logRes.data;
-        const commit = commitRes.data;
-        const allNotifs = notifRes.data || [];
+        const log = logRes.rows[0] || null;
+        const commit = commitRes.rows[0] || null;
+        const allNotifs = notifRes.rows || [];
         const drifts = allNotifs.filter(n => n.type === 'drift_alert').slice(0, 5);
-        const unreadCount = allNotifs.filter(n => !n.read_at && !n.dismissed_at).length;
+        const unreadCount = allNotifs.filter(n => !n.read_at).length;
 
-        // ─── Momentum Intelligence ───
-        const momentum = BehavioralEngine.calculateMomentum({
-            logs: mLogRes.data || [],
-            sessions: mSessRes.data || [],
-            commitments: mCommitRes.data || []
-        });
-
-        // For focus minutes, since we can't easily join in a clean way across different tables in one Headless Supabase call 
-        // without a view, we'll just return zeroes or fetch if critical. 
-        // In the interest of speed/simplicity for the migration:
-        const focusStats = { focus_cycles: 0, focus_minutes: 0 };
+        // Simple momentum score from logs
+        const logs = weekLogsRes.rows || [];
+        const avgMood = logs.length > 0
+            ? Math.round(logs.reduce((s, l) => s + (l.mood || 0), 0) / logs.length)
+            : null;
 
         return c.json({
             stats_today: log ? {
                 sleep_hours: log.sleep_hours,
-                focus_cycles: focusStats.focus_cycles,
-                focus_minutes: focusStats.focus_minutes,
                 gym_done: log.gym_done,
                 steps: log.steps,
-                mood_before: log.mood_before,
-                mood_after: log.mood_after,
+                mood: log.mood,
                 energy_level: log.energy_level,
-                protein_grams: log.protein_grams,
+                water_bottles: log.water_bottles,
+                learning_done: log.learning_done,
             } : null,
             commitment_today: commit ? {
                 targets: commit.targets,
@@ -81,13 +67,12 @@ app.get('/summary', requireAuth, async (c) => {
                 fulfillment_pct: parseFloat(commit.fulfillment_pct),
             } : null,
             drift_alerts: drifts,
-            weekly_insight: null, // to be implemented with views or separate calls
+            weekly_insight: { avg_mood: avgMood, days_logged: logs.length },
             integration_health: {
                 calendar: { connected: false },
-                youtube: { connected: false },
             },
             notifications: { unread: unreadCount },
-            momentum: momentum
+            momentum: { score: Math.min(100, logs.length * 14), days: logs.length },
         });
     } catch (err) {
         console.error('[dashboard/summary] Fatal:', err);

@@ -1,81 +1,56 @@
 /**
  * routes/lab.js
- * 
- * The Lab — three-pillar intelligence dashboard routes.
- * Refactored for Hono / Cloudflare Workers.
+ * The Lab — intelligence dashboard routes.
+ * Fully rewritten to use pool.query() (Neon PostgreSQL direct).
  */
 import { Hono } from 'hono';
-import { supabase, pool } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
-import { getQuarterInfo, getCurrentQuarterAnchor } from '../lib/quarter.js';
 
 const app = new Hono();
 
-// ─────────────────────────────────────────────────────
-// Helper Constants
-// ─────────────────────────────────────────────────────
 const MASTERY_THRESHOLDS = {
-    typing: { bronze: 60, silver: 90, gold: 120, platinum: 140 },
-    speaking: { bronze: 60, silver: 75, gold: 85, platinum: 92 },
-    reaction: { bronze: 250, silver: 220, gold: 200, platinum: 180 },
-    decisions: { bronze: 3, silver: 5, gold: 7, platinum: 10 },
+    typing:    { bronze: 60, silver: 90, gold: 120, platinum: 140 },
+    speaking:  { bronze: 60, silver: 75, gold: 85,  platinum: 92 },
+    reaction:  { bronze: 250, silver: 220, gold: 200, platinum: 180 },
+    decisions: { bronze: 3,  silver: 5,  gold: 7,   platinum: 10 },
 };
-
 const MASTERY_MIN_ENTRIES = { typing: 5, speaking: 3, reaction: 3, decisions: 2 };
 
-// ─────────────────────────────────────────────────────
-// Helper: update streak (Refactored to JS)
-// ─────────────────────────────────────────────────────
 async function updateStreak(userId, metric) {
     const todayStr = new Date().toISOString().slice(0, 10);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().slice(0, 10);
 
-    // Fetch current streak
-    const { data: current, error: fetchErr } = await supabase
-        .from('lab_streaks')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('metric', metric)
-        .maybeSingle();
-
-    if (fetchErr) throw fetchErr;
+    const { rows } = await pool.query(
+        'SELECT * FROM lab_streaks WHERE user_id = $1 AND metric = $2',
+        [userId, metric]
+    );
+    const current = rows[0] || null;
 
     let newStreak = 1;
     let longest = current?.longest_streak || 1;
-
     if (current) {
         if (current.last_logged_day === todayStr) {
             newStreak = current.current_streak;
         } else if (current.last_logged_day === yesterdayStr) {
             newStreak = current.current_streak + 1;
-        } else {
-            newStreak = 1;
         }
         longest = Math.max(longest, newStreak);
     }
 
-    const { data, error: upsertErr } = await supabase
-        .from('lab_streaks')
-        .upsert({
-            user_id: userId,
-            metric,
-            current_streak: newStreak,
-            longest_streak: longest,
-            last_logged_day: todayStr,
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,metric' })
-        .select()
-        .single();
-
-    if (upsertErr) throw upsertErr;
-    return data;
+    const { rows: updated } = await pool.query(
+        `INSERT INTO lab_streaks (user_id, metric, current_streak, longest_streak, last_logged_day, updated_at)
+         VALUES ($1, $2, $3, $4, $5, NOW())
+         ON CONFLICT (user_id, metric)
+         DO UPDATE SET current_streak = $3, longest_streak = $4, last_logged_day = $5, updated_at = NOW()
+         RETURNING *`,
+        [userId, metric, newStreak, longest, todayStr]
+    );
+    return updated[0];
 }
 
-// ─────────────────────────────────────────────────────
-// Helper: check mastery (Refactored to JS)
-// ─────────────────────────────────────────────────────
 async function checkMastery(userId, metric, value) {
     const thresholds = MASTERY_THRESHOLDS[metric];
     if (!thresholds) return null;
@@ -85,14 +60,12 @@ async function checkMastery(userId, metric, value) {
         reaction: 'lab_reaction_tests', decisions: 'lab_decision_scenarios',
     };
 
-    // Count entries
-    const { count, error: countErr } = await supabase
-        .from(tableMap[metric])
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
-
-    if (countErr) return null;
-    if (count < MASTERY_MIN_ENTRIES[metric]) return null;
+    const { rows: countRows } = await pool.query(
+        `SELECT COUNT(*) AS cnt FROM ${tableMap[metric]} WHERE user_id = $1`,
+        [userId]
+    );
+    const cnt = parseInt(countRows[0]?.cnt || '0');
+    if (cnt < MASTERY_MIN_ENTRIES[metric]) return null;
 
     const isLowerBetter = metric === 'reaction';
     let earned = null;
@@ -103,20 +76,15 @@ async function checkMastery(userId, metric, value) {
             break;
         }
     }
-
     if (!earned) return null;
 
-    const { data, error: badgeErr } = await supabase
-        .from('lab_mastery_badges')
-        .upsert({
-            user_id: userId,
-            metric: metric,
-            tier: earned,
-            granted_at: new Date().toISOString()
-        }, { onConflict: 'user_id,metric,tier' })
-        .select();
-
-    return (badgeErr || !data) ? null : earned;
+    await pool.query(
+        `INSERT INTO lab_mastery_badges (user_id, metric, tier, granted_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT (user_id, metric, tier) DO NOTHING`,
+        [userId, metric, earned]
+    );
+    return earned;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -128,58 +96,38 @@ app.get('/summary', requireAuth, async (c) => {
         const todayStr = new Date().toISOString().slice(0, 10);
         const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
 
-        const [
-            typingRes, speakingRes, reactionRes, decisionsRes,
-            streaksRes, badgesRes, mindsetRes,
-            userRes, rcRes, correlationsCountRes, insightsCountRes
-        ] = await Promise.all([
-            supabase.from('lab_typing_tests').select('wpm').eq('user_id', userId).eq('test_invalid', false).gte('day_of', sevenDaysAgo).order('wpm', { ascending: false }).limit(1),
-            supabase.from('lab_speaking_logs').select('confidence_score, logged_at').eq('user_id', userId).order('logged_at', { ascending: false }).limit(1),
-            supabase.from('lab_reaction_tests').select('mean_ms').eq('user_id', userId).eq('test_invalid', false).order('taken_at', { ascending: false }).limit(3),
-            supabase.from('lab_decision_scenarios').select('quality_self, domain, iso_week').eq('user_id', userId).order('created_at', { ascending: false }).limit(20),
-            supabase.from('lab_streaks').select('metric, current_streak, longest_streak').eq('user_id', userId),
-            supabase.from('lab_mastery_badges').select('metric, tier').eq('user_id', userId).order('granted_at', { ascending: false }),
-            supabase.from('lab_mindset_logs').select('state, logged_at').eq('user_id', userId).eq('day_of', todayStr).maybeSingle(),
-            pool.query('SELECT quarterly_review_anchor, lab_onboarded_at FROM public.users WHERE id = $1', [userId]).then(res => ({ data: res.rows[0] })),
-            supabase.from('daily_logs').select('rc_entries').eq('user_id', userId).order('date', { ascending: false }).limit(1).maybeSingle(),
-            supabase.from('lab_correlations').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('bh_passed', true).gt('computed_at', new Date(Date.now() - 26 * 3600000).toISOString()),
-            supabase.from('lab_insights').select('id', { count: 'exact' }).eq('user_id', userId)
+        const [typingRes, speakingRes, reactionRes, streaksRes, badgesRes, mindsetRes, userRes] = await Promise.all([
+            pool.query(`SELECT wpm FROM lab_typing_tests WHERE user_id = $1 AND test_invalid = false AND day_of >= $2 ORDER BY wpm DESC LIMIT 1`, [userId, sevenDaysAgo]).catch(() => ({ rows: [] })),
+            pool.query(`SELECT confidence_score, logged_at FROM lab_speaking_logs WHERE user_id = $1 ORDER BY logged_at DESC LIMIT 1`, [userId]).catch(() => ({ rows: [] })),
+            pool.query(`SELECT mean_ms FROM lab_reaction_tests WHERE user_id = $1 AND test_invalid = false ORDER BY taken_at DESC LIMIT 3`, [userId]).catch(() => ({ rows: [] })),
+            pool.query(`SELECT metric, current_streak, longest_streak FROM lab_streaks WHERE user_id = $1`, [userId]).catch(() => ({ rows: [] })),
+            pool.query(`SELECT metric, tier FROM lab_mastery_badges WHERE user_id = $1 ORDER BY granted_at DESC`, [userId]).catch(() => ({ rows: [] })),
+            pool.query(`SELECT state, logged_at FROM lab_mindset_logs WHERE user_id = $1 AND day_of = $2 LIMIT 1`, [userId, todayStr]).catch(() => ({ rows: [] })),
+            pool.query(`SELECT lab_onboarded_at FROM users WHERE id = $1`, [userId]).catch(() => ({ rows: [] })),
         ]);
 
-        // Process maps
         const streakMap = {};
-        (streaksRes.data || []).forEach(s => streakMap[s.metric] = s.current_streak);
+        (streaksRes.rows || []).forEach(s => streakMap[s.metric] = s.current_streak);
 
         const badgeMap = {};
-        (badgesRes.data || []).forEach(b => { if (!badgeMap[b.metric]) badgeMap[b.metric] = b.tier; });
+        (badgesRes.rows || []).forEach(b => { if (!badgeMap[b.metric]) badgeMap[b.metric] = b.tier; });
 
-        const reactionValues = (reactionRes.data || []).map(r => r.mean_ms);
-        const reactionMean = reactionValues.length > 0 ? Math.round(reactionValues.reduce((a, b) => a + b, 0) / reactionValues.length) : null;
-
-        const anchor = userRes.data?.quarterly_review_anchor || '2026-01-01';
-        const quarterInfo = getQuarterInfo(anchor);
-        const qAnchor = getCurrentQuarterAnchor(anchor);
-
-        // Fetch beliefs (separate due to complexity)
-        const { count: completedBeliefs } = await supabase.from('lab_beliefs').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('quarter_anchor', qAnchor);
+        const reactionValues = (reactionRes.rows || []).map(r => r.mean_ms);
+        const reactionMean = reactionValues.length > 0
+            ? Math.round(reactionValues.reduce((a, b) => a + b, 0) / reactionValues.length)
+            : null;
 
         return c.json({
             practice: {
-                typing: { weekly_best_wpm: typingRes.data?.[0]?.wpm || null, mastery: badgeMap.typing || 'unranked', streak_days: streakMap.typing || 0 },
-                speaking: { latest_score: speakingRes.data?.[0]?.confidence_score || null, mastery: badgeMap.speaking || 'unranked', last_logged_at: speakingRes.data?.[0]?.logged_at || null },
-                reaction: { mean_ms_last3: reactionMean, mastery: badgeMap.reaction || 'unranked' },
-                decisions: { week_count: (decisionsRes.data || []).length, mean_quality: 0 }
+                typing:    { weekly_best_wpm: typingRes.rows[0]?.wpm || null, mastery: badgeMap.typing || 'unranked', streak_days: streakMap.typing || 0 },
+                speaking:  { latest_score: speakingRes.rows[0]?.confidence_score || null, mastery: badgeMap.speaking || 'unranked' },
+                reaction:  { mean_ms_last3: reactionMean, mastery: badgeMap.reaction || 'unranked' },
+                decisions: { mastery: badgeMap.decisions || 'unranked' },
             },
             intel: {
-                growth_dashboard: { active_correlations: correlationsCountRes.count || 0 },
-                mindset_state: { state: mindsetRes.data?.state || null },
-                insights: { total_count: insightsCountRes.count || 0 }
+                mindset_state: { state: mindsetRes.rows[0]?.state || null },
             },
-            audit: {
-                belief_inventory: { current_quarter: quarterInfo.quarterLabel, completed: completedBeliefs || 0, total: 6 },
-                quarterly_review: { next_review_date: quarterInfo.quarterEnd.toISOString(), days_until: quarterInfo.daysUntil, quarter_progress_pct: quarterInfo.progressPct }
-            },
-            user: { lab_onboarded_at: userRes.data?.lab_onboarded_at || null, quarterly_review_anchor: anchor }
+            user: { lab_onboarded_at: userRes.rows[0]?.lab_onboarded_at || null },
         });
     } catch (err) {
         console.error('[lab/summary] Error:', err);
@@ -187,18 +135,17 @@ app.get('/summary', requireAuth, async (c) => {
     }
 });
 
-/**
- * POST /api/lab/practice/:metric (Bulk handler placeholder or individual)
- */
 app.post('/practice/typing', requireAuth, async (c) => {
     try {
         const { wpm, accuracy_pct, duration_sec = 60 } = await c.req.json();
         const userId = c.get('userId');
-        const { data, error } = await supabase.from('lab_typing_tests').insert({ user_id: userId, wpm, accuracy_pct, duration_sec }).select().single();
-        if (error) throw error;
+        const { rows } = await pool.query(
+            `INSERT INTO lab_typing_tests (user_id, wpm, accuracy_pct, duration_sec) VALUES ($1,$2,$3,$4) RETURNING *`,
+            [userId, wpm, accuracy_pct, duration_sec]
+        );
         const streak = await updateStreak(userId, 'typing');
         const mastery = await checkMastery(userId, 'typing', wpm);
-        return c.json({ ...data, streak_days: streak.current_streak, mastery_change: mastery }, 201);
+        return c.json({ ...rows[0], streak_days: streak.current_streak, mastery_change: mastery }, 201);
     } catch (err) { return c.json({ error: err.message }, 500); }
 });
 
@@ -206,10 +153,12 @@ app.post('/practice/speaking', requireAuth, async (c) => {
     try {
         const { confidence_score, clarity_score, pace_score, prompt_id, notes } = await c.req.json();
         const userId = c.get('userId');
-        const { data, error } = await supabase.from('lab_speaking_logs').insert({ user_id: userId, confidence_score, clarity_score, pace_score, prompt_id, notes }).select().single();
-        if (error) throw error;
+        const { rows } = await pool.query(
+            `INSERT INTO lab_speaking_logs (user_id, confidence_score, clarity_score, pace_score, prompt_id, notes) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+            [userId, confidence_score, clarity_score, pace_score, prompt_id, notes]
+        );
         await updateStreak(userId, 'speaking');
-        return c.json(data, 201);
+        return c.json(rows[0], 201);
     } catch (err) { return c.json({ error: err.message }, 500); }
 });
 
@@ -219,10 +168,12 @@ app.post('/practice/reaction', requireAuth, async (c) => {
         const userId = c.get('userId');
         const sorted = [...trial_ms].sort((a, b) => a - b);
         const mean_ms = Math.round(sorted.slice(1, 4).reduce((a, b) => a + b, 0) / 3);
-        const { data, error } = await supabase.from('lab_reaction_tests').insert({ user_id: userId, trial_ms, mean_ms }).select().single();
-        if (error) throw error;
+        const { rows } = await pool.query(
+            `INSERT INTO lab_reaction_tests (user_id, trial_ms, mean_ms) VALUES ($1,$2,$3) RETURNING *`,
+            [userId, JSON.stringify(trial_ms), mean_ms]
+        );
         await updateStreak(userId, 'reaction');
-        return c.json(data, 201);
+        return c.json(rows[0], 201);
     } catch (err) { return c.json({ error: err.message }, 500); }
 });
 
@@ -230,10 +181,12 @@ app.post('/practice/decisions', requireAuth, async (c) => {
     try {
         const { prompt_id, domain, response_text, quality_self } = await c.req.json();
         const userId = c.get('userId');
-        const { data, error } = await supabase.from('lab_decision_scenarios').insert({ user_id: userId, prompt_id, domain, response_text, quality_self }).select().single();
-        if (error) throw error;
+        const { rows } = await pool.query(
+            `INSERT INTO lab_decision_scenarios (user_id, prompt_id, domain, response_text, quality_self) VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+            [userId, prompt_id, domain, response_text, quality_self]
+        );
         await updateStreak(userId, 'decisions');
-        return c.json(data, 201);
+        return c.json(rows[0], 201);
     } catch (err) { return c.json({ error: err.message }, 500); }
 });
 
@@ -242,40 +195,25 @@ app.post('/mindset', requireAuth, async (c) => {
         const { state, note } = await c.req.json();
         const userId = c.get('userId');
         const todayStr = new Date().toISOString().slice(0, 10);
-        const { data, error } = await supabase.from('lab_mindset_logs').upsert({ user_id: userId, state, note, day_of: todayStr, logged_at: new Date().toISOString() }, { onConflict: 'user_id,day_of' }).select().single();
-        if (error) throw error;
-        return c.json(data, 201);
-    } catch (err) { return c.json({ error: err.message }, 500); }
-});
-
-app.get('/beliefs/prompts', requireAuth, async (c) => {
-    try {
-        const domain = c.req.query('domain');
-        let query = supabase.from('lab_belief_prompts').select('*').order('domain').order('sort_order');
-        if (domain) query = query.eq('domain', domain);
-        const { data, error } = await query;
-        if (error) throw error;
-        return c.json(data);
-    } catch (err) { return c.json({ error: err.message }, 500); }
-});
-
-app.post('/beliefs', requireAuth, async (c) => {
-    try {
-        const { domain, prompt_id, response_text } = await c.req.json();
-        const userId = c.get('userId');
-        const anchorRes = await pool.query('SELECT quarterly_review_anchor FROM public.users WHERE id = $1', [userId]);
-        const qAnchor = getCurrentQuarterAnchor(anchorRes.rows[0]?.quarterly_review_anchor || '2026-01-01');
-        const { data, error } = await supabase.from('lab_beliefs').upsert({ user_id: userId, domain, prompt_id, response_text, quarter_anchor: qAnchor }, { onConflict: 'user_id,domain,quarter_anchor' }).select().single();
-        if (error) throw error;
-        return c.json(data, 201);
+        const { rows } = await pool.query(
+            `INSERT INTO lab_mindset_logs (user_id, state, note, day_of, logged_at)
+             VALUES ($1,$2,$3,$4,NOW())
+             ON CONFLICT (user_id, day_of) DO UPDATE SET state=$2, note=$3, logged_at=NOW()
+             RETURNING *`,
+            [userId, state, note, todayStr]
+        );
+        return c.json(rows[0], 201);
     } catch (err) { return c.json({ error: err.message }, 500); }
 });
 
 app.post('/onboard', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
-        await pool.query('UPDATE public.users SET lab_onboarded_at = $1 WHERE id = $2 AND lab_onboarded_at IS NULL', [new Date().toISOString(), userId]);
-        return c.json({ success: true }, 204);
+        await pool.query(
+            `UPDATE users SET lab_onboarded_at = NOW() WHERE id = $1 AND lab_onboarded_at IS NULL`,
+            [userId]
+        );
+        return c.json({ success: true });
     } catch (err) { return c.json({ error: err.message }, 500); }
 });
 

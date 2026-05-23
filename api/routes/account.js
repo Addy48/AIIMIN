@@ -5,9 +5,9 @@
  * Refactored for Hono / Cloudflare Workers.
  */
 import { Hono } from 'hono';
-import { supabase, pool } from '../lib/db.js';
+import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
-import { supabaseAdmin as adminSupabase } from '../supabase.js';
+
 import { decrypt, encrypt } from '../lib/crypto.js';
 
 const app = new Hono();
@@ -90,12 +90,12 @@ app.patch('/profile', requireAuth, async (c) => {
         const data = rows[0];
 
         // Sync to Auth Metadata (Async, non-blocking)
-        adminSupabase.auth.admin.updateUserById(userId, {
-            user_metadata: {
-                ...(c.get('user')?.user_metadata || {}),
-                ...updates
-            }
-        }).catch(e => console.error('[account/profile] Auth sync failed:', e));
+        // adminSupabase.auth.admin.updateUserById(userId, {
+        //     user_metadata: {
+        //         ...(c.get('user')?.user_metadata || {}),
+        //         ...updates
+        //     }
+        // }).catch(e => console.error('[account/profile] Auth sync failed:', e));
 
         return c.json(data);
     } catch (err) {
@@ -110,30 +110,24 @@ app.get('/export', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
 
-        const [p, dl, pg, ps, mt, w, dc, ws, n] = await Promise.all([
-            pool.query('SELECT * FROM users WHERE id = $1', [userId]).then(res => ({ data: res.rows[0] || null })),
-            supabase.from('daily_logs').select('*').eq('user_id', userId).order('date', { ascending: false }),
-            supabase.from('personal_goals').select('*').eq('user_id', userId),
-            supabase.from('pomodoro_sessions').select('*').eq('user_id', userId).order('date', { ascending: false }),
-            supabase.from('money_transactions').select('*').eq('user_id', userId).order('date', { ascending: false }),
-            supabase.from('wins').select('*').eq('user_id', userId).order('date', { ascending: false }),
-            supabase.from('daily_commitments').select('*').eq('user_id', userId).order('date', { ascending: false }),
-            supabase.from('weekly_summaries').select('*').eq('user_id', userId).order('week_start', { ascending: false }),
-            supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        const [userRes, dlRes, mtRes, wRes, dcRes, nRes] = await Promise.all([
+            pool.query('SELECT * FROM users WHERE id = $1', [userId]),
+            pool.query('SELECT * FROM daily_logs WHERE user_id = $1 ORDER BY date DESC', [userId]),
+            pool.query('SELECT * FROM money_transactions WHERE user_id = $1 ORDER BY date DESC', [userId]).catch(() => ({ rows: [] })),
+            pool.query('SELECT * FROM wins WHERE user_id = $1 ORDER BY date DESC', [userId]).catch(() => ({ rows: [] })),
+            pool.query('SELECT * FROM daily_commitments WHERE user_id = $1 ORDER BY date DESC', [userId]).catch(() => ({ rows: [] })),
+            pool.query('SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC', [userId]).catch(() => ({ rows: [] })),
         ]);
 
         const exportData = {
             export_format: 'aiimin_v1',
             exported_at: new Date().toISOString(),
-            user: p.data,
-            daily_logs: dl.data,
-            goals: pg.data,
-            pomodoro: ps.data,
-            finances: mt.data,
-            wins: w.data,
-            commitments: dc.data,
-            weekly_summaries: ws.data,
-            notifications: n.data
+            user: userRes.rows[0] || null,
+            daily_logs: dlRes.rows,
+            finances: mtRes.rows,
+            wins: wRes.rows,
+            commitments: dcRes.rows,
+            notifications: nRes.rows,
         };
 
         return c.json(exportData, 200, {
@@ -155,15 +149,20 @@ app.delete('/', requireAuth, async (c) => {
         }
         const userId = c.get('userId');
 
-        // Revoke Google (simplified)
-        const { data: tokenRes } = await supabase.from('user_oauth_tokens').select('access_token_enc').eq('user_id', userId).eq('provider', 'google').maybeSingle();
-        if (tokenRes?.access_token_enc) {
-            const token = decrypt(tokenRes.access_token_enc);
-            fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, { method: 'POST' }).catch(() => { });
-        }
+        // Revoke Google token if stored
+        try {
+            const { rows: tokenRows } = await pool.query(
+                `SELECT access_token_enc FROM user_oauth_tokens WHERE user_id = $1 AND provider = 'google' LIMIT 1`,
+                [userId]
+            );
+            if (tokenRows[0]?.access_token_enc) {
+                const token = decrypt(tokenRows[0].access_token_enc);
+                fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, { method: 'POST' }).catch(() => {});
+            }
+        } catch (_) {}
 
         await pool.query('DELETE FROM users WHERE id = $1', [userId]);
-        await adminSupabase.auth.admin.deleteUser(userId);
+        // await adminSupabase.auth.admin.deleteUser(userId);
 
         return c.json({ success: true, message: 'Account permanently deleted' });
     } catch (err) {
