@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8787",
   "dependencies": {
     "@react-pdf/renderer": "^4.3.2",
     "@supabase/supabase-js": "^2.98.0",
