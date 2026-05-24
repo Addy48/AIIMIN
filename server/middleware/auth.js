@@ -2,6 +2,8 @@ import { pool } from '../lib/db.js';
 import jwt from 'jsonwebtoken';
 import { getCookie } from 'hono/cookie';
 import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
@@ -41,14 +43,15 @@ const getSupabase = () => {
 };
 
 export const requireAuth = async (c, next) => {
-    // 1. Extract token from cookie, then Bearer header
+    // 1. Extract token from cookie, then Bearer header, then query param
     let token = getCookie(c, COOKIE_NAME);
     if (!token) {
         const authHeader = c.req.header('authorization');
         if (authHeader?.startsWith('Bearer ')) token = authHeader.slice(7);
     }
-    // Dev mock token
-    if (!token) token = c.req.query('token');
+    if (!token) {
+        token = c.req.query('token');
+    }
 
     if (!token) {
         return c.json({ error: 'Unauthorized: missing token' }, 401);

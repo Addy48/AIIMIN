@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { apiGet } from '../utils/api';
+import { apiGet, apiPost } from '../utils/api';
 import toast from '../utils/toast';
 import supabase from '../utils/supabase';
 
@@ -54,9 +54,12 @@ export function AuthProvider({ children }) {
 
         // Initial check for active session
         supabase.auth.getSession().then(({ data: { session: activeSession } }) => {
+            const localToken = localStorage.getItem('aiimin_session_fallback');
             if (activeSession) {
                 setSession(activeSession);
                 localStorage.setItem('aiimin_session_fallback', activeSession.access_token);
+                checkSession();
+            } else if (localToken) {
                 checkSession();
             } else {
                 setLoading(false);
@@ -83,67 +86,60 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const signUpWithUsername = async (username, pin, fullName = '') => {
+    const signUpWithUsername = async (username, pin, fullName = '', email = '') => {
         try {
-            const email = `${username.toLowerCase()}@aiimin.com`;
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password: pin, // using pin as password
-                options: {
-                    data: {
-                        full_name: fullName,
-                        username: username
-                    }
-                }
+            const authEmail = email || `${username.toLowerCase()}@aiimin.com`;
+            const data = await apiPost('/auth/signup', {
+                email: authEmail,
+                password: pin,
+                fullName,
+                username
             });
-            if (error) throw error;
-            if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
-                throw new Error('This username is already registered. Please sign in instead.');
-            }
+            
             toast.success('Registration successful!');
+            localStorage.setItem('aiimin_session_fallback', data.token);
+            setSession({ access_token: data.token });
+            setUser(data.user);
             return data;
         } catch (error) {
             console.error('Error signing up:', error);
-            throw new Error(error.message || 'Signup failed');
+            throw new Error(error.response?.data?.error || error.message || 'Signup failed');
         }
     };
 
     const signInWithUsername = async (username, pin) => {
         try {
             let authEmail = `${username.toLowerCase()}@aiimin.com`;
-            const { data, error } = await supabase.auth.signInWithPassword({
+            
+            // Resolve username to real email if exists
+            try {
+                const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(username)}`, { auth: false });
+                if (resolveData && resolveData.email) {
+                    authEmail = resolveData.email;
+                }
+            } catch (e) {
+                // Not found or error, default email will be used
+            }
+
+            const data = await apiPost('/auth/login', {
                 email: authEmail,
                 password: pin
             });
-            if (error) {
-                // Fallback to check if they have a real email mapped in DB
-                try {
-                    const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(username)}`, { auth: false });
-                    if (resolveData && resolveData.email) {
-                        authEmail = resolveData.email;
-                        const res = await supabase.auth.signInWithPassword({
-                            email: authEmail,
-                            password: pin
-                        });
-                        if (res.error) throw res.error;
-                        toast.success('Welcome back!');
-                        return res.data;
-                    }
-                } catch (e) {
-                    throw new Error('Invalid credentials');
-                }
-                throw error;
-            }
+            
             toast.success('Welcome back!');
+            localStorage.setItem('aiimin_session_fallback', data.token);
+            setSession({ access_token: data.token });
+            setUser(data.user);
             return data;
         } catch (error) {
             console.error('Error signing in:', error);
-            throw new Error(error.message || 'Invalid credentials');
+            throw new Error(error.response?.data?.error || error.message || 'Invalid credentials');
         }
     };
 
     const signOut = async () => {
         try {
+            try { await apiPost('/auth/logout'); } catch(e) {}
             await supabase.auth.signOut();
             localStorage.removeItem('aiimin_session_fallback');
             setUser(null);

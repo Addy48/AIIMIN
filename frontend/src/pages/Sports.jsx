@@ -1,17 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Wifi } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Sports = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('Cricket'); // 'Cricket' | 'Football' | 'Formula 1'
   const [refreshing, setRefreshing] = useState(false);
 
-  const handleRefresh = () => {
+  const [feed, setFeed] = useState(null);
+
+  const fetchScores = async (isRefresh = false) => {
     setRefreshing(true);
-    setTimeout(() => {
+    try {
+      const endpoint = isRefresh ? '/sports/refresh' : '/sports';
+      const method = isRefresh ? 'POST' : 'GET';
+      const response = await fetch('/api' + endpoint, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('aiimin_session_fallback') || ''}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFeed(data.data || data); // handle both direct feed or wrapped data
+      }
+    } catch (err) {
+      console.error('Failed to sync sports:', err);
+    } finally {
       setRefreshing(false);
-    }, 1000);
+    }
   };
+
+  const handleRefresh = () => {
+    fetchScores(true);
+  };
+
+  useEffect(() => {
+    if (user?.isGuest) {
+      navigate('/overview');
+      return;
+    }
+    // Initial sync
+    fetchScores();
+    // 5-minute interval sync
+    const interval = setInterval(() => {
+      fetchScores(true);
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [user, navigate]);
 
   // Recent Balls data (Cricket tab)
   const recentBalls = [
