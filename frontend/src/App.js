@@ -16,6 +16,11 @@ import MobileApp from './components/mobile/MobileApp';
 import DashboardLayout from './components/layout/DashboardLayout';
 import FeedbackWidget from './components/FeedbackWidget';
 import ProductTour from './components/onboarding/ProductTour';
+import GuestTour from './components/onboarding/GuestTour';
+
+// Guest mode
+import { GuestProvider } from './context/GuestContext';
+import { GuestGateProvider } from './components/common/GuestGate';
 
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
@@ -40,6 +45,7 @@ const IdentityPage  = React.lazy(() => import('./pages/Identity'));
 const NotesPage     = React.lazy(() => import('./pages/Notes'));
 const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
 const FocusRoom     = React.lazy(() => import('./pages/FocusRoom'));
+const ATSAnalyzer   = React.lazy(() => import('./pages/ATSAnalyzer'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -97,7 +103,37 @@ function AppContent({ user }) {
         {/* ── Auth ── */}
         <Route path="/login" element={!user ? <Login /> : <Navigate to={isMobileDevice ? '/m' : '/overview'} replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
+        <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/guest'} replace />} />
+
+        {/* ── Guest Mode ── */}
+        {(() => {
+          const guestUser = { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
+          return (
+            <Route
+              path="/guest"
+              element={
+                user
+                  ? <Navigate to={isMobileDevice ? '/m' : '/overview'} replace />
+                  : (
+                    <GuestProvider>
+                      <GuestGateProvider>
+                        <DashboardLayout user={guestUser} />
+                      </GuestGateProvider>
+                    </GuestProvider>
+                  )
+              }
+            >
+              <Route index element={
+                <Lazy>
+                  <>
+                    {React.createElement(React.lazy(() => import('./pages/Overview')), { user: { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true } })}
+                    <GuestTour />
+                  </>
+                </Lazy>
+              } />
+            </Route>
+          );
+        })()}
 
         {/* ── Authenticated shell ── */}
         <Route element={user ? <DashboardLayout user={user} /> : <Navigate to="/login" replace />}>
@@ -117,6 +153,7 @@ function AppContent({ user }) {
           <Route path="/notes"       element={<Lazy><NotesPage /></Lazy>} />
           <Route path="/discipline"  element={<Lazy><DisciplinePage /></Lazy>} />
           <Route path="/focus"       element={<Lazy><FocusRoom /></Lazy>} />
+          <Route path="/ats"         element={<Lazy><ATSAnalyzer /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}
@@ -131,7 +168,7 @@ function AppContent({ user }) {
         <Route path="/contact" element={<Contact />} />
 
         {/* ── 404 ── */}
-        <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
+        <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/guest'} replace />} />
 
       </Routes>
 
@@ -160,6 +197,7 @@ function AppContent({ user }) {
       {/* Global Widgets */}
       {!isMobileRoute && user && <ProductTour />}
       {!isMobileRoute && user && <FeedbackWidget />}
+      {/* GuestTour is rendered inside the /guest route itself */}
     </div>
   );
 }
