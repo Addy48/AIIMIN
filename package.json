@@ -5,15 +5,15 @@
   "type": "module",
   "scripts": {
     "install": "cd frontend && npm install",
-    "install:all": "cd frontend && npm install && cd ../backend && npm install",
-    "dev": "npm run dev:backend & npm run dev:frontend",
+    "dev": "npm run dev:api & npm run dev:frontend",
+    "dev:api": "node test_api.js",
     "dev:frontend": "cd frontend && npm start",
-    "dev:backend": "cd backend && npm run dev",
     "build": "cd frontend && npm run build",
-    "start": "cd backend && npm start"
+    "start": "node test_api.js"
   },
   "dependencies": {
     "@hono/node-server": "^2.0.3",
+    "@supabase/supabase-js": "^2.106.1",
     "@vercel/blob": "^2.4.0",
     "bcryptjs": "^3.0.3",
     "cookie": "^1.1.1",

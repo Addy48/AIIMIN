@@ -1,7 +1,15 @@
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
-import { put, del } from '@vercel/blob';
+import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase Client for storage operations
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 
 const placementsRoutes = new Hono();
 
@@ -18,17 +26,44 @@ placementsRoutes.post('/resumes/upload', requireAuth, async (c) => {
             return c.json({ error: 'No file provided' }, 400);
         }
 
-        const blob = await put(`resumes/${Date.now()}-${file.name}`, file, { access: 'public' });
+        // Convert the File object to a Buffer
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Generate unique filename to avoid collisions
+        const uniqueId = crypto.randomUUID();
+        const ext = file.name.split('.').pop() || 'pdf';
+        const filePath = `resumes/${uniqueId}.${ext}`;
+
+        // Upload to Supabase Storage
+        const { data, error } = await supabase
+            .storage
+            .from('dashboard-uploads')
+            .upload(filePath, buffer, {
+                contentType: file.type || 'application/pdf',
+                upsert: true
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase
+            .storage
+            .from('dashboard-uploads')
+            .getPublicUrl(filePath);
 
         return c.json({
-            url: blob.url,
-            key: blob.url // For compatibility with the frontend's expected key
+            url: publicUrl,
+            key: publicUrl // For compatibility with the frontend's expected key
         });
     } catch (err) {
         console.error('Error uploading resume:', err);
-        return c.json({ error: 'Failed to upload resume' }, 500);
+        return c.json({ error: 'Failed to upload resume', message: err.message }, 500);
     }
 });
+
 
 placementsRoutes.get('/resumes', requireAuth, async (c) => {
     const userId = c.get('userId');
@@ -110,14 +145,19 @@ placementsRoutes.delete('/resumes/:id', requireAuth, async (c) => {
         
         const fileKey = fetchRes.rows[0].link_url;
         
-        // Delete from Vercel Blob
-        if (fileKey && fileKey.includes('public.blob.vercel-storage.com')) {
+        // Delete from Storage
+        if (fileKey) {
             try {
-                await del(fileKey);
+                let filePath = fileKey;
+                if (fileKey.includes('/dashboard-uploads/')) {
+                    filePath = fileKey.split('/dashboard-uploads/').pop();
+                    await supabase.storage.from('dashboard-uploads').remove([filePath]);
+                }
             } catch (blobErr) {
                 console.error(`Blob clean-up failed for key ${fileKey}:`, blobErr);
             }
         }
+
         
         await pool.query(
             'DELETE FROM resumes WHERE id = $1 AND user_id = $2',

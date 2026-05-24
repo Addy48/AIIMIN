@@ -139,18 +139,15 @@ app.post('/login', async (c) => {
     }
 });
 
+import { requireAuth } from '../middleware/auth.js';
+
 /**
  * GET /auth/me
  */
-app.get('/me', async (c) => {
+app.get('/me', requireAuth, async (c) => {
+    const userId = c.get('userId');
     try {
-        const token = getCookie(c, COOKIE_NAME);
-        if (!token) {
-            return c.json({ user: null }, 401);
-        }
-
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+        const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
         
         if (rows.length === 0) {
             return c.json({ user: null }, 401);
