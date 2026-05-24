@@ -21,10 +21,10 @@ const getPool = () => {
         connectionString,
         ssl: { rejectUnauthorized: false },
         // Serverless-optimized: keep connections small and fast
-        max: 3,
+        max: 2,
         min: 0,
-        idleTimeoutMillis: 10000,        // Release idle connections quickly
-        connectionTimeoutMillis: 10000,  // Fail fast if Neon is cold (retry on client)
+        idleTimeoutMillis: 5000,         // Release idle connections quickly
+        connectionTimeoutMillis: 5000,   // Fail fast — must stay well under Vercel 10s limit
         allowExitOnIdle: true,           // Let Node exit between invocations
     });
 
