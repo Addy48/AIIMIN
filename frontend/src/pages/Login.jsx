@@ -28,18 +28,19 @@ const GridBg = ({ isDark }) => (
 );
 
 const Login = () => {
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+  const { signInWithUsername, signUpWithUsername, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const isDark = false;
 
-  const [mode, setMode]             = useState('login'); // 'login' or 'signup'
-  const [step, setStep]             = useState(1);       // login: 1=id, 2=pin; signup: 1=email/name, 2=username, 3=pin, 4=pinVerify
+  const [mode, setMode]             = useState('login'); // 'login' or 'signup' or 'forgot'
+  const [step, setStep]             = useState(1);       // login: 1=id, 2=pin; signup: 1=name, 2=username, 3=pin, 4=pinVerify; forgot: 1=email
   const [identifier, setIdentifier] = useState('');      // Email or Username for Login
   const [fullName, setFullName]     = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [usernameVal, setUsernameVal] = useState('');
   const [pin, setPin]               = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
   const [error, setError]           = useState(null);
   const [loading, setLoading]       = useState(false);
   const [shake, setShake]           = useState(false);
@@ -54,6 +55,7 @@ const Login = () => {
     setUsernameVal('');
     setPin('');
     setConfirmPin('');
+    setForgotIdentifier('');
     setError(null);
   };
 
@@ -64,10 +66,16 @@ const Login = () => {
     if (mode === 'login') {
       if (!identifier.trim()) { setError('Identifier required.'); return; }
       setStep(2);
+    } else if (mode === 'forgot') {
+      if (!forgotIdentifier.trim()) { setError('Username or Email required.'); return; }
+      setStep(2);
+      // Simulate sending email since we don't have a backend endpoint implemented yet
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500);
     } else {
-      // Signup Stage 1: Email & Full Name
-      if (!signupEmail.trim()) { setError('Email required.'); return; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupEmail.trim())) { setError('Enter a valid email address.'); return; }
+      // Signup Stage 1: Full Name
       if (!fullName.trim()) { setError('Full name required.'); return; }
       setStep(2);
     }
@@ -78,6 +86,14 @@ const Login = () => {
     if (mode === 'login') {
       setStep(1);
       setPin('');
+    } else if (mode === 'forgot') {
+      if (step === 2) {
+        setMode('login');
+        setStep(2);
+      } else {
+        setMode('login');
+        setStep(2);
+      }
     } else {
       if (step > 1) {
         if (step === 2) {
@@ -156,7 +172,7 @@ const Login = () => {
     setError(null);
     setLoading(true);
     try {
-      await signInWithEmail(loginId.trim(), finalPin);
+      await signInWithUsername(loginId.trim(), finalPin);
     } catch (err) {
       setError(err.message || 'Verification failure. Try again.');
       setPin('');
@@ -180,7 +196,7 @@ const Login = () => {
       const registeredPin = pin;
       const registeredUsername = usernameVal.toUpperCase();
 
-      await signUpWithEmail(signupEmail.trim(), registeredPin, fullName.trim(), usernameVal.trim());
+      await signUpWithUsername(usernameVal.trim(), registeredPin, fullName.trim());
       
       // Auto-transition to login page and fill details
       setMode('login');
@@ -188,8 +204,8 @@ const Login = () => {
       setStep(2);
       setPin(registeredPin);
 
-      // Auto-submit login using the new credentials (use email directly to bypass resolution)
-      await handleSubmitLogin(registeredPin, signupEmail.trim());
+      // Auto-submit login using the new credentials
+      await handleSubmitLogin(registeredPin, usernameVal.trim());
     } catch (err) {
       setError(err.message || 'Signup failed. Try again.');
       setConfirmPin('');
@@ -327,7 +343,113 @@ const Login = () => {
 
         {/* ── Steps ── */}
         <AnimatePresence mode="wait">
-          {mode === 'login' ? (
+          {mode === 'forgot' ? (
+            /* ==================== FORGOT FLOW ==================== */
+            step === 1 ? (
+              <motion.div
+                key="forgot-step1"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    style={{
+                      alignSelf: 'flex-start',
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      background: 'rgba(0,0,0,0.04)',
+                      border: '1px solid rgba(0,0,0,0.08)',
+                      borderRadius: '99px', padding: '6px 14px',
+                      fontSize: '12px', fontWeight: 600, color: 'var(--text-2)',
+                      cursor: 'pointer', fontFamily: 'var(--font-sans)', marginBottom: '8px', width: 'fit-content'
+                    }}
+                  >
+                    <ArrowLeft size={13} /> Back
+                  </button>
+                  <div>
+                    <label style={labelStyle}>Username or Account Email</label>
+                    <input
+                      type="text" required value={forgotIdentifier} autoFocus
+                      onChange={e => setForgotIdentifier(e.target.value)}
+                      placeholder="Enter username or email"
+                      style={inputStyle}
+                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
+                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
+                  {error && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                      style={{ color: 'var(--color-danger)', fontSize: '13px', fontWeight: 500 }}>
+                      {error}
+                    </motion.div>
+                  )}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
+                    type="submit"
+                    style={{
+                      height: '52px', marginTop: '4px',
+                      background: isDark ? '#EDEDED' : '#111111',
+                      color: isDark ? '#111111' : '#FFFFFF',
+                      border: 'none', borderRadius: '12px',
+                      fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)', transition: 'opacity 0.2s',
+                    }}
+                  >
+                    Send Recovery Email →
+                  </motion.button>
+                </form>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="forgot-step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}
+              >
+                {loading ? (
+                  <div style={{ padding: '24px', textAlign: 'center' }}>
+                    <div className="aiimin-spinner" />
+                    <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
+                      Sending...
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(34, 197, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Check size={32} color="#22C55E" />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 700 }}>Check your inbox</h3>
+                      <p style={{ margin: 0, color: 'var(--text-3)', fontSize: '14px', lineHeight: '1.5' }}>
+                        If an account exists for that identifier, we've sent an email with a secure link to reset your PIN.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => { setMode('login'); setStep(1); }}
+                      style={{
+                        height: '44px', padding: '0 24px',
+                        background: 'transparent',
+                        color: '#111111',
+                        border: '1px solid rgba(0,0,0,0.12)',
+                        borderRadius: '12px',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        fontFamily: 'var(--font-sans)',
+                      }}
+                    >
+                      Return to Login
+                    </button>
+                  </>
+                )}
+              </motion.div>
+            )
+          ) : mode === 'login' ? (
             /* ==================== LOGIN FLOW ==================== */
             step === 1 ? (
               <motion.div
@@ -339,21 +461,21 @@ const Login = () => {
               >
                 <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={labelStyle}>Username or Email</label>
+                    <label style={labelStyle}>Username</label>
                     <input
                       type="text" required value={identifier} autoFocus
                       onChange={e => {
                         const val = e.target.value;
-                        setIdentifier(val.includes('@') ? val : val.toUpperCase());
+                        setIdentifier(val.toUpperCase());
                       }}
                       autoCapitalize="none"
                       autoComplete="off"
                       autoCorrect="off"
                       spellCheck="false"
-                      placeholder="Enter username or email"
+                      placeholder="Enter your username"
                       style={{
                         ...inputStyle,
-                        textTransform: identifier.includes('@') ? 'none' : 'uppercase'
+                        textTransform: 'uppercase'
                       }}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                       onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
@@ -492,14 +614,31 @@ const Login = () => {
                     </p>
                   </div>
                 ) : (
-                  <Numpad
-                    onEntry={handlePinEntry}
-                    onDelete={handlePinDelete}
-                    onClear={handlePinClear}
-                    maxLength={6}
-                    currentLength={pin.length}
-                    isDark={false}
-                  />
+                  <>
+                    <Numpad
+                      onEntry={handlePinEntry}
+                      onDelete={handlePinDelete}
+                      onClear={handlePinClear}
+                      maxLength={6}
+                      currentLength={pin.length}
+                      isDark={false}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('forgot');
+                        setStep(1);
+                        setError(null);
+                      }}
+                      style={{
+                        background: 'none', border: 'none', color: 'var(--text-3)',
+                        fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-sans)',
+                        textDecoration: 'underline', marginTop: '8px'
+                      }}
+                    >
+                      Forgot PIN / Username?
+                    </button>
+                  </>
                 )}
 
                 {error && (
@@ -523,21 +662,9 @@ const Login = () => {
               >
                 <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={labelStyle}>Email Address (Mail ID)</label>
-                    <input
-                      type="email" required value={signupEmail} autoFocus
-                      onChange={e => setSignupEmail(e.target.value)}
-                      placeholder="Enter email address"
-                      style={inputStyle}
-                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
-                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
-                    />
-                  </div>
-
-                  <div>
                     <label style={labelStyle}>Full Name</label>
                     <input
-                      type="text" required value={fullName}
+                      type="text" required value={fullName} autoFocus
                       onChange={e => setFullName(e.target.value)}
                       placeholder="e.g. Aaditya Upadhyay"
                       style={inputStyle}
@@ -545,6 +672,7 @@ const Login = () => {
                       onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
                     />
                   </div>
+
 
                   {error && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}

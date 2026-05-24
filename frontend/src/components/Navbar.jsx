@@ -17,7 +17,7 @@ const NAV_LINKS = [
   { to: '/placements',  label: 'Placement' },
   { to: '/ats',         label: 'ATS' },
   { to: '/sports',      label: 'Sports' },
-  { to: '/discipline',  label: 'Discipline' },
+  { to: '/discipline',  label: 'Discipline', hideFromGuest: true },
   { to: '/focus',       label: 'Focus' },
 ];
 
@@ -74,7 +74,7 @@ const Navbar = ({ user }) => {
 
         {/* CENTER: Nav links — centered perfectly */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
-          {NAV_LINKS.map(({ to, label, hasNew }) => (
+          {NAV_LINKS.filter(link => !(user?.isGuest && link.hideFromGuest)).map(({ to, label, hasNew }) => (
             <NavLink
               key={`${to}-${label}`}
               to={to}
