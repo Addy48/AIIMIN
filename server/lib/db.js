@@ -4,6 +4,8 @@
  * Uses the Supabase IPv4 transaction pooler (port 6543).
  */
 import pg from 'pg';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
 
 const { Pool } = pg;
 

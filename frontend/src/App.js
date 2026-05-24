@@ -45,7 +45,6 @@ const IdentityPage  = React.lazy(() => import('./pages/Identity'));
 const NotesPage     = React.lazy(() => import('./pages/Notes'));
 const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
 const FocusRoom     = React.lazy(() => import('./pages/FocusRoom'));
-const ATSAnalyzer   = React.lazy(() => import('./pages/ATSAnalyzer'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -117,7 +116,7 @@ function AppContent({ user }) {
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
           <Route path="/reports" element={<Lazy><ReportsPage /></Lazy>} />
-          <Route path="/sports" element={<Lazy><SportsPage /></Lazy>} />
+          <Route path="/sports" element={<Lazy>{!user || user.isGuest ? <Navigate to="/overview" replace /> : <SportsPage />}</Lazy>} />
           <Route path="/journal" element={<Lazy><JournalPage /></Lazy>} />
           <Route path="/finance" element={<Lazy><Finance /></Lazy>} />
           <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
@@ -129,7 +128,6 @@ function AppContent({ user }) {
           <Route path="/notes"       element={<Lazy><NotesPage /></Lazy>} />
           <Route path="/discipline"  element={<Lazy><DisciplinePage /></Lazy>} />
           <Route path="/focus"       element={<Lazy><FocusRoom /></Lazy>} />
-          <Route path="/ats"         element={<Lazy><ATSAnalyzer /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}

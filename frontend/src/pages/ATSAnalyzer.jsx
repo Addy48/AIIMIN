@@ -249,7 +249,7 @@ const DropZone = ({ resumeText, onTextChange, onFileRead }) => {
 // ── Main Component ─────────────────────────────────────────────────────────
 export default function ATSAnalyzer() {
   const { user } = useAuth();
-  const isGuest = !user;
+  const isGuest = user?.isGuest;
 
   const [jd, setJd] = useState('');
   const [resumeText, setResumeText] = useState('');

@@ -28,7 +28,7 @@ const GridBg = ({ isDark }) => (
 );
 
 const Login = () => {
-  const { signInWithUsername, signUpWithUsername, signInWithGoogle } = useAuth();
+  const { signInWithUsername, signUpWithUsername, signInWithGoogle, logout } = useAuth();
   const navigate = useNavigate();
   const isDark = false;
 
@@ -173,11 +173,12 @@ const Login = () => {
     setLoading(true);
     try {
       await signInWithUsername(loginId.trim(), finalPin);
+      // Explicitly navigate for immediate feedback
+      navigate('/overview');
     } catch (err) {
       setError(err.message || 'Verification failure. Try again.');
       setPin('');
       triggerShake();
-    } finally {
       setLoading(false);
     }
   };
@@ -195,8 +196,9 @@ const Login = () => {
     try {
       const registeredPin = pin;
       const registeredUsername = usernameVal.toUpperCase();
+      const generatedEmail = `${usernameVal.trim().toLowerCase()}@aiimin.com`;
 
-      await signUpWithUsername(usernameVal.trim(), registeredPin, fullName.trim());
+      await signUpWithUsername(usernameVal.trim(), registeredPin, fullName.trim(), generatedEmail);
       
       // Auto-transition to login page and fill details
       setMode('login');
@@ -540,7 +542,12 @@ const Login = () => {
 
                   <button
                     type="button"
-                    onClick={() => navigate('/guest')}
+                    onClick={async () => {
+                      if (logout) {
+                        try { await logout(); } catch (e) {}
+                      }
+                      navigate('/guest');
+                    }}
                     style={{
                       height: '44px',
                       background: 'transparent',
@@ -673,6 +680,8 @@ const Login = () => {
                     />
                   </div>
 
+
+                  {/* Email field removed to support username-only signup */}
 
                   {error && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}

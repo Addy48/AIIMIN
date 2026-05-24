@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import toast from '../utils/toast';
 import { apiGet, apiPost, apiPut, apiDelete, API_URL } from '../utils/api';
-import { X } from 'lucide-react';
+import { X, FileSearch, FileText } from 'lucide-react';
+import ATSAnalyzer from './ATSAnalyzer';
 
 const STATUS_CONFIG = {
   wishlist: { label: 'Wishlist', color: '#8C8C8C', icon: '📝' },
@@ -21,6 +22,7 @@ export default function Placements() {
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [resumeViewMode, setResumeViewMode] = useState('vault'); // 'vault' | 'analyzer'
 
   // Modals
   const [showAppModal, setShowAppModal] = useState(false);
@@ -779,17 +781,50 @@ export default function Placements() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
             <div>
-              <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '4px' }}>Resume Iterations</h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-3)' }}>Targeted versions for specific roles and industries.</p>
+              <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-1)', marginBottom: '4px' }}>Resume Hub</h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-3)' }}>Manage your resume versions and analyze match with JD.</p>
             </div>
-            <button 
-              onClick={() => { setResumeForm({ title: '', target_role: '', link_url: '' }); setShowResumeModal(true); }} 
-              style={{ background: 'var(--text-1)', color: 'var(--bg-primary)', border: 'none', padding: '12px 24px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
-            >
-              + New Version
-            </button>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', background: 'var(--bg-surface)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                <button 
+                  onClick={() => setResumeViewMode('vault')}
+                  style={{
+                    padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                    fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px',
+                    background: resumeViewMode === 'vault' ? 'var(--text-1)' : 'transparent',
+                    color: resumeViewMode === 'vault' ? 'var(--bg-primary)' : 'var(--text-3)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <FileText size={14} /> Vault
+                </button>
+                <button 
+                  onClick={() => setResumeViewMode('analyzer')}
+                  style={{
+                    padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                    fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px',
+                    background: resumeViewMode === 'analyzer' ? 'var(--text-1)' : 'transparent',
+                    color: resumeViewMode === 'analyzer' ? 'var(--bg-primary)' : 'var(--text-3)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <FileSearch size={14} /> Analyzer
+                </button>
+              </div>
+              {resumeViewMode === 'vault' && (
+                <button 
+                  onClick={() => { setResumeForm({ title: '', target_role: '', link_url: '' }); setShowResumeModal(true); }} 
+                  style={{ background: 'var(--text-1)', color: 'var(--bg-primary)', border: 'none', padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  + New Version
+                </button>
+              )}
+            </div>
           </div>
 
+          {resumeViewMode === 'analyzer' ? (
+            <ATSAnalyzer />
+          ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '32px' }}>
             {resumes.map(resume => (
               <div key={resume.id} className="resume-card">
@@ -846,6 +881,7 @@ export default function Placements() {
               </div>
             ))}
           </div>
+          )}
         </motion.div>
       )}
 

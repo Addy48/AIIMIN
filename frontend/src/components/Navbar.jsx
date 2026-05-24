@@ -15,8 +15,7 @@ const NAV_LINKS = [
   { to: '/finance',     label: 'Finance' },
   { to: '/calendar',    label: 'Calendar' },
   { to: '/placements',  label: 'Placement' },
-  { to: '/ats',         label: 'ATS' },
-  { to: '/sports',      label: 'Sports' },
+  { to: '/sports',      label: 'Sports', hideFromGuest: true },
   { to: '/discipline',  label: 'Discipline', hideFromGuest: true },
   { to: '/focus',       label: 'Focus' },
 ];
@@ -28,7 +27,7 @@ const Navbar = ({ user }) => {
   const [showAccount, setShowAccount] = useState(false);
   const bellRef = useRef(null);
 
-  const userInitial = user?.email ? user.email.charAt(0).toUpperCase() : 'A';
+  const userInitial = user?.isGuest ? 'G' : (user?.username?.charAt(0) || user?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
   const isDark = theme === 'dark';
   const borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
 
