@@ -811,11 +811,4 @@ const Login = () => {
   );
 };
 
-const labelStyle = {
-  fontSize: '11px', color: 'var(--text-3)', fontWeight: 600,
-  display: 'block', marginBottom: '8px',
-  textTransform: 'uppercase', letterSpacing: '0.08em',
-  fontFamily: 'var(--font-sans)',
-};
-
 export default Login;

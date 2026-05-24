@@ -3,22 +3,22 @@ import { handle } from 'hono/vercel';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 
-import authRoutes from './routes/auth.js';
-import dailyLogsRoutes from './routes/dailyLogs.js';
-import dashboardRoutes from './routes/dashboard.js';
-import tasksRoutes from './routes/tasks.js';
-import googleAuthRoutes from './routes/googleAuth.js';
-import calendarRoutes from './routes/calendar.js';
-import notificationRoutes from './routes/notifications.js';
-import accountRoutes from './routes/account.js';
-import healthRoutes from './routes/health.js';
-import habitsRoutes from './routes/habits.js';
-import labRoutes from './routes/lab.js';
-import placementsRoutes from './routes/placements.js';
-import wealthRoutes from './routes/wealth.js';
-import sportsRoutes from './routes/sports.js';
-import intelligenceRoutes from './routes/intelligence.js';
-import blobService from './services/blobService.js';
+import authRoutes from '../server/routes/auth.js';
+import dailyLogsRoutes from '../server/routes/dailyLogs.js';
+import dashboardRoutes from '../server/routes/dashboard.js';
+import tasksRoutes from '../server/routes/tasks.js';
+import googleAuthRoutes from '../server/routes/googleAuth.js';
+import calendarRoutes from '../server/routes/calendar.js';
+import notificationRoutes from '../server/routes/notifications.js';
+import accountRoutes from '../server/routes/account.js';
+import healthRoutes from '../server/routes/health.js';
+import habitsRoutes from '../server/routes/habits.js';
+import labRoutes from '../server/routes/lab.js';
+import placementsRoutes from '../server/routes/placements.js';
+import wealthRoutes from '../server/routes/wealth.js';
+import sportsRoutes from '../server/routes/sports.js';
+import intelligenceRoutes from '../server/routes/intelligence.js';
+import blobService from '../server/services/blobService.js';
 
 export const config = {
     runtime: 'nodejs'

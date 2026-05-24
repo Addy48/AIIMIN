@@ -10,7 +10,7 @@ const pool = new Pool({
 
 const run = async () => {
     try {
-        console.log('Connecting to Neon PostgreSQL...');
+        console.log('Connecting to Supabase PostgreSQL...');
         const res = await pool.query(`
             SELECT table_name 
             FROM information_schema.tables 
