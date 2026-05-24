@@ -83,11 +83,12 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const signUpWithEmail = async (email, password, fullName = '', username = '') => {
+    const signUpWithUsername = async (username, pin, fullName = '') => {
         try {
+            const email = `${username.toLowerCase()}@aiimin.com`;
             const { data, error } = await supabase.auth.signUp({
                 email,
-                password,
+                password: pin, // using pin as password
                 options: {
                     data: {
                         full_name: fullName,
@@ -97,7 +98,7 @@ export function AuthProvider({ children }) {
             });
             if (error) throw error;
             if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
-                throw new Error('This email is already registered. Please sign in instead.');
+                throw new Error('This username is already registered. Please sign in instead.');
             }
             toast.success('Registration successful!');
             return data;
@@ -107,19 +108,32 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const signInWithEmail = async (identifier, password) => {
+    const signInWithUsername = async (username, pin) => {
         try {
-            let authEmail = identifier;
-            if (!identifier.includes('@')) {
-                const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
-                authEmail = data.email;
-            }
-
+            let authEmail = `${username.toLowerCase()}@aiimin.com`;
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: authEmail,
-                password
+                password: pin
             });
-            if (error) throw error;
+            if (error) {
+                // Fallback to check if they have a real email mapped in DB
+                try {
+                    const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(username)}`, { auth: false });
+                    if (resolveData && resolveData.email) {
+                        authEmail = resolveData.email;
+                        const res = await supabase.auth.signInWithPassword({
+                            email: authEmail,
+                            password: pin
+                        });
+                        if (res.error) throw res.error;
+                        toast.success('Welcome back!');
+                        return res.data;
+                    }
+                } catch (e) {
+                    throw new Error('Invalid credentials');
+                }
+                throw error;
+            }
             toast.success('Welcome back!');
             return data;
         } catch (error) {
@@ -145,8 +159,8 @@ export function AuthProvider({ children }) {
         session,
         loading,
         signInWithGoogle,
-        signUpWithEmail,
-        signInWithEmail,
+        signUpWithUsername,
+        signInWithUsername,
         signOut,
         checkSession,
     }), [loading, session, user]);

@@ -15,6 +15,12 @@ export function GuestGateProvider({ children }) {
     setGateState({ open: true, action });
   }, []);
 
+  React.useEffect(() => {
+    const handleEvent = (e) => triggerGate(e.detail);
+    window.addEventListener('guest-gate', handleEvent);
+    return () => window.removeEventListener('guest-gate', handleEvent);
+  }, [triggerGate]);
+
   const dismiss = useCallback(() => {
     setGateState({ open: false, action: '' });
   }, []);

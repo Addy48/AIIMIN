@@ -105,39 +105,15 @@ function AppContent({ user }) {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/guest'} replace />} />
 
-        {/* ── Guest Mode ── */}
-        {(() => {
-          const guestUser = { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
-          return (
-            <Route
-              path="/guest"
-              element={
-                user
-                  ? <Navigate to={isMobileDevice ? '/m' : '/overview'} replace />
-                  : (
-                    <GuestProvider>
-                      <GuestGateProvider>
-                        <DashboardLayout user={guestUser} />
-                      </GuestGateProvider>
-                    </GuestProvider>
-                  )
-              }
-            >
-              <Route index element={
-                <Lazy>
-                  <>
-                    {React.createElement(React.lazy(() => import('./pages/Overview')), { user: { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true } })}
-                    <GuestTour />
-                  </>
-                </Lazy>
-              } />
-            </Route>
-          );
-        })()}
+        {/* ── Guest Mode specific route starts here ── */}
+        <Route path="/guest" element={<Navigate to="/overview?guest=true" replace />} />
 
-        {/* ── Authenticated shell ── */}
-        <Route element={user ? <DashboardLayout user={user} /> : <Navigate to="/login" replace />}>
-          <Route path="/overview" element={<Lazy><Overview user={user} /></Lazy>} />
+        {/* ── Authenticated / Guest shell ── */}
+        <Route element={
+          user ? <DashboardLayout user={user} /> : 
+          <GuestProvider><GuestGateProvider><DashboardLayout user={{ id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></GuestGateProvider></GuestProvider>
+        }>
+          <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} />{!user && <GuestTour />}</Lazy>} />
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
           <Route path="/reports" element={<Lazy><ReportsPage /></Lazy>} />
