@@ -150,11 +150,11 @@ const Login = () => {
     }
   };
 
-  const handleSubmitLogin = async (finalPin) => {
+  const handleSubmitLogin = async (finalPin, loginId = identifier) => {
     setError(null);
     setLoading(true);
     try {
-      await signInWithEmail(identifier.trim(), finalPin);
+      await signInWithEmail(loginId.trim(), finalPin);
     } catch (err) {
       setError(err.message || 'Verification failure. Try again.');
       setPin('');
@@ -175,14 +175,25 @@ const Login = () => {
     setError(null);
     setLoading(true);
     try {
-      await signUpWithEmail(signupEmail.trim(), pin, fullName.trim(), usernameVal.trim());
+      const registeredPin = pin;
+      const registeredUsername = usernameVal.toUpperCase();
+
+      await signUpWithEmail(signupEmail.trim(), registeredPin, fullName.trim(), usernameVal.trim());
+      
+      // Auto-transition to login page and fill details
+      setMode('login');
+      setIdentifier(registeredUsername);
+      setStep(2);
+      setPin(registeredPin);
+
+      // Auto-submit login using the new credentials (use email directly to bypass resolution)
+      await handleSubmitLogin(registeredPin, signupEmail.trim());
     } catch (err) {
       setError(err.message || 'Signup failed. Try again.');
       setConfirmPin('');
       setStep(3); // Send them back to enter PIN
       setPin('');
       triggerShake();
-    } finally {
       setLoading(false);
     }
   };

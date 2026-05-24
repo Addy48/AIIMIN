@@ -96,6 +96,9 @@ export function AuthProvider({ children }) {
                 }
             });
             if (error) throw error;
+            if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
+                throw new Error('This email is already registered. Please sign in instead.');
+            }
             toast.success('Registration successful!');
             return data;
         } catch (error) {
