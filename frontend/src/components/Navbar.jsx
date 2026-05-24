@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { to: '/finance',     label: 'Finance' },
   { to: '/calendar',    label: 'Calendar' },
   { to: '/placements',  label: 'Placement' },
+  { to: '/ats',         label: 'ATS' },
   { to: '/sports',      label: 'Sports' },
   { to: '/discipline',  label: 'Discipline' },
   { to: '/focus',       label: 'Focus' },

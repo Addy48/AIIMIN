@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Check, X } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import Numpad from '../components/common/Numpad';
@@ -28,6 +29,7 @@ const GridBg = ({ isDark }) => (
 
 const Login = () => {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
+  const navigate = useNavigate();
   const isDark = false;
 
   const [mode, setMode]             = useState('login'); // 'login' or 'signup'
@@ -405,6 +407,32 @@ const Login = () => {
                     }}
                   >
                     Continue with Google
+                  </button>
+
+                  {/* Divider */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }} />
+                    <span style={{ fontSize: '11px', color: '#aaa', fontWeight: 600, fontFamily: 'var(--font-sans)' }}>OR</span>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }} />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate('/guest')}
+                    style={{
+                      height: '44px',
+                      background: 'transparent',
+                      color: '#666',
+                      border: '1px dashed rgba(0,0,0,0.18)',
+                      borderRadius: '12px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontFamily: 'var(--font-sans)',
+                      letterSpacing: '0.01em',
+                    }}
+                  >
+                    👤 Continue as Guest
                   </button>
                 </form>
               </motion.div>
