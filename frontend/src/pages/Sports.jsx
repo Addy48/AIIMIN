@@ -11,7 +11,7 @@ const Sports = () => {
   const [activeTab, setActiveTab] = useState('Cricket'); // 'Cricket' | 'Football' | 'Formula 1'
   const [refreshing, setRefreshing] = useState(false);
 
-  const [, setFeed] = useState(null);
+  const [feed, setFeed] = useState(null);
 
   const fetchScores = async (isRefresh = false) => {
     setRefreshing(true);
@@ -195,26 +195,89 @@ const Sports = () => {
               transition={{ duration: 0.3 }}
               style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}
             >
-              {/* Cricket Live Header */}
-              <div style={{
-                display: 'flex',
-                gap: '16px',
-                borderBottom: '2px solid #1E5C3A',
-                paddingBottom: '8px',
-                marginBottom: '8px'
-              }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#1E5C3A', borderBottom: '3px solid #1E5C3A', paddingBottom: '8px', marginBottom: '-10px' }}>LIVE TEST</span>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#7E7C74' }}>IPL 2026</span>
-              </div>
+              {/* If we have real cricket events from cricapi/ESPN, render them dynamically! */}
+              {feed?.cricket?.[0]?.events?.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+                  {feed.cricket[0].events.map((match) => (
+                    <div key={match.id} style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E3DEC3',
+                      borderRadius: '24px',
+                      padding: '28px',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '20px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: match.isLive ? 'rgba(239,68,68,0.1)' : 'rgba(30,92,58,0.08)',
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                        }}>
+                          {match.isLive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                          <span style={{ fontSize: '10px', fontWeight: 900, color: match.isLive ? '#EF4444' : '#1E5C3A', letterSpacing: '0.05em' }}>
+                            {match.isLive ? 'LIVE' : match.isFinished ? 'FINISHED' : 'UPCOMING'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '11px', color: '#7E7C74', fontWeight: 600 }}>{match.notes?.[0] || 'Match'}</span>
+                      </div>
+                      
+                      <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, fontFamily: '"Playfair Display", "Georgia", serif', color: '#1E5C3A' }}>
+                        {match.name}
+                      </h3>
 
-              {/* Main Cricket Scoreboard & Statistics Split */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
-                
-                {/* Left Column: Live Scorecard */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  
-                  {/* ICC Test Main Card */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 700 }}>{match.home.name}</span>
+                          <span style={{ fontSize: '18px', fontWeight: 900, fontFamily: 'monospace' }}>{match.home.score || '—'}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 700 }}>{match.away.name}</span>
+                          <span style={{ fontSize: '18px', fontWeight: 900, fontFamily: 'monospace' }}>{match.away.score || '—'}</span>
+                        </div>
+                      </div>
+
+                      <div style={{
+                        background: 'rgba(30, 92, 58, 0.08)',
+                        border: '1px solid rgba(30, 92, 58, 0.15)',
+                        borderRadius: '16px',
+                        padding: '12px 16px',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        color: '#1E5C3A',
+                        textAlign: 'center'
+                      }}>
+                        {match.status}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  {/* Cricket Live Header */}
                   <div style={{
+                    display: 'flex',
+                    gap: '16px',
+                    borderBottom: '2px solid #1E5C3A',
+                    paddingBottom: '8px',
+                    marginBottom: '8px'
+                  }}>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#1E5C3A', borderBottom: '3px solid #1E5C3A', paddingBottom: '8px', marginBottom: '-10px' }}>LIVE TEST</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#7E7C74' }}>IPL 2026</span>
+                  </div>
+
+                  {/* Main Cricket Scoreboard & Statistics Split */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
+                    
+                    {/* Left Column: Live Scorecard */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                      
+                      {/* ICC Test Main Card */}
+                      <div style={{
                     background: '#FFFFFF',
                     border: '1px solid #E3DEC3',
                     borderRadius: '24px',
@@ -508,6 +571,8 @@ const Sports = () => {
 
                 </div>
               </div>
+                </>
+              )}
             </motion.div>
           )}
 
@@ -520,27 +585,88 @@ const Sports = () => {
               transition={{ duration: 0.3 }}
               style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}
             >
-              {/* Football Live Header */}
-              <div style={{
-                display: 'flex',
-                gap: '16px',
-                borderBottom: '2px solid #1E5C3A',
-                paddingBottom: '8px',
-                marginBottom: '8px'
-              }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#1E5C3A', borderBottom: '3px solid #1E5C3A', paddingBottom: '8px', marginBottom: '-10px' }}>EL CLÁSICO LIVE</span>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#7E7C74' }}>PREMIER LEAGUE</span>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: '#7E7C74' }}>UEFA CHAMPIONS LEAGUE</span>
-              </div>
+              {/* If we have real football events from the live feed, render them dynamically! */}
+              {feed?.football?.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
+                  {feed.football.flatMap(league => 
+                    league.events.map(match => (
+                      <div key={match.id} style={{
+                        background: '#FFFFFF',
+                        border: '1px solid #E3DEC3',
+                        borderRadius: '24px',
+                        padding: '28px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '20px'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#7E7C74', textTransform: 'uppercase' }}>
+                            {league.league.flag} {league.league.name}
+                          </span>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: match.isLive ? 'rgba(239,68,68,0.1)' : 'rgba(30,92,58,0.08)',
+                            padding: '4px 10px',
+                            borderRadius: '8px'
+                          }}>
+                            {match.isLive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
+                            <span style={{ fontSize: '10px', fontWeight: 900, color: match.isLive ? '#EF4444' : '#1E5C3A' }}>
+                              {match.isLive ? `LIVE ${match.clock || ''}` : match.isFinished ? 'FINISHED' : 'SCHEDULED'}
+                            </span>
+                          </div>
+                        </div>
 
-              {/* El Clásico Main Stats & Radial split */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
-                
-                {/* Football Match Card with Radial Possession */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  
-                  {/* Real Madrid vs Barcelona Match Card */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+                            {match.home.logo ? <img src={match.home.logo} alt="" style={{ width: '32px', height: '32px', objectFit: 'contain' }} /> : <span style={{ fontSize: '24px' }}>🛡️</span>}
+                            <span style={{ fontSize: '13px', fontWeight: 800, textAlign: 'center' }}>{match.home.name}</span>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                            <span style={{ fontSize: '28px', fontWeight: 900, fontFamily: 'monospace' }}>{match.home.score ?? '—'}</span>
+                            <span style={{ fontSize: '16px', color: '#A0AEC0', fontWeight: 700 }}>:</span>
+                            <span style={{ fontSize: '28px', fontWeight: 900, fontFamily: 'monospace' }}>{match.away.score ?? '—'}</span>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1 }}>
+                            {match.away.logo ? <img src={match.away.logo} alt="" style={{ width: '32px', height: '32px', objectFit: 'contain' }} /> : <span style={{ fontSize: '24px' }}>🛡️</span>}
+                            <span style={{ fontSize: '13px', fontWeight: 800, textAlign: 'center' }}>{match.away.name}</span>
+                          </div>
+                        </div>
+
+                        <div style={{ fontSize: '12px', color: '#7E7C74', textAlign: 'center', fontWeight: 600 }}>
+                          {match.statusDetail || match.status}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              ) : (
+                <>
+                  {/* Football Live Header */}
                   <div style={{
+                    display: 'flex',
+                    gap: '16px',
+                    borderBottom: '2px solid #1E5C3A',
+                    paddingBottom: '8px',
+                    marginBottom: '8px'
+                  }}>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#1E5C3A', borderBottom: '3px solid #1E5C3A', paddingBottom: '8px', marginBottom: '-10px' }}>EL CLÁSICO LIVE</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#7E7C74' }}>PREMIER LEAGUE</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#7E7C74' }}>UEFA CHAMPIONS LEAGUE</span>
+                  </div>
+
+                  {/* El Clásico Main Stats & Radial split */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
+                    
+                    {/* Football Match Card with Radial Possession */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                      
+                      {/* Real Madrid vs Barcelona Match Card */}
+                      <div style={{
                     background: '#FFFFFF',
                     border: '1px solid #E3DEC3',
                     borderRadius: '24px',
@@ -741,6 +867,8 @@ const Sports = () => {
 
                 </div>
               </div>
+                </>
+              )}
             </motion.div>
           )}
 
