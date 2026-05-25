@@ -10,6 +10,7 @@ import DataDeletion from './pages/legal/DataDeletion';
 import Security from './pages/legal/Security';
 import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
+import Brand from './pages/legal/Brand';
 
 // Layout & eager components
 import MobileApp from './components/mobile/MobileApp';
@@ -133,13 +134,14 @@ function AppContent({ user }) {
         {/* ── Mobile PWA ── */}
         <Route path="/m" element={user ? <MobileApp user={user} /> : <Navigate to="/login" replace />} />
 
-        {/* ── Public legal ── */}
+        {/* ── Public legal & brand ── */}
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/data-deletion" element={<DataDeletion />} />
         <Route path="/security" element={<Security />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/brand" element={<Brand />} />
 
         {/* ── 404 ── */}
         <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/guest'} replace />} />
