@@ -29,7 +29,7 @@ const ProgressRow = ({ label, val, color, delay = 0 }) => {
   }, [val]); // eslint-disable-line
 
   return (
-    <div style={{ marginBottom: '16px' }}>
+    <div style={{ marginBottom: '0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
         <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>
         <span style={{ fontSize: '11px', fontWeight: 800, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{Number(val).toFixed(4)}%</span>
@@ -38,27 +38,27 @@ const ProgressRow = ({ label, val, color, delay = 0 }) => {
         {/* Glow track */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: `linear-gradient(90deg, transparent 0%, ${color}22 100%)`,
+          background: `linear-gradient(90deg, transparent 0%, color-mix(in srgb, ${color} 15%, transparent) 100%)`,
           borderRadius: '99px',
         }} />
         {/* Animated fill */}
         <div style={{
           height: '100%',
           width: `${displayed}%`,
-          background: `linear-gradient(90deg, ${color}cc, ${color})`,
+          background: `linear-gradient(90deg, color-mix(in srgb, ${color} 80%, transparent), ${color})`,
           borderRadius: '99px',
           transition: mounted.current
             ? 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
             : 'none',
           willChange: 'width',
           position: 'relative',
-          boxShadow: `0 0 8px ${color}66`,
+          boxShadow: `0 0 8px color-mix(in srgb, ${color} 40%, transparent)`,
         }}>
           {/* Shimmer tip */}
           <div style={{
             position: 'absolute', right: 0, top: 0, bottom: 0,
             width: '12px',
-            background: `radial-gradient(ellipse at right, ${color}ff 0%, transparent 100%)`,
+            background: `radial-gradient(ellipse at right, ${color} 100%, transparent 100%)`,
             borderRadius: '99px',
           }} />
         </div>
@@ -434,10 +434,12 @@ const Overview = () => {
           {/* Trajectory */}
           <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
             <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'24px' }}>Trajectory Execution</div>
-            <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" delay={0}   />
-            <ProgressRow label="Monthly" val={progress.month} color="#3B82F6"              delay={80}  />
-            <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B"              delay={160} />
-            <ProgressRow label="Daily"   val={progress.day}   color="#EC4899"              delay={240} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 24px' }}>
+              <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" delay={0}   />
+              <ProgressRow label="Monthly" val={progress.month} color="#3B82F6"              delay={80}  />
+              <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B"              delay={160} />
+              <ProgressRow label="Daily"   val={progress.day}   color="#EC4899"              delay={240} />
+            </div>
           </div>
 
         </div>
