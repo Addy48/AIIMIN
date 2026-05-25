@@ -4,8 +4,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   X, ChevronRight, ChevronLeft, UserPlus, LogIn,
   BarChart2, Target, BookOpen, Zap, Briefcase,
-  DollarSign, Calendar, FlaskConical, Brain,
-  User, Minus, MapPin, Sparkles, Shield
+  DollarSign, Calendar, FlaskConical,
+  User, Minus, Sparkles
 } from 'lucide-react';
 
 const TOUR_KEY = 'aiimin_tour_seen_v2';
@@ -132,7 +132,6 @@ const GuestTour = () => {
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
-  const [navigating, setNavigating] = useState(false);
 
   const getInitialPos = () => {
     try {
@@ -162,13 +161,11 @@ const GuestTour = () => {
   }, []);
 
   const goToStep = useCallback((idx) => {
-    setNavigating(true);
     setStep(idx);
     const target = STEPS[idx].route;
     if (location.pathname !== target) {
       navigate(target);
     }
-    setTimeout(() => setNavigating(false), 400);
   }, [navigate, location.pathname]);
 
   const handleNext = () => {
@@ -209,267 +206,232 @@ const GuestTour = () => {
       dragConstraints={constraintsRef}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={handleDragEnd}
-      initial={{ opacity: 0, x: 50 + pos.x, y: pos.y }}
-      animate={{ opacity: 1, x: pos.x, y: pos.y }}
-      exit={{ opacity: 0, x: 50 + pos.x, y: pos.y }}
+      initial={{ opacity: 0, y: 100 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 100 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       onClick={() => { if (!isDragging) setCollapsed(false); }}
       style={{
         position: 'fixed',
-        bottom: '90px',
-        right: '20px',
+        bottom: '24px',
+        right: '24px',
         zIndex: 9000,
         display: 'flex',
         alignItems: 'center',
         gap: '10px',
-        background: '#111',
+        background: 'rgba(15, 15, 15, 0.85)',
+        backdropFilter: 'blur(16px)',
         color: '#fff',
-        border: '1.5px solid rgba(255,255,255,0.12)',
+        border: '1px solid rgba(255,255,255,0.08)',
         borderRadius: '100px',
         padding: '10px 18px 10px 12px',
-        fontSize: '13px',
+        fontSize: '12px',
         fontWeight: 700,
         cursor: 'pointer',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.28)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
         fontFamily: 'var(--font-sans)',
-        letterSpacing: '-0.01em',
         whiteSpace: 'nowrap',
       }}
     >
       <span style={{
-        width: '9px', height: '9px', borderRadius: '50%',
+        width: '8px', height: '8px', borderRadius: '50%',
         background: current.color,
-        boxShadow: `0 0 0 3px ${current.color}40`,
+        boxShadow: `0 0 8px ${current.color}`,
         flexShrink: 0,
         animation: 'aiimin-pulse 2s infinite',
       }} />
-      Explore AIIMIN
+      Explore Tour
       <span style={{
-        background: 'rgba(255,255,255,0.14)',
+        background: 'rgba(255,255,255,0.12)',
         borderRadius: '100px',
-        padding: '2px 9px',
-        fontSize: '11px',
+        padding: '2px 8px',
+        fontSize: '10px',
         fontWeight: 800,
       }}>
         {step + 1}/{STEPS.length}
       </span>
     </motion.button>
   );
-
-  // ── Full panel ──────────────────────────────────────────────────
+ 
+  // ── Horizontal Glassmorphic Bottom Dock ──
   const Panel = (
     <motion.div
       key="panel"
-      drag
-      dragMomentum={false}
-      dragElastic={0.08}
-      dragConstraints={constraintsRef}
-      onDragStart={() => setIsDragging(true)}
-      onDragEnd={handleDragEnd}
-      initial={{ opacity: 0, x: 60 + pos.x, y: pos.y, scale: 0.95 }}
-      animate={{ opacity: 1, x: pos.x, y: pos.y, scale: 1 }}
-      exit={{ opacity: 0, x: 60 + pos.x, y: pos.y, scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+      initial={{ opacity: 0, y: 50, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 50, scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 26 }}
       style={{
         position: 'fixed',
-        bottom: '90px',
-        right: '20px',
+        bottom: '24px',
+        left: '50%',
+        x: '-50%',
         zIndex: 9000,
-        width: '320px',
+        width: 'min(580px, 94vw)',
         fontFamily: 'var(--font-sans)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        pointerEvents: 'auto',
       }}
     >
-      <div style={{
-        background: '#fff',
-        borderRadius: '22px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08)',
-        border: '1px solid rgba(0,0,0,0.07)',
-        overflow: 'hidden',
-      }}>
-
-        {/* ── Hero banner ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`hero-${step}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.22 }}
-            style={{ background: current.bg, padding: '20px 20px 18px', position: 'relative' }}
-          >
-            {/* Top row */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <MapPin size={10} color={current.color} strokeWidth={2.5} />
-                <span style={{
-                  fontSize: '10px', fontWeight: 800, color: current.color,
-                  textTransform: 'uppercase', letterSpacing: '0.1em',
-                }}>
-                  {current.tag}
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: '5px' }}>
-                <button onClick={() => setCollapsed(true)} style={iconBtn('#00000010', '#00000060')} title="Minimise">
-                  <Minus size={12} />
-                </button>
-                <button onClick={handleDone} style={iconBtn('#00000010', '#00000060')} title="Close">
-                  <X size={12} />
-                </button>
-              </div>
+      {/* 1. Tooltip info card sitting on top of the dock */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={`info-${step}`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.18)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            position: 'relative',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{
+              fontSize: '9px', fontWeight: 800, color: current.color,
+              textTransform: 'uppercase', letterSpacing: '0.1em',
+              background: `${current.color}15`, padding: '2px 8px', borderRadius: '4px'
+            }}>
+              {current.tag}
+            </span>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
+              <button onClick={() => setCollapsed(true)} style={iconBtn('var(--bg-elevated)', 'var(--text-3)')} title="Minimise">
+                <Minus size={11} />
+              </button>
+              <button onClick={handleDone} style={iconBtn('var(--bg-elevated)', 'var(--text-3)')} title="Close">
+                <X size={11} />
+              </button>
             </div>
-
-            {/* Icon + title */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div style={{
-                width: '48px', height: '48px', borderRadius: '14px',
-                background: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                flexShrink: 0,
-                animation: 'aiimin-float 3s ease-in-out infinite',
-              }}>
-                <Icon size={22} color={current.color} strokeWidth={2.5} />
-              </div>
-              <div style={{ fontSize: '15px', fontWeight: 800, color: '#111', lineHeight: 1.25, letterSpacing: '-0.02em' }}>
+          </div>
+          <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginTop: '4px' }}>
+            <div style={{
+              width: '42px', height: '42px', borderRadius: '10px',
+              background: current.bg,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+              flexShrink: 0,
+            }}>
+              <Icon size={20} color={current.color} strokeWidth={2.5} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '4px', letterSpacing: '-0.01em' }}>
                 {current.title}
               </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* ── Body ── */}
-        <div style={{ padding: '16px 20px 20px' }}>
-
-          {/* Description */}
-          <AnimatePresence mode="wait">
-            <motion.div key={`body-${step}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-              <p style={{ fontSize: '13px', color: '#555', lineHeight: 1.65, margin: '0 0 14px', }}>
+              <p style={{ fontSize: '12px', color: 'var(--text-2)', lineHeight: 1.55, margin: 0 }}>
                 {current.description}
               </p>
+            </div>
+          </div>
 
-              {/* Feature bullets */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
-                {current.features.map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{
-                      width: '5px', height: '5px', borderRadius: '50%',
-                      background: current.color, flexShrink: 0,
-                    }} />
-                    <span style={{ fontSize: '12px', color: '#444', fontWeight: 500 }}>{f}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Auth step special UI */}
+          {/* Special Auth Prompt */}
           {current.isAuthStep && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
-              <div style={{
-                background: '#fff8e1', border: '1px solid #fde68a', borderRadius: '10px',
-                padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px',
-              }}>
-                <Shield size={14} color='#d97706' />
-                <span style={{ fontSize: '12px', color: '#92400e', fontWeight: 600, lineHeight: 1.4 }}>
-                  You're in Guest Mode — data won't be saved
-                </span>
-              </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '8px', borderTop: '1px solid var(--border)', paddingTop: '10px' }}>
               <button onClick={handleSignUp} style={{
-                width: '100%', padding: '11px', borderRadius: '11px', border: 'none',
-                background: '#111', color: '#fff', fontSize: '13px', fontWeight: 700,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
-                boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                flex: 1, padding: '8px 12px', borderRadius: '8px', border: 'none',
+                background: 'var(--accent)', color: '#fff', fontSize: '11px', fontWeight: 700,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
               }}>
-                <UserPlus size={14} /> Create Free Account
+                <UserPlus size={12} /> Create Free Account
               </button>
               <button onClick={handleSignIn} style={{
-                width: '100%', padding: '10px', borderRadius: '11px',
-                border: '1.5px solid #e5e7eb', background: '#fff',
-                color: '#111', fontSize: '13px', fontWeight: 600,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                padding: '8px 12px', borderRadius: '8px',
+                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                color: 'var(--text-1)', fontSize: '11px', fontWeight: 600,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
               }}>
-                <LogIn size={14} /> Sign In
+                <LogIn size={12} /> Sign In
               </button>
             </div>
           )}
+        </motion.div>
+      </AnimatePresence>
 
-          {/* Progress dots */}
-          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '14px' }}>
-            {STEPS.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => goToStep(i)}
-                title={s.tag}
-                style={{
-                  width: i === step ? '18px' : '6px',
-                  height: '6px',
-                  borderRadius: '3px',
-                  background: i === step ? current.color : (i < step ? '#d1d5db' : '#e5e7eb'),
-                  border: 'none', padding: 0, cursor: 'pointer',
-                  transition: 'all 0.25s ease',
-                  flexShrink: 0,
-                }}
-              />
-            ))}
-          </div>
+      {/* 2. Sleek horizontal dock bar */}
+      <div style={{
+        background: 'var(--bg-surface)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        border: '1px solid var(--border)',
+        borderRadius: '99px',
+        padding: '8px 12px 8px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+        height: '48px',
+      }}>
+        {/* Left Section: Progress Count */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{
+            width: '8px', height: '8px', borderRadius: '50%',
+            background: current.color,
+            boxShadow: `0 0 6px ${current.color}`
+          }} />
+          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.01em' }}>
+            {step + 1} of {STEPS.length}
+          </span>
+          <span style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            • {current.tag}
+          </span>
+        </div>
 
-          {/* Nav buttons */}
-          <div style={{ display: 'flex', gap: '8px' }}>
+        {/* Center Section: Dots */}
+        <div style={{ display: 'flex', gap: '4px', margin: '0 16px' }}>
+          {STEPS.map((s, i) => (
             <button
-              onClick={handlePrev}
-              disabled={step === 0}
+              key={i}
+              onClick={() => goToStep(i)}
               style={{
-                width: '38px', height: '38px', borderRadius: '11px',
-                border: '1.5px solid #e5e7eb', background: 'transparent',
-                cursor: step === 0 ? 'not-allowed' : 'pointer',
-                opacity: step === 0 ? 0.3 : 1,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#444',
-                flexShrink: 0, transition: 'opacity 0.2s',
+                width: i === step ? '12px' : '4px',
+                height: '4px',
+                borderRadius: '2px',
+                background: i === step ? current.color : 'var(--border)',
+                border: 'none', padding: 0, cursor: 'pointer',
+                transition: 'all 0.2s',
               }}
-            >
-              <ChevronLeft size={16} />
-            </button>
+            />
+          ))}
+        </div>
 
-            <button
-              onClick={isLast ? handleDone : handleNext}
-              style={{
-                flex: 1, height: '38px', borderRadius: '11px', border: 'none',
-                background: current.color, color: '#fff',
-                fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                boxShadow: `0 4px 16px ${current.color}44`,
-                letterSpacing: '-0.01em', transition: 'background 0.25s, box-shadow 0.25s',
-              }}
-            >
-              {isLast ? 'Finish Tour' : (<>Next: {STEPS[step + 1].tag} <ChevronRight size={14} /></>)}
-            </button>
-          </div>
-
-          {/* Step counter */}
-          <div style={{ textAlign: 'center', marginTop: '12px' }}>
-            <span style={{ fontSize: '11px', color: '#9ca3af', fontWeight: 600, letterSpacing: '0.04em' }}>
-              {step + 1} of {STEPS.length} • {current.tag}
-            </span>
-            {!current.isAuthStep && (
-              <> · <button onClick={handleSignUp} style={{
-                background: 'none', border: 'none', fontSize: '11px', color: '#9ca3af',
-                cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '2px', padding: 0,
-              }}>Sign up free</button></>
-            )}
-          </div>
+        {/* Right Section: Actions */}
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <button
+            onClick={handlePrev}
+            disabled={step === 0}
+            style={{
+              width: '28px', height: '28px', borderRadius: '50%',
+              border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+              cursor: step === 0 ? 'not-allowed' : 'pointer',
+              opacity: step === 0 ? 0.3 : 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-2)',
+            }}
+          >
+            <ChevronLeft size={14} />
+          </button>
+          <button
+            onClick={isLast ? handleDone : handleNext}
+            style={{
+              padding: '0 14px', height: '28px', borderRadius: '99px', border: 'none',
+              background: current.color, color: '#fff',
+              fontSize: '11px', fontWeight: 800, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
+              boxShadow: `0 2px 8px ${current.color}33`,
+            }}
+          >
+            {isLast ? 'Finish' : (<>Next <ChevronRight size={12} /></>)}
+          </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes aiimin-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.55; transform: scale(1.35); }
-        }
-        @keyframes aiimin-float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
-        }
-      `}</style>
     </motion.div>
   );
 

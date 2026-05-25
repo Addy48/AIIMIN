@@ -739,13 +739,13 @@ export default function Placements() {
                     "Focus on <span style={{ opacity: 0.7 }}>System Design</span> and <span style={{ opacity: 0.7 }}>Low Level Design</span>. Your DSA performance is top-tier, but response rates drop for L5+ roles."
                   </div>
                   
-                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ background: 'color-mix(in srgb, currentColor 8%, transparent)', borderRadius: '16px', padding: '24px', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)' }}>
                     <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, marginBottom: '16px', opacity: 0.5, letterSpacing: '0.1em' }}>Next Milestone</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px' }}>
                       <span style={{ fontSize: '15px', fontWeight: 600 }}>Mock Interview v4</span>
                       <span style={{ fontSize: '12px', opacity: 0.6 }}>3 Days Left</span>
                     </div>
-                    <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '6px', background: 'color-mix(in srgb, currentColor 12%, transparent)', borderRadius: '3px', overflow: 'hidden' }}>
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: '65%' }}

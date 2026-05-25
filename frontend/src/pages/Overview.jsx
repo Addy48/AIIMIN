@@ -218,9 +218,29 @@ const Overview = () => {
     };
   }, [activeModal]);
 
-  const targetDate = new Date('2026-07-26');
+  const [daysLeft, setDaysLeft] = useState(() => {
+    const targetStr = localStorage.getItem('aiimin_execution_target');
+    if (targetStr) {
+      const targetDate = new Date(targetStr);
+      return Math.max(0, Math.ceil((targetDate - new Date()) / 86400000));
+    }
+    const targetDate = new Date('2026-07-26');
+    return Math.max(0, Math.floor((targetDate - new Date()) / 86400000));
+  });
+
+  useEffect(() => {
+    const handleStorage = () => {
+      const targetStr = localStorage.getItem('aiimin_execution_target');
+      if (targetStr) {
+        const targetDate = new Date(targetStr);
+        setDaysLeft(Math.max(0, Math.ceil((targetDate - new Date()) / 86400000)));
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   const now = new Date();
-  const daysLeft = Math.max(0, Math.floor((targetDate - now) / 86400000));
 
   const getWeekNum = (d) => {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
