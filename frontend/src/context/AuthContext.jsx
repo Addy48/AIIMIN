@@ -17,10 +17,39 @@ export function AuthProvider({ children }) {
                 setUser(data.user);
                 return data.user;
             } else {
+                const { data: { session: activeSession } } = await supabase.auth.getSession();
+                if (activeSession?.user) {
+                    const fallbackUser = {
+                        id: activeSession.user.id,
+                        email: activeSession.user.email,
+                        full_name: activeSession.user.user_metadata?.full_name || activeSession.user.email?.split('@')[0],
+                        username: activeSession.user.user_metadata?.username || activeSession.user.email?.split('@')[0],
+                        role: 'user',
+                        isGuest: false
+                    };
+                    setUser(fallbackUser);
+                    return fallbackUser;
+                }
                 setUser(null);
                 return null;
             }
         } catch (error) {
+            console.warn('[checkSession] profile fetch failed, using Supabase session fallback:', error.message);
+            try {
+                const { data: { session: activeSession } } = await supabase.auth.getSession();
+                if (activeSession?.user) {
+                    const fallbackUser = {
+                        id: activeSession.user.id,
+                        email: activeSession.user.email,
+                        full_name: activeSession.user.user_metadata?.full_name || activeSession.user.email?.split('@')[0],
+                        username: activeSession.user.user_metadata?.username || activeSession.user.email?.split('@')[0],
+                        role: 'user',
+                        isGuest: false
+                    };
+                    setUser(fallbackUser);
+                    return fallbackUser;
+                }
+            } catch (e) {}
             setUser(null);
             return null;
         } finally {
