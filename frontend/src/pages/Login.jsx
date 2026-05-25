@@ -36,7 +36,6 @@ const Login = () => {
   const [step, setStep]             = useState(1);       // login: 1=id, 2=pin; signup: 1=name, 2=username, 3=pin, 4=pinVerify; forgot: 1=email
   const [identifier, setIdentifier] = useState('');      // Email or Username for Login
   const [fullName, setFullName]     = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
   const [usernameVal, setUsernameVal] = useState('');
   const [pin, setPin]               = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -51,7 +50,6 @@ const Login = () => {
     setStep(1);
     setIdentifier('');
     setFullName('');
-    setSignupEmail('');
     setUsernameVal('');
     setPin('');
     setConfirmPin('');

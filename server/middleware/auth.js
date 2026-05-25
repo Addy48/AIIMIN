@@ -1,15 +1,9 @@
 import { pool } from '../lib/db.js';
-import jwt from 'jsonwebtoken';
 import { getCookie } from 'hono/cookie';
-import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
+import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { ensureUserProfile } from '../services/userProfileService.js';
 dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
-
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
-    console.error('[FATAL] JWT_SECRET env var is not set in production!');
-}
-const _JWT_SECRET = JWT_SECRET || 'aiimin_super_secret_dev_key';
 
 const COOKIE_NAME = 'aiimin_session';
 
@@ -26,21 +20,6 @@ setInterval(() => {
         }
     }
 }, 60_000);
-
-// Initialize Supabase Admin client (lazy — avoids failing if env vars missing)
-let _supabase = null;
-const getSupabase = () => {
-    if (!_supabase) {
-        const url = process.env.SUPABASE_URL;
-        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (!url || !key) {
-            console.warn('[auth] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set');
-            return null;
-        }
-        _supabase = createClient(url, key);
-    }
-    return _supabase;
-};
 
 export const requireAuth = async (c, next) => {
     // 1. Extract token from cookie, then Bearer header, then query param
@@ -65,25 +44,18 @@ export const requireAuth = async (c, next) => {
     }
 
     let decoded = null;
-    let isSupabaseToken = false;
+    let authUser = null;
 
-    // 2. Try local JWT first (fast path)
+    // 2. Verify Supabase access token first. This is the production source of truth.
     try {
-        decoded = jwt.verify(token, _JWT_SECRET);
-    } catch (_) {
-        // 3. Fallback: try Supabase token (for users who logged in via Supabase Auth)
-        const supabase = getSupabase();
-        if (supabase) {
-            try {
-                const { data: { user }, error } = await supabase.auth.getUser(token);
-                if (user && !error) {
-                    decoded = { id: user.id, email: user.email };
-                    isSupabaseToken = true;
-                }
-            } catch (supaErr) {
-                console.error('[auth] Supabase token verify error:', supaErr.message);
-            }
+        const supabase = getSupabaseAdmin();
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (user && !error) {
+            authUser = user;
+            decoded = { id: user.id, email: user.email };
         }
+    } catch (supaErr) {
+        console.error('[auth] Supabase token verify error:', supaErr.message);
     }
 
     if (!decoded) {
@@ -104,29 +76,22 @@ export const requireAuth = async (c, next) => {
             if (rows.length > 0) {
                 cached = { ...rows[0], timestamp: now };
                 profileCache.set(decoded.id, cached);
-            } else if (isSupabaseToken) {
-                // Auto-create public profile for new Supabase Auth users
-                const supabase = getSupabase();
-                if (supabase) {
-                    const { data: { user } } = await supabase.auth.getUser(token);
-                    const fullName = user?.user_metadata?.full_name || '';
-                    const username = user?.user_metadata?.username || '';
-                    const { rows: inserted } = await pool.query(
-                        `INSERT INTO users (id, email, full_name, username, onboarding_stage, role)
-                         VALUES ($1, $2, $3, $4, 0, 'user')
-                         ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email
-                         RETURNING role, onboarding_stage, username`,
-                        [decoded.id, decoded.email, fullName, username]
-                    );
-                    cached = { ...inserted[0], timestamp: now };
-                    profileCache.set(decoded.id, cached);
-                }
+            } else if (authUser) {
+                const profile = await ensureUserProfile(pool, authUser);
+                cached = {
+                    role: profile.role,
+                    onboarding_stage: profile.onboarding_stage,
+                    username: profile.username,
+                    timestamp: now,
+                };
+                profileCache.set(decoded.id, cached);
             } else {
                 return c.json({ error: 'User not found' }, 401);
             }
         }
 
         c.set('user', {
+            ...(authUser || {}),
             id: decoded.id,
             email: decoded.email,
             role: cached?.role || 'user',

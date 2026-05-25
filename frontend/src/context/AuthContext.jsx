@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../utils/api';
 import toast from '../utils/toast';
 import supabase from '../utils/supabase';
@@ -15,11 +15,14 @@ export function AuthProvider({ children }) {
             const data = await apiGet('/auth/me');
             if (data && data.user) {
                 setUser(data.user);
+                return data.user;
             } else {
                 setUser(null);
+                return null;
             }
         } catch (error) {
             setUser(null);
+            return null;
         } finally {
             setLoading(false);
         }
@@ -32,14 +35,8 @@ export function AuthProvider({ children }) {
             if (currentSession) {
                 setSession(currentSession);
                 localStorage.setItem('aiimin_session_fallback', currentSession.access_token);
-                // Fetch profile details from Hono backend
                 try {
-                    const data = await apiGet('/auth/me');
-                    if (data && data.user) {
-                        setUser(data.user);
-                    } else {
-                        setUser(null);
-                    }
+                    await checkSession();
                 } catch (err) {
                     console.error('Failed to sync profile after auth event:', err);
                     setUser(null);
@@ -54,14 +51,12 @@ export function AuthProvider({ children }) {
 
         // Initial check for active session
         supabase.auth.getSession().then(({ data: { session: activeSession } }) => {
-            const localToken = localStorage.getItem('aiimin_session_fallback');
             if (activeSession) {
                 setSession(activeSession);
                 localStorage.setItem('aiimin_session_fallback', activeSession.access_token);
                 checkSession();
-            } else if (localToken) {
-                checkSession();
             } else {
+                localStorage.removeItem('aiimin_session_fallback');
                 setLoading(false);
             }
         });
@@ -89,18 +84,24 @@ export function AuthProvider({ children }) {
     const signUpWithUsername = async (username, pin, fullName = '', email = '') => {
         try {
             const authEmail = email || `${username.toLowerCase()}@aiimin.com`;
-            const data = await apiPost('/auth/signup', {
+            await apiPost('/auth/signup', {
                 email: authEmail,
                 password: pin,
                 fullName,
                 username
             });
-            
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: authEmail,
+                password: pin,
+            });
+            if (error) throw error;
+
+            localStorage.setItem('aiimin_session_fallback', data.session.access_token);
+            setSession(data.session);
+            const profile = await checkSession();
             toast.success('Registration successful!');
-            localStorage.setItem('aiimin_session_fallback', data.token);
-            setSession({ access_token: data.token });
-            setUser(data.user);
-            return data;
+            return { user: profile, session: data.session };
         } catch (error) {
             console.error('Error signing up:', error);
             throw new Error(error.response?.data?.error || error.message || 'Signup failed');
@@ -121,16 +122,17 @@ export function AuthProvider({ children }) {
                 // Not found or error, default email will be used
             }
 
-            const data = await apiPost('/auth/login', {
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email: authEmail,
-                password: pin
+                password: pin,
             });
-            
+            if (error) throw error;
+
+            localStorage.setItem('aiimin_session_fallback', data.session.access_token);
+            setSession(data.session);
+            const profile = await checkSession();
             toast.success('Welcome back!');
-            localStorage.setItem('aiimin_session_fallback', data.token);
-            setSession({ access_token: data.token });
-            setUser(data.user);
-            return data;
+            return { user: profile, session: data.session };
         } catch (error) {
             console.error('Error signing in:', error);
             throw new Error(error.response?.data?.error || error.message || 'Invalid credentials');
@@ -150,16 +152,17 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const value = useMemo(() => ({
+    const value = {
         user,
         session,
         loading,
         signInWithGoogle,
         signUpWithUsername,
         signInWithUsername,
+        logout: signOut,
         signOut,
         checkSession,
-    }), [loading, session, user]);
+    };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -173,4 +176,3 @@ export function useAuth() {
 }
 
 export default AuthContext;
-
