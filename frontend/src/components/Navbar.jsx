@@ -120,7 +120,7 @@ const Navbar = ({ user }) => {
 
           {/* Notifications */}
           <div ref={bellRef} style={{ position: 'relative' }}>
-            <NotificationBell unreadCount={unreadCount} onClick={handleOpenNotif} />
+            <NotificationBell count={unreadCount} onOpen={handleOpenNotif} isOpen={notifOpen} />
             {notifOpen && (
               <NotifDropdown
                 notifications={notifications}
