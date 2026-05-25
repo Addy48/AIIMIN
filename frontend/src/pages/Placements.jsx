@@ -15,7 +15,8 @@ const STATUS_CONFIG = {
 };
 
 export default function Placements() {
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const user = authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
   const [activeTab, setActiveTab] = useState('kanban'); // kanban | timeline | resources | resumes | trajectory
   const [applications, setApplications] = useState([]);
   const [resumes, setResumes] = useState([]);
@@ -59,6 +60,56 @@ export default function Placements() {
 
   const loadData = async () => {
     setLoading(true);
+    if (user.isGuest) {
+      // Load standard, gorgeous mock data immediately for a premium guest experience
+      setApplications([
+        {
+          id: 'mock-1',
+          company_name: 'Vercel',
+          role_title: 'Solutions Architect',
+          status: 'offer',
+          notes: 'Completed system design interview. Received offer sheet with excellent equity options.',
+          applied_at: new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0],
+          updated_at: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0]
+        },
+        {
+          id: 'mock-2',
+          company_name: 'Stripe',
+          role_title: 'Software Engineer',
+          status: 'interview',
+          notes: 'Technical screen passed. Virtual onsite scheduled for next week.',
+          applied_at: new Date(Date.now() - 10 * 86400000).toISOString().split('T')[0],
+          updated_at: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0]
+        },
+        {
+          id: 'mock-3',
+          company_name: 'Google',
+          role_title: 'Frontend Engineer',
+          status: 'applied',
+          notes: 'Applied through internal referral. Resume parsed and screening scheduled.',
+          applied_at: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0],
+          updated_at: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0]
+        }
+      ]);
+      setResumes([
+        {
+          id: 'mock-res-1',
+          title: 'Senior Systems & Architecture Resume',
+          target_role: 'Solutions Architect',
+          link_url: 'https://drive.google.com/file/d/1Xy_mock_resume_id/view',
+          created_at: new Date(Date.now() - 30 * 86400000).toISOString()
+        }
+      ]);
+      setDsaMetrics({ score: 88, desc: '94 solved problems logged' });
+      setCommunicationMetrics({ score: 85, desc: 'Based on active mock monologue metrics' });
+      setSystemDesignMetrics({ score: 75, desc: 'System patterns successfully structured' });
+      setMomentumScore(80);
+      setMomentumStatus('Peak');
+      setMomentumGrowth('+18.4% vs LW');
+      setMomentumText('You are maintaining a strong execution velocity. Keep completing daily modules.');
+      setLoading(false);
+      return;
+    }
     let anySuccess = false;
     try {
       // Fetch each endpoint independently — a single missing route won't kill everything

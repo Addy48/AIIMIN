@@ -4,10 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Wifi } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiGet, apiPost } from '../utils/api';
+import { sportsService } from '../services/sportsService';
 
 const Sports = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const user = authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
   const [activeTab, setActiveTab] = useState('Cricket'); // 'Cricket' | 'Football' | 'Formula 1'
   const [refreshing, setRefreshing] = useState(false);
 
@@ -16,9 +18,19 @@ const Sports = () => {
   const fetchScores = async (isRefresh = false) => {
     setRefreshing(true);
     try {
-      const endpoint = isRefresh ? '/sports/refresh' : '/sports';
-      const data = isRefresh ? await apiPost(endpoint, {}) : await apiGet(endpoint);
-      setFeed(data.data || data); // handle both direct feed or wrapped data
+      if (isRefresh) {
+        try {
+          const res = await apiPost('/sports/refresh', {});
+          setFeed(res.data || res);
+        } catch (err) {
+          console.warn('Server refresh failed, fetching local aggregated sports feed:', err);
+          const localData = await sportsService.getAggregatedSports();
+          setFeed(localData);
+        }
+      } else {
+        const localData = await sportsService.getAggregatedSports();
+        setFeed(localData);
+      }
     } catch (err) {
       console.error('Failed to sync sports:', err);
     } finally {
@@ -31,10 +43,6 @@ const Sports = () => {
   };
 
   useEffect(() => {
-    if (user?.isGuest) {
-      navigate('/overview');
-      return;
-    }
     // Initial sync
     fetchScores();
     // 5-minute interval sync
@@ -43,6 +51,7 @@ const Sports = () => {
     }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [user, navigate]);
+
 
   // Recent Balls data (Cricket tab)
   const recentBalls = [
