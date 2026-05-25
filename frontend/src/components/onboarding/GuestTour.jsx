@@ -1,30 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, X, UserPlus } from 'lucide-react';
+import {
+  X, UserPlus, ChevronRight, ChevronLeft,
+  BarChart2, Target, BookOpen, Zap, Briefcase,
+  DollarSign, Globe, FlaskConical, Calendar, Brain, Sparkles
+} from 'lucide-react';
 
 const TOUR_KEY = 'aiimin_tour_seen';
 
 const STEPS = [
   {
+    icon: Sparkles,
+    color: '#f59e0b',
+    gradient: 'linear-gradient(135deg,#fef3c7,#fde68a)',
     title: 'Welcome to AIIMIN 👋',
-    description: 'Your personal OS for tracking life. Explore freely — sign up to save your progress.',
+    description: 'Your personal life OS. Explore freely — sign up in 30 seconds to save your progress.',
+    highlight: 'Free to explore',
   },
   {
-    title: 'Overview Dashboard',
-    description: 'See all your daily metrics at a glance. Tasks, habits, finance, and more.',
+    icon: BarChart2,
+    color: '#6366f1',
+    gradient: 'linear-gradient(135deg,#ede9fe,#ddd6fe)',
+    title: 'Day Control Dashboard',
+    description: 'All your daily metrics at a glance — habits, mood, energy, and focus, all in one view.',
+    highlight: 'Your command center',
   },
   {
-    title: 'Finance Tracker',
-    description: 'Track income, expenses, and get AI-powered insights on your spending patterns.',
+    icon: Target,
+    color: '#10b981',
+    gradient: 'linear-gradient(135deg,#d1fae5,#a7f3d0)',
+    title: 'Goals & Habits',
+    description: 'Build streaks, set milestones, and turn abstract ambitions into daily actions.',
+    highlight: 'Build consistency',
   },
   {
+    icon: BookOpen,
+    color: '#ec4899',
+    gradient: 'linear-gradient(135deg,#fce7f3,#fbcfe8)',
+    title: 'Journal & Reflection',
+    description: 'Morning intentions, evening gratitude, daily productivity scores — all in your permanent log.',
+    highlight: 'Know yourself',
+  },
+  {
+    icon: Zap,
+    color: '#f97316',
+    gradient: 'linear-gradient(135deg,#ffedd5,#fed7aa)',
+    title: 'Deep Focus Room',
+    description: 'Pomodoro timer, ambient soundscapes, distraction blocking — lock into flow state.',
+    highlight: 'Enter flow state',
+  },
+  {
+    icon: DollarSign,
+    color: '#0ea5e9',
+    gradient: 'linear-gradient(135deg,#e0f2fe,#bae6fd)',
+    title: 'Finance & Wealth',
+    description: 'Track spending, investments, Gold, Mutual Funds, and global equities in one place.',
+    highlight: 'Control your money',
+  },
+  {
+    icon: Briefcase,
+    color: '#8b5cf6',
+    gradient: 'linear-gradient(135deg,#ede9fe,#ddd6fe)',
     title: 'ATS Resume Analyzer',
-    description: 'Paste a job description and upload your resume to get a match score and tailored bullets.',
+    description: 'Paste a job description and get your match score, missing keywords, and AI coaching.',
+    highlight: 'Land the job',
   },
   {
-    title: 'Ready to save your work?',
-    description: 'Create a free account in 30 seconds. Your data stays private and secure.',
+    icon: Brain,
+    color: '#14b8a6',
+    gradient: 'linear-gradient(135deg,#ccfbf1,#99f6e4)',
+    title: 'AI Insights Engine',
+    description: 'Discover hidden patterns across your behavior, finance, and productivity over time.',
+    highlight: 'Data-driven clarity',
   },
 ];
 
@@ -32,12 +80,14 @@ const GuestTour = () => {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
+  const [collapsed, setCollapsed] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const pulseRef = useRef(null);
 
   useEffect(() => {
     const seen = sessionStorage.getItem(TOUR_KEY);
     if (!seen) {
-      // Small delay so the dashboard has time to render
-      const t = setTimeout(() => setVisible(true), 800);
+      const t = setTimeout(() => setVisible(true), 900);
       return () => clearTimeout(t);
     }
   }, []);
@@ -48,10 +98,12 @@ const GuestTour = () => {
   };
 
   const handlePrev = () => {
+    setHasInteracted(true);
     setStep(s => Math.max(0, s - 1));
   };
 
   const handleNext = () => {
+    setHasInteracted(true);
     if (step < STEPS.length - 1) {
       setStep(s => s + 1);
     } else {
@@ -59,203 +111,349 @@ const GuestTour = () => {
     }
   };
 
+  const handleDotClick = (i) => {
+    setHasInteracted(true);
+    setStep(i);
+  };
+
   const handleCreateAccount = () => {
     handleSkip();
     navigate('/login', { state: { mode: 'signup' } });
   };
 
+  const toggleCollapse = () => setCollapsed(c => !c);
+
+  const current = STEPS[step];
+  const Icon = current.icon;
   const isLastStep = step === STEPS.length - 1;
 
+  // Collapsed pill trigger button
+  const CollapsedPill = (
+    <motion.button
+      key="pill"
+      initial={{ opacity: 0, scale: 0.8, x: 40 }}
+      animate={{ opacity: 1, scale: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 0.8, x: 40 }}
+      onClick={toggleCollapse}
+      style={{
+        position: 'fixed',
+        bottom: '90px',
+        right: '20px',
+        zIndex: 8880,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        background: '#111',
+        color: '#fff',
+        border: '1.5px solid rgba(255,255,255,0.15)',
+        borderRadius: '100px',
+        padding: '10px 18px 10px 12px',
+        fontSize: '13px',
+        fontWeight: 700,
+        cursor: 'pointer',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+        fontFamily: 'var(--font-sans)',
+        letterSpacing: '-0.01em',
+      }}
+    >
+      {/* Animated dot */}
+      <span style={{
+        width: '8px', height: '8px', borderRadius: '50%',
+        background: current.color,
+        boxShadow: `0 0 0 3px ${current.color}33`,
+        animation: 'pulse-dot 2s infinite',
+        display: 'inline-block',
+        flexShrink: 0,
+      }} />
+      <span>Explore AIIMIN</span>
+      <span style={{
+        background: 'rgba(255,255,255,0.12)',
+        borderRadius: '100px',
+        padding: '2px 8px',
+        fontSize: '11px',
+        fontWeight: 800,
+      }}>{step + 1}/{STEPS.length}</span>
+    </motion.button>
+  );
+
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          key="guest-tour"
-          initial={{ y: 120, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 120, opacity: 0 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 8888,
-            width: '100%',
-            maxWidth: '420px',
-            padding: '0 16px',
-            boxSizing: 'border-box',
-          }}
-        >
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '18px',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08)',
-            padding: '20px 22px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '14px',
-            border: '1px solid rgba(0,0,0,0.06)',
-          }}>
-            {/* Header row */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              {/* Step counter */}
-              <div style={{
-                fontSize: '11px',
-                fontWeight: 700,
-                color: '#999',
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                fontFamily: 'var(--font-mono, monospace)',
-              }}>
-                {step + 1} / {STEPS.length}
-              </div>
+    <>
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.3); }
+        }
+        @keyframes float-card {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-4px); }
+        }
+      `}</style>
 
-              {/* Progress dots */}
-              <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-                {STEPS.map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width: i === step ? '18px' : '6px',
-                      height: '6px',
-                      borderRadius: '3px',
-                      background: i === step ? '#111' : 'rgba(0,0,0,0.15)',
-                      transition: 'all 0.3s ease',
-                    }}
-                  />
-                ))}
-              </div>
-
-              {/* Skip / X */}
-              <button
-                onClick={handleSkip}
-                aria-label="Skip tour"
+      <AnimatePresence>
+        {visible && (
+          <>
+            {collapsed ? (
+              CollapsedPill
+            ) : (
+              <motion.div
+                key="tour-panel"
+                initial={{ opacity: 0, x: 60, scale: 0.94 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 60, scale: 0.94 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#aaa',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
+                  position: 'fixed',
+                  bottom: '90px',
+                  right: '20px',
+                  zIndex: 8880,
+                  width: '320px',
+                }}
+              >
+                {/* Main card */}
+                <div style={{
+                  background: '#ffffff',
+                  borderRadius: '22px',
+                  boxShadow: '0 12px 48px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06)',
+                  overflow: 'hidden',
+                  border: '1px solid rgba(0,0,0,0.07)',
+                }}>
+                  {/* Hero banner */}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={step}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                      style={{
+                        background: current.gradient,
+                        padding: '24px 20px 20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                        position: 'relative',
+                      }}
+                    >
+                      {/* Top controls */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{
+                          background: 'rgba(0,0,0,0.08)',
+                          borderRadius: '100px',
+                          padding: '3px 10px',
+                          fontSize: '10px',
+                          fontWeight: 800,
+                          color: 'rgba(0,0,0,0.6)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          fontFamily: 'var(--font-mono, monospace)',
+                        }}>
+                          {current.highlight}
+                        </span>
+                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <button
+                            onClick={toggleCollapse}
+                            style={{
+                              background: 'rgba(0,0,0,0.06)',
+                              border: 'none',
+                              borderRadius: '8px',
+                              width: '26px', height: '26px',
+                              cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: 'rgba(0,0,0,0.45)',
+                            }}
+                            title="Minimize"
+                          >
+                            <span style={{ fontSize: '10px', fontWeight: 900 }}>—</span>
+                          </button>
+                          <button
+                            onClick={handleSkip}
+                            style={{
+                              background: 'rgba(0,0,0,0.06)',
+                              border: 'none',
+                              borderRadius: '8px',
+                              width: '26px', height: '26px',
+                              cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: 'rgba(0,0,0,0.45)',
+                            }}
+                            title="Close"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Icon */}
+                      <div style={{
+                        width: '52px', height: '52px',
+                        borderRadius: '16px',
+                        background: '#fff',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                        animation: 'float-card 3s ease-in-out infinite',
+                      }}>
+                        <Icon size={24} color={current.color} strokeWidth={2.5} />
+                      </div>
+
+                      {/* Title */}
+                      <div>
+                        <div style={{
+                          fontSize: '16px',
+                          fontWeight: 800,
+                          color: '#111',
+                          letterSpacing: '-0.02em',
+                          lineHeight: 1.25,
+                          fontFamily: 'var(--font-sans)',
+                        }}>
+                          {current.title}
+                        </div>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+
+                  {/* Body */}
+                  <div style={{ padding: '16px 20px 20px' }}>
+                    {/* Description */}
+                    <AnimatePresence mode="wait">
+                      <motion.p
+                        key={step + '-desc'}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18 }}
+                        style={{
+                          fontSize: '13px',
+                          color: '#555',
+                          lineHeight: '1.6',
+                          margin: '0 0 16px',
+                          fontFamily: 'var(--font-sans)',
+                        }}
+                      >
+                        {current.description}
+                      </motion.p>
+                    </AnimatePresence>
+
+                    {/* Progress dots */}
+                    <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '16px' }}>
+                      {STEPS.map((s, i) => (
+                        <button
+                          key={i}
+                          onClick={() => handleDotClick(i)}
+                          style={{
+                            width: i === step ? '20px' : '6px',
+                            height: '6px',
+                            borderRadius: '3px',
+                            background: i === step ? current.color : 'rgba(0,0,0,0.12)',
+                            border: 'none',
+                            padding: 0,
+                            cursor: 'pointer',
+                            transition: 'all 0.25s ease',
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Navigation buttons */}
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={handlePrev}
+                        disabled={step === 0}
+                        style={{
+                          width: '38px', height: '38px',
+                          borderRadius: '11px',
+                          border: '1.5px solid rgba(0,0,0,0.1)',
+                          background: 'transparent',
+                          cursor: step === 0 ? 'not-allowed' : 'pointer',
+                          opacity: step === 0 ? 0.3 : 1,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#444',
+                          flexShrink: 0,
+                          transition: 'opacity 0.2s',
+                        }}
+                      >
+                        <ChevronLeft size={16} />
+                      </button>
+
+                      {isLastStep ? (
+                        <button
+                          onClick={handleCreateAccount}
+                          style={{
+                            flex: 1, height: '38px',
+                            borderRadius: '11px',
+                            border: 'none',
+                            background: '#111',
+                            color: '#fff',
+                            fontSize: '13px', fontWeight: 700,
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-sans)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                            letterSpacing: '-0.01em',
+                          }}
+                        >
+                          <UserPlus size={14} /> Create Free Account
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleNext}
+                          style={{
+                            flex: 1, height: '38px',
+                            borderRadius: '11px',
+                            border: 'none',
+                            background: current.color,
+                            color: '#fff',
+                            fontSize: '13px', fontWeight: 700,
+                            cursor: 'pointer',
+                            fontFamily: 'var(--font-sans)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                            boxShadow: `0 4px 16px ${current.color}44`,
+                            letterSpacing: '-0.01em',
+                            transition: 'background 0.2s, box-shadow 0.2s',
+                          }}
+                        >
+                          Next <ChevronRight size={14} />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Footer CTA */}
+                    {!isLastStep && (
+                      <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                        <button
+                          onClick={handleCreateAccount}
+                          style={{
+                            background: 'none', border: 'none',
+                            fontSize: '12px', color: '#888', cursor: 'pointer',
+                            fontFamily: 'var(--font-sans)',
+                            textDecoration: 'underline',
+                            textUnderlineOffset: '2px',
+                          }}
+                        >
+                          Skip tour & sign up now
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Step counter outside card */}
+                <div style={{
+                  textAlign: 'center',
+                  marginTop: '8px',
                   fontSize: '11px',
                   fontWeight: 600,
-                  padding: '4px 6px',
-                  borderRadius: '6px',
-                  fontFamily: 'var(--font-sans)',
-                }}
-              >
-                <X size={13} /> Skip
-              </button>
-            </div>
-
-            {/* Content */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={step}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -16 }}
-                transition={{ duration: 0.22 }}
-              >
-                <div style={{
-                  fontSize: '15px',
-                  fontWeight: 700,
-                  color: '#111',
-                  marginBottom: '6px',
-                  fontFamily: 'var(--font-sans)',
-                  letterSpacing: '-0.01em',
+                  color: 'rgba(0,0,0,0.35)',
+                  fontFamily: 'var(--font-mono, monospace)',
+                  letterSpacing: '0.06em',
                 }}>
-                  {STEPS[step].title}
-                </div>
-                <div style={{
-                  fontSize: '13px',
-                  color: '#666',
-                  lineHeight: '1.55',
-                  fontFamily: 'var(--font-sans)',
-                }}>
-                  {STEPS[step].description}
+                  {step + 1} of {STEPS.length} features
                 </div>
               </motion.div>
-            </AnimatePresence>
-
-            {/* Actions */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {/* Prev */}
-              <button
-                onClick={handlePrev}
-                disabled={step === 0}
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(0,0,0,0.12)',
-                  background: 'transparent',
-                  cursor: step === 0 ? 'not-allowed' : 'pointer',
-                  opacity: step === 0 ? 0.35 : 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#444',
-                  flexShrink: 0,
-                }}
-              >
-                <ChevronLeft size={16} />
-              </button>
-
-              {/* Next / Create Account */}
-              {isLastStep ? (
-                <button
-                  onClick={handleCreateAccount}
-                  style={{
-                    flex: 1,
-                    height: '36px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: '#111',
-                    color: '#fff',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-sans)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  <UserPlus size={14} />
-                  Create Account
-                </button>
-              ) : (
-                <button
-                  onClick={handleNext}
-                  style={{
-                    flex: 1,
-                    height: '36px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    background: '#111',
-                    color: '#fff',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-sans)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  Next <ChevronRight size={14} />
-                </button>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            )}
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
