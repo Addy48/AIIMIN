@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { apiGet } from '../utils/api';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { apiGet, apiPost } from '../utils/api';
 import toast from '../utils/toast';
 import supabase from '../utils/supabase';
 
@@ -15,11 +15,14 @@ export function AuthProvider({ children }) {
             const data = await apiGet('/auth/me');
             if (data && data.user) {
                 setUser(data.user);
+                return data.user;
             } else {
                 setUser(null);
+                return null;
             }
         } catch (error) {
             setUser(null);
+            return null;
         } finally {
             setLoading(false);
         }
@@ -32,14 +35,8 @@ export function AuthProvider({ children }) {
             if (currentSession) {
                 setSession(currentSession);
                 localStorage.setItem('aiimin_session_fallback', currentSession.access_token);
-                // Fetch profile details from Hono backend
                 try {
-                    const data = await apiGet('/auth/me');
-                    if (data && data.user) {
-                        setUser(data.user);
-                    } else {
-                        setUser(null);
-                    }
+                    await checkSession();
                 } catch (err) {
                     console.error('Failed to sync profile after auth event:', err);
                     setUser(null);
@@ -59,6 +56,7 @@ export function AuthProvider({ children }) {
                 localStorage.setItem('aiimin_session_fallback', activeSession.access_token);
                 checkSession();
             } else {
+                localStorage.removeItem('aiimin_session_fallback');
                 setLoading(false);
             }
         });
@@ -83,53 +81,67 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const signUpWithEmail = async (email, password, fullName = '', username = '') => {
+    const signUpWithUsername = async (username, pin, fullName = '', email = '') => {
         try {
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        full_name: fullName,
-                        username: username
-                    }
-                }
+            const authEmail = email || `${username.toLowerCase()}@aiimin.com`;
+            await apiPost('/auth/signup', {
+                email: authEmail,
+                password: pin,
+                fullName,
+                username
+            });
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: authEmail,
+                password: pin,
             });
             if (error) throw error;
-            if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
-                throw new Error('This email is already registered. Please sign in instead.');
-            }
+
+            localStorage.setItem('aiimin_session_fallback', data.session.access_token);
+            setSession(data.session);
+            const profile = await checkSession();
             toast.success('Registration successful!');
-            return data;
+            return { user: profile, session: data.session };
         } catch (error) {
             console.error('Error signing up:', error);
-            throw new Error(error.message || 'Signup failed');
+            throw new Error(error.response?.data?.error || error.message || 'Signup failed');
         }
     };
 
-    const signInWithEmail = async (identifier, password) => {
+    const signInWithUsername = async (username, pin) => {
         try {
-            let authEmail = identifier;
-            if (!identifier.includes('@')) {
-                const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
-                authEmail = data.email;
+            let authEmail = `${username.toLowerCase()}@aiimin.com`;
+            
+            // Resolve username to real email if exists
+            try {
+                const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(username)}`, { auth: false });
+                if (resolveData && resolveData.email) {
+                    authEmail = resolveData.email;
+                }
+            } catch (e) {
+                // Not found or error, default email will be used
             }
 
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: authEmail,
-                password
+                password: pin,
             });
             if (error) throw error;
+
+            localStorage.setItem('aiimin_session_fallback', data.session.access_token);
+            setSession(data.session);
+            const profile = await checkSession();
             toast.success('Welcome back!');
-            return data;
+            return { user: profile, session: data.session };
         } catch (error) {
             console.error('Error signing in:', error);
-            throw new Error(error.message || 'Invalid credentials');
+            throw new Error(error.response?.data?.error || error.message || 'Invalid credentials');
         }
     };
 
     const signOut = async () => {
         try {
+            try { await apiPost('/auth/logout'); } catch(e) {}
             await supabase.auth.signOut();
             localStorage.removeItem('aiimin_session_fallback');
             setUser(null);
@@ -140,16 +152,17 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const value = useMemo(() => ({
+    const value = {
         user,
         session,
         loading,
         signInWithGoogle,
-        signUpWithEmail,
-        signInWithEmail,
+        signUpWithUsername,
+        signInWithUsername,
+        logout: signOut,
         signOut,
         checkSession,
-    }), [loading, session, user]);
+    };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -163,4 +176,3 @@ export function useAuth() {
 }
 
 export default AuthContext;
-

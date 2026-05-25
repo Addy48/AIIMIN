@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import AuthContext from './AuthContext';
 
 const GuestContext = createContext(null);
 
@@ -14,7 +15,9 @@ export function GuestProvider({ children }) {
 
   return (
     <GuestContext.Provider value={{ isGuest, guestUser }}>
-      {children}
+      <AuthContext.Provider value={{ user: guestUser, session: null, loading: false }}>
+        {children}
+      </AuthContext.Provider>
     </GuestContext.Provider>
   );
 }

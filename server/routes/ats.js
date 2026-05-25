@@ -1,8 +1,10 @@
 /**
  * server/routes/ats.js
- * ATS Resume Analyzer — keyword matching + Gemini-powered gap analysis
+ * ATS Resume Analyzer — keyword matching + Kimi-powered gap analysis
  */
 import { Hono } from 'hono';
+import { requireAuth } from '../middleware/auth.js';
+import { generateKimiAtsAnalysis } from '../services/kimiAtsService.js';
 
 const atsRoutes = new Hono();
 
@@ -43,11 +45,29 @@ function tokenize(text) {
     return tokens;
 }
 
-atsRoutes.post('/analyze', async (c) => {
+const requireAuthUnlessGuest = async (c, next) => {
+    const isGuest = c.req.header('X-Guest') === 'true';
+    if (isGuest) return next();
+    return requireAuth(c, next);
+};
+
+const readAnalyzeBody = async (c) => {
+    const contentType = c.req.header('content-type') || '';
+    if (contentType.includes('multipart/form-data') || contentType.includes('application/x-www-form-urlencoded')) {
+        const body = await c.req.parseBody();
+        return {
+            jd: body.jd,
+            resume_text: body.resume_text,
+        };
+    }
+    return c.req.json();
+};
+
+atsRoutes.post('/analyze', requireAuthUnlessGuest, async (c) => {
     const isGuest = c.req.header('X-Guest') === 'true';
 
     try {
-        const body = await c.req.json();
+        const body = await readAnalyzeBody(c);
         const { jd, resume_text } = body;
 
         if (!jd?.trim()) return c.json({ error: 'Job description is required' }, 400);
@@ -89,97 +109,13 @@ atsRoutes.post('/analyze', async (c) => {
         const lengthScore = resumeText.length > 500 ? 20 : Math.round((resumeText.length / 500) * 20);
         const atsScore = Math.min(100, Math.round(matchScore * 0.6 + structureScore + lengthScore * 0.2));
 
-        let aiAnalysis = null;
-        let aiStatus = 'success'; // success | expired | limit_reached
-        const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || 'REDACTED_NVIDIA_API_KEY';
-
-        if (NVIDIA_API_KEY && !isGuest) {
-            try {
-                const prompt = `You are an expert ATS consultant and resume coach. Analyze this job description and resume, then give targeted advice.
-
-JOB DESCRIPTION:
-${jdText.slice(0, 2000)}
-
-RESUME:
-${resumeText.slice(0, 2000)}
-
-TOP MISSING KEYWORDS: ${sortedMissing.slice(0, 10).join(', ')}
-
-Respond ONLY with valid JSON in exactly this format:
-{
-  "missingSkills": [
-    { "skill": "skill name", "reason": "Why this matters and how to add it (2 sentences max)" }
-  ],
-  "bulletPoints": [
-    "Tailored resume bullet ready to paste (action verb, include metrics)"
-  ],
-  "overallFeedback": "2-3 sentence overall assessment"
-}
-
-Provide exactly 5 missingSkills and 5 bulletPoints. Do not include markdown formatting like \`\`\`json.`;
-
-                const nvidiaRes = await fetch(
-                    `https://integrate.api.nvidia.com/v1/chat/completions`,
-                    {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${NVIDIA_API_KEY}`,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: "moonshotai/kimi-k2.6",
-                            messages: [{ role: "user", content: prompt }],
-                            max_tokens: 16384,
-                            temperature: 0.5,
-                            top_p: 1.0,
-                            stream: false,
-                            chat_template_kwargs: { thinking: true }
-                        }),
-                        signal: AbortSignal.timeout(30000)
-                    }
-                );
-
-                if (nvidiaRes.ok) {
-                    const nvidiaData = await nvidiaRes.json();
-                    let rawText = nvidiaData.choices?.[0]?.message?.content;
-                    if (rawText) {
-                        // Strip markdown fences if present
-                        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-                        aiAnalysis = JSON.parse(rawText);
-                    }
-                } else if (nvidiaRes.status === 401 || nvidiaRes.status === 403) {
-                    aiStatus = 'expired';
-                    console.warn('[ats/analyze] NVIDIA key expired or unauthorized');
-                } else if (nvidiaRes.status === 429) {
-                    aiStatus = 'limit_reached';
-                    console.warn('[ats/analyze] NVIDIA API rate limit reached');
-                } else {
-                    console.warn('[ats/analyze] NVIDIA API error:', nvidiaRes.status, await nvidiaRes.text());
-                }
-            } catch (aiErr) {
-                console.warn('[ats/analyze] NVIDIA call failed:', aiErr.message);
-            }
-        }
-
-        if (!aiAnalysis) {
-            aiAnalysis = {
-                missingSkills: sortedMissing.slice(0, 5).map(skill => ({
-                    skill,
-                    reason: `"${skill}" appears in the JD but not in your resume. Add a specific example of using this skill with measurable outcomes.`,
-                })),
-                bulletPoints: [
-                    isGuest
-                        ? 'Sign in to unlock AI-powered resume bullet suggestions tailored to this JD.'
-                        : 'AI-powered suggestions are currently unavailable. Please check your API limits.',
-                    `Implemented ${sortedMissing[0] || 'core feature'} to improve system efficiency by X%.`,
-                    `Developed and deployed ${sortedMissing[1] || 'key solution'} for a team of N, reducing manual effort by Y hours/week.`,
-                    `Led cross-functional collaboration to deliver ${sortedMissing[2] || 'project milestone'} 2 weeks ahead of schedule.`,
-                    `Designed scalable architecture for ${sortedMissing[3] || 'system'} serving Z concurrent users.`,
-                ],
-                overallFeedback: `Your resume matches ~${matchScore}% of the JD keywords. Focus on adding the missing technical keywords naturally throughout your experience bullet points.`,
-            };
-        }
+        const { aiAnalysis, aiStatus } = await generateKimiAtsAnalysis({
+            jdText,
+            resumeText,
+            sortedMissing,
+            matchScore,
+            isGuest,
+        });
 
         return c.json({
             matchScore,

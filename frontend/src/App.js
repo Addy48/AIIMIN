@@ -10,6 +10,7 @@ import DataDeletion from './pages/legal/DataDeletion';
 import Security from './pages/legal/Security';
 import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
+import Brand from './pages/legal/Brand';
 
 // Layout & eager components
 import MobileApp from './components/mobile/MobileApp';
@@ -45,7 +46,6 @@ const IdentityPage  = React.lazy(() => import('./pages/Identity'));
 const NotesPage     = React.lazy(() => import('./pages/Notes'));
 const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
 const FocusRoom     = React.lazy(() => import('./pages/FocusRoom'));
-const ATSAnalyzer   = React.lazy(() => import('./pages/ATSAnalyzer'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -105,43 +105,19 @@ function AppContent({ user }) {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/guest'} replace />} />
 
-        {/* ── Guest Mode ── */}
-        {(() => {
-          const guestUser = { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
-          return (
-            <Route
-              path="/guest"
-              element={
-                user
-                  ? <Navigate to={isMobileDevice ? '/m' : '/overview'} replace />
-                  : (
-                    <GuestProvider>
-                      <GuestGateProvider>
-                        <DashboardLayout user={guestUser} />
-                      </GuestGateProvider>
-                    </GuestProvider>
-                  )
-              }
-            >
-              <Route index element={
-                <Lazy>
-                  <>
-                    {React.createElement(React.lazy(() => import('./pages/Overview')), { user: { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true } })}
-                    <GuestTour />
-                  </>
-                </Lazy>
-              } />
-            </Route>
-          );
-        })()}
+        {/* ── Guest Mode specific route starts here ── */}
+        <Route path="/guest" element={<Navigate to="/overview?guest=true" replace />} />
 
-        {/* ── Authenticated shell ── */}
-        <Route element={user ? <DashboardLayout user={user} /> : <Navigate to="/login" replace />}>
-          <Route path="/overview" element={<Lazy><Overview user={user} /></Lazy>} />
+        {/* ── Authenticated / Guest shell ── */}
+        <Route element={
+          user ? <DashboardLayout user={user} /> : 
+          <GuestProvider><GuestGateProvider><DashboardLayout user={{ id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></GuestGateProvider></GuestProvider>
+        }>
+          <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} />{!user && <GuestTour />}</Lazy>} />
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
           <Route path="/reports" element={<Lazy><ReportsPage /></Lazy>} />
-          <Route path="/sports" element={<Lazy><SportsPage /></Lazy>} />
+          <Route path="/sports" element={<Lazy>{!user || user.isGuest ? <Navigate to="/overview" replace /> : <SportsPage />}</Lazy>} />
           <Route path="/journal" element={<Lazy><JournalPage /></Lazy>} />
           <Route path="/finance" element={<Lazy><Finance /></Lazy>} />
           <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
@@ -153,19 +129,19 @@ function AppContent({ user }) {
           <Route path="/notes"       element={<Lazy><NotesPage /></Lazy>} />
           <Route path="/discipline"  element={<Lazy><DisciplinePage /></Lazy>} />
           <Route path="/focus"       element={<Lazy><FocusRoom /></Lazy>} />
-          <Route path="/ats"         element={<Lazy><ATSAnalyzer /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}
         <Route path="/m" element={user ? <MobileApp user={user} /> : <Navigate to="/login" replace />} />
 
-        {/* ── Public legal ── */}
+        {/* ── Public legal & brand ── */}
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/data-deletion" element={<DataDeletion />} />
         <Route path="/security" element={<Security />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/brand" element={<Brand />} />
 
         {/* ── 404 ── */}
         <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/guest'} replace />} />

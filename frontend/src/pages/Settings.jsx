@@ -416,7 +416,7 @@ const Settings = () => {
             },
             {
               icon: '🗄️',
-              name: 'Neon PostgreSQL',
+              name: 'Supabase PostgreSQL',
               desc: 'All data stored securely in your personal database',
               status: 'Connected',
               color: '#10B981',
@@ -424,9 +424,9 @@ const Settings = () => {
             },
             {
               icon: '☁️',
-              name: 'AWS Lambda',
-              desc: 'Serverless backend for all API calls — zero server cost',
-              status: 'ap-south-1 · Active',
+              name: 'Vercel Functions',
+              desc: 'Serverless backend for all API calls',
+              status: 'Production · Active',
               color: '#F59E0B',
               active: true,
             },
@@ -510,8 +510,8 @@ const Settings = () => {
         <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
           {[
             { label: 'App Version', value: 'AIIMIN v3.1' },
-            { label: 'Backend', value: 'AWS Lambda · Hono' },
-            { label: 'Database', value: 'Neon PostgreSQL' },
+            { label: 'Backend', value: 'Vercel · Hono' },
+            { label: 'Database', value: 'Supabase PostgreSQL' },
           ].map((info, i) => (
             <div key={i} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-3)', marginBottom: '4px' }}>{info.label}</div>

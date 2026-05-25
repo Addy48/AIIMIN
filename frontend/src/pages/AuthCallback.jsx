@@ -35,10 +35,19 @@ const AuthCallback = () => {
             return;
         }
 
-        // Login flow: Supabase verify endpoint redirects here with tokens in URL hash
-        // e.g. /auth/callback#access_token=xxx&refresh_token=xxx&...
-        // The Supabase JS client auto-detects and processes these hash fragments.
-        // We just need to wait for the session to be established.
+        const code = searchParams.get('code');
+
+        if (code) {
+            supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+                if (error) {
+                    setError(error.message || 'Authentication failed');
+                    setTimeout(() => navigate('/login'), 3000);
+                } else {
+                    navigate('/');
+                }
+            });
+            return;
+        }
 
         // Listen for auth state change (fires when Supabase processes the hash)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
