@@ -131,6 +131,7 @@ export default function TypingTest({ onComplete, onClose }) {
     const accent = 'var(--color-accent)';
     const surface = 'var(--color-surface)';
     const border = 'var(--color-border)';
+    const elevated = 'var(--color-elevated)';
     const errorColor = '#ff4d4d';
 
     return (
