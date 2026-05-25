@@ -166,94 +166,98 @@ export default function TypingTest({ onComplete, onClose }) {
                 />
             )}
 
-            {/* Header & Controls */}
-            <AnimatePresence>
-                {phase !== 'done' && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center',
-                            background: surface,
-                            backdropFilter: 'blur(20px)',
-                            padding: '12px 24px',
-                            borderRadius: '20px',
-                            border: `1px solid ${border}`
-                        }}
-                    >
-                        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', gap: '8px', color: text3, fontSize: '12px', fontWeight: 700 }}>
-                                <Clock size={14} /> Time
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                {[15, 30, 60].map(t => (
-                                    <button
-                                        key={t}
-                                        onClick={() => setConfig({ time: t, isCustom: false })}
-                                        style={{
-                                            background: 'none',
-                                            border: 'none',
-                                            color: !config.isCustom && config.time === t ? accent : text3,
-                                            fontSize: '13px',
-                                            fontWeight: 700,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            transform: !config.isCustom && config.time === t ? 'scale(1.1)' : 'scale(1)'
-                                        }}
-                                    >
-                                        {t}
-                                    </button>
-                                ))}
-                                <button
-                                    onClick={() => setConfig({ ...config, isCustom: true })}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: config.isCustom ? accent : text3,
-                                        fontSize: '13px',
-                                        fontWeight: 700,
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    Custom
-                                </button>
-                                {config.isCustom && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <input 
-                                            type="number"
-                                            value={customTime}
-                                            onChange={(e) => setCustomTime(Math.max(5, parseInt(e.target.value) || 5))}
+            {/* Main Split Layout */}
+            <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
+                
+                {/* LEFT SIDE: CONTROLS */}
+                <AnimatePresence>
+                    {phase !== 'done' && (
+                        <motion.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            style={{ 
+                                display: 'flex', 
+                                flexDirection: 'column',
+                                gap: '24px', 
+                                background: surface,
+                                backdropFilter: 'blur(20px)',
+                                padding: '32px 24px',
+                                borderRadius: '24px',
+                                border: `1px solid ${border}`,
+                                width: '220px',
+                                flexShrink: 0
+                            }}
+                        >
+                            <div style={{ fontSize: '12px', fontWeight: 800, color: text3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Settings</div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'flex', gap: '8px', color: text1, fontSize: '14px', fontWeight: 700, alignItems: 'center' }}>
+                                    <Clock size={16} /> Time Limit
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    {[15, 30, 60].map(t => (
+                                        <button
+                                            key={t}
+                                            onClick={() => setConfig({ time: t, isCustom: false })}
                                             style={{
-                                                width: '50px',
-                                                background: 'transparent',
-                                                border: `1px solid ${accent}`,
-                                                borderRadius: '4px',
-                                                color: accent,
-                                                fontSize: '12px',
-                                                textAlign: 'center',
-                                                padding: '2px',
-                                                outline: 'none'
+                                                background: !config.isCustom && config.time === t ? `${accent}15` : 'transparent',
+                                                border: `1px solid ${!config.isCustom && config.time === t ? accent : 'transparent'}`,
+                                                color: !config.isCustom && config.time === t ? accent : text3,
+                                                padding: '10px 16px',
+                                                borderRadius: '8px',
+                                                fontSize: '14px',
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                textAlign: 'left',
+                                                transition: 'all 0.2s',
                                             }}
-                                        />
-                                        <button onClick={() => setConfig({ ...config, isCustom: false, time: 60 })} style={{ background:'transparent', border:'none', color:text3, cursor:'pointer', padding:'2px', display:'flex', alignItems:'center', justifyContent:'center', borderRadius:'4px' }}>
-                                            ✕
+                                        >
+                                            {t} seconds
                                         </button>
+                                    ))}
+                                    
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                                        <button
+                                            onClick={() => setConfig({ ...config, isCustom: true })}
+                                            style={{
+                                                background: 'transparent',
+                                                border: 'none',
+                                                color: config.isCustom ? accent : text3,
+                                                fontSize: '14px',
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                padding: '0'
+                                            }}
+                                        >
+                                            Custom:
+                                        </button>
+                                        {config.isCustom && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <input 
+                                                    type="number"
+                                                    value={customTime}
+                                                    onChange={(e) => setCustomTime(Math.max(5, parseInt(e.target.value) || 5))}
+                                                    style={{
+                                                        width: '50px', background: 'transparent', border: `1px solid ${accent}`,
+                                                        borderRadius: '6px', color: accent, fontSize: '13px', textAlign: 'center',
+                                                        padding: '4px', outline: 'none'
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+                                </div>
                             </div>
-                        </div>
 
-                         <div style={{ display: 'flex', gap: '24px' }}>
-                           <button onClick={resetTest} style={{ background: 'var(--color-surface)', border: `1px solid ${border}`, color: text3, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 600, padding: '8px 16px', borderRadius: '10px' }}>
-                               <RefreshCw size={14} /> Reset
-                           </button>
-                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                            <div style={{ width: '100%', height: '1px', background: border, margin: '8px 0' }} />
+
+                            <button onClick={resetTest} style={{ background: elevated, border: `1px solid ${border}`, color: text1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, padding: '12px 16px', borderRadius: '12px', transition: 'all 0.2s' }}>
+                                <RefreshCw size={14} /> Restart Test
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
             <div style={{ position: 'relative', flex: 1 }}>
                 <AnimatePresence mode="wait">
@@ -476,12 +480,14 @@ export default function TypingTest({ onComplete, onClose }) {
                 </AnimatePresence>
             </div>
 
+            </div> {/* End Main Split Layout */}
+
             {/* Bottom Tip */}
             {phase === 'ready' && (
                 <motion.div 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    style={{ textAlign: 'center', color: text3, fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em' }}
+                    style={{ textAlign: 'center', color: text3, fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', position: 'absolute', bottom: '20px', width: '100%' }}
                 >
                     TYPE TO START
                 </motion.div>

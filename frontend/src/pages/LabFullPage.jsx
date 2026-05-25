@@ -76,6 +76,13 @@ export default function LabFullPage() {
     { key: "personality",emoji: "🧬",  label: "Personality Forge",desc: "Core trait & value alignment",  color: "#EC4899" },
     { key: "pit",       emoji: "⛓️",  label: "The Pit",        desc: "Hard-mode & resilience logs",   color: "#EF4444" },
     { key: "reading",    emoji: "📖",  label: "Reading Log",    desc: "Log books, articles & ratings",  color: "#10B981" },
+    { key: "aptitude", emoji: "🧠", label: "Aptitude Tests", desc: "Logical reasoning & pattern recognition", color: "#F59E0B" },
+    { key: "quant", emoji: "📐", label: "Quantitative Maths", desc: "Speed math for screening rounds", color: "#F97316" },
+    { key: "techsim", emoji: "💻", label: "Tech Simulator", desc: "Code output prediction & tricky MCQs", color: "#06B6D4" },
+    { key: "star", emoji: "⭐", label: "STAR Method", desc: "Behavioral interview storytelling", color: "#EAB308" },
+    { key: "resume", emoji: "📄", label: "Resume ATS Matcher", desc: "Match your resume against Job Descriptions", color: "#6366F1" },
+    { key: "flashcards", emoji: "🗂️", label: "Domain Flashcards", desc: "Spaced repetition for tech stacks", color: "#14B8A6" },
+    { key: "sysdesign", emoji: "🏗️", label: "System Design", desc: "Architecture whiteboard sandbox", color: "#8B5CF6" },
   ];
 
   return (
@@ -134,7 +141,14 @@ export default function LabFullPage() {
           speaking: { title: "Improvement Lab — Vocal Resonance Speech Logger", width: "1150px" },
           personality: { title: "Improvement Lab — Identity & Trait Sculptor", width: "780px" },
           pit: { title: "Improvement Lab — Self-Honesty Ledger & Challenges", width: "950px" },
-          reading: { title: "Improvement Lab — Intellect & Reading Log", width: "780px" }
+          reading: { title: "Improvement Lab — Intellect & Reading Log", width: "780px" },
+          aptitude: { title: "Improvement Lab — Aptitude & Logical Reasoning", width: "900px" },
+          quant: { title: "Improvement Lab — Quantitative Mathematics", width: "900px" },
+          techsim: { title: "Improvement Lab — Technical Interview Simulator", width: "1000px" },
+          star: { title: "Improvement Lab — STAR Behavioral Framework", width: "900px" },
+          resume: { title: "Improvement Lab — ATS Resume Matcher", width: "1100px" },
+          flashcards: { title: "Improvement Lab — Technical Flashcards", width: "800px" },
+          sysdesign: { title: "Improvement Lab — System Design Architecture", width: "1200px" },
         }[activeModule] || { title: "Improvement Lab module", width: "780px" };
 
         const winBg = isDark ? 'var(--color-surface)' : 'var(--color-overlay)';
@@ -204,6 +218,16 @@ export default function LabFullPage() {
                 {activeModule === "personality" && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
                 {activeModule === "pit"         && <ThePit userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
                 {activeModule === "reading"     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+                
+                {["aptitude", "quant", "techsim", "star", "resume", "flashcards", "sysdesign"].includes(activeModule) && (
+                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                    <div style={{ fontSize: "48px", marginBottom: "24px" }}>🚧</div>
+                    <h2 style={{ color: text1, fontSize: "24px", fontWeight: 700, marginBottom: "12px" }}>Module Under Construction</h2>
+                    <p style={{ color: text2, fontSize: "15px", maxWidth: "400px", margin: "0 auto", lineHeight: 1.6 }}>
+                      This BTech interview prep module is currently being built. Check back soon for the full interactive experience.
+                    </p>
+                  </div>
+                )}
               </div>
 
             </div>
