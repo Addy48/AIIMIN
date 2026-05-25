@@ -12,23 +12,61 @@ const STATES = ['clarity','scarcity','abundance','fear','growth','aimlessness','
 const STATE_ICONS = { clarity:'🔍', scarcity:'🪨', abundance:'🌊', fear:'🌑', growth:'🌱', aimlessness:'🌫️', focus:'🎯', noise:'📡' };
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-/* ── Trajectory progress bar ── */
-const ProgressRow = ({ label, val, color }) => (
-  <div style={{ marginBottom: '14px' }}>
-    <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'6px' }}>
-      <span style={{ fontSize:'11px', fontWeight:700, color:'var(--color-text-2)', textTransform:'uppercase', letterSpacing:'0.06em' }}>{label}</span>
-      <span style={{ fontSize:'11px', fontWeight:800, color }}>{val}%</span>
+/* ── Trajectory progress bar — smooth GPU-composited ── */
+const ProgressRow = ({ label, val, color, delay = 0 }) => {
+  const [displayed, setDisplayed] = React.useState(0);
+  const mounted = React.useRef(false);
+
+  // On mount: animate from 0 → val smoothly once
+  // After that: keep in sync with val via fast CSS transition (no re-trigger of framer)
+  React.useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      const t = setTimeout(() => setDisplayed(val), 60 + delay);
+      return () => clearTimeout(t);
+    }
+    setDisplayed(val);
+  }, [val]); // eslint-disable-line
+
+  return (
+    <div style={{ marginBottom: '16px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>
+        <span style={{ fontSize: '11px', fontWeight: 800, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{Number(val).toFixed(4)}%</span>
+      </div>
+      <div style={{ height: '6px', background: 'var(--color-border)', borderRadius: '99px', overflow: 'hidden', position: 'relative' }}>
+        {/* Glow track */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: `linear-gradient(90deg, transparent 0%, ${color}22 100%)`,
+          borderRadius: '99px',
+        }} />
+        {/* Animated fill */}
+        <div style={{
+          height: '100%',
+          width: `${displayed}%`,
+          background: `linear-gradient(90deg, ${color}cc, ${color})`,
+          borderRadius: '99px',
+          transition: mounted.current
+            ? 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+            : 'none',
+          willChange: 'width',
+          position: 'relative',
+          boxShadow: `0 0 8px ${color}66`,
+        }}>
+          {/* Shimmer tip */}
+          <div style={{
+            position: 'absolute', right: 0, top: 0, bottom: 0,
+            width: '12px',
+            background: `radial-gradient(ellipse at right, ${color}ff 0%, transparent 100%)`,
+            borderRadius: '99px',
+          }} />
+        </div>
+      </div>
     </div>
-    <div style={{ height:'5px', background:'var(--color-border)', borderRadius:'99px', overflow:'hidden' }}>
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${val}%` }}
-        transition={{ duration: 0.8, ease: [0.16,1,0.3,1], delay: 0.2 }}
-        style={{ height:'100%', background: color, borderRadius:'99px' }}
-      />
-    </div>
-  </div>
-);
+  );
+};
+
 
 /* ── Quick Check-In ── */
 const QuickCheckIn = ({ user }) => {
@@ -369,10 +407,10 @@ const Overview = () => {
           {/* Trajectory */}
           <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
             <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'24px' }}>Trajectory Execution</div>
-            <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" />
-            <ProgressRow label="Monthly" val={progress.month} color="#3B82F6" />
-            <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B" />
-            <ProgressRow label="Daily"   val={progress.day}   color="#EC4899" />
+            <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" delay={0}   />
+            <ProgressRow label="Monthly" val={progress.month} color="#3B82F6"              delay={80}  />
+            <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B"              delay={160} />
+            <ProgressRow label="Daily"   val={progress.day}   color="#EC4899"              delay={240} />
           </div>
 
         </div>
