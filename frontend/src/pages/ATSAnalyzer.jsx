@@ -1,10 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { FileSearch, Upload, Copy, Check, AlertCircle, X, Zap } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { apiPost } from '../utils/api';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-const API = process.env.REACT_APP_API_URL || '/api';
-
 const MOCK_RESULT = {
   matchScore: 62,
   matchedKeywords: ['python','sql','machine','learning','data','api','rest','agile','docker','postgres','git','analytics','dashboard','pipeline','model'],
@@ -273,22 +272,14 @@ export default function ATSAnalyzer() {
     }
 
     try {
-      const form = new FormData();
-      form.append('jd', jd);
-      form.append('resume_text', resumeText);
-
-      const res = await fetch(`${API}/ats/analyze`, {
-        method: 'POST',
-        headers: { 'credentials': 'include' },
-        credentials: 'include',
-        body: form,
+      const data = await apiPost('/ats/analyze', {
+        jd,
+        resume_text: resumeText,
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Analysis failed');
       setResult(data);
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      setError(err.response?.data?.error || err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }

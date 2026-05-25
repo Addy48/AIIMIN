@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Wifi } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { apiGet, apiPost } from '../utils/api';
 
 const Sports = () => {
   const navigate = useNavigate();
@@ -10,24 +11,14 @@ const Sports = () => {
   const [activeTab, setActiveTab] = useState('Cricket'); // 'Cricket' | 'Football' | 'Formula 1'
   const [refreshing, setRefreshing] = useState(false);
 
-  const [feed, setFeed] = useState(null);
+  const [, setFeed] = useState(null);
 
   const fetchScores = async (isRefresh = false) => {
     setRefreshing(true);
     try {
       const endpoint = isRefresh ? '/sports/refresh' : '/sports';
-      const method = isRefresh ? 'POST' : 'GET';
-      const response = await fetch('/api' + endpoint, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('aiimin_session_fallback') || ''}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setFeed(data.data || data); // handle both direct feed or wrapped data
-      }
+      const data = isRefresh ? await apiPost(endpoint, {}) : await apiGet(endpoint);
+      setFeed(data.data || data); // handle both direct feed or wrapped data
     } catch (err) {
       console.error('Failed to sync sports:', err);
     } finally {

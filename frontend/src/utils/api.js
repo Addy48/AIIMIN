@@ -1,4 +1,5 @@
 import axios from 'axios';
+import supabase from './supabase';
 
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -9,16 +10,21 @@ const api = axios.create({
 
 export const buildAuthHeaders = (extraHeaders = {}) => ({
     'Content-Type': 'application/json',
-    // Fallback if cookies aren't working locally
-    Authorization: `Bearer ${localStorage.getItem('aiimin_session_fallback') || ''}`,
+    Authorization: `Bearer ${typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') || '' : ''}`,
     ...extraHeaders,
 });
 
+export const getCurrentAccessToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || '';
+};
+
 const resolveHeaders = async ({ headers = {}, json = true } = {}) => {
+    const token = await getCurrentAccessToken();
     const baseHeaders = json ? buildAuthHeaders(headers) : {
-        Authorization: `Bearer ${localStorage.getItem('aiimin_session_fallback') || ''}`,
         ...headers,
     };
+    baseHeaders.Authorization = `Bearer ${token}`;
     return baseHeaders;
 };
 

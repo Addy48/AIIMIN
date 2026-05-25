@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import toast from '../utils/toast';
-import { apiGet, apiPost, apiPut, apiDelete, API_URL } from '../utils/api';
+import { apiGet, apiPost, apiPut, apiDelete, API_URL, getCurrentAccessToken } from '../utils/api';
 import { X, FileSearch, FileText } from 'lucide-react';
 import ATSAnalyzer from './ATSAnalyzer';
 
@@ -151,7 +151,7 @@ export default function Placements() {
           method: 'POST',
           body: formData,
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('aiimin_session_fallback') || ''}`
+            'Authorization': `Bearer ${await getCurrentAccessToken()}`
           }
         }).then(r => {
             if (!r.ok) throw new Error('Upload failed');
