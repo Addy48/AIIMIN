@@ -1076,7 +1076,7 @@ wealthRoutes.get('/ai-summary', requireAuth, async (c) => {
         const netFlow = totalIncome - totalExpense;
 
         // Try NVIDIA API for natural language summary
-        const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || 'REDACTED_NVIDIA_API_KEY';
+        const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
         let aiSummary = null;
         let aiStatus = 'success';
 
@@ -1183,4 +1183,3 @@ Do not include markdown formatting like \`\`\`json.`;
 });
 
 export default wealthRoutes;
-

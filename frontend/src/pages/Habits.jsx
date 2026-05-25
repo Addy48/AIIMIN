@@ -343,7 +343,7 @@ const Habits = () => {
             <div style={{ fontSize: '28px', fontWeight: 900, color: pct === 100 ? '#22C55E' : 'var(--color-accent)', lineHeight: 1 }}>{completedToday}/{habits.length}</div>
             <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 700, marginTop: '3px' }}>today's habits</div>
           </div>
-          <button onClick={() => setAdding(true)}
+          <button onClick={() => window.location.search.includes('guest') ? window.dispatchEvent(new CustomEvent('guest-gate', {detail: 'create habits'})) : setAdding(true)}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-accent)', border: 'none', borderRadius: '14px', padding: '12px 18px', fontSize: '13px', fontWeight: 800, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
             <Plus size={15} /> New
           </button>

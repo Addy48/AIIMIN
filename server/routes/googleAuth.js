@@ -24,7 +24,7 @@ const SCOPES = [
 ];
 
 const createOAuthClient = () => {
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || 'https://api.aiimin.in/api/google/auth/callback';
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || 'https://aiimin.in/api/google/auth/callback';
     return new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
@@ -33,19 +33,9 @@ const createOAuthClient = () => {
 };
 
 app.get('/auth/google', async (c) => {
-    const client = createOAuthClient();
-    const state = crypto.randomUUID().replace(/-/g, '');
-    const expiresAt = new Date(Date.now() + STATE_TTL_MS).toISOString();
-
-    await pool.query(
-        `INSERT INTO public.oauth_states (state, is_login, expires_at) 
-         VALUES ($1, $2, $3)
-         ON CONFLICT (state) DO UPDATE SET is_login = EXCLUDED.is_login, expires_at = EXCLUDED.expires_at`,
-        [state, true, expiresAt]
-    );
-
-    const authUrl = client.generateAuthUrl({ access_type: 'offline', prompt: 'consent', scope: SCOPES, state });
-    return c.redirect(authUrl);
+    return c.json({
+        error: 'Use Supabase Google Auth for app login. This route is reserved for Calendar connection.',
+    }, 410);
 });
 
 app.get('/auth/init', requireAuth, async (c) => {
@@ -101,29 +91,7 @@ app.get('/auth/callback', async (c) => {
         let userId = stateData.user_id;
 
         if (stateData.is_login) {
-            let userResult = await pool.query('SELECT id, email FROM users WHERE email = $1', [email]);
-            if (userResult.rows.length === 0) {
-                userResult = await pool.query(
-                    `INSERT INTO users (email, full_name, username, timezone, avatar_url)
-                     VALUES ($1, $2, $3, $4, $5) RETURNING id, email`,
-                    [email, userInfo.data.name, '', 'Asia/Kolkata', userInfo.data.picture]
-                );
-            }
-            const user = userResult.rows[0];
-            userId = user.id;
-            
-            // Generate JWT
-            const jwt = await import('jsonwebtoken');
-            const token = jwt.default.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET || 'aiimin_super_secret_dev_key', { expiresIn: '30d' });
-            
-            const { setCookie } = await import('hono/cookie');
-            setCookie(c, 'aiimin_session', token, {
-                path: '/',
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'Lax',
-                maxAge: 30 * 24 * 60 * 60,
-            });
+            return c.redirect(`${frontendUrl}/auth/callback?status=error&reason=use_supabase_google_login`);
         }
 
         if (userId) {

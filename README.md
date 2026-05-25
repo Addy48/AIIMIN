@@ -51,7 +51,7 @@ People who want to improve themselves face a fragmentation problem: their gym da
 │   /frontend/build          │   /api/index.js                │
 │                            │   (Vercel Serverless)          │
 │  ┌──────────┐              │                                │
-│  │ Desktop  │─────────────►│  /api/auth         JWT + bcrypt│
+│  │ Desktop  │─────────────►│  /api/auth         Supabase Auth│
 │  │Dashboard │              │  /api/daily-logs   UPSERT logs │
 │  └──────────┘              │  /api/dashboard    Aggregate   │
 │  ┌──────────┐              │  /api/lab          Intelligence│
@@ -64,8 +64,8 @@ People who want to improve themselves face a fragmentation problem: their gym da
                                              │
                                              ▼
                               ┌──────────────────────────┐
-                              │   Neon PostgreSQL         │
-                              │   (Serverless, auto-scale)│
+                              │   Supabase PostgreSQL     │
+                              │   (Auth + RLS + storage)  │
                               │                           │
                               │  30+ tables               │
                               │  daily_logs, users,       │
@@ -83,8 +83,8 @@ People who want to improve themselves face a fragmentation problem: their gym da
 1. React app at `aiimin.in` makes `fetch('/api/...')` calls
 2. Vercel routes `/api/*` → `api/index.js` (serverless function, Node.js runtime)
 3. Hono router dispatches to the correct handler
-4. Handler runs `pool.query()` against Neon PostgreSQL (connection pooled, TLS)
-5. JWT session stored in `httpOnly` cookie; fallback Bearer token for mobile
+4. Handler verifies the Supabase access token and syncs the profile row
+5. Handler runs `pool.query()` against Supabase PostgreSQL with RLS-backed ownership rules
 
 ---
 
@@ -96,10 +96,10 @@ People who want to improve themselves face a fragmentation problem: their gym da
 | **Styling** | Tailwind CSS + Custom CSS vars | Locked color palette, dark/light theming |
 | **Charts** | Recharts | Declarative, composable chart library |
 | **API Server** | Hono 4.x (Vercel Serverless) | Lightweight, edge-ready, zero cold starts |
-| **Auth** | JWT (`jsonwebtoken`) + `bcryptjs` | Stateless, httpOnly cookies, no vendor lock-in |
-| **Database** | PostgreSQL via Neon | Serverless Postgres, scales to zero, free tier |
+| **Auth** | Supabase Auth | Canonical user sessions, Google login, verified API tokens |
+| **Database** | Supabase PostgreSQL | Managed Postgres with RLS policies and service-role server access |
 | **File Storage** | Vercel Blob | Integrated, private access, zero config |
-| **OAuth** | Google OAuth 2.0 (googleapis) | Calendar sync + Google login |
+| **OAuth** | Supabase Google Auth + Google OAuth 2.0 (googleapis) | App login via Supabase; Calendar connection via backend OAuth |
 | **Hosting** | Vercel Hobby (frontend + API) | Free, global CDN, Git auto-deploy |
 | **Excel parsing** | SheetJS (xlsx) | Import bank statements / budget exports |
 | **PDF export** | jsPDF (client-side) | Monthly report downloads without a server |
@@ -189,11 +189,13 @@ cd frontend && npm install
 Create `.env` in the project root:
 
 ```env
-# Database (Neon PostgreSQL)
-DATABASE_URL=postgresql://user:pass@host/neondb?sslmode=require
+# Database (Supabase PostgreSQL)
+DATABASE_URL=postgresql://postgres:password@host/postgres?sslmode=require
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Auth
-JWT_SECRET=your-secret-here
+NVIDIA_API_KEY=server-only-nvidia-key
 TOKEN_ENCRYPTION_KEY=64-char-hex-string
 
 # Google OAuth (optional – for Calendar sync)
@@ -284,7 +286,7 @@ AIIMIN/
 │   │   ├── dashboard/            StatCard, WeekRows, QuickCapture
 │   │   ├── habits/               HabitManager, StreakAnalytics
 │   │   └── notifications/        Bell + slide-in panel
-│   ├── context/                  AuthContext (JWT + Google OAuth)
+│   ├── context/                  AuthContext (Supabase Auth + Google login)
 │   ├── hooks/                    useAuth, useTheme, useLabSummary…
 │   └── utils/
 │       ├── xpEngine.js           XP calc, rank thresholds, quests, achievements
@@ -292,7 +294,7 @@ AIIMIN/
 │       └── api.js                Axios instance with /api base URL
 │
 ├── vercel.json                   Routing: /api/* → serverless, /* → React
-├── package.json                  Root deps: hono, pg, googleapis, bcryptjs…
+├── package.json                  Root deps: hono, pg, googleapis, supabase-js…
 └── .env                          Local secrets (git-ignored)
 ```
 

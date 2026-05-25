@@ -1,6 +1,6 @@
 /**
  * routes/dashboard.js
- * Aggregate dashboard endpoint — uses pool.query() (Neon PostgreSQL direct).
+ * Aggregate dashboard endpoint — uses pool.query() against Supabase PostgreSQL.
  */
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';

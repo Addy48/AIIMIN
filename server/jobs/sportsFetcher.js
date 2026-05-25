@@ -2,7 +2,7 @@ import { updateSportsCache } from '../services/sportsCacheService.js';
 
 /**
  * Scheduled Lambda Handler for SST Cron Task.
- * Refreshes the Neon PostgreSQL cache for ESPN, CricAPI, and Jolpi sports feeds.
+ * Refreshes the Supabase PostgreSQL cache for ESPN, CricAPI, and Jolpi sports feeds.
  */
 export const handler = async (event) => {
   console.log('[Cron] Scheduled sports fetcher job started at:', new Date().toISOString());
