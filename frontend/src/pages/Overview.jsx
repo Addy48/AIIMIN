@@ -81,6 +81,12 @@ const QuickCheckIn = ({ user }) => {
     setSaving(true);
     const today = new Date().toISOString().split('T')[0];
     try {
+      if (user.isGuest) {
+        setSaved(true);
+        setNote('');
+        setTimeout(() => setSaved(false), 3000);
+        return;
+      }
       await supabase.from('daily_logs').insert({ user_id: user.id, mood: vals.mood, energy_level: vals.energy, focus_score: vals.focus, logged_at: new Date().toISOString() });
       await supabase.from('lab_mindset_logs').insert({ user_id: user.id, state, note: note.trim() || null, day_of: today, logged_at: new Date().toISOString() });
       setSaved(true);
@@ -200,7 +206,8 @@ const WeekCell = ({ day, isToday }) => {
 
 /* ── Main Overview ── */
 const Overview = () => {
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const user = authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
 
   const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
 
