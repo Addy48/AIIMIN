@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -124,6 +124,8 @@ const STEPS = [
   },
 ];
 
+const TOUR_POS_KEY = 'aiimin_tour_pos_v1';
+
 const GuestTour = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -131,6 +133,25 @@ const GuestTour = () => {
   const [step, setStep] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
   const [navigating, setNavigating] = useState(false);
+
+  const getInitialPos = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(TOUR_POS_KEY));
+      if (saved && typeof saved.x === 'number') return saved;
+    } catch {}
+    return { x: 0, y: 0 };
+  };
+
+  const [pos, setPos] = useState(getInitialPos);
+  const [isDragging, setIsDragging] = useState(false);
+  const constraintsRef = useRef(null);
+
+  const handleDragEnd = useCallback((_, info) => {
+    const newPos = { x: pos.x + info.offset.x, y: pos.y + info.offset.y };
+    setPos(newPos);
+    localStorage.setItem(TOUR_POS_KEY, JSON.stringify(newPos));
+    setTimeout(() => setIsDragging(false), 100);
+  }, [pos]);
 
   useEffect(() => {
     const seen = sessionStorage.getItem(TOUR_KEY);
@@ -182,11 +203,17 @@ const GuestTour = () => {
   const Pill = (
     <motion.button
       key="pill"
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 50 }}
+      drag
+      dragMomentum={false}
+      dragElastic={0.08}
+      dragConstraints={constraintsRef}
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={handleDragEnd}
+      initial={{ opacity: 0, x: 50 + pos.x, y: pos.y }}
+      animate={{ opacity: 1, x: pos.x, y: pos.y }}
+      exit={{ opacity: 0, x: 50 + pos.x, y: pos.y }}
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-      onClick={() => setCollapsed(false)}
+      onClick={() => { if (!isDragging) setCollapsed(false); }}
       style={{
         position: 'fixed',
         bottom: '90px',
@@ -233,9 +260,15 @@ const GuestTour = () => {
   const Panel = (
     <motion.div
       key="panel"
-      initial={{ opacity: 0, x: 60, scale: 0.95 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 60, scale: 0.95 }}
+      drag
+      dragMomentum={false}
+      dragElastic={0.08}
+      dragConstraints={constraintsRef}
+      onDragStart={() => setIsDragging(true)}
+      onDragEnd={handleDragEnd}
+      initial={{ opacity: 0, x: 60 + pos.x, y: pos.y, scale: 0.95 }}
+      animate={{ opacity: 1, x: pos.x, y: pos.y, scale: 1 }}
+      exit={{ opacity: 0, x: 60 + pos.x, y: pos.y, scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 280, damping: 26 }}
       style={{
         position: 'fixed',
@@ -441,9 +474,12 @@ const GuestTour = () => {
   );
 
   return (
-    <AnimatePresence>
-      {visible && (collapsed ? Pill : Panel)}
-    </AnimatePresence>
+    <>
+      <div ref={constraintsRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 8999 }} />
+      <AnimatePresence>
+        {visible && (collapsed ? Pill : Panel)}
+      </AnimatePresence>
+    </>
   );
 };
 
