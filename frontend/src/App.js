@@ -113,7 +113,7 @@ function AppContent({ user }) {
           user ? <DashboardLayout user={user} /> : 
           <GuestProvider><GuestGateProvider><DashboardLayout user={{ id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></GuestGateProvider></GuestProvider>
         }>
-          <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} />{!user && <GuestTour />}</Lazy>} />
+          <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
           <Route path="/reports" element={<Lazy><ReportsPage /></Lazy>} />
@@ -173,7 +173,7 @@ function AppContent({ user }) {
       {/* Global Widgets */}
       {!isMobileRoute && user && <ProductTour />}
       {!isMobileRoute && user && <FeedbackWidget />}
-      {/* GuestTour is rendered inside the /guest route itself */}
+      {!isMobileRoute && !user && <GuestTour />}
     </div>
   );
 }
