@@ -108,6 +108,9 @@ const AccountModal = ({ isOpen, onClose }) => {
     const [exporting, setExporting] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState('');
     const [deleting, setDeleting] = useState(false);
+    const [execWindow, setExecWindow] = useState(() => {
+        return Number(localStorage.getItem('aiimin_execution_window')) || 61;
+    });
     const modalRef = useRef();
 
     useEffect(() => {
@@ -279,7 +282,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                     <div className="settings-grid">
                         <div className="settings-panel-grid">
                             <Section title="Profile">
-                                <Row label="Name" border={false}>
+                                <Row label="Name" border={true}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
                                             {profile?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'Unnamed'}
@@ -298,6 +301,35 @@ const AccountModal = ({ isOpen, onClose }) => {
                                                 ✎
                                             </button>
                                         )}
+                                    </div>
+                                </Row>
+                                <Row label="Execution Timeline" border={false}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            max="365"
+                                            value={execWindow} 
+                                            onChange={e => {
+                                                const val = Math.max(1, Math.min(365, Number(e.target.value) || 61));
+                                                setExecWindow(val);
+                                                localStorage.setItem('aiimin_execution_window', val.toString());
+                                                window.dispatchEvent(new Event('storage'));
+                                            }}
+                                            style={{
+                                                width: '60px',
+                                                padding: '6px 10px',
+                                                borderRadius: '8px',
+                                                border: '1px solid var(--border)',
+                                                background: 'var(--bg-elevated)',
+                                                color: 'var(--text-1)',
+                                                textAlign: 'center',
+                                                fontWeight: 700,
+                                                fontSize: '13px',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                        <span style={{ fontSize: '12px', color: 'var(--text-3)', fontWeight: 600 }}>Days</span>
                                     </div>
                                 </Row>
                                 {isEditingProfile && (

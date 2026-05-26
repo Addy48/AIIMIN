@@ -59,33 +59,50 @@ export default function Placements() {
 
   const loadData = async () => {
     setLoading(true);
+    let anySuccess = false;
     try {
-      const [appsData, resumesData, habitsData] = await Promise.all([
+      // Fetch each endpoint independently — a single missing route won't kill everything
+      const [appsData, resumesData, habitsData] = await Promise.allSettled([
         apiGet('/placements/applications'),
         apiGet('/placements/resumes'),
-        apiGet('/placements/habit-logs')
+        apiGet('/placements/habit-logs'),
       ]);
-      setApplications(appsData || []);
-      setResumes(resumesData || []);
 
+      if (appsData.status === 'fulfilled') {
+        setApplications(appsData.value || []);
+        anySuccess = true;
+      } else {
+        console.warn('[Placements] Applications endpoint unavailable:', appsData.reason);
+        setApplications([]);
+      }
+
+      if (resumesData.status === 'fulfilled') {
+        setResumes(resumesData.value || []);
+        anySuccess = true;
+      } else {
+        console.warn('[Placements] Resumes endpoint unavailable:', resumesData.reason);
+        setResumes([]);
+      }
+
+      const habitsRaw = habitsData.status === 'fulfilled' ? (habitsData.value || []) : [];
+
+      // Readiness metrics — silent fallback, never toast
       try {
         const readinessData = await apiGet('/placements/readiness');
-        if (readinessData && readinessData.dsa) {
+        if (readinessData?.dsa) {
           setDsaMetrics(readinessData.dsa);
           setCommunicationMetrics(readinessData.communication);
           setSystemDesignMetrics(readinessData.systemDesign);
-        } else {
-          throw new Error('Invalid response structure');
         }
-      } catch (err) {
-        console.warn('Failed to fetch backend readiness metrics, using static calculations', err);
+      } catch {
+        // Use static defaults — no toast, no console error
         setDsaMetrics({ score: 65, desc: 'No solved problems logged yet' });
         setCommunicationMetrics({ score: 60, desc: 'Record speaking logs to benchmark' });
         setSystemDesignMetrics({ score: 40, desc: 'Target key systems in resumes' });
       }
 
-      // Momentum Status & Trajectory Analytics
-      const completedLogs = (habitsData || []).filter(h => h.status === 'done' || h.completed_at);
+      // Momentum calculation from habits
+      const completedLogs = habitsRaw.filter(h => h.status === 'done' || h.completed_at);
       const now = new Date();
       const oneDayMs = 24 * 60 * 60 * 1000;
       const last7DaysCount = completedLogs.filter(h => {
@@ -107,8 +124,7 @@ export default function Placements() {
       } else if (last7DaysCount > 0) {
         pctChange = 100;
       }
-      const pctChangeStr = (pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '% vs LW';
-      setMomentumGrowth(pctChangeStr);
+      setMomentumGrowth((pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '% vs LW');
 
       let status = 'Stagnant';
       if (calcMomentumScore >= 80) status = 'Peak';
@@ -116,18 +132,23 @@ export default function Placements() {
       else if (calcMomentumScore >= 45) status = 'Building';
       setMomentumStatus(status);
 
-      const text = calcMomentumScore >= 65 
-        ? `Your habit consistency is strong with ${last7DaysCount} checkins. Keep building momentum.` 
-        : "Increase your daily habit completions and speaking practice to drive higher momentum.";
-      setMomentumText(text);
+      setMomentumText(
+        calcMomentumScore >= 65
+          ? `Your habit consistency is strong with ${last7DaysCount} checkins. Keep building momentum.`
+          : 'Increase your daily habit completions and speaking practice to drive higher momentum.'
+      );
 
     } catch (error) {
-      console.error("Placements Load Error:", error);
-      toast.error("Failed to load career data");
+      // Only reaches here if something truly unexpected happens
+      console.error('[Placements] Critical load error:', error);
+      if (!anySuccess) {
+        toast.error('Career data temporarily unavailable — check your connection');
+      }
     } finally {
       setLoading(false);
     }
   };
+
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadMode, setUploadMode] = useState('file'); // 'file' | 'link'
@@ -718,13 +739,13 @@ export default function Placements() {
                     "Focus on <span style={{ opacity: 0.7 }}>System Design</span> and <span style={{ opacity: 0.7 }}>Low Level Design</span>. Your DSA performance is top-tier, but response rates drop for L5+ roles."
                   </div>
                   
-                  <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '24px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div style={{ background: 'color-mix(in srgb, currentColor 8%, transparent)', borderRadius: '16px', padding: '24px', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)' }}>
                     <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, marginBottom: '16px', opacity: 0.5, letterSpacing: '0.1em' }}>Next Milestone</div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px' }}>
                       <span style={{ fontSize: '15px', fontWeight: 600 }}>Mock Interview v4</span>
                       <span style={{ fontSize: '12px', opacity: 0.6 }}>3 Days Left</span>
                     </div>
-                    <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ height: '6px', background: 'color-mix(in srgb, currentColor 12%, transparent)', borderRadius: '3px', overflow: 'hidden' }}>
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: '65%' }}

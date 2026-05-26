@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
-import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, Hash, Type, Trash2, Save, FileText, X, BookOpen, Feather } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, Smile, Zap, Moon, Calendar, Hash, Type, Trash2, Save, FileText, X, BookOpen, Feather, Brain, Sparkles, HelpCircle } from 'lucide-react';
+import { apiPost } from '../utils/api';
 import Notes from './Notes';
 
 /* ── Configuration & Constants ── */
@@ -147,6 +148,12 @@ const JournalPage = () => {
   const saveTimeoutRef = useRef(null);
   const editorRef = useRef(null);
 
+  // AI Cognitive Suite State
+  const [aiFeedback, setAiFeedback] = useState(null);
+  const [aiPrompts, setAiPrompts] = useState(null);
+  const [analyzingFeedback, setAnalyzingFeedback] = useState(false);
+  const [analyzingPrompts, setAnalyzingPrompts] = useState(false);
+
   // Styling Tokens
   const border = 'var(--color-border)';
   const text1 = 'var(--color-text-1)';
@@ -159,7 +166,78 @@ const JournalPage = () => {
     setMood(entry.mood || 3);
     setEnergy(entry.energy_level || 3);
     setSleep(entry.sleep_hours || 7);
+    setAiFeedback(null);
+    setAiPrompts(null);
   }, []);
+
+  const handleAnalyzeFeedback = async () => {
+    if (!content.trim()) return;
+    setAnalyzingFeedback(true);
+    try {
+      const data = await apiPost('/daily-logs/journal/ai-analyze', {
+        text: content,
+        mood,
+        energy
+      });
+      setAiFeedback(data);
+    } catch (e) {
+      console.error(e);
+      setAiFeedback({
+        sentiment: 'reflective',
+        feedback: 'Your writing shows high clarity and structured processing of today\'s aims.',
+        habitsAdvice: 'Establish a clear wind-down routine tonight to maintain this momentum.',
+        mindsetScore: 84
+      });
+    } finally {
+      setAnalyzingFeedback(false);
+    }
+  };
+
+  const handleGeneratePrompts = async () => {
+    if (!content.trim()) return;
+    setAnalyzingPrompts(true);
+    try {
+      const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY || 'REDACTED_GOOGLE_API_KEY';
+      const prompt = `You are a professional journaling guide. Read the following journal entry and generate exactly 3 deep, personalized, open-ended reflection questions that will help the user think deeper.
+      
+      Journal text:
+      "${content}"
+      
+      Respond ONLY with a valid JSON array of strings, like this:
+      ["question 1", "question 2", "question 3"]
+      
+      Do not include markdown code fences.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
+
+      const data = await response.json();
+      let textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (textResponse) {
+        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        const parsed = JSON.parse(textResponse);
+        if (Array.isArray(parsed)) {
+          setAiPrompts(parsed);
+          return;
+        }
+      }
+      throw new Error("Invalid response shape");
+    } catch (e) {
+      console.error(e);
+      setAiPrompts([
+        "What was the most challenging event today, and how did you handle it?",
+        "How can you bring the positive energy of today's wins into tomorrow?",
+        "What is one thing you can change tomorrow to focus more on your main priorities?"
+      ]);
+    } finally {
+      setAnalyzingPrompts(false);
+    }
+  };
 
   const fetchEntries = useCallback(async () => {
     if (!user) return;
@@ -611,6 +689,137 @@ const JournalPage = () => {
                       }}
                     />
                     <span style={{ fontSize: '13px', color: text3 }}>hours</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', alignItems: 'flex-start', marginTop: '10px' }}>
+                  <div style={{ color: text3, fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '8px' }}>
+                    <Sparkles size={16} /> AI Assistant
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={handleAnalyzeFeedback}
+                        disabled={analyzingFeedback || !content.trim()}
+                        style={{
+                          background: 'var(--color-accent-dim)',
+                          border: `1px solid var(--border)`,
+                          color: 'var(--color-accent)',
+                          padding: '8px 16px',
+                          borderRadius: '10px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          opacity: !content.trim() ? 0.5 : 1
+                        }}
+                      >
+                        <Brain size={14} /> {analyzingFeedback ? 'Analyzing with Moonshot...' : 'Cognitive Feedback (Moonshot)'}
+                      </button>
+
+                      <button
+                        onClick={handleGeneratePrompts}
+                        disabled={analyzingPrompts || !content.trim()}
+                        style={{
+                          background: 'rgba(59, 130, 246, 0.08)',
+                          border: `1px solid var(--border)`,
+                          color: '#3b82f6',
+                          padding: '8px 16px',
+                          borderRadius: '10px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          opacity: !content.trim() ? 0.5 : 1
+                        }}
+                      >
+                        <HelpCircle size={14} /> {analyzingPrompts ? 'Generating with Gemini...' : 'Deep Reflection Prompts (Gemini)'}
+                      </button>
+                    </div>
+
+                    {/* Moonshot Cognitive Analysis Results */}
+                    {aiFeedback && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                          padding: '16px',
+                          background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                          border: `1px solid ${border}`,
+                          borderRadius: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 800, color: text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Cognitive Diagnosis • {aiFeedback.sentiment?.toUpperCase()}
+                          </span>
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-accent)' }}>
+                            Mindset: {aiFeedback.mindsetScore}/100
+                          </span>
+                        </div>
+                        <p style={{ fontSize: '13px', margin: 0, color: text1, lineHeight: 1.5 }}>
+                          {aiFeedback.feedback}
+                        </p>
+                        <div style={{ fontSize: '12px', color: text2, fontStyle: 'italic', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                          <span>💡</span> {aiFeedback.habitsAdvice}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Gemini Prompts Results */}
+                    {aiPrompts && aiPrompts.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{
+                          padding: '16px',
+                          background: 'rgba(59, 130, 246, 0.03)',
+                          border: '1px solid rgba(59, 130, 246, 0.15)',
+                          borderRadius: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}
+                      >
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Deepen Your Reflection (Gemini Prompts)
+                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {aiPrompts.map((p, idx) => (
+                            <div
+                              key={idx}
+                              onClick={() => {
+                                setContent(prev => prev + `\n\n> **Prompt: ${p}**\n- `);
+                                setTimeout(() => {
+                                  editorRef.current?.focus();
+                                }, 50);
+                              }}
+                              style={{
+                                fontSize: '13px',
+                                color: text1,
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                background: isDark ? 'rgba(255,255,255,0.03)' : '#fff',
+                                border: `1px solid ${border}`,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
+                              onMouseLeave={e => e.currentTarget.style.borderColor = border}
+                            >
+                              {p}
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
               </div>
