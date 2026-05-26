@@ -70,12 +70,12 @@ function App() {
 }
 
 function AuthedApp() {
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
   if (loading) return <Fallback />;
-  return <AppContent user={user} />;
+  return <AppContent user={user} session={session} />;
 }
 
-function AppContent({ user }) {
+function AppContent({ user, session }) {
   const location = useLocation();
   const isMobileRoute = location.pathname === '/m';
 
@@ -110,7 +110,7 @@ function AppContent({ user }) {
 
         {/* ── Authenticated / Guest shell ── */}
         <Route element={
-          user ? <DashboardLayout user={user} /> : 
+          session ? <DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} /> : 
           <GuestProvider><GuestGateProvider><DashboardLayout user={{ id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></GuestGateProvider></GuestProvider>
         }>
           <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />
@@ -171,9 +171,9 @@ function AppContent({ user }) {
       )}
 
       {/* Global Widgets */}
-      {!isMobileRoute && user && <ProductTour />}
-      {!isMobileRoute && user && <FeedbackWidget />}
-      {!isMobileRoute && !user && <GuestTour />}
+      {!isMobileRoute && user && !user.isGuest && <ProductTour />}
+      {!isMobileRoute && user && !user.isGuest && <FeedbackWidget />}
+      {!isMobileRoute && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
   );
 }
