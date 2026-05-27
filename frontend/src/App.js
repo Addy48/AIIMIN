@@ -117,7 +117,7 @@ function AppContent({ user, session }) {
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
           <Route path="/reports" element={<Lazy><ReportsPage /></Lazy>} />
-          <Route path="/sports" element={<Lazy>{!user || user.isGuest ? <Navigate to="/overview" replace /> : <SportsPage />}</Lazy>} />
+          <Route path="/sports" element={<Lazy><SportsPage /></Lazy>} />
           <Route path="/journal" element={<Lazy><JournalPage /></Lazy>} />
           <Route path="/finance" element={<Lazy><Finance /></Lazy>} />
           <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
