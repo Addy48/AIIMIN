@@ -80,8 +80,20 @@ const parseESPNEvents = (data) => {
 };
 
 
+/* ── Date helper for fixture navigation ── */
+const getDateStr = (offset = 0) => {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0].replace(/-/g, '');
+};
+
+const getDateRange = () => {
+  return `${getDateStr(-3)}-${getDateStr(3)}`;
+};
+
 /* ── Football (Soccer) ────────────────────────────────────── */
 export const fetchFootball = async () => {
+  const dateRange = getDateRange();
   const leagues = [
     { slug: 'eng.1', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
     { slug: 'esp.1', name: 'La Liga', flag: '🇪🇸' },
@@ -90,8 +102,8 @@ export const fetchFootball = async () => {
 
   const results = await Promise.allSettled(
     leagues.map(l =>
-      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
-        .then(d => ({ league: l, events: parseESPNEvents(d) }))
+      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard?dates=${dateRange}`)
+        .then(d => ({ league: l, events: parseESPNEvents(d).slice(0, 5) }))
     )
   );
 
@@ -274,7 +286,8 @@ export const fetchF1 = async () => {
 /* ── Basketball ───────────────────────────────────────────── */
 export const fetchBasketball = async (dateOffset = 0) => {
   try {
-    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard`);
+    const dateRange = getDateRange();
+    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard?dates=${dateRange}`);
     return [{ league: { name: 'NBA', flag: '🏀' }, events: parseESPNEvents(data) }];
   } catch (err) {
     console.warn('NBA API failed:', err);
