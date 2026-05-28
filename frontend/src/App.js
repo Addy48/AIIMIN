@@ -171,9 +171,9 @@ function AppContent({ user, session }) {
       )}
 
       {/* Global Widgets */}
-      {!isMobileRoute && user && !user.isGuest && <ProductTour />}
-      {!isMobileRoute && user && !user.isGuest && <FeedbackWidget />}
-      {!isMobileRoute && !session && (!user || user.isGuest) && <GuestTour />}
+      {!isMobileRoute && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+      {!isMobileRoute && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+      {!isMobileRoute && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
   );
 }

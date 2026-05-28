@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, RotateCcw, Play, Check, BarChart3, Globe, Code, Heart, Coffee, Zap, MessageSquare, X, BrainCircuit, Mic2, AlertCircle, Volume2 } from 'lucide-react';
+import { Mic, RotateCcw, Globe, Code, Heart, Coffee, Zap, MessageSquare, BrainCircuit, Mic2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../utils/supabase';
 import { useThemeContext } from '../../context/ThemeContext';
 import { DEBATE_TOPICS, CATEGORIZED_PROMPTS } from '../../data/SpeakingTopics';
@@ -173,7 +173,6 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     const border = 'var(--color-border)';
     const surface = 'var(--color-surface)';
     const elevated = 'var(--color-elevated)';
-    const accent = 'var(--color-accent)';
 
     // --- Monologue Handlers ---
     const spinTopic = () => {

@@ -29,7 +29,7 @@ const Navbar = ({ user }) => {
   const [showAccount, setShowAccount] = useState(false);
   const bellRef = useRef(null);
 
-  const userInitial = user?.isGuest ? 'G' : (user?.username?.charAt(0) || user?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
+  const userInitial = (user?.full_name?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
   const isDark = theme === 'dark';
   const borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
 

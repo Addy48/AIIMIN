@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import supabase from '../utils/supabase';
+import { useAuth } from '../context/AuthContext';
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -38,30 +39,13 @@ const AuthCallback = () => {
         const code = searchParams.get('code');
 
         if (code) {
-            supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-                if (error) {
-                    setError(error.message || 'Authentication failed');
-                    setTimeout(() => navigate('/login'), 3000);
-                } else {
-                    navigate('/');
-                }
-            });
-            return;
+            // Supabase client automatically handles exchanging the code for a session in v2.
         }
 
-        // Listen for auth state change (fires when Supabase processes the hash)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                navigate('/');
-            }
-        });
-
-        // Also check if session is already set (hash may have been processed before this effect ran)
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                navigate('/');
-            }
-        });
+        // Wait for the global AuthContext to fully populate the user profile
+        if (user) {
+            navigate('/');
+        }
 
         // Timeout fallback — if nothing happens in 10s, go to login
         const timeout = setTimeout(() => {
@@ -70,10 +54,9 @@ const AuthCallback = () => {
         }, 10000);
 
         return () => {
-            subscription.unsubscribe();
             clearTimeout(timeout);
         };
-    }, [searchParams, navigate]);
+    }, [searchParams, navigate, user]);
 
     if (error) {
         return (
