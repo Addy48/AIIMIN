@@ -103,15 +103,12 @@ function AppContent({ user, session }) {
         {/* ── Auth ── */}
         <Route path="/login" element={!user ? <Login /> : <Navigate to={isMobileDevice ? '/m' : '/overview'} replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/guest'} replace />} />
+        <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
 
-        {/* ── Guest Mode specific route starts here ── */}
-        <Route path="/guest" element={<Navigate to="/overview?guest=true" replace />} />
-
-        {/* ── Authenticated / Guest shell ── */}
+        {/* ── Authenticated shell ── */}
         <Route element={
           session ? <DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} /> : 
-          <GuestProvider><GuestGateProvider><DashboardLayout user={{ id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></GuestGateProvider></GuestProvider>
+          <Navigate to="/login" replace />
         }>
           <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
@@ -144,7 +141,7 @@ function AppContent({ user, session }) {
         <Route path="/brand" element={<Brand />} />
 
         {/* ── 404 ── */}
-        <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/guest'} replace />} />
+        <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
 
       </Routes>
 
