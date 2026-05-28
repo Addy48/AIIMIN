@@ -10,14 +10,18 @@ export function AuthProvider({ children }) {
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const checkSession = async () => {
+    const checkSession = async (providedSession = null) => {
         try {
             const data = await apiGet('/auth/me');
             if (data && data.user) {
                 setUser(data.user);
                 return data.user;
             } else {
-                const { data: { session: activeSession } } = await supabase.auth.getSession();
+                let activeSession = providedSession;
+                if (!activeSession) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    activeSession = session;
+                }
                 if (activeSession?.user) {
                     const fallbackUser = {
                         id: activeSession.user.id,
@@ -36,7 +40,11 @@ export function AuthProvider({ children }) {
         } catch (error) {
             console.warn('[checkSession] profile fetch failed, using Supabase session fallback:', error.message);
             try {
-                const { data: { session: activeSession } } = await supabase.auth.getSession();
+                let activeSession = providedSession;
+                if (!activeSession) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    activeSession = session;
+                }
                 if (activeSession?.user) {
                     const fallbackUser = {
                         id: activeSession.user.id,
@@ -65,7 +73,7 @@ export function AuthProvider({ children }) {
                 setSession(currentSession);
                 localStorage.setItem('aiimin_session_fallback', currentSession.access_token);
                 try {
-                    await checkSession();
+                    await checkSession(currentSession);
                 } catch (err) {
                     console.error('Failed to sync profile after auth event:', err);
                     setUser(null);
@@ -83,7 +91,7 @@ export function AuthProvider({ children }) {
             if (activeSession) {
                 setSession(activeSession);
                 localStorage.setItem('aiimin_session_fallback', activeSession.access_token);
-                checkSession();
+                checkSession(activeSession);
             } else {
                 localStorage.removeItem('aiimin_session_fallback');
                 setLoading(false);
@@ -128,7 +136,7 @@ export function AuthProvider({ children }) {
 
             localStorage.setItem('aiimin_session_fallback', data.session.access_token);
             setSession(data.session);
-            const profile = await checkSession();
+            const profile = await checkSession(data.session);
             toast.success('Registration successful!');
             return { user: profile, session: data.session };
         } catch (error) {
@@ -159,7 +167,7 @@ export function AuthProvider({ children }) {
 
             localStorage.setItem('aiimin_session_fallback', data.session.access_token);
             setSession(data.session);
-            const profile = await checkSession();
+            const profile = await checkSession(data.session);
             toast.success('Welcome back!');
             return { user: profile, session: data.session };
         } catch (error) {
