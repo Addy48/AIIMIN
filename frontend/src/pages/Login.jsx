@@ -28,7 +28,7 @@ const GridBg = ({ isDark }) => (
 );
 
 const Login = () => {
-  const { signInWithUsername, signUpWithUsername, signInWithGoogle, logout } = useAuth();
+  const { signInWithUsername, signUpWithUsername, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const isDark = false;
 
@@ -217,9 +217,7 @@ const Login = () => {
   };
 
   // Username validation constraints checks
-  const uLettersCount = (usernameVal.match(/[A-Z]/g) || []).length;
-  const uNumbersCount = (usernameVal.match(/[0-9]/g) || []).length;
-  const isUsernameValid = usernameVal.length >= 4 && usernameVal.length <= 8 && uLettersCount <= 4 && uNumbersCount <= 2;
+  const isUsernameValid = usernameVal.length >= 3 && usernameVal.length <= 20 && /^[a-zA-Z0-9_.-]+$/.test(usernameVal);
 
   const handleUsernameNext = async (e) => {
     if (e) e.preventDefault();
@@ -538,29 +536,7 @@ const Login = () => {
                     <div style={{ flex: 1, height: '1px', background: 'rgba(0,0,0,0.08)' }} />
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (logout) {
-                        try { await logout(); } catch (e) {}
-                      }
-                      navigate('/guest');
-                    }}
-                    style={{
-                      height: '44px',
-                      background: 'transparent',
-                      color: '#666',
-                      border: '1px dashed rgba(0,0,0,0.18)',
-                      borderRadius: '12px',
-                      fontSize: '13px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      fontFamily: 'var(--font-sans)',
-                      letterSpacing: '0.01em',
-                    }}
-                  >
-                    👤 Continue as Guest
-                  </button>
+
                 </form>
               </motion.div>
             ) : (
@@ -762,40 +738,21 @@ const Login = () => {
                     </div>
                     {/* Character limit */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: (usernameVal.length >= 4 && usernameVal.length <= 8) ? '#16a34a' : 'var(--text-2)' }}>
-                        {(usernameVal.length >= 4 && usernameVal.length <= 8) ? <Check size={13} /> : <X size={13} style={{ color: '#ef4444' }} />}
-                        <span>Between 4 and 8 characters</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: (usernameVal.length >= 3 && usernameVal.length <= 20) ? '#16a34a' : 'var(--text-2)' }}>
+                        {(usernameVal.length >= 3 && usernameVal.length <= 20) ? <Check size={13} /> : <X size={13} style={{ color: '#ef4444' }} />}
+                        <span>Between 3 and 20 characters</span>
                       </div>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: (usernameVal.length >= 4 && usernameVal.length <= 8) ? '#16a34a' : 'var(--text-3)' }}>
-                        {usernameVal.length} / 8
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: (usernameVal.length >= 3 && usernameVal.length <= 20) ? '#16a34a' : 'var(--text-3)' }}>
+                        {usernameVal.length} / 20
                       </span>
                     </div>
 
-                    {/* Letters limit */}
+                    {/* Character types */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: uLettersCount <= 4 ? '#16a34a' : '#ef4444' }}>
-                        {uLettersCount <= 4 ? <Check size={13} /> : <X size={13} />}
-                        <span>At most 4 letters (A-Z)</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: /^[a-zA-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? '#16a34a' : '#ef4444' }}>
+                        {/^[a-zA-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? <Check size={13} /> : <X size={13} />}
+                        <span>Letters, numbers, _, ., - only</span>
                       </div>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: uLettersCount <= 4 ? '#16a34a' : '#ef4444' }}>
-                        {uLettersCount} / 4
-                      </span>
-                    </div>
-
-                    {/* Numbers limit */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: uNumbersCount <= 2 ? '#16a34a' : '#ef4444' }}>
-                        {uNumbersCount <= 2 ? <Check size={13} /> : <X size={13} />}
-                        <span>At most 2 numbers (0-9)</span>
-                      </div>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: uNumbersCount <= 2 ? '#16a34a' : '#ef4444' }}>
-                        {uNumbersCount} / 2
-                      </span>
-                    </div>
-
-                    {/* Symbols context */}
-                    <div style={{ fontSize: '11px', color: 'var(--text-3)', fontStyle: 'italic', marginTop: '2px' }}>
-                      Remainder can be any special symbols (e.g. @, #, $, -, _, !, etc.)
                     </div>
                   </div>
 

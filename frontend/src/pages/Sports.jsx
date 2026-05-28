@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, Wifi } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { apiGet, apiPost } from '../utils/api';
+import { apiPost } from '../utils/api';
 import { sportsService } from '../services/sportsService';
 
 const Sports = () => {
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
-  const user = authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
+  const user = React.useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
   const [activeTab, setActiveTab] = useState('Cricket'); // 'Cricket' | 'Football' | 'Formula 1'
   const [refreshing, setRefreshing] = useState(false);
 
@@ -50,6 +50,7 @@ const Sports = () => {
       fetchScores(true);
     }, 5 * 60 * 1000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);
 
 

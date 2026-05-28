@@ -9,6 +9,7 @@ import { google } from 'googleapis';
 import { pool } from '../lib/db.js';
 import { encrypt } from '../lib/crypto.js';
 import { requireAuth } from '../middleware/auth.js';
+import crypto from 'node:crypto';
 
 const app = new Hono();
 
@@ -56,7 +57,7 @@ app.get('/auth/init', requireAuth, async (c) => {
 
 app.get('/auth/callback', async (c) => {
     const { code, state, error: googleError } = c.req.query();
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://aiimin.in';
 
     if (googleError) {
         return c.redirect(`${frontendUrl}/auth/callback?status=error&reason=${encodeURIComponent(googleError)}`);
