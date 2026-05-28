@@ -24,6 +24,9 @@ const Reports = ({ user }) => {
 
     const { lhsData, reportData } = useLHSData(session);
 
+    const usageDays = user?.created_at ? Math.max(0, Math.floor((new Date() - new Date(user.created_at)) / (1000 * 60 * 60 * 24))) : 0;
+    const hasSufficientData = usageDays >= 15;
+
     const handleRangeSelect = (mode) => {
         setRangeMode(mode);
         if (mode !== 'custom') {
@@ -136,12 +139,20 @@ const Reports = ({ user }) => {
                         {REPORT_MODES[reportMode].label} • {startDate} to {endDate}
                     </div>
 
-                    <button onClick={handleGenerate} disabled={isGenerating} style={{
+                    {!hasSufficientData && (
+                        <div style={{ padding: '12px', borderRadius: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', fontSize: '12px', color: 'var(--text-3)', textAlign: 'center' }}>
+                            <span style={{ color: 'var(--accent)', fontWeight: 700 }}>Insufficient Data: </span>
+                            Detailed reporting requires at least 15 days of system usage to establish behavioral baselines. 
+                            (Currently at {usageDays} {usageDays === 1 ? 'day' : 'days'})
+                        </div>
+                    )}
+
+                    <button onClick={handleGenerate} disabled={isGenerating || !hasSufficientData} style={{
                         width: '100%', padding: '14px', borderRadius: '10px', border: 'none',
                         background: 'linear-gradient(135deg, var(--accent) 0%, #e05c2a 100%)',
                         color: '#fff', fontWeight: 800, fontSize: '15px',
-                        cursor: isGenerating ? 'not-allowed' : 'pointer',
-                        opacity: isGenerating ? 0.7 : 1,
+                        cursor: (isGenerating || !hasSufficientData) ? 'not-allowed' : 'pointer',
+                        opacity: (isGenerating || !hasSufficientData) ? 0.7 : 1,
                     }}>
                         {isGenerating ? 'Generating Report...' : `Generate ${REPORT_MODES[reportMode].label}`}
                     </button>
