@@ -80,13 +80,13 @@ const getDateStr = (offset = 0) => {
   return d.toISOString().split('T')[0].replace(/-/g, '');
 };
 
-const getYesterdayTodayRange = () => {
-  return `${getDateStr(-1)}-${getDateStr(0)}`;
+const getDateRange = () => {
+  return `${getDateStr(-2)}-${getDateStr(2)}`;
 };
 
 /* ── Football (Soccer) Fetch & Filter ── */
 const fetchFootball = async () => {
-  const dateRange = getYesterdayTodayRange();
+  const dateRange = getDateRange();
   const leagues = [
     { slug: 'eng.1', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
     { slug: 'esp.1', name: 'La Liga', flag: '🇪🇸' },
@@ -95,7 +95,7 @@ const fetchFootball = async () => {
 
   const results = await Promise.allSettled(
     leagues.map(l =>
-      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard?dates=${dateRange}`)
+      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
         .then(d => {
           let events = parseESPNEvents(d);
           // Apply strict caps: Max 5 items per league to stay clean and cheap
@@ -255,7 +255,7 @@ const fetchF1 = async () => {
 /* ── Basketball ── */
 const fetchBasketball = async () => {
   try {
-    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard?dates=${getDateStr(0)}`);
+    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard`);
     const events = parseESPNEvents(data).slice(0, 5);
     return [{ league: { name: 'NBA', flag: '🏀' }, events }];
   } catch (err) {

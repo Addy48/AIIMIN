@@ -56,6 +56,7 @@ export default function Placements() {
 
   useEffect(() => {
     if (user) loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const loadData = async () => {
@@ -654,6 +655,7 @@ export default function Placements() {
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-3)', marginBottom: '24px' }}>{res.type}</div>
                 <div style={{ marginTop: 'auto' }}>
+)}
                   <a href={res.url} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: 'var(--color-rust)', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     Open Resource ↗
                   </a>
@@ -663,37 +665,34 @@ export default function Placements() {
           </div>
         </motion.div>
       ) : activeTab === 'trajectory' ? (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '40px' }}>
-          {/* Main Trajectory Content */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px' }}>
             
-            {/* Career Velocity Indicator */}
-            <div className="nordic-card" style={{ 
-              padding: '40px', 
-              background: 'var(--bg-surface)', 
+            {/* Momentum Status */}
+            <div className="card-hover" style={{ 
+              padding: '16px', 
+              background: 'linear-gradient(145deg, rgba(30,30,30,0.6), rgba(20,20,20,0.8))', 
+              backdropFilter: 'blur(10px)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
-              border: '1px solid var(--border)',
-              borderRadius: '24px',
-              position: 'relative',
-              overflow: 'hidden'
+              boxShadow: 'var(--shadow-sm)'
             }}>
-              <div style={{ zIndex: 1 }}>
-                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '12px' }}>Momentum Status</h3>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-                  <span style={{ fontSize: '48px', fontWeight: 400, fontFamily: 'var(--font-serif)', color: 'var(--text-1)' }}>{momentumStatus}</span>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: momentumGrowth.startsWith('-') ? 'var(--color-rust)' : 'var(--color-success)', background: momentumGrowth.startsWith('-') ? 'var(--color-rust)15' : 'var(--color-success)15', padding: '4px 12px', borderRadius: '20px' }}>{momentumGrowth}</span>
+              <div>
+                <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '6px' }}>Momentum Status</h3>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-1)', fontFamily: 'var(--font-serif)' }}>{momentumStatus}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 6px', borderRadius: '4px', background: momentumGrowth.startsWith('-') ? 'rgba(226,114,91,0.1)' : 'rgba(93,184,122,0.1)', color: momentumGrowth.startsWith('-') ? 'var(--color-rust)' : 'var(--color-success)' }}>{momentumGrowth}</span>
                 </div>
-                <p style={{ fontSize: '13px', color: 'var(--text-2)', marginTop: '16px', maxWidth: '400px', lineHeight: '1.6' }}>
-                  {momentumText}
-                </p>
+                <p style={{ fontSize: '11px', color: 'var(--text-2)', marginTop: '6px', margin: 0, lineHeight: 1.4 }}>{momentumText}</p>
               </div>
-              <div style={{ width: '120px', height: '120px', position: 'relative' }}>
-                 <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-elevated)" strokeWidth="8" />
+              <div style={{ width: '64px', height: '64px', position: 'relative', flexShrink: 0 }}>
+                 <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', dropShadow: '0 0 8px rgba(226,114,91,0.4)' }}>
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-elevated)" strokeWidth="6" />
                     <motion.circle 
-                      cx="50" cy="50" r="45" fill="none" stroke="var(--color-rust)" strokeWidth="8"
+                      cx="50" cy="50" r="45" fill="none" stroke="var(--color-rust)" strokeWidth="6"
                       strokeDasharray="283"
                       initial={{ strokeDashoffset: 283 }}
                       animate={{ strokeDashoffset: 283 - (283 * (momentumScore / 100)) }}
@@ -701,35 +700,54 @@ export default function Placements() {
                       strokeLinecap="round"
                     />
                  </svg>
-                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 600 }}>{momentumScore}</div>
+                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 800, color: 'var(--text-1)' }}>{momentumScore}</div>
               </div>
-              <div style={{ position: 'absolute', right: '-10%', top: '-20%', width: '200px', height: '200px', background: 'var(--color-rust)', filter: 'blur(80px)', opacity: 0.05 }} />
             </div>
 
-            {/* Conversion Funnel */}
-            <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)' }}>Conversion Funnel Efficiency</h3>
-                <span style={{ fontSize: '12px', color: 'var(--text-2)', fontWeight: 500 }}>Target: 15% Interview Rate</span>
+            {/* Strategic Directive */}
+            <div className="card-hover" style={{ 
+              padding: '16px', 
+              background: 'linear-gradient(145deg, rgba(226,114,91,0.05), rgba(20,20,20,0.8))', 
+              backdropFilter: 'blur(10px)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between'
+            }}>
+              <div>
+                <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--color-rust)', marginBottom: '8px' }}>Strategic Directive</h3>
+                <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-1)', lineHeight: '1.5', fontStyle: 'italic', marginBottom: '12px' }}>
+                  "Focus on System Design and LLD. Your DSA is top-tier, but response rates drop for L5+ roles."
+                </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', padding: '8px 12px', borderRadius: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-2)' }}>Next: Mock Interview v4</span>
+                <span style={{ fontSize: '10px', color: 'var(--color-rust)', fontWeight: 700 }}>3 Days Left</span>
+              </div>
+            </div>
+
+            {/* Compact Conversion Funnel */}
+            <div className="card-hover" style={{ padding: '16px', borderRadius: '12px', background: 'rgba(30,30,30,0.4)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)' }}>
+              <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Conversion Funnel</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {[
                   { label: 'Wishlist', count: stats.wishlist, color: '#8C8C8C', pct: 100 },
                   { label: 'Applied', count: stats.applied, color: '#556B2F', pct: (stats.applied / (stats.total || 1)) * 100 },
                   { label: 'Interview', count: stats.interviews, color: '#E2725B', pct: (stats.interviews / (stats.total || 1)) * 100 },
                   { label: 'Offer', count: stats.offers, color: '#23503B', pct: (stats.offers / (stats.total || 1)) * 100 }
                 ].map((step, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-                     <div style={{ width: '120px', fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>{step.label}</div>
-                     <div style={{ flex: 1, height: '54px', background: 'var(--bg-elevated)', borderRadius: '12px', overflow: 'hidden', position: 'relative', border: '1px solid var(--border)' }}>
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                     <div style={{ width: '65px', fontSize: '10px', fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase' }}>{step.label}</div>
+                     <div style={{ flex: 1, height: '20px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', overflow: 'hidden', position: 'relative' }}>
                        <motion.div 
                          initial={{ width: 0 }}
                          animate={{ width: `${step.pct}%` }}
                          transition={{ duration: 1.2, delay: idx * 0.1, ease: "circOut" }}
                          style={{ height: '100%', background: step.color, opacity: 0.85 }}
                        />
-                       <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 20px', fontSize: '14px', fontWeight: 700, color: step.pct > 30 ? 'white' : 'var(--text-1)' }}>
-                         {step.count} <span style={{ fontSize: '11px', opacity: 0.7, marginLeft: '10px', fontWeight: 500 }}>({step.pct.toFixed(0)}%)</span>
+                       <div style={{ position: 'absolute', right: '8px', top: '0', bottom: '0', display: 'flex', alignItems: 'center', fontSize: '10px', fontWeight: 800, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                         {step.count}
                        </div>
                      </div>
                   </div>
@@ -737,116 +755,68 @@ export default function Placements() {
               </div>
             </div>
 
-            {/* Preparation Scorecard */}
-            <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
-              <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '40px' }}>Market Readiness Scorecard</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '40px' }}>
+            {/* Market Readiness Scorecard */}
+            <div className="card-hover" style={{ padding: '16px', borderRadius: '12px', background: 'rgba(30,30,30,0.4)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)' }}>
+              <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Market Readiness</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
-                  { label: 'DSA/Algorithms', score: dsaMetrics.score, color: 'var(--color-rust)', desc: dsaMetrics.desc },
-                  { label: 'Communication', score: communicationMetrics.score, color: 'var(--accent)', desc: communicationMetrics.desc },
-                  { label: 'System Design', score: systemDesignMetrics.score, color: '#23503B', desc: systemDesignMetrics.desc }
-                ].map((m, i) => (
-                  <div key={i} style={{ textAlign: 'center' }}>
-                    <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 24px' }}>
-                      <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--bg-elevated)" strokeWidth="2.5" />
-                        <motion.path 
-                          initial={{ strokeDasharray: '0, 100' }}
-                          animate={{ strokeDasharray: `${m.score}, 100` }}
-                          transition={{ duration: 1.5, delay: i * 0.2, ease: "circOut" }}
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
-                          fill="none" 
-                          stroke={m.color} 
-                          strokeWidth="2.5" 
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 500, fontFamily: 'var(--font-serif)', color: 'var(--text-1)' }}>
-                        {m.score}
+                  { label: 'DSA/Algorithms', score: dsaMetrics.score, color: 'var(--color-rust)' },
+                  { label: 'Communication', score: communicationMetrics.score, color: 'var(--color-success)' },
+                  { label: 'System Design', score: systemDesignMetrics.score, color: 'var(--color-warning)' }
+                ].map((m, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-2)' }}>{m.label}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '50px', height: '4px', background: 'rgba(0,0,0,0.4)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${m.score}%` }} style={{ height: '100%', background: m.color }} />
                       </div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: m.color, minWidth: '24px', textAlign: 'right' }}>{m.score}</div>
                     </div>
-                    <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-1)', letterSpacing: '0.1em', marginBottom: '8px' }}>{m.label}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: '1.4' }}>{m.desc}</div>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
 
-          {/* Right Column: Career Strategy */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-             <div className="nordic-card" style={{ 
-                padding: '40px', 
-                background: 'var(--text-1)', 
-                color: 'var(--bg-primary)', 
-                border: 'none',
-                position: 'relative',
-                overflow: 'hidden',
-                borderRadius: '24px'
-              }}>
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <h3 style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', marginBottom: '32px', opacity: 0.6 }}>Strategic Directive</h3>
-                  <div style={{ fontSize: '20px', fontFamily: 'var(--font-serif)', lineHeight: '1.4', marginBottom: '32px' }}>
-                    "Focus on <span style={{ opacity: 0.7 }}>System Design</span> and <span style={{ opacity: 0.7 }}>Low Level Design</span>. Your DSA performance is top-tier, but response rates drop for L5+ roles."
+            {/* Market Sentiment */}
+            <div className="card-hover" style={{ padding: '16px', borderRadius: '12px', background: 'rgba(30,30,30,0.4)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)' }}>
+              <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Market Sentiment</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {[
+                  { label: 'AI/ML Infrastructure', trend: 'SURGING', color: '#10B981', val: '+24%' },
+                  { label: 'Fintech Backend', trend: 'STABLE', color: '#3B82F6', val: '+2%' },
+                  { label: 'Crypto/Web3', trend: 'VOLATILE', color: 'var(--color-rust)', val: '-12%' }
+                ].map((s, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingBottom: i < 2 ? '8px' : '0' }}>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-1)' }}>{s.label}</div>
+                      <div style={{ fontSize: '9px', fontWeight: 800, color: s.color, marginTop: '2px', letterSpacing: '0.05em' }}>{s.trend}</div>
+                    </div>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: s.val.startsWith('+') ? '#10B981' : 'var(--color-rust)' }}>{s.val}</span>
                   </div>
-                  
-                  <div style={{ background: 'color-mix(in srgb, currentColor 8%, transparent)', borderRadius: '16px', padding: '24px', border: '1px solid color-mix(in srgb, currentColor 15%, transparent)' }}>
-                    <div style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 700, marginBottom: '16px', opacity: 0.5, letterSpacing: '0.1em' }}>Next Milestone</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '15px', fontWeight: 600 }}>Mock Interview v4</span>
-                      <span style={{ fontSize: '12px', opacity: 0.6 }}>3 Days Left</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Interview Prep Quests */}
+            <div className="card-hover" style={{ padding: '16px', borderRadius: '12px', background: 'rgba(30,30,30,0.4)', backdropFilter: 'blur(10px)', border: '1px solid var(--border)' }}>
+              <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Active Quests</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {[
+                  { label: 'System Design Mock', type: 'Technical', status: 'Pending', color: 'var(--color-rust)' },
+                  { label: 'Amazon LP Review', type: 'Behavioral', status: 'Reviewing', color: 'var(--color-warning)' },
+                  { label: 'DSA: Graph Cycles', type: 'Algorithmic', status: 'Completed', color: 'var(--color-success)' }
+                ].map((q, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: '6px', borderLeft: `3px solid ${q.color}` }}>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-1)' }}>{q.label}</div>
+                      <div style={{ fontSize: '9px', color: 'var(--text-3)', marginTop: '2px', textTransform: 'uppercase' }}>{q.type}</div>
                     </div>
-                    <div style={{ height: '6px', background: 'color-mix(in srgb, currentColor 12%, transparent)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: '65%' }}
-                        transition={{ duration: 1, delay: 0.5 }}
-                        style={{ height: '100%', background: 'var(--color-rust)' }} 
-                      />
-                    </div>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: q.color }}>{q.status}</span>
                   </div>
-                </div>
-                <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', width: '150px', height: '150px', background: 'var(--color-rust)', filter: 'blur(80px)', opacity: 0.2 }} />
+                ))}
               </div>
+            </div>
 
-              <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
-                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '32px' }}>Market Sentiment</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  {[
-                    { label: 'AI/ML Infrastructure', trend: 'SURGING', color: '#10B981', val: '+24%' },
-                    { label: 'Fintech Backend', trend: 'STABLE', color: '#3B82F6', val: '+2%' },
-                    { label: 'Crypto/Web3', trend: 'VOLATILE', color: 'var(--color-rust)', val: '-12%' }
-                  ].map((s, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-1)' }}>{s.label}</div>
-                        <div style={{ fontSize: '10px', fontWeight: 700, color: s.color, marginTop: '4px' }}>{s.trend}</div>
-                      </div>
-                      <span style={{ fontSize: '16px', fontWeight: 600, color: s.val.startsWith('+') ? '#10B981' : 'var(--color-rust)' }}>{s.val}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Interview Prep Quests */}
-              <div className="nordic-card" style={{ padding: '40px', borderRadius: '24px' }}>
-                <h3 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)', marginBottom: '32px' }}>Interview Prep Quests</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  {[
-                    { label: 'System Design Mock', type: 'Technical', status: 'Pending', color: 'var(--color-rust)' },
-                    { label: 'Behavioral Stories (STAR)', type: 'Soft Skills', status: 'In Progress', color: '#3B82F6' },
-                    { label: 'LeetCode Hard Array/String', type: 'Coding', status: 'Completed', color: '#10B981' }
-                  ].map((s, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-1)' }}>{s.label}</div>
-                        <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', marginTop: '4px' }}>{s.type}</div>
-                      </div>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: s.color, background: `${s.color}15`, padding: '4px 12px', borderRadius: '12px' }}>{s.status}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
           </div>
         </motion.div>
       ) : (

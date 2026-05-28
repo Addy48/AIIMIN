@@ -117,9 +117,9 @@ const AccountModal = ({ isOpen, onClose }) => {
         if (!isOpen || !session) return;
         setLoading(true);
         apiGet('/account/profile', { session }).then((p) => {
-            const fallbackName = p?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || '';
+            const fallbackName = p?.full_name || p?.username || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'User';
             const fallbackTimezone = p?.timezone || session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-            const normalizedProfile = { ...p, full_name: fallbackName, timezone: fallbackTimezone };
+            const normalizedProfile = { ...p, full_name: fallbackName, username: p?.username || '', timezone: fallbackTimezone };
             setProfile(normalizedProfile);
             setDraftProfile(normalizedProfile);
         }).catch(err => {
@@ -155,7 +155,7 @@ const AccountModal = ({ isOpen, onClose }) => {
         setSaving(true);
         setSaveMsg('');
         try {
-            const savedProfile = await apiPatch('/account/profile', { full_name: draftProfile.full_name }, { session });
+            const savedProfile = await apiPatch('/account/profile', { full_name: draftProfile.full_name, username: draftProfile.username, timezone: draftProfile.timezone }, { session });
             setProfile(savedProfile);
             setDraftProfile(savedProfile);
             setIsEditingProfile(false);
@@ -285,7 +285,7 @@ const AccountModal = ({ isOpen, onClose }) => {
                                 <Row label="Name" border={true}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                         <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>
-                                            {profile?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'Unnamed'}
+                                            {profile?.full_name || profile?.username || session?.user?.email?.split('@')[0] || 'User'}
                                         </span>
                                         {!isEditingProfile && (
                                             <button
@@ -302,6 +302,16 @@ const AccountModal = ({ isOpen, onClose }) => {
                                             </button>
                                         )}
                                     </div>
+                                </Row>
+                                <Row label="Username" border={true}>
+                                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>
+                                        {profile?.username ? `@${profile.username}` : 'Not set'}
+                                    </span>
+                                </Row>
+                                <Row label="Timezone" border={true}>
+                                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>
+                                        {profile?.timezone || 'Auto-detected'}
+                                    </span>
                                 </Row>
                                 <Row label="Execution Timeline" border={false}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -344,7 +354,36 @@ const AccountModal = ({ isOpen, onClose }) => {
                                                 color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
                                             }}
                                         />
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                        <input
+                                            value={draftProfile?.username || ''}
+                                            onChange={e => setDraftProfile(p => ({ ...p, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }))}
+                                            placeholder="Username (e.g. john_doe)"
+                                            style={{
+                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                                color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
+                                            }}
+                                        />
+                                        <select
+                                            value={draftProfile?.timezone || 'Asia/Kolkata'}
+                                            onChange={e => setDraftProfile(p => ({ ...p, timezone: e.target.value }))}
+                                            style={{
+                                                padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
+                                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                                color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600,
+                                                appearance: 'none'
+                                            }}
+                                        >
+                                            <option value={Intl.DateTimeFormat().resolvedOptions().timeZone}>System Default ({Intl.DateTimeFormat().resolvedOptions().timeZone})</option>
+                                            <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+                                            <option value="America/New_York">America/New_York (EST/EDT)</option>
+                                            <option value="America/Los_Angeles">America/Los_Angeles (PST/PDT)</option>
+                                            <option value="Europe/London">Europe/London (GMT/BST)</option>
+                                            <option value="Europe/Paris">Europe/Paris (CET/CEST)</option>
+                                            <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                                            <option value="Australia/Sydney">Australia/Sydney (AEST/AEDT)</option>
+                                        </select>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
                                             <button onClick={handleSaveProfile} disabled={saving} style={{
                                                 flex: 1, padding: '12px', background: 'var(--accent)', color: 'white',
                                                 border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 800,
@@ -434,6 +473,95 @@ const AccountModal = ({ isOpen, onClose }) => {
 
                             <Section title="Change Password">
                                 <ChangePassword />
+                            </Section>
+
+                            <Section title="Preferences & Notifications">
+                                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Daily Summary Email</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Get a morning brief of your goals and schedule.</div>
+                                        </div>
+                                        <div style={{ width: '40px', height: '24px', background: 'var(--color-accent)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
+                                            <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: '#fff', borderRadius: '50%' }} />
+                                        </div>
+                                    </div>
+                                    <div style={{ height: '1px', background: 'var(--border)' }} />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Push Notifications</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Real-time alerts for habits and meetings.</div>
+                                        </div>
+                                        <div style={{ width: '40px', height: '24px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
+                                            <div style={{ position: 'absolute', top: '1px', left: '2px', width: '18px', height: '18px', background: 'var(--text-3)', borderRadius: '50%' }} />
+                                        </div>
+                                    </div>
+                                    <div style={{ height: '1px', background: 'var(--border)' }} />
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>24-Hour Time Format</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Use 24-hour clock (e.g. 14:00) instead of AM/PM.</div>
+                                        </div>
+                                        <div style={{ width: '40px', height: '24px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
+                                            <div style={{ position: 'absolute', top: '1px', left: '2px', width: '18px', height: '18px', background: 'var(--text-3)', borderRadius: '50%' }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </Section>
+
+                            <Section title="Subscription & Billing">
+                                <div style={{ padding: '24px', background: 'var(--bg-elevated)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '20px' }}>
+                                                ✦
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-1)' }}>Free Tier</div>
+                                                <div style={{ fontSize: '13px', color: 'var(--text-3)', marginTop: '2px', fontWeight: 500 }}>Basic access to AIIMIN features.</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ background: 'var(--bg-surface)', padding: '6px 12px', borderRadius: '99px', fontSize: '12px', fontWeight: 800, color: 'var(--color-accent)', border: '1px solid var(--border)' }}>
+                                            Active
+                                        </div>
+                                    </div>
+                                    <button style={{
+                                        width: '100%', padding: '12px', background: 'var(--text-1)', color: 'var(--bg-primary)',
+                                        border: 'none', borderRadius: '12px', fontSize: '14px', fontWeight: 800, cursor: 'pointer',
+                                        transition: 'all 0.2s ease'
+                                    }}>
+                                        Upgrade to PRO
+                                    </button>
+                                </div>
+                            </Section>
+
+                            <Section title="Connected Accounts">
+                                <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--bg-elevated)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ width: '32px', height: '32px', background: '#fff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Google</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>Connected</div>
+                                            </div>
+                                        </div>
+                                        <button style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-2)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Disconnect</button>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--bg-surface)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ width: '32px', height: '32px', background: '#000', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Facebook</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>Not connected</div>
+                                            </div>
+                                        </div>
+                                        <button style={{ padding: '8px 16px', background: 'var(--text-1)', border: 'none', borderRadius: '8px', color: 'var(--bg-primary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Connect</button>
+                                    </div>
+                                </div>
                             </Section>
 
                             <Section title="Data Strategy">
