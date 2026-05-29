@@ -99,9 +99,10 @@ export const requireAuth = async (c, next) => {
             username: cached?.username,
         });
         c.set('userId', decoded.id);
-        await next();
     } catch (err) {
         console.error('[auth middleware] Error:', err.message);
-        return c.json({ error: 'Unauthorized: session error' }, 401);
+        return c.json({ error: 'Unauthorized: session error', details: err.message }, 401);
     }
+
+    await next();
 };

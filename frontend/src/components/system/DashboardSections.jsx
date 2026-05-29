@@ -10,6 +10,7 @@ import QuickCapture from '../dashboard/QuickCapture';
 import WinsEngine from '../WinsEngine';
 import MomentumBar from '../MomentumBar';
 import ErrorBoundary from './ErrorBoundary';
+import PDFReportGenerator from '../PDFReportGenerator';
 import HabitsPage from '../habits/HabitsPage';
 import AdminPanel from '../account/AdminPanel';
 import AdminConsole from '../account/AdminConsole';
@@ -442,6 +443,7 @@ export function ReportsSection({ user }) {
             <SectionLabel icon="📄">Reports</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
                 <Reports user={user} />
+                <PDFReportGenerator />
                 <div style={{ marginTop: '24px' }}>
                     <AchievementsGallery user={user} />
                 </div>
