@@ -81,7 +81,7 @@ const getDateStr = (offset = 0) => {
 };
 
 const getDateRange = () => {
-  return `${getDateStr(-2)}-${getDateStr(2)}`;
+  return `${getDateStr(-3)}-${getDateStr(3)}`;
 };
 
 /* ── Football (Soccer) Fetch & Filter ── */
@@ -95,7 +95,7 @@ const fetchFootball = async () => {
 
   const results = await Promise.allSettled(
     leagues.map(l =>
-      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
+      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard?dates=${dateRange}`)
         .then(d => {
           let events = parseESPNEvents(d);
           // Apply strict caps: Max 5 items per league to stay clean and cheap
@@ -255,7 +255,8 @@ const fetchF1 = async () => {
 /* ── Basketball ── */
 const fetchBasketball = async () => {
   try {
-    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard`);
+    const dateRange = getDateRange();
+    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard?dates=${dateRange}`);
     const events = parseESPNEvents(data).slice(0, 5);
     return [{ league: { name: 'NBA', flag: '🏀' }, events }];
   } catch (err) {
@@ -304,9 +305,20 @@ export const updateSportsCache = async () => {
  */
 export const getCachedSports = async () => {
   const result = await pool.query('SELECT data, updated_at FROM sports_cache WHERE key = $1', ['aggregated_feed']);
+  
   if (result.rows.length === 0) {
-    // If cache is empty, trigger a synchronous refresh
     return await updateSportsCache();
   }
-  return result.rows[0].data;
+
+  const { data, updated_at } = result.rows[0];
+  const cacheAgeMs = Date.now() - new Date(updated_at).getTime();
+  const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
+
+  if (cacheAgeMs > CACHE_TTL_MS) {
+    console.log('[SportsCache] Cache expired (older than 2 hours). Triggering background refresh...');
+    // Trigger in background to avoid blocking the current request
+    updateSportsCache().catch(err => console.error('[SportsCache] Background refresh failed:', err));
+  }
+
+  return data;
 };
