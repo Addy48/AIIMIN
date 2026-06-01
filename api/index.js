@@ -22,8 +22,20 @@ app.use('*', cors({
     credentials: true,
 }));
 
+import { pool } from '../server/lib/db.js';
+
 // ── INSTANT health check ──
 app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
+
+// ── Supabase Keepalive (CRON) ──
+app.get('/keepalive', async (c) => {
+    try {
+        await pool.query('SELECT 1');
+        return c.json({ status: 'alive', message: 'Supabase pinged successfully', ts: Date.now() });
+    } catch (err) {
+        return c.json({ status: 'error', message: err.message }, 500);
+    }
+});
 
 // ── Auth routes — loaded eagerly (small, needed first) ──
 import authRoutes from '../server/routes/auth.js';
