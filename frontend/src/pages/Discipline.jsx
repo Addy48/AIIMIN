@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, RefreshCw, ChevronDown, ChevronUp, Trophy, Brain, Zap, Lock, X, Wind } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../utils/supabase';
-
-/* ── Storage ── */
+import PageHeader from '../components/layout/PageHeader';/* ── Storage ── */
 const SK_DATA = 'aiimin_discipline_v2';
 const SK_LOG  = 'aiimin_discipline_log_v2';
 
@@ -378,27 +377,17 @@ const Discipline = () => {
   const quote = motivational[currentDays % motivational.length];
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '40px 24px',
-      paddingBottom: '80px'
-    }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
-        <div>
-          <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--color-accent)', marginBottom: '6px' }}>
-            Mind Mastery
+    <div className="page-container">
+      <PageHeader 
+        title="Discipline"
+        subtitle="Mind Mastery"
+        rightContent={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '8px 14px' }}>
+            <Lock size={12} color="var(--color-text-3)" />
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)' }}>Private</span>
           </div>
-          <h1 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.03em', fontFamily: 'var(--font-serif)' }}>
-            Discipline.
-          </h1>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '8px 14px' }}>
-          <Lock size={12} color="var(--color-text-3)" />
-          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)' }}>Private</span>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main counter card */}
       <motion.div

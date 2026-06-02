@@ -5,6 +5,7 @@ import { RefreshCw, Wifi } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiPost } from '../utils/api';
 import { sportsService } from '../services/sportsService';
+import PageHeader from '../components/layout/PageHeader';
 
 const Sports = () => {
   const navigate = useNavigate();
@@ -72,83 +73,51 @@ const Sports = () => {
   ];
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '40px 24px',
-      paddingBottom: '80px'
-    }}>
-      {/* Header section */}
-      <div style={{
-        marginBottom: '32px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '16px'
-      }}>
-        <div>
-          <div style={{
-            fontSize: '11px',
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.2em',
-            color: 'var(--color-accent)',
-            marginBottom: '6px'
-          }}>
-            AIIMIN Sports Intelligence
-          </div>
-          <h1 style={{
-            fontSize: '36px',
-            fontWeight: 900,
-            color: 'var(--color-text-1)',
-            margin: 0,
-            letterSpacing: '-0.03em',
-            fontFamily: 'var(--font-serif)'
-          }}>
-            The Arena.
-          </h1>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 16px',
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderRadius: '12px',
-            fontSize: '11px',
-            fontWeight: 800,
-            color: 'var(--color-accent)'
-          }}>
-            <Wifi size={13} style={{ strokeWidth: 2.5 }} /> Live Score Feed
-          </div>
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            style={{
-              background: 'var(--color-surface)',
-              border: '1px solid var(--border)',
-              borderRadius: '12px',
-              padding: '10px 18px',
-              fontSize: '12px',
-              fontWeight: 800,
-              color: 'var(--color-text-2)',
-              cursor: 'pointer',
+    <div className="page-container">
+      <PageHeader 
+        title="The Arena."
+        subtitle="AIIMIN Sports Intelligence"
+        rightContent={
+          <>
+            <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <RefreshCw size={13} className={refreshing ? 'spin-anim' : ''} style={{ transition: 'transform 0.5s' }} />
-            {refreshing ? 'Syncing...' : 'Sync Scores'}
-          </button>
-        </div>
-      </div>
+              gap: '6px',
+              padding: '8px 16px',
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              fontSize: '11px',
+              fontWeight: 800,
+              color: 'var(--color-accent)'
+            }}>
+              <Wifi size={13} style={{ strokeWidth: 2.5 }} /> Live Score Feed
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
+                padding: '10px 18px',
+                fontSize: '12px',
+                fontWeight: 800,
+                color: 'var(--color-text-2)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <RefreshCw size={13} className={refreshing ? 'spin-anim' : ''} style={{ transition: 'transform 0.5s' }} />
+              {refreshing ? 'Syncing...' : 'Sync Scores'}
+            </button>
+          </>
+        }
+      />
 
       {/* Main Tabs Navigation */}
       <div style={{
@@ -206,14 +175,16 @@ const Sports = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
                   {feed.cricket[0].events.map((match) => (
                     <div key={match.id} style={{
-                      background: 'var(--color-surface)',
+                      background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, var(--color-surface) 40%, var(--color-surface) 100%)',
                       border: '1px solid var(--border)',
                       borderRadius: '24px',
                       padding: '28px',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '20px'
+                      gap: '20px',
+                      position: 'relative',
+                      overflow: 'hidden'
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{
@@ -285,14 +256,18 @@ const Sports = () => {
                   {feed.football.flatMap(league => 
                     league.events.map(match => (
                       <div key={match.id} style={{
-                        background: 'var(--color-surface)',
+                        background: match.home?.color && match.away?.color 
+                          ? `linear-gradient(135deg, ${match.home.color}15 0%, var(--color-surface) 35%, var(--color-surface) 65%, ${match.away.color}15 100%)`
+                          : 'var(--color-surface)',
                         border: '1px solid var(--border)',
                         borderRadius: '24px',
                         padding: '28px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '20px'
+                        gap: '20px',
+                        position: 'relative',
+                        overflow: 'hidden'
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase' }}>
@@ -405,7 +380,10 @@ const Sports = () => {
                           }} />
                           
                           <div style={{ fontSize: '16px', fontWeight: 800 }}>
-                            Date: {feed.f1.upcoming[0].date} {feed.f1.upcoming[0].time}
+                            Date: {
+                              new Date(`${feed.f1.upcoming[0].date}T${feed.f1.upcoming[0].time || '00:00:00Z'}`)
+                                .toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
+                            } IST
                           </div>
                         </div>
                       )}

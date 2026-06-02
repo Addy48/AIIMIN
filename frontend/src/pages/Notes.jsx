@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Search, Pin, Clock, ArrowUpRight, BookOpen } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
+
 
 const STORAGE_KEY = 'aiimin_notes_v3';
 const CATEGORIES = ['All', 'Ideas', 'Tasks', 'Learning', 'Archive'];
@@ -161,32 +163,31 @@ const Notes = () => {
     });
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 40px 100px 40px' }}>
+        <div className="page-container">
             
             {/* ── Revolutionary Hero ── */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '60px 0', marginBottom: '40px' }}>
-                <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <span style={{ background: 'var(--color-accent)', color: '#fff', padding: '6px 16px', borderRadius: '99px', fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em' }}>NOTES</span>
-                    </div>
-                    <h1 style={{ fontSize: '84px', fontWeight: 900, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.06em', lineHeight: 0.9 }}>
-                        Knowledge<br />Canvas.
-                    </h1>
-                </div>
-
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                    <div style={{ position: 'relative', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '24px', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px', width: '360px' }}>
-                        <Search size={20} color="var(--color-text-3)" />
-                        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Query your mind..." style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--color-text-1)', fontSize: '16px', width: '100%' }} />
-                    </div>
-                    <button 
-                        onClick={() => { setEditorNote(null); setShowEditor(true); }}
-                        style={{ background: 'var(--color-text-1)', color: 'var(--color-base)', border: 'none', borderRadius: '24px', padding: '20px 40px', fontSize: '18px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-md)' }}
-                    >
-                        <Plus size={24} strokeWidth={3} /> Capture Thought
-                    </button>
-                </div>
-            </div>
+            <PageHeader 
+                title={
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        Knowledge Canvas<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
+                    </span>
+                }
+                subtitle="NOTES"
+                rightContent={
+                    <>
+                        <div style={{ position: 'relative', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '24px', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '12px', width: '360px' }}>
+                            <Search size={20} color="var(--color-text-3)" />
+                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Query your mind..." style={{ background: 'none', border: 'none', outline: 'none', color: 'var(--color-text-1)', fontSize: '16px', width: '100%' }} />
+                        </div>
+                        <button 
+                            onClick={() => { setEditorNote(null); setShowEditor(true); }}
+                            style={{ background: 'var(--color-text-1)', color: 'var(--color-base)', border: 'none', borderRadius: '24px', padding: '20px 40px', fontSize: '18px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: 'var(--shadow-md)' }}
+                        >
+                            <Plus size={24} strokeWidth={3} /> Capture Thought
+                        </button>
+                    </>
+                }
+            />
 
             {/* ── Categories ── */}
             <div style={{ display: 'flex', gap: '12px', marginBottom: '60px', overflowX: 'auto', paddingBottom: '16px' }}>

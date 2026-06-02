@@ -1,11 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import PageHeader from '../components/layout/PageHeader';
 
 const Identity = () => {
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
+    <div className="page-container" style={{
       padding: 'var(--content-pad)',
       paddingBottom: '100px',
       fontFamily: 'var(--font-sans)',
@@ -16,37 +15,12 @@ const Identity = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <header style={{ textAlign: 'center', marginBottom: '80px', paddingTop: '40px' }}>
-          <div style={{
-            fontSize: '12px',
-            fontWeight: 700,
-            color: 'var(--color-accent)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.2em',
-            marginBottom: '16px',
-          }}>
-            Identity & Vision
-          </div>
-          <h1 style={{
-            fontSize: 'min(64px, 12vw)',
-            fontWeight: 500,
-            fontFamily: 'var(--font-serif)',
-            lineHeight: 1,
-            letterSpacing: '-0.03em',
-            margin: '0 0 24px 0',
-          }}>
-            AIIMIN
-          </h1>
-          <p style={{
-            fontSize: '18px',
-            color: 'var(--color-text-2)',
-            maxWidth: '600px',
-            margin: '0 auto',
-            lineHeight: 1.6,
-          }}>
-            The definitive personal operating system designed to structure your life, optimize your focus, and accelerate your trajectory.
-          </p>
-        </header>
+        <PageHeader 
+          title="AIIMIN"
+          subtitle="Identity & Vision"
+          description="The definitive personal operating system designed to structure your life, optimize your focus, and accelerate your trajectory."
+          centered={true}
+        />
 
         <section style={{ marginBottom: '60px' }}>
           <h2 style={{ fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-serif)', marginBottom: '24px', borderBottom: '1px solid var(--color-border)', paddingBottom: '12px' }}>
