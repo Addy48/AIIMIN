@@ -95,14 +95,17 @@ const getDateRange = () => {
 export const fetchFootball = async () => {
   const dateRange = getDateRange();
   const leagues = [
+    { slug: 'fifa.world', name: 'World Cup', flag: '🏆' },
+    { slug: 'conmebol.america', name: 'Copa America', flag: '🌎' },
     { slug: 'eng.1', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
     { slug: 'esp.1', name: 'La Liga', flag: '🇪🇸' },
     { slug: 'UEFA.CHAMPIONS', name: 'UCL', flag: '⭐' },
+    { slug: 'usa.1', name: 'MLS', flag: '🇺🇸' },
   ];
 
   const results = await Promise.allSettled(
     leagues.map(l =>
-      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard?dates=${dateRange}`)
+      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
         .then(d => ({ league: l, events: parseESPNEvents(d).slice(0, 5) }))
     )
   );
@@ -208,11 +211,9 @@ export const fetchCricket = async () => {
         // 6. Explicitly exclude English counties
         const englishCounties = ['middlesex', 'yorkshire', 'surrey', 'somerset', 'lancashire', 'essex', 'warwickshire', 'hampshire', 'sussex', 'kent', 'nottinghamshire', 'glamorgan', 'leicestershire', 'derbyshire', 'worcestershire', 'gloucestershire', 'durham', 'northamptonshire', 'county', 'vitality blast'];
         const isCounty = englishCounties.some(c => title.includes(c));
-        if (isCounty) return false;
         
-        // Final Filter: Must be IPL, India, or Top 8 International
-        // We include IPL and India always (Men's), and Top 8 if it's a recognized match type
-        return isIPL || involvesIndia || (involvesTop8 && (type === 't20' || type === 'odi' || type === 'test' || type === 'm' || type === 't10')) || involvesIPLTeam;
+        // Relaxed fallback: if nothing else matches, at least show international formats.
+        return isIPL || involvesIndia || involvesTop8 || involvesIPLTeam || (!isCounty && (type === 't20' || type === 'odi' || type === 'test'));
       })
       .map(match => {
       const isLive = match.ms === 'live';
@@ -286,8 +287,7 @@ export const fetchF1 = async () => {
 /* ── Basketball ───────────────────────────────────────────── */
 export const fetchBasketball = async (dateOffset = 0) => {
   try {
-    const dateRange = getDateRange();
-    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard?dates=${dateRange}`);
+    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard`);
     return [{ league: { name: 'NBA', flag: '🏀' }, events: parseESPNEvents(data) }];
   } catch (err) {
     console.warn('NBA API failed:', err);

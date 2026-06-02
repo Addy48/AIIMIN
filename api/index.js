@@ -28,9 +28,13 @@ import { pool } from '../server/lib/db.js';
 app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
 
 // ── Supabase Keepalive (CRON) ──
+import { supabase } from '../server/lib/supabase.js';
 app.get('/keepalive', async (c) => {
     try {
         await pool.query('SELECT 1');
+        // Also ping via Supabase client to ensure REST API registers activity
+        const { data, error } = await supabase.from('users').select('id').limit(1);
+        if (error) console.error('Supabase REST ping error:', error);
         return c.json({ status: 'alive', message: 'Supabase pinged successfully', ts: Date.now() });
     } catch (err) {
         return c.json({ status: 'error', message: err.message }, 500);
@@ -59,6 +63,7 @@ const routeMap = {
     'intelligence':  () => import('../server/routes/intelligence.js'),
     'ats':           () => import('../server/routes/ats.js'),
     'blob':          () => import('../server/services/blobService.js'),
+    'feedback':      () => import('../server/routes/feedback.js'),
 };
 
 async function loadRouter(name) {

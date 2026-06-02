@@ -88,14 +88,17 @@ const getDateRange = () => {
 const fetchFootball = async () => {
   const dateRange = getDateRange();
   const leagues = [
+    { slug: 'fifa.world', name: 'World Cup', flag: '🏆' },
+    { slug: 'conmebol.america', name: 'Copa America', flag: '🌎' },
     { slug: 'eng.1', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
     { slug: 'esp.1', name: 'La Liga', flag: '🇪🇸' },
     { slug: 'UEFA.CHAMPIONS', name: 'UCL', flag: '⭐' },
+    { slug: 'usa.1', name: 'MLS', flag: '🇺🇸' },
   ];
 
   const results = await Promise.allSettled(
     leagues.map(l =>
-      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard?dates=${dateRange}`)
+      fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
         .then(d => {
           let events = parseESPNEvents(d);
           // Apply strict caps: Max 5 items per league to stay clean and cheap
@@ -172,9 +175,9 @@ const fetchCricket = async () => {
 
         const englishCounties = ['middlesex', 'yorkshire', 'surrey', 'somerset', 'lancashire', 'essex', 'warwickshire', 'hampshire', 'sussex', 'kent', 'nottinghamshire', 'glamorgan', 'leicestershire', 'derbyshire', 'worcestershire', 'gloucestershire', 'durham', 'northamptonshire', 'county', 'vitality blast'];
         const isCounty = englishCounties.some(c => title.includes(c));
-        if (isCounty) return false;
         
-        return isIPL || involvesIndia || (involvesTop8 && (type === 't20' || type === 'odi' || type === 'test' || type === 'm' || type === 't10')) || involvesIPLTeam;
+        // Relaxed fallback: if nothing else matches, at least show international formats.
+        return isIPL || involvesIndia || involvesTop8 || involvesIPLTeam || (!isCounty && (type === 't20' || type === 'odi' || type === 'test'));
       })
       .map(match => {
         const isLive = match.ms === 'live';
@@ -230,11 +233,11 @@ const fetchCricket = async () => {
 const fetchF1 = async () => {
   try {
     const [nextRace, lastRace, driverStandings, constructorStandings, schedule] = await Promise.allSettled([
-      fetchJSON(`${ERGAST}/current/next.json`),
-      fetchJSON(`${ERGAST}/current/last/results.json`),
-      fetchJSON(`${ERGAST}/current/driverStandings.json`),
-      fetchJSON(`${ERGAST}/current/constructorStandings.json`),
-      fetchJSON(`${ERGAST}/current.json`),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/next.json`),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/last/results.json`),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/driverStandings.json`),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/constructorStandings.json`),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current.json`),
     ]);
 
     const next = nextRace.status === 'fulfilled' && nextRace.value?.MRData ? nextRace.value.MRData.RaceTable?.Races?.[0] : null;
@@ -255,8 +258,7 @@ const fetchF1 = async () => {
 /* ── Basketball ── */
 const fetchBasketball = async () => {
   try {
-    const dateRange = getDateRange();
-    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard?dates=${dateRange}`);
+    const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard`);
     const events = parseESPNEvents(data).slice(0, 5);
     return [{ league: { name: 'NBA', flag: '🏀' }, events }];
   } catch (err) {
@@ -315,9 +317,15 @@ export const getCachedSports = async () => {
   const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
   if (cacheAgeMs > CACHE_TTL_MS) {
-    console.log('[SportsCache] Cache expired (older than 2 hours). Triggering background refresh...');
-    // Trigger in background to avoid blocking the current request
-    updateSportsCache().catch(err => console.error('[SportsCache] Background refresh failed:', err));
+    console.log('[SportsCache] Cache expired (older than 2 hours). Refreshing synchronously...');
+    // Await synchronously on serverless to ensure execution completes
+    try {
+      const freshData = await updateSportsCache();
+      return freshData;
+    } catch (err) {
+      console.error('[SportsCache] Synchronous refresh failed:', err);
+      // Fallback to stale data if refresh fails
+    }
   }
 
   return data;

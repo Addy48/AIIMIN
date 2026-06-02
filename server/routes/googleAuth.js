@@ -52,7 +52,8 @@ app.get('/auth/init', requireAuth, async (c) => {
     );
 
     const authUrl = client.generateAuthUrl({ access_type: 'offline', prompt: 'consent', scope: SCOPES, state });
-    return c.redirect(authUrl);
+    // Return authUrl as JSON so frontend can securely redirect
+    return c.json({ authUrl });
 });
 
 app.get('/auth/callback', async (c) => {

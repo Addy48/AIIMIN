@@ -6,6 +6,7 @@ import {
   AlertTriangle, Check, ChevronDown, ChevronUp
 } from 'lucide-react';
 import toast from '../utils/toast';
+import { useAudio } from '../context/AudioContext';
 
 // ── Session presets ──────────────────────────────────────────────────────────
 const PRESETS = [
@@ -79,10 +80,8 @@ export default function FocusRoom() {
     try { return parseInt(localStorage.getItem('aiimin_focus_mins') || '0', 10); } catch { return 0; }
   });
 
-  // Audio
-  const [audioFiles, setAudioFiles] = useState([]);
-  const [audioIdx, setAudioIdx] = useState(0);
-  const audioRef = useRef(null);
+  // Audio is now handled globally in AudioContext
+  const { audioFiles, audioIdx, handleAudioUpload, nextAudio } = useAudio();
 
   // Tasks for this session
   const [sessionTasks, setSessionTasks] = useState([]);
@@ -172,21 +171,6 @@ export default function FocusRoom() {
     };
   }, [status, phase]);
 
-  // ── Audio ──────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (audioRef.current && audioFiles.length > 0) {
-      audioRef.current.play().catch(() => {});
-    }
-  }, [audioIdx, audioFiles.length]);
-
-  const handleAudioUpload = (e) => {
-    const urls = Array.from(e.target.files).map(f => ({ name: f.name, url: URL.createObjectURL(f) }));
-    setAudioFiles(urls);
-    setAudioIdx(0);
-  };
-
-  const nextAudio = () => setAudioIdx(i => (i + 1) % audioFiles.length);
-
   // ── Actions ────────────────────────────────────────────────────────────────
   const start = () => {
     setStatus('running');
@@ -217,7 +201,7 @@ export default function FocusRoom() {
   const streakLabel = cycleCount >= 4 ? `🔥 ${Math.floor(cycleCount / 4)} streak${Math.floor(cycleCount / 4) > 1 ? 's' : ''}` : null;
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--color-accent)', marginBottom: '6px' }}>
@@ -418,24 +402,22 @@ export default function FocusRoom() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: 'var(--color-text-1)' }}>
                 <Music size={16} /> Ambient Sounds
               </div>
+              {audioFiles.length > 0 && (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--color-elevated)', borderRadius: '12px', padding: '6px 12px', margin: '0 12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{audioFiles[audioIdx].name}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Track {audioIdx + 1}/{audioFiles.length}</div>
+                  </div>
+                  <button onClick={nextAudio} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)' }}>
+                    <SkipForward size={16} />
+                  </button>
+                </div>
+              )}
               <label style={{ cursor: 'pointer', fontSize: '11px', fontWeight: 700, padding: '6px 14px', background: 'var(--color-elevated)', borderRadius: '10px', color: 'var(--color-text-2)', border: '1px solid var(--color-border)' }}>
                 + Add Music
                 <input type="file" accept="audio/*" multiple onChange={handleAudioUpload} style={{ display: 'none' }} />
               </label>
             </div>
-            {audioFiles.length > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--color-elevated)', padding: '12px 14px', borderRadius: '12px' }}>
-                <Volume2 size={16} color="var(--color-accent)" />
-                <div style={{ flex: 1, overflow: 'hidden' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{audioFiles[audioIdx].name}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Track {audioIdx + 1}/{audioFiles.length}</div>
-                </div>
-                <audio ref={audioRef} src={audioFiles[audioIdx].url} controls onEnded={nextAudio} style={{ height: '28px', width: '160px' }} />
-                <button onClick={nextAudio} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)' }}>
-                  <SkipForward size={16} />
-                </button>
-              </div>
-            )}
           </div>
         </div>
 

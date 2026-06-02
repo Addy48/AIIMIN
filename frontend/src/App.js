@@ -27,6 +27,7 @@ import { GuestGateProvider } from './components/common/GuestGate';
 import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
 
 // Lazy-loaded Dashboard routes
@@ -60,9 +61,11 @@ function App() {
     <ErrorBoundary label="Application">
       <ThemeProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <AuthedApp />
-          </BrowserRouter>
+          <AudioProvider>
+            <BrowserRouter>
+              <AuthedApp />
+            </BrowserRouter>
+          </AudioProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

@@ -378,7 +378,12 @@ const Discipline = () => {
   const quote = motivational[currentDays % motivational.length];
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '40px 24px',
+      paddingBottom: '80px'
+    }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
         <div>
@@ -619,7 +624,7 @@ const Discipline = () => {
       )}
 
       {/* Real Experiences & Motivation */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', marginBottom: '24px' }}>
         <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '24px' }}>
           <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Wind size={14} color="var(--color-accent)" /> Voices of Victory
@@ -640,38 +645,6 @@ const Discipline = () => {
           </div>
         </div>
 
-        {/* YT Music Embed */}
-        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Zap size={14} color="#f43f5e" /> Focus & Flow
-            </div>
-            <button 
-              onClick={() => {
-                const url = prompt("Paste a YouTube Video ID or Playlist ID (e.g., 5qap5aO4i9A or PLxyz...):", localStorage.getItem('aiimin_yt_music') || '5qap5aO4i9A');
-                if (url) {
-                  localStorage.setItem('aiimin_yt_music', url);
-                  window.location.reload();
-                }
-              }}
-              style={{ background: 'transparent', border: '1px solid var(--color-border)', color: 'var(--color-text-3)', borderRadius: '8px', padding: '4px 8px', fontSize: '10px', cursor: 'pointer' }}
-            >
-              Change Playlist
-            </button>
-          </div>
-          <div style={{ flex: 1, borderRadius: '16px', overflow: 'hidden', background: '#000', border: '1px solid var(--color-border)' }}>
-            <iframe 
-              width="100%" 
-              height="100%" 
-              src={`https://www.youtube.com/embed/${localStorage.getItem('aiimin_yt_music') || '5qap5aO4i9A'}?autoplay=0&mute=0&controls=1&playsinline=1&rel=0&modestbranding=1`} 
-              title="YouTube Music Player" 
-              frameBorder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-              allowFullScreen
-              style={{ minHeight: '300px' }}
-            ></iframe>
-          </div>
-        </div>
       </div>
 
       {/* Reset modal */}

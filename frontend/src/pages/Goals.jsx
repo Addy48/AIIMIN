@@ -292,7 +292,12 @@ const Goals = () => {
   const onTrackCount = goals.filter(g => g.status === 'On Track' || g.status === 'Achieved').length;
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 0 100px 0' }}>
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '40px 24px',
+      paddingBottom: '80px'
+    }}>
       
       {/* ── Compact Header ── */}
       <motion.div 

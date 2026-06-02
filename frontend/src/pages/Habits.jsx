@@ -331,7 +331,12 @@ const Habits = () => {
   const filtered = filter === 'all' ? habits : habits.filter(h => h.category === filter);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '40px 24px',
+      paddingBottom: '80px'
+    }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
         <div>
