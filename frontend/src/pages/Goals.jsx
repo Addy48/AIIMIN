@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, BookOpen, Briefcase, Heart, Brain, Trash2, Clock } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
 
 /* ── Constants ─────────────────────────────────────────────── */
 const PILLARS = [
@@ -292,66 +293,48 @@ const Goals = () => {
   const onTrackCount = goals.filter(g => g.status === 'On Track' || g.status === 'Achieved').length;
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '40px 24px',
-      paddingBottom: '80px'
-    }}>
+    <div className="page-container">
       
-      {/* ── Compact Header ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{ 
-          background: 'var(--bg-elevated)',
-          border: '1px solid var(--border)',
-          borderRadius: '16px',
-          padding: '16px 24px',
-          marginBottom: '20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-1)', margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>Goals & Vision</h1>
-          <p style={{ color: 'var(--color-text-3)', fontSize: '12px', margin: 0, fontWeight: 500 }}>
+      <PageHeader 
+        title="Goals & Vision"
+        subtitle={
+          <span style={{ color: 'var(--color-text-3)', fontSize: '12px', margin: 0, fontWeight: 500 }}>
             <span style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{onTrackCount} active commitments</span> shaping your reality.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-1)' }}>{goals.length}</div>
-                <div style={{ fontSize: '9px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase' }}>Total</div>
+          </span>
+        }
+        rightContent={
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-1)' }}>{goals.length}</div>
+                  <div style={{ fontSize: '9px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase' }}>Total</div>
+              </div>
+              <div style={{ padding: '8px 16px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: '#10b981' }}>{goals.filter(g => g.status === 'Achieved').length}</div>
+                  <div style={{ fontSize: '9px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>Won</div>
+              </div>
             </div>
-            <div style={{ padding: '8px 16px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: '#10b981' }}>{goals.filter(g => g.status === 'Achieved').length}</div>
-                <div style={{ fontSize: '9px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>Won</div>
-            </div>
+            <button onClick={() => setShowModal(true)}
+              style={{ 
+                  background: 'var(--color-text-1)', 
+                  border: 'none', 
+                  borderRadius: '12px', 
+                  padding: '12px 24px', 
+                  fontSize: '14px', 
+                  fontWeight: 900, 
+                  color: 'var(--color-base)', 
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s'
+              }}
+            >
+              <Plus size={16} strokeWidth={3} /> Add
+            </button>
           </div>
-          <button onClick={() => setShowModal(true)}
-            style={{ 
-                background: 'var(--color-text-1)', 
-                border: 'none', 
-                borderRadius: '12px', 
-                padding: '12px 24px', 
-                fontSize: '14px', 
-                fontWeight: 900, 
-                color: 'var(--color-base)', 
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
-            }}
-          >
-            <Plus size={16} strokeWidth={3} /> Add
-          </button>
-        </div>
-      </motion.div>
+        }
+      />
 
       {/* ── Filters & Controls ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>

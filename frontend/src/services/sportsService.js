@@ -43,7 +43,11 @@ const parseESPNEvents = (data) => {
       name: ev.name,
       shortName: ev.shortName,
       status: status.name,
-      statusShort: status.completed ? '' : statusDetail,
+      statusShort: status.completed ? '' : (
+        status.state === 'pre' && ev.date
+          ? new Date(ev.date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' IST'
+          : statusDetail
+      ),
       statusDetail: comp.status?.type?.detail || '',
       clock: comp.status?.displayClock,
       period: comp.status?.period,
@@ -184,40 +188,36 @@ export const fetchCricket = async () => {
         const matchStatus = (match.status || '').toLowerCase();
         const title = `${t1} ${t2} ${series} ${type} ${matchStatus}`.toLowerCase();
 
-        // 1. Strictly No Women's cricket (Aggressive check)
+        // Strictly No Women's cricket (Aggressive check)
         if (title.includes('women') || title.includes('wpl') || title.includes('wbbl') || title.includes('wt20')) return false;
         
-        // 2. IPL Check (Highest priority for domestic)
+        // IPL Check (Highest priority for domestic)
         const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
         
-        // 3. Indian National Team Check (Highest priority for international)
+        // Indian National Team Check (Highest priority for international)
         const involvesIndia = t1 === 'india' || t2 === 'india' || t1 === 'ind' || t2 === 'ind' || t1.includes('(ind)') || t2.includes('(ind)');
 
-        // 4. Top 8 Nations (Men's International)
+        // Top 8 Nations (Men's International)
         const involvesTop8 = TOP_8.some(t => {
           const name = t.toLowerCase();
-          // Ensure we match the main team, not 'A' teams or 'U19' if possible
           const isMainTeam1 = t1 === name || t1.startsWith(`${name} `) || t1.endsWith(` ${name}`);
           const isMainTeam2 = t2 === name || t2.startsWith(`${name} `) || t2.endsWith(` ${name}`);
           return (isMainTeam1 || isMainTeam2) && !title.includes('u19') && !title.includes('under-19');
         });
 
-        // 5. IPL Team Check
+        // IPL Team Check
         const involvesIPLTeam = IPL_TEAMS.some(t => {
             const team = t.toLowerCase();
-            return t1.includes(team) || t2.includes(team);
+            return t1 === team || t2 === team || t1.includes(team) || t2.includes(team);
         });
 
-        // 6. Explicitly exclude English counties
-        const englishCounties = ['middlesex', 'yorkshire', 'surrey', 'somerset', 'lancashire', 'essex', 'warwickshire', 'hampshire', 'sussex', 'kent', 'nottinghamshire', 'glamorgan', 'leicestershire', 'derbyshire', 'worcestershire', 'gloucestershire', 'durham', 'northamptonshire', 'county', 'vitality blast'];
-        const isCounty = englishCounties.some(c => title.includes(c));
-        
-        // Relaxed fallback: if nothing else matches, at least show international formats.
-        return isIPL || involvesIndia || involvesTop8 || involvesIPLTeam || (!isCounty && (type === 't20' || type === 'odi' || type === 'test'));
+        // Strict fallback: ONLY return IPL, India matches, Top 8 ICC matches, and IPL teams
+        return isIPL || involvesIndia || involvesTop8 || involvesIPLTeam;
       })
       .map(match => {
       const isLive = match.ms === 'live';
       const isFinished = match.ms === 'result';
+      const gmtDate = match.dateTimeGMT?.endsWith('Z') ? match.dateTimeGMT : `${match.dateTimeGMT}Z`;
       
       return {
         id: match.id,
@@ -228,7 +228,7 @@ export const fetchCricket = async () => {
           ? (match.status || 'Live')
           : isFinished
             ? (match.status || 'Result')
-            : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(match.dateTimeGMT).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
+            : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(gmtDate).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
         statusDetail: match.t1s || match.t2s || '',
         isLive,
         isFinished,

@@ -37,7 +37,11 @@ const parseESPNEvents = (data) => {
       name: ev.name,
       shortName: ev.shortName,
       status: status.name,
-      statusShort: status.completed ? '' : statusDetail,
+      statusShort: status.completed ? '' : (
+        status.state === 'pre' && ev.date
+          ? new Date(ev.date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' IST'
+          : statusDetail
+      ),
       statusDetail: comp.status?.type?.detail || '',
       clock: comp.status?.displayClock,
       period: comp.status?.period,
@@ -84,6 +88,30 @@ const getDateRange = () => {
   return `${getDateStr(-3)}-${getDateStr(3)}`;
 };
 
+const sortEvents = (events) => {
+  return events.sort((a, b) => {
+    // 1. Live matches first
+    if (a.isLive && !b.isLive) return -1;
+    if (!a.isLive && b.isLive) return 1;
+
+    // 2. Upcoming matches next (not live, not finished)
+    const aIsUpcoming = !a.isLive && !a.isFinished;
+    const bIsUpcoming = !b.isLive && !b.isFinished;
+    if (aIsUpcoming && !bIsUpcoming) return -1;
+    if (!aIsUpcoming && bIsUpcoming) return 1;
+
+    // 3. Within same category, sort by date/time
+    const dateA = new Date(a.date || a.dateTimeGMT || 0).getTime();
+    const dateB = new Date(b.date || b.dateTimeGMT || 0).getTime();
+    
+    if (aIsUpcoming) {
+      return dateA - dateB; // earliest upcoming first
+    } else {
+      return dateB - dateA; // latest finished first
+    }
+  });
+};
+
 /* ── Football (Soccer) Fetch & Filter ── */
 const fetchFootball = async () => {
   const dateRange = getDateRange();
@@ -101,8 +129,9 @@ const fetchFootball = async () => {
       fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
         .then(d => {
           let events = parseESPNEvents(d);
-          // Apply strict caps: Max 5 items per league to stay clean and cheap
-          events = events.slice(0, 5);
+          events = sortEvents(events);
+          // Apply strict caps: Max 3 main matches per league to avoid clutter
+          events = events.slice(0, 3);
           return { league: l, events };
         })
     )
@@ -156,10 +185,18 @@ const fetchCricket = async () => {
         const matchStatus = (match.status || '').toLowerCase();
         const title = `${t1} ${t2} ${series} ${type} ${matchStatus}`.toLowerCase();
 
+        // Exclude women matches
         if (title.includes('women') || title.includes('wpl') || title.includes('wbbl') || title.includes('wt20')) return false;
         
+        // Exclude England county and other domestic non-IPL leagues
+        if (title.includes('county') || title.includes('vitality') || title.includes('blast') || title.includes('hundred') || title.includes('sheffield')) return false;
+
         const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
         const involvesIndia = t1 === 'india' || t2 === 'india' || t1 === 'ind' || t2 === 'ind' || t1.includes('(ind)') || t2.includes('(ind)');
+
+        // Exclude Pakistan unless playing with India
+        const involvesPak = t1.includes('pakistan') || t2.includes('pakistan') || t1 === 'pak' || t2 === 'pak';
+        if (involvesPak && !involvesIndia) return false;
 
         const involvesTop8 = TOP_8.some(t => {
           const name = t.toLowerCase();
@@ -168,20 +205,21 @@ const fetchCricket = async () => {
           return (isMainTeam1 || isMainTeam2) && !title.includes('u19') && !title.includes('under-19');
         });
 
+        // Only ICC matches (Tests, ODIs, T20Is) or IPL
+        const isICC = title.includes('test') || title.includes('odi') || title.includes('t20i') || title.includes('icc') || title.includes('world cup');
+
         const involvesIPLTeam = IPL_TEAMS.some(t => {
             const team = t.toLowerCase();
-            return t1.includes(team) || t2.includes(team);
+            return t1 === team || t2 === team || t1.includes(team) || t2.includes(team);
         });
 
-        const englishCounties = ['middlesex', 'yorkshire', 'surrey', 'somerset', 'lancashire', 'essex', 'warwickshire', 'hampshire', 'sussex', 'kent', 'nottinghamshire', 'glamorgan', 'leicestershire', 'derbyshire', 'worcestershire', 'gloucestershire', 'durham', 'northamptonshire', 'county', 'vitality blast'];
-        const isCounty = englishCounties.some(c => title.includes(c));
-        
-        // Relaxed fallback: if nothing else matches, at least show international formats.
-        return isIPL || involvesIndia || involvesTop8 || involvesIPLTeam || (!isCounty && (type === 't20' || type === 'odi' || type === 'test'));
+        // Strict inclusion: Only IPL, India, or Top 8 teams in ICC matches
+        return isIPL || involvesIndia || (involvesTop8 && isICC) || involvesIPLTeam;
       })
       .map(match => {
         const isLive = match.ms === 'live';
         const isFinished = match.ms === 'result';
+        const gmtDate = match.dateTimeGMT?.endsWith('Z') ? match.dateTimeGMT : `${match.dateTimeGMT}Z`;
         
         return {
           id: match.id,
@@ -192,7 +230,7 @@ const fetchCricket = async () => {
             ? (match.status || 'Live')
             : isFinished
               ? (match.status || 'Result')
-              : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(match.dateTimeGMT).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
+              : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(gmtDate).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
           statusDetail: match.t1s || match.t2s || '',
           isLive,
           isFinished,
@@ -213,16 +251,31 @@ const fetchCricket = async () => {
         };
       });
 
-    // Caps: limit total cricket events to 5 max
-    events = events.slice(0, 5);
+    events = sortEvents(events);
+    events = events.slice(0, 6); // Top 6 most relevant matches
 
     return [{ league: { name: 'Cricket Scores', flag: '🏏' }, events }];
   } catch (err) {
     console.warn('Cricket API failed, falling back to ESPN scoreboard:', err);
     try {
       const general = await fetchJSON(`${ESPN}/cricket/scoreboard`);
-      const events = parseESPNEvents(general).slice(0, 5);
-      return [{ league: { name: 'Cricket (Fallback)', flag: '🏏' }, events }];
+      let events = parseESPNEvents(general).filter(ev => {
+        // Apply strict filter to ESPN fallback as well
+        const t1 = (ev.home?.name || '').toLowerCase();
+        const t2 = (ev.away?.name || '').toLowerCase();
+        
+        const involvesPak = t1.includes('pakistan') || t2.includes('pakistan');
+        const involvesIndia = t1.includes('india') || t2.includes('india');
+        if (involvesPak && !involvesIndia) return false;
+
+        const TOP_8 = ['australia', 'england', 'south africa', 'new zealand', 'west indies', 'sri lanka', 'india'];
+        const involvesTop8 = TOP_8.some(t => t1.includes(t) || t2.includes(t));
+        const isIPL = ev.league?.toLowerCase().includes('indian premier league') || t1.includes('chennai') || t2.includes('chennai') || t1.includes('mumbai') || t2.includes('mumbai') || t1.includes('royal') || t2.includes('royal');
+        
+        return involvesIndia || involvesTop8 || isIPL;
+      });
+      events = sortEvents(events).slice(0, 4);
+      return [{ league: { name: 'Cricket', flag: '🏏' }, events }];
     } catch (e) {
       return [];
     }
@@ -259,7 +312,8 @@ const fetchF1 = async () => {
 const fetchBasketball = async () => {
   try {
     const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard`);
-    const events = parseESPNEvents(data).slice(0, 5);
+    let events = parseESPNEvents(data);
+    events = sortEvents(events).slice(0, 3);
     return [{ league: { name: 'NBA', flag: '🏀' }, events }];
   } catch (err) {
     console.warn('NBA API failed:', err);
@@ -317,15 +371,12 @@ export const getCachedSports = async () => {
   const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
   if (cacheAgeMs > CACHE_TTL_MS) {
-    console.log('[SportsCache] Cache expired (older than 2 hours). Refreshing synchronously...');
-    // Await synchronously on serverless to ensure execution completes
-    try {
-      const freshData = await updateSportsCache();
-      return freshData;
-    } catch (err) {
-      console.error('[SportsCache] Synchronous refresh failed:', err);
-      // Fallback to stale data if refresh fails
-    }
+    console.log('[SportsCache] Cache expired (older than 2 hours). Refreshing asynchronously...');
+    // Fire and forget to avoid blocking UI, return stale data immediately
+    updateSportsCache().catch(err => {
+      console.error('[SportsCache] Background refresh failed:', err);
+    });
+    return data;
   }
 
   return data;
