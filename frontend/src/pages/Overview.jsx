@@ -298,7 +298,12 @@ const Overview = () => {
   if (!user) return null;
 
   return (
-    <div style={{ maxWidth:'1200px', margin:'0 auto' }}>
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '40px 24px',
+      paddingBottom: '80px'
+    }}>
       {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:'32px', gap: '24px', flexWrap: 'wrap' }}>
         <div>

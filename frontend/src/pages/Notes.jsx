@@ -161,7 +161,7 @@ const Notes = () => {
     });
 
     return (
-        <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 40px 100px 40px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 40px 100px 40px' }}>
             
             {/* ── Revolutionary Hero ── */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '60px 0', marginBottom: '40px' }}>

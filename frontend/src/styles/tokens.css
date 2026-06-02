@@ -176,7 +176,7 @@
 /* ────────────────────────────────────────────────────────
    LIGHT MODE: Nordic Calm (Parchment + Forest Ink)
 ───────────────────────────────────────────────────────── */
-[data-theme="light"] {
+[data-theme="normal"] {
   color-scheme: light;
 
   --color-base:    #F0EDE8;
@@ -282,118 +282,23 @@
 }
 
 /* ────────────────────────────────────────────────────────
-   THEME: MIDNIGHT BLUE
+   THEME: INTERNET (Hacker / Retro Web)
 ───────────────────────────────────────────────────────── */
-[data-theme="midnight"] {
+[data-theme="internet"] {
   color-scheme: dark;
-  --color-base: #0B1120;
-  --color-surface: #0F172A;
-  --color-elevated: #1E293B;
-  --color-border: #1E293B;
-  --color-border-lit: #334155;
-  --color-text-1: #F8FAFC;
-  --color-text-2: #94A3B8;
-  --color-text-3: #64748B;
-  --color-accent: #38BDF8;
-  --glass-bg: rgba(15, 23, 42, 0.88);
-  --glass-border: rgba(255, 255, 255, 0.06);
-}
-
-/* ────────────────────────────────────────────────────────
-   THEME: SOLARIZED DARK
-───────────────────────────────────────────────────────── */
-[data-theme="solarized"] {
-  color-scheme: dark;
-  --color-base: #002B36;
-  --color-surface: #073642;
-  --color-elevated: #002B36;
-  --color-border: #586E75;
-  --color-border-lit: #657B83;
-  --color-text-1: #839496;
-  --color-text-2: #93A1A1;
-  --color-text-3: #586E75;
-  --color-accent: #2AA198;
-  --glass-bg: rgba(7, 54, 66, 0.88);
-  --glass-border: rgba(255, 255, 255, 0.06);
-}
-
-/* ────────────────────────────────────────────────────────
-   THEME: NEON CYBERPUNK
-───────────────────────────────────────────────────────── */
-[data-theme="cyberpunk"] {
-  color-scheme: dark;
-  --color-base: #09090B;
-  --color-surface: #18181B;
-  --color-elevated: #27272A;
-  --color-border: #27272A;
-  --color-border-lit: #3F3F46;
-  --color-text-1: #F4F4F5;
-  --color-text-2: #A1A1AA;
-  --color-text-3: #71717A;
-  --color-accent: #F43F5E;
-  --color-success: #10B981;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --glass-bg: rgba(24, 24, 27, 0.88);
-  --glass-border: rgba(244, 63, 94, 0.15);
-}
-
-/* ────────────────────────────────────────────────────────
-   THEME: MONOKAI
-───────────────────────────────────────────────────────── */
-[data-theme="monokai"] {
-  color-scheme: dark;
-  --color-base: #272822;
-  --color-surface: #3E3D32;
-  --color-elevated: #49483E;
-  --color-border: #49483E;
-  --color-border-lit: #75715E;
-  --color-text-1: #F8F8F2;
-  --color-text-2: #E6DB74;
-  --color-text-3: #75715E;
-  --color-accent: #A6E22E;
-  --glass-bg: rgba(62, 61, 50, 0.88);
-  --glass-border: rgba(255, 255, 255, 0.06);
-}
-
-/* ────────────────────────────────────────────────────────
-   THEME: GRAPHITE GOLD
-───────────────────────────────────────────────────────── */
-[data-theme="graphite"] {
-  color-scheme: dark;
-  --color-base: #151515;
-  --color-surface: #202020;
-  --color-elevated: #2B2B2B;
-  --color-border: #343434;
-  --color-border-lit: #4A4A4A;
-  --color-text-1: #F3F0E8;
-  --color-text-2: #C2BBAE;
-  --color-text-3: #7B756B;
-  --color-accent: #D4AF37;
-  --color-success: #7FB069;
-  --color-warning: #D4AF37;
-  --color-danger: #C85C5C;
-  --glass-bg: rgba(32, 32, 32, 0.88);
-  --glass-border: rgba(212, 175, 55, 0.16);
-}
-
-/* ────────────────────────────────────────────────────────
-   THEME: SAKURA LIGHT
-───────────────────────────────────────────────────────── */
-[data-theme="sakura"] {
-  color-scheme: light;
-  --color-base: #FFF7F8;
-  --color-surface: #FFFFFF;
-  --color-elevated: #FCE7EB;
-  --color-border: #F3CCD4;
-  --color-border-lit: #EAAEBB;
-  --color-text-1: #2A171C;
-  --color-text-2: #6D3B47;
-  --color-text-3: #A06A76;
-  --color-accent: #BE3455;
-  --color-success: #2F7D5A;
-  --color-warning: #B8872D;
-  --color-danger: #B4233F;
-  --glass-bg: rgba(255, 247, 248, 0.88);
-  --glass-border: rgba(190, 52, 85, 0.12);
+  --color-base: #000000;
+  --color-surface: #0a0a0a;
+  --color-elevated: #111111;
+  --color-border: #1a1a1a;
+  --color-border-lit: #222222;
+  --color-text-1: #e0e0e0;
+  --color-text-2: #8a8a8a;
+  --color-text-3: #555555;
+  --color-accent: #00ff41;
+  --color-success: #00ff41;
+  --color-warning: #ffb000;
+  --color-danger: #ff003c;
+  --glass-bg: rgba(0, 0, 0, 0.9);
+  --glass-border: rgba(0, 255, 65, 0.2);
+  --font-sans: 'JetBrains Mono', 'SF Mono', monospace; /* Override to make it hacker-ish */
 }

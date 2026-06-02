@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
+import GlobalMusicPlayer from '../system/GlobalMusicPlayer';
 
 /**
  * DashboardLayout — Authenticated shell.
@@ -103,6 +104,8 @@ const DashboardLayout = ({ user }) => {
       }}>
         <Outlet />
       </main>
+
+      <GlobalMusicPlayer />
     </div>
   );
 };

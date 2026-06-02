@@ -303,7 +303,12 @@ savingsRate: (sRate * 100).toFixed(1),
   ];
 
   return (
-    <div style={{ paddingBottom: '80px' }}>
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: '40px 24px',
+      paddingBottom: '80px'
+    }}>
 
       {/* Header */}
       <header style={{ marginBottom: '40px' }}>
