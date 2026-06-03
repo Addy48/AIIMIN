@@ -286,19 +286,20 @@
 ───────────────────────────────────────────────────────── */
 [data-theme="internet"] {
   color-scheme: dark;
-  --color-base: #000000;
-  --color-surface: #0a0a0a;
-  --color-elevated: #111111;
-  --color-border: #1a1a1a;
-  --color-border-lit: #222222;
-  --color-text-1: #e0e0e0;
-  --color-text-2: #8a8a8a;
-  --color-text-3: #555555;
-  --color-accent: #00ff41;
-  --color-success: #00ff41;
-  --color-warning: #ffb000;
-  --color-danger: #ff003c;
-  --glass-bg: rgba(0, 0, 0, 0.9);
-  --glass-border: rgba(0, 255, 65, 0.2);
-  --font-sans: 'JetBrains Mono', 'SF Mono', monospace; /* Override to make it hacker-ish */
+  --color-base: #0A0D10;
+  --color-surface: #101419;
+  --color-elevated: #161B22;
+  --color-border: #21262D;
+  --color-border-lit: #30363D;
+  --color-text-1: #F0F6FC;
+  --color-text-2: #8B949E;
+  --color-text-3: #484F58;
+  --color-accent: #00F0FF;
+  --color-success: #00FF88;
+  --color-warning: #FFD33D;
+  --color-danger: #FF7B72;
+  --glass-bg: rgba(10, 13, 16, 0.85);
+  --glass-border: rgba(0, 240, 255, 0.25);
+  --ambient-1: radial-gradient(circle at 0% 0%, rgba(0, 240, 255, 0.15), transparent 40%);
+  --ambient-2: radial-gradient(circle at 100% 100%, rgba(0, 255, 136, 0.1), transparent 40%);
 }

@@ -453,6 +453,25 @@ const Discipline = () => {
               </div>
             )}
 
+            {/* My Why Anchor */}
+            <div style={{ marginBottom: '24px', textAlign: 'left', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
+              <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
+                My Why (Anchor)
+              </div>
+              <textarea
+                defaultValue={localStorage.getItem('aiimin_discipline_why') || ''}
+                onBlur={e => localStorage.setItem('aiimin_discipline_why', e.target.value)}
+                placeholder="Why are you doing this? What do you stand to lose if you fail? Be brutally honest here."
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  background: 'transparent', border: 'none',
+                  fontSize: '13px', color: 'var(--color-text-1)', outline: 'none', resize: 'none',
+                  fontFamily: 'inherit', lineHeight: 1.6,
+                }}
+                rows={3}
+              />
+            </div>
+
             {/* Daily Pledge */}
             <div style={{ marginBottom: '24px' }}>
               {!pledgedToday ? (

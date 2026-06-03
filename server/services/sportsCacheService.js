@@ -129,7 +129,27 @@ const fetchFootball = async () => {
       fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
         .then(d => {
           let events = parseESPNEvents(d);
+          
+          const FAVORITES = ['real madrid', 'arsenal', 'manchester united', 'man utd'];
+          const RIVALS = ['barcelona', 'atletico madrid', 'manchester city', 'liverpool', 'chelsea', 'tottenham', 'bayern munich', 'psg', 'juventus'];
+          
+          events = events.filter(ev => {
+            const t1 = (ev.home?.name || '').toLowerCase();
+            const t2 = (ev.away?.name || '').toLowerCase();
+            return FAVORITES.some(f => t1.includes(f) || t2.includes(f)) || RIVALS.some(r => t1.includes(r) || t2.includes(r));
+          });
+
           events = sortEvents(events);
+          
+          // Force favorites to the absolute top
+          events = events.sort((a, b) => {
+             const aFav = FAVORITES.some(f => a.home?.name?.toLowerCase().includes(f) || a.away?.name?.toLowerCase().includes(f));
+             const bFav = FAVORITES.some(f => b.home?.name?.toLowerCase().includes(f) || b.away?.name?.toLowerCase().includes(f));
+             if (aFav && !bFav) return -1;
+             if (!aFav && bFav) return 1;
+             return 0;
+          });
+
           // Apply strict caps: Max 3 main matches per league to avoid clutter
           events = events.slice(0, 3);
           return { league: l, events };
@@ -295,11 +315,24 @@ const fetchF1 = async () => {
 
     const next = nextRace.status === 'fulfilled' && nextRace.value?.MRData ? nextRace.value.MRData.RaceTable?.Races?.[0] : null;
     const last = lastRace.status === 'fulfilled' && lastRace.value?.MRData ? lastRace.value.MRData.RaceTable?.Races?.[0] : null;
-    const drivers = driverStandings.status === 'fulfilled' && driverStandings.value?.MRData ? driverStandings.value.MRData.StandingsTable?.StandingsLists?.[0]?.DriverStandings?.slice(0, 10) : null;
-    const constructors = constructorStandings.status === 'fulfilled' && constructorStandings.value?.MRData ? constructorStandings.value.MRData.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings?.slice(0, 10) : null;
+    let drivers = driverStandings.status === 'fulfilled' && driverStandings.value?.MRData ? driverStandings.value.MRData.StandingsTable?.StandingsLists?.[0]?.DriverStandings : null;
+    let constructors = constructorStandings.status === 'fulfilled' && constructorStandings.value?.MRData ? constructorStandings.value.MRData.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings : null;
     const allRaces = schedule.status === 'fulfilled' && schedule.value?.MRData ? schedule.value.MRData.RaceTable?.Races || [] : [];
     const now = new Date();
     const upcoming = allRaces.filter(r => new Date(`${r.date}T${r.time || '00:00:00Z'}`) > now).slice(0, 3);
+
+    // VIP Driver Cutoff Filter (Top 3 + Hamilton + Verstappen)
+    const VIPs = ['verstappen', 'hamilton'];
+    if (drivers) {
+      drivers = drivers.filter((d, index) => index < 3 || VIPs.includes((d.Driver?.driverId || '').toLowerCase()));
+    }
+    if (last && last.Results) {
+      last.Results = last.Results.filter((r, index) => index < 3 || VIPs.includes((r.Driver?.driverId || '').toLowerCase()));
+    }
+    if (constructors) {
+      // Keep constructor standings clean too (Top 4)
+      constructors = constructors.slice(0, 4);
+    }
 
     return { next, last, standings: drivers, constructors, upcoming };
   } catch (err) {
