@@ -213,6 +213,34 @@ export default function FocusRoom() {
         {/* ── LEFT: Timer ──────────────────────────────────────────────────── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
+          {/* Locked Intent Setting */}
+          <div style={{
+            background: 'var(--glass-bg)',
+            backdropFilter: 'var(--glass-blur)',
+            border: `1px solid ${status === 'running' ? phaseInfo.color : 'var(--color-border)'}`,
+            borderRadius: '20px',
+            padding: '16px 20px',
+            boxShadow: status === 'running' ? `0 0 20px ${phaseInfo.color}33` : 'none',
+            transition: 'all 0.3s ease',
+            display: 'flex', flexDirection: 'column', gap: '8px'
+          }}>
+            <div style={{ fontSize: '12px', fontWeight: 800, color: status === 'running' ? phaseInfo.color : 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {status === 'running' ? 'Active Commitment' : 'Set Your Intent'}
+            </div>
+            <input
+              value={taskInput}
+              onChange={e => setTaskInput(e.target.value)}
+              disabled={status === 'running'}
+              placeholder="e.g., 'Finish the math assignment without checking phone'"
+              style={{
+                background: 'transparent', border: 'none', color: 'var(--color-text-1)',
+                fontSize: '16px', fontWeight: 600, outline: 'none', width: '100%',
+                opacity: status === 'running' ? 1 : 0.8,
+                fontFamily: 'inherit'
+              }}
+            />
+          </div>
+
           {/* Preset Pills */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
             {PRESETS.map(p => (
