@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Font, Image } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import { Download, AlertCircle, Calendar, FileText, CheckCircle } from 'lucide-react';
 
 // Create styles for PDF

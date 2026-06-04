@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, RefreshCw, ChevronDown, ChevronUp, Trophy, Brain, Zap, Lock, X, Wind } from 'lucide-react';
+import { Shield, RefreshCw, ChevronDown, ChevronUp, Trophy, Brain, Zap, Lock, X, Wind, Activity, CheckCircle, AlertTriangle, Flame } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../utils/supabase';
-import PageHeader from '../components/layout/PageHeader';/* ── Storage ── */
-const SK_DATA = 'aiimin_discipline_v2';
-const SK_LOG  = 'aiimin_discipline_log_v2';
+import PageHeader from '../components/layout/PageHeader';
+
+/* ── Storage ── */
+const SK_DATA = 'aiimin_discipline_v3';
+const SK_LOG  = 'aiimin_discipline_log_v3';
 
 const loadData = () => {
   try { return JSON.parse(localStorage.getItem(SK_DATA) || 'null'); }
@@ -50,13 +52,33 @@ const MILESTONES = [
   { days: 21,  icon: '💪', label: '3 Weeks',   msg: '21 days — a new habit is forming.' },
   { days: 30,  icon: '🏆', label: '30 Days',   msg: 'A full month. Elite level discipline.' },
   { days: 60,  icon: '🦅', label: '60 Days',   msg: 'Two months. You\'ve mastered your mind.' },
-  { days: 90,  icon: '👑', label: '90 Days',   msg: 'THREE MONTHS. Ronaldo-level commitment.' },
+  { days: 90,  icon: '👑', label: '90 Days',   msg: 'THREE MONTHS. Rewired & Reborn.' },
+  { days: 365, icon: '🌟', label: '1 Year',    msg: 'An entire year. A completely new life.' },
+];
+
+/* ── Recovery Strategies ── */
+const STRATEGIES = [
+  {
+    title: 'The 10-Minute Rule',
+    desc: 'When an urge hits, tell yourself you will wait 10 minutes. By the time 10 minutes pass, the chemical spike in your brain will usually have subsided.',
+    icon: <Wind size={16} color="#3b82f6" />
+  },
+  {
+    title: 'HALT Method',
+    desc: 'Are you Hungry, Angry, Lonely, or Tired? These four states make you highly vulnerable to relapse. Fix the underlying state instead of giving in.',
+    icon: <Activity size={16} color="#f59e0b" />
+  },
+  {
+    title: 'Urge Surfing',
+    desc: 'Don\'t fight the urge. Observe it like a wave. It rises, peaks, and crashes. Ride it out without acting on it. Every time you surf an urge, your brain gets stronger.',
+    icon: <Zap size={16} color="#8b5cf6" />
+  }
 ];
 
 const ResetModal = ({ onConfirm, onCancel, currentDays, currentHours }) => {
   const TRIGGERS = [
-    'Boredom / loneliness', 'Stress / anxiety', 'Late night scroll',
-    'Triggered by content', 'Weak mindset moment', 'Other',
+    'Boredom / Loneliness', 'Stress / Anxiety', 'Late night / Exhaustion',
+    'Triggered by content', 'Rationalization (Just this once)', 'Other',
   ];
   const [trigger, setTrigger] = useState('');
   const [note, setNote] = useState('');
@@ -64,16 +86,18 @@ const ResetModal = ({ onConfirm, onCancel, currentDays, currentHours }) => {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
       zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
     }}>
       <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 24 }}
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
         style={{
-          background: 'var(--color-surface, #111111)',
-          border: '1px solid rgba(239,68,68,0.4)',
-          borderRadius: '28px', padding: '36px',
+          background: 'rgba(20, 20, 20, 0.9)',
+          border: '1px solid rgba(239,68,68,0.5)',
+          boxShadow: '0 24px 64px rgba(239, 68, 68, 0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+          borderRadius: '24px', padding: '36px',
           width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto',
           position: 'relative'
         }}
@@ -82,41 +106,45 @@ const ResetModal = ({ onConfirm, onCancel, currentDays, currentHours }) => {
           onClick={onCancel}
           style={{ 
             position: 'absolute', top: '24px', right: '24px',
-            background: 'var(--color-elevated)', border: '1px solid var(--color-border)', 
-            color: 'var(--color-text-2)', cursor: 'pointer', padding: '8px',
-            borderRadius: '12px', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-            zIndex: 100
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', 
+            color: 'rgba(255,255,255,0.6)', cursor: 'pointer', padding: '8px',
+            borderRadius: '12px', transition: 'all 0.2s', zIndex: 100
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-1)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-elevated)'; e.currentTarget.style.color = 'var(--color-text-2)'; }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
         >
           <X size={20} />
         </button>
 
-        <div style={{ fontSize: '28px', marginBottom: '8px', textAlign: 'center' }}>⚠️</div>
-        <h2 style={{ textAlign: 'center', fontSize: '20px', fontWeight: 900, color: '#ef4444', marginBottom: '6px', letterSpacing: '-0.02em' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <div style={{ background: 'rgba(239,68,68,0.1)', padding: '16px', borderRadius: '50%', border: '1px solid rgba(239,68,68,0.3)' }}>
+            <AlertTriangle size={32} color="#ef4444" />
+          </div>
+        </div>
+        
+        <h2 style={{ textAlign: 'center', fontSize: '24px', fontWeight: 900, color: '#ef4444', marginBottom: '8px', letterSpacing: '-0.02em' }}>
           You are about to throw away
         </h2>
-        <h1 style={{ textAlign: 'center', fontSize: '32px', fontWeight: 900, color: 'var(--color-text-1)', marginBottom: '16px', letterSpacing: '-0.02em' }}>
+        <h1 style={{ textAlign: 'center', fontSize: '36px', fontWeight: 900, color: '#fff', marginBottom: '16px', letterSpacing: '-0.02em' }}>
           {currentDays} Days, {currentHours} Hours
         </h1>
-        <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--color-text-3)', marginBottom: '28px', lineHeight: 1.6 }}>
-          Are you sure you want to surrender? If so, take accountability.
+        <p style={{ textAlign: 'center', fontSize: '14px', color: 'rgba(255,255,255,0.6)', marginBottom: '32px', lineHeight: 1.6 }}>
+          Are you completely sure you want to surrender? You will regret this in exactly 5 minutes. If you must, take accountability.
         </p>
 
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '10px' }}>
-            What triggered it?
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', marginBottom: '12px' }}>
+            What triggered this failure?
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {TRIGGERS.map(t => (
               <button key={t} onClick={() => setTrigger(t)}
                 style={{
-                  padding: '10px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 700,
-                  border: `1px solid ${trigger === t ? '#ef4444' : 'var(--color-border)'}`,
-                  background: trigger === t ? 'rgba(239,68,68,0.1)' : 'var(--color-surface)',
-                  color: trigger === t ? '#ef4444' : 'var(--color-text-2)',
-                  cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
+                  padding: '12px', borderRadius: '12px', fontSize: '13px', fontWeight: 700,
+                  border: `1px solid ${trigger === t ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+                  background: trigger === t ? 'rgba(239,68,68,0.15)' : 'rgba(0,0,0,0.2)',
+                  color: trigger === t ? '#ef4444' : 'rgba(255,255,255,0.7)',
+                  cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
                 }}>
                 {t}
               </button>
@@ -124,57 +152,67 @@ const ResetModal = ({ onConfirm, onCancel, currentDays, currentHours }) => {
           </div>
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
-            Reflect briefly (mandatory):
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', marginBottom: '12px' }}>
+            Reflect on this moment:
           </div>
           <textarea
             value={note} onChange={e => setNote(e.target.value)} rows={3}
-            placeholder="What were you feeling? What led to this? Be honest."
+            placeholder="What were you feeling? What led to this? Don't make excuses. Be brutally honest."
             style={{
               width: '100%', boxSizing: 'border-box',
-              background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-              borderRadius: '12px', padding: '12px 14px', fontSize: '13px',
-              color: 'var(--color-text-1)', outline: 'none', resize: 'none',
+              background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px', padding: '16px', fontSize: '14px',
+              color: '#fff', outline: 'none', resize: 'none',
               fontFamily: 'inherit', lineHeight: 1.5,
+              transition: 'border-color 0.2s',
             }}
+            onFocus={e => e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'}
+            onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
           />
         </div>
 
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
-            Type "I relapse" to confirm:
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', marginBottom: '12px' }}>
+            Type "I surrender" to confirm:
           </div>
           <input
             type="text"
             value={confirmText}
             onChange={e => setConfirmText(e.target.value)}
-            placeholder="I relapse"
+            placeholder="I surrender"
             style={{
               width: '100%', boxSizing: 'border-box',
-              background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-              borderRadius: '12px', padding: '12px 14px', fontSize: '13px',
-              color: 'var(--color-text-1)', outline: 'none',
-              fontFamily: 'inherit',
+              background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px', padding: '16px', fontSize: '14px',
+              color: '#fff', outline: 'none', fontFamily: 'inherit',
+              transition: 'border-color 0.2s',
             }}
+            onFocus={e => e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)'}
+            onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
           />
         </div>
 
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={onCancel}
-            style={{ flex: 1, padding: '14px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '14px', fontSize: '14px', fontWeight: 800, color: 'var(--color-text-2)', cursor: 'pointer', fontFamily: 'inherit' }}>
-            Cancel
+            style={{ flex: 1, padding: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontSize: '15px', fontWeight: 800, color: 'rgba(255,255,255,0.8)', cursor: 'pointer', transition: 'all 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+          >
+            Cancel (Stay Strong)
           </button>
-          <button onClick={() => confirmText.trim().toLowerCase() === 'i relapse' && trigger && note && onConfirm({ trigger, note })}
-            disabled={confirmText.trim().toLowerCase() !== 'i relapse' || !trigger || !note}
+          <button onClick={() => confirmText.trim().toLowerCase() === 'i surrender' && trigger && note && onConfirm({ trigger, note })}
+            disabled={confirmText.trim().toLowerCase() !== 'i surrender' || !trigger || !note}
             style={{
-              flex: 1, padding: '14px', background: (confirmText.trim().toLowerCase() === 'i relapse' && trigger && note) ? '#ef4444' : 'var(--color-surface)',
-              border: `1px solid ${(confirmText.trim().toLowerCase() === 'i relapse' && trigger && note) ? '#ef4444' : 'var(--color-border)'}`,
-              borderRadius: '14px', fontSize: '14px', fontWeight: 900,
-              color: (confirmText.trim().toLowerCase() === 'i relapse' && trigger && note) ? '#fff' : 'var(--color-text-3)',
-              cursor: (confirmText.trim().toLowerCase() === 'i relapse' && trigger && note) ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'all 0.2s',
+              flex: 1, padding: '16px', 
+              background: (confirmText.trim().toLowerCase() === 'i surrender' && trigger && note) ? '#ef4444' : 'rgba(0,0,0,0.3)',
+              border: `1px solid ${(confirmText.trim().toLowerCase() === 'i surrender' && trigger && note) ? '#ef4444' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: '16px', fontSize: '15px', fontWeight: 900,
+              color: (confirmText.trim().toLowerCase() === 'i surrender' && trigger && note) ? '#fff' : 'rgba(255,255,255,0.3)',
+              cursor: (confirmText.trim().toLowerCase() === 'i surrender' && trigger && note) ? 'pointer' : 'not-allowed', 
+              transition: 'all 0.2s',
             }}>
-            Reset & Restart
+            Reset Streak
           </button>
         </div>
       </motion.div>
@@ -200,70 +238,89 @@ const UrgeModal = ({ onComplete, onCancel }) => {
   
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(12px)',
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)',
       zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
     }}>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
         style={{
-          background: 'var(--color-surface, #111111)',
-          border: '1px solid rgba(59,130,246,0.3)',
+          background: 'rgba(15, 23, 42, 0.8)',
+          border: '1px solid rgba(56, 189, 248, 0.3)',
+          boxShadow: '0 24px 64px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
           borderRadius: '32px', padding: '48px',
           width: '100%', maxWidth: '600px',
-          position: 'relative', textAlign: 'center'
+          position: 'relative', textAlign: 'center',
+          overflow: 'hidden'
         }}
       >
+        {/* Animated breathing background */}
+        <motion.div
+          animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.3, 0.1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: 'absolute', inset: '-50%', background: 'radial-gradient(circle at center, rgba(56,189,248,0.2) 0%, transparent 60%)', zIndex: 0, pointerEvents: 'none' }}
+        />
+
         <button 
           onClick={onCancel}
-          style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}
+          style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', zIndex: 10 }}
         >
           <X size={24} />
         </button>
 
-        <motion.div 
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          style={{ width: '80px', height: '80px', background: 'rgba(59,130,246,0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#3b82f6' }}
-        >
-          <Wind size={40} />
-        </motion.div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <motion.div 
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            style={{ width: '80px', height: '80px', background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.3)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#38bdf8' }}
+          >
+            <Wind size={32} />
+          </motion.div>
 
-        <h2 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-text-1)', marginBottom: '8px' }}>Urge Surfing</h2>
-        <p style={{ color: 'var(--color-text-3)', marginBottom: '32px', lineHeight: 1.6 }}>Breathe. The urge is a wave. It will peak and it will pass. Just wait it out.</p>
+          <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#fff', marginBottom: '12px' }}>Urge Surfing</h2>
+          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '36px', lineHeight: 1.6, fontSize: '16px' }}>
+            Breathe in deeply for 4 seconds. Hold for 4. Exhale for 4. Hold for 4. 
+            <br/><br/>
+            The urge is just a temporary chemical wave in your brain. Do not fight it, just watch it pass. It cannot force you to act.
+          </p>
 
-        <div style={{ fontSize: '64px', fontWeight: 900, fontFamily: 'monospace', color: timeLeft === 0 ? '#10b981' : '#3b82f6', marginBottom: '32px', letterSpacing: '-0.05em' }}>
-          {String(m).padStart(2,'0')}:{String(s).padStart(2,'0')}
-        </div>
-
-        <div style={{ marginBottom: '32px', textAlign: 'left' }}>
-          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
-            Journal your thoughts (Optional):
+          <div style={{ fontSize: '80px', fontWeight: 900, fontFamily: 'monospace', color: timeLeft === 0 ? '#10b981' : '#38bdf8', marginBottom: '40px', letterSpacing: '-0.04em', textShadow: `0 0 40px ${timeLeft === 0 ? 'rgba(16,185,129,0.5)' : 'rgba(56,189,248,0.5)'}` }}>
+            {String(m).padStart(2,'0')}:{String(s).padStart(2,'0')}
           </div>
-          <textarea
-            value={note} onChange={e => setNote(e.target.value)} rows={3}
-            placeholder="Write down what you're feeling right now. Externalize the urge."
-            style={{
-              width: '100%', boxSizing: 'border-box',
-              background: 'var(--color-elevated)', border: '1px solid var(--color-border)',
-              borderRadius: '12px', padding: '16px', fontSize: '14px',
-              color: 'var(--color-text-1)', outline: 'none', resize: 'none',
-              fontFamily: 'inherit', lineHeight: 1.6,
-            }}
-          />
-        </div>
 
-        <button onClick={() => onComplete(note)}
-          disabled={timeLeft > 0}
-          style={{
-            width: '100%', padding: '16px', background: timeLeft === 0 ? '#10b981' : 'var(--color-surface)',
-            border: `1px solid ${timeLeft === 0 ? '#10b981' : 'var(--color-border)'}`,
-            borderRadius: '16px', fontSize: '15px', fontWeight: 800,
-            color: timeLeft === 0 ? '#fff' : 'var(--color-text-3)',
-            cursor: timeLeft === 0 ? 'pointer' : 'not-allowed', fontFamily: 'inherit', transition: 'all 0.3s',
-          }}>
-          {timeLeft === 0 ? 'I Survived the Urge' : 'Wait out the timer...'}
-        </button>
+          <div style={{ marginBottom: '32px', textAlign: 'left' }}>
+            <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>
+              Externalize the urge (Optional):
+            </div>
+            <textarea
+              value={note} onChange={e => setNote(e.target.value)} rows={3}
+              placeholder="Type out what your brain is trying to convince you of right now. Expose the lie."
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '16px', padding: '16px', fontSize: '15px',
+                color: '#fff', outline: 'none', resize: 'none',
+                fontFamily: 'inherit', lineHeight: 1.6,
+                transition: 'border-color 0.2s',
+              }}
+              onFocus={e => e.currentTarget.style.borderColor = 'rgba(56,189,248,0.5)'}
+              onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+            />
+          </div>
+
+          <button onClick={() => onComplete(note)}
+            disabled={timeLeft > 0}
+            style={{
+              width: '100%', padding: '20px', background: timeLeft === 0 ? '#10b981' : 'rgba(255,255,255,0.05)',
+              border: `1px solid ${timeLeft === 0 ? '#10b981' : 'rgba(255,255,255,0.1)'}`,
+              borderRadius: '16px', fontSize: '16px', fontWeight: 800,
+              color: timeLeft === 0 ? '#fff' : 'rgba(255,255,255,0.4)',
+              cursor: timeLeft === 0 ? 'pointer' : 'not-allowed', transition: 'all 0.3s',
+            }}>
+            {timeLeft === 0 ? 'I Survived the Urge' : 'Surfing... Just breathe.'}
+          </button>
+        </div>
       </motion.div>
     </div>
   );
@@ -300,7 +357,7 @@ const Discipline = () => {
 
   const handleStart = () => {
     const now = new Date().toISOString();
-    const updated = { ...data, streak: 0, lastUpdated: now };
+    const updated = { ...data, streak: 0, lastUpdated: now, startedAt: data.startedAt || now };
     setData(updated);
     saveData(updated);
   };
@@ -358,309 +415,310 @@ const Discipline = () => {
     saveData(updated);
     saveLog(newLog);
     setShowReset(false);
+    setPledgedToday(false);
     
     // Log relapse to journal
     const content = `#relapse-reflection\n\nI lost a streak of ${currentDays} days.\n\n**Trigger:** ${trigger}\n\n**Reflection:**\n${note}`;
     await logToJournal(content, 1); // Rough mood for a loss
   };
 
-  const nextMilestone = MILESTONES.find(m => m.days > currentDays);
+  const nextMilestone = MILESTONES.find(ms => ms.days > currentDays);
 
   const motivational = [
     '"Discipline is the bridge between goals and accomplishment." — Jim Rohn',
-    '"Hard work beats talent when talent doesn\'t work hard." — Ronaldo',
-    '"You are not what you feel. You are what you do." — Mourinho',
+    '"Hard work beats talent when talent doesn\'t work hard." — Cristiano Ronaldo',
+    '"You are not what you feel. You are what you do." — Jose Mourinho',
     '"Champions are made in the moments they want to quit."',
     '"The pain of discipline is far less than the pain of regret."',
-    '"Winning means you\'re willing to go longer, work harder, and give more." — CR7',
+    '"We must all suffer from one of two pains: the pain of discipline or the pain of regret." — Jim Rohn',
   ];
-  const quote = motivational[currentDays % motivational.length];
+  const quote = motivational[currentDays % motivational.length] || motivational[0];
 
   return (
-    <div className="page-container">
+    <div className="page-container" style={{ paddingBottom: '80px' }}>
       <PageHeader 
-        title="Discipline"
-        subtitle="Mind Mastery"
+        title="Discipline & Recovery"
+        subtitle="Rewire your brain. Reclaim your life."
         rightContent={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '8px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px 14px' }}>
             <Lock size={12} color="var(--color-text-3)" />
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)' }}>Private</span>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)' }}>Secure & Private</span>
           </div>
         }
       />
 
-      {/* Main counter card */}
-      <motion.div
-        style={{
-          background: data.lastUpdated
-            ? 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(16,185,129,0.05) 100%)'
-            : 'var(--color-surface)',
-          border: `1px solid ${data.lastUpdated ? 'rgba(34,197,94,0.3)' : 'var(--color-border)'}`,
-          borderRadius: '28px', padding: '40px', marginBottom: '24px', textAlign: 'center',
-          position: 'relative', overflow: 'hidden',
-        }}
-      >
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(34,197,94,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+        
+        {/* Main Hero Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: data.lastUpdated
+              ? 'linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(16,185,129,0.02) 100%)'
+              : 'rgba(255,255,255,0.02)',
+            border: `1px solid ${data.lastUpdated ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'}`,
+            borderRadius: '32px', padding: '48px', textAlign: 'center',
+            position: 'relative', overflow: 'hidden',
+            boxShadow: data.lastUpdated ? '0 32px 64px rgba(34,197,94,0.05), inset 0 1px 0 rgba(255,255,255,0.1)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
+            backdropFilter: 'blur(20px)'
+          }}
+        >
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(34,197,94,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {data.lastUpdated ? (
-          <>
-            {/* Big counter */}
-            <div style={{ marginBottom: '8px' }}>
-              <motion.div
-                key={elapsed}
-                style={{ fontSize: '80px', fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em', fontFamily: 'var(--font-mono, monospace)', color: currentDays >= 7 ? '#22c55e' : currentDays >= 3 ? '#f59e0b' : 'var(--color-text-1)' }}>
-                {d}
-              </motion.div>
-              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-3)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                {d === 1 ? 'Day' : 'Days'} Clean
-              </div>
-            </div>
-
-            {/* HH:MM:SS */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginBottom: '32px' }}>
-              {[
-                { v: String(h).padStart(2,'0'), l: 'HRS' },
-                { v: ':', l: null },
-                { v: String(m).padStart(2,'0'), l: 'MIN' },
-                { v: ':', l: null },
-                { v: String(s).padStart(2,'0'), l: 'SEC' },
-              ].map((item, i) => item.l ? (
-                <div key={i} style={{ fontSize: '22px', fontWeight: 900, color: 'var(--color-text-3)', fontFamily: 'monospace', lineHeight: 1.2 }}>:</div>
-              ) : (
-                <div key={i} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '22px', fontWeight: 900, color: 'var(--color-text-2)', fontFamily: 'monospace', lineHeight: 1 }}>{item.v}</div>
-                  <div style={{ fontSize: '8px', fontWeight: 800, color: 'var(--color-text-3)', letterSpacing: '0.1em', marginTop: '2px' }}>{item.l}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Quote */}
-            <div style={{ fontSize: '12px', color: 'var(--color-text-3)', fontStyle: 'italic', maxWidth: '500px', margin: '0 auto 32px', lineHeight: 1.6 }}>
-              {quote}
-            </div>
-
-            {/* Next milestone */}
-            {nextMilestone && (
-              <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '16px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ fontSize: '28px' }}>{nextMilestone.icon}</div>
-                <div style={{ flex: 1, textAlign: 'left' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-text-1)' }}>Next: {nextMilestone.label}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '2px' }}>{nextMilestone.days - currentDays} days away</div>
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-accent)' }}>
-                  Day {nextMilestone.days}
+          {data.lastUpdated ? (
+            <>
+              {/* Central Timer */}
+              <div style={{ marginBottom: '24px', position: 'relative', zIndex: 1 }}>
+                <motion.div
+                  key={elapsed}
+                  style={{ 
+                    fontSize: '100px', fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em', 
+                    fontFamily: 'var(--font-mono, monospace)', 
+                    color: currentDays >= 7 ? '#22c55e' : currentDays >= 3 ? '#f59e0b' : '#fff',
+                    textShadow: currentDays >= 7 ? '0 0 60px rgba(34,197,94,0.3)' : 'none',
+                    display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '8px'
+                  }}>
+                  {d}
+                  <span style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text-3)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    {d === 1 ? 'Day' : 'Days'}
+                  </span>
+                </motion.div>
+                <div style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                  Clean & Focused
                 </div>
               </div>
-            )}
 
-            {/* My Why Anchor */}
-            <div style={{ marginBottom: '24px', textAlign: 'left', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
-                My Why (Anchor)
+              {/* Exact Time HH:MM:SS */}
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '40px', position: 'relative', zIndex: 1 }}>
+                {[
+                  { v: String(h).padStart(2,'0'), l: 'Hours' },
+                  { v: String(m).padStart(2,'0'), l: 'Minutes' },
+                  { v: String(s).padStart(2,'0'), l: 'Seconds' },
+                ].map((item, i) => (
+                  <div key={i} style={{ 
+                    background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', 
+                    padding: '16px 24px', borderRadius: '20px', minWidth: '100px' 
+                  }}>
+                    <div style={{ fontSize: '32px', fontWeight: 900, color: '#fff', fontFamily: 'monospace', lineHeight: 1, marginBottom: '6px' }}>{item.v}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{item.l}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quote */}
+              <div style={{ 
+                fontSize: '15px', color: 'rgba(255,255,255,0.7)', fontStyle: 'italic', maxWidth: '600px', margin: '0 auto 40px', 
+                lineHeight: 1.6, background: 'rgba(255,255,255,0.03)', padding: '24px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)'
+              }}>
+                {quote}
+              </div>
+
+              {/* Next milestone */}
+              {nextMilestone && (
+                <div style={{ 
+                  background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.1)', 
+                  borderRadius: '24px', padding: '24px', marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '16px', maxWidth: '500px', margin: '0 auto 40px' 
+                }}>
+                  <div style={{ fontSize: '36px', background: 'rgba(255,255,255,0.05)', padding: '16px', borderRadius: '20px' }}>{nextMilestone.icon}</div>
+                  <div style={{ flex: 1, textAlign: 'left' }}>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff', marginBottom: '4px' }}>Next Goal: {nextMilestone.label}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--color-text-3)', lineHeight: 1.5 }}>{nextMilestone.msg}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-accent)' }}>{nextMilestone.days - currentDays}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)' }}>Days Left</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'center' }}>
+                {!pledgedToday ? (
+                  <button onClick={handlePledge}
+                    style={{
+                      padding: '16px 32px', background: 'rgba(34,197,94,0.1)',
+                      border: '1px solid rgba(34,197,94,0.3)', borderRadius: '20px',
+                      fontSize: '15px', fontWeight: 800, color: '#22c55e',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      display: 'flex', alignItems: 'center', gap: '10px',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.2)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; }}
+                  >
+                    <Shield size={18} /> I pledge to stay clean today
+                  </button>
+                ) : (
+                  <div style={{
+                    padding: '16px 32px', background: 'rgba(34,197,94,0.15)',
+                    border: '1px solid rgba(34,197,94,0.4)', borderRadius: '20px',
+                    fontSize: '15px', fontWeight: 800, color: '#22c55e',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                  }}>
+                    <CheckCircle size={18} /> Daily Pledge Active
+                  </div>
+                )}
+
+                <button onClick={() => setShowUrge(true)}
+                  style={{
+                    padding: '16px 32px', background: '#3b82f6',
+                    border: 'none', borderRadius: '20px',
+                    fontSize: '15px', fontWeight: 800, color: '#fff',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                    boxShadow: '0 12px 32px rgba(59,130,246,0.3)'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <Wind size={18} /> I have an urge
+                </button>
+                
+                <button onClick={() => setShowReset(true)}
+                  style={{
+                    padding: '16px 32px', background: 'rgba(239,68,68,0.1)',
+                    border: '1px solid rgba(239,68,68,0.3)', borderRadius: '20px',
+                    fontSize: '15px', fontWeight: 800, color: '#ef4444',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                    display: 'flex', alignItems: 'center', gap: '10px',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; }}
+                >
+                  <RefreshCw size={18} /> Relapse
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ padding: '60px 20px' }}>
+              <div style={{ fontSize: '80px', marginBottom: '24px', textShadow: '0 0 60px rgba(255,255,255,0.2)' }}>🛡️</div>
+              <div style={{ fontSize: '32px', fontWeight: 900, color: '#fff', marginBottom: '16px', letterSpacing: '-0.02em' }}>Start Your Recovery Journey</div>
+              <div style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', marginBottom: '40px', maxWidth: '480px', margin: '0 auto 40px', lineHeight: 1.6 }}>
+                Addiction shrinks your world. Discipline expands it. Commit to taking your mind back, starting right now.
+              </div>
+              <button onClick={handleStart}
+                style={{
+                  padding: '20px 48px', background: 'var(--color-accent)', border: 'none',
+                  borderRadius: '24px', fontSize: '18px', fontWeight: 900, color: '#fff',
+                  cursor: 'pointer', boxShadow: '0 16px 40px rgba(59,130,246,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                  transition: 'transform 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                Begin Day 1
+              </button>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Stats row */}
+        {data.lastUpdated && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+            {[
+              { label: 'Longest Streak', value: `${Math.max(data.longestStreak, currentDays)}d`, icon: <Trophy size={20} />, color: '#f59e0b' },
+              { label: 'Total Resets', value: data.totalResets, icon: <RefreshCw size={20} />, color: '#ef4444' },
+              { label: 'Current Score', value: `${Math.min(100, currentDays + 1)}%`, icon: <Flame size={20} />, color: '#22c55e' },
+            ].map(stat => (
+              <div key={stat.label} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '24px', textAlign: 'center', backdropFilter: 'blur(10px)' }}>
+                <div style={{ color: stat.color, marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>{stat.icon}</div>
+                <div style={{ fontSize: '32px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', marginBottom: '4px' }}>{stat.value}</div>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+          {/* Commitment Contract / My Why */}
+          {data.lastUpdated && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Brain size={16} color="var(--color-accent)" /> My Commitment (The "Why")
               </div>
               <textarea
                 defaultValue={localStorage.getItem('aiimin_discipline_why') || ''}
                 onBlur={e => localStorage.setItem('aiimin_discipline_why', e.target.value)}
-                placeholder="Why are you doing this? What do you stand to lose if you fail? Be brutally honest here."
+                placeholder="Why are you doing this? What do you stand to lose if you fail? What kind of person do you want to become? Be brutally honest here."
                 style={{
                   width: '100%', boxSizing: 'border-box',
-                  background: 'transparent', border: 'none',
-                  fontSize: '13px', color: 'var(--color-text-1)', outline: 'none', resize: 'none',
-                  fontFamily: 'inherit', lineHeight: 1.6,
+                  background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px',
+                  padding: '20px', fontSize: '15px', color: '#fff', outline: 'none', resize: 'none',
+                  fontFamily: 'inherit', lineHeight: 1.6, minHeight: '180px',
+                  transition: 'border-color 0.2s'
                 }}
-                rows={3}
+                onFocus={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'}
               />
             </div>
+          )}
 
-            {/* Daily Pledge */}
-            <div style={{ marginBottom: '24px' }}>
-              {!pledgedToday ? (
-                <button onClick={handlePledge}
-                  style={{
-                    padding: '14px 32px', background: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)', borderRadius: '16px',
-                    fontSize: '14px', fontWeight: 800, color: 'var(--color-text-2)',
-                    cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
-                    display: 'flex', alignItems: 'center', gap: '8px', margin: '0 auto',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)'; e.currentTarget.style.borderColor = '#22c55e'; e.currentTarget.style.color = '#22c55e'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-2)'; }}
-                >
-                  <Shield size={16} /> I pledge to stay clean today.
-                </button>
-              ) : (
-                <div style={{
-                  padding: '12px 24px', background: 'rgba(34,197,94,0.1)',
-                  border: '1px solid rgba(34,197,94,0.3)', borderRadius: '16px',
-                  fontSize: '13px', fontWeight: 800, color: '#22c55e',
-                  display: 'flex', alignItems: 'center', gap: '8px', margin: '0 auto', width: 'fit-content'
-                }}>
-                  <Shield size={16} /> Pledge Active
-                </div>
-              )}
-            </div>
-
-            {/* Emergency & Reset buttons */}
-            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
-              <button onClick={() => setShowUrge(true)}
-                style={{
-                  padding: '12px 28px', background: '#3b82f6',
-                  border: 'none', borderRadius: '14px',
-                  fontSize: '13px', fontWeight: 800, color: '#fff',
-                  cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  boxShadow: '0 8px 24px rgba(59,130,246,0.4)'
-                }}
-              >
-                <Wind size={14} /> I have an urge
-              </button>
-              
-              <button onClick={() => setShowReset(true)}
-                style={{
-                  padding: '12px 28px', background: 'transparent',
-                  border: '1px solid rgba(239,68,68,0.4)', borderRadius: '14px',
-                  fontSize: '13px', fontWeight: 800, color: 'rgba(239,68,68,0.8)',
-                  cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = '#ef4444'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
-              >
-                <RefreshCw size={14} /> Relapse (Reset)
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div style={{ fontSize: '56px', marginBottom: '16px' }}>🛡️</div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px' }}>Start Your Journey</div>
-            <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginBottom: '28px', maxWidth: '360px', margin: '0 auto 28px', lineHeight: 1.6 }}>
-              Track your mental discipline streak. Private, accountable, and yours alone.
-            </div>
-            <button onClick={handleStart}
-              style={{
-                padding: '16px 40px', background: 'var(--color-accent)', border: 'none',
-                borderRadius: '16px', fontSize: '16px', fontWeight: 900, color: '#fff',
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}>
-              Begin Today
-            </button>
-          </>
-        )}
-      </motion.div>
-
-      {/* Stats row */}
-      {data.lastUpdated && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
-          {[
-            { label: 'Longest Streak', value: `${Math.max(data.longestStreak, currentDays)}d`, icon: <Trophy size={16} />, color: '#f59e0b' },
-            { label: 'Total Resets', value: data.totalResets, icon: <RefreshCw size={16} />, color: '#ef4444' },
-            { label: 'Current Score', value: `${Math.min(100, currentDays + 1)}%`, icon: <Zap size={16} />, color: '#22c55e' },
-          ].map(stat => (
-            <div key={stat.label} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '18px', padding: '20px', textAlign: 'center' }}>
-              <div style={{ color: stat.color, marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>{stat.icon}</div>
-              <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-text-1)', letterSpacing: '-0.02em' }}>{stat.value}</div>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '4px' }}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Milestones */}
-      {data.lastUpdated && (
-        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '24px', marginBottom: '24px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Trophy size={14} color="var(--color-accent)" /> Milestones
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '10px' }}>
-            {MILESTONES.map(ms => {
-              const achieved = currentDays >= ms.days;
-              return (
-                <div key={ms.days} style={{
-                  padding: '14px', borderRadius: '14px', textAlign: 'center',
-                  background: achieved ? 'rgba(34,197,94,0.08)' : 'var(--color-elevated, rgba(255,255,255,0.04))',
-                  border: `1px solid ${achieved ? 'rgba(34,197,94,0.3)' : 'var(--color-border)'}`,
-                  opacity: achieved ? 1 : 0.5,
-                }}>
-                  <div style={{ fontSize: '24px', marginBottom: '4px', filter: achieved ? 'none' : 'grayscale(1)' }}>{ms.icon}</div>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: achieved ? '#22c55e' : 'var(--color-text-2)' }}>{ms.label}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: '2px' }}>Day {ms.days}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Reset Log */}
-      {log.length > 0 && (
-        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', overflow: 'hidden', marginBottom: '24px' }}>
-          <button onClick={() => setShowLog(l => !l)}
-            style={{
-              width: '100%', background: 'none', border: 'none', padding: '20px 24px',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              cursor: 'pointer', color: 'var(--color-text-1)', fontFamily: 'inherit',
-            }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Brain size={14} color="var(--color-text-3)" />
-              <span style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)' }}>
-                Reset Log ({log.length})
-              </span>
-            </div>
-            {showLog ? <ChevronUp size={16} color="var(--color-text-3)" /> : <ChevronDown size={16} color="var(--color-text-3)" />}
-          </button>
-          <AnimatePresence>
-            {showLog && (
-              <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} style={{ overflow: 'hidden' }}>
-                <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {log.map(entry => (
-                    <div key={entry.id} style={{ background: 'var(--color-elevated, rgba(255,255,255,0.04))', border: '1px solid var(--color-border)', borderRadius: '14px', padding: '14px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#ef4444' }}>Reset at {entry.streakAtReset}d</span>
-                        <span style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>{new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                      </div>
-                      <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-2)', marginBottom: '4px' }}>Trigger: {entry.trigger}</div>
-                      {entry.note && <div style={{ fontSize: '11px', color: 'var(--color-text-3)', fontStyle: 'italic', lineHeight: 1.5 }}>"{entry.note}"</div>}
+          {/* Recovery Strategies */}
+          {data.lastUpdated && (
+            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '32px' }}>
+              <div style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Shield size={16} color="#22c55e" /> Recovery Strategies
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {STRATEGIES.map((s, i) => (
+                  <div key={i} style={{ padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                      {s.icon}
+                      <span style={{ fontSize: '14px', fontWeight: 800, color: '#fff' }}>{s.title}</span>
                     </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* Real Experiences & Motivation */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', marginBottom: '24px' }}>
-        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '24px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Wind size={14} color="var(--color-accent)" /> Voices of Victory
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ padding: '16px', background: 'var(--color-elevated)', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
-              <p style={{ fontSize: '13px', color: 'var(--color-text-2)', margin: '0 0 8px 0', lineHeight: 1.6, fontStyle: 'italic' }}>"The first 2 weeks are physical torture. But on day 30, you wake up and the brain fog is gone. You realize the addiction wasn't curing your stress, it was causing it."</p>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)' }}>— Reddit User, r/DecidingToBeBetter</span>
+                    <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, margin: 0 }}>
+                      {s.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div style={{ padding: '16px', background: 'var(--color-elevated)', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
-              <p style={{ fontSize: '13px', color: 'var(--color-text-2)', margin: '0 0 8px 0', lineHeight: 1.6, fontStyle: 'italic' }}>"I stopped negotiating with my mind. The moment I felt the urge, I started counting down from 5 and physically left the room. Urges pass in 10 minutes if you don't feed them."</p>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)' }}>— Quora, Overcoming Bad Habits</span>
-            </div>
-            <div style={{ padding: '16px', background: 'var(--color-elevated)', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
-              <p style={{ fontSize: '13px', color: 'var(--color-text-2)', margin: '0 0 8px 0', lineHeight: 1.6, fontStyle: 'italic' }}>"Relapse is a part of recovery for many, but don't use it as an excuse. Take accountability, figure out the exact trigger, and build a system so it doesn't happen again."</p>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)' }}>— YouTube Comment, Huberman Lab</span>
-            </div>
-          </div>
+          )}
         </div>
 
+        {/* Reset Log */}
+        {log.length > 0 && (
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', overflow: 'hidden' }}>
+            <button onClick={() => setShowLog(l => !l)}
+              style={{
+                width: '100%', background: 'none', border: 'none', padding: '24px 32px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                cursor: 'pointer', color: '#fff', fontFamily: 'inherit',
+              }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <AlertTriangle size={16} color="#ef4444" />
+                <span style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#ef4444' }}>
+                  Relapse Log ({log.length})
+                </span>
+              </div>
+              {showLog ? <ChevronUp size={20} color="rgba(255,255,255,0.5)" /> : <ChevronDown size={20} color="rgba(255,255,255,0.5)" />}
+            </button>
+            <AnimatePresence>
+              {showLog && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
+                  <div style={{ padding: '0 32px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {log.map(entry => (
+                      <div key={entry.id} style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', padding: '20px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: '#ef4444' }}>Lost streak of {entry.streakAtReset} days</span>
+                          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff', marginBottom: '8px' }}>Trigger: {entry.trigger}</div>
+                        {entry.note && <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontStyle: 'italic', lineHeight: 1.6, background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px' }}>"{entry.note}"</div>}
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
-      {/* Reset modal */}
+      {/* Modals */}
       <AnimatePresence>
         {showReset && <ResetModal currentDays={d} currentHours={h} onConfirm={handleReset} onCancel={() => setShowReset(false)} />}
       </AnimatePresence>
 
-      {/* Urge modal */}
       <AnimatePresence>
         {showUrge && <UrgeModal onComplete={handleUrgeSurfed} onCancel={() => setShowUrge(false)} />}
       </AnimatePresence>
