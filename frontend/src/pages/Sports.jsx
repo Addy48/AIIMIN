@@ -445,7 +445,11 @@ const Sports = () => {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '12px' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <span style={{ fontSize: '11px', fontWeight: 900, color: idx === 0 ? 'var(--color-accent)' : 'var(--color-text-3)' }}>P{driver.position}</span>
-                                    <span style={{ fontWeight: 800, color: 'var(--color-text-1)' }}>{driver.Driver.givenName} {driver.Driver.familyName}</span>
+                                    <span style={{ fontWeight: 800, color: driver.Driver.familyName === 'Hamilton' ? '#FBBF24' : driver.Driver.familyName === 'Verstappen' ? '#93C5FD' : 'var(--color-text-1)' }}>
+                                      {driver.Driver.familyName === 'Hamilton' && '👑 '}
+                                      {driver.Driver.familyName === 'Verstappen' && '⭐ '}
+                                      {driver.Driver.givenName} {driver.Driver.familyName}
+                                    </span>
                                     <span style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 600 }}>{driver.Constructors[0]?.name}</span>
                                   </div>
                                   <span style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-accent)', fontFamily: 'monospace' }}>{driver.points} PTS</span>
@@ -454,7 +458,7 @@ const Sports = () => {
                                   <div style={{
                                     width: `${(driver.points / maxPoints) * 100}%`,
                                     height: '100%',
-                                    background: 'var(--color-accent)',
+                                    background: driver.Driver.familyName === 'Hamilton' ? '#FBBF24' : driver.Driver.familyName === 'Verstappen' ? '#93C5FD' : 'var(--color-accent)',
                                     borderRadius: '3px'
                                   }} />
                                 </div>

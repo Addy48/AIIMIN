@@ -107,10 +107,37 @@ export const fetchFootball = async () => {
     { slug: 'usa.1', name: 'MLS', flag: '🇺🇸' },
   ];
 
+  const favoriteTeams = ['real madrid', 'arsenal', 'manchester united', 'man united'];
+
   const results = await Promise.allSettled(
     leagues.map(l =>
       fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
-        .then(d => ({ league: l, events: parseESPNEvents(d).slice(0, 5) }))
+        .then(d => {
+          let events = parseESPNEvents(d);
+          
+          events.sort((a, b) => {
+            const aFav = favoriteTeams.some(t => a.home.name.toLowerCase().includes(t) || a.away.name.toLowerCase().includes(t));
+            const bFav = favoriteTeams.some(t => b.home.name.toLowerCase().includes(t) || b.away.name.toLowerCase().includes(t));
+            
+            // 1. Live matches first
+            if (a.isLive && !b.isLive) return -1;
+            if (!a.isLive && b.isLive) return 1;
+            
+            // 2. Favorite teams second
+            if (aFav && !bFav) return -1;
+            if (!aFav && bFav) return 1;
+            
+            // 3. Upcoming before Finished
+            if (!a.isFinished && b.isFinished) return -1;
+            if (a.isFinished && !b.isFinished) return 1;
+            
+            // 4. Sort by date
+            return new Date(a.date) - new Date(b.date);
+          });
+          
+          // Return top 5 matches per league to keep the feed clean
+          return { league: l, events: events.slice(0, 5) };
+        })
     )
   );
 
@@ -248,6 +275,16 @@ export const fetchCricket = async () => {
         }
       };
     });
+
+    // Sort cricket events: Live > Upcoming > Finished
+    events.sort((a, b) => {
+      if (a.isLive && !b.isLive) return -1;
+      if (!a.isLive && b.isLive) return 1;
+      if (!a.isFinished && b.isFinished) return -1;
+      if (a.isFinished && !b.isFinished) return 1;
+      return new Date(a.date) - new Date(b.date);
+    });
+
     return [{ league: { name: 'Cricket Scores', flag: '🏏' }, events }];
   } catch (err) {
     console.warn('Cricket API failed, falling back to ESPN:', err);
