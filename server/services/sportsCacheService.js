@@ -129,29 +129,35 @@ const fetchFootball = async () => {
       fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
         .then(d => {
           let events = parseESPNEvents(d);
-          
           const FAVORITES = ['real madrid', 'arsenal', 'manchester united', 'man utd'];
-          const RIVALS = ['barcelona', 'atletico madrid', 'manchester city', 'liverpool', 'chelsea', 'tottenham', 'bayern munich', 'psg', 'juventus'];
           
-          events = events.filter(ev => {
-            const t1 = (ev.home?.name || '').toLowerCase();
-            const t2 = (ev.away?.name || '').toLowerCase();
-            return FAVORITES.some(f => t1.includes(f) || t2.includes(f)) || RIVALS.some(r => t1.includes(r) || t2.includes(r));
+          events.sort((a, b) => {
+            const aFav = FAVORITES.some(f => a.home?.name?.toLowerCase().includes(f) || a.away?.name?.toLowerCase().includes(f));
+            const bFav = FAVORITES.some(f => b.home?.name?.toLowerCase().includes(f) || b.away?.name?.toLowerCase().includes(f));
+            
+            // 1. Live matches first
+            if (a.isLive && !b.isLive) return -1;
+            if (!a.isLive && b.isLive) return 1;
+            
+            // 2. Favorite teams second
+            if (aFav && !bFav) return -1;
+            if (!aFav && bFav) return 1;
+            
+            // 3. Upcoming matches third
+            const aIsUpcoming = !a.isLive && !a.isFinished;
+            const bIsUpcoming = !b.isLive && !b.isFinished;
+            if (aIsUpcoming && !bIsUpcoming) return -1;
+            if (!aIsUpcoming && bIsUpcoming) return 1;
+            
+            // 4. Sort by date
+            const dateA = new Date(a.date || a.dateTimeGMT || 0).getTime();
+            const dateB = new Date(b.date || b.dateTimeGMT || 0).getTime();
+            if (aIsUpcoming) return dateA - dateB; // earliest upcoming first
+            return dateB - dateA; // latest finished first
           });
 
-          events = sortEvents(events);
-          
-          // Force favorites to the absolute top
-          events = events.sort((a, b) => {
-             const aFav = FAVORITES.some(f => a.home?.name?.toLowerCase().includes(f) || a.away?.name?.toLowerCase().includes(f));
-             const bFav = FAVORITES.some(f => b.home?.name?.toLowerCase().includes(f) || b.away?.name?.toLowerCase().includes(f));
-             if (aFav && !bFav) return -1;
-             if (!aFav && bFav) return 1;
-             return 0;
-          });
-
-          // Apply strict caps: Max 3 main matches per league to avoid clutter
-          events = events.slice(0, 3);
+          // Limit to 5 matches
+          events = events.slice(0, 5);
           return { league: l, events };
         })
     )
