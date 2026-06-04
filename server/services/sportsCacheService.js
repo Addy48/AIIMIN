@@ -156,9 +156,11 @@ const fetchFootball = async () => {
             return dateB - dateA; // latest finished first
           });
 
-          // Limit to 5 matches
-          events = events.slice(0, 5);
-          return { league: l, events };
+          // Filter to show ONLY favorite team matches or Live matches or top 3 if neither
+          let filtered = events.filter(e => e.isLive || FAVORITES.some(t => e.home?.name?.toLowerCase().includes(t) || e.away?.name?.toLowerCase().includes(t)));
+          if (filtered.length === 0) filtered = events.slice(0, 3);
+
+          return { league: l, events: filtered };
         })
     )
   );
@@ -217,7 +219,6 @@ const fetchCricket = async () => {
         // Exclude England county and other domestic non-IPL leagues
         if (title.includes('county') || title.includes('vitality') || title.includes('blast') || title.includes('hundred') || title.includes('sheffield')) return false;
 
-        const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
         const involvesIndia = t1 === 'india' || t2 === 'india' || t1 === 'ind' || t2 === 'ind' || t1.includes('(ind)') || t2.includes('(ind)');
 
         // Exclude Pakistan unless playing with India
@@ -233,6 +234,7 @@ const fetchCricket = async () => {
 
         // Only ICC matches (Tests, ODIs, T20Is) or IPL
         const isICC = title.includes('test') || title.includes('odi') || title.includes('t20i') || title.includes('icc') || title.includes('world cup');
+        const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
 
         const involvesIPLTeam = IPL_TEAMS.some(t => {
             const team = t.toLowerCase();

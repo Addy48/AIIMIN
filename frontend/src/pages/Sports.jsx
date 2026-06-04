@@ -55,23 +55,7 @@ const Sports = () => {
   }, [user, navigate]);
 
 
-  // Recent Balls data (Cricket tab)
-  const recentBalls = [
-    { type: 'run', val: '1', color: '#1E5C3A' },
-    { type: 'wicket', val: 'W', color: '#B33A3A' },
-    { type: 'boundary', val: '4', color: '#2B6CB0' },
-    { type: 'dot', val: '0', color: '#718096' },
-    { type: 'run', val: '2', color: '#1E5C3A' },
-    { type: 'six', val: '6', color: '#805AD5' },
-    { type: 'run', val: '1', color: '#1E5C3A' },
-    { type: 'run', val: '2', color: '#1E5C3A' },
-    { type: 'boundary', val: '4', color: '#2B6CB0' },
-    { type: 'dot', val: '0', color: '#718096' },
-    { type: 'run', val: '1', color: '#1E5C3A' },
-    { type: 'run', val: '1', color: '#1E5C3A' },
-    { type: 'run', val: '3', color: '#1E5C3A' }
-  ];
-
+  // Recent Balls data (Cricket tab) removed
   return (
     <div className="page-container">
       <PageHeader 
