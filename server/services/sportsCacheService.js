@@ -156,9 +156,8 @@ const fetchFootball = async () => {
             return dateB - dateA; // latest finished first
           });
 
-          // Filter to show ONLY favorite team matches or Live matches or top 3 if neither
+          // Filter to show ONLY favorite team matches or Live matches
           let filtered = events.filter(e => e.isLive || FAVORITES.some(t => e.home?.name?.toLowerCase().includes(t) || e.away?.name?.toLowerCase().includes(t)));
-          if (filtered.length === 0) filtered = events.slice(0, 3);
 
           return { league: l, events: filtered };
         })
@@ -170,7 +169,7 @@ const fetchFootball = async () => {
     .map(r => r.value);
 };
 
-/* ── IPL / Cricket lookup and fetcher ── */
+/* ── IPL / Cricket lookup and helpers ── */
 const IPL_ABBR = {
   'royal challengers bengaluru': 'RCB',
   'royal challengers bangalore': 'RCB',
@@ -196,13 +195,76 @@ const getTeamShort = (name) => {
   return name.substring(0, 3).toUpperCase();
 };
 
+const isIPLTeam = (teamName) => {
+  if (!teamName) return false;
+  const name = teamName.toLowerCase().replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+  const iplKeywords = [
+    'mumbai indians', 'chennai super kings', 'royal challengers', 'kolkata knight riders',
+    'sunrisers hyderabad', 'delhi capitals', 'punjab kings', 'rajasthan royals',
+    'lucknow super giants', 'gujarat titans', 'rcb', 'csk', 'mi', 'kkr', 'srh', 'dc',
+    'pbks', 'rr', 'lsg', 'gt'
+  ];
+  return iplKeywords.some(keyword => {
+    if (name === keyword) return true;
+    const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+    return regex.test(name);
+  });
+};
+
+const isNationalTeam = (teamName) => {
+  if (!teamName) return false;
+  const name = teamName.toLowerCase().replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+  
+  // Exclude 'A' teams, Lions, U19, emerging, academy etc.
+  if (
+    name.includes(' emerging') || 
+    name.includes(' academy') || 
+    name.includes(' u19') || 
+    name.includes('under-19') ||
+    name.includes(' u-19') ||
+    name.includes('under 19') ||
+    name.includes(' xi') || 
+    /\b(a|lions|emerg|u19|u-19|academy)\b/.test(name)
+  ) {
+    return null;
+  }
+
+  const nationalTeams = {
+    india: ['india', 'ind'],
+    australia: ['australia', 'aus'],
+    england: ['england', 'eng'],
+    south_africa: ['south africa', 'rsa', 'sa'],
+    pakistan: ['pakistan', 'pak'],
+    new_zealand: ['new zealand', 'nz'],
+    west_indies: ['west indies', 'wi', 'windies'],
+    sri_lanka: ['sri lanka', 'sl']
+  };
+
+  for (const [key, aliases] of Object.entries(nationalTeams)) {
+    if (aliases.some(alias => name === alias || new RegExp(`\\b${alias}\\b`, 'i').test(name))) {
+      return key;
+    }
+  }
+
+  return null;
+};
+
+const deduplicateMatches = (events) => {
+  const seen = new Set();
+  return events.filter(e => {
+    const t1 = (e.home?.name || '').toLowerCase().replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+    const t2 = (e.away?.name || '').toLowerCase().replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+    const pair = [t1, t2].sort().join(' vs ');
+    if (seen.has(pair)) return false;
+    seen.add(pair);
+    return true;
+  });
+};
+
 const fetchCricket = async () => {
   try {
     const res = await fetchJSON(`https://api.cricapi.com/v1/cricScore?apikey=${CRICKET_KEY}`);
     if (res.status !== 'success') throw new Error(res.info || 'Cricket API failed');
-
-    const TOP_8 = ['India', 'Australia', 'England', 'South Africa', 'Pakistan', 'New Zealand', 'West Indies', 'Sri Lanka'];
-    const IPL_TEAMS = ['MI', 'CSK', 'RCB', 'KKR', 'SRH', 'DC', 'PBKS', 'RR', 'LSG', 'GT', 'Mumbai Indians', 'Chennai Super Kings', 'Royal Challengers', 'Kolkata Knight Riders', 'Sunrisers', 'Delhi Capitals', 'Punjab Kings', 'Rajasthan Royals', 'Lucknow Super Giants', 'Gujarat Titans'];
 
     let events = res.data
       .filter(match => {
@@ -213,36 +275,54 @@ const fetchCricket = async () => {
         const matchStatus = (match.status || '').toLowerCase();
         const title = `${t1} ${t2} ${series} ${type} ${matchStatus}`.toLowerCase();
 
-        // Exclude women matches
-        if (title.includes('women') || title.includes('wpl') || title.includes('wbbl') || title.includes('wt20')) return false;
-        
-        // Exclude England county and other domestic non-IPL leagues
-        if (title.includes('county') || title.includes('vitality') || title.includes('blast') || title.includes('hundred') || title.includes('sheffield')) return false;
+        // 1. Aggressive bans for women's and minor cricket
+        if (
+          title.includes('women') || 
+          title.includes('wpl') || 
+          title.includes('wbbl') || 
+          title.includes('wt20') || 
+          title.includes('county') || 
+          title.includes('vitality') || 
+          title.includes('blast') || 
+          title.includes('hundred') || 
+          title.includes('sheffield') ||
+          title.includes('plunket') ||
+          title.includes('u19') ||
+          title.includes('under-19') ||
+          title.includes('u-19') ||
+          title.includes('under 19') ||
+          title.includes('development') ||
+          title.includes('emerging') ||
+          title.includes('academy') ||
+          title.includes(' xi') ||
+          /\b(a|lions|emerg|u19|u-19)\b/.test(title) ||
+          /\[w(t(20)?)?\]/i.test(match.t1 || '') ||
+          /\[w(t(20)?)?\]/i.test(match.t2 || '') ||
+          /\(w(t(20)?)?\)/i.test(match.t1 || '') ||
+          /\(w(t(20)?)?\)/i.test(match.t2 || '')
+        ) {
+          return false;
+        }
 
-        const involvesIndia = t1 === 'india' || t2 === 'india' || t1 === 'ind' || t2 === 'ind' || t1.includes('(ind)') || t2.includes('(ind)');
+        // 2. Classify teams
+        const nat1 = isNationalTeam(match.t1);
+        const nat2 = isNationalTeam(match.t2);
 
-        // Exclude Pakistan unless playing with India
-        const involvesPak = t1.includes('pakistan') || t2.includes('pakistan') || t1 === 'pak' || t2 === 'pak';
+        const involvesIndia = nat1 === 'india' || nat2 === 'india';
+        const involvesPak = nat1 === 'pakistan' || nat2 === 'pakistan';
+
+        // Block Pakistan unless playing India
         if (involvesPak && !involvesIndia) return false;
 
-        const involvesTop8 = TOP_8.some(t => {
-          const name = t.toLowerCase();
-          const isMainTeam1 = t1 === name || t1.startsWith(`${name} `) || t1.endsWith(` ${name}`);
-          const isMainTeam2 = t2 === name || t2.startsWith(`${name} `) || t2.endsWith(` ${name}`);
-          return (isMainTeam1 || isMainTeam2) && !title.includes('u19') && !title.includes('under-19');
-        });
+        // International senior men check (India vs anyone, or other top 8 vs each other)
+        const isHighProfileInternational = 
+          (involvesIndia && (nat1 || nat2)) ||
+          (nat1 && nat2 && nat1 !== 'pakistan' && nat2 !== 'pakistan');
 
-        // Only ICC matches (Tests, ODIs, T20Is) or IPL
-        const isICC = title.includes('test') || title.includes('odi') || title.includes('t20i') || title.includes('icc') || title.includes('world cup');
-        const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
+        // IPL senior check
+        const isIPLMatch = isIPLTeam(match.t1) && isIPLTeam(match.t2);
 
-        const involvesIPLTeam = IPL_TEAMS.some(t => {
-            const team = t.toLowerCase();
-            return t1 === team || t2 === team || t1.includes(team) || t2.includes(team);
-        });
-
-        // Strict inclusion: Only IPL, India, or Top 8 teams in ICC matches
-        return isIPL || involvesIndia || (involvesTop8 && isICC) || involvesIPLTeam;
+        return isHighProfileInternational || isIPLMatch;
       })
       .map(match => {
         const isLive = match.ms === 'live';
@@ -280,6 +360,7 @@ const fetchCricket = async () => {
       });
 
     events = sortEvents(events);
+    events = deduplicateMatches(events);
     events = events.slice(0, 6); // Top 6 most relevant matches
 
     return [{ league: { name: 'Cricket Scores', flag: '🏏' }, events }];
@@ -288,21 +369,25 @@ const fetchCricket = async () => {
     try {
       const general = await fetchJSON(`${ESPN}/cricket/scoreboard`);
       let events = parseESPNEvents(general).filter(ev => {
-        // Apply strict filter to ESPN fallback as well
-        const t1 = (ev.home?.name || '').toLowerCase();
-        const t2 = (ev.away?.name || '').toLowerCase();
-        
-        const involvesPak = t1.includes('pakistan') || t2.includes('pakistan');
-        const involvesIndia = t1.includes('india') || t2.includes('india');
+        const nat1 = isNationalTeam(ev.home?.name);
+        const nat2 = isNationalTeam(ev.away?.name);
+
+        const involvesIndia = nat1 === 'india' || nat2 === 'india';
+        const involvesPak = nat1 === 'pakistan' || nat2 === 'pakistan';
+
         if (involvesPak && !involvesIndia) return false;
 
-        const TOP_8 = ['australia', 'england', 'south africa', 'new zealand', 'west indies', 'sri lanka', 'india'];
-        const involvesTop8 = TOP_8.some(t => t1.includes(t) || t2.includes(t));
-        const isIPL = ev.league?.toLowerCase().includes('indian premier league') || t1.includes('chennai') || t2.includes('chennai') || t1.includes('mumbai') || t2.includes('mumbai') || t1.includes('royal') || t2.includes('royal');
-        
-        return involvesIndia || involvesTop8 || isIPL;
+        const isHighProfileInternational = 
+          (involvesIndia && (nat1 || nat2)) ||
+          (nat1 && nat2 && nat1 !== 'pakistan' && nat2 !== 'pakistan');
+
+        const isIPLMatch = isIPLTeam(ev.home?.name) && isIPLTeam(ev.away?.name);
+
+        return isHighProfileInternational || isIPLMatch;
       });
-      events = sortEvents(events).slice(0, 4);
+      events = sortEvents(events);
+      events = deduplicateMatches(events);
+      events = events.slice(0, 4);
       return [{ league: { name: 'Cricket', flag: '🏏' }, events }];
     } catch (e) {
       return [];
