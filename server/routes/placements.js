@@ -295,7 +295,7 @@ placementsRoutes.get('/habit-logs', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
         const res = await pool.query(
-            'SELECT id, completed_at, created_at, status FROM habit_logs WHERE user_id = $1',
+            "SELECT id, completed_at, created_at, status FROM habit_logs WHERE user_id = $1 AND created_at >= NOW() - INTERVAL '14 days'",
             [userId]
         );
         return c.json(res.rows);
@@ -309,14 +309,14 @@ placementsRoutes.get('/readiness', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
         const [dsaRes, speakingRes, resumesRes] = await Promise.all([
-            pool.query('SELECT id FROM dsa_logs WHERE user_id = $1', [userId]),
+            pool.query('SELECT COUNT(*) as count FROM dsa_logs WHERE user_id = $1', [userId]),
             pool.query('SELECT confidence_score, clarity_score, pace_score FROM lab_speaking_logs WHERE user_id = $1', [userId]),
-            pool.query('SELECT id FROM resumes WHERE user_id = $1', [userId])
+            pool.query('SELECT COUNT(*) as count FROM resumes WHERE user_id = $1', [userId])
         ]);
 
-        const dsaCount = dsaRes.rows.length;
+        const dsaCount = parseInt(dsaRes.rows[0].count, 10);
         const speakingLogs = speakingRes.rows;
-        const resumeCount = resumesRes.rows.length;
+        const resumeCount = parseInt(resumesRes.rows[0].count, 10);
 
         const dsaScore = Math.min(100, Math.max(35, 35 + dsaCount * 5));
         const dsaDesc = dsaCount > 0 ? `${dsaCount} problems solved this period` : 'No solved problems logged yet';

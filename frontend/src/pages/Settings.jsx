@@ -87,15 +87,10 @@ const StatMini = ({ icon, value, label, color }) => (
 );
 
 const THEMES = [
-  { id: 'nordic', label: 'Nordic', colors: ['#1E5C3A', '#2D7A55', '#F0EDE8'], dark: false },
-  { id: 'vercel', label: 'Vercel', colors: ['#00B37E', '#111111', '#F5F5F5'], dark: true },
-  { id: 'studio', label: 'Studio', colors: ['#666', '#333', '#ccc'], dark: true },
-  { id: 'midnight', label: 'Midnight', colors: ['#3B82F6', '#0B1120', '#1E3A5F'], dark: true },
-  { id: 'solar', label: 'Solar', colors: ['#F59E0B', '#1A1A2E', '#16213E'], dark: true },
-  { id: 'neon', label: 'Neon', colors: ['#EC4899', '#09090B', '#18181B'], dark: true },
-  { id: 'monokai', label: 'Monokai', colors: ['#A6E22E', '#272822', '#383830'], dark: true },
-  { id: 'graphite', label: 'Graphite', colors: ['#D4A84B', '#1A1A1A', '#2A2A2A'], dark: true },
-  { id: 'sakura', label: 'Sakura', colors: ['#EC4899', '#FFF0F3', '#FFD6E0'], dark: false },
+  { id: 'normal', label: 'Normal', colors: ['#FAFAF9', '#1A1A1A', '#1E5C3A'], dark: false },
+  { id: 'dark', label: 'Dark', colors: ['#0A0A0A', '#EDEDED', '#22C55E'], dark: true },
+  { id: 'notion', label: 'Notion', colors: ['#FFFFFF', '#37352F', '#EBEBEA'], dark: false },
+  { id: 'internet', label: 'Internet', colors: ['#000000', '#00ff41', '#111111'], dark: true },
 ];
 
 /**
@@ -212,7 +207,7 @@ const Settings = () => {
   if (!user) return null;
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '20px' }}>
         <div style={{

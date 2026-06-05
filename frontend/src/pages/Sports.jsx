@@ -73,17 +73,14 @@ const Sports = () => {
 
   return (
     <div style={{
-      background: '#F5F2EB',
-      minHeight: '100vh',
+      maxWidth: '1200px',
+      margin: '0 auto',
       padding: '40px 24px',
-      fontFamily: '"Outfit", "Inter", sans-serif',
-      color: '#2B2A24',
-      transition: 'all 0.3s ease'
+      paddingBottom: '80px'
     }}>
       {/* Header section */}
       <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto 32px auto',
+        marginBottom: '32px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -96,7 +93,7 @@ const Sports = () => {
             fontWeight: 800,
             textTransform: 'uppercase',
             letterSpacing: '0.2em',
-            color: '#1E5C3A',
+            color: 'var(--color-accent)',
             marginBottom: '6px'
           }}>
             AIIMIN Sports Intelligence
@@ -104,10 +101,10 @@ const Sports = () => {
           <h1 style={{
             fontSize: '36px',
             fontWeight: 900,
-            color: '#1E5C3A',
+            color: 'var(--color-text-1)',
             margin: 0,
             letterSpacing: '-0.03em',
-            fontFamily: '"Playfair Display", "Georgia", serif'
+            fontFamily: 'var(--font-serif)'
           }}>
             The Arena.
           </h1>
@@ -119,12 +116,12 @@ const Sports = () => {
             alignItems: 'center',
             gap: '6px',
             padding: '8px 16px',
-            background: 'rgba(30, 92, 58, 0.08)',
-            border: '1px solid rgba(30, 92, 58, 0.15)',
+            background: 'var(--bg-elevated)',
+            border: '1px solid var(--border)',
             borderRadius: '12px',
             fontSize: '11px',
             fontWeight: 800,
-            color: '#1E5C3A'
+            color: 'var(--color-accent)'
           }}>
             <Wifi size={13} style={{ strokeWidth: 2.5 }} /> Live Score Feed
           </div>
@@ -132,13 +129,13 @@ const Sports = () => {
             onClick={handleRefresh}
             disabled={refreshing}
             style={{
-              background: '#FFFFFF',
-              border: '1px solid #E3DEC3',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--border)',
               borderRadius: '12px',
               padding: '10px 18px',
               fontSize: '12px',
               fontWeight: 800,
-              color: '#5C5A52',
+              color: 'var(--color-text-2)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -155,11 +152,10 @@ const Sports = () => {
 
       {/* Main Tabs Navigation */}
       <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto 32px auto',
+        marginBottom: '32px',
         display: 'flex',
         gap: '12px',
-        borderBottom: '1px solid #E3DEC3',
+        borderBottom: '1px solid var(--border)',
         paddingBottom: '16px'
       }}>
         {['Cricket', 'Football', 'Formula 1'].map((tab) => {
@@ -171,9 +167,9 @@ const Sports = () => {
               style={{
                 padding: '10px 24px',
                 borderRadius: '99px',
-                border: `1px solid ${isActive ? '#1E5C3A' : '#E3DEC3'}`,
-                background: isActive ? '#1E5C3A' : '#FFFFFF',
-                color: isActive ? '#FFFFFF' : '#5C5A52',
+                border: `1px solid ${isActive ? 'var(--color-accent)' : 'var(--border)'}`,
+                background: isActive ? 'var(--color-accent)' : 'var(--color-surface)',
+                color: isActive ? 'var(--color-base)' : 'var(--color-text-2)',
                 fontSize: '13px',
                 fontWeight: 800,
                 cursor: 'pointer',
@@ -181,7 +177,7 @@ const Sports = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                boxShadow: isActive ? '0 4px 12px rgba(30,92,58,0.2)' : 'none'
+                boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
               }}
             >
               {tab === 'Cricket' && '🏏'}
@@ -210,8 +206,8 @@ const Sports = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '24px' }}>
                   {feed.cricket[0].events.map((match) => (
                     <div key={match.id} style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E3DEC3',
+                      background: 'var(--color-surface)',
+                      border: '1px solid var(--border)',
                       borderRadius: '24px',
                       padding: '28px',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
@@ -224,19 +220,19 @@ const Sports = () => {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '6px',
-                          background: match.isLive ? 'rgba(239,68,68,0.1)' : 'rgba(30,92,58,0.08)',
+                          background: match.isLive ? 'rgba(239,68,68,0.1)' : 'var(--bg-elevated)',
                           padding: '4px 10px',
                           borderRadius: '8px',
                         }}>
                           {match.isLive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                          <span style={{ fontSize: '10px', fontWeight: 900, color: match.isLive ? '#EF4444' : '#1E5C3A', letterSpacing: '0.05em' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 900, color: match.isLive ? '#EF4444' : 'var(--color-accent)', letterSpacing: '0.05em' }}>
                             {match.isLive ? 'LIVE' : match.isFinished ? 'FINISHED' : 'UPCOMING'}
                           </span>
                         </div>
-                        <span style={{ fontSize: '11px', color: '#7E7C74', fontWeight: 600 }}>{match.notes?.[0] || 'Match'}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 600 }}>{match.notes?.[0] || 'Match'}</span>
                       </div>
                       
-                      <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, fontFamily: '"Playfair Display", "Georgia", serif', color: '#1E5C3A' }}>
+                      <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, fontFamily: 'var(--font-serif)', color: 'var(--color-text-1)' }}>
                         {match.name}
                       </h3>
 
@@ -252,13 +248,13 @@ const Sports = () => {
                       </div>
 
                       <div style={{
-                        background: 'rgba(30, 92, 58, 0.08)',
-                        border: '1px solid rgba(30, 92, 58, 0.15)',
+                        background: 'var(--bg-elevated)',
+                        border: '1px solid var(--border)',
                         borderRadius: '16px',
                         padding: '12px 16px',
                         fontSize: '12px',
                         fontWeight: 800,
-                        color: '#1E5C3A',
+                        color: 'var(--color-accent)',
                         textAlign: 'center'
                       }}>
                         {match.status}
@@ -267,8 +263,8 @@ const Sports = () => {
                   ))}
                 </div>
               ) : (
-                <div style={{ padding: '40px', textAlign: 'center', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E3DEC3' }}>
-                  <h3 style={{ fontSize: '18px', color: '#7E7C74' }}>No live or upcoming cricket matches found at this time.</h3>
+                <div style={{ padding: '40px', textAlign: 'center', background: 'var(--color-surface)', borderRadius: '24px', border: '1px solid var(--border)' }}>
+                  <h3 style={{ fontSize: '18px', color: 'var(--color-text-3)' }}>No live or upcoming cricket matches found at this time.</h3>
                 </div>
               )}
             </motion.div>
@@ -289,8 +285,8 @@ const Sports = () => {
                   {feed.football.flatMap(league => 
                     league.events.map(match => (
                       <div key={match.id} style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #E3DEC3',
+                        background: 'var(--color-surface)',
+                        border: '1px solid var(--border)',
                         borderRadius: '24px',
                         padding: '28px',
                         boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
@@ -299,19 +295,19 @@ const Sports = () => {
                         gap: '20px'
                       }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#7E7C74', textTransform: 'uppercase' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase' }}>
                             {league.league.flag} {league.league.name}
                           </span>
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
                             gap: '6px',
-                            background: match.isLive ? 'rgba(239,68,68,0.1)' : 'rgba(30,92,58,0.08)',
+                            background: match.isLive ? 'rgba(239,68,68,0.1)' : 'var(--bg-elevated)',
                             padding: '4px 10px',
                             borderRadius: '8px'
                           }}>
                             {match.isLive && <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#EF4444', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />}
-                            <span style={{ fontSize: '10px', fontWeight: 900, color: match.isLive ? '#EF4444' : '#1E5C3A' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 900, color: match.isLive ? '#EF4444' : 'var(--color-accent)' }}>
                               {match.isLive ? `LIVE ${match.clock || ''}` : match.isFinished ? 'FINISHED' : 'SCHEDULED'}
                             </span>
                           </div>
@@ -335,7 +331,7 @@ const Sports = () => {
                           </div>
                         </div>
 
-                        <div style={{ fontSize: '12px', color: '#7E7C74', textAlign: 'center', fontWeight: 600 }}>
+                        <div style={{ fontSize: '12px', color: 'var(--color-text-3)', textAlign: 'center', fontWeight: 600 }}>
                           {match.statusDetail || match.status}
                         </div>
                       </div>
@@ -343,8 +339,8 @@ const Sports = () => {
                   )}
                 </div>
               ) : (
-                <div style={{ padding: '40px', textAlign: 'center', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E3DEC3' }}>
-                  <h3 style={{ fontSize: '18px', color: '#7E7C74' }}>No live or upcoming football matches found at this time.</h3>
+                <div style={{ padding: '40px', textAlign: 'center', background: 'var(--color-surface)', borderRadius: '24px', border: '1px solid var(--border)' }}>
+                  <h3 style={{ fontSize: '18px', color: 'var(--color-text-3)' }}>No live or upcoming football matches found at this time.</h3>
                 </div>
               )}
             </motion.div>
@@ -365,12 +361,12 @@ const Sports = () => {
                   <div style={{
                     display: 'flex',
                     gap: '16px',
-                    borderBottom: '2px solid #1E5C3A',
+                    borderBottom: '2px solid var(--color-accent)',
                     paddingBottom: '8px',
                     marginBottom: '8px'
                   }}>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#1E5C3A', borderBottom: '3px solid #1E5C3A', paddingBottom: '8px', marginBottom: '-10px' }}>GRID STANDINGS</span>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#7E7C74' }}>UPCOMING GP</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-accent)', borderBottom: '3px solid var(--color-accent)', paddingBottom: '8px', marginBottom: '-10px' }}>GRID STANDINGS</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-3)' }}>UPCOMING GP</span>
                   </div>
 
                   {/* Grid split */}
@@ -382,11 +378,11 @@ const Sports = () => {
                       {/* Upcoming Race Card */}
                       {feed?.f1?.upcoming?.[0] && (
                         <div style={{
-                          background: 'linear-gradient(135deg, #1E5C3A, #0D3B26)',
+                          background: 'var(--color-accent)',
                           borderRadius: '24px',
                           padding: '32px',
                           color: '#FFFFFF',
-                          boxShadow: '0 4px 20px rgba(30,92,58,0.15)',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '24px'
@@ -395,7 +391,7 @@ const Sports = () => {
                             <div style={{ fontSize: '11px', fontWeight: 800, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px' }}>
                               🏎️ NEXT GRAND PRIX
                             </div>
-                            <h2 style={{ fontSize: '26px', fontWeight: 900, margin: '0 0 6px 0', fontFamily: '"Playfair Display", "Georgia", serif' }}>
+                            <h2 style={{ fontSize: '26px', fontWeight: 900, margin: '0 0 6px 0', fontFamily: 'var(--font-serif)' }}>
                               {feed.f1.upcoming[0].raceName}
                             </h2>
                             <span style={{ fontSize: '13px', opacity: 0.8, fontWeight: 500 }}>
@@ -417,13 +413,13 @@ const Sports = () => {
                       {/* Constructor Championship Standings */}
                       {feed?.f1?.constructors?.length > 0 && (
                         <div style={{
-                          background: '#FFFFFF',
-                          border: '1px solid #E3DEC3',
+                          background: 'var(--color-surface)',
+                          border: '1px solid var(--border)',
                           borderRadius: '24px',
                           padding: '24px',
                           boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
                         }}>
-                          <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#7E7C74', marginBottom: '16px', margin: 0 }}>
+                          <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '16px', margin: 0 }}>
                             CONSTRUCTOR STANDINGS
                           </h3>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -433,16 +429,16 @@ const Sports = () => {
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 paddingBottom: idx < 4 ? '12px' : '0',
-                                borderBottom: idx < 4 ? '1px solid #F0EDE8' : 'none'
+                                borderBottom: idx < 4 ? '1px solid var(--border)' : 'none'
                               }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#7E7C74', minWidth: '16px' }}>{team.position}</span>
+                                  <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-3)', minWidth: '16px' }}>{team.position}</span>
                                   <div>
-                                    <div style={{ fontSize: '13px', fontWeight: 800 }}>{team.Constructor.name}</div>
-                                    <div style={{ fontSize: '10px', color: '#7E7C74', fontWeight: 600 }}>{team.wins} Wins</div>
+                                    <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-1)' }}>{team.Constructor.name}</div>
+                                    <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 600 }}>{team.wins} Wins</div>
                                   </div>
                                 </div>
-                                <span style={{ fontSize: '16px', fontWeight: 900, fontFamily: 'monospace', color: '#1E5C3A' }}>{team.points}</span>
+                                <span style={{ fontSize: '16px', fontWeight: 900, fontFamily: 'monospace', color: 'var(--color-accent)' }}>{team.points}</span>
                               </div>
                             ))}
                           </div>
@@ -454,13 +450,13 @@ const Sports = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                       {feed?.f1?.standings?.length > 0 && (
                         <div style={{
-                          background: '#FFFFFF',
-                          border: '1px solid #E3DEC3',
+                          background: 'var(--color-surface)',
+                          border: '1px solid var(--border)',
                           borderRadius: '24px',
                           padding: '24px',
                           boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
                         }}>
-                          <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#7E7C74', marginBottom: '20px', margin: 0 }}>
+                          <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px', margin: 0 }}>
                             DRIVER CHAMPIONSHIP
                           </h3>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -470,17 +466,17 @@ const Sports = () => {
                               <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', fontSize: '12px' }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ fontSize: '11px', fontWeight: 900, color: idx === 0 ? '#1E5C3A' : '#7E7C74' }}>P{driver.position}</span>
-                                    <span style={{ fontWeight: 800 }}>{driver.Driver.givenName} {driver.Driver.familyName}</span>
-                                    <span style={{ fontSize: '10px', color: '#7E7C74', fontWeight: 600 }}>{driver.Constructors[0]?.name}</span>
+                                    <span style={{ fontSize: '11px', fontWeight: 900, color: idx === 0 ? 'var(--color-accent)' : 'var(--color-text-3)' }}>P{driver.position}</span>
+                                    <span style={{ fontWeight: 800, color: 'var(--color-text-1)' }}>{driver.Driver.givenName} {driver.Driver.familyName}</span>
+                                    <span style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 600 }}>{driver.Constructors[0]?.name}</span>
                                   </div>
-                                  <span style={{ fontSize: '14px', fontWeight: 900, color: '#1E5C3A', fontFamily: 'monospace' }}>{driver.points} PTS</span>
+                                  <span style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-accent)', fontFamily: 'monospace' }}>{driver.points} PTS</span>
                                 </div>
-                                <div style={{ height: '6px', background: '#F0EDE8', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{ height: '6px', background: 'var(--border)', borderRadius: '3px', overflow: 'hidden' }}>
                                   <div style={{
                                     width: `${(driver.points / maxPoints) * 100}%`,
                                     height: '100%',
-                                    background: '#1E5C3A',
+                                    background: 'var(--color-accent)',
                                     borderRadius: '3px'
                                   }} />
                                 </div>
@@ -493,8 +489,8 @@ const Sports = () => {
                   </div>
                 </>
               ) : (
-                <div style={{ padding: '40px', textAlign: 'center', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E3DEC3' }}>
-                  <h3 style={{ fontSize: '18px', color: '#7E7C74' }}>No Formula 1 standings or upcoming races available.</h3>
+                <div style={{ padding: '40px', textAlign: 'center', background: 'var(--color-surface)', borderRadius: '24px', border: '1px solid var(--border)' }}>
+                  <h3 style={{ fontSize: '18px', color: 'var(--color-text-3)' }}>No Formula 1 standings or upcoming races available.</h3>
                 </div>
               )}
             </motion.div>
