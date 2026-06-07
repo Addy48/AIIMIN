@@ -92,7 +92,7 @@ const THEMES = [
   { id: 'normal', label: 'Normal', colors: ['#FAFAF9', '#1A1A1A', '#1E5C3A'], dark: false },
   { id: 'dark', label: 'Dark', colors: ['#0A0A0A', '#EDEDED', '#22C55E'], dark: true },
   { id: 'notion', label: 'Notion', colors: ['#FFFFFF', '#37352F', '#EBEBEA'], dark: false },
-  { id: 'internet', label: 'Internet', colors: ['#000000', '#00ff41', '#111111'], dark: true },
+  { id: 'internet', label: 'Internet', colors: ['#0A0D10', '#00F0FF', '#161B22'], dark: true },
 ];
 
 /**
