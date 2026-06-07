@@ -327,15 +327,12 @@ export const getCachedSports = async () => {
   const CACHE_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 
   if (cacheAgeMs > CACHE_TTL_MS) {
-    console.log('[SportsCache] Cache expired (older than 2 hours). Refreshing synchronously...');
-    // Await synchronously on serverless to ensure execution completes
-    try {
-      const freshData = await updateSportsCache();
-      return freshData;
-    } catch (err) {
-      console.error('[SportsCache] Synchronous refresh failed:', err);
-      // Fallback to stale data if refresh fails
-    }
+    console.log('[SportsCache] Cache expired (older than 2 hours). Refreshing asynchronously...');
+    // Fire and forget to avoid blocking UI, return stale data immediately
+    updateSportsCache().catch(err => {
+      console.error('[SportsCache] Background refresh failed:', err);
+    });
+    return data;
   }
 
   return data;
