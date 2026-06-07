@@ -88,6 +88,30 @@ const getDateRange = () => {
   return `${getDateStr(-3)}-${getDateStr(3)}`;
 };
 
+const sortEvents = (events) => {
+  return events.sort((a, b) => {
+    // 1. Live matches first
+    if (a.isLive && !b.isLive) return -1;
+    if (!a.isLive && b.isLive) return 1;
+
+    // 2. Upcoming matches next (not live, not finished)
+    const aIsUpcoming = !a.isLive && !a.isFinished;
+    const bIsUpcoming = !b.isLive && !b.isFinished;
+    if (aIsUpcoming && !bIsUpcoming) return -1;
+    if (!aIsUpcoming && bIsUpcoming) return 1;
+
+    // 3. Within same category, sort by date/time
+    const dateA = new Date(a.date || a.dateTimeGMT || 0).getTime();
+    const dateB = new Date(b.date || b.dateTimeGMT || 0).getTime();
+    
+    if (aIsUpcoming) {
+      return dateA - dateB; // earliest upcoming first
+    } else {
+      return dateB - dateA; // latest finished first
+    }
+  });
+};
+
 /* ── Football (Soccer) Fetch & Filter ── */
 const fetchFootball = async () => {
   const dateRange = getDateRange();
@@ -105,8 +129,9 @@ const fetchFootball = async () => {
       fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
         .then(d => {
           let events = parseESPNEvents(d);
-          // Apply strict caps: Max 5 items per league to stay clean and cheap
-          events = events.slice(0, 5);
+          events = sortEvents(events);
+          // Apply strict caps: Max 3 main matches per league to avoid clutter
+          events = events.slice(0, 3);
           return { league: l, events };
         })
     )
@@ -160,10 +185,18 @@ const fetchCricket = async () => {
         const matchStatus = (match.status || '').toLowerCase();
         const title = `${t1} ${t2} ${series} ${type} ${matchStatus}`.toLowerCase();
 
+        // Exclude women matches
         if (title.includes('women') || title.includes('wpl') || title.includes('wbbl') || title.includes('wt20')) return false;
         
+        // Exclude England county and other domestic non-IPL leagues
+        if (title.includes('county') || title.includes('vitality') || title.includes('blast') || title.includes('hundred') || title.includes('sheffield')) return false;
+
         const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
         const involvesIndia = t1 === 'india' || t2 === 'india' || t1 === 'ind' || t2 === 'ind' || t1.includes('(ind)') || t2.includes('(ind)');
+
+        // Exclude Pakistan unless playing with India
+        const involvesPak = t1.includes('pakistan') || t2.includes('pakistan') || t1 === 'pak' || t2 === 'pak';
+        if (involvesPak && !involvesIndia) return false;
 
         const involvesTop8 = TOP_8.some(t => {
           const name = t.toLowerCase();
@@ -172,13 +205,16 @@ const fetchCricket = async () => {
           return (isMainTeam1 || isMainTeam2) && !title.includes('u19') && !title.includes('under-19');
         });
 
+        // Only ICC matches (Tests, ODIs, T20Is) or IPL
+        const isICC = title.includes('test') || title.includes('odi') || title.includes('t20i') || title.includes('icc') || title.includes('world cup');
+
         const involvesIPLTeam = IPL_TEAMS.some(t => {
             const team = t.toLowerCase();
             return t1 === team || t2 === team || t1.includes(team) || t2.includes(team);
         });
 
-        // Strict inclusion: Only IPL, India, or Top 8 teams
-        return isIPL || involvesIndia || involvesTop8 || involvesIPLTeam;
+        // Strict inclusion: Only IPL, India, or Top 8 teams in ICC matches
+        return isIPL || involvesIndia || (involvesTop8 && isICC) || involvesIPLTeam;
       })
       .map(match => {
         const isLive = match.ms === 'live';
@@ -215,23 +251,30 @@ const fetchCricket = async () => {
         };
       });
 
-    events = events.slice(0, 10); // Show more since we filter heavily
+    events = sortEvents(events);
+    events = events.slice(0, 6); // Top 6 most relevant matches
 
     return [{ league: { name: 'Cricket Scores', flag: '🏏' }, events }];
   } catch (err) {
     console.warn('Cricket API failed, falling back to ESPN scoreboard:', err);
     try {
       const general = await fetchJSON(`${ESPN}/cricket/scoreboard`);
-      const events = parseESPNEvents(general).filter(ev => {
+      let events = parseESPNEvents(general).filter(ev => {
         // Apply strict filter to ESPN fallback as well
         const t1 = (ev.home?.name || '').toLowerCase();
         const t2 = (ev.away?.name || '').toLowerCase();
+        
+        const involvesPak = t1.includes('pakistan') || t2.includes('pakistan');
         const involvesIndia = t1.includes('india') || t2.includes('india');
-        const TOP_8 = ['australia', 'england', 'south africa', 'pakistan', 'new zealand', 'west indies', 'sri lanka'];
+        if (involvesPak && !involvesIndia) return false;
+
+        const TOP_8 = ['australia', 'england', 'south africa', 'new zealand', 'west indies', 'sri lanka', 'india'];
         const involvesTop8 = TOP_8.some(t => t1.includes(t) || t2.includes(t));
         const isIPL = ev.league?.toLowerCase().includes('indian premier league') || t1.includes('chennai') || t2.includes('chennai') || t1.includes('mumbai') || t2.includes('mumbai') || t1.includes('royal') || t2.includes('royal');
+        
         return involvesIndia || involvesTop8 || isIPL;
-      }).slice(0, 5);
+      });
+      events = sortEvents(events).slice(0, 4);
       return [{ league: { name: 'Cricket', flag: '🏏' }, events }];
     } catch (e) {
       return [];
@@ -269,7 +312,8 @@ const fetchF1 = async () => {
 const fetchBasketball = async () => {
   try {
     const data = await fetchJSON(`${ESPN}/basketball/nba/scoreboard`);
-    const events = parseESPNEvents(data).slice(0, 5);
+    let events = parseESPNEvents(data);
+    events = sortEvents(events).slice(0, 3);
     return [{ league: { name: 'NBA', flag: '🏀' }, events }];
   } catch (err) {
     console.warn('NBA API failed:', err);
