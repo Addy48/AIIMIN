@@ -209,12 +209,19 @@ button:disabled, button[disabled] {
 .insight-card:hover { border-color: var(--color-border-lit); }
 
 /* ─── Card hover depth ───────────────────────────────── */
+.nordic-card,
 .card-hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, var(--color-surface) 40%, var(--color-surface) 100%) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
   transition: transform var(--dur-normal) var(--ease), box-shadow var(--dur-normal) var(--ease);
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: var(--glass-shadow);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08) !important;
 }
 
 /* ─── Toast (Top-Right) ──────────────────────────────── */
