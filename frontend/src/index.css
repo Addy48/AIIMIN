@@ -22,7 +22,6 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.25s ease, color 0.25s ease;
-  zoom: 1.2;
 }
 
 #root { position: relative; z-index: 1; min-height: 100vh; }
