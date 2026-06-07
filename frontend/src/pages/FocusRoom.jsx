@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play, Pause, Square, RotateCcw, Coffee, Brain,
-  Music, SkipForward, Volume2, Target, Zap, Clock,
-  AlertTriangle, Check, ChevronDown, ChevronUp
+  Music, SkipForward, Target, Zap, Clock,
+  AlertTriangle, Check, ChevronDown, ChevronUp, Lock
 } from 'lucide-react';
 import toast from '../utils/toast';
 import { useAudio } from '../context/AudioContext';
@@ -35,7 +35,7 @@ const TreeVisual = ({ progress, status, phase }) => {
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 1.1, opacity: 0 }}
       transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-      style={{ fontSize: '72px', lineHeight: 1, filter: status === 'dead' ? 'grayscale(1) saturate(0)' : 'none' }}
+      style={{ fontSize: '96px', lineHeight: 1, filter: status === 'dead' ? 'grayscale(1) saturate(0)' : 'drop-shadow(0 0 20px rgba(255,255,255,0.1))', zIndex: 2, position: 'relative' }}
     >
       {status === 'dead' ? '🥀' : trees[Math.max(0, idx)]}
     </motion.div>
@@ -43,14 +43,24 @@ const TreeVisual = ({ progress, status, phase }) => {
 };
 
 // ── Circular timer ring ──────────────────────────────────────────────────────
-const TimerRing = ({ progress, color, children, size = 220 }) => {
+const TimerRing = ({ progress, color, children, size = 300, isRunning }) => {
   const r = (size - 16) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - Math.max(0, Math.min(1, progress)));
+  
   return (
     <div style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <svg width={size} height={size} style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth={8} />
+      {/* Background ambient glow when running */}
+      {isRunning && (
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          style={{ position: 'absolute', inset: -20, borderRadius: '50%', background: `radial-gradient(circle, ${color}33 0%, transparent 70%)`, pointerEvents: 'none' }}
+        />
+      )}
+      
+      <svg width={size} height={size} style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)', zIndex: 1 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={8} />
         <motion.circle
           cx={size / 2} cy={size / 2} r={r}
           fill="none" stroke={color} strokeWidth={8}
@@ -58,9 +68,10 @@ const TimerRing = ({ progress, color, children, size = 220 }) => {
           strokeDasharray={circ}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
+          style={{ filter: `drop-shadow(0 0 8px ${color})` }}
         />
       </svg>
-      <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+      <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {children}
       </div>
     </div>
@@ -82,13 +93,13 @@ export default function FocusRoom() {
     try { return parseInt(localStorage.getItem('aiimin_focus_mins') || '0', 10); } catch { return 0; }
   });
 
-  // Audio is now handled globally in AudioContext
   const { audioFiles, audioIdx, handleAudioUpload, nextAudio } = useAudio();
 
-  // Tasks for this session
+  // Tasks and intent
+  const [mainIntent, setMainIntent] = useState(() => localStorage.getItem('aiimin_focus_intent') || '');
   const [sessionTasks, setSessionTasks] = useState([]);
   const [taskInput, setTaskInput] = useState('');
-  const [showTaskPanel, setShowTaskPanel] = useState(false);
+  const [showTaskPanel, setShowTaskPanel] = useState(true);
 
   const intervalRef = useRef(null);
   const visRef = useRef(null);
@@ -173,8 +184,18 @@ export default function FocusRoom() {
     };
   }, [status, phase]);
 
+  const saveIntent = (val) => {
+    setMainIntent(val);
+    localStorage.setItem('aiimin_focus_intent', val);
+  };
+
   // ── Actions ────────────────────────────────────────────────────────────────
   const start = () => {
+    if (!mainIntent.trim() && phase === 'work') {
+      toast.error('Please set your Main Intent first.');
+      document.getElementById('mainIntentInput')?.focus();
+      return;
+    }
     setStatus('running');
   };
   const pause = () => setStatus(s => s === 'running' ? 'paused' : 'running');
@@ -203,106 +224,101 @@ export default function FocusRoom() {
   const streakLabel = cycleCount >= 4 ? `🔥 ${Math.floor(cycleCount / 4)} streak${Math.floor(cycleCount / 4) > 1 ? 's' : ''}` : null;
 
   return (
-    <div className="page-container">
+    <div className="page-container" style={{ paddingBottom: '100px' }}>
       <PageHeader 
         title="Focus Room"
-        subtitle="Deep Work Engine"
+        subtitle="Monk Mode. Zero Distractions."
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gap: '28px' }}>
-        {/* ── LEFT: Timer ──────────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* ── TOP: Sticky Intent / Commitment ── */}
+      <motion.div 
+        layout
+        style={{
+          background: status === 'running' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255,255,255,0.03)',
+          border: `1px solid ${status === 'running' ? 'rgba(16, 185, 129, 0.4)' : 'rgba(255,255,255,0.1)'}`,
+          borderRadius: '24px',
+          padding: '24px',
+          marginBottom: '32px',
+          boxShadow: status === 'running' ? '0 16px 40px rgba(16,185,129,0.15)' : 'none',
+          backdropFilter: 'blur(20px)',
+          transition: 'all 0.3s',
+          display: 'flex', flexDirection: 'column', gap: '12px'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: status === 'running' ? '#10b981' : 'var(--color-text-3)', fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          {status === 'running' ? <Lock size={16} /> : <Target size={16} />}
+          {status === 'running' ? 'Locked Commitment' : 'Define Your Main Intent'}
+        </div>
+        <input
+          id="mainIntentInput"
+          value={mainIntent}
+          onChange={e => saveIntent(e.target.value)}
+          disabled={status === 'running'}
+          placeholder="What is the ONE thing you must accomplish in this session?"
+          style={{
+            background: 'transparent', border: 'none', color: '#fff',
+            fontSize: '24px', fontWeight: 900, outline: 'none', width: '100%',
+            fontFamily: 'inherit', letterSpacing: '-0.02em',
+            opacity: status === 'running' ? 1 : 0.8
+          }}
+        />
+      </motion.div>
 
-          {/* Locked Intent Setting */}
-          <div style={{
-            background: 'var(--glass-bg)',
-            backdropFilter: 'var(--glass-blur)',
-            border: `1px solid ${status === 'running' ? phaseInfo.color : 'var(--color-border)'}`,
-            borderRadius: '20px',
-            padding: '16px 20px',
-            boxShadow: status === 'running' ? `0 0 20px ${phaseInfo.color}33` : 'none',
-            transition: 'all 0.3s ease',
-            display: 'flex', flexDirection: 'column', gap: '8px'
-          }}>
-            <div style={{ fontSize: '12px', fontWeight: 800, color: status === 'running' ? phaseInfo.color : 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {status === 'running' ? 'Active Commitment' : 'Set Your Intent'}
-            </div>
-            <input
-              value={taskInput}
-              onChange={e => setTaskInput(e.target.value)}
-              disabled={status === 'running'}
-              placeholder="e.g., 'Finish the math assignment without checking phone'"
-              style={{
-                background: 'transparent', border: 'none', color: 'var(--color-text-1)',
-                fontSize: '16px', fontWeight: 600, outline: 'none', width: '100%',
-                opacity: status === 'running' ? 1 : 0.8,
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 380px', gap: '32px' }}>
+        
+        {/* ── LEFT: Timer & Visuals ──────────────────────────────────────────────────── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
           {/* Preset Pills */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)' }}>
             {PRESETS.map(p => (
-              <button key={p.label} onClick={() => changePreset(p)} style={{
-                padding: '8px 18px', borderRadius: '99px',
-                border: `1px solid ${preset.label === p.label ? phaseInfo.color : 'var(--color-border)'}`,
-                background: preset.label === p.label ? `${phaseInfo.color}18` : 'var(--color-surface)',
-                color: preset.label === p.label ? phaseInfo.color : 'var(--color-text-2)',
-                fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
-                transition: 'all 0.2s',
+              <button key={p.label} onClick={() => status === 'idle' && changePreset(p)} style={{
+                padding: '10px 20px', borderRadius: '16px',
+                border: `1px solid ${preset.label === p.label ? phaseInfo.color : 'rgba(255,255,255,0.05)'}`,
+                background: preset.label === p.label ? `${phaseInfo.color}18` : 'transparent',
+                color: preset.label === p.label ? phaseInfo.color : 'var(--color-text-3)',
+                fontSize: '14px', fontWeight: 800, cursor: status === 'idle' ? 'pointer' : 'default', fontFamily: 'inherit',
+                transition: 'all 0.2s', opacity: (status !== 'idle' && preset.label !== p.label) ? 0.3 : 1
               }}>
                 {p.icon} {p.label}
               </button>
             ))}
-            {/* Custom adjustment buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '2px 8px', gap: '4px' }}>
-              <button 
-                onClick={() => {
-                  const newWork = Math.max(1, preset.work - 5);
-                  changePreset({ label: `${newWork}m`, work: newWork, break: Math.round(newWork * 0.2) || 1, long: Math.round(newWork * 0.6) || 5, icon: '⚙️' });
-                }} 
-                style={{
-                  background: 'none', border: 'none', color: 'var(--color-text-2)', 
-                  cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', padding: '2px 6px',
-                  fontFamily: 'inherit', transition: 'color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = phaseInfo.color}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-2)'}
-                title="Decrease duration by 5m"
-              >
-                -
-              </button>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', padding: '0 2px', userSelect: 'none' }}>
-                {preset.work}m
-              </span>
-              <button 
-                onClick={() => {
-                  const newWork = Math.min(180, preset.work + 5);
-                  changePreset({ label: `${newWork}m`, work: newWork, break: Math.round(newWork * 0.2) || 1, long: Math.round(newWork * 0.6) || 5, icon: '⚙️' });
-                }} 
-                style={{
-                  background: 'none', border: 'none', color: 'var(--color-text-2)', 
-                  cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', padding: '2px 6px',
-                  fontFamily: 'inherit', transition: 'color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = phaseInfo.color}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-2)'}
-                title="Increase duration by 5m"
-              >
-                +
-              </button>
-            </div>
-            {/* Phase pills */}
-            <div style={{ flex: 1 }} />
+            {/* Custom adjustment */}
+            {status === 'idle' && (
+              <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', padding: '4px 12px', gap: '8px', marginLeft: 'auto' }}>
+                <button 
+                  onClick={() => {
+                    const newWork = Math.max(1, preset.work - 5);
+                    changePreset({ label: `${newWork}m`, work: newWork, break: Math.round(newWork * 0.2) || 1, long: Math.round(newWork * 0.6) || 5, icon: '⚙️' });
+                  }} 
+                  style={{ background: 'none', border: 'none', color: 'var(--color-text-2)', cursor: 'pointer', fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = phaseInfo.color}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-2)'}
+                >-</button>
+                <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text-1)', userSelect: 'none' }}>{preset.work}m</span>
+                <button 
+                  onClick={() => {
+                    const newWork = Math.min(180, preset.work + 5);
+                    changePreset({ label: `${newWork}m`, work: newWork, break: Math.round(newWork * 0.2) || 1, long: Math.round(newWork * 0.6) || 5, icon: '⚙️' });
+                  }} 
+                  style={{ background: 'none', border: 'none', color: 'var(--color-text-2)', cursor: 'pointer', fontSize: '20px', fontWeight: 'bold', display: 'flex', alignItems: 'center', transition: 'color 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.color = phaseInfo.color}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-2)'}
+                >+</button>
+              </div>
+            )}
+          </div>
+
+          {/* Phase selectors */}
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
             {Object.entries(PHASES).map(([k, v]) => (
               <button key={k} onClick={() => status === 'idle' && initPhase(k)} style={{
-                padding: '8px 14px', borderRadius: '99px',
-                border: `1px solid ${phase === k ? v.color : 'var(--color-border)'}`,
-                background: phase === k ? `${v.color}18` : 'transparent',
+                padding: '8px 24px', borderRadius: '99px',
+                border: `1px solid ${phase === k ? v.color : 'rgba(255,255,255,0.05)'}`,
+                background: phase === k ? `${v.color}15` : 'transparent',
                 color: phase === k ? v.color : 'var(--color-text-3)',
-                fontSize: '11px', fontWeight: 800, cursor: status === 'idle' ? 'pointer' : 'default',
-                fontFamily: 'inherit', transition: 'all 0.2s',
+                fontSize: '12px', fontWeight: 800, cursor: status === 'idle' ? 'pointer' : 'default',
+                fontFamily: 'inherit', transition: 'all 0.2s', letterSpacing: '0.05em'
               }}>
                 {v.icon} {v.label}
               </button>
@@ -310,101 +326,92 @@ export default function FocusRoom() {
           </div>
 
           {/* Timer Card */}
-          <div style={{
-            background: `linear-gradient(135deg, var(--color-surface) 0%, ${phaseInfo.bgGlow} 100%)`,
-            border: `1px solid ${status === 'running' ? phaseInfo.color + '55' : 'var(--color-border)'}`,
-            borderRadius: '28px', padding: '48px 40px',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px',
-            position: 'relative', overflow: 'hidden',
-            boxShadow: status === 'running' ? `0 0 40px ${phaseInfo.color}15` : 'none',
-            transition: 'all 0.4s ease',
-          }}>
-            {/* Glow pulse when running */}
-            {status === 'running' && (
-              <motion.div
-                animate={{ scale: [1, 1.05, 1], opacity: [0.04, 0.08, 0.04] }}
-                transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                style={{ position: 'absolute', inset: 0, background: phaseInfo.color, borderRadius: '28px', zIndex: 0 }}
-              />
-            )}
-
-            <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-              {/* Phase badge */}
-              <div style={{
-                padding: '6px 16px', borderRadius: '99px', fontSize: '10px', fontWeight: 900,
-                textTransform: 'uppercase', letterSpacing: '0.15em',
-                background: `${phaseInfo.color}18`, color: phaseInfo.color,
-                border: `1px solid ${phaseInfo.color}40`,
-              }}>
-                {phaseInfo.icon} {phaseInfo.label}
-              </div>
-
+          <motion.div 
+            layout
+            style={{
+              background: status === 'running' ? `linear-gradient(180deg, rgba(20,20,20,0.8) 0%, ${phaseInfo.bgGlow} 100%)` : 'rgba(255,255,255,0.02)',
+              border: `1px solid ${status === 'running' ? phaseInfo.color + '55' : 'rgba(255,255,255,0.05)'}`,
+              borderRadius: '40px', padding: '60px 40px',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '40px',
+              position: 'relative', overflow: 'hidden',
+              backdropFilter: 'blur(30px)',
+              boxShadow: status === 'running' ? `0 40px 100px ${phaseInfo.color}20, inset 0 1px 0 rgba(255,255,255,0.1)` : 'inset 0 1px 0 rgba(255,255,255,0.05)',
+              transition: 'all 0.4s ease',
+            }}
+          >
+            <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               {/* Timer ring with tree inside */}
-              <TimerRing progress={progress} color={phaseInfo.color} size={240}>
+              <TimerRing progress={progress} color={phaseInfo.color} size={320} isRunning={status === 'running'}>
                 <AnimatePresence mode="wait">
                   <TreeVisual progress={progress} status={status} phase={phase} />
                 </AnimatePresence>
-                <div style={{ fontSize: '42px', fontWeight: 900, fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em', color: status === 'dead' ? '#ef4444' : 'var(--color-text-1)', marginTop: '8px', lineHeight: 1 }}>
+                <div style={{ fontSize: '64px', fontWeight: 900, fontFamily: 'var(--font-mono, monospace)', letterSpacing: '-0.04em', color: status === 'dead' ? '#ef4444' : '#fff', marginTop: '16px', lineHeight: 1, textShadow: status === 'running' ? `0 0 40px ${phaseInfo.color}50` : 'none' }}>
                   {mins}:{secs}
                 </div>
                 {status === 'running' && (
-                  <div style={{ fontSize: '10px', fontWeight: 700, color: phaseInfo.color, marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                    In Session
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: phaseInfo.color, marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                    Focus Locked
                   </div>
                 )}
               </TimerRing>
 
               {/* Controls */}
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '48px' }}>
                 {status === 'idle' && (
                   <button onClick={start} style={{
-                    padding: '14px 36px', borderRadius: '16px', border: 'none',
+                    padding: '20px 48px', borderRadius: '24px', border: 'none',
                     background: phaseInfo.color, color: '#fff',
-                    fontSize: '15px', fontWeight: 900, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: '10px',
-                    boxShadow: `0 8px 20px ${phaseInfo.color}40`, fontFamily: 'inherit',
-                  }}>
-                    <Play size={18} fill="currentColor" /> Start
+                    fontSize: '18px', fontWeight: 900, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    boxShadow: `0 16px 40px ${phaseInfo.color}60`, fontFamily: 'inherit',
+                    transition: 'transform 0.2s'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <Play size={24} fill="currentColor" /> Enter Monk Mode
                   </button>
                 )}
                 {(status === 'running' || status === 'paused') && (
                   <>
                     <button onClick={pause} style={{
-                      padding: '12px 28px', borderRadius: '14px',
-                      border: `1px solid ${phaseInfo.color}`, background: `${phaseInfo.color}18`,
-                      color: phaseInfo.color, fontSize: '14px', fontWeight: 800, cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'inherit',
+                      padding: '16px 36px', borderRadius: '20px',
+                      border: `1px solid ${phaseInfo.color}`, background: `${phaseInfo.color}20`,
+                      color: phaseInfo.color, fontSize: '16px', fontWeight: 800, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'inherit',
+                      backdropFilter: 'blur(10px)'
                     }}>
-                      {status === 'running' ? <><Pause size={16} /> Pause</> : <><Play size={16} fill="currentColor" /> Resume</>}
+                      {status === 'running' ? <><Pause size={20} fill="currentColor" /> Pause</> : <><Play size={20} fill="currentColor" /> Resume</>}
                     </button>
                     <button onClick={abort} style={{
-                      padding: '12px 20px', borderRadius: '14px',
-                      border: '1px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)',
-                      color: '#ef4444', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'inherit',
+                      padding: '16px 28px', borderRadius: '20px',
+                      border: '1px solid rgba(239,68,68,0.4)', background: 'rgba(239,68,68,0.1)',
+                      color: '#ef4444', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'inherit',
                     }}>
-                      <Square size={14} fill="currentColor" /> Give Up
+                      <Square size={18} fill="currentColor" /> Give Up
                     </button>
                   </>
                 )}
                 {(status === 'dead' || status === 'success') && (
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ display: 'flex', gap: '16px' }}>
                     <button onClick={reset} style={{
-                      padding: '12px 22px', borderRadius: '14px',
-                      border: '1px solid var(--color-border)', background: 'var(--color-surface)',
-                      color: 'var(--color-text-2)', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'inherit',
+                      padding: '16px 32px', borderRadius: '20px',
+                      border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)',
+                      color: '#fff', fontSize: '16px', fontWeight: 800, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'inherit',
                     }}>
-                      <RotateCcw size={14} /> Retry
+                      <RotateCcw size={18} /> Retry
                     </button>
                     {status === 'success' && (
                       <button onClick={nextPhase} style={{
-                        padding: '12px 22px', borderRadius: '14px', border: 'none',
+                        padding: '16px 36px', borderRadius: '20px', border: 'none',
                         background: phaseInfo.color, color: '#fff',
-                        fontSize: '14px', fontWeight: 800, cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'inherit',
+                        fontSize: '16px', fontWeight: 900, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'inherit',
+                        boxShadow: `0 12px 32px ${phaseInfo.color}50`
                       }}>
-                        {phase === 'work' ? <><Coffee size={14} /> Take Break</> : <><Brain size={14} /> Back to Work</>}
+                        {phase === 'work' ? <><Coffee size={18} /> Take Break</> : <><Brain size={18} /> Back to Work</>}
                       </button>
                     )}
                   </div>
@@ -413,123 +420,60 @@ export default function FocusRoom() {
 
               {/* Warning for work phase */}
               {phase === 'work' && status === 'idle' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--color-text-3)' }}>
-                  <AlertTriangle size={12} color="var(--color-text-3)" />
-                  Leaving the tab during work kills your tree
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '24px' }}>
+                  <AlertTriangle size={14} color="#ef4444" />
+                  Leaving the tab during deep work kills your tree
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Audio player */}
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '20px', padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: audioFiles.length ? '14px' : 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, color: 'var(--color-text-1)' }}>
-                <Music size={16} /> Ambient Sounds
-              </div>
-              {audioFiles.length > 0 && (
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--color-elevated)', borderRadius: '12px', padding: '6px 12px', margin: '0 12px' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{audioFiles[audioIdx].name}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Track {audioIdx + 1}/{audioFiles.length}</div>
-                  </div>
-                  <button onClick={nextAudio} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)' }}>
-                    <SkipForward size={16} />
-                  </button>
-                </div>
-              )}
-              <label style={{ cursor: 'pointer', fontSize: '11px', fontWeight: 700, padding: '6px 14px', background: 'var(--color-elevated)', borderRadius: '10px', color: 'var(--color-text-2)', border: '1px solid var(--color-border)' }}>
-                + Add Music
-                <input type="file" accept="audio/*" multiple onChange={handleAudioUpload} style={{ display: 'none' }} />
-              </label>
-            </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* ── RIGHT: Sidebar ────────────────────────────────────────────────── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-          {/* Stats */}
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '20px', padding: '24px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px' }}>Today's Output</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          {/* Stats Grid */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px' }}>Today's Output</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               {[
-                { label: 'Sessions', value: todaySessions, icon: <Zap size={16} />, color: '#F59E0B' },
-                { label: 'Minutes', value: todayMinutes, icon: <Clock size={16} />, color: '#10B981' },
-                { label: 'Cycles', value: cycleCount, icon: <Target size={16} />, color: '#3B82F6' },
+                { label: 'Sessions', value: todaySessions, icon: <Zap size={18} />, color: '#F59E0B' },
+                { label: 'Minutes', value: todayMinutes, icon: <Clock size={18} />, color: '#10B981' },
+                { label: 'Cycles', value: cycleCount, icon: <Target size={18} />, color: '#3B82F6' },
                 { label: 'Streak', value: streakLabel || `${cycleCount % 4}/4`, icon: '🔥', color: '#EF4444', isStr: true },
               ].map((s, i) => (
-                <div key={i} style={{ background: 'var(--color-elevated)', borderRadius: '14px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: s.color }}>
-                    {typeof s.icon === 'string' ? <span style={{ fontSize: '16px' }}>{s.icon}</span> : s.icon}
-                    <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-3)' }}>{s.label}</span>
+                <div key={i} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: s.color }}>
+                    {typeof s.icon === 'string' ? <span style={{ fontSize: '18px' }}>{s.icon}</span> : s.icon}
+                    <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-3)' }}>{s.label}</span>
                   </div>
-                  <div style={{ fontSize: s.isStr ? '14px' : '28px', fontWeight: 900, color: 'var(--color-text-1)', letterSpacing: '-0.02em' }}>{s.value}</div>
+                  <div style={{ fontSize: s.isStr ? '16px' : '36px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em' }}>{s.value}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Session Focus / Tasks */}
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '20px', padding: '24px' }}>
-            <button onClick={() => setShowTaskPanel(v => !v)} style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showTaskPanel ? '16px' : 0, fontFamily: 'inherit' }}>
-              <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)' }}>Session Intent</div>
-              {showTaskPanel ? <ChevronUp size={14} color="var(--color-text-3)" /> : <ChevronDown size={14} color="var(--color-text-3)" />}
-            </button>
-            {showTaskPanel && (
-              <div>
-                <input
-                  value={taskInput}
-                  onChange={e => setTaskInput(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && taskInput.trim()) {
-                      setSessionTasks(prev => [...prev, { id: Date.now(), text: taskInput.trim(), done: false }]);
-                      setTaskInput('');
-                    }
-                  }}
-                  placeholder="What will you work on? (Enter to add)"
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: 'var(--color-elevated)', border: '1px solid var(--color-border)', borderRadius: '10px', fontSize: '13px', color: 'var(--color-text-1)', outline: 'none', fontFamily: 'inherit', marginBottom: '12px' }}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {sessionTasks.map(t => (
-                    <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <button onClick={() => setSessionTasks(prev => prev.map(x => x.id === t.id ? { ...x, done: !x.done } : x))} style={{
-                        width: '20px', height: '20px', borderRadius: '6px', border: `1.5px solid ${t.done ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                        background: t.done ? 'var(--color-accent)' : 'transparent', cursor: 'pointer', flexShrink: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        {t.done && <Check size={11} color="#fff" />}
-                      </button>
-                      <span style={{ fontSize: '13px', color: t.done ? 'var(--color-text-3)' : 'var(--color-text-1)', textDecoration: t.done ? 'line-through' : 'none', flex: 1 }}>{t.text}</span>
-                    </div>
-                  ))}
-                  {sessionTasks.length === 0 && <div style={{ fontSize: '12px', color: 'var(--color-text-3)', textAlign: 'center', padding: '12px 0' }}>No tasks yet. Add one above.</div>}
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Pomodoro cycle guide */}
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '20px', padding: '24px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '16px' }}>Session Cycle</div>
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px' }}>Session Cycle</div>
             {[0, 1, 2, 3].map(i => {
               const done = i < cycleCount % 4;
               const active = i === cycleCount % 4 && phase === 'work';
               return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: i < 3 ? '1px solid var(--color-border)' : 'none' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 0', borderBottom: i < 3 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
                   <div style={{
-                    width: '28px', height: '28px', borderRadius: '8px', flexShrink: 0,
-                    background: done ? 'var(--color-accent)' : active ? `${phaseInfo.color}20` : 'var(--color-elevated)',
-                    border: `1.5px solid ${done ? 'var(--color-accent)' : active ? phaseInfo.color : 'var(--color-border)'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px',
+                    width: '32px', height: '32px', borderRadius: '10px', flexShrink: 0,
+                    background: done ? 'var(--color-accent)' : active ? `${phaseInfo.color}20` : 'rgba(0,0,0,0.2)',
+                    border: `1.5px solid ${done ? 'var(--color-accent)' : active ? phaseInfo.color : 'rgba(255,255,255,0.1)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#fff', fontWeight: 800
                   }}>
-                    {done ? <Check size={13} color="#fff" /> : active ? '🎯' : `${i + 1}`}
+                    {done ? <Check size={16} color="#fff" /> : active ? '🎯' : `${i + 1}`}
                   </div>
                   <div>
-                    <div style={{ fontSize: '12px', fontWeight: 700, color: active ? phaseInfo.color : done ? 'var(--color-text-3)' : 'var(--color-text-1)' }}>
-                      Session {i + 1} — {preset.work}m
+                    <div style={{ fontSize: '14px', fontWeight: 800, color: active ? phaseInfo.color : done ? 'var(--color-text-3)' : '#fff' }}>
+                      Session {i + 1} <span style={{ opacity: 0.5 }}>• {preset.work}m</span>
                     </div>
-                    <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>
+                    <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>
                       {done ? '✓ Completed' : active ? 'In Progress' : i === 3 ? `Then ${preset.long}m long break` : `Then ${preset.break}m break`}
                     </div>
                   </div>
@@ -538,11 +482,71 @@ export default function FocusRoom() {
             })}
           </div>
 
-          {/* Tips */}
-          <div style={{ background: 'var(--color-elevated)', borderRadius: '16px', padding: '16px', border: '1px solid var(--color-border)' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-2)', lineHeight: 1.6 }}>
-              <strong>Flow tips:</strong> Remove phone from sight · Set 1 clear task · Close unused tabs · Drink water before starting
+          {/* Micro-tasks for the session */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '28px' }}>
+            <button onClick={() => setShowTaskPanel(v => !v)} style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showTaskPanel ? '20px' : 0, fontFamily: 'inherit' }}>
+              <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)' }}>Micro Tasks</div>
+              {showTaskPanel ? <ChevronUp size={16} color="var(--color-text-3)" /> : <ChevronDown size={16} color="var(--color-text-3)" />}
+            </button>
+            <AnimatePresence>
+              {showTaskPanel && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
+                  <input
+                    value={taskInput}
+                    onChange={e => setTaskInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && taskInput.trim()) {
+                        setSessionTasks(prev => [...prev, { id: Date.now(), text: taskInput.trim(), done: false }]);
+                        setTaskInput('');
+                      }
+                    }}
+                    placeholder="Add small sub-tasks... (Press Enter)"
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '14px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', fontSize: '14px', color: '#fff', outline: 'none', fontFamily: 'inherit', marginBottom: '16px', transition: 'border-color 0.2s' }}
+                    onFocus={e => e.currentTarget.style.borderColor = 'var(--color-accent)'}
+                    onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                  />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {sessionTasks.map(t => (
+                      <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <button onClick={() => setSessionTasks(prev => prev.map(x => x.id === t.id ? { ...x, done: !x.done } : x))} style={{
+                          width: '24px', height: '24px', borderRadius: '8px', border: `2px solid ${t.done ? 'var(--color-accent)' : 'rgba(255,255,255,0.2)'}`,
+                          background: t.done ? 'var(--color-accent)' : 'transparent', cursor: 'pointer', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
+                        }}>
+                          {t.done && <Check size={14} color="#fff" />}
+                        </button>
+                        <span style={{ fontSize: '14px', color: t.done ? 'rgba(255,255,255,0.3)' : '#fff', textDecoration: t.done ? 'line-through' : 'none', flex: 1, fontWeight: t.done ? 500 : 600 }}>{t.text}</span>
+                      </div>
+                    ))}
+                    {sessionTasks.length === 0 && <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '16px 0' }}>Break down your intent into small steps.</div>}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Ambient Music Settings (now visually integrated) */}
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '24px', padding: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: 800, color: '#fff' }}>
+                <Music size={18} color="var(--color-accent)" /> Local Ambient
+              </div>
+              <label style={{ cursor: 'pointer', fontSize: '12px', fontWeight: 800, padding: '8px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
+                + Load Tracks
+                <input type="file" accept="audio/*" multiple onChange={handleAudioUpload} style={{ display: 'none' }} />
+              </label>
             </div>
+            {audioFiles.length > 0 && (
+              <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', borderRadius: '16px', padding: '12px 16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flex: 1, marginRight: '16px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px' }}>{audioFiles[audioIdx].name}</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Track {audioIdx + 1} of {audioFiles.length}</div>
+                </div>
+                <button onClick={nextAudio} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', transition: 'background 0.2s' }}>
+                  <SkipForward size={16} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

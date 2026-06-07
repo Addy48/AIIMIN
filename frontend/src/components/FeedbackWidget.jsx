@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { MessageSquare, X, Send } from 'lucide-react';
-import { supabase } from '../utils/supabase';
 import { apiPost } from '../utils/api';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function FeedbackWidget() {
-    const { user } = useAuth();
     const { theme } = useThemeContext();
     const isDark = theme === 'dark';
     

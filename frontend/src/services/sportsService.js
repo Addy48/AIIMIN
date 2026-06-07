@@ -84,20 +84,11 @@ const parseESPNEvents = (data) => {
 };
 
 
-/* ── Date helper for fixture navigation ── */
-const getDateStr = (offset = 0) => {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d.toISOString().split('T')[0].replace(/-/g, '');
-};
-
-const getDateRange = () => {
-  return `${getDateStr(-3)}-${getDateStr(3)}`;
-};
+/* Date helpers removed */
 
 /* ── Football (Soccer) ────────────────────────────────────── */
 export const fetchFootball = async () => {
-  const dateRange = getDateRange();
+/* dateRange removed */
   const leagues = [
     { slug: 'fifa.world', name: 'World Cup', flag: '🏆' },
     { slug: 'conmebol.america', name: 'Copa America', flag: '🌎' },
@@ -135,8 +126,11 @@ export const fetchFootball = async () => {
             return new Date(a.date) - new Date(b.date);
           });
           
-          // Return top 5 matches per league to keep the feed clean
-          return { league: l, events: events.slice(0, 5) };
+          // Filter to show ONLY favorite team matches or Live matches or top 3 if neither
+          let filtered = events.filter(e => e.isLive || favoriteTeams.some(t => e.home.name.toLowerCase().includes(t) || e.away.name.toLowerCase().includes(t)));
+          if (filtered.length === 0) filtered = events.slice(0, 3);
+
+          return { league: l, events: filtered };
         })
     )
   );
@@ -203,7 +197,7 @@ export const fetchCricket = async () => {
     const res = await fetchJSON(`https://api.cricapi.com/v1/cricScore?apikey=${CRICKET_KEY}`);
     if (res.status !== 'success') throw new Error(res.info || 'Cricket API failed');
 
-    const TOP_8 = ['India', 'Australia', 'England', 'South Africa', 'Pakistan', 'New Zealand', 'West Indies', 'Sri Lanka'];
+    const TOP_8 = ['India', 'Australia', 'England', 'South Africa', 'New Zealand', 'West Indies', 'Sri Lanka']; // Pakistan handled separately
     const IPL_TEAMS = ['MI', 'CSK', 'RCB', 'KKR', 'SRH', 'DC', 'PBKS', 'RR', 'LSG', 'GT', 'Mumbai Indians', 'Chennai Super Kings', 'Royal Challengers', 'Kolkata Knight Riders', 'Sunrisers', 'Delhi Capitals', 'Punjab Kings', 'Rajasthan Royals', 'Lucknow Super Giants', 'Gujarat Titans'];
 
     const events = res.data
@@ -218,12 +212,18 @@ export const fetchCricket = async () => {
         // Strictly No Women's cricket (Aggressive check)
         if (title.includes('women') || title.includes('wpl') || title.includes('wbbl') || title.includes('wt20')) return false;
         
-        // IPL Check (Highest priority for domestic)
-        const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
-        
+        // Exclude county cricket / domestic leagues other than IPL
+        if (title.includes('county') || title.includes('vitality') || title.includes('blast') || title.includes('hundred')) return false;
+
         // Indian National Team Check (Highest priority for international)
         const involvesIndia = t1 === 'india' || t2 === 'india' || t1 === 'ind' || t2 === 'ind' || t1.includes('(ind)') || t2.includes('(ind)');
 
+        // Exclude Pakistan unless playing against India
+        if ((t1.includes('pakistan') || t2.includes('pakistan') || t1 === 'pak' || t2 === 'pak') && !involvesIndia) return false;
+
+        // IPL Check (Highest priority for domestic)
+        const isIPL = title.includes('ipl') || title.includes('indian premier league') || series.includes('ipl');
+        
         // Top 8 Nations (Men's International)
         const involvesTop8 = TOP_8.some(t => {
           const name = t.toLowerCase();
