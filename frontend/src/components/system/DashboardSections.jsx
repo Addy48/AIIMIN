@@ -193,15 +193,10 @@ export function CognitiveSection({ user }) {
     return (
         <div id="sys-cognitive" style={{ scrollMarginTop: '100px' }}>
             <SectionLabel icon="🧠">Cognitive System</SectionLabel>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'stretch' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', alignItems: 'stretch' }}>
                 <div style={{ height: '390px' }}>
                     <div className="glass-panel-gold" style={{ borderRadius: 'var(--r-lg)', padding: '24px 20px', height: '100%' }}>
                         <PomodoroTimer user={user} />
-                    </div>
-                </div>
-                <div style={{ height: '390px' }}>
-                    <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: '24px 20px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                        <SpotifyPlayer />
                     </div>
                 </div>
             </div>

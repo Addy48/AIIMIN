@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Music, Minimize2, Maximize2, Settings } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const GlobalMusicPlayer = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,8 +15,19 @@ const GlobalMusicPlayer = () => {
     }
   };
 
+  const location = useLocation();
+  const isFocus = location.pathname === '/focus';
+
   return (
-    <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+    <div style={{ 
+      position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999, 
+      display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px',
+      // If not in focus room, move it offscreen so it stays mounted but invisible
+      transform: isFocus ? 'none' : 'translateX(9999px)',
+      opacity: isFocus ? 1 : 0,
+      pointerEvents: isFocus ? 'auto' : 'none',
+      transition: 'opacity 0.3s ease'
+    }}>
       
       {/* Always mounted iframe wrapper to prevent reloading and stopping the music */}
       <motion.div

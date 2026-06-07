@@ -278,3 +278,12 @@ button:disabled, button[disabled] {
 .text-caption {
   font-size: 11px; font-weight: 500; color: var(--color-text-3); line-height: 1.4;
 }
+
+/* ─── Page Container ─────────────────────────────────── */
+.page-container {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--content-pad) var(--content-pad) 100px var(--content-pad);
+  animation: fadeUp 0.4s var(--ease) forwards;
+}

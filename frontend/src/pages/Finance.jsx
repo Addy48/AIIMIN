@@ -11,6 +11,7 @@ import toast from '../utils/toast';
 import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
 import { EXPENSE_CATS } from '../components/money/MoneyShared';
 import DesktopWindow from '../components/ui/DesktopWindow';
+import PageHeader from '../components/layout/PageHeader';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, PieChart as RePieChart, Pie
@@ -303,43 +304,18 @@ savingsRate: (sRate * 100).toFixed(1),
   ];
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '40px 24px',
-      paddingBottom: '80px'
-    }}>
+    <div className="page-container">
 
       {/* Header */}
-      <header style={{ marginBottom: '40px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div>
-            <div style={{
-              fontSize: '11px',
-              fontWeight: 800,
-              color: 'var(--color-accent)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.2em',
-              marginBottom: '12px',
-            }}>
-              Capital Allocation · {monthStr}
-            </div>
-            <h1 style={{
-              fontSize: '48px',
-              fontWeight: 800,
-              color: 'var(--color-text-1)',
-              margin: 0,
-              letterSpacing: '-0.04em',
-              fontFamily: 'var(--font-serif)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px'
-            }}>
-              Wealth Vault<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
-            </h1>
-
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
+      <PageHeader 
+        title={
+          <span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            Wealth Vault<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
+          </span>
+        }
+        subtitle={`Capital Allocation · ${monthStr}`}
+        rightContent={
+          <>
             <button 
               onClick={() => setImportOpen(true)}
               style={{
@@ -402,9 +378,9 @@ savingsRate: (sRate * 100).toFixed(1),
             >
               <Plus size={18} /> New Entry
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
 
       {/* Navigation Tabs */}

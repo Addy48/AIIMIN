@@ -7,6 +7,7 @@ import { Plus, X, ChevronRight, Keyboard, Mic } from 'lucide-react';
 import TypingTest from '../components/lab/TypingTest';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
 import DesktopWindow from '../components/ui/DesktopWindow';
+import PageHeader from '../components/layout/PageHeader';
 
 const STATES = ['clarity','scarcity','abundance','fear','growth','aimlessness','focus','noise'];
 const STATE_ICONS = { clarity:'🔍', scarcity:'🪨', abundance:'🌊', fear:'🌑', growth:'🌱', aimlessness:'🌫️', focus:'🎯', noise:'📡' };
@@ -298,31 +299,21 @@ const Overview = () => {
   if (!user) return null;
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '40px 24px',
-      paddingBottom: '80px'
-    }}>
-      {/* Header */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:'32px', gap: '24px', flexWrap: 'wrap' }}>
-        <div>
-          <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.18em', color:'var(--color-accent)', marginBottom:'6px' }}>
-            Operational Intelligence
+    <div className="page-container">
+      <PageHeader 
+        title="Day Control."
+        subtitle="Operational Intelligence"
+        rightContent={
+          <div style={{ textAlign:'right' }}>
+            <div style={{ fontSize:'13px', fontWeight:700, color:'var(--color-text-2)' }}>
+              {now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}
+            </div>
+            <div style={{ fontSize:'10px', color:'var(--color-text-3)', marginTop:'3px' }}>
+              Week {weekNum} · AIIMIN v3
+            </div>
           </div>
-          <h1 style={{ fontSize:'36px', fontWeight:800, color:'var(--color-text-1)', margin:0, letterSpacing:'-0.03em', fontFamily:'var(--font-serif)' }}>
-            Day Control.
-          </h1>
-        </div>
-        <div style={{ textAlign:'right' }}>
-          <div style={{ fontSize:'13px', fontWeight:700, color:'var(--color-text-2)' }}>
-            {now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}
-          </div>
-          <div style={{ fontSize:'10px', color:'var(--color-text-3)', marginTop:'3px' }}>
-            Week {weekNum} · AIIMIN v3
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main Grid */}
       <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px' }} className="overview-grid">

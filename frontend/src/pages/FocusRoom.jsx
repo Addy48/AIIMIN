@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import toast from '../utils/toast';
 import { useAudio } from '../context/AudioContext';
+import PageHeader from '../components/layout/PageHeader';
+import GlobalMusicPlayer from '../components/system/GlobalMusicPlayer';
 
 // ── Session presets ──────────────────────────────────────────────────────────
 const PRESETS = [
@@ -201,16 +203,11 @@ export default function FocusRoom() {
   const streakLabel = cycleCount >= 4 ? `🔥 ${Math.floor(cycleCount / 4)} streak${Math.floor(cycleCount / 4) > 1 ? 's' : ''}` : null;
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--color-accent)', marginBottom: '6px' }}>
-          Deep Work Engine
-        </div>
-        <h1 style={{ fontSize: '36px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.03em', fontFamily: 'var(--font-serif)' }}>
-          Focus Room.
-        </h1>
-      </div>
+    <div className="page-container">
+      <PageHeader 
+        title="Focus Room"
+        subtitle="Deep Work Engine"
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 340px', gap: '28px' }}>
         {/* ── LEFT: Timer ──────────────────────────────────────────────────── */}
@@ -527,6 +524,7 @@ export default function FocusRoom() {
           .focus-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+      <GlobalMusicPlayer />
     </div>
   );
 }
