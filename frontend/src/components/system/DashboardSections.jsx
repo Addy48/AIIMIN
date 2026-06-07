@@ -5,7 +5,6 @@ import MoodTracker from '../MoodTracker';
 import Streaks from '../Streaks';
 import MoneyManager from '../MoneyManager';
 import Reports from '../Reports';
-import SpotifyPlayer from '../SpotifyPlayer';
 import QuickCapture from '../dashboard/QuickCapture';
 import WinsEngine from '../WinsEngine';
 import MomentumBar from '../MomentumBar';

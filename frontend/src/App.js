@@ -20,8 +20,7 @@ import ProductTour from './components/onboarding/ProductTour';
 import GuestTour from './components/onboarding/GuestTour';
 
 // Guest mode
-import { GuestProvider } from './context/GuestContext';
-import { GuestGateProvider } from './components/common/GuestGate';
+// (Removed unused guest providers)
 
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
