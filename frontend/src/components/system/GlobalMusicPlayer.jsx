@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Music, Minimize2, Settings, Play, Pause, SkipForward, SkipBack, Plus, Trash2, FolderMusic, Globe } from 'lucide-react';
+import { Music, Minimize2, Settings, Play, Pause, SkipForward, SkipBack, Plus, Trash2, Folder, Globe } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { saveTrack, getTracks, deleteTrack } from '../../utils/musicDB';
 
@@ -149,7 +149,7 @@ const GlobalMusicPlayer = () => {
             <Globe size={12} /> Internet
           </button>
           <button onClick={() => setMode('local')} style={{ flex: 1, padding: '6px', background: mode === 'local' ? 'var(--color-surface)' : 'transparent', border: mode === 'local' ? '1px solid var(--color-border)' : 'none', borderRadius: '8px', color: mode === 'local' ? 'var(--color-text-1)' : 'var(--color-text-3)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            <FolderMusic size={12} /> Local
+            <Folder size={12} /> Local
           </button>
         </div>
 
