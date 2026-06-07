@@ -11,6 +11,8 @@ import {
   Globe, Lock, ChevronRight, Check, X, Edit2,
   Download, Trash2, Eye, EyeOff
 } from 'lucide-react';
+import PageHeader from '../components/layout/PageHeader';
+
 
 
 // ── Section wrapper ──────────────────────────────────────────────────────────
@@ -207,26 +209,24 @@ const Settings = () => {
   if (!user) return null;
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="page-container">
       {/* Header */}
-      <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-        <div style={{
-          width: '64px', height: '64px', borderRadius: '20px',
-          background: 'linear-gradient(135deg, var(--color-accent), #059669)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '28px', fontWeight: 900, color: '#fff',
-          flexShrink: 0,
-        }}>
-          {(nameVal?.[0] || 'A').toUpperCase()}
-        </div>
-        <div>
-          <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em', color: 'var(--color-accent)', marginBottom: '4px' }}>Account</div>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.03em' }}>
-            {nameVal}
-          </h1>
-          <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginTop: '2px' }}>{user.email} · {isAdmin ? '⚡ Admin' : 'Member'}</div>
-        </div>
-      </div>
+      <PageHeader 
+        title={nameVal}
+        subtitle="Account Settings"
+        rightContent={
+          <div style={{
+            width: '64px', height: '64px', borderRadius: '20px',
+            background: 'linear-gradient(135deg, var(--color-accent), #059669)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px', fontWeight: 900, color: '#fff',
+            flexShrink: 0,
+            boxShadow: 'var(--shadow-md)'
+          }}>
+            {(nameVal?.[0] || 'A').toUpperCase()}
+          </div>
+        }
+      />
 
       {/* Account Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '28px' }}>

@@ -37,7 +37,11 @@ const parseESPNEvents = (data) => {
       name: ev.name,
       shortName: ev.shortName,
       status: status.name,
-      statusShort: status.completed ? '' : statusDetail,
+      statusShort: status.completed ? '' : (
+        status.state === 'pre' && ev.date
+          ? new Date(ev.date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' IST'
+          : statusDetail
+      ),
       statusDetail: comp.status?.type?.detail || '',
       clock: comp.status?.displayClock,
       period: comp.status?.period,
@@ -170,18 +174,16 @@ const fetchCricket = async () => {
 
         const involvesIPLTeam = IPL_TEAMS.some(t => {
             const team = t.toLowerCase();
-            return t1.includes(team) || t2.includes(team);
+            return t1 === team || t2 === team || t1.includes(team) || t2.includes(team);
         });
 
-        const englishCounties = ['middlesex', 'yorkshire', 'surrey', 'somerset', 'lancashire', 'essex', 'warwickshire', 'hampshire', 'sussex', 'kent', 'nottinghamshire', 'glamorgan', 'leicestershire', 'derbyshire', 'worcestershire', 'gloucestershire', 'durham', 'northamptonshire', 'county', 'vitality blast'];
-        const isCounty = englishCounties.some(c => title.includes(c));
-        
-        // Relaxed fallback: if nothing else matches, at least show international formats.
-        return isIPL || involvesIndia || involvesTop8 || involvesIPLTeam || (!isCounty && (type === 't20' || type === 'odi' || type === 'test'));
+        // Strict inclusion: Only IPL, India, or Top 8 teams
+        return isIPL || involvesIndia || involvesTop8 || involvesIPLTeam;
       })
       .map(match => {
         const isLive = match.ms === 'live';
         const isFinished = match.ms === 'result';
+        const gmtDate = match.dateTimeGMT?.endsWith('Z') ? match.dateTimeGMT : `${match.dateTimeGMT}Z`;
         
         return {
           id: match.id,
@@ -192,7 +194,7 @@ const fetchCricket = async () => {
             ? (match.status || 'Live')
             : isFinished
               ? (match.status || 'Result')
-              : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(match.dateTimeGMT).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
+              : `${match.matchType?.toUpperCase() || 'Match'} · ${new Date(gmtDate).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`,
           statusDetail: match.t1s || match.t2s || '',
           isLive,
           isFinished,
@@ -213,16 +215,24 @@ const fetchCricket = async () => {
         };
       });
 
-    // Caps: limit total cricket events to 5 max
-    events = events.slice(0, 5);
+    events = events.slice(0, 10); // Show more since we filter heavily
 
     return [{ league: { name: 'Cricket Scores', flag: '🏏' }, events }];
   } catch (err) {
     console.warn('Cricket API failed, falling back to ESPN scoreboard:', err);
     try {
       const general = await fetchJSON(`${ESPN}/cricket/scoreboard`);
-      const events = parseESPNEvents(general).slice(0, 5);
-      return [{ league: { name: 'Cricket (Fallback)', flag: '🏏' }, events }];
+      const events = parseESPNEvents(general).filter(ev => {
+        // Apply strict filter to ESPN fallback as well
+        const t1 = (ev.home?.name || '').toLowerCase();
+        const t2 = (ev.away?.name || '').toLowerCase();
+        const involvesIndia = t1.includes('india') || t2.includes('india');
+        const TOP_8 = ['australia', 'england', 'south africa', 'pakistan', 'new zealand', 'west indies', 'sri lanka'];
+        const involvesTop8 = TOP_8.some(t => t1.includes(t) || t2.includes(t));
+        const isIPL = ev.league?.toLowerCase().includes('indian premier league') || t1.includes('chennai') || t2.includes('chennai') || t1.includes('mumbai') || t2.includes('mumbai') || t1.includes('royal') || t2.includes('royal');
+        return involvesIndia || involvesTop8 || isIPL;
+      }).slice(0, 5);
+      return [{ league: { name: 'Cricket', flag: '🏏' }, events }];
     } catch (e) {
       return [];
     }

@@ -356,13 +356,7 @@ export default function Placements() {
   };
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '40px 24px',
-      paddingBottom: '80px',
-      minHeight: '100vh'
-    }}>
+    <div className="page-container" style={{ minHeight: '100vh' }}>
       {/* Header Section */}
       <header style={{ marginBottom: 'var(--space-8)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '20px' }}>

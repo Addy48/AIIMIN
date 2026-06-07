@@ -5,6 +5,7 @@ import { useThemeContext } from '../context/ThemeContext';
 import { useLHSData } from '../hooks/useLHSData';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
+import PageHeader from '../components/layout/PageHeader';
 
 /* ─────────────────────────────────────────────────
    SKILL DOMAINS — editable / pulled from DB later
@@ -183,15 +184,10 @@ const Insights = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
 
       {/* ── Page header ── */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: text3, marginBottom: '12px' }}>
-          Skills · Mastery Engine
-        </div>
-        <h1 style={{ fontSize: '52px', fontWeight: 800, color: text1, margin: 0, letterSpacing: '-0.03em' }}>
-          Build yourself.
-        </h1>
-      </div>
-
+      <PageHeader 
+        title="Build yourself."
+        subtitle="Skills · Mastery Engine"
+      />
       {/* ── XP summary ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
         {[
@@ -296,11 +292,6 @@ const Insights = () => {
   );
 };
 
-export const PageHeader = ({ label, title }) => (
-  <div style={{ marginBottom: '40px' }}>
-    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)', marginBottom: '8px' }}>{label}</div>
-    <h1 style={{ font: 'var(--text-hero)', color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.02em' }}>{title}</h1>
-  </div>
-);
+
 
 export default Insights;

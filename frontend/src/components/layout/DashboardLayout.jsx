@@ -1,7 +1,6 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
-import GlobalMusicPlayer from '../system/GlobalMusicPlayer';
 
 /**
  * DashboardLayout — Authenticated shell.
@@ -95,8 +94,7 @@ const DashboardLayout = ({ user }) => {
       )}
 
       <main style={{
-        maxWidth: 'var(--content-max)',
-        margin: '0 auto',
+        width: '100%',
         padding: '40px var(--content-pad) 120px',
         display: 'flex',
         flexDirection: 'column',
@@ -105,7 +103,6 @@ const DashboardLayout = ({ user }) => {
         <Outlet />
       </main>
 
-      <GlobalMusicPlayer />
     </div>
   );
 };
