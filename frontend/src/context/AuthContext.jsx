@@ -1,16 +1,20 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../utils/api';
 import toast from '../utils/toast';
 import supabase from '../utils/supabase';
 
 const AuthContext = createContext(null);
 
+const normalizeUsername = (value = '') => value.trim().toUpperCase();
+const normalizeEmail = (value = '') => value.trim().toLowerCase();
+const isEmailIdentifier = (value = '') => value.includes('@');
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const checkSession = async (providedSession = null) => {
+    const checkSession = useCallback(async (providedSession = null) => {
         try {
             const data = await apiGet('/auth/me');
             if (data && data.user) {
@@ -63,7 +67,7 @@ export function AuthProvider({ children }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         // Monitor Supabase Auth state changes dynamically
@@ -101,14 +105,18 @@ export function AuthProvider({ children }) {
         return () => {
             subscription.unsubscribe();
         };
-    }, []);
+    }, [checkSession]);
 
     const signInWithGoogle = async () => {
         try {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + '/auth/callback'
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'select_account',
+                    },
                 }
             });
             if (error) throw error;
@@ -118,14 +126,28 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const completeOAuthSignIn = useCallback(async (code) => {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) throw error;
+
+        if (data?.session?.access_token) {
+            localStorage.setItem('aiimin_session_fallback', data.session.access_token);
+            setSession(data.session);
+            await checkSession(data.session);
+        }
+
+        return data;
+    }, [checkSession]);
+
     const signUpWithUsername = async (username, pin, fullName = '', email = '') => {
         try {
-            const authEmail = email || `${username.toLowerCase()}@aiimin.com`;
+            const normalizedUsername = normalizeUsername(username);
+            const authEmail = normalizeEmail(email) || `${normalizedUsername.toLowerCase()}@aiimin.com`;
             await apiPost('/auth/signup', {
                 email: authEmail,
                 password: pin,
                 fullName,
-                username
+                username: normalizedUsername
             });
 
             const { data, error } = await supabase.auth.signInWithPassword({
@@ -147,11 +169,14 @@ export function AuthProvider({ children }) {
 
     const signInWithUsername = async (username, pin) => {
         try {
-            let authEmail = `${username.toLowerCase()}@aiimin.com`;
+            const identifier = username.trim();
+            let authEmail = isEmailIdentifier(identifier)
+                ? normalizeEmail(identifier)
+                : `${normalizeUsername(identifier).toLowerCase()}@aiimin.com`;
             
             // Resolve username to real email if exists
             try {
-                const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(username)}`, { auth: false });
+                const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
                 if (resolveData && resolveData.email) {
                     authEmail = resolveData.email;
                 }
@@ -194,6 +219,7 @@ export function AuthProvider({ children }) {
         session,
         loading,
         signInWithGoogle,
+        completeOAuthSignIn,
         signUpWithUsername,
         signInWithUsername,
         logout: signOut,

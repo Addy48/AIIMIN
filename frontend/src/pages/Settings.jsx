@@ -114,7 +114,7 @@ const Settings = () => {
 
   // Username editing
   const [editingName, setEditingName] = useState(false);
-  const [nameVal, setNameVal] = useState(user?.user_metadata?.username || user?.email?.split('@')[0] || 'User');
+  const [nameVal, setNameVal] = useState((user?.user_metadata?.username || user?.email?.split('@')[0] || 'User').toUpperCase());
 
   // Account stats (simulated from localStorage + session)
   const focusMins = parseInt(localStorage.getItem('aiimin_focus_mins') || '0', 10);
@@ -159,7 +159,7 @@ const Settings = () => {
 
   const handleNameSave = async () => {
     try {
-      await supabase.auth.updateUser({ data: { username: nameVal } });
+      await supabase.auth.updateUser({ data: { username: nameVal.toUpperCase() } });
       toast.success('Username updated');
       setEditingName(false);
     } catch {
@@ -246,7 +246,7 @@ const Settings = () => {
             control={
               editingName ? (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <input value={nameVal} onChange={e => setNameVal(e.target.value)} autoFocus
+                  <input value={nameVal} onChange={e => setNameVal(e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 20))} autoFocus
                     style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--color-accent)', background: 'var(--color-elevated)', color: 'var(--color-text-1)', fontSize: '13px', outline: 'none', fontFamily: 'inherit', width: '160px' }}
                     onKeyDown={e => e.key === 'Enter' && handleNameSave()}
                   />
