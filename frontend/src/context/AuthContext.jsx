@@ -58,6 +58,11 @@ export function AuthProvider({ children }) {
     }, []);
 
     useEffect(() => {
+        // Failsafe timeout: if Supabase hangs or fails to resolve, unblock UI after 2.5s
+        const failsafe = setTimeout(() => {
+            setLoading(false);
+        }, 2500);
+
         // Monitor Supabase Auth state changes dynamically
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
             console.log(`[Supabase Auth Event] ${event}`);
@@ -75,6 +80,7 @@ export function AuthProvider({ children }) {
                 setUser(null);
                 localStorage.removeItem('aiimin_session_fallback');
             }
+            clearTimeout(failsafe);
             setLoading(false);
         });
 
@@ -86,11 +92,17 @@ export function AuthProvider({ children }) {
                 checkSession(activeSession);
             } else {
                 localStorage.removeItem('aiimin_session_fallback');
+                clearTimeout(failsafe);
                 setLoading(false);
             }
+        }).catch(err => {
+            console.error('Initial getSession failed:', err);
+            clearTimeout(failsafe);
+            setLoading(false);
         });
 
         return () => {
+            clearTimeout(failsafe);
             subscription.unsubscribe();
         };
     }, [checkSession]);
