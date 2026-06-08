@@ -1,66 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import useAuth from '../hooks/useAuth';
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { completeOAuthSignIn } = useAuth();
+    const { session } = useAuth();
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        let cancelled = false;
+        const status = searchParams.get('status');
+        const reason = searchParams.get('reason');
+        const supabaseError = searchParams.get('error');
+        const supabaseDesc = searchParams.get('error_description');
 
-        const finishOAuth = async () => {
-            const status = searchParams.get('status');
-            const reason = searchParams.get('reason');
+        if (supabaseError) {
+            const msg = supabaseDesc ? decodeURIComponent(supabaseDesc) : supabaseError;
+            setError(msg);
+            setTimeout(() => navigate('/login'), 4000);
+            return;
+        }
 
-            // Supabase native OAuth error format: ?error=server_error&error_description=...
-            const supabaseError = searchParams.get('error');
-            const supabaseDesc = searchParams.get('error_description');
+        if (status === 'error') {
+            setError(reason || 'Authentication failed');
+            setTimeout(() => navigate('/login'), 3000);
+            return;
+        }
 
-            if (supabaseError) {
-                const msg = supabaseDesc ? decodeURIComponent(supabaseDesc) : supabaseError;
-                setError(msg);
-                setTimeout(() => navigate('/login'), 4000);
-                return;
-            }
+        if (status === 'success') {
+            navigate('/', { replace: true });
+            return;
+        }
+    }, [searchParams, navigate]);
 
-            // Error from backend redirect
-            if (status === 'error') {
-                setError(reason || 'Authentication failed');
-                setTimeout(() => navigate('/login'), 3000);
-                return;
-            }
-
-            // Integration success (non-login OAuth like calendar/youtube connect)
-            if (status === 'success') {
-                navigate('/');
-                return;
-            }
-
-            const code = searchParams.get('code');
-
-            try {
-                if (code) {
-                    await completeOAuthSignIn(code);
-                }
-
-                if (!cancelled) navigate('/overview', { replace: true });
-            } catch (err) {
-                if (!cancelled) {
-                    setError(err.message || 'Google sign-in failed');
-                    setTimeout(() => navigate('/login'), 4000);
-                }
-            }
-        };
-
-        finishOAuth();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [searchParams, navigate, completeOAuthSignIn]);
+    useEffect(() => {
+        if (session) {
+            navigate('/overview', { replace: true });
+        }
+    }, [session, navigate]);
 
     if (error) {
         return (
