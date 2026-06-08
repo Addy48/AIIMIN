@@ -1235,8 +1235,8 @@ savingsRate: (sRate * 100).toFixed(1),
       {/* Entry Modal */}
       <AnimatePresence>
         {entryOpen && (
-          <DesktopWindow title="Record Finance Entry" subtitle="transactions.finance" onClose={() => setEntryOpen(false)} width="620px" maxHeight="90vh">
-            <div style={{ padding: '34px' }}>
+          <DesktopWindow title="Record Finance Entry" subtitle="transactions.finance" onClose={() => setEntryOpen(false)} width="560px" maxHeight="88vh">
+            <div style={{ padding: '24px' }}>
               <EntryForm 
                 user={user} 
                 accounts={accounts} 
@@ -1255,8 +1255,8 @@ savingsRate: (sRate * 100).toFixed(1),
       {/* Excel Import Modal */}
       <AnimatePresence>
         {importOpen && (
-          <DesktopWindow title="Import Spreadsheet" subtitle="money-import.finance" onClose={() => setImportOpen(false)} width="560px">
-            <div style={{ padding: '36px' }}>
+          <DesktopWindow title="Import Spreadsheet" subtitle="money-import.finance" onClose={() => setImportOpen(false)} width="520px">
+            <div style={{ padding: '28px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--color-accent-dim)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <FileSpreadsheet size={30} />

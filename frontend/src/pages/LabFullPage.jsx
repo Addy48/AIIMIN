@@ -174,41 +174,37 @@ export default function LabFullPage() {
                 backdropFilter: "blur(20px)"
               }}>
               
-              {/* macOS Browser Title Bar Mock */}
+              {/* Dark Title Bar — matches site theme */}
               <div style={{
-                height: '48px',
-                minHeight: '48px',
-                padding: '0 20px',
+                height: '52px',
+                minHeight: '52px',
+                padding: '0 18px 0 20px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                borderBottom: `1px solid ${winBorder}`,
-                background: headerBg
+                borderBottom: '1px solid rgba(255,255,255,0.07)',
+                background: 'rgba(255,255,255,0.03)',
+                flexShrink: 0,
               }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span onClick={() => setActiveModule(null)} style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56', cursor: 'pointer', transition: 'opacity 0.2s' }} onMouseEnter={e => e.currentTarget.style.opacity = 0.8} onMouseLeave={e => e.currentTarget.style.opacity = 1} title="Close" />
-                  <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e', opacity: 0.6 }} />
-                  <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f', opacity: 0.6 }} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'var(--font-mono, monospace)', letterSpacing: '0.03em' }}>
+                    {config.title}
+                  </div>
                 </div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: text2, letterSpacing: '0.02em', textTransform: 'uppercase', font: '600 11px/1 var(--font-mono)' }}>
-                  {config.title}
-                </div>
-                <button onClick={() => setActiveModule(null)}
+                <button
+                  onClick={() => setActiveModule(null)}
                   style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: text2,
-                    cursor: 'pointer',
-                    fontSize: '15px',
-                    padding: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'color 0.2s'
+                    width: '32px', height: '32px', borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(255,255,255,0.05)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--color-text-3)', transition: 'all 0.15s', flexShrink: 0,
                   }}
-                  onMouseEnter={e => e.currentTarget.style.color = text1}
-                  onMouseLeave={e => e.currentTarget.style.color = text2}
-                >✕</button>
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--color-text-3)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                >
+                  ✕
+                </button>
               </div>
 
               {/* Scrollable Contents */}
@@ -271,10 +267,10 @@ function ReadingLog({ userId, isDark, onClose }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [recent, setRecent] = useState([]);
-  const border = isDark ? "#2a2a2a" : "#e5e7eb";
-  const text1 = isDark ? "#ededed" : "#111";
-  const text3 = isDark ? "#52525b" : "#9ca3af";
-  const inp = { width: "100%", padding: "10px 12px", borderRadius: "8px", border: `1px solid ${border}`, background: isDark?"#1a1a1a":"#f9fafb", color: text1, fontSize: "13px" };
+  const border = 'var(--color-border)';
+  const text1 = 'var(--color-text-1)';
+  const text3 = 'var(--color-text-3)';
+  const inp = { width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.04)', color: 'var(--color-text-1)', fontSize: '13px', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s', fontFamily: 'inherit' };
   useEffect(() => {
     supabase.from("lab_reading_log").select("title,author,rating,logged_at").eq("user_id", userId)
       .order("logged_at", { ascending: false }).limit(5).then(({ data }) => setRecent(data || []));

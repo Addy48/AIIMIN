@@ -86,41 +86,60 @@ const NoteEditor = ({ note, onSave, onClose }) => {
     const [body, setBody] = useState(note?.body || '');
     const [category, setCategory] = useState(note?.category || 'Ideas');
 
+    // Close on Escape
+    useEffect(() => {
+        const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handleKey);
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [onClose]);
+
     return (
         <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(20px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            onClick={e => e.target === e.currentTarget && onClose()}
         >
             <motion.div 
-                initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
-                style={{ width: '100%', maxWidth: '900px', background: 'var(--color-base)', border: '1px solid var(--border)', borderRadius: '40px', padding: '60px', position: 'relative', boxShadow: '0 40px 100px rgba(0,0,0,0.4)' }}
+                initial={{ scale: 0.97, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97, y: 16 }}
+                style={{ width: '100%', maxWidth: '640px', maxHeight: '88vh', background: 'var(--color-base, #111)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', overflow: 'hidden' }}
             >
-                <button onClick={onClose} style={{ position: 'absolute', top: '32px', right: '32px', background: 'var(--bg-elevated)', border: 'none', borderRadius: '50%', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-1)' }}>
-                    <X size={20} />
-                </button>
-
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '40px' }}>
-                    {CATEGORIES.filter(c => c !== 'All').map(c => (
-                        <button key={c} onClick={() => setCategory(c)} style={{ padding: '8px 20px', borderRadius: '12px', border: `1px solid ${category === c ? 'var(--color-accent)' : 'var(--border)'}`, background: category === c ? 'var(--color-accent)' : 'transparent', color: category === c ? '#fff' : 'var(--color-text-3)', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}>{c}</button>
-                    ))}
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                        {CATEGORIES.filter(c => c !== 'All').map(c => (
+                            <button key={c} onClick={() => setCategory(c)} style={{ padding: '5px 12px', borderRadius: '8px', border: `1px solid ${category === c ? 'var(--color-accent)' : 'rgba(255,255,255,0.08)'}`, background: category === c ? 'var(--color-accent)' : 'transparent', color: category === c ? '#fff' : 'var(--color-text-3)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>{c}</button>
+                        ))}
+                    </div>
+                    <button 
+                        onClick={onClose} 
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-3)', transition: 'all 0.15s', flexShrink: 0 }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
+                    >
+                        <X size={16} strokeWidth={2.5} />
+                    </button>
                 </div>
 
-                <input 
-                    autoFocus value={title} onChange={e => setTitle(e.target.value)}
-                    placeholder="The North Star of this thought..."
-                    style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '48px', fontWeight: 900, color: 'var(--color-text-1)', marginBottom: '32px', letterSpacing: '-0.04em' }}
-                />
+                {/* Body */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px 20px' }}>
+                    <input 
+                        autoFocus value={title} onChange={e => setTitle(e.target.value)}
+                        placeholder="The North Star of this thought..."
+                        style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '26px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '16px', letterSpacing: '-0.03em', fontFamily: 'var(--font-serif, serif)' }}
+                    />
 
-                <textarea 
-                    value={body} onChange={e => setBody(e.target.value)}
-                    placeholder="Collapse the entropy into wisdom..."
-                    style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '18px', color: 'var(--color-text-2)', lineHeight: 1.8, minHeight: '400px', resize: 'none' }}
-                />
+                    <textarea 
+                        value={body} onChange={e => setBody(e.target.value)}
+                        placeholder="Collapse the entropy into wisdom..."
+                        style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '14px', color: 'var(--color-text-2)', lineHeight: 1.75, minHeight: '260px', resize: 'none' }}
+                    />
+                </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '40px' }}>
+                {/* Footer */}
+                <div style={{ padding: '14px 28px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
                     <button 
                         onClick={() => onSave({ title, body, category })}
-                        style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '20px', padding: '16px 48px', fontSize: '16px', fontWeight: 900, cursor: 'pointer', boxShadow: 'var(--shadow-md)' }}
+                        style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 28px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.3)' }}
                     >
                         Archive Insight
                     </button>
@@ -129,6 +148,7 @@ const NoteEditor = ({ note, onSave, onClose }) => {
         </motion.div>
     );
 };
+
 
 const Notes = () => {
     const [notes, setNotes] = useState([]);
