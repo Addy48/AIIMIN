@@ -64,6 +64,7 @@ const routeMap = {
     'ats':           () => import('../server/routes/ats.js'),
     'blob':          () => import('../server/services/blobService.js'),
     'feedback':      () => import('../server/routes/feedback.js'),
+    'family':        () => import('../server/routes/family.js'),
 };
 
 async function loadRouter(name) {

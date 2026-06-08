@@ -96,25 +96,25 @@ const NoteEditor = ({ note, onSave, onClose }) => {
     return (
         <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
             onClick={e => e.target === e.currentTarget && onClose()}
         >
             <motion.div 
                 initial={{ scale: 0.97, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97, y: 16 }}
-                style={{ width: '100%', maxWidth: '640px', maxHeight: '88vh', background: 'var(--color-base, #111)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', overflow: 'hidden' }}
+                style={{ width: '100%', maxWidth: '640px', maxHeight: '88vh', background: 'var(--color-base)', border: '1px solid var(--color-border)', borderRadius: '16px', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', overflow: 'hidden' }}
             >
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
                     <div style={{ display: 'flex', gap: '6px' }}>
                         {CATEGORIES.filter(c => c !== 'All').map(c => (
-                            <button key={c} onClick={() => setCategory(c)} style={{ padding: '5px 12px', borderRadius: '8px', border: `1px solid ${category === c ? 'var(--color-accent)' : 'rgba(255,255,255,0.08)'}`, background: category === c ? 'var(--color-accent)' : 'transparent', color: category === c ? '#fff' : 'var(--color-text-3)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>{c}</button>
+                            <button key={c} onClick={() => setCategory(c)} style={{ padding: '5px 12px', borderRadius: '8px', border: `1px solid ${category === c ? 'var(--color-accent)' : 'var(--color-border)'}`, background: category === c ? 'var(--color-accent)' : 'var(--color-elevated)', color: category === c ? '#fff' : 'var(--color-text-3)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>{c}</button>
                         ))}
                     </div>
                     <button 
                         onClick={onClose} 
-                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-3)', transition: 'all 0.15s', flexShrink: 0 }}
+                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-elevated)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-3)', transition: 'all 0.15s', flexShrink: 0 }}
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-elevated)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
                     >
                         <X size={16} strokeWidth={2.5} />
                     </button>
@@ -136,7 +136,7 @@ const NoteEditor = ({ note, onSave, onClose }) => {
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '14px 28px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
+                <div style={{ padding: '14px 28px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
                     <button 
                         onClick={() => onSave({ title, body, category })}
                         style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 28px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.3)' }}
