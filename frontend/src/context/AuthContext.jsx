@@ -23,19 +23,24 @@ export function AuthProvider({ children }) {
             } catch (e) {}
         }
 
-        // Optimistic UI Unblock: if we have a valid JWT session, render the shell instantly
-        if (activeSession?.user) {
-            const fallbackUser = {
-                id: activeSession.user.id,
-                email: activeSession.user.email,
-                full_name: activeSession.user.user_metadata?.full_name || activeSession.user.email?.split('@')[0],
-                username: activeSession.user.user_metadata?.username || activeSession.user.email?.split('@')[0],
-                role: 'user',
-                isGuest: false
-            };
-            setUser(prev => prev || fallbackUser);
-            setLoading(false); // Unblock the UI instantly instead of waiting for backend
+        // If no session exists, the user is logged out. Do not hit the backend.
+        if (!activeSession?.user) {
+            setUser(null);
+            setLoading(false);
+            return null;
         }
+
+        // Optimistic UI Unblock: if we have a valid JWT session, render the shell instantly
+        const fallbackUser = {
+            id: activeSession.user.id,
+            email: activeSession.user.email,
+            full_name: activeSession.user.user_metadata?.full_name || activeSession.user.email?.split('@')[0],
+            username: activeSession.user.user_metadata?.username || activeSession.user.email?.split('@')[0],
+            role: 'user',
+            isGuest: false
+        };
+        setUser(prev => prev || fallbackUser);
+        setLoading(false); // Unblock the UI instantly instead of waiting for backend
 
         try {
             // Background fetch to sync detailed profile data
@@ -43,20 +48,12 @@ export function AuthProvider({ children }) {
             if (data && data.user) {
                 setUser(data.user);
                 return data.user;
-            } else if (activeSession?.user) {
-                // Return our fallback if DB fails but JWT is valid
-                return activeSession.user;
             }
-            setUser(null);
-            return null;
+            // Return our fallback if DB fails but JWT is valid
+            return fallbackUser;
         } catch (error) {
             console.warn('[checkSession] profile fetch failed, using Supabase session fallback:', error.message);
-            if (!activeSession?.user) {
-                setUser(null);
-            }
-            return null;
-        } finally {
-            setLoading(false);
+            return fallbackUser;
         }
     }, []);
 
