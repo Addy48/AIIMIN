@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { MessageSquare, X, Send } from 'lucide-react';
 import { apiPost } from '../utils/api';
-import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 

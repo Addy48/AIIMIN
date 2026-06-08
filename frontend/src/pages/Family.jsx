@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import PageHeader from '../components/layout/PageHeader';
@@ -101,7 +101,7 @@ export default function FamilyPage() {
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
@@ -122,12 +122,11 @@ export default function FamilyPage() {
     } catch (error) {
       console.error('Error fetching family data:', error);
     }
-    setLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchData();
-  }, [user]);
+  }, [fetchData]);
 
   const autoCreateReminder = async (title, dueDate, sourceType, sourceId) => {
     if (!dueDate) return;
@@ -150,7 +149,7 @@ export default function FamilyPage() {
   const handleAddMember = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    const { data, error } = await supabase.from('family_members').insert({
+    const { error } = await supabase.from('family_members').insert({
       user_id: user.id,
       name: fd.get('name'),
       relation: fd.get('relation'),

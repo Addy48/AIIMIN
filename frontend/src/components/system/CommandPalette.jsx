@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Compass, BookOpen, Heart, TrendingUp, AlertTriangle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const ACTIONS = [
   { id: 'family', label: 'Go to Family Vault', route: '/family', icon: Heart, category: 'Navigation' },
