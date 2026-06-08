@@ -1,14 +1,15 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { X } from 'lucide-react';
 
 const DesktopWindow = ({
   title,
   subtitle,
   children,
   onClose,
-  width = '980px',
+  width = '620px',
   height = 'auto',
-  maxHeight = '88vh',
+  maxHeight = '85vh',
   bodyStyle = {},
   contentStyle = {},
 }) => {
@@ -33,10 +34,10 @@ const DesktopWindow = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '32px',
-        background: 'rgba(24, 24, 22, 0.54)',
-        backdropFilter: 'blur(16px) saturate(120%)',
-        WebkitBackdropFilter: 'blur(16px) saturate(120%)',
+        padding: '20px',
+        background: 'rgba(0, 0, 0, 0.75)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         ...bodyStyle,
       }}
     >
@@ -44,73 +45,106 @@ const DesktopWindow = ({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        initial={{ opacity: 0, y: 22, scale: 0.98 }}
+        initial={{ opacity: 0, y: 16, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 14, scale: 0.98 }}
-        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        exit={{ opacity: 0, y: 10, scale: 0.97 }}
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
         onClick={(event) => event.stopPropagation()}
         style={{
           width,
           height,
-          maxWidth: 'min(96vw, 1320px)',
+          maxWidth: 'min(94vw, 680px)',
           maxHeight,
-          background: 'var(--color-base)',
-          border: '1px solid rgba(31, 32, 29, 0.16)',
-          borderRadius: '18px',
+          background: 'var(--color-base, #111)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '16px',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 32px 90px rgba(21, 22, 19, 0.34)',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
           color: 'var(--color-text-1)',
           ...contentStyle,
         }}
       >
+        {/* Header — dark, consistent with site theme */}
         <header
           style={{
-            minHeight: '58px',
-            display: 'grid',
-            gridTemplateColumns: '120px minmax(0, 1fr) 120px',
+            minHeight: '52px',
+            display: 'flex',
             alignItems: 'center',
-            gap: '16px',
-            padding: '0 18px',
-            background: 'linear-gradient(180deg, #fbfaf7 0%, #efede7 100%)',
-            borderBottom: '1px solid rgba(31, 32, 29, 0.16)',
+            justifyContent: 'space-between',
+            gap: '12px',
+            padding: '0 16px 0 20px',
+            background: 'rgba(255,255,255,0.03)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            flexShrink: 0,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
-              aria-label="Close window"
-              onClick={onClose}
-              style={{
-                width: '13px',
-                height: '13px',
-                borderRadius: '50%',
-                border: '1px solid rgba(0,0,0,0.12)',
-                background: '#ff5f57',
-                cursor: 'pointer',
-                padding: 0,
-                display: 'block',
-              }}
-            />
-          </div>
-
-          <div style={{ textAlign: 'center', minWidth: 0 }}>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: '#2b2c28', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {/* Title */}
+          <div style={{ minWidth: 0 }}>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: 'var(--color-text-1)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              fontFamily: 'var(--font-sans, inherit)',
+            }}>
               {title}
             </div>
             {subtitle && (
-              <div style={{ marginTop: '3px', fontSize: '11px', fontWeight: 600, color: '#7a766d', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{
+                marginTop: '2px',
+                fontSize: '11px',
+                fontWeight: 500,
+                color: 'var(--color-text-3)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                fontFamily: 'var(--font-mono, monospace)',
+              }}>
                 {subtitle}
               </div>
             )}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <div style={{ width: '13px', height: '13px' }} />
-          </div>
+          {/* Close button — prominent X */}
+          <button
+            type="button"
+            aria-label="Close window"
+            onClick={onClose}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(255,255,255,0.05)',
+              cursor: 'pointer',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--color-text-3)',
+              flexShrink: 0,
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(239,68,68,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)';
+              e.currentTarget.style.color = '#ef4444';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.color = 'var(--color-text-3)';
+            }}
+          >
+            <X size={16} strokeWidth={2.5} />
+          </button>
         </header>
 
+        {/* Body — scrollable */}
         <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
           {children}
         </div>
