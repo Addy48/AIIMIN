@@ -15,6 +15,7 @@ const NAV_LINKS = [
   { to: '/goals',       label: 'Goals' },
   { to: '/journal',     label: 'Journal' },
   { to: '/finance',     label: 'Finance' },
+  { to: '/family',      label: 'Family' },
   { to: '/calendar',    label: 'Calendar' },
   { to: '/placements',  label: 'Placement' },
   { to: '/sports',      label: 'Sports', hideFromGuest: true },

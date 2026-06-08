@@ -9,6 +9,7 @@ const DesktopWindow = ({
   onClose,
   width = '620px',
   height = 'auto',
+  maxWidth = 'min(94vw, 680px)',
   maxHeight = '85vh',
   bodyStyle = {},
   contentStyle = {},
@@ -53,10 +54,10 @@ const DesktopWindow = ({
         style={{
           width,
           height,
-          maxWidth: 'min(94vw, 680px)',
+          maxWidth,
           maxHeight,
-          background: 'var(--color-base, #111)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--color-base)',
+          border: '1px solid var(--color-border)',
           borderRadius: '16px',
           overflow: 'hidden',
           display: 'flex',
@@ -75,8 +76,8 @@ const DesktopWindow = ({
             justifyContent: 'space-between',
             gap: '12px',
             padding: '0 16px 0 20px',
-            background: 'rgba(255,255,255,0.03)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            background: 'var(--color-elevated)',
+            borderBottom: '1px solid var(--color-border)',
             flexShrink: 0,
           }}
         >
@@ -118,8 +119,8 @@ const DesktopWindow = ({
               width: '32px',
               height: '32px',
               borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.08)',
-              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-elevated)',
               cursor: 'pointer',
               padding: 0,
               display: 'flex',
@@ -135,8 +136,8 @@ const DesktopWindow = ({
               e.currentTarget.style.color = '#ef4444';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              e.currentTarget.style.background = 'var(--color-elevated)';
+              e.currentTarget.style.borderColor = 'var(--color-border)';
               e.currentTarget.style.color = 'var(--color-text-3)';
             }}
           >

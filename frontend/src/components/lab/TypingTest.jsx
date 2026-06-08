@@ -107,13 +107,22 @@ function analyzeWeakKeys(keyErrors) {
     .map(([k, count]) => ({ key: k, count }));
 }
 
+function hexToRgb(hex) {
+  if (!hex || typeof hex !== 'string') return '0, 0, 0';
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16) || 0;
+  const g = parseInt(h.substring(2, 4), 16) || 0;
+  const b = parseInt(h.substring(4, 6), 16) || 0;
+  return `${r}, ${g}, ${b}`;
+}
+
 /* ─── CSS injected once ──────────────────────────────────────────── */
 const TYPING_CSS = `
   .tt-input { position: absolute; opacity: 0; pointer-events: none; }
   .tt-kbd {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 28px; height: 28px; padding: 0 6px;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+    background: var(--bg-elevated); border: 1px solid var(--color-border);
     border-bottom-width: 2px; border-radius: 6px;
     font: 700 11px/1 'Fira Code', monospace; color: var(--color-text-2);
     user-select: none;
@@ -125,12 +134,12 @@ const TYPING_CSS = `
     25% { transform: translateX(-3px); }
     75% { transform: translateX(3px); }
   }
-  .tt-progress-bar { height: 2px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .tt-progress-bar { height: 2px; background: var(--color-border); border-radius: 2px; overflow: hidden; }
   .tt-progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
   .tt-tab { padding: 8px 18px; border-radius: 8px; border: none; font: 600 13px/1 inherit; cursor: pointer; transition: all 0.15s; }
-  .tt-tab.active { background: rgba(255,255,255,0.1); color: var(--color-text-1); }
-  .tt-tab.inactive { background: transparent; color: var(--color-text-3); }
-  .tt-tab.inactive:hover { color: var(--color-text-2); background: rgba(255,255,255,0.04); }
+  .tt-tab.active { background: var(--bg-elevated); color: var(--color-text-1); border: 1px solid var(--color-border); }
+  .tt-tab.inactive { background: transparent; color: var(--color-text-3); border: 1px solid transparent; }
+  .tt-tab.inactive:hover { color: var(--color-text-2); background: var(--bg-elevated); border: 1px solid var(--color-border); }
   .tt-btn-primary {
     border: none; border-radius: 10px; padding: 12px 28px;
     font: 700 14px/1 inherit; cursor: pointer; transition: all 0.2s;
@@ -139,22 +148,22 @@ const TYPING_CSS = `
   }
   .tt-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
   .tt-btn-secondary {
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 24px;
+    border: 1px solid var(--color-border); border-radius: 10px; padding: 12px 24px;
     font: 600 13px/1 inherit; cursor: pointer; transition: all 0.15s;
-    background: rgba(255,255,255,0.05); color: var(--color-text-2);
+    background: var(--bg-elevated); color: var(--color-text-2);
   }
-  .tt-btn-secondary:hover { background: rgba(255,255,255,0.08); color: var(--color-text-1); }
+  .tt-btn-secondary:hover { background: var(--color-border); color: var(--color-text-1); }
   .tt-metric {
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    background: var(--bg-elevated); border: 1px solid var(--color-border);
     border-radius: 12px; padding: 16px 20px;
   }
   .tt-inp {
-    width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    width: 100%; background: var(--bg-elevated); border: 1px solid var(--color-border);
     border-radius: 10px; padding: 10px 14px; color: var(--color-text-1);
     font: 400 13px/1 inherit; outline: none; box-sizing: border-box;
     transition: border-color 0.15s;
   }
-  .tt-inp:focus { border-color: rgba(255,255,255,0.2); }
+  .tt-inp:focus { border-color: var(--color-accent); }
   .tt-inp option { background: #1a1a1a; color: #fff; }
   select.tt-inp { cursor: pointer; }
 `;
@@ -274,7 +283,7 @@ export default function TypingTest({ userId, onComplete, onClose }) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {(progress.history || []).slice(0, 5).map((r, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '10px 14px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '10px 14px', background: 'var(--bg-elevated)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
                 <span style={{ fontSize: '11px', color: 'var(--color-text-3)', minWidth: '80px' }}>{new Date(r.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                 <span style={{ fontSize: '14px', fontWeight: 800, color: '#3B82F6', fontFamily: 'var(--font-mono, monospace)' }}>{r.wpm} WPM</span>
                 <span style={{ fontSize: '13px', fontWeight: 600, color: r.accuracy >= 95 ? '#10B981' : '#F59E0B' }}>{r.accuracy}%</span>
@@ -297,8 +306,8 @@ function ModeCard({ emoji, title, desc, color, onClick, badge }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? `rgba(${hexToRgb(color)},0.08)` : 'rgba(255,255,255,0.02)',
-        border: `1px solid ${hov ? color + '40' : 'rgba(255,255,255,0.07)'}`,
+        background: hov ? 'var(--color-border-lit)' : 'var(--bg-elevated)',
+        border: `1px solid ${hov ? color + '40' : 'var(--color-border)'}`,
         borderRadius: '14px', padding: '24px', textAlign: 'left', cursor: 'pointer',
         transition: 'all 0.2s', display: 'flex', flexDirection: 'column', gap: '12px',
         transform: hov ? 'translateY(-2px)' : 'none',
@@ -483,11 +492,11 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
         <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px' }} onClick={onBack}>
           <ArrowLeft size={13} /> Back
         </button>
-        <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '4px' }}>
+        <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-elevated)', borderRadius: '10px', padding: '4px', border: '1px solid var(--color-border)' }}>
           {[15, 30, 60].map(d => (
             <button key={d} onClick={() => handleDuration(d)}
               style={{ padding: '7px 16px', borderRadius: '7px', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
-                background: duration === d ? 'rgba(255,255,255,0.1)' : 'transparent',
+                background: duration === d ? 'var(--color-border-lit)' : 'transparent',
                 color: duration === d ? 'var(--color-text-1)' : 'var(--color-text-3)',
               }}>
               {d}s
@@ -520,7 +529,7 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
 
       {/* Typing Area */}
       <div
-        style={{ position: 'relative', background: 'rgba(255,255,255,0.02)', border: `1px solid ${isFocused ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '14px', padding: '28px 32px', cursor: 'text', transition: 'border-color 0.2s', minHeight: '160px', userSelect: 'none' }}
+        style={{ position: 'relative', background: 'var(--bg-elevated)', border: `1px solid ${isFocused ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: '14px', padding: '28px 32px', cursor: 'text', transition: 'border-color 0.2s', minHeight: '160px', userSelect: 'none' }}
         onClick={() => inputRef.current?.focus()}
       >
         <input ref={inputRef} type="text" value={input} onChange={handleInput}
@@ -529,7 +538,7 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
         />
 
         {phase === 'ready' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 5, gap: '8px' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'var(--color-base)', opacity: 0.9, backdropFilter: 'blur(4px)', zIndex: 5, gap: '8px' }}>
             <Keyboard size={28} color="var(--color-text-3)" />
             <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-1)' }}>Click here and start typing</div>
             <div style={{ fontSize: '12px', color: 'var(--color-text-3)' }}>Timer starts on first keystroke</div>
@@ -537,7 +546,7 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
         )}
 
         {!isFocused && phase === 'running' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', zIndex: 5, gap: '6px' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'var(--color-base)', opacity: 0.9, backdropFilter: 'blur(4px)', zIndex: 5, gap: '6px' }}>
             <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)' }}>⏸ Paused</div>
             <div style={{ fontSize: '12px', color: 'var(--color-text-3)' }}>Click to resume</div>
           </div>
@@ -550,7 +559,7 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
             const wrong = typed && input[i] !== char;
             const current = i === input.length;
             return (
-              <span key={i} style={{ position: 'relative', color: wrong ? '#ef4444' : correct ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.22)', textDecoration: wrong ? 'underline' : 'none', transition: 'color 0.05s' }}>
+              <span key={i} style={{ position: 'relative', color: wrong ? '#ef4444' : correct ? 'var(--color-text-1)' : 'var(--color-text-3)', opacity: correct ? 1 : 0.6, textDecoration: wrong ? 'underline' : 'none', transition: 'color 0.05s' }}>
                 {current && phase !== 'done' && (
                   <motion.span style={{ position: 'absolute', left: 0, top: '10%', width: '2px', height: '82%', background: accentColor, boxShadow: `0 0 8px ${accentColor}`, borderRadius: '2px' }}
                     animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} />
@@ -622,15 +631,15 @@ function LessonRow({ lesson, done, onSelect }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
-        border: `1px solid ${done ? lesson.color + '30' : 'rgba(255,255,255,0.07)'}`,
-        borderLeft: `3px solid ${done ? lesson.color : 'rgba(255,255,255,0.12)'}`,
+        background: hov ? 'var(--color-border-lit)' : 'var(--bg-elevated)',
+        border: `1px solid ${done ? lesson.color + '30' : 'var(--color-border)'}`,
+        borderLeft: `3px solid ${done ? lesson.color : 'var(--color-border)'}`,
         borderRadius: '10px', padding: '14px 16px', cursor: 'pointer', textAlign: 'left',
         transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '14px',
         transform: hov ? 'translateX(2px)' : 'none',
       }}
     >
-      <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: done ? lesson.color + '20' : 'rgba(255,255,255,0.05)', border: `1px solid ${done ? lesson.color + '40' : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: done ? lesson.color + '20' : 'var(--bg-elevated)', border: `1px solid ${done ? lesson.color + '40' : 'var(--color-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         {done ? <CheckCircle2 size={14} color={lesson.color} /> : <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)' }}>{lesson.id}</span>}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -778,7 +787,7 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
 
       {/* Typing area */}
       <div
-        style={{ position: 'relative', background: 'rgba(255,255,255,0.02)', border: `1px solid ${isFocused ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '14px', padding: '28px 32px', cursor: 'text', transition: 'border-color 0.2s', minHeight: '120px' }}
+        style={{ position: 'relative', background: 'var(--bg-elevated)', border: `1px solid ${isFocused ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: '14px', padding: '28px 32px', cursor: 'text', transition: 'border-color 0.2s', minHeight: '120px' }}
         onClick={() => { inputRef.current?.focus(); }}
       >
         <input ref={inputRef} type="text" value={input} onChange={handleInput}
@@ -787,7 +796,7 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
         />
 
         {phase === 'intro' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 5, gap: '8px' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'var(--color-base)', opacity: 0.9, backdropFilter: 'blur(4px)', zIndex: 5, gap: '8px' }}>
             <Keyboard size={24} color="var(--color-text-3)" />
             <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)' }}>Click and start typing the text below</div>
           </div>
