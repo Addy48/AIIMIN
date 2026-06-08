@@ -144,17 +144,24 @@ const GoalModal = ({ onClose, onSave }) => {
   const [goal, setGoal] = useState(blankGoal());
   const pillar = PILLARS.find(p => p.key === goal.pillar) || PILLARS[0];
 
+  // Close on Escape key
+  useEffect(() => {
+    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [onClose]);
+
   const updateMilestone = (i, text) => setGoal(g => ({ ...g, milestones: g.milestones.map((m, idx) => idx === i ? { ...m, text } : m) }));
   const addMilestone = () => goal.milestones.length < 5 && setGoal(g => ({ ...g, milestones: [...g.milestones, { text: '', done: false }] }));
   const removeMilestone = (i) => setGoal(g => ({ ...g, milestones: g.milestones.filter((_, idx) => idx !== i) }));
 
   const inp = { 
-    background: 'rgba(0,0,0,0.2)', 
+    background: 'rgba(255,255,255,0.04)', 
     border: '1px solid rgba(255,255,255,0.08)', 
-    borderRadius: '16px', 
-    padding: '14px 18px', 
+    borderRadius: '10px', 
+    padding: '10px 14px', 
     color: 'var(--color-text-1)', 
-    fontSize: '14px', 
+    fontSize: '13px', 
     fontFamily: 'inherit', 
     outline: 'none', 
     width: '100%', 
@@ -163,24 +170,34 @@ const GoalModal = ({ onClose, onSave }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '24px' }}
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+      <motion.div initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }}
         style={{ 
-            background: 'rgba(15,15,15,0.95)', 
-            border: '1px solid rgba(255,255,255,0.1)', 
-            borderRadius: '32px', 
-            padding: '40px', 
+            background: 'var(--color-base, #111)', 
+            border: '1px solid rgba(255,255,255,0.08)', 
+            borderRadius: '16px', 
             width: '100%', 
-            maxWidth: '560px', 
+            maxWidth: '520px', 
             maxHeight: '90vh', 
             overflowY: 'auto',
-            boxShadow: '0 64px 128px rgba(0,0,0,0.5)'
+            boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+            display: 'flex',
+            flexDirection: 'column',
         }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--color-text-1)', margin: 0, fontFamily: 'var(--font-serif)' }}>Define Commitment</h3>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer', padding: '8px', borderRadius: '12px' }}><X size={20} /></button>
+        {/* Modal header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+          <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)', margin: 0 }}>Define Commitment</h3>
+          <button 
+            onClick={onClose} 
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-text-3)', cursor: 'pointer', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
+          >
+            <X size={16} strokeWidth={2.5} />
+          </button>
         </div>
+        <div style={{ padding: '20px', overflowY: 'auto' }}>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div>
@@ -251,20 +268,22 @@ const GoalModal = ({ onClose, onSave }) => {
 
           <button onClick={() => { if (goal.title.trim()) { onSave(goal); onClose(); } }}
             style={{ 
-                marginTop: '12px', 
+                marginTop: '8px', 
                 background: pillar.color, 
                 color: '#fff', 
                 border: 'none', 
-                padding: '20px', 
-                borderRadius: '16px', 
-                fontSize: '16px', 
-                fontWeight: 900, 
+                padding: '14px', 
+                borderRadius: '10px', 
+                fontSize: '14px', 
+                fontWeight: 700, 
                 cursor: 'pointer', 
-                boxShadow: `0 12px 32px ${pillar.color}40`,
+                width: '100%',
+                boxShadow: `0 8px 20px ${pillar.color}40`,
                 transition: 'all 0.2s'
             }}>
             Confirm Commitment
           </button>
+        </div>
         </div>
       </motion.div>
     </div>
