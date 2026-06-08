@@ -2,6 +2,11 @@ const safeText = (value, maxLength = 255) => (
     typeof value === 'string' && value.trim() ? value.trim().slice(0, maxLength) : null
 );
 
+const safeUsername = (value) => {
+    const username = safeText(value, 64);
+    return username ? username.toUpperCase() : null;
+};
+
 export function profileFromAuthUser(authUser, overrides = {}) {
     const metadata = authUser?.user_metadata || {};
     const identityData = authUser?.identities?.[0]?.identity_data || {};
@@ -16,7 +21,7 @@ export function profileFromAuthUser(authUser, overrides = {}) {
             identityData.full_name ||
             identityData.name
         ),
-        username: safeText(overrides.username || metadata.username, 64),
+        username: safeUsername(overrides.username || metadata.username),
         avatarUrl: safeText(
             metadata.avatar_url ||
             metadata.picture ||

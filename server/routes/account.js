@@ -11,6 +11,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { decrypt, encrypt } from '../lib/crypto.js';
 
 const app = new Hono();
+const USERNAME_PATTERN = /^[A-Z0-9_.-]{3,20}$/;
 
 /**
  * GET /api/account/profile
@@ -42,7 +43,7 @@ app.get('/profile', requireAuth, async (c) => {
                     userId,
                     user?.email,
                     meta.full_name || meta.name || null,
-                    meta.username || null,
+                    meta.username?.toUpperCase() || null,
                     meta.avatar_url || meta.picture || null,
                     meta.timezone || 'Asia/Kolkata'
                 ]
@@ -63,10 +64,17 @@ app.patch('/profile', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const body = await c.req.json();
-        const { full_name, timezone, avatar_url } = body;
+        const { full_name, username, timezone, avatar_url } = body;
 
         const updates = {};
         if (full_name !== undefined) updates.full_name = full_name;
+        if (username !== undefined) {
+            const normalizedUsername = username.trim().toUpperCase();
+            if (normalizedUsername && !USERNAME_PATTERN.test(normalizedUsername)) {
+                return c.json({ error: 'Username must be 3-20 uppercase letters, numbers, _, ., or -' }, 400);
+            }
+            updates.username = normalizedUsername || null;
+        }
         if (timezone !== undefined) updates.timezone = timezone;
         if (avatar_url !== undefined) updates.avatar_url = avatar_url;
 
