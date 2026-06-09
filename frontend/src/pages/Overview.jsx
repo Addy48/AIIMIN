@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight, Keyboard, Mic } from 'lucide-react';
+import { Plus, X, ChevronRight, Keyboard, Mic, AlertTriangle } from 'lucide-react';
 import TypingTest from '../components/lab/TypingTest';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
 import DesktopWindow from '../components/ui/DesktopWindow';
 import PageHeader from '../components/layout/PageHeader';
+import CommandCenter from '../components/overview/CommandCenter';
 
-const STATES = ['clarity','scarcity','abundance','fear','growth','aimlessness','focus','noise'];
-const STATE_ICONS = { clarity:'🔍', scarcity:'🪨', abundance:'🌊', fear:'🌑', growth:'🌱', aimlessness:'🌫️', focus:'🎯', noise:'📡' };
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 /* ── Trajectory progress bar — smooth GPU-composited ── */
@@ -69,78 +68,6 @@ const ProgressRow = ({ label, val, color, delay = 0 }) => {
 };
 
 
-/* ── Quick Check-In ── */
-const QuickCheckIn = ({ user }) => {
-  const [vals, setVals] = useState({ mood:7, energy:7, focus:7 });
-  const [state, setState] = useState('focus');
-  const [note, setNote] = useState('');
-  const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const save = async () => {
-    if (!user || saving) return;
-    setSaving(true);
-    const today = new Date().toISOString().split('T')[0];
-    try {
-      if (user.isGuest) {
-        setSaved(true);
-        setNote('');
-        setTimeout(() => setSaved(false), 3000);
-        return;
-      }
-      await supabase.from('daily_logs').insert({ user_id: user.id, mood: vals.mood, energy_level: vals.energy, focus_score: vals.focus, logged_at: new Date().toISOString() });
-      await supabase.from('lab_mindset_logs').insert({ user_id: user.id, state, note: note.trim() || null, day_of: today, logged_at: new Date().toISOString() });
-      setSaved(true);
-      setNote('');
-      setTimeout(() => setSaved(false), 3000);
-    } catch (err) { console.error(err); }
-    finally { setSaving(false); }
-  };
-
-  return (
-    <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px' }}>
-      <div style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.12em', color:'var(--color-text-3)', marginBottom:'16px', display:'flex', alignItems:'center', gap:'8px' }}>
-        <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:'var(--color-accent)', display:'inline-block' }} />
-        Operational Pulse
-      </div>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'6px', marginBottom:'20px' }}>
-        {STATES.map(s => (
-          <button key={s} onClick={() => setState(s)} style={{
-            background: state===s ? 'var(--color-accent)' : 'var(--color-elevated)',
-            color: state===s ? '#fff' : 'var(--color-text-3)',
-            border: `1px solid ${state===s ? 'var(--color-accent)' : 'var(--color-border)'}`,
-            borderRadius:'8px', padding:'8px 4px', cursor:'pointer',
-            fontSize:'9px', fontWeight:800, textAlign:'center',
-            transition:'all 0.15s', display:'flex', flexDirection:'column', alignItems:'center', gap:'3px'
-          }}>
-            <span style={{ fontSize:'13px' }}>{STATE_ICONS[s]}</span>
-            {s}
-          </button>
-        ))}
-      </div>
-      {['mood','energy','focus'].map(k => (
-        <div key={k} style={{ marginBottom:'14px' }}>
-          <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'6px' }}>
-            <span style={{ fontSize:'10px', fontWeight:800, textTransform:'uppercase', color:'var(--color-text-3)' }}>{k}</span>
-            <span style={{ fontSize:'11px', fontWeight:900, color:'var(--color-accent)' }}>{vals[k]}</span>
-          </div>
-          <input type="range" min={1} max={10} value={vals[k]} onChange={e => setVals(v=>({...v,[k]:Number(e.target.value)}))}
-            style={{ width:'100%', height:'4px', appearance:'none', background:'var(--color-border)', borderRadius:'10px', outline:'none', cursor:'pointer', accentColor:'var(--color-accent)' }} />
-        </div>
-      ))}
-      <textarea placeholder="Quick reflection..." value={note} onChange={e=>setNote(e.target.value)}
-        style={{ width:'100%', boxSizing:'border-box', background:'var(--color-elevated)', border:'1px solid var(--color-border)', borderRadius:'10px', padding:'10px 12px', fontSize:'13px', color:'var(--color-text-1)', outline:'none', resize:'none', height:'56px', fontFamily:'inherit', marginBottom:'12px' }} />
-      <button onClick={save} disabled={saved||saving} style={{
-        width:'100%', padding:'13px', borderRadius:'12px',
-        background: saved ? 'var(--color-accent-dim)' : 'var(--color-accent)',
-        color: saved ? 'var(--color-accent)' : '#fff',
-        border:'none', fontSize:'12px', fontWeight:900, cursor:'pointer', transition:'all 0.2s'
-      }}>
-        {saved ? '✓ SYNCED' : saving ? 'SYNCING...' : 'COMMIT SESSION'}
-      </button>
-    </div>
-  );
-};
 
 /* ── Weekly task cell ── */
 const WeekCell = ({ day, isToday }) => {
@@ -211,9 +138,23 @@ const Overview = () => {
   const user = authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
 
   const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
-
-
+  const [urgentReminders, setUrgentReminders] = useState([]);
   const [activeModal, setActiveModal] = useState(null);
+
+  useEffect(() => {
+    if (user?.isGuest) return;
+    const fetchReminders = async () => {
+      const { data } = await supabase
+        .from('family_reminders')
+        .select('*')
+        .eq('completed', false)
+        .gte('due_date', new Date().toISOString().split('T')[0])
+        .lte('due_date', new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0])
+        .order('due_date', { ascending: true });
+      if (data) setUrgentReminders(data);
+    };
+    fetchReminders();
+  }, [user]);
 
   useEffect(() => {
     if (activeModal) {
@@ -321,9 +262,25 @@ const Overview = () => {
         {/* LEFT column */}
         <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
           
+          {/* Urgent Reminders Banner */}
+          {urgentReminders.length > 0 && (
+            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '16px', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#EF4444', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <AlertTriangle size={14} /> Urgent Family Reminders
+              </div>
+              {urgentReminders.map(r => (
+                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '14px', color: 'var(--color-text-1)', fontWeight: 600 }}>{r.title}</span>
+                  <span style={{ fontSize: '13px', color: '#EF4444', fontWeight: 700 }}>Due: {r.due_date}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Quick Access Horizontal Strip */}
           <div style={{ display:'flex', gap:'12px', overflowX:'auto', paddingBottom:'4px', scrollbarWidth: 'none' }}>
             {[
+                        { to:'/family',     label:'Family',      icon:'👨‍👩‍👧', color:'#EC4899' },
               { to:'/journal',     label:'Journal',     icon:'📓', color:'#F59E0B' },
               { to:'/finance',     label:'Wealth',      icon:'💰', color:'#22C55E' },
               { to:'/habits',      label:'Habits',      icon:'✅', color:'#3B82F6' },
@@ -425,7 +382,7 @@ const Overview = () => {
         {/* RIGHT sidebar */}
         <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
 
-          <QuickCheckIn user={user} />
+          <CommandCenter user={user} />
 
           {/* Trajectory */}
           <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
@@ -443,13 +400,13 @@ const Overview = () => {
 
       {/* Modals */}
       {activeModal === 'typing' && (
-        <DesktopWindow title="Typing Lab" subtitle="monkeytype-style keyboard practice" onClose={() => setActiveModal(null)} width="1180px" height="84vh">
+        <DesktopWindow title="Typing Lab" subtitle="monkeytype-style keyboard practice" onClose={() => setActiveModal(null)} width="1180px" maxWidth="1180px" height="84vh">
           <TypingTest userId={user.id} onComplete={() => {}} onClose={() => setActiveModal(null)} />
         </DesktopWindow>
       )}
 
       {activeModal === 'speaking' && (
-        <DesktopWindow title="Speaking Lab" subtitle="prompt, record, assess, save" onClose={() => setActiveModal(null)} width="1180px" height="84vh">
+        <DesktopWindow title="Speaking Lab" subtitle="prompt, record, assess, save" onClose={() => setActiveModal(null)} width="1180px" maxWidth="1180px" height="84vh">
           <SpeakingLogger onComplete={() => {}} onClose={() => setActiveModal(null)} />
         </DesktopWindow>
       )}

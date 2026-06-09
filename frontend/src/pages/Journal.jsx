@@ -596,14 +596,14 @@ const JournalPage = () => {
               }} />
               
               {/* Floating Action Menu */}
-              <div style={{ position: 'absolute', top: '24px', right: '40px', display: 'flex', gap: '8px' }}>
-                 <button onClick={saveEntry} style={{ background: 'rgba(0,0,0,0.3)', border: 'none', color: '#fff', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ position: 'fixed', top: '90px', right: '40px', zIndex: 100, display: 'flex', gap: '8px' }}>
+                 <button onClick={saveEntry} style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s' }}>
                    <Save size={14} /> Save
                  </button>
-                 <button onClick={() => deleteEntry(selectedEntry.id)} style={{ background: 'rgba(239, 68, 68, 0.3)', border: 'none', color: '#ff8080', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+                 <button onClick={() => deleteEntry(selectedEntry.id)} style={{ background: 'rgba(239, 68, 68, 0.4)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#fff', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }}>
                    <Trash2 size={16} />
                  </button>
-                 <button onClick={() => setSelectedEntry(null)} style={{ background: 'rgba(0, 0, 0, 0.3)', border: 'none', color: '#fff', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)' }}>
+                 <button onClick={() => setSelectedEntry(null)} style={{ background: 'rgba(0, 0, 0, 0.4)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '8px', borderRadius: '8px', cursor: 'pointer', backdropFilter: 'blur(10px)', transition: 'all 0.2s' }}>
                    <X size={16} />
                  </button>
               </div>

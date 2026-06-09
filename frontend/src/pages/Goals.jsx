@@ -156,8 +156,8 @@ const GoalModal = ({ onClose, onSave }) => {
   const removeMilestone = (i) => setGoal(g => ({ ...g, milestones: g.milestones.filter((_, idx) => idx !== i) }));
 
   const inp = { 
-    background: 'rgba(255,255,255,0.04)', 
-    border: '1px solid rgba(255,255,255,0.08)', 
+    background: 'var(--bg-elevated)', 
+    border: '1px solid var(--color-border)', 
     borderRadius: '10px', 
     padding: '10px 14px', 
     color: 'var(--color-text-1)', 
@@ -170,12 +170,12 @@ const GoalModal = ({ onClose, onSave }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }}
         style={{ 
-            background: 'var(--color-base, #111)', 
-            border: '1px solid rgba(255,255,255,0.08)', 
+            background: 'var(--color-base)', 
+            border: '1px solid var(--color-border)', 
             borderRadius: '16px', 
             width: '100%', 
             maxWidth: '520px', 
@@ -186,13 +186,13 @@ const GoalModal = ({ onClose, onSave }) => {
             flexDirection: 'column',
         }}>
         {/* Modal header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)', margin: 0 }}>Define Commitment</h3>
           <button 
             onClick={onClose} 
-            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-text-3)', cursor: 'pointer', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+            style={{ background: 'var(--color-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-3)', cursor: 'pointer', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-elevated)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
           >
             <X size={16} strokeWidth={2.5} />
           </button>
