@@ -56,37 +56,37 @@ const DesktopWindow = ({
           height,
           maxWidth,
           maxHeight,
-          background: 'var(--color-base)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '16px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderRadius: '24px',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
-          color: 'var(--color-text-1)',
+          boxShadow: '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--border)',
+          color: 'var(--text-1)',
           ...contentStyle,
         }}
       >
         {/* Header — dark, consistent with site theme */}
         <header
           style={{
-            minHeight: '52px',
+            minHeight: '64px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             gap: '12px',
-            padding: '0 16px 0 20px',
-            background: 'var(--color-elevated)',
-            borderBottom: '1px solid var(--color-border)',
+            padding: '24px 32px 20px',
+            background: 'transparent',
+            borderBottom: '1px solid var(--border)',
             flexShrink: 0,
           }}
         >
           {/* Title */}
           <div style={{ minWidth: 0 }}>
             <div style={{
-              fontSize: '13px',
-              fontWeight: 700,
-              color: 'var(--color-text-1)',
+              fontSize: '20px',
+              fontWeight: 800,
+              color: 'var(--text-1)',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -96,10 +96,10 @@ const DesktopWindow = ({
             </div>
             {subtitle && (
               <div style={{
-                marginTop: '2px',
-                fontSize: '11px',
+                marginTop: '4px',
+                fontSize: '13px',
                 fontWeight: 500,
-                color: 'var(--color-text-3)',
+                color: 'var(--text-3)',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -110,38 +110,38 @@ const DesktopWindow = ({
             )}
           </div>
 
-          {/* Close button — prominent X */}
+          {/* Close button — Back to Lab */}
           <button
             type="button"
-            aria-label="Close window"
+            aria-label="Back to Lab"
             onClick={onClose}
             style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-elevated)',
+              height: '36px',
+              borderRadius: '12px',
+              border: '1px solid var(--border)',
+              background: 'var(--bg-elevated)',
               cursor: 'pointer',
-              padding: 0,
+              padding: '0 16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--color-text-3)',
+              color: 'var(--text-1)',
+              fontSize: '13px',
+              fontWeight: 700,
               flexShrink: 0,
               transition: 'all 0.15s',
+              gap: '6px',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(239,68,68,0.15)';
-              e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)';
-              e.currentTarget.style.color = '#ef4444';
+              e.currentTarget.style.background = 'var(--bg-card)';
+              e.currentTarget.style.borderColor = 'var(--color-accent)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'var(--color-elevated)';
-              e.currentTarget.style.borderColor = 'var(--color-border)';
-              e.currentTarget.style.color = 'var(--color-text-3)';
+              e.currentTarget.style.background = 'var(--bg-elevated)';
+              e.currentTarget.style.borderColor = 'var(--border)';
             }}
           >
-            <X size={16} strokeWidth={2.5} />
+            <span>Back to Lab</span>
           </button>
         </header>
 

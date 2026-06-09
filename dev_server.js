@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import apiApp from './api/index.js'; // Imports the handler... wait, api/index.js exports a function `handler(req, res)`

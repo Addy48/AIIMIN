@@ -1,91 +1,41 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
 import { Plus, X, ChevronRight, Keyboard, Mic, AlertTriangle } from 'lucide-react';
-import TypingTest from '../components/lab/TypingTest';
-import SpeakingLogger from '../components/lab/SpeakingLogger';
-import DesktopWindow from '../components/ui/DesktopWindow';
 import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-/* ── Trajectory progress bar — smooth GPU-composited ── */
-const ProgressRow = ({ label, val, color, delay = 0 }) => {
-  const [displayed, setDisplayed] = React.useState(0);
-  const mounted = React.useRef(false);
 
-  // On mount: animate from 0 → val smoothly once
-  // After that: keep in sync with val via fast CSS transition (no re-trigger of framer)
-  React.useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      const t = setTimeout(() => setDisplayed(val), 60 + delay);
-      return () => clearTimeout(t);
-    }
-    setDisplayed(val);
-  }, [val]); // eslint-disable-line
-
-  return (
-    <div style={{ marginBottom: '0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-2)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>
-        <span style={{ fontSize: '11px', fontWeight: 800, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{Number(val).toFixed(4)}%</span>
-      </div>
-      <div style={{ height: '6px', background: 'var(--color-border)', borderRadius: '99px', overflow: 'hidden', position: 'relative' }}>
-        {/* Glow track */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `linear-gradient(90deg, transparent 0%, color-mix(in srgb, ${color} 15%, transparent) 100%)`,
-          borderRadius: '99px',
-        }} />
-        {/* Animated fill */}
-        <div style={{
-          height: '100%',
-          width: `${displayed}%`,
-          background: `linear-gradient(90deg, color-mix(in srgb, ${color} 80%, transparent), ${color})`,
-          borderRadius: '99px',
-          transition: mounted.current
-            ? 'width 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
-            : 'none',
-          willChange: 'width',
-          position: 'relative',
-          boxShadow: `0 0 8px color-mix(in srgb, ${color} 40%, transparent)`,
-        }}>
-          {/* Shimmer tip */}
-          <div style={{
-            position: 'absolute', right: 0, top: 0, bottom: 0,
-            width: '12px',
-            background: `radial-gradient(ellipse at right, ${color} 100%, transparent 100%)`,
-            borderRadius: '99px',
-          }} />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-
-
-/* ── Weekly task cell ── */
-const WeekCell = ({ day, isToday }) => {
-  const [tasks, setTasks] = useState([]);
-  const [input, setInput] = useState('');
+const WeekCell = React.memo(({ day, isToday }) => {
+  const [tasks, setTasks] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(`aiimin_tasks_${day}`) || '[]');
+    } catch { return []; }
+  });
   const [adding, setAdding] = useState(false);
+  const [input, setInput] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem(`aiimin_tasks_${day}`, JSON.stringify(tasks));
+  }, [tasks, day]);
 
   const addTask = () => {
-    if (!input.trim()) return;
-    setTasks(prev => [...prev, { id: Date.now(), text: input.trim(), done: false }]);
-    setInput(''); setAdding(false);
+    if (input.trim()) {
+      setTasks(p => [...p, { id: Date.now(), text: input.trim(), done: false }]);
+      setInput('');
+    }
+    setAdding(false);
   };
 
   return (
     <div style={{
       background: isToday ? 'var(--color-accent-dim)' : 'var(--color-surface)',
       border: `1px solid ${isToday ? 'var(--color-accent)' : 'var(--color-border)'}`,
-      borderRadius:'16px', padding:'12px', minHeight:'160px', maxHeight: '250px', display:'flex', flexDirection:'column'
+      borderRadius:'16px', padding:'12px', minHeight:'160px', display:'flex', flexDirection:'column', height: '100%'
     }}>
       <div style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)', marginBottom:'10px', borderBottom:'1px solid var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
         {day}
@@ -130,93 +80,188 @@ const WeekCell = ({ day, isToday }) => {
       </div>
     </div>
   );
-};
+});
 
-const TrajectoryProgress = () => {
-  const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
+/* ── Stacked Linear Progress ── */
+const LinearProgress = ({ label, color, id, sublabel }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-1)' }}>
+          {label}
+        </div>
+        <div id={`orbit-sub-${id}`} style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-3)' }}>
+          {sublabel}
+        </div>
+      </div>
+      <div id={`orbit-pct-${id}`} style={{ fontSize: '13px', fontWeight: 900, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', lineHeight: 1 }}>
+        0%
+      </div>
+    </div>
+    <div style={{ height: '10px', background: 'var(--color-elevated)', borderRadius: '99px', overflow: 'hidden', border: '1px solid var(--color-border)', position: 'relative' }}>
+      <div style={{ position: 'absolute', inset: 0, opacity: 0.1, background: color }} />
+      <div id={`orbit-ring-${id}`} style={{
+        height: '100%',
+        width: '0%',
+        background: color,
+        borderRadius: '99px',
+        transition: 'width 1.2s cubic-bezier(0.16,1,0.3,1)',
+        boxShadow: `0 0 10px ${color}88`
+      }} />
+    </div>
+  </div>
+);
 
-  useEffect(() => {
-    const updateProgress = () => {
-      const now = new Date();
-      
-      const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
-      const nextYear = new Date(now.getFullYear() + 1, 0, 1).getTime();
-      const yearElapsed = ((now.getTime() - startOfYear) / (nextYear - startOfYear)) * 100;
-      
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
-      const monthElapsed = ((now.getTime() - startOfMonth) / (nextMonth - startOfMonth)) * 100;
+const TrajectoryProgress = React.memo(() => {
+  const getProgress = () => {
+    const now = new Date();
+    const startOfYear  = new Date(now.getFullYear(), 0, 1).getTime();
+    const nextYear     = new Date(now.getFullYear() + 1, 0, 1).getTime();
+    const yearElapsed  = ((now - startOfYear) / (nextYear - startOfYear)) * 100;
 
-      const dayOfWeek = (now.getDay() + 6) % 7; 
-      const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
-      startOfWeek.setHours(0, 0, 0, 0);
-      const nextWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const weekElapsed = ((now.getTime() - startOfWeek.getTime()) / (nextWeek.getTime() - startOfWeek.getTime())) * 100;
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const nextMonth    = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+    const monthElapsed = ((now - startOfMonth) / (nextMonth - startOfMonth)) * 100;
 
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      startOfDay.setHours(0, 0, 0, 0);
-      const nextDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
-      const dayElapsed = ((now.getTime() - startOfDay.getTime()) / (nextDay.getTime() - startOfDay.getTime())) * 100;
+    const dayOfWeek    = (now.getDay() + 6) % 7;
+    const startOfWeek  = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const nextWeek     = new Date(startOfWeek.getTime() + 7 * 86400000);
+    const weekElapsed  = ((now - startOfWeek) / (nextWeek - startOfWeek)) * 100;
 
-      setProgress({
-        year: yearElapsed.toFixed(4),
-        month: monthElapsed.toFixed(4),
-        week: weekElapsed.toFixed(4),
-        day: dayElapsed.toFixed(4)
-      });
+    const startOfDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    startOfDay.setHours(0, 0, 0, 0);
+    const nextDay      = new Date(startOfDay.getTime() + 86400000);
+    const dayElapsed   = ((now - startOfDay) / (nextDay - startOfDay)) * 100;
+
+    // "time left" labels
+    const daysInYear   = Math.ceil((nextYear - now) / 86400000);
+    const daysInMonth  = Math.ceil((nextMonth - now) / 86400000);
+    const daysInWeek   = Math.ceil((nextWeek  - now) / 86400000);
+    const minsInDay    = Math.ceil((nextDay   - now) / 60000);
+    const hoursInDay   = Math.floor(minsInDay / 60);
+    const minRem       = minsInDay % 60;
+    const daySubLabel  = hoursInDay > 0 ? `${hoursInDay}h ${minRem}m left` : `${minsInDay}m left`;
+
+    return {
+      year:  { val: yearElapsed,  sub: `${daysInYear}d left`  },
+      month: { val: monthElapsed, sub: `${daysInMonth}d left` },
+      week:  { val: weekElapsed,  sub: `${daysInWeek}d left`  },
+      day:   { val: dayElapsed,   sub: daySubLabel             },
     };
+  };
 
-    updateProgress();
-    const interval = setInterval(updateProgress, 1000);
-    return () => clearInterval(interval);
+  React.useEffect(() => {
+    const p = getProgress();
+    const setDial = (id, val) => {
+      const ring = document.getElementById(`orbit-ring-${id}`);
+      if (ring) ring.style.width = `${Math.min(100, Math.max(0, val))}%`;
+      const pct  = document.getElementById(`orbit-pct-${id}`);
+      if (pct)  pct.textContent = `${val.toFixed(2)}%`;
+    };
+    const t = setTimeout(() => {
+      setDial('year',  p.year.val);
+      setDial('month', p.month.val);
+      setDial('week',  p.week.val);
+      setDial('day',   p.day.val);
+    }, 120);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    let raf;
+    let last = 0;
+    const tick = (ts) => {
+      if (ts - last > 1000) {
+        last = ts;
+        const p = getProgress();
+        [
+          ['year',  p.year.val,  p.year.sub],
+          ['month', p.month.val, p.month.sub],
+          ['week',  p.week.val,  p.week.sub],
+          ['day',   p.day.val,   p.day.sub],
+        ].forEach(([id, val, sub]) => {
+          const ring = document.getElementById(`orbit-ring-${id}`);
+          if (ring) ring.style.width = `${Math.min(100, Math.max(0, val))}%`;
+          const pct  = document.getElementById(`orbit-pct-${id}`);
+          if (pct)  pct.textContent = `${val.toFixed(2)}%`;
+          const subEl = document.getElementById(`orbit-sub-${id}`);
+          if (subEl) subEl.textContent = sub;
+        });
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const initial = React.useMemo(() => getProgress(), []);
+
   return (
-    <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
-      <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'24px' }}>Trajectory Execution</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 24px' }}>
-        <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" delay={0}   />
-        <ProgressRow label="Monthly" val={progress.month} color="#3B82F6"              delay={80}  />
-        <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B"              delay={160} />
-        <ProgressRow label="Daily"   val={progress.day}   color="#EC4899"              delay={240} />
+    <div style={{
+      background: 'linear-gradient(180deg, var(--color-surface) 0%, var(--color-elevated) 100%)',
+      border: '1px solid var(--color-border)',
+      borderRadius: '24px', padding: '24px 32px',
+      flex: 1, display: 'flex', flexDirection: 'column', height: '100%',
+      boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.02), 0 8px 24px rgba(0,0,0,0.04)',
+      minHeight: 0
+    }}>
+      <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span>Trajectory Execution</span>
+        <span style={{ padding: '4px 10px', background: 'var(--color-surface)', borderRadius: '99px', border: '1px solid var(--color-border)' }}>Live</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', margin: 'auto 0' }}>
+        <LinearProgress id="day"   label="Day"    color="#14B8A6" sublabel={initial.day.sub}   />
+        <LinearProgress id="week"  label="Week"   color="#3B82F6" sublabel={initial.week.sub}  />
+        <LinearProgress id="month" label="Month"  color="#8B5CF6" sublabel={initial.month.sub} />
+        <LinearProgress id="year"  label="Year"   color="#F43F5E" sublabel={initial.year.sub}  />
       </div>
     </div>
   );
-};
+});
+
 
 /* ── Main Overview ── */
 const Overview = () => {
   const { user: authUser } = useAuth();
   const user = useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
+  const navigate = useNavigate();
 
   const [urgentReminders, setUrgentReminders] = useState([]);
-  const [activeModal, setActiveModal] = useState(null);
 
   useEffect(() => {
     if (user?.isGuest) return;
-    const fetchReminders = async () => {
-      const { data } = await supabase
-        .from('family_reminders')
-        .select('*')
-        .eq('completed', false)
-        .gte('due_date', new Date().toISOString().split('T')[0])
-        .lte('due_date', new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0])
-        .order('due_date', { ascending: true });
-      if (data) setUrgentReminders(data);
-    };
-    fetchReminders();
-  }, [user]);
+    const abortController = new AbortController();
 
-  useEffect(() => {
-    if (activeModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
+    const fetchReminders = async () => {
+      try {
+        const { data } = await supabase
+          .from('family_reminders')
+          .select('*')
+          .eq('completed', false)
+          .gte('due_date', new Date().toISOString().split('T')[0])
+          .lte('due_date', new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0])
+          .order('due_date', { ascending: true })
+          .abortSignal(abortController.signal);
+          
+        if (data && !abortController.signal.aborted) {
+          setUrgentReminders(data);
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Failed to fetch reminders:', err);
+        }
+      }
     };
-  }, [activeModal]);
+    
+    fetchReminders();
+    
+    return () => {
+      abortController.abort();
+    };
+  }, [user]);
 
   const [daysLeft, setDaysLeft] = useState(() => {
     const targetStr = localStorage.getItem('aiimin_execution_target');
@@ -277,7 +322,7 @@ const Overview = () => {
       <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px' }} className="overview-grid">
 
         {/* LEFT column */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:'32px', height: '100%', minHeight: 0 }}>
           
           {/* Urgent Reminders Banner */}
           {urgentReminders.length > 0 && (
@@ -297,7 +342,7 @@ const Overview = () => {
           {/* Quick Access Horizontal Strip */}
           <div style={{ display:'flex', gap:'12px', overflowX:'auto', paddingBottom:'4px', scrollbarWidth: 'none' }}>
             {[
-                        { to:'/family',     label:'Family',      icon:'👨‍👩‍👧', color:'#EC4899' },
+              { to:'/family',      label:'Family',      icon:'👨‍👩‍👧', color:'#EC4899' },
               { to:'/journal',     label:'Journal',     icon:'📓', color:'#F59E0B' },
               { to:'/finance',     label:'Wealth',      icon:'💰', color:'#22C55E' },
               { to:'/habits',      label:'Habits',      icon:'✅', color:'#3B82F6' },
@@ -366,14 +411,14 @@ const Overview = () => {
               <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Productivity Labs</div>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:'20px' }}>
-              <button onClick={() => setActiveModal('typing')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#10B981'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+              <button onClick={() => navigate('/lab?module=typing')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#10B981'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
                 <div style={{ background:'rgba(16, 185, 129, 0.1)', color:'#10B981', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Keyboard size={24} /></div>
                 <div>
                   <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Typing Lab</div>
                   <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Speed & accuracy</div>
                 </div>
               </button>
-              <button onClick={() => setActiveModal('speaking')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#8B5CF6'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+              <button onClick={() => navigate('/lab?module=speaking')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#8B5CF6'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
                 <div style={{ background:'rgba(139, 92, 246, 0.1)', color:'#8B5CF6', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Mic size={24} /></div>
                 <div>
                   <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Speaking Lab</div>
@@ -384,12 +429,12 @@ const Overview = () => {
           </div>
 
           {/* Weekly Planner */}
-          <div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
               <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Master Planner</div>
               <div style={{ fontSize:'12px', color:'var(--color-text-3)', fontWeight:700, padding: '4px 12px', background: 'var(--color-elevated)', borderRadius: '99px' }}>Week {weekNum}</div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', flex: 1, minHeight: 0, gridAutoRows: '1fr' }}>
               {DAYS.map((day, i) => <WeekCell key={day} day={day} isToday={i===todayIdx} />)}
             </div>
           </div>
@@ -397,7 +442,7 @@ const Overview = () => {
         </div>
 
         {/* RIGHT sidebar */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'32px' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:'32px', height: '100%' }}>
 
           <CommandCenter user={user} />
 
@@ -405,22 +450,6 @@ const Overview = () => {
 
         </div>
       </div>
-
-      {/* Modals */}
-      {activeModal === 'typing' && (
-        <DesktopWindow title="Typing Lab" subtitle="monkeytype-style keyboard practice" onClose={() => setActiveModal(null)} width="1180px" maxWidth="1180px" height="84vh">
-          <TypingTest userId={user.id} onComplete={() => {}} onClose={() => setActiveModal(null)} />
-        </DesktopWindow>
-      )}
-
-      {activeModal === 'speaking' && (
-        <DesktopWindow title="Speaking Lab" subtitle="prompt, record, assess, save" onClose={() => setActiveModal(null)} width="1180px" maxWidth="1180px" height="84vh">
-          <SpeakingLogger onComplete={() => {}} onClose={() => setActiveModal(null)} />
-        </DesktopWindow>
-      )}
-
-
-
 
       {/* Responsive */}
       <style>{`

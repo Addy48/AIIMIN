@@ -58,42 +58,53 @@ export default function PersonalityForge({ userId, isDark, onClose }) {
   };
 
   return (
-    <div style={{ padding: '32px' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, margin: '0 0 8px' }}>Personality Forge</h2>
-        <p style={{ fontSize: '14px', color: text2 }}>Map your psychological baseline and core values.</p>
+    <div style={{ padding: '80px 40px 40px', maxWidth: '850px', margin: '0 auto', position: 'relative', height: '100%', overflowY: 'auto' }}>
+      {onClose && (
+        <button 
+          onClick={onClose}
+          style={{ position: 'absolute', top: '24px', right: '40px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <span>←</span> Back to Lab
+        </button>
+      )}
+      <div style={{ marginBottom: '32px' }}>
+        <h2 style={{ fontSize: '40px', fontWeight: 800, color: text1, margin: '0 0 12px' }}>Personality Forge</h2>
+        <p style={{ fontSize: '18px', color: text2 }}>Map your psychological baseline and core values.</p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', marginBottom: '40px' }}>
         {TRAITS.map(t => (
           <div key={t.key}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: text1 }}>{t.label}</div>
-                <div style={{ fontSize: '11px', color: text2 }}>{t.desc}</div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: text1 }}>{t.label}</div>
+                <div style={{ fontSize: '14px', color: text2, marginTop: '4px' }}>{t.desc}</div>
               </div>
-              <div style={{ fontSize: '18px', fontWeight: 800, color: t.color, fontFamily: 'var(--font-mono)' }}>{traits[t.key]}</div>
+              <div style={{ fontSize: '24px', fontWeight: 800, color: t.color, fontFamily: 'var(--font-mono)' }}>{traits[t.key]}</div>
             </div>
             <input 
               type="range" min="1" max="10" 
               value={traits[t.key]} 
               onChange={e => setTraits(prev => ({ ...prev, [t.key]: parseInt(e.target.value) }))}
-              style={{ width: '100%', accentColor: t.color, height: '6px', borderRadius: '3px', cursor: 'pointer' }}
+              style={{ width: '100%', accentColor: t.color, height: '8px', borderRadius: '4px', cursor: 'pointer' }}
             />
           </div>
         ))}
       </div>
 
-      <div style={{ marginBottom: '24px' }}>
-        <label style={{ fontSize: '13px', fontWeight: 600, color: text1, display: 'block', marginBottom: '8px' }}>Core Values / Mission Statement</label>
+      <div style={{ marginBottom: '32px' }}>
+        <label style={{ fontSize: '16px', fontWeight: 600, color: text1, display: 'block', marginBottom: '12px' }}>Core Values / Mission Statement</label>
         <textarea 
           value={values} 
           onChange={e => setValues(e.target.value)}
           placeholder="What are the non-negotiables that drive you?"
           style={{ 
-            width: '100%', minHeight: '100px', padding: '12px', borderRadius: '12px', 
+            width: '100%', minHeight: '140px', padding: '16px', borderRadius: '14px', 
             border: `1px solid ${border}`, background: 'var(--color-surface)',
-            color: text1, fontSize: '13px', fontFamily: 'var(--font-sans)', resize: 'none', outline: 'none'
+            color: text1, fontSize: '16px', fontFamily: 'var(--font-sans)', resize: 'none', outline: 'none',
+            lineHeight: 1.6
           }}
         />
       </div>
@@ -102,8 +113,8 @@ export default function PersonalityForge({ userId, isDark, onClose }) {
         onClick={handleSave} 
         disabled={saving || saved}
         style={{ 
-          width: '100%', padding: '14px', borderRadius: '12px', background: saved ? '#22C55E' : 'var(--color-accent)',
-          color: '#fff', border: 'none', fontSize: '14px', fontWeight: 700, cursor: 'pointer', transition: 'all 200ms'
+          width: '100%', padding: '20px', borderRadius: '16px', background: saved ? '#22C55E' : 'var(--color-accent)',
+          color: '#000', border: 'none', fontSize: '18px', fontWeight: 700, cursor: 'pointer', transition: 'all 200ms'
         }}
       >
         {saved ? '✓ Profile Forge Complete' : saving ? 'Forging...' : 'Save Personality Profile'}

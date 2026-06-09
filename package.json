@@ -6,10 +6,10 @@
   "scripts": {
     "install": "cd frontend && npm install",
     "dev": "npm run dev:api & npm run dev:frontend",
-    "dev:api": "node test_api.js",
+    "dev:api": "node dev_server.js",
     "dev:frontend": "cd frontend && npm start",
     "build": "cd frontend && npm run build",
-    "start": "node test_api.js",
+    "start": "node dev_server.js",
     "test": "node --test server/services/*.test.js"
   },
   "dependencies": {
