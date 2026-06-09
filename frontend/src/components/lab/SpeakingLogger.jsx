@@ -242,7 +242,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     const VOICE_API_KEY = process.env.REACT_APP_VOICE_API_KEY || 'REDACTED_GOOGLE_API_KEY';
 
     const startDebate = () => {
-        if (!GEMINI_API_KEY) {
+        if (!VOICE_API_KEY) {
             setDebatePhase('waiting_key');
             return;
         }
