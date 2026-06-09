@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Check, AlertTriangle, TrendingDown, ChevronRight, Flame, ExternalLink } from 'lucide-react';
+import { Plus, Check, ChevronRight, Flame } from 'lucide-react';
 import { apiGet } from '../../utils/api';
 
 /* ─── Constants ─────────────────────────────────────────────────── */

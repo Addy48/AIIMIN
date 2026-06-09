@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
@@ -135,7 +135,7 @@ const WeekCell = ({ day, isToday }) => {
 /* ── Main Overview ── */
 const Overview = () => {
   const { user: authUser } = useAuth();
-  const user = authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true };
+  const user = useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
 
   const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
   const [urgentReminders, setUrgentReminders] = useState([]);
