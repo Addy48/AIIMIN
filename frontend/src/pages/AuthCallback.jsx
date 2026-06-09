@@ -5,58 +5,62 @@ import { useAuth } from '../context/AuthContext';
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { completeOAuthSignIn } = useAuth();
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const status = searchParams.get('status');
-        const reason = searchParams.get('reason');
+        let cancelled = false;
 
-        // Supabase native OAuth error format: ?error=server_error&error_description=...
-        const supabaseError = searchParams.get('error');
-        const supabaseDesc = searchParams.get('error_description');
+        const finishOAuth = async () => {
+            const status = searchParams.get('status');
+            const reason = searchParams.get('reason');
 
-        if (supabaseError) {
-            const msg = supabaseDesc ? decodeURIComponent(supabaseDesc) : supabaseError;
-            setError(msg);
-            setTimeout(() => navigate('/login'), 4000);
-            return;
-        }
+            // Supabase native OAuth error format: ?error=server_error&error_description=...
+            const supabaseError = searchParams.get('error');
+            const supabaseDesc = searchParams.get('error_description');
 
-        // Error from backend redirect
-        if (status === 'error') {
-            setError(reason || 'Authentication failed');
-            setTimeout(() => navigate('/login'), 3000);
-            return;
-        }
+            if (supabaseError) {
+                const msg = supabaseDesc ? decodeURIComponent(supabaseDesc) : supabaseError;
+                setError(msg);
+                setTimeout(() => navigate('/login'), 4000);
+                return;
+            }
 
-        // Integration success (non-login OAuth like calendar/youtube connect)
-        if (status === 'success') {
-            navigate('/');
-            return;
-        }
+            // Error from backend redirect
+            if (status === 'error') {
+                setError(reason || 'Authentication failed');
+                setTimeout(() => navigate('/login'), 3000);
+                return;
+            }
 
-        const code = searchParams.get('code');
+            // Integration success (non-login OAuth like calendar/youtube connect)
+            if (status === 'success') {
+                navigate('/');
+                return;
+            }
 
-        if (code) {
-            // Supabase client automatically handles exchanging the code for a session in v2.
-        }
+            const code = searchParams.get('code');
 
-        // Wait for the global AuthContext to fully populate the user profile
-        if (user) {
-            navigate('/');
-        }
+            try {
+                if (code) {
+                    await completeOAuthSignIn(code);
+                }
 
-        // Timeout fallback — if nothing happens in 10s, go to login
-        const timeout = setTimeout(() => {
-            setError('Login timed out. Please try again.');
-            setTimeout(() => navigate('/login'), 2000);
-        }, 10000);
+                if (!cancelled) navigate('/overview', { replace: true });
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err.message || 'Google sign-in failed');
+                    setTimeout(() => navigate('/login'), 4000);
+                }
+            }
+        };
+
+        finishOAuth();
 
         return () => {
-            clearTimeout(timeout);
+            cancelled = true;
         };
-    }, [searchParams, navigate, user]);
+    }, [searchParams, navigate, completeOAuthSignIn]);
 
     if (error) {
         return (

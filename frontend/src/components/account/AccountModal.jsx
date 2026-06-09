@@ -354,11 +354,11 @@ const AccountModal = ({ isOpen, onClose }) => {
                                                 color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
                                             }}
                                         />
-                                        <input
-                                            value={draftProfile?.username || ''}
-                                            onChange={e => setDraftProfile(p => ({ ...p, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') }))}
-                                            placeholder="Username (e.g. john_doe)"
-                                            style={{
+	                                        <input
+	                                            value={draftProfile?.username || ''}
+	                                            onChange={e => setDraftProfile(p => ({ ...p, username: e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 20) }))}
+	                                            placeholder="Username (e.g. AADIYA10)"
+	                                            style={{
                                                 padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
                                                 border: '1px solid var(--border)', background: 'var(--bg-elevated)',
                                                 color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600

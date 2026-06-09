@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, Clock, Zap, BookOpen, ChevronRight, BarChart2, X, CheckCircle2, AlertTriangle, Trophy, Target, ArrowLeft, Keyboard } from 'lucide-react';
-import { supabase } from '../../utils/supabase';
+import { motion } from 'framer-motion';
+import { RefreshCw, ChevronRight, CheckCircle2, AlertTriangle, ArrowLeft, Keyboard } from 'lucide-react';
 
 /* ─── Word Banks ─────────────────────────────────────────────────── */
 const COMMON_WORDS = [
@@ -433,7 +432,6 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
 
   const textChars = text.split('');
   const accentColor = '#3B82F6';
-  const errorColor = '#ef4444';
 
   if (phase === 'done') {
     const rating = wpm >= 80 ? { label: 'Expert', color: '#10B981', emoji: '🏆' } : wpm >= 60 ? { label: 'Advanced', color: '#3B82F6', emoji: '⭐' } : wpm >= 40 ? { label: 'Intermediate', color: '#F59E0B', emoji: '💪' } : { label: 'Beginner', color: '#8B5CF6', emoji: '🌱' };
@@ -824,10 +822,4 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
       <p style={{ fontSize: '11px', color: 'var(--color-text-3)', textAlign: 'center', marginTop: '12px' }}>{lesson.desc}</p>
     </div>
   );
-}
-
-/* ─── Util ───────────────────────────────────────────────────────── */
-function hexToRgb(hex) {
-  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return r ? `${parseInt(r[1],16)},${parseInt(r[2],16)},${parseInt(r[3],16)}` : '255,255,255';
 }

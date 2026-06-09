@@ -152,7 +152,6 @@ export default function LabFullPage() {
         }[activeModule] || { title: "Improvement Lab module", width: "780px" };
 
         const winBg = isDark ? 'var(--color-surface)' : 'var(--color-overlay)';
-        const headerBg = isDark ? 'var(--color-elevated)' : 'var(--color-surface)';
         const winBorder = 'var(--color-border)';
 
         return (

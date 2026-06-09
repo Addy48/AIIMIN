@@ -10,9 +10,9 @@ import { apiGet } from '../utils/api';
 /**
  * AIIMIN Identity Portal v3
  * - Clean geometric background (no colored glow blobs)
- * - Multi-stage sign-up wizard (Email & Name -> Username Selection -> PIN -> PIN Verify)
- * - visual uppercase transformation for usernames
- * - Strict username rules: max 4 letters, max 2 numbers, symbols allowed, exactly 8 characters
+ * - Multi-stage sign-up wizard (Name/Gmail -> Username Selection -> PIN -> PIN Verify)
+ * - usernames are stored and displayed in uppercase
+ * - username + PIN and Gmail + PIN both resolve through Supabase Auth
  * - Zero remembered or pre-filled logins (blank fields always)
  */
 
@@ -36,6 +36,7 @@ const Login = () => {
   const [step, setStep]             = useState(1);       // login: 1=id, 2=pin; signup: 1=name, 2=username, 3=pin, 4=pinVerify; forgot: 1=email
   const [identifier, setIdentifier] = useState('');      // Email or Username for Login
   const [fullName, setFullName]     = useState('');
+  const [email, setEmail]           = useState('');
   const [usernameVal, setUsernameVal] = useState('');
   const [pin, setPin]               = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -50,6 +51,7 @@ const Login = () => {
     setStep(1);
     setIdentifier('');
     setFullName('');
+    setEmail('');
     setUsernameVal('');
     setPin('');
     setConfirmPin('');
@@ -73,8 +75,11 @@ const Login = () => {
         setLoading(false);
       }, 1500);
     } else {
-      // Signup Stage 1: Full Name
       if (!fullName.trim()) { setError('Full name required.'); return; }
+      if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        setError('Enter a valid Gmail address or leave it blank.');
+        return;
+      }
       setStep(2);
     }
   };
@@ -194,9 +199,9 @@ const Login = () => {
     try {
       const registeredPin = pin;
       const registeredUsername = usernameVal.toUpperCase();
-      const generatedEmail = `${usernameVal.trim().toLowerCase()}@aiimin.com`;
+      const authEmail = email.trim() || `${registeredUsername.toLowerCase()}@aiimin.com`;
 
-      await signUpWithUsername(usernameVal.trim(), registeredPin, fullName.trim(), generatedEmail);
+      await signUpWithUsername(registeredUsername, registeredPin, fullName.trim(), authEmail);
       
       // Auto-transition to login page and fill details
       setMode('login');
@@ -217,7 +222,7 @@ const Login = () => {
   };
 
   // Username validation constraints checks
-  const isUsernameValid = usernameVal.length >= 3 && usernameVal.length <= 20 && /^[a-zA-Z0-9_.-]+$/.test(usernameVal);
+  const isUsernameValid = usernameVal.length >= 3 && usernameVal.length <= 20 && /^[A-Z0-9_.-]+$/.test(usernameVal);
 
   const handleUsernameNext = async (e) => {
     if (e) e.preventDefault();
@@ -246,8 +251,8 @@ const Login = () => {
   };
 
   const handleUsernameChange = (e) => {
-    const val = e.target.value.toUpperCase();
-    if (val.length <= 8) {
+    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '');
+    if (val.length <= 20) {
       setUsernameVal(val);
     }
   };
@@ -315,7 +320,7 @@ const Login = () => {
             style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.03em', margin: '0 0 8px', color: isDark ? '#EDEDED' : '#111111' }}
           >
             {mode === 'login' ? (
-              step === 1 ? 'Welcome back' : 'Enter your PIN'
+            step === 1 ? 'Welcome back' : 'Enter your PIN'
             ) : (
               step === 1 ? 'Create account' :
               step === 2 ? 'Choose Username' :
@@ -330,10 +335,10 @@ const Login = () => {
             style={{ fontSize: '14px', color: 'var(--text-3)', margin: 0, lineHeight: '1.5' }}
           >
             {mode === 'login' ? (
-              step === 1 ? 'Sign in to your personal OS' : `Verifying identity for ${identifier}`
+              step === 1 ? 'Use Google, Gmail + PIN, or username + PIN' : `Verifying identity for ${identifier}`
             ) : (
-              step === 1 ? 'Join the AIIMIN network' :
-              step === 2 ? 'Visually uppercase, 4-8 character constraint' :
+              step === 1 ? 'Add Gmail for email login, or leave it blank for username-only' :
+              step === 2 ? 'Usernames are saved in uppercase automatically' :
               step === 3 ? 'Choose a secure 6-digit PIN' : 'Confirm your 6-digit PIN'
             )}
           </motion.p>
@@ -459,21 +464,21 @@ const Login = () => {
               >
                 <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={labelStyle}>Username</label>
+                    <label style={labelStyle}>Username or Gmail</label>
                     <input
                       type="text" required value={identifier} autoFocus
                       onChange={e => {
-                        const val = e.target.value;
-                        setIdentifier(val.toUpperCase());
+                        const val = e.target.value.trim();
+                        setIdentifier(val.includes('@') ? val.toLowerCase() : val.toUpperCase());
                       }}
                       autoCapitalize="none"
                       autoComplete="off"
                       autoCorrect="off"
                       spellCheck="false"
-                      placeholder="Enter your username"
+                      placeholder="USERNAME or name@gmail.com"
                       style={{
                         ...inputStyle,
-                        textTransform: 'uppercase'
+                        textTransform: identifier.includes('@') ? 'none' : 'uppercase'
                       }}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                       onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
@@ -633,7 +638,7 @@ const Login = () => {
           ) : (
             /* ==================== SIGNUP FLOW ==================== */
             step === 1 ? (
-              /* Signup Stage 1: Email & Full Name */
+              /* Signup Stage 1: Gmail & Full Name */
               <motion.div
                 key="signup-step1"
                 initial={{ opacity: 0, x: -20 }}
@@ -654,8 +659,21 @@ const Login = () => {
                     />
                   </div>
 
-
-                  {/* Email field removed to support username-only signup */}
+                  <div>
+                    <label style={labelStyle}>Gmail address optional</label>
+                    <input
+                      type="email" value={email}
+                      onChange={e => setEmail(e.target.value.trim().toLowerCase())}
+                      placeholder="name@gmail.com"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                      autoCorrect="off"
+                      spellCheck="false"
+                      style={inputStyle}
+                      onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
+                      onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
+                    />
+                  </div>
 
                   {error && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -676,7 +694,7 @@ const Login = () => {
                       fontFamily: 'var(--font-sans)', transition: 'opacity 0.2s',
                     }}
                   >
-                    Continue to Username Selection →
+                    Continue to Username →
                   </motion.button>
 
                   <div style={{ textAlign: 'center' }}>
@@ -721,7 +739,7 @@ const Login = () => {
                     <input
                       type="text" required value={usernameVal} autoFocus
                       onChange={handleUsernameChange}
-                      placeholder="e.g. A@B12C-D"
+                      placeholder="e.g. AADIYA10"
                       style={{ ...inputStyle, textTransform: 'uppercase', fontStyle: 'normal', letterSpacing: '0.05em' }}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 1px var(--accent)'; }}
                       onBlur={e  => { e.target.style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.12)'; e.target.style.boxShadow = 'none'; }}
@@ -749,8 +767,8 @@ const Login = () => {
 
                     {/* Character types */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: /^[a-zA-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? '#16a34a' : '#ef4444' }}>
-                        {/^[a-zA-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? <Check size={13} /> : <X size={13} />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: /^[A-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? '#16a34a' : '#ef4444' }}>
+                        {/^[A-Z0-9_.-]+$/.test(usernameVal) && usernameVal.length > 0 ? <Check size={13} /> : <X size={13} />}
                         <span>Letters, numbers, _, ., - only</span>
                       </div>
                     </div>

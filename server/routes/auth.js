@@ -8,6 +8,8 @@ import { requireAuth } from '../middleware/auth.js';
 const app = new Hono();
 
 const COOKIE_NAME = 'aiimin_session';
+const USERNAME_PATTERN = /^[A-Z0-9_.-]{3,20}$/;
+const PIN_PATTERN = /^\d{6}$/;
 
 /**
  * GET /auth/resolve?identifier=...
@@ -54,7 +56,15 @@ app.post('/signup', async (c) => {
         }
 
         const normalizedEmail = email.toLowerCase().trim();
-        const normalizedUsername = username?.trim() || null;
+        const normalizedUsername = username?.trim().toUpperCase() || null;
+
+        if (!PIN_PATTERN.test(password)) {
+            return c.json({ error: 'PIN must be exactly 6 digits' }, 400);
+        }
+
+        if (normalizedUsername && !USERNAME_PATTERN.test(normalizedUsername)) {
+            return c.json({ error: 'Username must be 3-20 uppercase letters, numbers, _, ., or -' }, 400);
+        }
 
         // Check if public profile exists before creating an Auth user.
         const check = await pool.query('SELECT id FROM users WHERE email = $1 OR LOWER(username) = LOWER($2)', [normalizedEmail, normalizedUsername]);
