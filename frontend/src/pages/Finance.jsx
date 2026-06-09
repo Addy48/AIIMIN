@@ -465,7 +465,7 @@ savingsRate: (sRate * 100).toFixed(1),
                       </div>
                   </div>
                   {/* Decorative background element */}
-                  <div style={{ position: 'absolute', right: '-5%', bottom: '-10%', width: '40%', height: '80%', background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', right: '-5%', bottom: '-10%', width: '40%', height: '80%', background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)', opacity: 0.1, pointerEvents: 'none' }} />
               </div>
 
               {/* AI Finance Summary Card */}
@@ -509,7 +509,7 @@ savingsRate: (sRate * 100).toFixed(1),
                         </div>
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                        <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: aiSummary?.sentiment === 'positive' ? '#10B981' : aiSummary?.sentiment === 'warning' ? '#F59E0B' : 'var(--color-text-3)', background: aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.12)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.06)', padding: '4px 10px', borderRadius: '99px' }}>
+                        <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: aiSummary?.sentiment === 'positive' ? '#10B981' : aiSummary?.sentiment === 'warning' ? '#F59E0B' : 'var(--color-text-3)', background: aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.12)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.12)' : 'var(--bg-elevated)', border: '1px solid var(--color-border)', padding: '4px 10px', borderRadius: '99px' }}>
                           {aiSummary?.sentiment === 'positive' ? '✦ AI Insight' : aiSummary?.sentiment === 'warning' ? '⚠ AI Alert' : '◆ AI Summary'}
                         </div>
                         <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>30-day analysis · just now</div>
@@ -555,7 +555,7 @@ savingsRate: (sRate * 100).toFixed(1),
                       padding: '24px', 
                       position: 'relative', 
                       overflow: 'hidden',
-                      background: 'rgba(255,255,255,0.02)',
+                      background: 'var(--bg-elevated)',
                       border: '1px solid var(--color-border)',
                       backdropFilter: 'blur(10px)',
                       borderRadius: '20px'
@@ -649,7 +649,7 @@ savingsRate: (sRate * 100).toFixed(1),
                             <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
                         <XAxis dataKey="name" stroke="var(--text-3)" fontSize={11} tickLine={false} axisLine={false} />
                         <YAxis hide />
                         <Tooltip 
@@ -809,7 +809,7 @@ savingsRate: (sRate * 100).toFixed(1),
 
           {activeTab === 'ACCOUNTS' && (
             <motion.div key="accounts" initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }}>
-              <div style={{ marginBottom: '32px', padding: '32px', background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginBottom: '32px', padding: '32px', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '8px' }}>Total Liquid Balance</div>
                   <div style={{ fontSize: '48px', fontFamily: 'var(--font-serif)', fontWeight: 600, color: 'var(--text-1)', letterSpacing: '-0.03em' }}>{formatCurrency(totalBalance)}</div>
@@ -824,19 +824,19 @@ savingsRate: (sRate * 100).toFixed(1),
                     key={acc.id} 
                     style={{ 
                       padding: '32px', 
-                      background: 'rgba(255,255,255,0.02)', 
+                      background: 'var(--bg-elevated)', 
                       backdropFilter: 'blur(16px)', 
-                      border: '1px solid rgba(255,255,255,0.05)', 
+                      border: '1px solid var(--color-border)', 
                       borderRadius: '24px', 
                       transition: 'all 0.2s', 
                       position: 'relative'
                     }} 
-                    onMouseEnter={e => {e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)';}} 
-                    onMouseLeave={e => {e.currentTarget.style.transform = 'none'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)';}}
+                    onMouseEnter={e => {e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.borderColor = 'var(--color-border-lit)';}} 
+                    onMouseLeave={e => {e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = 'var(--color-border)';}}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
                           {acc.icon || '🏦'}
                         </div>
                         <div>
@@ -866,7 +866,7 @@ savingsRate: (sRate * 100).toFixed(1),
                     <div style={{ fontSize: '32px', fontFamily: 'var(--font-serif)', fontWeight: 600, letterSpacing: '-0.02em' }}>{formatCurrency(acc.balance)}</div>
                     
                     {/* Visual bar */}
-                    <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', marginTop: '24px', overflow: 'hidden' }}>
+                    <div style={{ height: '4px', background: 'var(--color-border)', borderRadius: '2px', marginTop: '24px', overflow: 'hidden' }}>
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: '100%' }}
@@ -1051,7 +1051,7 @@ savingsRate: (sRate * 100).toFixed(1),
                   { label: 'Unrealized Gain', value: totalReturns, icon: <Activity size={16} />, color: '#8B5CF6', sub: `+${returnPct}% ROI` },
                   { label: 'Freedom Progress', value: `${Math.round((totalNetWorth / (monthlyExpenses * 12 * 25 || 1)) * 100)}%`, icon: <Trophy size={16} />, color: '#F59E0B', isPct: true, sub: 'To 25x Burn' }
                 ].map((stat, i) => (
-                  <div key={i} className="nordic-card" style={{ padding: '24px', background: 'rgba(255,255,255,0.02)' }}>
+                  <div key={i} className="nordic-card" style={{ padding: '24px', background: 'var(--bg-elevated)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', color: stat.color }}>
                       {stat.icon}
                       <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)' }}>{stat.label}</span>
@@ -1066,7 +1066,7 @@ savingsRate: (sRate * 100).toFixed(1),
 
               <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 0.6fr', gap: '24px' }}>
                 {/* Main Asset Distribution */}
-                <div className="nordic-card" style={{ padding: '40px', background: 'rgba(255,255,255,0.01)' }}>
+                <div className="nordic-card" style={{ padding: '40px', background: 'var(--bg-elevated)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
                     <div>
                       <h3 style={{ fontSize: '20px', fontWeight: 600, margin: '0 0 4px 0', fontFamily: 'var(--font-serif)' }}>Portfolio Matrix</h3>
@@ -1114,7 +1114,7 @@ savingsRate: (sRate * 100).toFixed(1),
                         { label: 'Defensive Assets', val: assetBreakdown.gold, color: '#F59E0B', icon: '🛡️' },
                         { label: 'Liquid Capital', val: assetBreakdown.bank + assetBreakdown.cash, color: '#3B82F6', icon: '💧' }
                       ].map((cat, i) => (
-                        <div key={i} style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div key={i} style={{ padding: '16px', background: 'var(--color-base)', borderRadius: '16px', border: '1px solid var(--color-border)' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', alignItems: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span style={{ fontSize: '16px' }}>{cat.icon}</span>
@@ -1122,7 +1122,7 @@ savingsRate: (sRate * 100).toFixed(1),
                             </div>
                             <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{((cat.val / totalNetWorth) * 100).toFixed(1)}%</span>
                           </div>
-                          <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
+                          <div style={{ height: '4px', background: 'var(--color-border)', borderRadius: '2px', overflow: 'hidden' }}>
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${(cat.val / totalNetWorth) * 100}%` }}
@@ -1152,7 +1152,7 @@ savingsRate: (sRate * 100).toFixed(1),
                         'Increase Gold SIP by 10%',
                         'Check Tax Harvesting'
                       ].map((action, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', background: 'rgba(255,255,255,0.08)', padding: '12px', borderRadius: '8px' }}>
+                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '8px' }}>
                           <CheckCircle2 size={12} color="#10B981" />
                           <span>{action}</span>
                         </div>
@@ -1160,7 +1160,7 @@ savingsRate: (sRate * 100).toFixed(1),
                     </div>
                   </div>
 
-                  <div className="nordic-card" style={{ padding: '32px', background: 'rgba(255,255,255,0.02)' }}>
+                  <div className="nordic-card" style={{ padding: '32px', background: 'var(--bg-elevated)' }}>
                     <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '16px' }}>Projected Net Worth (2026)</div>
                     <div style={{ fontSize: '32px', fontWeight: 600, fontFamily: 'var(--font-serif)', marginBottom: '8px' }}>{formatCurrency(totalNetWorth * 1.25)}</div>
                     <div style={{ fontSize: '11px', color: '#10B981', fontWeight: 700 }}>↗ EST. +25% YEARLY YIELD</div>
@@ -1185,7 +1185,7 @@ savingsRate: (sRate * 100).toFixed(1),
                   { label: 'Capital', val: assetBreakdown.bank, icon: '🏦', color: '#3B82F6' },
                   { label: 'Other', val: assetBreakdown.cash, icon: '💵', color: '#EC4899' }
                 ].map((item, i) => (
-                  <div key={i} className="nordic-card" style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.01)' }}>
+                  <div key={i} className="nordic-card" style={{ padding: '20px', textAlign: 'center', background: 'var(--bg-elevated)' }}>
                     <div style={{ fontSize: '24px', marginBottom: '12px' }}>{item.icon}</div>
                     <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{item.label}</div>
                     <div style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{formatCurrency(item.val)}</div>

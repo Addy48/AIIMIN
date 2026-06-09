@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
+import CommandPalette from '../system/CommandPalette';
 
 /**
  * DashboardLayout — Authenticated shell.
@@ -18,6 +19,7 @@ const DashboardLayout = ({ user }) => {
       color: 'var(--color-text-1)',
     }}>
       <Navbar user={user} />
+      <CommandPalette />
 
       {/* ── Sleek Guest Mode Floating Banner ── */}
       {user?.isGuest && (
