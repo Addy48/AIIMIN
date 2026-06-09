@@ -239,7 +239,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
 
-    const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
+    const VOICE_API_KEY = process.env.REACT_APP_VOICE_API_KEY || 'REDACTED_GOOGLE_API_KEY';
 
     const startDebate = () => {
         if (!GEMINI_API_KEY) {
@@ -308,24 +308,28 @@ export default function SpeakingLogger({ onComplete, onClose }) {
         }];
         setMessages(newContents);
 
+        if (!VOICE_API_KEY) {
+            console.error("Voice API Key is missing");
+            setIsDebating(false);
+            return;
+        }
+
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            const res = await fetch(`https://api.voice-provider.com/generate?key=${VOICE_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    systemInstruction: {
-                        parts: [{ text: `You are an expert debater. The user is practicing their vocal delivery. The topic is: "${debateTopic}". Keep your responses under 60 seconds, concise, and challenging. Always end by asking a question back to keep the debate going.` }]
-                    },
+                    topic: debateTopic,
                     contents: newContents
                 })
             });
             
             const data = await res.json();
-            const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that.";
+            const responseText = data.text || "I couldn't process that.";
             
-            setMessages([...newContents, { role: "model", parts: [{ text: aiText }] }]);
+            setMessages([...newContents, { role: "model", parts: [{ text: responseText }] }]);
             
-            const u = new SpeechSynthesisUtterance(aiText);
+            const u = new SpeechSynthesisUtterance(responseText);
             u.onstart = () => setIsAiSpeaking(true);
             u.onend = () => setIsAiSpeaking(false);
             window.speechSynthesis.speak(u);
@@ -337,7 +341,17 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     };
 
     return (
-        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '10px 0', position: 'relative' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px 0', position: 'relative' }}>
+            {onClose && (
+                <button 
+                  onClick={onClose}
+                  style={{ position: 'absolute', top: '24px', right: '40px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
+                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <span>←</span> Back to Lab
+                </button>
+            )}
             
             {/* Mode Switcher */}
             {(phase === 'ready' && debatePhase === 'setup') && (
@@ -349,26 +363,26 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                         <button 
                             onClick={() => setMode('monologue')}
                             style={{
-                                padding: '8px 24px', borderRadius: '100px', border: 'none',
+                                padding: '12px 32px', borderRadius: '100px', border: 'none',
                                 background: mode === 'monologue' ? (isDark ? '#fff' : '#111') : 'transparent',
                                 color: mode === 'monologue' ? (isDark ? '#111' : '#fff') : text2,
-                                fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+                                fontWeight: 700, fontSize: '15px', cursor: 'pointer',
                                 transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px'
                             }}
                         >
-                            <Mic2 size={16} /> Monologue
+                            <Mic2 size={18} /> Monologue
                         </button>
                         <button 
                             onClick={() => setMode('debate')}
                             style={{
-                                padding: '8px 24px', borderRadius: '100px', border: 'none',
+                                padding: '12px 32px', borderRadius: '100px', border: 'none',
                                 background: mode === 'debate' ? (isDark ? '#fff' : '#111') : 'transparent',
                                 color: mode === 'debate' ? (isDark ? '#111' : '#fff') : text2,
-                                fontWeight: 700, fontSize: '13px', cursor: 'pointer',
+                                fontWeight: 700, fontSize: '15px', cursor: 'pointer',
                                 transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px'
                             }}
                         >
-                            <BrainCircuit size={16} /> AI Debate
+                            <BrainCircuit size={18} /> Sparring Partner
                         </button>
                     </div>
                 </div>
@@ -378,18 +392,18 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                 {/* ── MONOLOGUE MODE ── */}
                 {mode === 'monologue' && phase === 'ready' && (
                     <motion.div key="mono-ready" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                            <h1 style={{ fontSize: '42px', fontWeight: 900, color: text1, marginBottom: '12px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                            <h1 style={{ fontSize: '56px', fontWeight: 900, color: text1, marginBottom: '16px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
                                 Vocal Mastery
                             </h1>
-                            <p style={{ color: text3, fontSize: '14px', maxWidth: '500px', margin: '0 auto', lineHeight: 1.5 }}>
+                            <p style={{ color: text3, fontSize: '18px', maxWidth: '600px', margin: '0 auto', lineHeight: 1.5 }}>
                                 Refine your delivery and articulation. Spin for a prompt, speak for 60 seconds, and reflect.
                             </p>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', maxWidth: '1000px', margin: '0 auto' }}>
+                        <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', maxWidth: '1100px', margin: '0 auto' }}>
                             {/* LEFT SIDE: TOPICS */}
-                            <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '12px', flexShrink: 0 }}>
+                            <div style={{ width: '300px', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0 }}>
                                 {TOPICS.map(t => (
                                     <button
                                         key={t.label}
@@ -398,11 +412,11 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                                             setPromptIndex(getUnseenPromptIndex(t.label));
                                         }}
                                         style={{
-                                            padding: '16px', borderRadius: '16px', border: `1px solid ${selectedTopic === t.label ? t.color : border}`,
+                                            padding: '20px', borderRadius: '16px', border: `2px solid ${selectedTopic === t.label ? t.color : border}`,
                                             background: selectedTopic === t.label ? (isDark ? t.bg : `${t.color}20`) : surface,
                                             color: selectedTopic === t.label ? t.color : text2,
-                                            fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '12px',
+                                            fontSize: '16px', fontWeight: 700, cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '16px',
                                             transition: 'all 0.2s', textAlign: 'left'
                                         }}
                                     >
@@ -414,25 +428,25 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                             {/* RIGHT SIDE: PROMPT UI & CONTROLS */}
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '32px' }}>
                                 <div style={{ 
-                                    background: elevated, borderRadius: '24px', padding: '60px 40px', 
-                                    border: `1px solid ${border}`, minHeight: '300px',
+                                    background: elevated, borderRadius: '24px', padding: '80px 40px', 
+                                    border: `1px solid ${border}`, minHeight: '400px',
                                     display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
                                     textAlign: 'center'
                                 }}>
-                                    <div style={{ fontSize: '11px', color: activeTopic.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '16px' }}>
+                                    <div style={{ fontSize: '14px', color: activeTopic.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '24px' }}>
                                         {selectedTopic}
                                     </div>
-                                    <h2 style={{ fontSize: '26px', fontWeight: 600, color: text1, lineHeight: 1.4, fontFamily: 'var(--font-serif)', maxWidth: '600px' }}>
+                                    <h2 style={{ fontSize: '36px', fontWeight: 600, color: text1, lineHeight: 1.4, fontFamily: 'var(--font-serif)', maxWidth: '700px' }}>
                                         {isSpinning ? 'Selecting...' : `"${prompts[promptIndex]}"`}
                                     </h2>
                                 </div>
 
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-                                    <button onClick={spinTopic} disabled={isSpinning} style={{ background: surface, color: text1, border: `1px solid ${border}`, padding: '14px 28px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                        <RotateCcw size={16} /> Randomize
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
+                                    <button onClick={spinTopic} disabled={isSpinning} style={{ background: surface, color: text1, border: `2px solid ${border}`, padding: '20px 40px', borderRadius: '16px', fontSize: '18px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                        <RotateCcw size={20} /> Randomize
                                     </button>
-                                    <button onClick={startRecording} style={{ background: activeTopic.color, color: '#fff', border: 'none', padding: '14px 40px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                        <Mic size={18} /> Start 60s Session
+                                    <button onClick={startRecording} style={{ background: activeTopic.color, color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '16px', fontSize: '18px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                        <Mic size={20} /> Start 60s Session
                                     </button>
                                 </div>
                             </div>
@@ -442,14 +456,14 @@ export default function SpeakingLogger({ onComplete, onClose }) {
 
                 {/* ── RECORDING STATE (Monologue) ── */}
                 {mode === 'monologue' && phase === 'recording' && (
-                    <motion.div key="mono-rec" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: elevated, border: `1px solid ${border}`, borderRadius: '24px', padding: '60px 40px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '11px', color: text3, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '16px' }}>Capturing Audio...</div>
-                        <div style={{ fontSize: '72px', fontWeight: 900, color: activeTopic.color, marginBottom: '24px', fontFamily: 'var(--font-mono)' }}>
+                    <motion.div key="mono-rec" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: elevated, border: `1px solid ${border}`, borderRadius: '24px', padding: '80px 40px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '14px', color: text3, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '24px' }}>Capturing Audio...</div>
+                        <div style={{ fontSize: '96px', fontWeight: 900, color: activeTopic.color, marginBottom: '32px', fontFamily: 'var(--font-mono)' }}>
                             0:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}
                         </div>
                         <WaveformVisualizer isRecording={true} color={activeTopic.color} />
-                        <div style={{ fontSize: '20px', color: text1, fontStyle: 'italic', marginBottom: '40px', fontFamily: 'var(--font-serif)' }}>"{prompts[promptIndex]}"</div>
-                        <button onClick={stopRecording} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '14px 40px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer' }}>Complete Early</button>
+                        <div style={{ fontSize: '28px', color: text1, fontStyle: 'italic', marginBottom: '40px', fontFamily: 'var(--font-serif)' }}>"{prompts[promptIndex]}"</div>
+                        <button onClick={stopRecording} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '16px', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}>Complete Early</button>
                     </motion.div>
                 )}
 
@@ -482,18 +496,18 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                 {/* ── DEBATE MODE ── */}
                 {mode === 'debate' && debatePhase === 'setup' && (
                     <motion.div key="deb-setup" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                            <h1 style={{ fontSize: '42px', fontWeight: 900, color: text1, marginBottom: '12px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
-                                AI Sparring Partner
+                        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                            <h1 style={{ fontSize: '56px', fontWeight: 900, color: text1, marginBottom: '16px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
+                                Sparring Partner
                             </h1>
-                            <p style={{ color: text3, fontSize: '14px', maxWidth: '500px', margin: '0 auto', lineHeight: 1.5 }}>
-                                Engage in a real-time vocal debate with an AI. It will listen to your arguments, counter them, and grade your rhetoric.
+                            <p style={{ color: text3, fontSize: '18px', maxWidth: '600px', margin: '0 auto', lineHeight: 1.5 }}>
+                                Engage in a real-time vocal debate. Practice responding to counters and maintaining your composure.
                             </p>
                         </div>
                         
-                        <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', maxWidth: '1000px', margin: '0 auto' }}>
+                        <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', maxWidth: '1100px', margin: '0 auto' }}>
                             {/* LEFT SIDE: TOPICS LIST */}
-                            <div style={{ width: '300px', display: 'flex', flexDirection: 'column', gap: '12px', flexShrink: 0 }}>
+                            <div style={{ width: '350px', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0 }}>
                                 <div style={{ fontSize: '12px', fontWeight: 700, color: text2, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>Select Topic</div>
                                 
                                 <div style={{ maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '8px' }}>
@@ -502,11 +516,11 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                                             key={topic}
                                             onClick={() => setDebateTopic(topic)}
                                             style={{
-                                                textAlign: 'left', padding: '16px', borderRadius: '12px',
+                                                textAlign: 'left', padding: '20px', borderRadius: '16px',
                                                 background: debateTopic === topic ? (isDark ? 'rgba(99, 102, 241, 0.15)' : '#eef2ff') : surface,
-                                                border: `1px solid ${debateTopic === topic ? '#6366f1' : border}`,
+                                                border: `2px solid ${debateTopic === topic ? '#6366f1' : border}`,
                                                 color: debateTopic === topic ? (isDark ? '#a5b4fc' : '#4f46e5') : text1,
-                                                fontWeight: debateTopic === topic ? 700 : 500, fontSize: '13px', lineHeight: 1.4,
+                                                fontWeight: debateTopic === topic ? 700 : 500, fontSize: '16px', lineHeight: 1.4,
                                                 cursor: 'pointer', transition: 'all 0.2s'
                                             }}
                                         >
@@ -520,26 +534,26 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '32px' }}>
                                 <div style={{ 
                                     background: elevated, border: `1px solid ${border}`, borderRadius: '24px', 
-                                    padding: '60px 40px', minHeight: '300px', display: 'flex', flexDirection: 'column',
+                                    padding: '80px 40px', minHeight: '400px', display: 'flex', flexDirection: 'column',
                                     justifyContent: 'center', alignItems: 'center', textAlign: 'center' 
                                 }}>
-                                    <div style={{ fontSize: '11px', color: '#6366f1', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '16px' }}>Current Debate Topic</div>
-                                    <div style={{ fontSize: '26px', fontWeight: 700, color: text1, lineHeight: 1.4, fontFamily: 'var(--font-serif)', maxWidth: '600px' }}>
+                                    <div style={{ fontSize: '14px', color: '#6366f1', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '24px' }}>Current Topic</div>
+                                    <div style={{ fontSize: '36px', fontWeight: 700, color: text1, lineHeight: 1.4, fontFamily: 'var(--font-serif)', maxWidth: '700px' }}>
                                         "{debateTopic}"
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
                                     <button 
                                         onClick={() => setDebateTopic(getUnseenDebateTopic())} 
-                                        style={{ background: surface, color: text1, border: `1px solid ${border}`, padding: '14px 28px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}
+                                        style={{ background: surface, color: text1, border: `2px solid ${border}`, padding: '20px 40px', borderRadius: '16px', fontSize: '18px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}
                                     >
-                                        <RotateCcw size={16} /> Randomize
+                                        <RotateCcw size={20} /> Randomize
                                     </button>
                                     <button 
                                         onClick={startDebate}
-                                        style={{ background: '#6366f1', color: '#fff', border: 'none', padding: '14px 40px', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}
+                                        style={{ background: '#6366f1', color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '16px', fontSize: '18px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}
                                     >
-                                        <BrainCircuit size={18} /> Connect to AI
+                                        <BrainCircuit size={20} /> Initialize Session
                                     </button>
                                 </div>
                             </div>
@@ -550,37 +564,36 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                 {/* ── DEBATE MODE: WAITING FOR KEY ── */}
                 {mode === 'debate' && debatePhase === 'waiting_key' && (
                     <motion.div key="deb-wait" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: elevated, border: `1px dashed ${border}`, borderRadius: '24px', padding: '60px 40px', textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', padding: '16px', borderRadius: '50%', marginBottom: '24px' }}>
-                            <AlertCircle size={32} />
-                        </div>
-                        <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, marginBottom: '12px' }}>Gemini API Key Required</h2>
-                        <p style={{ color: text2, fontSize: '14px', maxWidth: '400px', margin: '0 auto 32px', lineHeight: 1.6 }}>
-                            To power the real-time bidirectional voice debate, AIIMIN requires a Gemini API key. Ensure REACT_APP_GEMINI_API_KEY is set in your .env file.
-                        </p>
-                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                            <button onClick={() => setDebatePhase('setup')} style={{ background: surface, color: text1, border: `1px solid ${border}`, padding: '12px 24px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Back to Setup</button>
+                        <div style={{ backgroundColor: surface, padding: '40px', borderRadius: '16px', border: `1px solid ${border}`, textAlign: 'center' }}>
+                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, marginBottom: '12px' }}>Voice API Key Required</h2>
+                            <p style={{ color: text2, lineHeight: 1.6, marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px auto' }}>
+                                To power the real-time bidirectional voice debate, AIIMIN requires a Voice API key. Ensure REACT_APP_VOICE_API_KEY is set in your .env file.
+                            </p>
+                            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                                <button onClick={() => setDebatePhase('setup')} style={{ background: surface, color: text1, border: `1px solid ${border}`, padding: '12px 24px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Back to Setup</button>
+                            </div>
                         </div>
                     </motion.div>
                 )}
 
                 {/* ── DEBATE MODE: ACTIVE ── */}
                 {mode === 'debate' && debatePhase === 'active' && (
-                    <motion.div key="deb-active" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: elevated, border: `1px solid ${border}`, borderRadius: '24px', padding: '40px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                    <motion.div key="deb-active" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ background: elevated, border: `1px solid ${border}`, borderRadius: '24px', padding: '60px', display: 'flex', flexDirection: 'column', gap: '40px', maxWidth: '900px', margin: '0 auto' }}>
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', color: '#6366f1', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px' }}>Active Debate</div>
-                            <h2 style={{ fontSize: '20px', fontWeight: 700, color: text1, margin: 0 }}>"{debateTopic}"</h2>
+                            <div style={{ fontSize: '14px', color: '#6366f1', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '8px' }}>Active Debate</div>
+                            <h2 style={{ fontSize: '28px', fontWeight: 700, color: text1, margin: 0, fontFamily: 'var(--font-serif)' }}>"{debateTopic}"</h2>
                         </div>
                         
-                        <div style={{ flex: 1, background: surface, border: `1px solid ${border}`, borderRadius: '16px', padding: '24px', minHeight: '300px', maxHeight: '400px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ flex: 1, background: surface, border: `1px solid ${border}`, borderRadius: '16px', padding: '32px', minHeight: '400px', maxHeight: '500px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             {messages.map((msg, idx) => (
                                 <div key={idx} style={{ alignSelf: msg.role === 'model' ? 'flex-start' : 'flex-end', maxWidth: '80%' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: 700, color: text3, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: msg.role === 'model' ? 'left' : 'right' }}>
+                                    <div style={{ fontSize: '13px', fontWeight: 700, color: text3, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: msg.role === 'model' ? 'left' : 'right' }}>
                                         {msg.role === 'model' ? 'AI Sparring Partner' : 'You'}
                                     </div>
                                     <div style={{
                                         background: msg.role === 'model' ? (isDark ? 'rgba(99, 102, 241, 0.15)' : '#eef2ff') : (isDark ? '#2a2a2a' : '#f3f4f6'),
                                         color: msg.role === 'model' ? (isDark ? '#a5b4fc' : '#4f46e5') : text1,
-                                        padding: '12px 16px', borderRadius: '12px', fontSize: '14px', lineHeight: 1.5,
+                                        padding: '16px 24px', borderRadius: '16px', fontSize: '16px', lineHeight: 1.6,
                                         border: msg.role === 'model' ? `1px solid rgba(99, 102, 241, 0.3)` : `1px solid ${border}`
                                     }}>
                                         {msg.parts[0].text || "🎙️ Audio Segment Sent"}
@@ -588,7 +601,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                                 </div>
                             ))}
                             {isDebating && (
-                                <div style={{ alignSelf: 'flex-start', color: text3, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <div style={{ alignSelf: 'flex-start', color: text3, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px', padding: '0 8px' }}>
                                     <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }}>Thinking & Evaluating...</motion.div>
                                 </div>
                             )}
@@ -598,7 +611,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                             {phase === 'recording' || isAiSpeaking ? (
                                 <WaveformVisualizer isRecording={true} color="#6366f1" isAi={isAiSpeaking} />
                             ) : (
-                                <div style={{ height: '160px', display: 'flex', alignItems: 'center', color: text3, fontSize: '13px' }}>Hold mic button below to respond</div>
+                                <div style={{ height: '160px', display: 'flex', alignItems: 'center', color: text3, fontSize: '15px', fontWeight: 600 }}>Hold mic button below to respond</div>
                             )}
 
                             <button 
@@ -610,13 +623,13 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                                     background: isDebating ? surface : (phase === 'recording' ? '#ef4444' : '#6366f1'), 
                                     color: isDebating ? text3 : '#fff', 
                                     border: isDebating ? `1px solid ${border}` : 'none', 
-                                    padding: '20px 48px', borderRadius: '100px', fontWeight: 800, fontSize: '15px', 
-                                    cursor: isDebating ? 'not-allowed' : 'pointer', display: 'flex', gap: '10px', alignItems: 'center', 
-                                    boxShadow: phase === 'recording' ? '0 0 0 8px rgba(239, 68, 68, 0.2)' : '0 8px 24px rgba(99,102,241,0.3)',
+                                    padding: '24px 56px', borderRadius: '100px', fontWeight: 800, fontSize: '18px', 
+                                    cursor: isDebating ? 'not-allowed' : 'pointer', display: 'flex', gap: '12px', alignItems: 'center', 
+                                    boxShadow: phase === 'recording' ? '0 0 0 12px rgba(239, 68, 68, 0.2)' : '0 12px 32px rgba(99,102,241,0.3)',
                                     transition: 'all 0.2s', userSelect: 'none'
                                 }}
                             >
-                                <Mic size={20} /> {phase === 'recording' ? 'Recording... Release to send' : 'Hold to Speak'}
+                                <Mic size={24} /> {phase === 'recording' ? 'Recording... Release to send' : 'Hold to Speak'}
                             </button>
                         </div>
                     </motion.div>

@@ -51,13 +51,23 @@ export default function ThePit({ userId, isDark, onClose }) {
   const isLogged = (id) => logs.some(l => l.challenge_id === id);
 
   return (
-    <div style={{ padding: '32px' }}>
-      <div style={{ marginBottom: '28px' }}>
-        <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, margin: '0 0 8px' }}>The Pit</h2>
-        <p style={{ fontSize: '14px', color: text2 }}>Where discipline is forged. No excuses, just output.</p>
+    <div style={{ padding: '80px 40px 40px', maxWidth: '850px', margin: '0 auto', position: 'relative', height: '100%', overflowY: 'auto' }}>
+      {onClose && (
+        <button 
+          onClick={onClose}
+          style={{ position: 'absolute', top: '24px', right: '40px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <span>←</span> Back to Lab
+        </button>
+      )}
+      <div style={{ marginBottom: '40px' }}>
+        <h2 style={{ fontSize: '40px', fontWeight: 800, color: text1, margin: '0 0 12px' }}>The Pit</h2>
+        <p style={{ fontSize: '18px', color: text2 }}>Where discipline is forged. No excuses, just output.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>
         {CHALLENGES.map(c => {
           const done = isLogged(c.id);
           return (
@@ -66,16 +76,16 @@ export default function ThePit({ userId, isDark, onClose }) {
               onClick={() => !done && handleLog(c)}
               disabled={done || logging === c.id}
               style={{
-                padding: '20px', borderRadius: '16px', border: `1px solid ${done ? '#22C55E' : border}`,
+                padding: '24px', borderRadius: '20px', border: `2px solid ${done ? '#22C55E' : border}`,
                 background: done ? 'rgba(34,197,94,0.08)' : 'var(--color-surface)',
                 cursor: done ? 'default' : 'pointer', textAlign: 'left', transition: 'all 200ms ease',
-                display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative', overflow: 'hidden'
+                display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', overflow: 'hidden'
               }}
             >
-              <div style={{ fontSize: '24px' }}>{c.icon}</div>
+              <div style={{ fontSize: '32px' }}>{c.icon}</div>
               <div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: done ? '#22C55E' : text1 }}>{c.label}</div>
-                <div style={{ fontSize: '11px', color: done ? '#22C55E' : text2, opacity: 0.8 }}>+{c.xp} XP</div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: done ? '#22C55E' : text1 }}>{c.label}</div>
+                <div style={{ fontSize: '14px', color: done ? '#22C55E' : text2, opacity: 0.8, marginTop: '4px' }}>+{c.xp} XP</div>
               </div>
               {done && (
                 <div style={{ position: 'absolute', top: '12px', right: '12px', color: '#22C55E' }}>
@@ -94,11 +104,11 @@ export default function ThePit({ userId, isDark, onClose }) {
         })}
       </div>
 
-      <div style={{ padding: '20px', borderRadius: '16px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `1px dashed ${border}` }}>
-        <div style={{ fontSize: '12px', fontWeight: 700, color: text2, textTransform: 'uppercase', marginBottom: '8px' }}>Daily Discipline Score</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-          <div style={{ fontSize: '32px', fontWeight: 900, color: text1 }}>{logs.reduce((acc, curr) => acc + curr.xp_earned, 0)}</div>
-          <div style={{ fontSize: '14px', fontWeight: 600, color: text2 }}>XP Earned Today</div>
+      <div style={{ padding: '32px', borderRadius: '20px', background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', border: `2px dashed ${border}` }}>
+        <div style={{ fontSize: '14px', fontWeight: 800, color: text2, textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>Daily Discipline Score</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+          <div style={{ fontSize: '48px', fontWeight: 900, color: text1 }}>{logs.reduce((acc, curr) => acc + curr.xp_earned, 0)}</div>
+          <div style={{ fontSize: '18px', fontWeight: 600, color: text2 }}>XP Earned Today</div>
         </div>
       </div>
     </div>

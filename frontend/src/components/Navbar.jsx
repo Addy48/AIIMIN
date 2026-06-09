@@ -3,7 +3,6 @@ import { Link, NavLink } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotifications';
 import { useThemeContext } from '../context/ThemeContext';
 import NotificationBell from './notifications/NotificationBell';
-import AccountModal from './account/AccountModal';
 import Logo from './Logo';
 
 
@@ -21,13 +20,13 @@ const NAV_LINKS = [
   { to: '/sports',      label: 'Sports', hideFromGuest: true },
   { to: '/discipline',  label: 'Discipline', hideFromGuest: true },
   { to: '/focus',       label: 'Focus' },
+  { to: '/lab',         label: 'Lab' },
 ];
 
 const Navbar = ({ user }) => {
   const { notifications, unreadCount, loading, fetchAll, markRead, markAllRead, dismiss } = useNotifications();
   const { theme, toggleTheme } = useThemeContext();
   const [notifOpen, setNotifOpen] = useState(false);
-  const [showAccount, setShowAccount] = useState(false);
   const bellRef = useRef(null);
 
   const userInitial = (user?.full_name?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
@@ -44,9 +43,9 @@ const Navbar = ({ user }) => {
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0,
         height: 'var(--nav-height)',
-        background: isDark ? 'rgba(10,10,10,0.85)' : 'rgba(240,237,232,0.85)',
+        background: 'color-mix(in srgb, var(--color-base) 85%, transparent)',
         backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: `1px solid ${borderColor}`,
+        borderBottom: '1px solid var(--color-border)',
         display: 'flex',
         alignItems: 'center',
         padding: '0 24px',
@@ -55,16 +54,16 @@ const Navbar = ({ user }) => {
 
         {/* LEFT: Brand */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <Link to="/identity" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <Logo size={28} />
+              <Logo size={36} />
             </Link>
             <Link to="/overview" aria-label="AIIMIN today" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
               <span style={{
-                fontSize: '25px',
-                fontWeight: 400,
+                fontSize: '28px',
+                fontWeight: 600,
                 letterSpacing: '-0.065em',
-                color: isDark ? '#F2EBDA' : '#1f201d',
+                color: 'var(--color-text-1)',
                 fontFamily: 'var(--font-serif)',
                 lineHeight: 1,
               }}>
@@ -81,18 +80,14 @@ const Navbar = ({ user }) => {
               key={`${to}-${label}`}
               to={to}
               style={({ isActive }) => ({
-                fontSize: '12px',
-                fontWeight: isActive ? 600 : 400,
+                fontSize: '16px',
+                fontWeight: isActive ? 700 : 500,
                 fontFamily: 'var(--font-sans)',
-                color: isActive
-                  ? (isDark ? '#EDEDED' : 'var(--color-accent)')
-                  : (isDark ? '#71717A' : '#6B6B6B'),
+                color: isActive ? 'var(--color-text-1)' : 'var(--color-text-2)',
                 textDecoration: 'none',
-                padding: '6px 11px',
-                borderRadius: '9px',
-                background: isActive
-                  ? (isDark ? 'rgba(255,255,255,0.07)' : 'rgba(30,92,58,0.06)')
-                  : 'transparent',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                background: isActive ? 'var(--color-elevated)' : 'transparent',
                 transition: 'all 180ms',
                 whiteSpace: 'nowrap',
               })}
@@ -110,9 +105,9 @@ const Navbar = ({ user }) => {
             onClick={toggleTheme}
             title={isDark ? 'Light mode' : 'Dark mode'}
             style={{
-              width: '28px', height: '28px', borderRadius: '6px', background: 'transparent',
-              border: `1px solid ${borderColor}`,
-              color: isDark ? '#71717A' : '#6B6B6B', fontSize: '13px', cursor: 'pointer',
+              width: '36px', height: '36px', borderRadius: '8px', background: 'transparent',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-2)', fontSize: '16px', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
@@ -136,24 +131,19 @@ const Navbar = ({ user }) => {
           </div>
 
           {/* Avatar */}
-          <button
-            onClick={() => setShowAccount(true)}
+          <Link
+            to="/account"
             style={{
-              width: '28px', height: '28px', borderRadius: '50%', background: '#23503B',
-              border: 'none', color: '#fff', font: '600 11px var(--font-sans)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '36px', height: '36px', borderRadius: '50%', background: '#23503B',
+              border: 'none', color: '#fff', font: '700 14px var(--font-sans)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none'
             }}
             aria-label="Account"
           >
             {userInitial}
-          </button>
+          </Link>
         </div>
       </nav>
-
-      {showAccount && (
-        <AccountModal isOpen={showAccount} onClose={() => setShowAccount(false)} />
-      )}
-
 
     </>
   );
@@ -196,17 +186,17 @@ const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDi
     <div ref={ref} style={{
       position: 'absolute', top: 'calc(100% + 8px)', right: 0,
       width: '300px', maxHeight: '400px',
-      background: bg, border: `1px solid ${border}`,
+      background: 'var(--color-surface)', border: '1px solid var(--color-border)',
       borderRadius: '10px',
-      boxShadow: isDark ? '0 16px 48px rgba(0,0,0,0.7)' : '0 8px 24px rgba(0,0,0,0.12)',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
       zIndex: 9999, overflow: 'hidden', display: 'flex', flexDirection: 'column',
     }}>
       {/* Header */}
       <div style={{
         padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        borderBottom: `1px solid ${border}`, flexShrink: 0,
+        borderBottom: '1px solid var(--color-border)', flexShrink: 0,
       }}>
-        <span style={{ fontSize: '12px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>Notifications</span>
+        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)' }}>Notifications</span>
         {notifications.some(n => !n.read_at) && (
           <button onClick={onMarkAllRead} style={{
             background: 'none', border: 'none', fontSize: '11px', color: '#22C55E',
@@ -218,31 +208,31 @@ const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDi
       {/* List */}
       <div style={{ overflowY: 'auto', flex: 1 }}>
         {loading && (
-          <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: text3, fontFamily: 'var(--font-sans)' }}>Loading…</div>
+          <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>Loading…</div>
         )}
         {!loading && notifications.length === 0 && (
           <div style={{ padding: '28px 16px', textAlign: 'center' }}>
             <div style={{ fontSize: '22px', marginBottom: '8px' }}>🔔</div>
-            <div style={{ fontSize: '12px', color: text2, fontFamily: 'var(--font-sans)' }}>All clear</div>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)' }}>All clear</div>
           </div>
         )}
         {!loading && notifications.map(n => (
           <div key={n.id} style={{
-            padding: '10px 14px', borderBottom: `1px solid ${border}`,
+            padding: '10px 14px', borderBottom: '1px solid var(--color-border)',
             display: 'flex', gap: '10px', alignItems: 'flex-start',
-            background: !n.read_at ? (isDark ? 'rgba(34,197,94,0.04)' : 'rgba(34,197,94,0.04)') : 'transparent',
+            background: !n.read_at ? 'var(--color-accent-dim)' : 'transparent',
           }}>
             <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>{typeIcon(n.type)}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '12px', fontWeight: n.read_at ? 400 : 600, color: text1, fontFamily: 'var(--font-sans)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '12px', fontWeight: n.read_at ? 400 : 600, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {n.title}
               </div>
-              {n.body && <div style={{ fontSize: '11px', color: text2, fontFamily: 'var(--font-sans)', lineHeight: 1.4 }}>{n.body}</div>}
-              <div style={{ fontSize: '10px', color: text3, marginTop: '3px', fontFamily: 'var(--font-sans)' }}>{timeAgo(n.created_at)}</div>
+              {n.body && <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.4 }}>{n.body}</div>}
+              <div style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: '3px', fontFamily: 'var(--font-sans)' }}>{timeAgo(n.created_at)}</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
               {!n.read_at && <button onClick={() => onMarkRead(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22C55E', fontSize: '11px' }}>✓</button>}
-              <button onClick={() => onDismiss(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: text3, fontSize: '11px' }}>✕</button>
+              <button onClick={() => onDismiss(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', fontSize: '11px' }}>✕</button>
             </div>
           </div>
         ))}
