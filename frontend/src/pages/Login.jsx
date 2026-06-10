@@ -854,7 +854,7 @@ const Login = () => {
                         type="email"
                         value={email}
                         onChange={e => setEmail(e.target.value.trim().toLowerCase())}
-                        placeholder="name@gmail.com"
+                        placeholder="you@example.com"
                         autoCapitalize="none"
                         autoComplete="email"
                         spellCheck="false"
