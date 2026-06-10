@@ -163,7 +163,7 @@ export function AuthProvider({ children }) {
             return { user: basicUser, session: data.session };
         } catch (error) {
             console.error('Error signing up:', error);
-            throw new Error(error.response?.data?.error || error.message || 'Signup failed');
+            throw new Error(error.message || 'Signup failed');
         }
     };
 
@@ -211,7 +211,7 @@ export function AuthProvider({ children }) {
             return { user: basicUser, session: data.session };
         } catch (error) {
             console.error('Error signing in:', error);
-            throw new Error(error.response?.data?.error || error.message || 'Invalid credentials');
+            throw new Error(error.message || 'Invalid credentials');
         }
     };
 

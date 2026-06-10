@@ -8,8 +8,20 @@ import { requireAuth } from '../middleware/auth.js';
 const app = new Hono();
 
 const COOKIE_NAME = 'aiimin_session';
-const USERNAME_PATTERN = /^[A-Z0-9_.-]{3,20}$/;
+// OS-ID: 4-8 uppercase letters/numbers, max 4 digits
+const USERNAME_PATTERN = /^[A-Z0-9]{4,8}$/;
 const PIN_PATTERN = /^\d{6}$/;
+
+const validateOsId = (username) => {
+    if (!USERNAME_PATTERN.test(username)) {
+        return 'OS-ID must be 4-8 uppercase letters/numbers';
+    }
+    const digits = (username.match(/[0-9]/g) || []).length;
+    if (digits > 4) {
+        return 'OS-ID can have at most 4 numbers';
+    }
+    return null;
+};
 
 /**
  * GET /auth/resolve?identifier=...
@@ -63,7 +75,8 @@ app.post('/signup', async (c) => {
         }
 
         if (normalizedUsername && !USERNAME_PATTERN.test(normalizedUsername)) {
-            return c.json({ error: 'Username must be 3-20 uppercase letters, numbers, _, ., or -' }, 400);
+            const osIdErr = validateOsId(normalizedUsername);
+            return c.json({ error: osIdErr || 'Invalid OS-ID format' }, 400);
         }
 
         // Check if public profile exists before creating an Auth user.

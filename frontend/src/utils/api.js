@@ -55,7 +55,16 @@ export const apiRequest = async (path, options = {}) => {
     const response = await fetch(url, fetchOptions);
 
     if (!response.ok) {
-        throw new Error(`API Request failed with status ${response.status}: ${await response.text()}`);
+        let errMsg = `Request failed (${response.status})`;
+        try {
+            const errBody = await response.json();
+            errMsg = errBody.error || errBody.message || errMsg;
+        } catch (_) {
+            try { errMsg = await response.text() || errMsg; } catch (_2) {}
+        }
+        const err = new Error(errMsg);
+        err.status = response.status;
+        throw err;
     }
 
     if (responseType === 'json') {
