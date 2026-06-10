@@ -15,10 +15,6 @@ export const getPool = () => {
     if (_pool) return _pool;
 
     let connectionString = process.env.DATABASE_URL;
-    if (connectionString) {
-        // Replace old pgbouncer port 6543 with session pooler port 5432
-        connectionString = connectionString.replace(':6543', ':5432');
-    }
     if (!connectionString) {
         const msg = '[DB] FATAL: DATABASE_URL is not set. Cannot initialize database pool.';
         console.error(msg);
