@@ -132,12 +132,63 @@ const WeekCell = ({ day, isToday }) => {
   );
 };
 
+const TrajectoryProgress = () => {
+  const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
+
+  useEffect(() => {
+    const updateProgress = () => {
+      const now = new Date();
+      
+      const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+      const nextYear = new Date(now.getFullYear() + 1, 0, 1).getTime();
+      const yearElapsed = ((now.getTime() - startOfYear) / (nextYear - startOfYear)) * 100;
+      
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
+      const monthElapsed = ((now.getTime() - startOfMonth) / (nextMonth - startOfMonth)) * 100;
+
+      const dayOfWeek = (now.getDay() + 6) % 7; 
+      const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+      startOfWeek.setHours(0, 0, 0, 0);
+      const nextWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const weekElapsed = ((now.getTime() - startOfWeek.getTime()) / (nextWeek.getTime() - startOfWeek.getTime())) * 100;
+
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      startOfDay.setHours(0, 0, 0, 0);
+      const nextDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
+      const dayElapsed = ((now.getTime() - startOfDay.getTime()) / (nextDay.getTime() - startOfDay.getTime())) * 100;
+
+      setProgress({
+        year: yearElapsed.toFixed(4),
+        month: monthElapsed.toFixed(4),
+        week: weekElapsed.toFixed(4),
+        day: dayElapsed.toFixed(4)
+      });
+    };
+
+    updateProgress();
+    const interval = setInterval(updateProgress, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
+      <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'24px' }}>Trajectory Execution</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 24px' }}>
+        <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" delay={0}   />
+        <ProgressRow label="Monthly" val={progress.month} color="#3B82F6"              delay={80}  />
+        <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B"              delay={160} />
+        <ProgressRow label="Daily"   val={progress.day}   color="#EC4899"              delay={240} />
+      </div>
+    </div>
+  );
+};
+
 /* ── Main Overview ── */
 const Overview = () => {
   const { user: authUser } = useAuth();
   const user = useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
 
-  const [progress, setProgress] = useState({ year:0, month:0, week:0, day:0 });
   const [urgentReminders, setUrgentReminders] = useState([]);
   const [activeModal, setActiveModal] = useState(null);
 
@@ -201,41 +252,7 @@ const Overview = () => {
   const weekNum = getWeekNum(now);
   const todayIdx = (now.getDay() + 6) % 7;
 
-  useEffect(() => {
-    const updateProgress = () => {
-      const now = new Date();
-      
-      const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
-      const nextYear = new Date(now.getFullYear() + 1, 0, 1).getTime();
-      const yearElapsed = ((now.getTime() - startOfYear) / (nextYear - startOfYear)) * 100;
-      
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
-      const monthElapsed = ((now.getTime() - startOfMonth) / (nextMonth - startOfMonth)) * 100;
 
-      const dayOfWeek = (now.getDay() + 6) % 7; 
-      const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
-      startOfWeek.setHours(0, 0, 0, 0);
-      const nextWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const weekElapsed = ((now.getTime() - startOfWeek.getTime()) / (nextWeek.getTime() - startOfWeek.getTime())) * 100;
-
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      startOfDay.setHours(0, 0, 0, 0);
-      const nextDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
-      const dayElapsed = ((now.getTime() - startOfDay.getTime()) / (nextDay.getTime() - startOfDay.getTime())) * 100;
-
-      setProgress({
-        year: yearElapsed.toFixed(4),
-        month: monthElapsed.toFixed(4),
-        week: weekElapsed.toFixed(4),
-        day: dayElapsed.toFixed(4)
-      });
-    };
-
-    updateProgress();
-    const interval = setInterval(updateProgress, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   if (!user) return null;
 
@@ -384,16 +401,7 @@ const Overview = () => {
 
           <CommandCenter user={user} />
 
-          {/* Trajectory */}
-          <div style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'24px', padding:'28px' }}>
-            <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'24px' }}>Trajectory Execution</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px 24px' }}>
-              <ProgressRow label="Yearly"  val={progress.year}  color="var(--color-accent)" delay={0}   />
-              <ProgressRow label="Monthly" val={progress.month} color="#3B82F6"              delay={80}  />
-              <ProgressRow label="Weekly"  val={progress.week}  color="#F59E0B"              delay={160} />
-              <ProgressRow label="Daily"   val={progress.day}   color="#EC4899"              delay={240} />
-            </div>
-          </div>
+          <TrajectoryProgress />
 
         </div>
       </div>

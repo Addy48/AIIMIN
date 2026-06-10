@@ -15,57 +15,45 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     const checkSession = useCallback(async (providedSession = null) => {
+        let activeSession = providedSession;
+        if (!activeSession) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                activeSession = session;
+            } catch (e) {}
+        }
+
+        // If no session exists, the user is logged out. Do not hit the backend.
+        if (!activeSession?.user) {
+            setUser(null);
+            setLoading(false);
+            return null;
+        }
+
+        // Optimistic UI Unblock: if we have a valid JWT session, render the shell instantly
+        const fallbackUser = {
+            id: activeSession.user.id,
+            email: activeSession.user.email,
+            full_name: activeSession.user.user_metadata?.full_name || activeSession.user.email?.split('@')[0],
+            username: activeSession.user.user_metadata?.username || activeSession.user.email?.split('@')[0],
+            role: 'user',
+            isGuest: false
+        };
+        setUser(prev => prev || fallbackUser);
+        setLoading(false); // Unblock the UI instantly instead of waiting for backend
+
         try {
+            // Background fetch to sync detailed profile data
             const data = await apiGet('/auth/me');
             if (data && data.user) {
                 setUser(data.user);
                 return data.user;
-            } else {
-                let activeSession = providedSession;
-                if (!activeSession) {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    activeSession = session;
-                }
-                if (activeSession?.user) {
-                    const fallbackUser = {
-                        id: activeSession.user.id,
-                        email: activeSession.user.email,
-                        full_name: activeSession.user.user_metadata?.full_name || activeSession.user.email?.split('@')[0],
-                        username: activeSession.user.user_metadata?.username || activeSession.user.email?.split('@')[0],
-                        role: 'user',
-                        isGuest: false
-                    };
-                    setUser(fallbackUser);
-                    return fallbackUser;
-                }
-                setUser(null);
-                return null;
             }
+            // Return our fallback if DB fails but JWT is valid
+            return fallbackUser;
         } catch (error) {
             console.warn('[checkSession] profile fetch failed, using Supabase session fallback:', error.message);
-            try {
-                let activeSession = providedSession;
-                if (!activeSession) {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    activeSession = session;
-                }
-                if (activeSession?.user) {
-                    const fallbackUser = {
-                        id: activeSession.user.id,
-                        email: activeSession.user.email,
-                        full_name: activeSession.user.user_metadata?.full_name || activeSession.user.email?.split('@')[0],
-                        username: activeSession.user.user_metadata?.username || activeSession.user.email?.split('@')[0],
-                        role: 'user',
-                        isGuest: false
-                    };
-                    setUser(fallbackUser);
-                    return fallbackUser;
-                }
-            } catch (e) {}
-            setUser(null);
-            return null;
-        } finally {
-            setLoading(false);
+            return fallbackUser;
         }
     }, []);
 
