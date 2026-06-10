@@ -158,7 +158,7 @@ export default function Onboarding() {
     const submitUsername = () => {
         const upper = username.trim().toUpperCase();
         if (!USERNAME_RE.test(upper)) { setError('3–20 chars: letters, numbers, _ . -'); return; }
-        if (usernameStatus === 'taken') { setError('That username is taken'); return; }
+        if (usernameStatus === 'taken') { setError('That OS-ID is taken'); return; }
         if (usernameStatus === 'checking') { setError('Still checking availability…'); return; }
         next();
     };
@@ -228,7 +228,7 @@ export default function Onboarding() {
 
         /* Step 1 — Username */
         <motion.div key="username" {...slide(dir)}>
-            <h2 style={s.heading}>Choose your username</h2>
+            <h2 style={s.heading}>Choose your OS-ID</h2>
             <p style={s.sub}>This is your unique AIIMIN handle. You use it to log in.</p>
             <div style={{ position: 'relative' }}>
                 <input
