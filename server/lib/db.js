@@ -14,7 +14,11 @@ let _pool = null;
 export const getPool = () => {
     if (_pool) return _pool;
 
-    const connectionString = process.env.DATABASE_URL;
+    let connectionString = process.env.DATABASE_URL;
+    if (connectionString && connectionString.includes('.supabase.co:6543')) {
+        // Fallback for Supabase IPv4 deprecation on old PgBouncer port
+        connectionString = connectionString.replace(':6543', ':5432');
+    }
     if (!connectionString) {
         const msg = '[DB] FATAL: DATABASE_URL is not set. Cannot initialize database pool.';
         console.error(msg);
