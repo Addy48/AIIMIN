@@ -251,22 +251,42 @@ const Divider = () => (
 /* ─────────────────────────────────────────────
    INPUT with focus highlight
 ───────────────────────────────────────────── */
-const Field = ({ label, ...props }) => {
+const Field = ({ label, placeholder, ...props }) => {
   const [focused, setFocused] = useState(false);
+  // Bypass Safari placeholder override by using a custom overlay
   return (
     <div>
       {label && <label style={labelBase}>{label}</label>}
-      <input
-        {...props}
-        style={{
-          ...inputBase,
-          borderColor: focused ? 'var(--color-accent)' : 'var(--color-border)',
-          boxShadow: focused ? '0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent)' : 'none',
-          ...(props.style || {}),
-        }}
-        onFocus={e => { setFocused(true); props.onFocus && props.onFocus(e); }}
-        onBlur={e => { setFocused(false); props.onBlur && props.onBlur(e); }}
-      />
+      <div style={{ position: 'relative' }}>
+        <input
+          {...props}
+          placeholder=" "
+          style={{
+            ...inputBase,
+            borderColor: focused ? 'var(--color-accent)' : 'var(--color-border)',
+            boxShadow: focused ? '0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent)' : 'none',
+            ...(props.style || {}),
+          }}
+          onFocus={e => { setFocused(true); props.onFocus && props.onFocus(e); }}
+          onBlur={e => { setFocused(false); props.onBlur && props.onBlur(e); }}
+        />
+        {!props.value && placeholder && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              display: 'flex', alignItems: 'center',
+              padding: '14px 16px',
+              color: '#8A8A8E', /* Placeholder color */
+              pointerEvents: 'none',
+              fontFamily: 'var(--font-sans)',
+              fontSize: '16px',
+            }}
+          >
+            {placeholder}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -579,15 +599,15 @@ const Login = () => {
 
   const handleUsernameNext = async (e) => {
     if (e) e.preventDefault();
-    if (!isUsernameValid) { setError('Username does not meet requirements.'); return; }
+    if (!isUsernameValid) { setError('OS-ID does not meet requirements.'); return; }
     setError(null); setLoading(true);
     try {
       const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(usernameVal.trim())}`, { auth: false });
-      if (data && data.email) setError('Username is already taken.');
+      if (data && data.email) setError('OS-ID is already taken.');
       else { setDirection(1); setStep(3); }
     } catch (err) {
       if (err.response && err.response.status === 404) { setDirection(1); setStep(3); }
-      else setError(err.message || 'Error checking username. Please try again.');
+      else setError(err.message || 'Error checking OS-ID. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -681,7 +701,7 @@ const Login = () => {
                       forgotSent ? 'Check your inbox' : 'Reset Access'
                     ) : (
                       step === 1 ? 'Create account' :
-                      step === 2 ? 'Choose a username' :
+                      step === 2 ? 'Choose an OS-ID' :
                       step === 3 ? 'Set a PIN' : 'Confirm your PIN'
                     )}
                   </h1>
@@ -692,7 +712,7 @@ const Login = () => {
                       forgotSent ? 'A recovery link has been sent.' : 'We\'ll send a recovery link to your email.'
                     ) : (
                       step === 1 ? 'Join AIIMIN and elevate your operations.' :
-                      step === 2 ? 'Your unique ID across the network.' :
+                      step === 2 ? 'Your unique OS-ID across the network.' :
                       step === 3 ? 'Choose a secure 6-digit access PIN.' : 'Re-enter your PIN to confirm.'
                     )}
                   </p>
@@ -730,13 +750,13 @@ const Login = () => {
                       <BackBtn onClick={handleBack} />
                       <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                         <Field
-                          label="Username or Email"
+                          label="OS-ID / Email"
                           type="text"
                           required
                           autoFocus
                           value={forgotIdentifier}
                           onChange={e => setForgotIdentifier(e.target.value)}
-                          placeholder="Enter username or email"
+                          placeholder="Enter OS-ID or email"
                         />
                         <ErrorMsg msg={error} />
                         <PrimaryBtn>Send Recovery Link →</PrimaryBtn>
@@ -767,7 +787,7 @@ const Login = () => {
                         autoComplete="off"
                         autoCorrect="off"
                         spellCheck="false"
-                        placeholder="USERNAME or email@example.com"
+                        placeholder="OS-ID / EMAIL"
                         style={{ textTransform: identifier.includes('@') ? 'none' : 'uppercase' }}
                       />
                       <ErrorMsg msg={error} />
@@ -870,7 +890,7 @@ const Login = () => {
                     <BackBtn onClick={handleBack} />
                     <form onSubmit={handleUsernameNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       <Field
-                        label="Username"
+                        label="OS-ID"
                         type="text"
                         required
                         autoFocus
