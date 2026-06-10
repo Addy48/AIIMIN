@@ -76,25 +76,34 @@ const StepIndicator = ({ currentStep, totalSteps = 4 }) => (
 /* ─────────────────────────────────────────────
    PIN DOTS
 ───────────────────────────────────────────── */
-const PinDots = ({ length, current, shake }) => (
+const PinDots = ({ length, value = '', shake }) => (
   <motion.div
     animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : { x: 0 }}
     transition={{ duration: 0.45 }}
-    style={{ display: 'flex', gap: '14px', justifyContent: 'center' }}
+    style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
   >
     {Array.from({ length }, (_, i) => {
-      const filled = i < current;
+      const char = value[i];
+      const filled = !!char;
       return (
         <motion.div
           key={i}
           animate={{
-            scale: filled ? 1.15 : 1,
-            backgroundColor: filled ? (shake ? '#ef4444' : 'var(--color-accent)') : 'transparent',
+            scale: filled ? 1.1 : 1,
             borderColor: filled ? (shake ? '#ef4444' : 'var(--color-accent)') : 'var(--color-border)',
+            backgroundColor: filled ? 'var(--color-surface)' : 'transparent',
+            color: shake ? '#ef4444' : 'var(--color-text-1)',
           }}
           transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-          style={{ width: '14px', height: '14px', borderRadius: '50%', border: '2px solid' }}
-        />
+          style={{ 
+            width: '42px', height: '52px', borderRadius: '12px', border: '2px solid',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '24px', fontWeight: 600,
+            fontFamily: 'var(--font-sans)',
+          }}
+        >
+          {char || ''}
+        </motion.div>
       );
     })}
   </motion.div>
@@ -393,6 +402,10 @@ const Login = () => {
   const [forgotSent, setForgotSent]   = useState(false);
 
   useEffect(() => {
+    setTheme('normal'); // Force Light theme on the Login page
+  }, [setTheme]);
+
+  useEffect(() => {
     let timer;
     if (loading) {
       timer = setTimeout(() => {
@@ -405,11 +418,7 @@ const Login = () => {
   }, [loading]);
 
   // ── Helpers ──
-  const go = (nextStep) => {
-    setDirection(nextStep > step ? 1 : -1);
-    setStep(nextStep);
-    setError(null);
-  };
+
 
   const triggerShake = useCallback(() => {
     setShake(true);
@@ -456,6 +465,40 @@ const Login = () => {
     }
   };
 
+  // ── Auth ──
+  const handleSubmitLogin = useCallback(async (finalPin) => {
+    setError(null); setLoading(true);
+    try {
+      await signInWithUsername(identifier.trim(), finalPin);
+      navigate('/overview');
+    } catch (err) {
+      setError(err.message || 'Verification failure. Try again.');
+      setPin(''); triggerShake(); setLoading(false);
+    }
+  }, [identifier, navigate, signInWithUsername, triggerShake]);
+
+  const handleSubmitSignup = useCallback(async (finalConfirmPin) => {
+    if (pin !== finalConfirmPin) {
+      setError('PINs do not match. Re-verify.');
+      setConfirmPin(''); triggerShake(); return;
+    }
+    setError(null);
+    setInitializing(true);
+    setTimeout(() => setInitStage(1), 1000);
+    setTimeout(() => setInitStage(2), 2500);
+    setTimeout(() => setInitStage(3), 4000);
+    try {
+      const regUser = usernameVal.toUpperCase();
+      const authEmail = email.trim() || `${regUser.toLowerCase()}@aiimin.com`;
+      await signUpWithUsername(regUser, pin, fullName.trim(), authEmail);
+      setTimeout(() => { window.location.href = '/overview'; }, 5000);
+    } catch (err) {
+      setInitializing(false); setInitStage(0);
+      setError(err.message || 'Signup failed. Try again.');
+      setConfirmPin(''); setStep(3); setDirection(-1); setPin(''); triggerShake(); setLoading(false);
+    }
+  }, [email, fullName, pin, signUpWithUsername, triggerShake, usernameVal]);
+
   // ── PIN handlers ──
   const handlePinEntryRef = React.useRef();
   const handlePinDeleteRef = React.useRef();
@@ -492,7 +535,7 @@ const Login = () => {
         });
       }
     }
-  }, [loading, mode, step]);
+  }, [loading, mode, step, handleSubmitLogin, handleSubmitSignup]);
 
   const handlePinDelete = useCallback(() => {
     if (loading) return;
@@ -530,40 +573,6 @@ const Login = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [mode, step]);
-
-  // ── Auth ──
-  const handleSubmitLogin = async (finalPin) => {
-    setError(null); setLoading(true);
-    try {
-      await signInWithUsername(identifier.trim(), finalPin);
-      navigate('/overview');
-    } catch (err) {
-      setError(err.message || 'Verification failure. Try again.');
-      setPin(''); triggerShake(); setLoading(false);
-    }
-  };
-
-  const handleSubmitSignup = async (finalConfirmPin) => {
-    if (pin !== finalConfirmPin) {
-      setError('PINs do not match. Re-verify.');
-      setConfirmPin(''); triggerShake(); return;
-    }
-    setError(null);
-    setInitializing(true);
-    setTimeout(() => setInitStage(1), 1000);
-    setTimeout(() => setInitStage(2), 2500);
-    setTimeout(() => setInitStage(3), 4000);
-    try {
-      const regUser = usernameVal.toUpperCase();
-      const authEmail = email.trim() || `${regUser.toLowerCase()}@aiimin.com`;
-      await signUpWithUsername(regUser, pin, fullName.trim(), authEmail);
-      setTimeout(() => { window.location.href = '/overview'; }, 5000);
-    } catch (err) {
-      setInitializing(false); setInitStage(0);
-      setError(err.message || 'Signup failed. Try again.');
-      setConfirmPin(''); setStep(3); setDirection(-1); setPin(''); triggerShake(); setLoading(false);
-    }
-  };
 
   // ── Username step ──
   const isUsernameValid = usernameVal.length >= 3 && usernameVal.length <= 20 && /^[A-Z0-9_.-]+$/.test(usernameVal);
@@ -633,29 +642,6 @@ const Login = () => {
 
       {/* RIGHT: Form Panel */}
       <div className="login-right" style={{ position: 'relative' }}>
-        {/* Theme Picker */}
-        <div style={{ position: 'absolute', top: '24px', right: '32px', display: 'flex', gap: '8px', zIndex: 10 }}>
-          {THEMES.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTheme(t.id)}
-              title={t.label}
-              style={{
-                width: '24px', height: '24px', borderRadius: '50%',
-                background: t.colors[0],
-                border: theme === t.id ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
-                cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: theme === t.id ? '0 0 0 2px var(--color-surface)' : 'none',
-                transition: 'all 0.2s',
-                padding: 0
-              }}
-            >
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: t.colors[1] }} />
-            </button>
-          ))}
-        </div>
-
         <div className="login-form-wrap">
           {/* AIIMIN wordmark */}
           <div style={{ marginBottom: '32px' }}>
@@ -808,7 +794,7 @@ const Login = () => {
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
                   >
                     <BackBtn onClick={handleBack} />
-                    <PinDots length={6} current={pin.length} shake={shake} />
+                    <PinDots length={6} value={pin} shake={shake} />
                     {loading ? (
                       <div style={{ padding: '24px', textAlign: 'center' }}>
                         <span className="login-spinner-lg" />
@@ -847,7 +833,7 @@ const Login = () => {
                         autoFocus
                         value={fullName}
                         onChange={e => setFullName(e.target.value)}
-                        placeholder="e.g. John Doe"
+                        placeholder="e.g. Hashmatullah Kumar"
                       />
                       <Field
                         label="Recovery Email (Optional)"
@@ -921,7 +907,7 @@ const Login = () => {
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
                   >
                     <BackBtn onClick={handleBack} />
-                    <PinDots length={6} current={pin.length} shake={shake} />
+                    <PinDots length={6} value={pin} shake={shake} />
                     <PinNumpad onEntry={handlePinEntry} onDelete={handlePinDelete} />
                     <ErrorMsg msg={error} />
                   </motion.div>
@@ -935,7 +921,7 @@ const Login = () => {
                     style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
                   >
                     <BackBtn onClick={handleBack} />
-                    <PinDots length={6} current={confirmPin.length} shake={shake} />
+                    <PinDots length={6} value={confirmPin} shake={shake} />
                     {loading ? (
                       <div style={{ padding: '24px', textAlign: 'center' }}>
                         <span className="login-spinner-lg" />
