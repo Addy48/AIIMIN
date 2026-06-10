@@ -5,7 +5,7 @@ import { Check, Loader2, ChevronRight } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 
 /* ─── helpers ──────────────────────────────────────────────── */
-const USERNAME_RE = /^[A-Z0-9_.-]{3,20}$/;
+const USERNAME_RE = /^[A-Z0-9_.-]{8}$/;
 const PIN_DIGITS  = 6;
 
 const slide = (dir = 1) => ({
@@ -157,7 +157,8 @@ export default function Onboarding() {
     /* ── Step 1: Username ── */
     const submitUsername = () => {
         const upper = username.trim().toUpperCase();
-        if (!USERNAME_RE.test(upper)) { setError('3–20 chars: letters, numbers, _ . -'); return; }
+        if (!USERNAME_RE.test(upper)) { setError('Exactly 8 chars: letters, numbers, _ . -'); return; }
+        if ((upper.match(/[0-9]/g) || []).length > 4) { setError('Max 4 numbers allowed'); return; }
         if (usernameStatus === 'taken') { setError('That OS-ID is taken'); return; }
         if (usernameStatus === 'checking') { setError('Still checking availability…'); return; }
         next();
@@ -234,10 +235,10 @@ export default function Onboarding() {
                 <input
                     autoFocus
                     value={username}
-                    onChange={e => { setUsername(e.target.value); setError(''); }}
+                    onChange={e => { setUsername(e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '')); setError(''); }}
                     onKeyDown={e => e.key === 'Enter' && submitUsername()}
-                    placeholder="YOURNAME"
-                    maxLength={20}
+                    placeholder="e.g. HASMAT99"
+                    maxLength={8}
                     style={{ ...s.input, textTransform: 'uppercase', paddingRight: '44px' }}
                 />
                 {usernameStatus !== 'idle' && (
@@ -249,7 +250,7 @@ export default function Onboarding() {
                 )}
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '8px' }}>
-                3–20 characters · letters, numbers, _ . - only
+                Exactly 8 characters, max 4 numbers · letters, numbers, _ . - only
             </p>
             {error && <p style={s.err}>{error}</p>}
             <div style={{ display: 'flex', gap: '10px' }}>

@@ -152,6 +152,13 @@ const AccountModal = ({ isOpen, onClose }) => {
 
     const handleSaveProfile = async () => {
         if (!draftProfile) return;
+        
+        if (draftProfile.username) {
+            const u = draftProfile.username;
+            if (u.length !== 8) { toast.error('OS-ID must be exactly 8 characters'); return; }
+            if ((u.match(/[0-9]/g) || []).length > 4) { toast.error('OS-ID can have max 4 numbers'); return; }
+        }
+
         setSaving(true);
         setSaveMsg('');
         try {
@@ -356,8 +363,8 @@ const AccountModal = ({ isOpen, onClose }) => {
                                         />
 	                                        <input
 	                                            value={draftProfile?.username || ''}
-	                                            onChange={e => setDraftProfile(p => ({ ...p, username: e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 20) }))}
-	                                            placeholder="OS-ID (e.g. AADIYA10)"
+	                                            onChange={e => setDraftProfile(p => ({ ...p, username: e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 8) }))}
+	                                            placeholder="OS-ID (e.g. HASMAT99)"
 	                                            style={{
                                                 padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
                                                 border: '1px solid var(--border)', background: 'var(--bg-elevated)',

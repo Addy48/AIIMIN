@@ -595,7 +595,7 @@ const Login = () => {
   }, [mode, step]);
 
   // ── Username step ──
-  const isUsernameValid = usernameVal.length >= 3 && usernameVal.length <= 20 && /^[A-Z0-9_.-]+$/.test(usernameVal);
+  const isUsernameValid = usernameVal.length === 8 && /^[A-Z0-9_.-]+$/.test(usernameVal) && (usernameVal.match(/[0-9]/g) || []).length <= 4;
 
   const handleUsernameNext = async (e) => {
     if (e) e.preventDefault();
@@ -615,7 +615,7 @@ const Login = () => {
 
   const handleUsernameChange = (e) => {
     const val = e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '');
-    if (val.length <= 20) setUsernameVal(val);
+    if (val.length <= 8) setUsernameVal(val);
   };
 
   // ── Signup step indicator step number ──
@@ -896,7 +896,7 @@ const Login = () => {
                         autoFocus
                         value={usernameVal}
                         onChange={handleUsernameChange}
-                        placeholder="e.g. AADIYA10"
+                        placeholder="e.g. HASMAT99"
                         style={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}
                       />
                       {/* Validation hints */}
@@ -905,8 +905,12 @@ const Login = () => {
                           Requirements
                         </div>
                         <ValidationRow
-                          ok={usernameVal.length >= 3 && usernameVal.length <= 20}
-                          label={`3–20 characters (${usernameVal.length}/20)`}
+                          ok={usernameVal.length === 8}
+                          label={`Exactly 8 characters (${usernameVal.length}/8)`}
+                        />
+                        <ValidationRow
+                          ok={(usernameVal.match(/[0-9]/g) || []).length <= 4}
+                          label={`Max 4 numbers (${(usernameVal.match(/[0-9]/g) || []).length}/4)`}
                         />
                         <ValidationRow
                           ok={usernameVal.length > 0 && /^[A-Z0-9_.-]+$/.test(usernameVal)}
