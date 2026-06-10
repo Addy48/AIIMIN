@@ -1,8 +1,6 @@
 import { Hono } from 'hono';
-import { pool } from '../lib/db.js';
 import { deleteCookie } from 'hono/cookie';
 import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
-import { ensureUserProfile } from '../services/userProfileService.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const app = new Hono();
@@ -14,7 +12,7 @@ const PIN_PATTERN = /^\d{6}$/;
 
 const validateOsId = (username) => {
     if (!USERNAME_PATTERN.test(username)) {
-        return 'OS-ID must be 4-8 uppercase letters/numbers';
+        return 'OS-ID must be 4-8 uppercase letters/numbers only';
     }
     const digits = (username.match(/[0-9]/g) || []).length;
     if (digits > 4) {
@@ -25,7 +23,7 @@ const validateOsId = (username) => {
 
 /**
  * GET /auth/resolve?identifier=...
- * Resolves a username or email to the actual email address for login.
+ * Resolves an OS-ID or email to the actual email address for login.
  */
 app.get('/resolve', async (c) => {
     const identifier = c.req.query('identifier');
@@ -39,16 +37,23 @@ app.get('/resolve', async (c) => {
     }
 
     try {
-        const { rows } = await pool.query(
-            'SELECT email FROM users WHERE LOWER(username) = LOWER($1)',
-            [identifier]
-        );
+        const supabase = getSupabaseAdmin();
+        const { data, error } = await supabase
+            .from('users')
+            .select('email')
+            .ilike('username', identifier)
+            .maybeSingle();
 
-        if (rows.length === 0) {
+        if (error) {
+            console.error('[auth/resolve] supabase error:', error.message);
+            return c.json({ error: 'Internal server error' }, 500);
+        }
+
+        if (!data) {
             return c.json({ error: 'User not found' }, 404);
         }
 
-        return c.json({ email: rows[0].email });
+        return c.json({ email: data.email });
     } catch (err) {
         console.error('[auth/resolve] error:', err.message);
         return c.json({ error: 'Internal server error' }, 500);
@@ -74,18 +79,25 @@ app.post('/signup', async (c) => {
             return c.json({ error: 'PIN must be exactly 6 digits' }, 400);
         }
 
-        if (normalizedUsername && !USERNAME_PATTERN.test(normalizedUsername)) {
+        if (normalizedUsername) {
             const osIdErr = validateOsId(normalizedUsername);
-            return c.json({ error: osIdErr || 'Invalid OS-ID format' }, 400);
-        }
-
-        // Check if public profile exists before creating an Auth user.
-        const check = await pool.query('SELECT id FROM users WHERE email = $1 OR LOWER(username) = LOWER($2)', [normalizedEmail, normalizedUsername]);
-        if (check.rows.length > 0) {
-            return c.json({ error: 'User already exists' }, 400);
+            if (osIdErr) return c.json({ error: osIdErr }, 400);
         }
 
         const supabase = getSupabaseAdmin();
+
+        // Check if user already exists in public.users
+        const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .or(`email.eq.${normalizedEmail},username.ilike.${normalizedUsername}`)
+            .maybeSingle();
+
+        if (existing) {
+            return c.json({ error: 'User already exists' }, 400);
+        }
+
+        // Create auth user via Supabase Admin
         const { data, error } = await supabase.auth.admin.createUser({
             email: normalizedEmail,
             password,
@@ -101,12 +113,35 @@ app.post('/signup', async (c) => {
             return c.json({ error: error.message }, status);
         }
 
-        const user = await ensureUserProfile(pool, data.user, {
-            fullName,
-            username: normalizedUsername,
-        });
+        // Upsert into public.users table
+        const { data: userRow, error: upsertErr } = await supabase
+            .from('users')
+            .upsert({
+                id: data.user.id,
+                email: normalizedEmail,
+                full_name: fullName || '',
+                username: normalizedUsername || '',
+                role: 'user',
+                onboarding_stage: 'complete',
+            }, { onConflict: 'id' })
+            .select()
+            .single();
 
-        return c.json({ user });
+        if (upsertErr) {
+            console.error('[auth/signup] upsert error:', upsertErr.message);
+            // Don't fail — user was created in auth, return basic info
+            return c.json({
+                user: {
+                    id: data.user.id,
+                    email: normalizedEmail,
+                    username: normalizedUsername,
+                    full_name: fullName || '',
+                    role: 'user',
+                }
+            });
+        }
+
+        return c.json({ user: userRow });
     } catch (err) {
         console.error('[auth/signup] error:', err);
         return c.json({ error: 'Internal server error' }, 500);
@@ -129,18 +164,27 @@ app.get('/me', requireAuth, async (c) => {
     const userId = c.get('userId');
     const authUser = c.get('user');
     try {
+        const supabase = getSupabaseAdmin();
+
+        // Ensure user profile exists
         if (authUser?.id) {
-            await ensureUserProfile(pool, authUser);
+            await supabase.from('users').upsert({
+                id: authUser.id,
+                email: authUser.email,
+                full_name: authUser.user_metadata?.full_name || '',
+                username: authUser.user_metadata?.username || '',
+                role: 'user',
+            }, { onConflict: 'id', ignoreDuplicates: true });
         }
 
-        const { rows } = await pool.query(
-            `SELECT id, email, full_name, username, role, avatar_url, timezone,
-                    onboarding_stage, created_at
-             FROM users WHERE id = $1`,
-            [userId]
-        );
-        if (rows.length === 0) return c.json({ user: null }, 401);
-        return c.json({ user: rows[0] });
+        const { data, error } = await supabase
+            .from('users')
+            .select('id, email, full_name, username, role, avatar_url, timezone, onboarding_stage, created_at')
+            .eq('id', userId)
+            .maybeSingle();
+
+        if (error || !data) return c.json({ user: null }, 401);
+        return c.json({ user: data });
     } catch (err) {
         console.error('[auth/me] error:', err.message);
         return c.json({ user: null }, 401);
@@ -149,8 +193,6 @@ app.get('/me', requireAuth, async (c) => {
 
 /**
  * POST /auth/complete-google-profile
- * Called after Google OAuth to set username + PIN for new Google users.
- * Requires a valid Supabase session (Bearer token).
  */
 app.post('/complete-google-profile', requireAuth, async (c) => {
     const userId = c.get('userId');
@@ -169,21 +211,24 @@ app.post('/complete-google-profile', requireAuth, async (c) => {
         }
 
         const normalizedUsername = username.trim().toUpperCase();
-        if (!USERNAME_PATTERN.test(normalizedUsername)) {
-            return c.json({ error: 'Username must be 3-20 uppercase letters, numbers, _, ., or -' }, 400);
-        }
+        const osIdErr = validateOsId(normalizedUsername);
+        if (osIdErr) return c.json({ error: osIdErr }, 400);
+
+        const supabase = getSupabaseAdmin();
 
         // Check username uniqueness (exclude self)
-        const check = await pool.query(
-            'SELECT id FROM users WHERE LOWER(username) = LOWER($1) AND id != $2',
-            [normalizedUsername, userId]
-        );
-        if (check.rows.length > 0) {
+        const { data: taken } = await supabase
+            .from('users')
+            .select('id')
+            .ilike('username', normalizedUsername)
+            .neq('id', userId)
+            .maybeSingle();
+
+        if (taken) {
             return c.json({ error: 'Username already taken' }, 409);
         }
 
         // Update Supabase auth user password (PIN) + metadata
-        const supabase = getSupabaseAdmin();
         const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
             password: pin,
             user_metadata: {
@@ -198,27 +243,20 @@ app.post('/complete-google-profile', requireAuth, async (c) => {
             return c.json({ error: 'Failed to update credentials' }, 500);
         }
 
-        // Update / create DB users row
-        const { rows: existing } = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
-
-        if (existing.length > 0) {
-            await pool.query(
-                `UPDATE users SET username = $1, full_name = $2, onboarding_stage = 'complete', updated_at = NOW() WHERE id = $3`,
-                [normalizedUsername, full_name || '', userId]
-            );
-        } else {
-            await ensureUserProfile(pool, { ...authUser, user_metadata: { username: normalizedUsername, full_name: full_name || '' } }, {
+        // Upsert DB users row
+        const { data: userRow } = await supabase
+            .from('users')
+            .upsert({
+                id: userId,
+                email: authUser.email,
                 username: normalizedUsername,
-                fullName: full_name || '',
-            });
-        }
+                full_name: full_name || '',
+                onboarding_stage: 'complete',
+            }, { onConflict: 'id' })
+            .select()
+            .single();
 
-        const { rows } = await pool.query(
-            'SELECT id, email, full_name, username, role, avatar_url, onboarding_stage FROM users WHERE id = $1',
-            [userId]
-        );
-
-        return c.json({ success: true, user: rows[0] || null });
+        return c.json({ success: true, user: userRow || null });
     } catch (err) {
         console.error('[complete-google-profile] error:', err);
         return c.json({ error: 'Internal server error' }, 500);
