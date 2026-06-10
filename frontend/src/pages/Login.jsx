@@ -847,7 +847,7 @@ const Login = () => {
                         autoFocus
                         value={fullName}
                         onChange={e => setFullName(e.target.value)}
-                        placeholder="e.g. Aaditya Upadhyay"
+                        placeholder="e.g. John Doe"
                       />
                       <Field
                         label="Recovery Email (Optional)"
