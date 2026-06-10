@@ -213,10 +213,10 @@ const TrajectoryProgress = React.memo(() => {
         <span style={{ padding: '4px 10px', background: 'var(--color-surface)', borderRadius: '99px', border: '1px solid var(--color-border)' }}>Live</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', margin: 'auto 0' }}>
-        <LinearProgress id="day"   label="Day"    color="#14B8A6" sublabel={initial.day.sub}   />
-        <LinearProgress id="week"  label="Week"   color="#3B82F6" sublabel={initial.week.sub}  />
-        <LinearProgress id="month" label="Month"  color="#8B5CF6" sublabel={initial.month.sub} />
-        <LinearProgress id="year"  label="Year"   color="#F43F5E" sublabel={initial.year.sub}  />
+        <LinearProgress id="day"   label="Day"    color="#22D3EE" sublabel={initial.day.sub}   />
+        <LinearProgress id="week"  label="Week"   color="#A78BFA" sublabel={initial.week.sub}  />
+        <LinearProgress id="month" label="Month"  color="#F472B6" sublabel={initial.month.sub} />
+        <LinearProgress id="year"  label="Year"   color="#FB923C" sublabel={initial.year.sub}  />
       </div>
     </div>
   );
@@ -319,10 +319,10 @@ const Overview = () => {
       />
 
       {/* Main Grid */}
-      <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px' }} className="overview-grid">
+      <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px', alignItems: 'stretch' }} className="overview-grid">
 
         {/* LEFT column */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'32px', height: '100%', minHeight: 0 }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:'32px', minHeight: 0 }}>
           
           {/* Urgent Reminders Banner */}
           {urgentReminders.length > 0 && (
@@ -442,7 +442,7 @@ const Overview = () => {
         </div>
 
         {/* RIGHT sidebar */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'32px', height: '100%' }}>
+        <div style={{ display:'flex', flexDirection:'column', gap:'32px', minHeight: 0 }}>
 
           <CommandCenter user={user} />
 

@@ -120,11 +120,10 @@ const PinNumpad = ({ onEntry, onDelete }) => {
         if (key === '') return <div key={idx} />;
         const isBack = key === '⌫';
         return (
-          <motion.button
+          <button
             key={idx}
-            whileHover={{ backgroundColor: 'var(--color-elevated)' }}
-            whileTap={{ scale: 0.93 }}
             type="button"
+            className="pin-numpad-btn"
             onClick={() => isBack ? onDelete() : onEntry(key)}
             style={{
               height: '64px', borderRadius: '14px',
@@ -136,11 +135,11 @@ const PinNumpad = ({ onEntry, onDelete }) => {
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontFamily: 'var(--font-sans)',
-              transition: 'background 0.15s',
+              transition: 'background 0.15s, transform 0.1s',
             }}
           >
             {key}
-          </motion.button>
+          </button>
         );
       })}
     </div>
@@ -379,7 +378,7 @@ const InitializingScreen = ({ stage }) => {
 ───────────────────────────────────────────── */
 const Login = () => {
   const { signInWithUsername, signUpWithUsername, signInWithGoogle } = useAuth();
-  const { theme, setTheme } = useThemeContext();
+  const { setForcedTheme } = useThemeContext();
   const navigate = useNavigate();
 
   // ── State ──
@@ -402,8 +401,9 @@ const Login = () => {
   const [forgotSent, setForgotSent]   = useState(false);
 
   useEffect(() => {
-    setTheme('normal'); // Force Light theme on the Login page
-  }, [setTheme]);
+    setForcedTheme('normal'); // Force Light theme on the Login page
+    return () => setForcedTheme(null);
+  }, [setForcedTheme]);
 
   useEffect(() => {
     let timer;
@@ -1099,6 +1099,13 @@ const Login = () => {
 
         @keyframes login-spin {
           to { transform: rotate(360deg); }
+        }
+
+        .pin-numpad-btn:hover {
+          background: var(--color-elevated) !important;
+        }
+        .pin-numpad-btn:active {
+          transform: scale(0.93);
         }
 
         /* Mobile: hide left panel */
