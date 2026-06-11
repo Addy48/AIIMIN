@@ -43,7 +43,20 @@ const Login = () => {
   const [forgotIdentifier, setForgotIdentifier] = useState('');
   const [error, setError]           = useState(null);
   const [loading, setLoading]       = useState(false);
+  const [loadingText, setLoadingText] = useState('Verifying...');
   const [shake, setShake]           = useState(false);
+
+  React.useEffect(() => {
+    let timer;
+    if (loading) {
+      timer = setTimeout(() => {
+        setLoadingText('Waking up secure servers (may take ~50s)...');
+      }, 3500);
+    } else {
+      setLoadingText('Verifying...');
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   // Clear inputs when changing mode
   const toggleMode = () => {
@@ -418,7 +431,7 @@ const Login = () => {
                   <div style={{ padding: '24px', textAlign: 'center' }}>
                     <div className="aiimin-spinner" />
                     <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
-                      Sending...
+                      {loadingText}
                     </p>
                   </div>
                 ) : (
@@ -596,7 +609,7 @@ const Login = () => {
                   <div style={{ padding: '24px', textAlign: 'center' }}>
                     <div className="aiimin-spinner" />
                     <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
-                      Verifying...
+                      {loadingText}
                     </p>
                   </div>
                 ) : (
