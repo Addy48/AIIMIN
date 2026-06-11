@@ -126,19 +126,6 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const completeOAuthSignIn = useCallback(async (code) => {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) throw error;
-
-        if (data?.session?.access_token) {
-            localStorage.setItem('aiimin_session_fallback', data.session.access_token);
-            setSession(data.session);
-            await checkSession(data.session);
-        }
-
-        return data;
-    }, [checkSession]);
-
     const signUpWithUsername = async (username, pin, fullName = '', email = '') => {
         try {
             const normalizedUsername = normalizeUsername(username);
@@ -246,7 +233,6 @@ export function AuthProvider({ children }) {
         session,
         loading,
         signInWithGoogle,
-        completeOAuthSignIn,
         signUpWithUsername,
         signInWithUsername,
         logout: signOut,
