@@ -216,14 +216,9 @@ const Login = () => {
 
       await signUpWithUsername(registeredUsername, registeredPin, fullName.trim(), authEmail);
       
-      // Auto-transition to login page and fill details
-      setMode('login');
-      setIdentifier(registeredUsername);
-      setStep(2);
-      setPin(registeredPin);
-
-      // Auto-submit login using the new credentials
-      await handleSubmitLogin(registeredPin, usernameVal.trim());
+      // signUpWithUsername already calls signInWithPassword and populates the session!
+      // The AuthContext will detect the user and the router will auto-redirect to /overview.
+      // We do not need to manually call handleSubmitLogin here.
     } catch (err) {
       setError(err.message || 'Signup failed. Try again.');
       setConfirmPin('');
@@ -923,7 +918,7 @@ const Login = () => {
                   <div style={{ padding: '24px', textAlign: 'center' }}>
                     <div className="aiimin-spinner" />
                     <p style={{ color: 'var(--text-3)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '16px' }}>
-                      Registering and setting up OS...
+                      {loadingText === 'Verifying...' ? 'Registering and setting up OS...' : loadingText}
                     </p>
                   </div>
                 ) : (
