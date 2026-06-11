@@ -58,6 +58,11 @@ export function AuthProvider({ children }) {
     }, []);
 
     useEffect(() => {
+        // Failsafe timeout: if Supabase hangs or fails to resolve, unblock UI after 2.5s
+        const failsafe = setTimeout(() => {
+            setLoading(false);
+        }, 2500);
+
         // Monitor Supabase Auth state changes dynamically
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
             console.log(`[Supabase Auth Event] ${event}`);
@@ -75,6 +80,7 @@ export function AuthProvider({ children }) {
                 setUser(null);
                 localStorage.removeItem('aiimin_session_fallback');
             }
+            clearTimeout(failsafe);
             setLoading(false);
         });
 
@@ -86,11 +92,17 @@ export function AuthProvider({ children }) {
                 checkSession(activeSession);
             } else {
                 localStorage.removeItem('aiimin_session_fallback');
+                clearTimeout(failsafe);
                 setLoading(false);
             }
+        }).catch(err => {
+            console.error('Initial getSession failed:', err);
+            clearTimeout(failsafe);
+            setLoading(false);
         });
 
         return () => {
+            clearTimeout(failsafe);
             subscription.unsubscribe();
         };
     }, [checkSession]);
@@ -146,9 +158,22 @@ export function AuthProvider({ children }) {
 
             localStorage.setItem('aiimin_session_fallback', data.session.access_token);
             setSession(data.session);
-            const profile = await checkSession(data.session);
+            
+            // Fire checkSession in background, do NOT await it
+            checkSession(data.session);
+            
             toast.success('Registration successful!');
-            return { user: profile, session: data.session };
+            
+            // Return basic user data instantly
+            const basicUser = {
+                id: data.session.user.id,
+                email: data.session.user.email,
+                username: normalizedUsername,
+                full_name: fullName,
+                role: 'user',
+                isGuest: false
+            };
+            return { user: basicUser, session: data.session };
         } catch (error) {
             console.error('Error signing up:', error);
             throw new Error(error.response?.data?.error || error.message || 'Signup failed');
@@ -162,14 +187,16 @@ export function AuthProvider({ children }) {
                 ? normalizeEmail(identifier)
                 : `${normalizeUsername(identifier).toLowerCase()}@aiimin.com`;
             
-            // Resolve username to real email if exists
-            try {
-                const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
-                if (resolveData && resolveData.email) {
-                    authEmail = resolveData.email;
+            // Resolve username to real email if exists (only if not already an email)
+            if (!isEmailIdentifier(identifier)) {
+                try {
+                    const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
+                    if (resolveData && resolveData.email) {
+                        authEmail = resolveData.email;
+                    }
+                } catch (e) {
+                    // Not found or error, default email will be used
                 }
-            } catch (e) {
-                // Not found or error, default email will be used
             }
 
             const { data, error } = await supabase.auth.signInWithPassword({
@@ -180,9 +207,21 @@ export function AuthProvider({ children }) {
 
             localStorage.setItem('aiimin_session_fallback', data.session.access_token);
             setSession(data.session);
-            const profile = await checkSession(data.session);
+            
+            // Fire checkSession in background, do NOT await it so we don't block login on /auth/me
+            checkSession(data.session);
+            
             toast.success('Welcome back!');
-            return { user: profile, session: data.session };
+            
+            // Return basic user data instantly
+            const basicUser = {
+                id: data.session.user.id,
+                email: data.session.user.email,
+                username: identifier,
+                role: 'user',
+                isGuest: false
+            };
+            return { user: basicUser, session: data.session };
         } catch (error) {
             console.error('Error signing in:', error);
             throw new Error(error.response?.data?.error || error.message || 'Invalid credentials');
