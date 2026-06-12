@@ -157,8 +157,10 @@ export default function Onboarding() {
     /* ── Step 1: Username ── */
     const submitUsername = () => {
         const upper = username.trim().toUpperCase();
-        if (!/^[A-Z0-9@,._\-=+*^$#!]{8}$/i.test(upper)) { setError('Exactly 8 chars: letters, numbers, @,._-=+*^$#! allowed'); return; }
-        if ((upper.match(/[0-9]/g) || []).length > 4) { setError('Max 4 numbers allowed'); return; }
+        if (!upper) { setError('OS-ID cannot be empty.'); return; }
+        if (upper.length !== 8) { setError('OS-ID must be exactly 8 characters long.'); return; }
+        if (!/^[A-Z0-9@,._\-=+*^$#!]+$/.test(upper)) { setError('Only letters, numbers, and @,._-=+*^$#! are allowed.'); return; }
+        if ((upper.match(/[0-9]/g) || []).length > 4) { setError('Maximum 4 digits allowed.'); return; }
         if (usernameStatus === 'taken') { setError('That OS-ID is taken'); return; }
         if (usernameStatus === 'checking') { setError('Still checking availability…'); return; }
         next();
