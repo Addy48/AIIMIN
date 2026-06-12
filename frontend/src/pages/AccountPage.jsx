@@ -630,6 +630,32 @@ export default function AccountPage() {
                             </div>
                         </Section>
 
+                        {profile?.username === 'AU48' && (
+                            <Section title="Admin: Release Versions">
+                                <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    {[
+                                        { version: 'v1.0.4', build: 'Build 4810', date: 'June 12, 2026', changes: ['Fixed OS-ID validation rules', 'Resolved back button duplication', 'Enhanced typing practice'] },
+                                        { version: 'v1.0.3', build: 'Build 4792', date: 'June 11, 2026', changes: ['Implemented split-layout login', 'Added onboarding flow', 'Fixed auth redirects'] },
+                                        { version: 'v1.0.2', build: 'Build 4621', date: 'June 05, 2026', changes: ['Added 24-hour time format', 'Updated storage visualizer', 'Bug fixes in Focus Room'] },
+                                        { version: 'v1.0.1', build: 'Build 4510', date: 'May 30, 2026', changes: ['Initial Beta Release', 'Core modules integrated', 'Identity & Habits stable'] }
+                                    ].map((release, i) => (
+                                        <div key={i} style={{ padding: '16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                    <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-1)' }}>{release.version}</span>
+                                                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', background: 'var(--accent-alpha)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--accent)' }}>{release.build}</span>
+                                                </div>
+                                                <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>{release.date}</span>
+                                            </div>
+                                            <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-2)', fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                {release.changes.map((change, j) => <li key={j}>{change}</li>)}
+                                            </ul>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Section>
+                        )}
+
                         <div style={{
                             display: 'flex',
                             flexDirection: 'column',
@@ -649,7 +675,8 @@ export default function AccountPage() {
                             </button>
 
                             <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                Account settings · Theme saved locally · Secure session active
+                                Account settings · Theme saved locally · Secure session active<br/>
+                                <span style={{ marginTop: '8px', display: 'block', color: 'var(--text-3)', opacity: 0.7 }}>AIIMIN v1.0.4 (Build 4810)</span>
                             </p>
                         </div>
                     </div>
