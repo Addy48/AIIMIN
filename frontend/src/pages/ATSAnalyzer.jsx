@@ -304,9 +304,7 @@ export default function ATSAnalyzer({ onClose }) {
             Paste the Job Description and your Resume text. We'll identify missing keywords and suggest tailored bullet points to beat the ATS.
           </p>
         </div>
-        {onClose && (
-          <button onClick={onClose} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}>✕</button>
-        )}
+
       </div>
       {isGuest && (
           <div style={{
