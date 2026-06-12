@@ -3,25 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight, Keyboard, Mic, AlertTriangle } from 'lucide-react';
+import { Plus, X, ChevronRight, ChevronLeft, Keyboard, Mic, AlertTriangle } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
+import { useCalendarEvents } from '../hooks/useCalendarEvents';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 
-const WeekCell = React.memo(({ day, isToday }) => {
+const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
   const [tasks, setTasks] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(`aiimin_tasks_${day}`) || '[]');
+      return JSON.parse(localStorage.getItem(`aiimin_tasks_${dateStr}`) || '[]');
     } catch { return []; }
   });
   const [adding, setAdding] = useState(false);
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    localStorage.setItem(`aiimin_tasks_${day}`, JSON.stringify(tasks));
-  }, [tasks, day]);
+    localStorage.setItem(`aiimin_tasks_${dateStr}`, JSON.stringify(tasks));
+  }, [tasks, dateStr]);
+
+  useEffect(() => {
+    try {
+      setTasks(JSON.parse(localStorage.getItem(`aiimin_tasks_${dateStr}`) || '[]'));
+    } catch { setTasks([]); }
+  }, [dateStr]);
 
   const addTask = () => {
     if (input.trim()) {
@@ -37,10 +44,20 @@ const WeekCell = React.memo(({ day, isToday }) => {
       border: `1px solid ${isToday ? 'var(--color-accent)' : 'var(--color-border)'}`,
       borderRadius:'16px', padding:'12px', minHeight:'160px', display:'flex', flexDirection:'column', height: '100%'
     }}>
-      <div style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)', marginBottom:'10px', borderBottom:'1px solid var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
-        {day}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:'10px', borderBottom:'1px solid var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
+        <div style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)' }}>
+          {day}
+        </div>
+        <div style={{ fontSize:'10px', fontWeight:800, color: isToday ? 'var(--color-accent)' : 'var(--color-text-2)' }}>
+          {new Date(dateStr).getDate()}
+        </div>
       </div>
       <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'5px', overflowY:'auto', scrollbarWidth:'none', minHeight: 0 }}>
+        {calendarEvents?.map(e => (
+          <div key={e.id} style={{ fontSize:'10px', background:'var(--color-elevated)', borderLeft:`2px solid ${e.color||'var(--color-accent)'}`, padding:'4px 6px', borderRadius:'4px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', color:'var(--color-text-1)', fontWeight:600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '8px' }}>🕒</span> {e.title || e.summary}
+          </div>
+        ))}
         {tasks.map(t => (
           <div key={t.id} style={{ display:'flex', alignItems:'center', gap:'6px' }}>
             <input type="checkbox" checked={t.done} onChange={() => setTasks(p=>p.map(x=>x.id===t.id?{...x,done:!x.done}:x))}
@@ -225,9 +242,34 @@ const TrajectoryProgress = React.memo(() => {
 
 /* ── Main Overview ── */
 const Overview = () => {
-  const { user: authUser } = useAuth();
+  const { user: authUser, session } = useAuth();
   const user = useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
   const navigate = useNavigate();
+
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const currentWeekDates = useMemo(() => {
+    const today = new Date();
+    const dayOfWeek = (today.getDay() + 6) % 7;
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + (weekOffset * 7));
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(d.getDate() + i);
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${d.getFullYear()}-${m}-${dd}`;
+      dates.push({ day: DAYS[i], dateStr, isToday: weekOffset === 0 && i === dayOfWeek, rawDate: d });
+    }
+    return dates;
+  }, [weekOffset]);
+
+  const rangeStart = currentWeekDates[0].dateStr;
+  const rangeEnd = currentWeekDates[6].dateStr;
+  
+  const { events: allCalendarEvents } = useCalendarEvents(session, rangeStart, rangeEnd);
 
   const [urgentReminders, setUrgentReminders] = useState([]);
 
@@ -294,8 +336,8 @@ const Overview = () => {
     return Math.ceil((((d - y) / 86400000) + 1) / 7);
   };
 
-  const weekNum = getWeekNum(now);
-  const todayIdx = (now.getDay() + 6) % 7;
+  const displayWeekDate = new Date(currentWeekDates[0].rawDate);
+  const weekNum = getWeekNum(displayWeekDate);
 
 
 
@@ -421,12 +463,27 @@ const Overview = () => {
                   AI SCHEDULE
                 </div>
               </div>
-              <div style={{ fontSize:'12px', color:'var(--color-text-3)', fontWeight:600 }}>
-                3 tasks suggested for today
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-surface)', padding: '4px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+                  <button onClick={() => setWeekOffset(p => p - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-2)', display: 'flex', alignItems: 'center', padding: '4px' }}><ChevronLeft size={16} /></button>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-1)', width: '60px', textAlign: 'center' }}>Week {weekNum}</div>
+                  <button onClick={() => setWeekOffset(p => p + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-2)', display: 'flex', alignItems: 'center', padding: '4px' }}><ChevronRight size={16} /></button>
+                </div>
+                <button onClick={() => setWeekOffset(0)} style={{ fontSize:'11px', fontWeight:700, color:'var(--color-text-2)', background:'var(--color-surface)', border:'1px solid var(--color-border)', padding:'6px 12px', borderRadius:'8px', cursor:'pointer' }}>
+                  Today
+                </button>
               </div>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', flex: 1, minHeight: 0, gridAutoRows: '1fr' }}>
-              {DAYS.map((day, i) => <WeekCell key={day} day={day} isToday={i===todayIdx} />)}
+              {currentWeekDates.map(d => {
+                const dayEvents = allCalendarEvents?.filter(e => {
+                  const t = new Date(e.start_time || e.start);
+                  const m = String(t.getMonth() + 1).padStart(2, '0');
+                  const dd = String(t.getDate()).padStart(2, '0');
+                  return `${t.getFullYear()}-${m}-${dd}` === d.dateStr;
+                });
+                return <WeekCell key={d.dateStr} day={d.day} dateStr={d.dateStr} isToday={d.isToday} calendarEvents={dayEvents} />;
+              })}
             </div>
           </div>
 
