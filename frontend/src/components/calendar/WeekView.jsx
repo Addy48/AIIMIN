@@ -10,7 +10,7 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
  */
 const WeekView = ({ events, currentDate, onEventClick, onSlotClick }) => {
     const { theme } = useThemeContext();
-    const isDark = theme === 'dark';
+    const isDark = theme === 'vercel' || theme === 'midnight';
 
     const d = new Date(currentDate);
     const dayOfWeek = d.getDay();

@@ -9,7 +9,7 @@
 /* ────────────────────────────────────────────────────────
    DARK MODE (DEFAULT): Vercel-style black
 ───────────────────────────────────────────────────────── */
-:root {
+:root, [data-theme="vercel"] {
   color-scheme: dark;
 
   /* ── Base ────────────────────────────────────────── */
@@ -176,7 +176,7 @@
 /* ────────────────────────────────────────────────────────
    LIGHT MODE: Nordic Calm (Parchment + Forest Ink)
 ───────────────────────────────────────────────────────── */
-[data-theme="normal"] {
+[data-theme="nordic"] {
   color-scheme: light;
 
   --color-base:    #F0EDE8;
@@ -266,7 +266,7 @@
 /* ────────────────────────────────────────────────────────
    THEME: NOTION B&W
 ───────────────────────────────────────────────────────── */
-[data-theme="notion"] {
+[data-theme="studio"] {
   color-scheme: light;
   --color-base: #FFFFFF;
   --color-surface: #F7F7F5;
@@ -284,7 +284,7 @@
 /* ────────────────────────────────────────────────────────
    THEME: INTERNET (Hacker / Retro Web)
 ───────────────────────────────────────────────────────── */
-[data-theme="internet"] {
+[data-theme="midnight"] {
   color-scheme: dark;
   --color-base: #0A0D10;
   --color-surface: #101419;

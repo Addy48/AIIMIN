@@ -122,7 +122,7 @@ const UnauthenticatedView = () => (
 
 export default function AccountPage() {
     const { session, signOut } = useAuth();
-    const { theme, setTheme } = useThemeContext();
+    const { theme, userTheme, defaultLightTheme, defaultDarkTheme, setTheme, setDefaultLightTheme, setDefaultDarkTheme } = useThemeContext();
     const [profile, setProfile] = useState(null);
     const [draftProfile, setDraftProfile] = useState(null);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -387,36 +387,109 @@ export default function AccountPage() {
                         </Section>
 
                         <Section title="Appearance">
-                            <div style={{ padding: '20px', display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px' }}>
-                                {[
-                                    { id: 'light', label: 'Nordic', colors: ['#F0EDE8', '#FAFAF9', '#1E5C3A'], darkText: true },
-                                    { id: 'dark', label: 'Vercel', colors: ['#0A0A0A', '#111111', '#22C55E'] },
-                                    { id: 'notion', label: 'Studio', colors: ['#FFFFFF', '#F7F6F3', '#37352F'], darkText: true },
-                                    { id: 'midnight', label: 'Midnight', colors: ['#0B1120', '#0F172A', '#38BDF8'] }
-                                ].map(t => (
-                                    <div 
-                                        key={t.id}
-                                        onClick={() => setTheme(t.id)}
-                                        style={{
-                                            padding: '16px',
-                                            borderRadius: '16px',
-                                            background: t.colors[0],
-                                            border: `2px solid ${theme === t.id ? 'var(--color-accent)' : 'var(--border)'}`,
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '12px',
-                                            transition: 'all 0.2s ease',
-                                            opacity: theme === t.id ? 1 : 0.82,
-                                            boxShadow: theme === t.id ? '0 0 0 4px var(--color-surface)' : 'none'
-                                        }}
-                                    >
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', height: '36px' }}>
-                                            {t.colors.map(color => <span key={color} style={{ background: color, borderRadius: '8px', border: '1px solid rgba(0,0,0,0.08)' }} />)}
-                                        </div>
-                                        <span style={{ fontSize: '13px', fontWeight: 800, color: t.darkText ? '#151515' : '#EEE' }}>{t.label}</span>
+                            <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                                
+                                {/* Current Theme */}
+                                <div>
+                                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px', color: 'var(--text-2)' }}>Current Theme</h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px' }}>
+                                        {[
+                                            { id: 'nordic', label: 'Nordic', colors: ['#F0EDE8', '#FAFAF9', '#1E5C3A'], darkText: true },
+                                            { id: 'vercel', label: 'Vercel', colors: ['#0A0A0A', '#111111', '#22C55E'] },
+                                            { id: 'studio', label: 'Studio', colors: ['#FFFFFF', '#F7F6F3', '#37352F'], darkText: true },
+                                            { id: 'midnight', label: 'Midnight', colors: ['#0B1120', '#0F172A', '#38BDF8'] }
+                                        ].map(t => (
+                                            <div 
+                                                key={t.id}
+                                                onClick={() => setTheme(t.id)}
+                                                style={{
+                                                    padding: '16px',
+                                                    borderRadius: '16px',
+                                                    background: t.colors[0],
+                                                    border: `2px solid ${userTheme === t.id ? 'var(--color-accent)' : 'var(--border)'}`,
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '12px',
+                                                    transition: 'all 0.2s ease',
+                                                    opacity: userTheme === t.id ? 1 : 0.82,
+                                                    boxShadow: userTheme === t.id ? '0 0 0 4px var(--color-surface)' : 'none'
+                                                }}
+                                            >
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', height: '36px' }}>
+                                                    {t.colors.map(color => <span key={color} style={{ background: color, borderRadius: '8px', border: '1px solid rgba(0,0,0,0.08)' }} />)}
+                                                </div>
+                                                <span style={{ fontSize: '13px', fontWeight: 800, color: t.darkText ? '#151515' : '#EEE' }}>{t.label}</span>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                </div>
+
+                                {/* Default Light Theme */}
+                                <div>
+                                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px', color: 'var(--text-2)' }}>Default Light Theme</h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px' }}>
+                                        {[
+                                            { id: 'nordic', label: 'Nordic', colors: ['#F0EDE8', '#FAFAF9', '#1E5C3A'], darkText: true },
+                                            { id: 'studio', label: 'Studio', colors: ['#FFFFFF', '#F7F6F3', '#37352F'], darkText: true }
+                                        ].map(t => (
+                                            <div 
+                                                key={`light-${t.id}`}
+                                                onClick={() => setDefaultLightTheme(t.id)}
+                                                style={{
+                                                    padding: '12px',
+                                                    borderRadius: '12px',
+                                                    background: t.colors[0],
+                                                    border: `2px solid ${defaultLightTheme === t.id ? 'var(--color-accent)' : 'var(--border)'}`,
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '12px',
+                                                    transition: 'all 0.2s ease',
+                                                    opacity: defaultLightTheme === t.id ? 1 : 0.7
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', gap: '4px' }}>
+                                                    <span style={{ width: '16px', height: '16px', background: t.colors[2], borderRadius: '4px' }} />
+                                                </div>
+                                                <span style={{ fontSize: '13px', fontWeight: 700, color: t.darkText ? '#151515' : '#EEE' }}>{t.label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Default Dark Theme */}
+                                <div>
+                                    <h4 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px', color: 'var(--text-2)' }}>Default Dark Theme</h4>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px' }}>
+                                        {[
+                                            { id: 'vercel', label: 'Vercel', colors: ['#0A0A0A', '#111111', '#22C55E'] },
+                                            { id: 'midnight', label: 'Midnight', colors: ['#0B1120', '#0F172A', '#38BDF8'] }
+                                        ].map(t => (
+                                            <div 
+                                                key={`dark-${t.id}`}
+                                                onClick={() => setDefaultDarkTheme(t.id)}
+                                                style={{
+                                                    padding: '12px',
+                                                    borderRadius: '12px',
+                                                    background: t.colors[0],
+                                                    border: `2px solid ${defaultDarkTheme === t.id ? 'var(--color-accent)' : 'var(--border)'}`,
+                                                    cursor: 'pointer',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '12px',
+                                                    transition: 'all 0.2s ease',
+                                                    opacity: defaultDarkTheme === t.id ? 1 : 0.7
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', gap: '4px' }}>
+                                                    <span style={{ width: '16px', height: '16px', background: t.colors[2], borderRadius: '4px' }} />
+                                                </div>
+                                                <span style={{ fontSize: '13px', fontWeight: 700, color: '#EEE' }}>{t.label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </Section>
 
