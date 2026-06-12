@@ -1,12 +1,6 @@
-import axios from 'axios';
 import supabase from './supabase';
 
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
-
-const api = axios.create({
-    baseURL: API_URL,
-    withCredentials: true
-});
 
 export const buildAuthHeaders = (extraHeaders = {}) => ({
     'Content-Type': 'application/json',
@@ -28,18 +22,6 @@ const resolveHeaders = async ({ headers = {}, json = true } = {}) => {
     return baseHeaders;
 };
 
-api.interceptors.request.use(async (config) => {
-    const headers = await resolveHeaders({
-        headers: config.headers || {},
-        json: config.json !== false,
-    });
-
-    config.headers = headers;
-    return config;
-});
-
-export default api;
-
 export const getAuthHeaders = (extraHeaders = {}) => buildAuthHeaders(extraHeaders);
 
 export const apiRequest = async (path, options = {}) => {
@@ -51,17 +33,42 @@ export const apiRequest = async (path, options = {}) => {
         responseType = 'json',
     } = options;
 
-    const response = await api.request({
-        url: path,
-        method,
-        data,
-        params,
-        headers,
-        responseType,
-        json: options.json,
+    const resolvedHeaders = await resolveHeaders({
+        headers: headers || {},
+        json: options.json !== false,
     });
 
-    return response.data;
+    const url = new URL(path.startsWith('http') ? path : `${window.location.origin}${API_URL}${path}`);
+    if (params) {
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    }
+
+    const fetchOptions = {
+        method,
+        headers: resolvedHeaders,
+    };
+
+    if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        fetchOptions.body = typeof data === 'string' ? data : JSON.stringify(data);
+    }
+
+    const response = await fetch(url, fetchOptions);
+
+    if (!response.ok) {
+        throw new Error(`API Request failed with status ${response.status}: ${await response.text()}`);
+    }
+
+    if (responseType === 'json') {
+        return await response.json();
+    } else if (responseType === 'text') {
+        return await response.text();
+    } else if (responseType === 'blob') {
+        return await response.blob();
+    } else if (responseType === 'arraybuffer') {
+        return await response.arrayBuffer();
+    }
+
+    return response;
 };
 
 export const apiGet = (path, options = {}) => apiRequest(path, { ...options, method: 'GET' });

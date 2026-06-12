@@ -121,8 +121,8 @@ export function AuthProvider({ children }) {
             });
             if (error) throw error;
         } catch (err) {
-            console.error('Google sign-in error:', err);
-            toast.error(err.message || 'Google authentication failed');
+            console.warn('Google sign-in error:', err);
+            toast.error('Google Auth unavailable locally. Please verify Supabase settings.');
         }
     };
 

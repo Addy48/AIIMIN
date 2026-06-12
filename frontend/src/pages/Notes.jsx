@@ -96,50 +96,50 @@ const NoteEditor = ({ note, onSave, onClose }) => {
     return (
         <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
             onClick={e => e.target === e.currentTarget && onClose()}
         >
             <motion.div 
                 initial={{ scale: 0.97, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.97, y: 16 }}
-                style={{ width: '100%', maxWidth: '640px', maxHeight: '88vh', background: 'var(--color-base)', border: '1px solid var(--color-border)', borderRadius: '16px', display: 'flex', flexDirection: 'column', boxShadow: '0 32px 80px rgba(0,0,0,0.6)', overflow: 'hidden' }}
+                style={{ width: '100%', maxWidth: '640px', maxHeight: '88vh', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--border)', overflow: 'hidden' }}
             >
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 32px 14px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
                     <div style={{ display: 'flex', gap: '6px' }}>
                         {CATEGORIES.filter(c => c !== 'All').map(c => (
-                            <button key={c} onClick={() => setCategory(c)} style={{ padding: '5px 12px', borderRadius: '8px', border: `1px solid ${category === c ? 'var(--color-accent)' : 'var(--color-border)'}`, background: category === c ? 'var(--color-accent)' : 'var(--color-elevated)', color: category === c ? '#fff' : 'var(--color-text-3)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>{c}</button>
+                            <button key={c} onClick={() => setCategory(c)} style={{ padding: '6px 14px', borderRadius: '10px', border: `1px solid ${category === c ? 'var(--color-accent)' : 'var(--border)'}`, background: category === c ? 'var(--color-accent)' : 'var(--bg-elevated)', color: category === c ? '#fff' : 'var(--text-3)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}>{c}</button>
                         ))}
                     </div>
                     <button 
                         onClick={onClose} 
-                        style={{ width: '32px', height: '32px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-elevated)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-3)', transition: 'all 0.15s', flexShrink: 0 }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-elevated)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
+                        style={{ width: '36px', height: '36px', borderRadius: '12px', border: '1px solid var(--border)', background: 'var(--bg-elevated)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', transition: 'all 0.15s', flexShrink: 0 }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
                     >
                         <X size={16} strokeWidth={2.5} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px 20px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px 20px' }}>
                     <input 
                         autoFocus value={title} onChange={e => setTitle(e.target.value)}
                         placeholder="The North Star of this thought..."
-                        style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '26px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '16px', letterSpacing: '-0.03em', fontFamily: 'var(--font-serif, serif)' }}
+                        style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '26px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '16px', letterSpacing: '-0.03em', fontFamily: 'var(--font-serif, serif)' }}
                     />
 
                     <textarea 
                         value={body} onChange={e => setBody(e.target.value)}
                         placeholder="Collapse the entropy into wisdom..."
-                        style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '14px', color: 'var(--color-text-2)', lineHeight: 1.75, minHeight: '260px', resize: 'none' }}
+                        style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '15px', color: 'var(--text-2)', lineHeight: 1.75, minHeight: '260px', resize: 'none' }}
                     />
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '14px 28px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
+                <div style={{ padding: '20px 32px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', flexShrink: 0 }}>
                     <button 
                         onClick={() => onSave({ title, body, category })}
-                        style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 28px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.3)' }}
+                        style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '12px', padding: '12px 32px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.3)' }}
                     >
                         Archive Insight
                     </button>

@@ -28,11 +28,12 @@ import { pool } from '../server/lib/db.js';
 app.get('/health', (c) => c.json({ status: 'ok', ts: Date.now() }));
 
 // ── Supabase Keepalive (CRON) ──
-import { supabase } from '../server/lib/supabase.js';
+import { getSupabaseAdmin } from '../server/lib/supabaseAdmin.js';
 app.get('/keepalive', async (c) => {
     try {
         await pool.query('SELECT 1');
         // Also ping via Supabase client to ensure REST API registers activity
+        const supabase = getSupabaseAdmin();
         const { data, error } = await supabase.from('users').select('id').limit(1);
         if (error) console.error('Supabase REST ping error:', error);
         return c.json({ status: 'alive', message: 'Supabase pinged successfully', ts: Date.now() });

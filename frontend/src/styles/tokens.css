@@ -134,8 +134,8 @@
   --space-9: 64px;
 
   /* ── Layout ─────────────────────────────────────── */
-  --nav-height:      56px;
-  --nav-height-mob:  50px;
+  --nav-height:      80px;
+  --nav-height-mob:  64px;
   --content-max:     1320px;
   --content-pad:     40px;
   --section-gap:     var(--space-6);

@@ -135,6 +135,84 @@ app.get('/me', requireAuth, async (c) => {
 });
 
 /**
+ * POST /auth/complete-google-profile
+ * Called after Google OAuth to set username + PIN for new Google users.
+ * Requires a valid Supabase session (Bearer token).
+ */
+app.post('/complete-google-profile', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const authUser = c.get('user');
+
+    try {
+        const body = await c.req.json();
+        const { username, pin, full_name } = body;
+
+        if (!username || !pin) {
+            return c.json({ error: 'Username and PIN are required' }, 400);
+        }
+
+        if (!PIN_PATTERN.test(pin)) {
+            return c.json({ error: 'PIN must be exactly 6 digits' }, 400);
+        }
+
+        const normalizedUsername = username.trim().toUpperCase();
+        if (!USERNAME_PATTERN.test(normalizedUsername)) {
+            return c.json({ error: 'Username must be 3-20 uppercase letters, numbers, _, ., or -' }, 400);
+        }
+
+        // Check username uniqueness (exclude self)
+        const check = await pool.query(
+            'SELECT id FROM users WHERE LOWER(username) = LOWER($1) AND id != $2',
+            [normalizedUsername, userId]
+        );
+        if (check.rows.length > 0) {
+            return c.json({ error: 'Username already taken' }, 409);
+        }
+
+        // Update Supabase auth user password (PIN) + metadata
+        const supabase = getSupabaseAdmin();
+        const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+            password: pin,
+            user_metadata: {
+                ...authUser.user_metadata,
+                username: normalizedUsername,
+                full_name: full_name || authUser.user_metadata?.full_name || '',
+            },
+        });
+
+        if (updateError) {
+            console.error('[complete-google-profile] Supabase update error:', updateError.message);
+            return c.json({ error: 'Failed to update credentials' }, 500);
+        }
+
+        // Update / create DB users row
+        const { rows: existing } = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
+
+        if (existing.length > 0) {
+            await pool.query(
+                `UPDATE users SET username = $1, full_name = $2, onboarding_stage = 'complete', updated_at = NOW() WHERE id = $3`,
+                [normalizedUsername, full_name || '', userId]
+            );
+        } else {
+            await ensureUserProfile(pool, { ...authUser, user_metadata: { username: normalizedUsername, full_name: full_name || '' } }, {
+                username: normalizedUsername,
+                fullName: full_name || '',
+            });
+        }
+
+        const { rows } = await pool.query(
+            'SELECT id, email, full_name, username, role, avatar_url, onboarding_stage FROM users WHERE id = $1',
+            [userId]
+        );
+
+        return c.json({ success: true, user: rows[0] || null });
+    } catch (err) {
+        console.error('[complete-google-profile] error:', err);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+});
+
+/**
  * POST /auth/logout
  */
 app.post('/logout', async (c) => {

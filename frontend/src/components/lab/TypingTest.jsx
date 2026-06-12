@@ -140,29 +140,35 @@ const TYPING_CSS = `
   .tt-tab.inactive { background: transparent; color: var(--color-text-3); border: 1px solid transparent; }
   .tt-tab.inactive:hover { color: var(--color-text-2); background: var(--bg-elevated); border: 1px solid var(--color-border); }
   .tt-btn-primary {
-    border: none; border-radius: 10px; padding: 12px 28px;
-    font: 700 14px/1 inherit; cursor: pointer; transition: all 0.2s;
-    background: var(--color-accent); color: #fff;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    border: none; border-radius: 12px; padding: 14px 32px;
+    font: 800 14px/1 inherit; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    background: var(--color-accent); color: var(--color-base);
+    box-shadow: 0 8px 24px -6px var(--color-accent);
   }
-  .tt-btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .tt-btn-primary:hover { opacity: 0.95; transform: translateY(-2px); box-shadow: 0 12px 32px -6px var(--color-accent); }
   .tt-btn-secondary {
-    border: 1px solid var(--color-border); border-radius: 10px; padding: 12px 24px;
-    font: 600 13px/1 inherit; cursor: pointer; transition: all 0.15s;
-    background: var(--bg-elevated); color: var(--color-text-2);
+    border: 1px solid var(--color-border); border-radius: 12px; padding: 14px 28px;
+    font: 700 13px/1 inherit; cursor: pointer; transition: all 0.2s;
+    background: var(--color-surface); color: var(--color-text-2);
   }
-  .tt-btn-secondary:hover { background: var(--color-border); color: var(--color-text-1); }
+  .tt-btn-secondary:hover { background: var(--color-elevated); color: var(--color-text-1); border-color: var(--color-text-3); }
   .tt-metric {
-    background: var(--bg-elevated); border: 1px solid var(--color-border);
-    border-radius: 12px; padding: 16px 20px;
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: 16px; padding: 20px 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .tt-metric:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
   }
   .tt-inp {
-    width: 100%; background: var(--bg-elevated); border: 1px solid var(--color-border);
-    border-radius: 10px; padding: 10px 14px; color: var(--color-text-1);
-    font: 400 13px/1 inherit; outline: none; box-sizing: border-box;
-    transition: border-color 0.15s;
+    width: 100%; background: var(--color-surface); border: 1px solid var(--color-border);
+    border-radius: 12px; padding: 14px 16px; color: var(--color-text-1);
+    font: 500 14px/1 inherit; outline: none; box-sizing: border-box;
+    transition: all 0.2s;
   }
-  .tt-inp:focus { border-color: var(--color-accent); }
+  .tt-inp:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
   .tt-inp option { background: #1a1a1a; color: #fff; }
   select.tt-inp { cursor: pointer; }
 `;
@@ -204,14 +210,24 @@ export default function TypingTest({ userId, onComplete, onClose }) {
   const totalTests = progress.totalTests || 0;
 
   return (
-    <div style={{ padding: '32px 28px', maxWidth: '860px', margin: '0 auto' }}>
+    <div style={{ padding: '40px 32px', maxWidth: '1100px', margin: '0 auto', position: 'relative' }}>
+      {onClose && (
+        <button 
+          onClick={onClose}
+          style={{ position: 'absolute', top: '24px', right: '40px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <span>←</span> Back to Lab
+        </button>
+      )}
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
         <div>
-          <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--color-text-3)', marginBottom: '6px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--color-text-3)', marginBottom: '8px' }}>
             Typing Lab · Keyboard Dexterity
           </div>
-          <h2 style={{ font: '800 24px/1 var(--font-serif, serif)', color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.02em' }}>
+          <h2 style={{ font: '800 36px/1 var(--font-serif, serif)', color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.02em' }}>
             Master the keys.
           </h2>
         </div>
@@ -221,9 +237,9 @@ export default function TypingTest({ userId, onComplete, onClose }) {
             { label: 'Tests Done', value: totalTests, color: '#10B981' },
             { label: 'Lessons', value: `${completedLessons}/${LESSONS.length}`, color: '#8B5CF6' },
           ].map(s => (
-            <div key={s.label} className="tt-metric" style={{ textAlign: 'center', minWidth: '80px' }}>
-              <div style={{ fontSize: '22px', fontWeight: 800, color: s.color, lineHeight: 1, marginBottom: '4px' }}>{s.value}</div>
-              <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
+            <div key={s.label} className="tt-metric" style={{ textAlign: 'center', minWidth: '100px' }}>
+              <div style={{ fontSize: '28px', fontWeight: 800, color: s.color, lineHeight: 1, marginBottom: '6px' }}>{s.value}</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -305,27 +321,28 @@ function ModeCard({ emoji, title, desc, color, onClick, badge }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? 'var(--color-border-lit)' : 'var(--bg-elevated)',
+        background: hov ? 'var(--color-surface)' : 'var(--bg-elevated)',
         border: `1px solid ${hov ? color + '40' : 'var(--color-border)'}`,
-        borderRadius: '14px', padding: '24px', textAlign: 'left', cursor: 'pointer',
-        transition: 'all 0.2s', display: 'flex', flexDirection: 'column', gap: '12px',
-        transform: hov ? 'translateY(-2px)' : 'none',
+        borderRadius: '24px', padding: '36px', textAlign: 'left', cursor: 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', display: 'flex', flexDirection: 'column', gap: '20px',
+        transform: hov ? 'translateY(-6px)' : 'none',
+        boxShadow: hov ? `0 16px 40px -10px ${color}30` : '0 4px 20px rgba(0,0,0,0.05)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '28px' }}>{emoji}</span>
+        <span style={{ fontSize: '36px' }}>{emoji}</span>
         {badge && (
-          <span style={{ fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '6px', background: `rgba(${hexToRgb(color)},0.15)`, color }}>
+          <span style={{ fontSize: '12px', fontWeight: 700, padding: '6px 14px', borderRadius: '8px', background: `rgba(${hexToRgb(color)},0.15)`, color }}>
             {badge}
           </span>
         )}
       </div>
       <div>
-        <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '6px' }}>{title}</div>
-        <div style={{ fontSize: '12px', color: 'var(--color-text-3)', lineHeight: 1.5 }}>{desc}</div>
+        <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '10px' }}>{title}</div>
+        <div style={{ fontSize: '14px', color: 'var(--color-text-3)', lineHeight: 1.6 }}>{desc}</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color, fontSize: '12px', fontWeight: 700 }}>
-        Open <ChevronRight size={14} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color, fontSize: '14px', fontWeight: 700 }}>
+        Open <ChevronRight size={16} />
       </div>
     </button>
   );
@@ -436,23 +453,23 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
   if (phase === 'done') {
     const rating = wpm >= 80 ? { label: 'Expert', color: '#10B981', emoji: '🏆' } : wpm >= 60 ? { label: 'Advanced', color: '#3B82F6', emoji: '⭐' } : wpm >= 40 ? { label: 'Intermediate', color: '#F59E0B', emoji: '💪' } : { label: 'Beginner', color: '#8B5CF6', emoji: '🌱' };
     return (
-      <div style={{ padding: '32px 28px', maxWidth: '700px', margin: '0 auto' }}>
-        <button className="tt-btn-secondary" style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }} onClick={onBack}>
-          <ArrowLeft size={14} /> Back
+      <div style={{ padding: '40px 32px', maxWidth: '900px', margin: '0 auto' }}>
+        <button className="tt-btn-secondary" style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', padding: '12px 20px' }} onClick={onBack}>
+          <ArrowLeft size={16} /> Back
         </button>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '48px', marginBottom: '8px' }}>{rating.emoji}</div>
-          <div style={{ fontSize: '13px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: rating.color, marginBottom: '32px' }}>
+          <div style={{ fontSize: '56px', marginBottom: '12px' }}>{rating.emoji}</div>
+          <div style={{ fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: rating.color, marginBottom: '40px' }}>
             {rating.label} Typist
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginBottom: '40px' }}>
-            <div className="tt-metric" style={{ textAlign: 'center', minWidth: '130px' }}>
-              <div style={{ fontSize: '56px', fontWeight: 900, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-mono, monospace)', letterSpacing: '-0.04em' }}>{wpm}</div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '6px' }}>WPM</div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', marginBottom: '48px' }}>
+            <div className="tt-metric" style={{ textAlign: 'center', minWidth: '160px', padding: '32px' }}>
+              <div style={{ fontSize: '72px', fontWeight: 900, color: accentColor, lineHeight: 1, fontFamily: 'var(--font-mono, monospace)', letterSpacing: '-0.04em' }}>{wpm}</div>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '12px' }}>WPM</div>
             </div>
-            <div className="tt-metric" style={{ textAlign: 'center', minWidth: '130px' }}>
-              <div style={{ fontSize: '56px', fontWeight: 900, color: accuracy >= 95 ? '#10B981' : accuracy >= 85 ? '#F59E0B' : '#ef4444', lineHeight: 1, fontFamily: 'var(--font-mono, monospace)', letterSpacing: '-0.04em' }}>{accuracy}<span style={{ fontSize: '24px', color: 'var(--color-text-3)' }}>%</span></div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '6px' }}>Accuracy</div>
+            <div className="tt-metric" style={{ textAlign: 'center', minWidth: '160px', padding: '32px' }}>
+              <div style={{ fontSize: '72px', fontWeight: 900, color: accuracy >= 95 ? '#10B981' : accuracy >= 85 ? '#F59E0B' : '#ef4444', lineHeight: 1, fontFamily: 'var(--font-mono, monospace)', letterSpacing: '-0.04em' }}>{accuracy}<span style={{ fontSize: '28px', color: 'var(--color-text-3)' }}>%</span></div>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '12px' }}>Accuracy</div>
             </div>
           </div>
           {Object.keys(keyErrors).length > 0 && (
@@ -484,16 +501,16 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
   }
 
   return (
-    <div style={{ padding: '24px 28px', maxWidth: '860px', margin: '0 auto' }}>
+    <div style={{ padding: '32px', maxWidth: '1100px', margin: '0 auto' }}>
       {/* Nav */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px' }} onClick={onBack}>
-          <ArrowLeft size={13} /> Back
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+        <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', padding: '12px 20px' }} onClick={onBack}>
+          <ArrowLeft size={16} /> Back
         </button>
-        <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-elevated)', borderRadius: '10px', padding: '4px', border: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', gap: '6px', background: 'var(--bg-elevated)', borderRadius: '12px', padding: '6px', border: '1px solid var(--color-border)' }}>
           {[15, 30, 60].map(d => (
             <button key={d} onClick={() => handleDuration(d)}
-              style={{ padding: '7px 16px', borderRadius: '7px', border: 'none', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+              style={{ padding: '10px 24px', borderRadius: '8px', border: 'none', fontSize: '14px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.15s',
                 background: duration === d ? 'var(--color-border-lit)' : 'transparent',
                 color: duration === d ? 'var(--color-text-1)' : 'var(--color-text-3)',
               }}>
@@ -501,21 +518,21 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
             </button>
           ))}
         </div>
-        <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px' }} onClick={() => reset(duration)}>
-          <RefreshCw size={13} /> Restart
+        <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', padding: '12px 20px' }} onClick={() => reset(duration)}>
+          <RefreshCw size={16} /> Restart
         </button>
       </div>
 
       {/* Live Metrics */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
         {[
           { label: 'TIME', value: timeLeft + 's', color: timeLeft <= 5 ? '#ef4444' : 'var(--color-text-1)' },
           { label: 'WPM', value: wpm, color: accentColor },
           { label: 'ACC', value: accuracy + '%', color: accuracy < 90 ? '#ef4444' : accuracy < 95 ? '#F59E0B' : '#10B981' },
         ].map(m => (
-          <div key={m.label} className="tt-metric" style={{ flex: 1, textAlign: 'center' }}>
-            <div style={{ fontSize: '26px', fontWeight: 900, color: m.color, lineHeight: 1, fontFamily: 'var(--font-mono, monospace)' }}>{m.value}</div>
-            <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }}>{m.label}</div>
+          <div key={m.label} className="tt-metric" style={{ flex: 1, textAlign: 'center', padding: '24px' }}>
+            <div style={{ fontSize: '36px', fontWeight: 900, color: m.color, lineHeight: 1, fontFamily: 'var(--font-mono, monospace)' }}>{m.value}</div>
+            <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '8px' }}>{m.label}</div>
           </div>
         ))}
       </div>
@@ -525,9 +542,8 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
         <div className="tt-progress-fill" style={{ width: `${(input.length / text.length) * 100}%`, background: accentColor }} />
       </div>
 
-      {/* Typing Area */}
       <div
-        style={{ position: 'relative', background: 'var(--bg-elevated)', border: `1px solid ${isFocused ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: '14px', padding: '28px 32px', cursor: 'text', transition: 'border-color 0.2s', minHeight: '160px', userSelect: 'none' }}
+        style={{ position: 'relative', background: 'var(--color-surface)', border: `2px solid ${isFocused ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: '24px', padding: '48px 56px', cursor: 'text', transition: 'all 0.2s', minHeight: '300px', userSelect: 'none', boxShadow: isFocused ? '0 16px 50px -12px rgba(16,185,129,0.25)' : '0 8px 30px rgba(0,0,0,0.05)' }}
         onClick={() => inputRef.current?.focus()}
       >
         <input ref={inputRef} type="text" value={input} onChange={handleInput}
@@ -536,7 +552,7 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
         />
 
         {phase === 'ready' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'var(--color-base)', opacity: 0.9, backdropFilter: 'blur(4px)', zIndex: 5, gap: '8px' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '22px', background: 'var(--color-base)', opacity: 0.9, backdropFilter: 'blur(4px)', zIndex: 5, gap: '8px' }}>
             <Keyboard size={28} color="var(--color-text-3)" />
             <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-1)' }}>Click here and start typing</div>
             <div style={{ fontSize: '12px', color: 'var(--color-text-3)' }}>Timer starts on first keystroke</div>
@@ -544,13 +560,13 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
         )}
 
         {!isFocused && phase === 'running' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', background: 'var(--color-base)', opacity: 0.9, backdropFilter: 'blur(4px)', zIndex: 5, gap: '6px' }}>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)' }}>⏸ Paused</div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-3)' }}>Click to resume</div>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderRadius: '22px', background: 'var(--color-base)', opacity: 0.9, backdropFilter: 'blur(4px)', zIndex: 5, gap: '8px' }}>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-1)' }}>⏸ Paused</div>
+            <div style={{ fontSize: '14px', color: 'var(--color-text-3)' }}>Click to resume</div>
           </div>
         )}
 
-        <div style={{ fontSize: '19px', lineHeight: '2.1', fontFamily: '"Fira Code","JetBrains Mono","Roboto Mono",monospace', letterSpacing: '0.01em', wordBreak: 'break-word' }}>
+        <div style={{ fontSize: '26px', lineHeight: '1.9', fontFamily: '"Fira Code","JetBrains Mono","Roboto Mono",monospace', letterSpacing: '0.02em', wordBreak: 'break-word' }}>
           {textChars.map((char, i) => {
             const typed = i < input.length;
             const correct = typed && input[i] === char;
@@ -579,14 +595,14 @@ function LessonSelect({ progress, weakKeys, onSelectLesson, onBack }) {
   const levels = [...new Set(LESSONS.map(l => l.level))];
   const levelLabels = { 1: 'Home Row', 2: 'Top Row', 3: 'Bottom Row', 4: 'Numbers & Shift', 5: 'Speed', 6: 'Expert' };
   return (
-    <div style={{ padding: '28px', maxWidth: '760px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px' }} onClick={onBack}>
-          <ArrowLeft size={13} /> Back
+    <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+        <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', padding: '12px 20px' }} onClick={onBack}>
+          <ArrowLeft size={16} /> Back
         </button>
         <div>
-          <h3 style={{ font: '700 16px/1 inherit', color: 'var(--color-text-1)', margin: 0 }}>Lesson Mode</h3>
-          <p style={{ font: '400 12px/1 inherit', color: 'var(--color-text-3)', margin: '4px 0 0' }}>Learn keys step-by-step. Progress is saved automatically.</p>
+          <h3 style={{ font: '800 24px/1 inherit', color: 'var(--color-text-1)', margin: 0 }}>Lesson Mode</h3>
+          <p style={{ font: '500 14px/1 inherit', color: 'var(--color-text-3)', margin: '8px 0 0' }}>Learn keys step-by-step. Progress is saved automatically.</p>
         </div>
       </div>
 
@@ -629,28 +645,29 @@ function LessonRow({ lesson, done, onSelect }) {
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        background: hov ? 'var(--color-border-lit)' : 'var(--bg-elevated)',
-        border: `1px solid ${done ? lesson.color + '30' : 'var(--color-border)'}`,
-        borderLeft: `3px solid ${done ? lesson.color : 'var(--color-border)'}`,
-        borderRadius: '10px', padding: '14px 16px', cursor: 'pointer', textAlign: 'left',
-        transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '14px',
-        transform: hov ? 'translateX(2px)' : 'none',
+        background: hov ? 'var(--color-surface)' : 'var(--bg-elevated)',
+        border: `1px solid ${done ? lesson.color + '40' : 'var(--color-border)'}`,
+        borderLeft: `6px solid ${done ? lesson.color : 'var(--color-border)'}`,
+        borderRadius: '16px', padding: '20px 28px', cursor: 'pointer', textAlign: 'left',
+        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)', display: 'flex', alignItems: 'center', gap: '24px',
+        transform: hov ? 'translateX(6px)' : 'none',
+        boxShadow: hov ? '0 12px 30px rgba(0,0,0,0.06)' : 'none'
       }}
     >
-      <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: done ? lesson.color + '20' : 'var(--bg-elevated)', border: `1px solid ${done ? lesson.color + '40' : 'var(--color-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        {done ? <CheckCircle2 size={14} color={lesson.color} /> : <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)' }}>{lesson.id}</span>}
+      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: done ? lesson.color + '20' : 'var(--bg-elevated)', border: `1px solid ${done ? lesson.color + '40' : 'var(--color-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        {done ? <CheckCircle2 size={20} color={lesson.color} /> : <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--color-text-3)' }}>{lesson.id}</span>}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '2px' }}>{lesson.title}</div>
-        <div style={{ fontSize: '11px', color: 'var(--color-text-3)' }}>{lesson.desc}</div>
+        <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '4px' }}>{lesson.title}</div>
+        <div style={{ fontSize: '13px', color: 'var(--color-text-3)' }}>{lesson.desc}</div>
       </div>
       {lesson.keys.length > 0 && (
-        <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-          {lesson.keys.slice(0, 4).map(k => <span key={k} className="tt-kbd">{k}</span>)}
-          {lesson.keys.length > 4 && <span style={{ fontSize: '11px', color: 'var(--color-text-3)', alignSelf: 'center' }}>+{lesson.keys.length - 4}</span>}
+        <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+          {lesson.keys.slice(0, 4).map(k => <span key={k} className="tt-kbd" style={{ minWidth: '32px', height: '32px', fontSize: '13px' }}>{k}</span>)}
+          {lesson.keys.length > 4 && <span style={{ fontSize: '13px', color: 'var(--color-text-3)', alignSelf: 'center' }}>+{lesson.keys.length - 4}</span>}
         </div>
       )}
-      <ChevronRight size={16} color="var(--color-text-3)" />
+      <ChevronRight size={20} color="var(--color-text-3)" />
     </button>
   );
 }
@@ -709,37 +726,37 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
 
   if (phase === 'done') {
     return (
-      <div style={{ padding: '32px 28px', maxWidth: '700px', margin: '0 auto' }}>
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '40px', marginBottom: '8px' }}>✅</div>
-          <h3 style={{ font: '800 20px/1 inherit', color: 'var(--color-text-1)', margin: '0 0 4px' }}>Lesson Complete!</h3>
-          <p style={{ font: '400 13px/1 inherit', color: 'var(--color-text-3)', marginBottom: '28px' }}>{lesson.title}</p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '28px' }}>
+      <div style={{ padding: '40px 32px', maxWidth: '900px', margin: '0 auto' }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '56px', marginBottom: '12px' }}>✅</div>
+          <h3 style={{ font: '800 28px/1 inherit', color: 'var(--color-text-1)', margin: '0 0 8px' }}>Lesson Complete!</h3>
+          <p style={{ font: '500 16px/1 inherit', color: 'var(--color-text-3)', marginBottom: '40px' }}>{lesson.title}</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '32px', marginBottom: '40px' }}>
             {[{ label: 'WPM', value: wpm, color: lesson.color }, { label: 'Accuracy', value: accuracy + '%', color: accuracy >= 90 ? '#10B981' : '#F59E0B' }].map(s => (
-              <div key={s.label} className="tt-metric" style={{ textAlign: 'center', minWidth: '110px' }}>
-                <div style={{ fontSize: '36px', fontWeight: 900, color: s.color, fontFamily: 'var(--font-mono, monospace)', lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }}>{s.label}</div>
+              <div key={s.label} className="tt-metric" style={{ textAlign: 'center', minWidth: '150px', padding: '28px' }}>
+                <div style={{ fontSize: '48px', fontWeight: 900, color: s.color, fontFamily: 'var(--font-mono, monospace)', lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.12em', marginTop: '10px' }}>{s.label}</div>
               </div>
             ))}
           </div>
           {Object.keys(keyErrors).length > 0 && (
-            <div className="tt-metric" style={{ marginBottom: '24px', textAlign: 'left' }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-3)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <AlertTriangle size={12} color="#F59E0B" /> Errors this lesson
+            <div className="tt-metric" style={{ marginBottom: '32px', textAlign: 'left' }}>
+              <div style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-3)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertTriangle size={16} color="#F59E0B" /> Errors this lesson
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                 {Object.entries(keyErrors).sort((a,b)=>b[1]-a[1]).map(([k,c]) => (
-                  <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span className="tt-kbd" style={{ borderColor: '#ef4444', color: '#ef4444', background: 'rgba(239,68,68,0.1)' }}>{k === ' ' ? 'space' : k}</span>
-                    <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 600 }}>{c}×</span>
+                  <div key={k} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="tt-kbd" style={{ borderColor: '#ef4444', color: '#ef4444', background: 'rgba(239,68,68,0.1)', fontSize: '14px', minWidth: '32px', height: '32px' }}>{k === ' ' ? 'space' : k}</span>
+                    <span style={{ fontSize: '13px', color: '#ef4444', fontWeight: 700 }}>{c}×</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
             <button className="tt-btn-primary" style={{ background: lesson.color }} onClick={onBack}>Back to Lessons</button>
-            <button className="tt-btn-secondary" onClick={reset}><RefreshCw size={13} style={{ marginRight: '6px' }} />Retry</button>
+            <button className="tt-btn-secondary" onClick={reset}><RefreshCw size={16} style={{ marginRight: '8px' }} />Retry</button>
           </div>
         </motion.div>
       </div>
@@ -747,21 +764,21 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
   }
 
   return (
-    <div style={{ padding: '24px 28px', maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', padding: '8px 14px' }} onClick={onBack}>
-          <ArrowLeft size={13} /> Lessons
+    <div style={{ padding: '32px 32px', maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
+        <button className="tt-btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', padding: '12px 20px' }} onClick={onBack}>
+          <ArrowLeft size={16} /> Lessons
         </button>
         <div style={{ textAlign: 'center' }}>
-          <span style={{ fontSize: '10px', fontWeight: 700, padding: '4px 12px', borderRadius: '6px', background: `rgba(${hexToRgb(lesson.color)},0.15)`, color: lesson.color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <span style={{ fontSize: '12px', fontWeight: 800, padding: '6px 16px', borderRadius: '8px', background: `rgba(${hexToRgb(lesson.color)},0.15)`, color: lesson.color, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             {lesson.id} · Level {lesson.level}
           </span>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-1)', marginTop: '4px' }}>{lesson.title}</div>
+          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-1)', marginTop: '8px' }}>{lesson.title}</div>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '16px', fontWeight: 800, color: lesson.color, fontFamily: 'var(--font-mono, monospace)' }}>{wpm} <span style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>WPM</span></div>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: accuracy < 90 ? '#ef4444' : '#10B981' }}>{accuracy}% acc</div>
+            <div style={{ fontSize: '20px', fontWeight: 900, color: lesson.color, fontFamily: 'var(--font-mono, monospace)' }}>{wpm} <span style={{ fontSize: '12px', color: 'var(--color-text-3)' }}>WPM</span></div>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: accuracy < 90 ? '#ef4444' : '#10B981' }}>{accuracy}% acc</div>
           </div>
         </div>
       </div>
@@ -785,7 +802,7 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
 
       {/* Typing area */}
       <div
-        style={{ position: 'relative', background: 'var(--bg-elevated)', border: `1px solid ${isFocused ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: '14px', padding: '28px 32px', cursor: 'text', transition: 'border-color 0.2s', minHeight: '120px' }}
+        style={{ position: 'relative', background: 'var(--color-surface)', border: `2px solid ${isFocused ? 'var(--color-accent)' : 'var(--color-border)'}`, borderRadius: '24px', padding: '48px 56px', cursor: 'text', transition: 'all 0.2s', minHeight: '200px', boxShadow: isFocused ? '0 16px 50px -12px rgba(16,185,129,0.25)' : '0 8px 30px rgba(0,0,0,0.05)' }}
         onClick={() => { inputRef.current?.focus(); }}
       >
         <input ref={inputRef} type="text" value={input} onChange={handleInput}
