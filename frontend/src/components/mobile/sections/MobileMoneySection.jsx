@@ -37,11 +37,11 @@ const MobileMoneySection = ({ user, accounts }) => {
         'Household': ['earphones', 'headphones', 'speaker', 'jbl', 'sennheiser', 'charger', 'cable', 'pillow', 'hanger', 'wiper', 'bat', 'posters', 'handwash', 'toiletries', 'frame', 'water bottle', 'bottle'],
         'Body Care': ['serum', 'sunscreen', 'moisturizer', 'face wash', 'facewash', 'shampoo', 'haircut', 'hair cut', 'perfume', 'deodorant', 'rollon', 'scrubber', 'hairband', 'toothbrush', 'brush', 'tongue cleaner', 'skincare', 'lip balm', 'lotion', 'conditioner', 'hair oil', 'face mask'],
         'Education': ['print', 'pen', 'pencil', 'copy', 'cutter', 'sheets', 'file', 'lab', 'aws', 'course', 'study', 'book', 'notebook', 'pages', 'pbl', 'os lab'],
-        'Subscriptions': ['netflix', 'spotify', 'youtube', 'yt premium', 'amazon prime', 'apple one', 'hotstar', 'prime video', 'gpt', 'chatgpt', 'subscription', 'gpgo'],
+        'Subscriptions': ['netflix', 'spotify', 'youtube', 'yt premium', 'amazon prime', 'apple one', 'hotstar', 'prime video', 'subscription'],
         'Transport': ['auto', 'bus', 'train', 'bike', 'taxi', 'cab', 'rickshaw', 'rapido', 'uber', 'ola', 'petrol', 'fuel', 'toll', 'metro', 'ticket', 'nptel'],
         'Health': ['medicine', 'medicines', 'ors', '1mg', 'hospital', 'doctor', 'pharmacy', 'apollo', 'tablet', 'clinic', 'azithromycin', 'cofsils', 'strip'],
         'Misc': ['recharge', 'screen guard', 'ipad cover', 'cleaning kit', 'table clock', 'tumbler', 'fevikwik', 'dream cricket', 'paytm gold', 'trip', 'tennis ball', 'dust cleaner', 'apple pencil', 'keyboard', 'mouse'],
-        'Earning': ['dscout', 'attapoll', 'neevo', 'testerwork', 'pulse lab', 'pulselab', 'user interview', 'userq', 'cashkaro', 'freelance', 'gemini insider', 'payment received', 'bounty', 'income'],
+        'Earning': ['dscout', 'attapoll', 'neevo', 'testerwork', 'pulse lab', 'pulselab', 'user interview', 'userq', 'cashkaro', 'freelance', 'payment received', 'bounty', 'income'],
     };
 
     const ITEM_PRIORITY = [

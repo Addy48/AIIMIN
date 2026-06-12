@@ -3,33 +3,44 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
-    const [theme, setTheme] = useState(
+    const [theme, setThemeState] = useState(
         () => localStorage.getItem('aiimin-theme') || 'dark'
     );
+    const [forcedTheme, setForcedTheme] = useState(null);
 
-    // Apply theme to DOM whenever it changes
+    const activeTheme = forcedTheme || theme;
+
     useEffect(() => {
         const root = document.documentElement;
-        root.setAttribute('data-theme', theme);
+        root.setAttribute('data-theme', activeTheme);
 
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
-        }
+        // Remove all previous classes and add the active one
+        root.classList.remove('dark', 'normal', 'notion', 'internet');
+        root.classList.add(activeTheme);
 
         // CSS variables handle backgrounds — remove any inline overrides
         root.style.removeProperty('background-color');
         document.body.style.removeProperty('background-color');
+    }, [activeTheme]);
 
+    // Only save to localStorage when the ACTUAL user preference changes
+    useEffect(() => {
         localStorage.setItem('aiimin-theme', theme);
     }, [theme]);
 
-    const toggleTheme = useCallback(() => {
-        setTheme(prev => prev === 'dark' ? 'normal' : 'dark');
+    const setTheme = useCallback((newTheme) => {
+        setThemeState(newTheme);
     }, []);
 
-    const value = { theme, setTheme, toggleTheme };
+    const toggleTheme = useCallback(() => {
+        setThemeState(prev => {
+            const themes = ['dark', 'normal', 'notion', 'internet'];
+            const nextIdx = (themes.indexOf(prev) + 1) % themes.length;
+            return themes[nextIdx];
+        });
+    }, []);
+
+    const value = { theme: activeTheme, setTheme, setForcedTheme, toggleTheme, userTheme: theme };
 
     return (
         <ThemeContext.Provider value={value}>

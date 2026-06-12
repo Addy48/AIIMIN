@@ -170,34 +170,34 @@ const GoalModal = ({ onClose, onSave }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '24px' }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <motion.div initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }}
         style={{ 
-            background: 'var(--color-base)', 
-            border: '1px solid var(--color-border)', 
-            borderRadius: '16px', 
+            background: 'var(--bg-card)', 
+            border: '1px solid var(--border)', 
+            borderRadius: '24px', 
             width: '100%', 
-            maxWidth: '520px', 
-            maxHeight: '90vh', 
+            maxWidth: '560px', 
+            maxHeight: '85vh', 
             overflowY: 'auto',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--border)',
             display: 'flex',
             flexDirection: 'column',
         }}>
         {/* Modal header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--color-border)', flexShrink: 0 }}>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--color-text-1)', margin: 0 }}>Define Commitment</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 32px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', margin: 0, fontFamily: 'var(--font-serif)' }}>Define Commitment</h3>
           <button 
             onClick={onClose} 
-            style={{ background: 'var(--color-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-3)', cursor: 'pointer', padding: '6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-elevated)'; e.currentTarget.style.color = 'var(--color-text-3)'; }}
+            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-3)', cursor: 'pointer', padding: '8px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
           >
-            <X size={16} strokeWidth={2.5} />
+            <X size={18} strokeWidth={2.5} />
           </button>
         </div>
-        <div style={{ padding: '20px', overflowY: 'auto' }}>
+        <div style={{ padding: '32px', overflowY: 'auto' }}>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div>
@@ -268,14 +268,14 @@ const GoalModal = ({ onClose, onSave }) => {
 
           <button onClick={() => { if (goal.title.trim()) { onSave(goal); onClose(); } }}
             style={{ 
-                marginTop: '8px', 
+                marginTop: '16px', 
                 background: pillar.color, 
                 color: '#fff', 
                 border: 'none', 
-                padding: '14px', 
-                borderRadius: '10px', 
-                fontSize: '14px', 
-                fontWeight: 700, 
+                padding: '16px', 
+                borderRadius: '14px', 
+                fontSize: '15px', 
+                fontWeight: 800, 
                 cursor: 'pointer', 
                 width: '100%',
                 boxShadow: `0 8px 20px ${pillar.color}40`,

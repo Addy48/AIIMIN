@@ -57,10 +57,10 @@ const ScoreRing = ({ score }) => {
         position: 'absolute', inset: 0,
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       }}>
-        <span style={{ fontSize: 28, fontWeight: 700, color, fontFamily: 'var(--font-sans)', lineHeight: 1 }}>
+        <span style={{ fontSize: 36, fontWeight: 800, color, fontFamily: 'var(--font-sans)', lineHeight: 1 }}>
           {score}%
         </span>
-        <span style={{ fontSize: 10, color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)', marginTop: 6, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           ATS Match
         </span>
       </div>
@@ -86,10 +86,10 @@ const Chip = ({ label, variant }) => {
   return (
     <span style={{
       display: 'inline-block',
-      padding: '3px 9px',
+      padding: '6px 14px',
       borderRadius: '9999px',
-      fontSize: 11,
-      fontWeight: 500,
+      fontSize: 13,
+      fontWeight: 600,
       fontFamily: 'var(--font-mono)',
       ...styles[variant],
     }}>
@@ -112,12 +112,12 @@ const CopyButton = ({ text }) => {
       onClick={handle}
       title="Copy to clipboard"
       style={{
-        display: 'flex', alignItems: 'center', gap: 4,
-        padding: '4px 10px', borderRadius: 6,
+        display: 'flex', alignItems: 'center', gap: 6,
+        padding: '6px 14px', borderRadius: 8,
         border: '1px solid var(--color-border)',
         background: copied ? 'var(--color-success-dim)' : 'var(--color-elevated)',
         color: copied ? 'var(--color-success)' : 'var(--color-text-2)',
-        fontSize: 11, fontWeight: 500,
+        fontSize: 13, fontWeight: 600,
         cursor: 'pointer', flexShrink: 0,
         transition: 'all 0.15s ease',
       }}
@@ -208,14 +208,14 @@ const DropZone = ({ resumeText, onTextChange, onFileRead }) => {
           minHeight: 100,
         }}
       >
-        <Upload size={20} color={dragOver ? 'var(--color-accent)' : 'var(--color-text-3)'} />
-        <span style={{ fontSize: 12, color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', textAlign: 'center' }}>
+        <Upload size={28} color={dragOver ? 'var(--color-accent)' : 'var(--color-text-3)'} />
+        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', textAlign: 'center' }}>
           {fileName
             ? <><strong style={{ color: 'var(--color-text-1)' }}>{fileName}</strong> — paste text below</>
             : <>Drop PDF / TXT here, or <strong style={{ color: 'var(--color-accent)' }}>browse</strong></>
           }
         </span>
-        <span style={{ fontSize: 11, color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
+        <span style={{ fontSize: 13, color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
           PDF: open → select all → copy → paste below
         </span>
         <input ref={fileRef} type="file" accept=".pdf,.txt,.doc,.docx" style={{ display: 'none' }} onChange={e => readFile(e.target.files?.[0])} />
@@ -228,13 +228,13 @@ const DropZone = ({ resumeText, onTextChange, onFileRead }) => {
         placeholder="Paste your resume text here…"
         spellCheck={false}
         style={{
-          width: '100%', minHeight: 260,
-          padding: '14px 16px',
+          width: '100%', minHeight: 280,
+          padding: '20px 24px',
           background: 'var(--color-elevated)',
           border: '1px solid var(--color-border)',
-          borderRadius: 10,
+          borderRadius: 14,
           color: 'var(--color-text-1)',
-          fontSize: 12,
+          fontSize: 14,
           fontFamily: 'var(--font-mono)',
           lineHeight: 1.6,
           resize: 'vertical',
@@ -246,7 +246,7 @@ const DropZone = ({ resumeText, onTextChange, onFileRead }) => {
 };
 
 // ── Main Component ─────────────────────────────────────────────────────────
-export default function ATSAnalyzer() {
+export default function ATSAnalyzer({ onClose }) {
   const { user } = useAuth();
   const isGuest = user?.isGuest;
 
@@ -288,22 +288,36 @@ export default function ATSAnalyzer() {
   const canAnalyze = jd.trim().length > 50 && resumeText.trim().length > 80;
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28 }}>
+    <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28, position: 'relative' }}>
+      {onClose && (
+        <button 
+          onClick={onClose}
+          style={{ position: 'absolute', top: '-10px', right: '0px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <span>←</span> Back to Lab
+        </button>
+      )}
 
       {/* ── Header ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <FileSearch size={20} color="var(--color-accent)" />
-            <h1 style={{ fontSize: 22, fontWeight: 600, fontFamily: 'var(--font-sans)', color: 'var(--color-text-1)', margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <FileSearch size={28} color="var(--color-accent)" />
+            <h1 style={{ fontSize: 36, fontWeight: 800, fontFamily: 'var(--font-sans)', color: 'var(--color-text-1)', margin: 0 }}>
               ATS Resume Analyzer
             </h1>
           </div>
-          <p style={{ fontSize: 13, color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', margin: 0 }}>
-            Paste a job description and your resume to get a keyword match score, gap analysis, and AI-tailored bullets.
+          <p style={{ margin: 0, fontSize: 16, color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
+            Paste the Job Description and your Resume text. We'll identify missing keywords and suggest tailored bullet points to beat the ATS.
           </p>
         </div>
-        {isGuest && (
+        {onClose && (
+          <button onClick={onClose} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}>✕</button>
+        )}
+      </div>
+      {isGuest && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '8px 14px', borderRadius: 8,
@@ -316,18 +330,16 @@ export default function ATSAnalyzer() {
             </span>
           </div>
         )}
-      </div>
-
       {/* ── Input panels ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: 20,
+        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+        gap: 24,
       }}>
         {/* Left: Job Description */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <label style={{
-            fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
+            fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
             textTransform: 'uppercase', color: 'var(--color-text-3)',
             fontFamily: 'var(--font-mono)',
           }}>
@@ -339,13 +351,13 @@ export default function ATSAnalyzer() {
             placeholder="Paste the full job description here…"
             spellCheck={false}
             style={{
-              width: '100%', minHeight: 380,
-              padding: '14px 16px',
+              width: '100%', minHeight: 400,
+              padding: '20px 24px',
               background: 'var(--color-elevated)',
               border: '1px solid var(--color-border)',
-              borderRadius: 10,
+              borderRadius: 14,
               color: 'var(--color-text-1)',
-              fontSize: 12,
+              fontSize: 14,
               fontFamily: 'var(--font-mono)',
               lineHeight: 1.6,
               resize: 'vertical',
@@ -358,9 +370,9 @@ export default function ATSAnalyzer() {
         </div>
 
         {/* Right: Resume */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <label style={{
-            fontSize: 10, fontWeight: 600, letterSpacing: '0.08em',
+            fontSize: 13, fontWeight: 700, letterSpacing: '0.1em',
             textTransform: 'uppercase', color: 'var(--color-text-3)',
             fontFamily: 'var(--font-mono)',
           }}>
@@ -399,12 +411,12 @@ export default function ATSAnalyzer() {
           onClick={handleAnalyze}
           disabled={!canAnalyze || loading}
           style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '13px 36px',
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '16px 48px',
             background: canAnalyze && !loading ? 'var(--color-accent)' : 'var(--color-elevated)',
             color: canAnalyze && !loading ? '#000' : 'var(--color-text-3)',
-            border: 'none', borderRadius: 10,
-            fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-sans)',
+            border: 'none', borderRadius: 14,
+            fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-sans)',
             cursor: canAnalyze && !loading ? 'pointer' : 'not-allowed',
             transition: 'all 0.2s ease',
             boxShadow: canAnalyze && !loading ? '0 0 20px var(--color-accent-glow)' : 'none',
@@ -449,10 +461,10 @@ export default function ATSAnalyzer() {
           }}>
             <ScoreRing score={result.matchScore} />
             <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', marginBottom: 6 }}>
+              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
                 {result.matchScore >= 75 ? '🎯 Strong Match' : result.matchScore >= 50 ? '⚠️ Moderate Match' : '🔴 Low Match'}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 16, color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
                 Your resume matches <strong style={{ color: 'var(--color-text-1)' }}>{result.matchedKeywords.length}</strong> of <strong style={{ color: 'var(--color-text-1)' }}>{result.matchedKeywords.length + result.missingKeywords.length}</strong> key terms.{' '}
                 {result.matchScore < 75 && 'Add the missing keywords below to improve your ATS score.'}
               </div>
@@ -469,11 +481,11 @@ export default function ATSAnalyzer() {
             {/* Matched */}
             <div style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-              borderRadius: 12, padding: '20px 22px',
+              borderRadius: 16, padding: '24px 28px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <Check size={14} color="var(--color-success)" />
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+                <Check size={18} color="var(--color-success)" />
+                <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
                   Matched ({result.matchedKeywords.length})
                 </span>
               </div>
@@ -488,11 +500,11 @@ export default function ATSAnalyzer() {
             {/* Missing */}
             <div style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-              borderRadius: 12, padding: '20px 22px',
+              borderRadius: 16, padding: '24px 28px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <X size={14} color="var(--color-danger)" />
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+                <X size={18} color="var(--color-danger)" />
+                <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
                   Missing ({result.missingKeywords.length})
                 </span>
               </div>
@@ -509,11 +521,11 @@ export default function ATSAnalyzer() {
           {result.aiAnalysis?.missingSkills?.length > 0 && (
             <div style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-              borderRadius: 12, padding: '20px 22px',
+              borderRadius: 16, padding: '24px 28px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
-                <Zap size={14} color="var(--color-accent)" />
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <Zap size={18} color="var(--color-accent)" />
+                <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
                   AI Gap Analysis
                 </span>
               </div>
@@ -527,19 +539,19 @@ export default function ATSAnalyzer() {
                     display: 'flex', gap: 14, alignItems: 'flex-start',
                   }}>
                     <div style={{
-                      width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                      width: 32, height: 32, borderRadius: 10, flexShrink: 0,
                       background: 'var(--color-danger-dim)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 12, fontWeight: 700, color: 'var(--color-danger)',
+                      fontSize: 14, fontWeight: 800, color: 'var(--color-danger)',
                       fontFamily: 'var(--font-mono)',
                     }}>
                       {idx + 1}
                     </div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', marginBottom: 4 }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', marginBottom: 6 }}>
                         {item.skill}
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 14, color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
                         {item.reason}
                       </div>
                     </div>
@@ -553,25 +565,25 @@ export default function ATSAnalyzer() {
           {result.aiAnalysis?.bulletPoints?.length > 0 && (
             <div style={{
               background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-              borderRadius: 12, padding: '20px 22px',
+              borderRadius: 16, padding: '24px 28px',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
-                <FileSearch size={14} color="var(--color-accent)" />
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <FileSearch size={18} color="var(--color-accent)" />
+                <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>
                   Tailored Resume Bullets
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {result.aiAnalysis.bulletPoints.map((bullet, idx) => (
                   <div key={idx} style={{
-                    padding: '12px 16px',
+                    padding: '16px 20px',
                     background: 'var(--color-elevated)',
                     border: '1px solid var(--color-border)',
-                    borderRadius: 10,
-                    display: 'flex', alignItems: 'flex-start', gap: 12,
+                    borderRadius: 12,
+                    display: 'flex', alignItems: 'flex-start', gap: 16,
                   }}>
-                    <span style={{ color: 'var(--color-accent)', fontSize: 14, marginTop: 1, flexShrink: 0 }}>•</span>
-                    <span style={{ flex: 1, fontSize: 12, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', lineHeight: 1.65 }}>
+                    <span style={{ color: 'var(--color-accent)', fontSize: 18, marginTop: 2, flexShrink: 0 }}>•</span>
+                    <span style={{ flex: 1, fontSize: 14, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', lineHeight: 1.65 }}>
                       {bullet}
                     </span>
                     <CopyButton text={bullet} />

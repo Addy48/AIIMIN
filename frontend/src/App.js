@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react
 // Eagerly loaded Auth & public pages
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
+import Onboarding from './pages/Onboarding';
 import Privacy from './pages/legal/Privacy';
 import Terms from './pages/legal/Terms';
 import DataDeletion from './pages/legal/DataDeletion';
@@ -47,6 +48,7 @@ const NotesPage     = React.lazy(() => import('./pages/Notes'));
 const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
 const FocusRoom     = React.lazy(() => import('./pages/FocusRoom'));
 const FamilyPage    = React.lazy(() => import('./pages/Family'));
+const AccountPage   = React.lazy(() => import('./pages/AccountPage'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -85,19 +87,7 @@ function AppContent({ user, session }) {
   // Basic check for mobile form factor (used for smart default routing)
   const isMobileDevice = typeof window !== 'undefined' && (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768);
 
-  React.useEffect(() => {
-    const meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) return;
-    const defaultVP = 'width=device-width, initial-scale=1, viewport-fit=cover';
-    const mobileVP = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
-    meta.setAttribute('content', isMobileRoute ? mobileVP : defaultVP);
-    if (isMobileRoute) {
-      const block = (e) => { if (e.touches?.length > 1) e.preventDefault(); };
-      document.addEventListener('touchmove', block, { passive: false });
-      return () => { meta.setAttribute('content', defaultVP); document.removeEventListener('touchmove', block); };
-    }
-    return () => meta.setAttribute('content', defaultVP);
-  }, [isMobileRoute]);
+  // Removed dynamic viewport manipulation to restore default zoom behavior
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-base)' }}>
@@ -106,6 +96,7 @@ function AppContent({ user, session }) {
         {/* ── Auth ── */}
         <Route path="/login" element={!user ? <Login /> : <Navigate to={isMobileDevice ? '/m' : '/overview'} replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/login" replace />} />
         <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
 
         {/* ── Authenticated shell ── */}
@@ -130,6 +121,7 @@ function AppContent({ user, session }) {
           <Route path="/discipline"  element={<Lazy><DisciplinePage /></Lazy>} />
           <Route path="/focus"       element={<Lazy><FocusRoom /></Lazy>} />
           <Route path="/family"      element={<Lazy><FamilyPage /></Lazy>} />
+          <Route path="/account"     element={<Lazy><AccountPage /></Lazy>} />
         </Route>
 
         {/* ── Mobile PWA ── */}
@@ -148,28 +140,6 @@ function AppContent({ user, session }) {
         <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
 
       </Routes>
-
-      {!isMobileRoute && (
-        <footer style={{
-          padding: '32px 24px',
-          background: 'var(--color-surface)',
-          borderTop: '1px solid var(--color-border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '12px',
-        }}>
-          <span style={{ font: '500 10px/1 var(--font-mono)', color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            AIIMIN — Personal OS
-          </span>
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-            {[['/privacy', 'Privacy'], ['/terms', 'Terms'], ['/data-deletion', 'Data Deletion'], ['/security', 'Security'], ['/about', 'About']].map(([to, label]) => (
-              <Link key={to} to={to} style={{ font: '300 12px/1 var(--font-sans)', color: 'var(--color-text-3)', textDecoration: 'none' }}>{label}</Link>
-            ))}
-          </div>
-        </footer>
-      )}
 
       {/* Global Widgets */}
       {!isMobileRoute && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}

@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
+import { motion } from 'framer-motion';
+import { AlertTriangle } from 'lucide-react';
+import { supabase } from '../utils/supabase';
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { session } = useAuth();
     const [error, setError] = useState(null);
+    const [status, setStatus] = useState('Establishing secure connection…');
 
     useEffect(() => {
-        const status = searchParams.get('status');
-        const reason = searchParams.get('reason');
         const supabaseError = searchParams.get('error');
-        const supabaseDesc = searchParams.get('error_description');
+        const supabaseDesc  = searchParams.get('error_description');
+        const queryStatus   = searchParams.get('status');
+        const reason        = searchParams.get('reason');
 
         if (supabaseError) {
             const msg = supabaseDesc ? decodeURIComponent(supabaseDesc) : supabaseError;
@@ -21,73 +23,140 @@ const AuthCallback = () => {
             return;
         }
 
-        if (status === 'error') {
+        if (queryStatus === 'error') {
             setError(reason || 'Authentication failed');
             setTimeout(() => navigate('/login'), 3000);
             return;
         }
 
-        if (status === 'success') {
-            navigate('/', { replace: true });
-            return;
-        }
+        // Wait for Supabase to exchange the code for a session
+        const handleCallback = async () => {
+            try {
+                setStatus('Verifying identity…');
+
+                // Give Supabase time to process the OAuth exchange
+                await new Promise(r => setTimeout(r, 800));
+
+                const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
+
+                if (sessionErr || !session) {
+                    setError('Could not establish session. Please try again.');
+                    setTimeout(() => navigate('/login'), 3000);
+                    return;
+                }
+
+                setStatus('Checking profile…');
+
+                // Fetch full profile from our API
+                const res = await fetch('/api/auth/me', {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                });
+                const data = res.ok ? await res.json() : null;
+                const userProfile = data?.user;
+
+                // Detect incomplete profile (Google user who hasn't set username yet)
+                const isIncomplete =
+                    !userProfile?.username ||
+                    userProfile.username === '' ||
+                    userProfile.onboarding_stage === 'pending';
+
+                if (isIncomplete) {
+                    setStatus('Setting up your profile…');
+                    await new Promise(r => setTimeout(r, 400));
+                    navigate('/onboarding', { replace: true });
+                } else {
+                    setStatus('Welcome back!');
+                    await new Promise(r => setTimeout(r, 300));
+                    navigate('/overview', { replace: true });
+                }
+            } catch (err) {
+                console.error('[AuthCallback] error:', err);
+                setError('Something went wrong. Redirecting…');
+                setTimeout(() => navigate('/login'), 3000);
+            }
+        };
+
+        handleCallback();
     }, [searchParams, navigate]);
 
-    useEffect(() => {
-        if (session) {
-            navigate('/overview', { replace: true });
-        }
-    }, [session, navigate]);
-
+    /* ── Error state ─────────────────────────────────────────── */
     if (error) {
         return (
             <div style={{
-                minHeight: '100vh',
-                background: 'var(--bg-primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexDirection: 'column',
-                gap: '12px',
-                fontFamily: 'inherit',
+                minHeight: '100vh', background: 'var(--color-base)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'var(--font-sans)',
             }}>
-                <div style={{
-                    padding: '20px 32px',
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--danger)',
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    maxWidth: '400px',
-                }}>
-                    <p style={{ color: 'var(--danger)', fontSize: '14px', fontWeight: 600, margin: '0 0 8px' }}>
-                        Google Sign-In Failed
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                    style={{
+                        padding: '40px 36px', background: 'var(--bg-card)',
+                        border: '1px solid var(--border)', borderRadius: '24px',
+                        textAlign: 'center', maxWidth: '420px', width: '90%',
+                        boxShadow: '0 24px 64px rgba(0,0,0,0.08)',
+                    }}
+                >
+                    <div style={{
+                        width: '52px', height: '52px', borderRadius: '50%',
+                        background: 'rgba(239,68,68,0.1)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
+                    }}>
+                        <AlertTriangle size={24} color="#EF4444" />
+                    </div>
+                    <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', margin: '0 0 12px' }}>
+                        Authentication Failed
+                    </h2>
+                    <p style={{ color: 'var(--text-2)', fontSize: '14px', margin: '0 0 20px', lineHeight: 1.6, wordBreak: 'break-word' }}>
+                        {error?.includes('exchange') ? 'Google OAuth misconfiguration — verify provider setup in Supabase.' : error}
                     </p>
-                    <p style={{ color: 'var(--text-2)', fontSize: '12px', margin: '0 0 12px', wordBreak: 'break-word' }}>
-                        {error?.includes('exchange') ? 'Google OAuth misconfiguration — see setup instructions.' : error}
+                    <p style={{ color: 'var(--text-3)', fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
+                        Redirecting to login…
                     </p>
-                    <p style={{ color: 'var(--text-3)', fontSize: '11px', margin: 0 }}>
-                        Redirecting to login...
-                    </p>
-                </div>
+                </motion.div>
             </div>
         );
     }
 
+    /* ── Loading state ───────────────────────────────────────── */
     return (
         <div style={{
-            minHeight: '100vh',
-            background: 'var(--bg-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            minHeight: '100vh', background: 'var(--color-base)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--font-sans)',
         }}>
-            <div style={{
-                width: '32px', height: '32px', borderRadius: '50%',
-                border: '3px solid var(--border)',
-                borderTopColor: 'var(--accent)',
-                animation: 'spin 0.8s linear infinite',
-            }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
+            >
+                {/* Logo */}
+                <div style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 900, letterSpacing: '-0.04em', color: 'var(--text-1)' }}>
+                    AIIMIN
+                </div>
+
+                {/* Spinner */}
+                <div style={{ position: 'relative', width: '56px', height: '56px' }}>
+                    <div style={{
+                        position: 'absolute', inset: 0, borderRadius: '50%',
+                        border: '2.5px solid var(--border)',
+                        borderTopColor: 'var(--color-accent)',
+                        animation: 'cb-spin 0.75s linear infinite',
+                    }} />
+                </div>
+
+                {/* Status text */}
+                <motion.p
+                    key={status}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ color: 'var(--text-2)', fontSize: '14px', margin: 0 }}
+                >
+                    {status}
+                </motion.p>
+            </motion.div>
+
+            <style>{`@keyframes cb-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 };

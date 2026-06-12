@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
@@ -6,6 +7,13 @@ import SpeakingLogger from '../components/lab/SpeakingLogger';
 import TypingTest from '../components/lab/TypingTest';
 import PersonalityForge from '../components/lab/PersonalityForge';
 import ThePit from '../components/lab/ThePit';
+import ATSAnalyzer from './ATSAnalyzer';
+import AptitudeTest from '../components/lab/AptitudeTest';
+import QuantitativeMaths from '../components/lab/QuantitativeMaths';
+import TechSimulator from '../components/lab/TechSimulator';
+import STARMethod from '../components/lab/STARMethod';
+import DomainFlashcards from '../components/lab/DomainFlashcards';
+import SystemDesign from '../components/lab/SystemDesign';
 import './lab/lab.css';
 
 /* ─────────────────────────────────────────────────────────────
@@ -21,10 +29,20 @@ export default function LabFullPage() {
   const { user } = useAuth();
   const { theme } = useThemeContext();
   const isDark = theme === 'dark';
+  const location = useLocation();
   const [activeModule, setActiveModule] = useState(null);
   const [typingStats, setTypingStats] = useState(null);
   const [todayMindset, setTodayMindset] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Check URL parameters for active module
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const mod = params.get('module');
+    if (mod) {
+      setActiveModule(mod);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     if (activeModule) {
@@ -98,137 +116,100 @@ export default function LabFullPage() {
         </div>
       </div>
 
-      {!loading && typingStats && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "32px" }}>
-          {[
-            { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#3B82F6" },
-            { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#22C55E" },
-            { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#F59E0B" },
-            { label: "Mindset Today", value: todayMindset?.state ?? "—", color: "#8B5CF6" },
-          ].map(stat => (
-            <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "10px", padding: "16px", borderTop: `3px solid ${stat.color}` }}>
-              <div style={{ fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{stat.label}</div>
-              <div style={{ fontSize: "22px", fontWeight: 700, color: text1, letterSpacing: "-0.02em", lineHeight: 1, textTransform: "capitalize" }}>{stat.value}</div>
+      {activeModule ? (
+        <div style={{ animation: 'fadeIn 0.2s ease-out', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 140px)' }}>
+          {/* Back to Lab bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexShrink: 0 }}>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: text1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {modules.find(m => m.key === activeModule)?.emoji} {modules.find(m => m.key === activeModule)?.label}
             </div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ marginBottom: "16px", fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em" }}>Modules</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
-        {modules.map(m => (
-          <button key={m.key} onClick={() => setActiveModule(m.key)}
-            style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "14px", padding: "24px", textAlign: "left", cursor: "pointer", transition: "all 150ms ease", borderLeft: `4px solid ${m.color}` }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-            <div style={{ fontSize: "26px", marginBottom: "12px" }}>{m.emoji}</div>
-            <div style={{ fontSize: "14px", fontWeight: 700, color: text1, marginBottom: "5px" }}>{m.label}</div>
-            <div style={{ fontSize: "12px", color: text2 }}>{m.desc}</div>
-          </button>
-        ))}
-      </div>
-
-      {!loading && typingStats && typingStats.totalTests > 0 && (
-        <div style={{ marginTop: "32px" }}>
-          <div style={{ fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>Recent Typing Tests</div>
-          <TypingHistory userId={user.id} isDark={isDark} cardBg={cardBg} border={border} text1={text1} text2={text2} text3={text3} />
-        </div>
-      )}
-
-      {activeModule && (() => {
-        const config = {
-          typing: { title: "Improvement Lab — Keyboard Dexterity & Speed Test", width: "1150px" },
-          speaking: { title: "Improvement Lab — Vocal Resonance Speech Logger", width: "1150px" },
-          personality: { title: "Improvement Lab — Identity & Trait Sculptor", width: "780px" },
-          pit: { title: "Improvement Lab — Self-Honesty Ledger & Challenges", width: "950px" },
-          reading: { title: "Improvement Lab — Intellect & Reading Log", width: "780px" },
-          aptitude: { title: "Improvement Lab — Aptitude & Logical Reasoning", width: "900px" },
-          quant: { title: "Improvement Lab — Quantitative Mathematics", width: "900px" },
-          techsim: { title: "Improvement Lab — Technical Interview Simulator", width: "1000px" },
-          star: { title: "Improvement Lab — STAR Behavioral Framework", width: "900px" },
-          resume: { title: "Improvement Lab — ATS Resume Matcher", width: "1100px" },
-          flashcards: { title: "Improvement Lab — Technical Flashcards", width: "800px" },
-          sysdesign: { title: "Improvement Lab — System Design Architecture", width: "1200px" },
-        }[activeModule] || { title: "Improvement Lab module", width: "780px" };
-
-        const winBg = isDark ? 'var(--color-surface)' : 'var(--color-overlay)';
-        const winBorder = 'var(--color-border)';
-
-        return (
-          <div onClick={() => setActiveModule(null)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", backdropFilter: "blur(8px)" }}>
-            <div onClick={e => e.stopPropagation()}
+            <button
+              onClick={() => {
+                setActiveModule(null);
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.delete('module');
+                window.history.pushState({}, '', newUrl);
+              }}
               style={{
-                background: winBg,
-                border: `1px solid ${winBorder}`,
-                borderRadius: "16px",
-                width: config.width,
-                maxWidth: "95vw",
-                height: "82vh",
-                maxHeight: "85vh",
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-                boxShadow: isDark ? "0 24px 64px rgba(0,0,0,0.7)" : "0 24px 64px rgba(0,0,0,0.15)",
-                backdropFilter: "blur(20px)"
-              }}>
-              
-              {/* Dark Title Bar — matches site theme */}
-              <div style={{
-                height: '52px',
-                minHeight: '52px',
-                padding: '0 18px 0 20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderBottom: '1px solid rgba(255,255,255,0.07)',
-                background: 'rgba(255,255,255,0.03)',
-                flexShrink: 0,
-              }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'var(--font-mono, monospace)', letterSpacing: '0.03em' }}>
-                    {config.title}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setActiveModule(null)}
-                  style={{
-                    width: '32px', height: '32px', borderRadius: '8px',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    background: 'rgba(255,255,255,0.05)',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--color-text-3)', transition: 'all 0.15s', flexShrink: 0,
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--color-text-3)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; }}
-                >
-                  ✕
-                </button>
-              </div>
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                borderRadius: '12px', padding: '10px 18px',
+                color: 'var(--text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 700,
+                transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.12)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
+            >
+              Back to Lab
+            </button>
+          </div>
 
-              {/* Scrollable Contents */}
-              <div style={{ flex: 1, overflowY: "auto", padding: "32px 40px" }}>
-                {activeModule === "typing"      && <TypingTest userId={user.id} onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
-                {activeModule === "speaking"    && <SpeakingLogger onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
-                {activeModule === "personality" && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-                {activeModule === "pit"         && <ThePit userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-                {activeModule === "reading"     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-                
-                {["aptitude", "quant", "techsim", "star", "resume", "flashcards", "sysdesign"].includes(activeModule) && (
-                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
-                    <div style={{ fontSize: "48px", marginBottom: "24px" }}>🚧</div>
-                    <h2 style={{ color: text1, fontSize: "24px", fontWeight: 700, marginBottom: "12px" }}>Module Under Construction</h2>
-                    <p style={{ color: text2, fontSize: "15px", maxWidth: "400px", margin: "0 auto", lineHeight: 1.6 }}>
-                      This BTech interview prep module is currently being built. Check back soon for the full interactive experience.
-                    </p>
-                  </div>
-                )}
-              </div>
-
+          <div style={{
+            background: cardBg, border: `1px solid ${border}`,
+            borderRadius: '16px', overflow: 'hidden', flex: 1,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column'
+          }}>
+            <div style={{ padding: '0', flex: 1, height: '100%', overflow: 'hidden' }}>
+              {activeModule === 'typing'      && <TypingTest userId={user.id} onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
+              {activeModule === 'speaking'    && <SpeakingLogger onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
+              {activeModule === 'personality' && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+              {activeModule === 'pit'         && <ThePit userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+              {activeModule === 'reading'     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+              {activeModule === 'resume'      && <ATSAnalyzer onClose={() => setActiveModule(null)} />}
+              {activeModule === 'aptitude'    && <AptitudeTest onClose={() => setActiveModule(null)} />}
+              {activeModule === 'quant'       && <QuantitativeMaths onClose={() => setActiveModule(null)} />}
+              {activeModule === 'techsim'     && <TechSimulator onClose={() => setActiveModule(null)} />}
+              {activeModule === 'star'        && <STARMethod onClose={() => setActiveModule(null)} />}
+              {activeModule === 'flashcards'  && <DomainFlashcards onClose={() => setActiveModule(null)} />}
+              {activeModule === 'sysdesign'   && <SystemDesign onClose={() => setActiveModule(null)} />}
             </div>
           </div>
-        );
-      })()}
+        </div>
+      ) : (
+        <>
+          {!loading && typingStats && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "32px" }}>
+              {[
+                { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#3B82F6" },
+                { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#22C55E" },
+                { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#F59E0B" },
+                { label: "Mindset Today", value: todayMindset?.state ?? "—", color: "#8B5CF6" },
+              ].map(stat => (
+                <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "10px", padding: "16px", borderTop: `3px solid ${stat.color}` }}>
+                  <div style={{ fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{stat.label}</div>
+                  <div style={{ fontSize: "22px", fontWeight: 700, color: text1, letterSpacing: "-0.02em", lineHeight: 1, textTransform: "capitalize" }}>{stat.value}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div style={{ marginBottom: "16px", fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em" }}>Modules</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
+            {modules.map(m => (
+              <button key={m.key} onClick={() => {
+                setActiveModule(m.key);
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('module', m.key);
+                window.history.pushState({}, '', newUrl);
+              }}
+                style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "14px", padding: "24px", textAlign: "left", cursor: "pointer", transition: "all 150ms ease", borderLeft: `4px solid ${m.color}` }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+                <div style={{ fontSize: "26px", marginBottom: "12px" }}>{m.emoji}</div>
+                <div style={{ fontSize: "14px", fontWeight: 700, color: text1, marginBottom: "5px" }}>{m.label}</div>
+                <div style={{ fontSize: "12px", color: text2 }}>{m.desc}</div>
+              </button>
+            ))}
+          </div>
+
+          {!loading && typingStats && typingStats.totalTests > 0 && (
+            <div style={{ marginTop: "32px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>Recent Typing Tests</div>
+              <TypingHistory userId={user.id} isDark={isDark} cardBg={cardBg} border={border} text1={text1} text2={text2} text3={text3} />
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -284,7 +265,17 @@ function ReadingLog({ userId, isDark, onClose }) {
     } catch { setSaving(false); }
   };
   return (
-    <div style={{ padding: "32px" }}>
+    <div style={{ padding: "32px", position: "relative" }}>
+      {onClose && (
+        <button 
+          onClick={onClose}
+          style={{ position: 'absolute', top: '24px', right: '32px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <span>←</span> Back to Lab
+        </button>
+      )}
       <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Reading Log</div>
       <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 24px" }}>Log what you read</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>

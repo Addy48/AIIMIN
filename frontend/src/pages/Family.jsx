@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import PageHeader from '../components/layout/PageHeader';
@@ -17,16 +18,25 @@ const TABS = [
 
 /* ── Generic Modal ── */
 const Modal = ({ isOpen, onClose, title, children }) => {
-  return (
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div 
+          key={`modal-overlay-${title}`}
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
           exit={{ opacity: 0 }}
           style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999,
             padding: '20px'
           }}
           onClick={onClose}
@@ -37,9 +47,9 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             style={{
-              background: 'var(--color-base)', border: '1px solid var(--color-border)', borderRadius: '24px',
+              background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px',
               padding: '32px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto',
-              boxShadow: '0 24px 48px rgba(0,0,0,0.2)'
+              boxShadow: '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--border)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -53,7 +63,8 @@ const Modal = ({ isOpen, onClose, title, children }) => {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 
@@ -80,6 +91,19 @@ const MaskedText = ({ text }) => {
 };
 
 
+const EmptyState = ({ icon: Icon, title, description, buttonText, onAction }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', background: 'var(--color-surface)', borderRadius: '24px', border: '1px dashed var(--color-border)', textAlign: 'center' }}>
+    <div style={{ width: '64px', height: '64px', background: 'var(--color-elevated)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', color: 'var(--color-text-2)' }}>
+      <Icon size={32} />
+    </div>
+    <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)', margin: '0 0 8px 0' }}>{title}</h3>
+    <p style={{ fontSize: '14px', color: 'var(--color-text-3)', maxWidth: '400px', lineHeight: 1.6, margin: '0 0 24px 0' }}>{description}</p>
+    <button onClick={onAction} style={{ background: 'var(--color-text-1)', color: 'var(--color-base)', padding: '12px 24px', borderRadius: '12px', fontSize: '14px', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Plus size={16} /> {buttonText}
+    </button>
+  </div>
+);
+
 export default function FamilyPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('members');
@@ -102,10 +126,14 @@ export default function FamilyPage() {
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const [m, d, i, h, r, e] = await Promise.all([
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
+      const fetchPromise = Promise.all([
         supabase.from('family_members').select('*').order('created_at', { ascending: true }),
         supabase.from('family_documents').select('*').order('created_at', { ascending: false }),
         supabase.from('family_insurance').select('*').order('created_at', { ascending: false }),
@@ -113,6 +141,8 @@ export default function FamilyPage() {
         supabase.from('family_reminders').select('*').order('due_date', { ascending: true }),
         supabase.from('family_emergency_contacts').select('*').order('is_pinned', { ascending: false })
       ]);
+
+      const [m, d, i, h, r, e] = await Promise.race([fetchPromise, timeoutPromise]);
       setMembers(m.data || []);
       setDocuments(d.data || []);
       setInsurance(i.data || []);
@@ -121,6 +151,8 @@ export default function FamilyPage() {
       setEmergency(e.data || []);
     } catch (error) {
       console.error('Error fetching family data:', error);
+    } finally {
+      setLoading(false);
     }
   }, [user]);
 
@@ -258,7 +290,30 @@ export default function FamilyPage() {
   const getMemberName = (id) => members.find(m => m.id === id)?.name || 'Unknown';
 
   if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--color-text-2)' }}>Loading Vault...</div>;
+    return (
+      <div className="page-container" style={{ opacity: 0.7, pointerEvents: 'none' }}>
+        <PageHeader title="Family Vault." subtitle="Secure, centralized record of your family's vital information." />
+        <div style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', overflowX: 'auto' }}>
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} style={{ width: '120px', height: '40px', background: 'var(--color-surface)', borderRadius: '12px', animation: 'aiimin-pulse 1.5s infinite' }} />
+            ))}
+          </div>
+          <div style={{ 
+            width: '100%', height: '400px', background: 'var(--color-surface)', 
+            borderRadius: '24px', border: '1px solid var(--color-border)', 
+            animation: 'aiimin-pulse 1.5s infinite' 
+          }} />
+        </div>
+        <style>{`
+          @keyframes aiimin-pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+          }
+        `}</style>
+      </div>
+    );
   }
 
   return (
@@ -304,6 +359,23 @@ export default function FamilyPage() {
         title="Family Vault." 
         subtitle="Secure central repository for family documents, insurance, and health."
       />
+
+      {/* Family Overview Dashboard */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+        <div style={{ background: 'linear-gradient(145deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.02) 100%)', border: '1px solid rgba(34, 197, 94, 0.2)', padding: '20px', borderRadius: '24px' }}>
+          <div style={{ fontSize: '13px', color: 'var(--color-text-2)', fontWeight: 600, marginBottom: '8px' }}>Total Members</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text-1)' }}>{members.length}</div>
+        </div>
+        <div style={{ background: 'linear-gradient(145deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.02) 100%)', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '20px', borderRadius: '24px' }}>
+          <div style={{ fontSize: '13px', color: 'var(--color-text-2)', fontWeight: 600, marginBottom: '8px' }}>Active Policies</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text-1)' }}>{insurance.length}</div>
+        </div>
+        <div style={{ background: 'linear-gradient(145deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.02) 100%)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '20px', borderRadius: '24px' }}>
+          <div style={{ fontSize: '13px', color: 'var(--color-text-2)', fontWeight: 600, marginBottom: '8px' }}>Reminders</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, color: 'var(--color-text-1)' }}>{reminders.length}</div>
+        </div>
+      </div>
+
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '32px', scrollbarWidth: 'none' }}>
@@ -354,7 +426,15 @@ export default function FamilyPage() {
                   </div>
                 </div>
               ))}
-              {members.length === 0 && <div style={{ color: 'var(--color-text-3)' }}>No members found.</div>}
+              {members.length === 0 && (
+                <EmptyState 
+                  icon={Shield} 
+                  title="No Family Members" 
+                  description="Add family members to securely manage their documents, health records, and insurance policies in one place." 
+                  buttonText="Add Member" 
+                  onAction={() => setIsMemberModalOpen(true)} 
+                />
+              )}
             </div>
           </div>
         )}
@@ -386,7 +466,15 @@ export default function FamilyPage() {
                   </div>
                 );
               })}
-              {documents.length === 0 && <div style={{ color: 'var(--color-text-3)' }}>No documents found.</div>}
+              {documents.length === 0 && (
+                <EmptyState 
+                  icon={FileText} 
+                  title="No Documents Uploaded" 
+                  description="Securely store passports, driver's licenses, and IDs. AIIMIN will remind you before they expire." 
+                  buttonText="Add Document" 
+                  onAction={() => setIsDocModalOpen(true)} 
+                />
+              )}
             </div>
           </div>
         )}
@@ -415,7 +503,15 @@ export default function FamilyPage() {
                   </div>
                 );
               })}
-              {insurance.length === 0 && <div style={{ color: 'var(--color-text-3)' }}>No insurance policies found.</div>}
+              {insurance.length === 0 && (
+                <EmptyState 
+                  icon={Heart} 
+                  title="No Insurance Policies" 
+                  description="Track your life, health, and vehicle insurance policies. Never miss a premium payment." 
+                  buttonText="Add Policy" 
+                  onAction={() => setIsInsModalOpen(true)} 
+                />
+              )}
             </div>
           </div>
         )}
@@ -442,7 +538,15 @@ export default function FamilyPage() {
                   </div>
                 </div>
               ))}
-              {health.length === 0 && <div style={{ color: 'var(--color-text-3)' }}>No health profiles found.</div>}
+              {health.length === 0 && (
+                <EmptyState 
+                  icon={Activity} 
+                  title="No Health Records" 
+                  description="Log allergies, blood groups, and ongoing medications so emergency responders have instant access when it matters." 
+                  buttonText="Add Health Profile" 
+                  onAction={() => setIsHealthModalOpen(true)} 
+                />
+              )}
             </div>
           </div>
         )}
@@ -476,7 +580,15 @@ export default function FamilyPage() {
                   </div>
                 );
               })}
-              {reminders.length === 0 && <div style={{ color: 'var(--color-text-3)' }}>No reminders found.</div>}
+              {reminders.length === 0 && (
+                <EmptyState 
+                  icon={Clock} 
+                  title="No Active Reminders" 
+                  description="Set custom reminders for family events or let AIIMIN automatically generate them for expiring documents and policies." 
+                  buttonText="Add Reminder" 
+                  onAction={() => setIsReminderModalOpen(true)} 
+                />
+              )}
             </div>
           </div>
         )}
@@ -497,7 +609,15 @@ export default function FamilyPage() {
                   {e.notes && <div style={{ fontSize: '13px', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '12px', borderRadius: '8px' }}>{e.notes}</div>}
                 </div>
               ))}
-              {emergency.length === 0 && <div style={{ color: 'var(--color-text-3)' }}>No emergency contacts found.</div>}
+              {emergency.length === 0 && (
+                <EmptyState 
+                  icon={AlertTriangle} 
+                  title="No Emergency Contacts" 
+                  description="Add doctors, hospitals, and close relatives. Pinned contacts are accessible immediately during a crisis." 
+                  buttonText="Add Emergency Contact" 
+                  onAction={() => setIsEmergencyModalOpen(true)} 
+                />
+              )}
             </div>
           </div>
         )}
