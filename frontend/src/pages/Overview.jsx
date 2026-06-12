@@ -339,37 +339,25 @@ const Overview = () => {
             </div>
           )}
 
-          {/* Quick Access Horizontal Strip */}
-          <div style={{ display:'flex', gap:'12px', overflowX:'auto', paddingBottom:'4px', scrollbarWidth: 'none' }}>
-            {[
-              { to:'/family',      label:'Family',      icon:'👨‍👩‍👧', color:'#EC4899' },
-              { to:'/journal',     label:'Journal',     icon:'📓', color:'#F59E0B' },
-              { to:'/finance',     label:'Wealth',      icon:'💰', color:'#22C55E' },
-              { to:'/habits',      label:'Habits',      icon:'✅', color:'#3B82F6' },
-              { to:'/notes',       label:'Notes',       icon:'🗒️', color:'#8B5CF6' },
-              { to:'/sports',      label:'Sports',      icon:'⚽', color:'#EF4444' },
-              { to:'/placements',  label:'Career',      icon:'🎯', color:'#14B8A6' },
-            ].map(item => (
-              <Link key={item.to} to={item.to} style={{ textDecoration:'none', flex: 1, minWidth: '100px' }}>
-                <motion.div 
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  style={{
-                    display:'flex', flexDirection: 'column', alignItems:'center', gap:'8px', padding:'16px 12px',
-                    background:'var(--color-surface)', border:'1px solid var(--color-border)',
-                    borderRadius:'20px', cursor:'pointer', transition:'border-color 0.2s',
-                    textAlign: 'center'
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = item.color}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
-                >
-                  <div style={{ background: `${item.color}15`, color: item.color, width: '44px', height: '44px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '4px' }}>
-                    {item.icon}
-                  </div>
-                  <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-text-1)', letterSpacing: '0.02em' }}>{item.label}</div>
-                </motion.div>
-              </Link>
-            ))}
+          {/* QUICK CAPTURE */}
+          <div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
+              <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)' }}>Quick Capture</div>
+              <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-accent)', cursor:'pointer' }}>Smart Log &rarr;</div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'16px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'16px', padding:'16px' }}>
+              {[
+                { label: 'Log a Habit', icon: '✅', to: '/habits' },
+                { label: 'Journal Entry', icon: '✏️', to: '/journal' },
+                { label: 'Track Expense', icon: '💸', to: '/finance' },
+                { label: 'Add Goal', icon: '🎯', to: '/placements' }
+              ].map((item, i) => (
+                <Link key={i} to={item.to} style={{ textDecoration:'none', display:'flex', flexDirection:'column', alignItems:'center', gap:'12px', padding:'20px 12px', border:'1.5px dashed var(--color-border)', borderRadius:'12px', transition:'all 0.2s', background:'var(--color-elevated)' }} onMouseEnter={e=>e.currentTarget.style.borderColor='var(--color-accent)'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+                  <div style={{ fontSize:'24px' }}>{item.icon}</div>
+                  <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-text-2)' }}>{item.label}</div>
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* Countdown Hero */}
@@ -405,34 +393,37 @@ const Overview = () => {
             </div>
           </div>
 
-          {/* Action Center */}
+          {/* RECENT WINS */}
           <div>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
-              <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Productivity Labs</div>
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:'20px' }}>
-              <button onClick={() => navigate('/lab?module=typing')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#10B981'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
-                <div style={{ background:'rgba(16, 185, 129, 0.1)', color:'#10B981', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Keyboard size={24} /></div>
-                <div>
-                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Typing Lab</div>
-                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Speed & accuracy</div>
+            <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'16px' }}>Recent Wins</div>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:'12px' }}>
+              {[
+                { text: 'Morning Workout — 2h ago', icon: '🔥', color: '#22C55E' },
+                { text: 'Journal — yesterday', icon: '✏️', color: '#8B5CF6' },
+                { text: 'Saved ₹500 — 3h ago', icon: '💰', color: '#F59E0B' }
+              ].map((win, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'99px' }}>
+                  <div style={{ width:'6px', height:'6px', borderRadius:'50%', background: win.color }} />
+                  <span style={{ fontSize:'14px' }}>{win.icon}</span>
+                  <span style={{ fontSize:'13px', fontWeight:600, color:'var(--color-text-2)' }}>{win.text}</span>
                 </div>
-              </button>
-              <button onClick={() => navigate('/lab?module=speaking')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#8B5CF6'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
-                <div style={{ background:'rgba(139, 92, 246, 0.1)', color:'#8B5CF6', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Mic size={24} /></div>
-                <div>
-                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Speaking Lab</div>
-                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Communication mastery</div>
-                </div>
-              </button>
+              ))}
             </div>
           </div>
 
           {/* Weekly Planner */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
-              <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Master Planner</div>
-              <div style={{ fontSize:'12px', color:'var(--color-text-3)', fontWeight:700, padding: '4px 12px', background: 'var(--color-elevated)', borderRadius: '99px' }}>Week {weekNum}</div>
+              <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Command Timeline</div>
+                <div style={{ fontSize:'10px', fontWeight:800, color:'#22C55E', background:'rgba(34,197,94,0.1)', padding:'4px 8px', borderRadius:'6px', display:'flex', alignItems:'center', gap:'4px' }}>
+                  <span style={{ width:'4px', height:'4px', borderRadius:'50%', background:'#22C55E' }} />
+                  AI SCHEDULE
+                </div>
+              </div>
+              <div style={{ fontSize:'12px', color:'var(--color-text-3)', fontWeight:600 }}>
+                3 tasks suggested for today
+              </div>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', flex: 1, minHeight: 0, gridAutoRows: '1fr' }}>
               {DAYS.map((day, i) => <WeekCell key={day} day={day} isToday={i===todayIdx} />)}
