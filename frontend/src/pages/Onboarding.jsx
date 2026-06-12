@@ -122,7 +122,7 @@ export default function Onboarding() {
     useEffect(() => {
         if (!username || username.length < 3) { setUsernameStatus('idle'); return; }
         const upper = username.toUpperCase();
-        if (!USERNAME_RE.test(upper)) { setUsernameStatus('idle'); return; }
+        if (!/^[A-Z0-9@,._\-=+*^$#!]{8}$/i.test(upper)) { setUsernameStatus('idle'); return; }
 
         setUsernameStatus('checking');
         const timer = setTimeout(async () => {
@@ -157,7 +157,7 @@ export default function Onboarding() {
     /* ── Step 1: Username ── */
     const submitUsername = () => {
         const upper = username.trim().toUpperCase();
-        if (!USERNAME_RE.test(upper)) { setError('Exactly 8 chars: letters, numbers, _ . -'); return; }
+        if (!/^[A-Z0-9@,._\-=+*^$#!]{8}$/i.test(upper)) { setError('Exactly 8 chars: letters, numbers, @,._-=+*^$#! allowed'); return; }
         if ((upper.match(/[0-9]/g) || []).length > 4) { setError('Max 4 numbers allowed'); return; }
         if (usernameStatus === 'taken') { setError('That OS-ID is taken'); return; }
         if (usernameStatus === 'checking') { setError('Still checking availability…'); return; }
@@ -235,7 +235,7 @@ export default function Onboarding() {
                 <input
                     autoFocus
                     value={username}
-                    onChange={e => { setUsername(e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '')); setError(''); }}
+                    onChange={e => { setUsername(e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '')); setError(''); }}
                     onKeyDown={e => e.key === 'Enter' && submitUsername()}
                     placeholder="e.g. HASMAT99"
                     maxLength={8}
@@ -250,7 +250,7 @@ export default function Onboarding() {
                 )}
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '8px' }}>
-                Exactly 8 characters, max 4 numbers · letters, numbers, _ . - only
+                Exactly 8 characters, max 4 numbers · allowed special characters: @,._-=+*^$#!
             </p>
             {error && <p style={s.err}>{error}</p>}
             <div style={{ display: 'flex', gap: '10px' }}>

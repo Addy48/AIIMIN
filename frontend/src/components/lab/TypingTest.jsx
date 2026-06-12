@@ -211,16 +211,7 @@ export default function TypingTest({ userId, onComplete, onClose }) {
 
   return (
     <div style={{ padding: '40px 32px', maxWidth: '1100px', margin: '0 auto', position: 'relative' }}>
-      {onClose && (
-        <button 
-          onClick={onClose}
-          style={{ position: 'absolute', top: '24px', right: '40px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <span>←</span> Back to Lab
-        </button>
-      )}
+
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px' }}>
         <div>
@@ -257,7 +248,7 @@ export default function TypingTest({ userId, onComplete, onClose }) {
         />
         <ModeCard
           emoji="🎯"
-          title="Lesson Mode"
+          title="Typing Practice"
           desc="Step-by-step key-by-key lessons — builds muscle memory from scratch"
           color="#8B5CF6"
           onClick={() => setMode('lesson')}
@@ -284,7 +275,7 @@ export default function TypingTest({ userId, onComplete, onClose }) {
               </div>
             ))}
             <span style={{ fontSize: '11px', color: 'var(--color-text-3)', marginLeft: '6px' }}>
-              — Practice these in Lesson Mode
+              — Practice these in Typing Practice
             </span>
           </div>
         </div>
@@ -367,7 +358,14 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
   const timerRef = useRef(null);
   const startRef = useRef(null);
   const textRef = useRef(text);
+  const activeCharRef = useRef(null);
   textRef.current = text;
+
+  useEffect(() => {
+    if (activeCharRef.current) {
+      activeCharRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [input.length]);
 
   const reset = useCallback((dur = duration) => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -566,22 +564,24 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
           </div>
         )}
 
-        <div style={{ fontSize: '26px', lineHeight: '1.9', fontFamily: '"Fira Code","JetBrains Mono","Roboto Mono",monospace', letterSpacing: '0.02em', wordBreak: 'break-word' }}>
-          {textChars.map((char, i) => {
-            const typed = i < input.length;
-            const correct = typed && input[i] === char;
-            const wrong = typed && input[i] !== char;
-            const current = i === input.length;
-            return (
-              <span key={i} style={{ position: 'relative', color: wrong ? '#ef4444' : correct ? 'var(--color-text-1)' : 'var(--color-text-3)', opacity: correct ? 1 : 0.6, textDecoration: wrong ? 'underline' : 'none', transition: 'color 0.05s' }}>
-                {current && phase !== 'done' && (
-                  <motion.span style={{ position: 'absolute', left: 0, top: '10%', width: '2px', height: '82%', background: accentColor, boxShadow: `0 0 8px ${accentColor}`, borderRadius: '2px' }}
-                    animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} />
-                )}
-                {char}
-              </span>
-            );
-          })}
+        <div style={{ height: '180px', overflowY: 'hidden', position: 'relative' }}>
+          <div style={{ fontSize: '26px', lineHeight: '1.9', fontFamily: '"Fira Code","JetBrains Mono","Roboto Mono",monospace', letterSpacing: '0.02em', wordBreak: 'break-word' }}>
+            {textChars.map((char, i) => {
+              const typed = i < input.length;
+              const correct = typed && input[i] === char;
+              const wrong = typed && input[i] !== char;
+              const current = i === input.length;
+              return (
+                <span key={i} ref={current ? activeCharRef : null} style={{ position: 'relative', color: wrong ? '#ef4444' : correct ? 'var(--color-text-1)' : 'var(--color-text-3)', opacity: correct ? 1 : 0.6, textDecoration: wrong ? 'underline' : 'none', transition: 'color 0.05s' }}>
+                  {current && phase !== 'done' && (
+                    <motion.span style={{ position: 'absolute', left: 0, top: '10%', width: '2px', height: '82%', background: accentColor, boxShadow: `0 0 8px ${accentColor}`, borderRadius: '2px' }}
+                      animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} />
+                  )}
+                  {char}
+                </span>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -601,7 +601,7 @@ function LessonSelect({ progress, weakKeys, onSelectLesson, onBack }) {
           <ArrowLeft size={16} /> Back
         </button>
         <div>
-          <h3 style={{ font: '800 24px/1 inherit', color: 'var(--color-text-1)', margin: 0 }}>Lesson Mode</h3>
+          <h3 style={{ font: '800 24px/1 inherit', color: 'var(--color-text-1)', margin: 0 }}>Typing Practice</h3>
           <p style={{ font: '500 14px/1 inherit', color: 'var(--color-text-3)', margin: '8px 0 0' }}>Learn keys step-by-step. Progress is saved automatically.</p>
         </div>
       </div>
@@ -686,6 +686,13 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
   const [isFocused, setIsFocused] = useState(false);
   const [flashKey, setFlashKey] = useState(null);
   const inputRef = useRef(null);
+  const activeCharRef = useRef(null);
+
+  useEffect(() => {
+    if (activeCharRef.current) {
+      activeCharRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [input.length]);
 
   const reset = () => { setInput(''); setPhase('intro'); setWpm(0); setAccuracy(100); setKeyErrors({}); setStartTime(null); };
 
@@ -817,22 +824,24 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
           </div>
         )}
 
-        <div style={{ fontSize: '18px', lineHeight: '2.1', fontFamily: '"Fira Code","JetBrains Mono","Roboto Mono",monospace', letterSpacing: '0.015em', wordBreak: 'break-word', userSelect: 'none' }}>
-          {text.split('').map((char, i) => {
-            const typed = i < input.length;
-            const correct = typed && input[i] === char;
-            const wrong = typed && input[i] !== char;
-            const current = i === input.length;
-            return (
-              <span key={i} style={{ position: 'relative', color: wrong ? '#ef4444' : correct ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.22)', textDecoration: wrong ? 'underline' : 'none', transition: 'color 0.05s', background: current ? `rgba(${hexToRgb(lesson.color)},0.12)` : 'none', borderRadius: '2px' }}>
-                {current && phase !== 'done' && (
-                  <motion.span style={{ position: 'absolute', left: 0, top: '10%', width: '2px', height: '82%', background: lesson.color, boxShadow: `0 0 8px ${lesson.color}`, borderRadius: '2px' }}
-                    animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} />
-                )}
-                {char}
-              </span>
-            );
-          })}
+        <div style={{ height: '180px', overflowY: 'hidden', position: 'relative' }}>
+          <div style={{ fontSize: '18px', lineHeight: '2.1', fontFamily: '"Fira Code","JetBrains Mono","Roboto Mono",monospace', letterSpacing: '0.015em', wordBreak: 'break-word', userSelect: 'none' }}>
+            {text.split('').map((char, i) => {
+              const typed = i < input.length;
+              const correct = typed && input[i] === char;
+              const wrong = typed && input[i] !== char;
+              const current = i === input.length;
+              return (
+                <span key={i} ref={current ? activeCharRef : null} style={{ position: 'relative', color: wrong ? '#ef4444' : correct ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.22)', textDecoration: wrong ? 'underline' : 'none', transition: 'color 0.05s', background: current ? `rgba(${hexToRgb(lesson.color)},0.12)` : 'none', borderRadius: '2px' }}>
+                  {current && phase !== 'done' && (
+                    <motion.span style={{ position: 'absolute', left: 0, top: '10%', width: '2px', height: '82%', background: lesson.color, boxShadow: `0 0 8px ${lesson.color}`, borderRadius: '2px' }}
+                      animate={{ opacity: [1, 0, 1] }} transition={{ repeat: Infinity, duration: 0.8 }} />
+                  )}
+                  {char}
+                </span>
+              );
+            })}
+          </div>
         </div>
       </div>
 
