@@ -30,7 +30,7 @@ const LOGO_PATH = `
 
 export default function Logo({ size = 36, withBg = true }) {
   const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
+  const isDark = theme === 'vercel' || theme === 'midnight';
 
   if (withBg) {
     // Navbar variant: premium gradient on green rounded square
