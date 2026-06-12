@@ -44,16 +44,7 @@ export default function LabFullPage() {
     }
   }, [location.search]);
 
-  useEffect(() => {
-    if (activeModule) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [activeModule]);
+
 
   const cardBg = 'var(--color-surface)';
   const border = 'var(--color-border)';
@@ -146,10 +137,10 @@ export default function LabFullPage() {
 
           <div style={{
             background: cardBg, border: `1px solid ${border}`,
-            borderRadius: '16px', overflow: 'hidden', flex: 1,
+            borderRadius: '16px', overflow: 'hidden', flex: 1, minHeight: 0,
             boxShadow: '0 20px 40px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column'
           }}>
-            <div style={{ padding: '0', flex: 1, height: '100%', overflow: 'hidden' }}>
+            <div style={{ padding: '0', flex: 1, height: '100%', overflowY: 'auto', minHeight: 0 }}>
               {activeModule === 'typing'      && <TypingTest userId={user.id} onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
               {activeModule === 'speaking'    && <SpeakingLogger onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
               {activeModule === 'personality' && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
