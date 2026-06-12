@@ -703,7 +703,7 @@ export default function AccountPage() {
                             </div>
                         </Section>
 
-                        {profile?.username === 'AU48' && (
+                        {profile?.os_id === 'AU48' && (
                             <Section title="Admin: Release Versions">
                                 <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                     {[
