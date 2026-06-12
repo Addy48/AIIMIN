@@ -210,13 +210,13 @@ const TrajectoryProgress = React.memo(() => {
     }}>
       <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span>Trajectory Execution</span>
-        <span style={{ padding: '4px 10px', background: 'var(--color-surface)', borderRadius: '99px', border: '1px solid var(--color-border)' }}>Live</span>
+        <span style={{ color: '#F97316' }}>LIVE</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', margin: 'auto 0' }}>
-        <LinearProgress id="day"   label="Day"    color="#22D3EE" sublabel={initial.day.sub}   />
-        <LinearProgress id="week"  label="Week"   color="#A78BFA" sublabel={initial.week.sub}  />
-        <LinearProgress id="month" label="Month"  color="#F472B6" sublabel={initial.month.sub} />
-        <LinearProgress id="year"  label="Year"   color="#FB923C" sublabel={initial.year.sub}  />
+        <LinearProgress id="day"   label="Day"    color="#48A860" sublabel={initial.day.sub}   />
+        <LinearProgress id="week"  label="Week"   color="#3B82F6" sublabel={initial.week.sub}  />
+        <LinearProgress id="month" label="Month"  color="#EC4899" sublabel={initial.month.sub} />
+        <LinearProgress id="year"  label="Year"   color="#F97316" sublabel={initial.year.sub}  />
       </div>
     </div>
   );
