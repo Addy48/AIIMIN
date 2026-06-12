@@ -591,9 +591,6 @@ export default function QuantitativeMaths({ onClose }) {
               <BarChart2 size={14} /> History
             </button>
           )}
-          <button onClick={onClose} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '10px', padding: '8px 14px', color: 'var(--text-3)', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>
-            ✕
-          </button>
         </div>
       </div>
 

@@ -564,7 +564,7 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
           </div>
         )}
 
-        <div style={{ height: '180px', overflowY: 'hidden', position: 'relative' }}>
+        <div style={{ height: '180px', overflowY: 'auto', position: 'relative' }}>
           <div style={{ fontSize: '26px', lineHeight: '1.9', fontFamily: '"Fira Code","JetBrains Mono","Roboto Mono",monospace', letterSpacing: '0.02em', wordBreak: 'break-word' }}>
             {textChars.map((char, i) => {
               const typed = i < input.length;
@@ -824,7 +824,7 @@ function LessonRunner({ lesson, progress, onComplete, onBack, onUpdateProgress }
           </div>
         )}
 
-        <div style={{ height: '180px', overflowY: 'hidden', position: 'relative' }}>
+        <div style={{ height: '180px', overflowY: 'auto', position: 'relative' }}>
           <div style={{ fontSize: '18px', lineHeight: '2.1', fontFamily: '"Fira Code","JetBrains Mono","Roboto Mono",monospace', letterSpacing: '0.015em', wordBreak: 'break-word', userSelect: 'none' }}>
             {text.split('').map((char, i) => {
               const typed = i < input.length;
