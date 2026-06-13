@@ -7,6 +7,7 @@ import supabase from '../utils/supabase';
 import { apiDelete, apiGet, apiPatch } from '../utils/api';
 import { useThemeContext } from '../context/ThemeContext';
 import PageHeader from '../components/layout/PageHeader';
+import Modal from '../components/ui/Modal';
 
 const Section = ({ title, children }) => (
     <div style={{ marginBottom: '24px' }}>
@@ -756,74 +757,57 @@ export default function AccountPage() {
                 </div>
             )}
 
-            {showPricingModal && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    padding: '20px', animation: 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                }}>
-                    <div style={{
-                        background: 'var(--bg-elevated)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '24px', width: '100%', maxWidth: '440px',
-                        padding: '32px', position: 'relative', 
-                        boxShadow: '0 24px 64px rgba(0,0,0,0.3)',
-                        overflow: 'hidden', margin: 'auto'
-                    }}>
-                        {/* Background glow effects */}
-                        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '120px', background: 'linear-gradient(180deg, var(--accent-alpha) 0%, transparent 100%)', zIndex: 0, pointerEvents: 'none', opacity: 0.5 }} />
+            <Modal isOpen={showPricingModal} onClose={() => setShowPricingModal(false)} maxWidth="440px">
+                {/* Background glow effects */}
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '120px', background: 'linear-gradient(180deg, var(--accent-alpha) 0%, transparent 100%)', zIndex: 0, pointerEvents: 'none', opacity: 0.5 }} />
 
-                        <button 
-                            onClick={() => setShowPricingModal(false)}
-                            style={{ position: 'absolute', top: '20px', right: '20px', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-2)', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, transition: 'all 0.2s', fontSize: '14px' }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-1)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = 'var(--text-2)'; }}
-                        >✕</button>
-                        
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '99px', color: 'var(--text-1)', fontWeight: 800, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
-                                    <span style={{ fontSize: '14px', color: 'var(--accent)' }}>✦</span> AIIMIN PRO
-                                </div>
-                                <h2 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '8px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Elevate Your System</h2>
-                                <p style={{ fontSize: '14px', color: 'var(--text-3)', margin: '0 auto', lineHeight: 1.5, fontWeight: 500 }}>Unlock unbounded data, deep AI analytics, and premium integrations to maximize your potential.</p>
-                            </div>
+                <button 
+                    onClick={() => setShowPricingModal(false)}
+                    style={{ position: 'absolute', top: '20px', right: '20px', background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-2)', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10, transition: 'all 0.2s', fontSize: '14px' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-1)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = 'var(--text-2)'; }}
+                >✕</button>
+                
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '99px', color: 'var(--text-1)', fontWeight: 800, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px' }}>
+                            <span style={{ fontSize: '14px', color: 'var(--accent)' }}>✦</span> AIIMIN PRO
+                        </div>
+                        <h2 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '8px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Elevate Your System</h2>
+                        <p style={{ fontSize: '14px', color: 'var(--text-3)', margin: '0 auto', lineHeight: 1.5, fontWeight: 500 }}>Unlock unbounded data, deep AI analytics, and premium integrations to maximize your potential.</p>
+                    </div>
 
-                            <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', marginBottom: '28px' }}>
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                                    {[
-                                        { title: 'Unlimited Workspaces', desc: 'Create as many projects and goals as you need.' },
-                                        { title: 'Advanced AI Analytics', desc: 'Get deep insights into your habits and performance.' },
-                                        { title: '1TB Cloud Vault', desc: 'Secure, encrypted storage for your files and data.' },
-                                        { title: 'Custom Workflows', desc: 'Automate your daily routines and systems.' },
-                                        { title: 'Priority Support', desc: '24/7 dedicated assistance from our team.' }
-                                    ].map((item, i) => (
-                                        <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                                            <div style={{ color: 'var(--accent)', marginTop: '2px', background: 'var(--accent-alpha)', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>✓</div> 
-                                            <div>
-                                                <div style={{ fontSize: '13px', color: 'var(--text-1)', fontWeight: 700, marginBottom: '2px' }}>{item.title}</div>
-                                                <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{item.desc}</div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                            
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <button onClick={() => toast.info('Coming soon! Premium subscriptions are disabled in this build.')} style={{ width: '100%', padding: '16px', background: 'var(--text-1)', border: 'none', color: 'var(--bg-primary)', borderRadius: '14px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}>
-                                    Upgrade to Pro — $40 / yr
-                                </button>
-                                <div style={{ display: 'flex', gap: '12px' }}>
-                                    <button onClick={() => toast.info('Coming soon! Premium subscriptions are disabled in this build.')} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontSize: '13px' }} onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = 'var(--text-1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-2)'; }}>Monthly ($5)</button>
-                                    <button onClick={() => toast.info('Coming soon! Premium subscriptions are disabled in this build.')} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontSize: '13px' }} onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = 'var(--text-1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-2)'; }}>Lifetime ($85)</button>
-                                </div>
-                            </div>
+                    <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', marginBottom: '28px' }}>
+                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            {[
+                                { title: 'Unlimited Workspaces', desc: 'Create as many projects and goals as you need.' },
+                                { title: 'Advanced AI Analytics', desc: 'Get deep insights into your habits and performance.' },
+                                { title: '1TB Cloud Vault', desc: 'Secure, encrypted storage for your files and data.' },
+                                { title: 'Custom Workflows', desc: 'Automate your daily routines and systems.' },
+                                { title: 'Priority Support', desc: '24/7 dedicated assistance from our team.' }
+                            ].map((item, i) => (
+                                <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                    <div style={{ color: 'var(--accent)', marginTop: '2px', background: 'var(--accent-alpha)', width: '20px', height: '20px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>✓</div> 
+                                    <div>
+                                        <div style={{ fontSize: '13px', color: 'var(--text-1)', fontWeight: 700, marginBottom: '2px' }}>{item.title}</div>
+                                        <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{item.desc}</div>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <button onClick={() => toast.info('Coming soon! Premium subscriptions are disabled in this build.')} style={{ width: '100%', padding: '16px', background: 'var(--text-1)', border: 'none', color: 'var(--bg-primary)', borderRadius: '14px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', fontSize: '14px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)'; }} onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; }}>
+                            Upgrade to Pro — $40 / yr
+                        </button>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button onClick={() => toast.info('Coming soon! Premium subscriptions are disabled in this build.')} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontSize: '13px' }} onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = 'var(--text-1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-2)'; }}>Monthly ($5)</button>
+                            <button onClick={() => toast.info('Coming soon! Premium subscriptions are disabled in this build.')} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-2)', borderRadius: '12px', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', fontSize: '13px' }} onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.color = 'var(--text-1)'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-2)'; }}>Lifetime ($85)</button>
                         </div>
                     </div>
                 </div>
-            )}
+            </Modal>
         </div>
     );
 }

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, RefreshCw, ChevronDown, ChevronUp, Trophy, Brain, Zap, Lock, X, Wind, Activity, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../utils/supabase';
-
+import Modal from '../components/ui/Modal';
 /* ── Storage ── */
 const SK_DATA = 'aiimin_discipline_v3';
 const SK_LOG  = 'aiimin_discipline_log_v3';
@@ -67,127 +67,99 @@ const STRATEGIES = [
   }
 ];
 
-const ResetModal = ({ onConfirm, onCancel, currentDays, currentHours }) => {
+const ResetModal = ({ isOpen, onConfirm, onCancel, currentDays, currentHours }) => {
   const [trigger, setTrigger] = useState('');
   const [note, setNote] = useState('');
   const [step, setStep] = useState(1);
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)', zIndex: 9999,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-    }}>
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', boxShadow: '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--border)',
-          padding: '40px', maxWidth: '500px', width: '100%',
-          position: 'relative'
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ display: 'inline-flex', padding: '16px', background: 'var(--danger-dim)', borderRadius: '50%', marginBottom: '20px' }}>
-            <AlertTriangle size={32} color="var(--danger)" />
-          </div>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '12px' }}>Reset Your Streak?</h2>
-          <p style={{ fontSize: '15px', color: 'var(--text-2)', lineHeight: 1.6, margin: 0 }}>
-            You are about to lose <span style={{ color: 'var(--text-1)' }}>{currentDays}d {currentHours}h</span>. 
-            This action cannot be undone. Brutal honesty is required for recovery.
-          </p>
+    <Modal isOpen={isOpen} onClose={onCancel} hideCloseButton maxWidth="500px">
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{ display: 'inline-flex', padding: '16px', background: 'var(--color-danger-dim, rgba(239, 68, 68, 0.1))', borderRadius: '50%', marginBottom: '20px' }}>
+          <AlertTriangle size={32} color="var(--color-danger, #ef4444)" />
         </div>
+        <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px' }}>Reset Your Streak?</h2>
+        <p style={{ fontSize: '15px', color: 'var(--color-text-2)', lineHeight: 1.6, margin: 0 }}>
+          You are about to lose <span style={{ color: 'var(--color-text-1)' }}>{currentDays}d {currentHours}h</span>. 
+          This action cannot be undone. Brutal honesty is required for recovery.
+        </p>
+      </div>
 
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px', letterSpacing: '0.1em' }}>What was the exact trigger?</label>
-          <input
-            type="text"
-            value={trigger}
-            onChange={e => setTrigger(e.target.value)}
-            placeholder="e.g. Stress, Boredom, Specific App..."
-            style={{
-              width: '100%', padding: '16px', background: 'var(--bg-surface)', border: '1px solid var(--border)',
-              borderRadius: 'var(--r-md)', fontSize: '15px', color: 'var(--text-1)', outline: 'none',
-              transition: 'all 0.2s', fontFamily: 'inherit',
-            }}
-          />
+      <div style={{ marginBottom: '24px' }}>
+        <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-3)', marginBottom: '8px', letterSpacing: '0.1em' }}>What was the exact trigger?</label>
+        <input
+          type="text"
+          value={trigger}
+          onChange={e => setTrigger(e.target.value)}
+          placeholder="e.g. Stress, Boredom, Specific App..."
+          style={{
+            width: '100%', padding: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+            borderRadius: '12px', fontSize: '15px', color: 'var(--color-text-1)', outline: 'none',
+            transition: 'all 0.2s', fontFamily: 'inherit', boxSizing: 'border-box'
+          }}
+        />
+      </div>
+
+      <div style={{ marginBottom: '32px' }}>
+        <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-3)', marginBottom: '8px', letterSpacing: '0.1em' }}>Write a note to your future self</label>
+        <textarea
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          placeholder="How do you feel right now? Read this next time you get an urge."
+          style={{
+            width: '100%', padding: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+            borderRadius: '12px', fontSize: '15px', color: 'var(--color-text-1)', outline: 'none', minHeight: '100px', resize: 'none',
+            transition: 'all 0.2s', fontFamily: 'inherit', lineHeight: 1.5, boxSizing: 'border-box'
+          }}
+        />
+      </div>
+
+      {step === 1 ? (
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <button onClick={onCancel} style={{ flex: 1, padding: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', fontSize: '15px', fontWeight: 800, color: 'var(--color-text-1)', cursor: 'pointer' }}>Cancel</button>
+          <button onClick={() => setStep(2)} disabled={!trigger.trim() || !note.trim()} style={{ flex: 1, padding: '16px', background: 'var(--color-danger, #ef4444)', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: 800, color: '#fff', cursor: (trigger.trim() && note.trim()) ? 'pointer' : 'not-allowed', opacity: (trigger.trim() && note.trim()) ? 1 : 0.5 }}>Next</button>
         </div>
-
-        <div style={{ marginBottom: '32px' }}>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '8px', letterSpacing: '0.1em' }}>Write a note to your future self</label>
-          <textarea
-            value={note}
-            onChange={e => setNote(e.target.value)}
-            placeholder="How do you feel right now? Read this next time you get an urge."
-            style={{
-              width: '100%', padding: '16px', background: 'var(--bg-surface)', border: '1px solid var(--border)',
-              borderRadius: 'var(--r-md)', fontSize: '15px', color: 'var(--text-1)', outline: 'none', minHeight: '100px', resize: 'none',
-              transition: 'all 0.2s', fontFamily: 'inherit', lineHeight: 1.5,
-            }}
-          />
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <button onClick={() => onConfirm({ trigger, note })} style={{ padding: '16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '12px', fontSize: '15px', fontWeight: 800, color: 'var(--color-danger, #ef4444)', cursor: 'pointer' }}>I Confirm Relapse (Reset to 0)</button>
+          <button onClick={onCancel} style={{ padding: '16px', background: 'transparent', border: 'none', fontSize: '14px', fontWeight: 600, color: 'var(--color-text-3)', cursor: 'pointer' }}>Nevermind, I am staying strong</button>
         </div>
-
-        {step === 1 ? (
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <button onClick={onCancel} style={{ flex: 1, padding: '16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', fontSize: '15px', fontWeight: 800, color: 'var(--text-1)', cursor: 'pointer' }}>Cancel</button>
-            <button onClick={() => setStep(2)} disabled={!trigger.trim() || !note.trim()} style={{ flex: 1, padding: '16px', background: 'var(--danger)', border: 'none', borderRadius: 'var(--r-md)', fontSize: '15px', fontWeight: 800, color: '#fff', cursor: (trigger.trim() && note.trim()) ? 'pointer' : 'not-allowed', opacity: (trigger.trim() && note.trim()) ? 1 : 0.5 }}>Next</button>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <button onClick={() => onConfirm({ trigger, note })} style={{ padding: '16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 'var(--r-md)', fontSize: '15px', fontWeight: 800, color: 'var(--danger)', cursor: 'pointer' }}>I Confirm Relapse (Reset to 0)</button>
-            <button onClick={onCancel} style={{ padding: '16px', background: 'transparent', border: 'none', fontSize: '14px', fontWeight: 600, color: 'var(--text-3)', cursor: 'pointer' }}>Nevermind, I am staying strong</button>
-          </div>
-        )}
-      </motion.div>
-    </div>
+      )}
+    </Modal>
   );
 };
 
 /* ── Urge Surfing Modal ── */
-const UrgeModal = ({ onComplete, onCancel }) => {
+const UrgeModal = ({ isOpen, onComplete, onCancel }) => {
   const [timeLeft, setTimeLeft] = useState(300);
   const [note, setNote] = useState('');
   
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0 || !isOpen) return;
     const interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
     return () => clearInterval(interval);
-  }, [timeLeft]);
+  }, [timeLeft, isOpen]);
   
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)', zIndex: 9999,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
-    }}>
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        style={{
-          background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', boxShadow: '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--border)',
-          padding: '40px', maxWidth: '500px', width: '100%',
-        }}
-      >
-        <button onClick={onCancel} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer' }}><X size={24} /></button>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ display: 'inline-flex', padding: '20px', background: 'var(--accent-dim)', borderRadius: '50%', marginBottom: '24px' }}>
-            <Wind size={40} color="var(--accent)" />
-          </div>
-          <h2 style={{ fontSize: '32px', fontWeight: 900, color: 'var(--text-1)', marginBottom: '16px' }}>Urge Surfing</h2>
-          <div style={{ fontSize: '48px', fontWeight: 900, fontFamily: 'monospace', color: 'var(--text-1)', marginBottom: '40px' }}>
-            {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-          </div>
-          <textarea
-            value={note} onChange={e => setNote(e.target.value)} rows={3}
-            placeholder="What is your brain lying to you about right now?"
-            style={{ width: '100%', padding: '16px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 'var(--r-md)', marginBottom: '24px', fontSize: '15px', color: 'var(--text-1)' }}
-          />
-          <button onClick={() => onComplete(note)} disabled={timeLeft > 0} style={{ width: '100%', padding: '20px', background: timeLeft === 0 ? 'var(--success)' : 'var(--bg-surface)', border: 'none', borderRadius: 'var(--r-md)', color: timeLeft === 0 ? '#fff' : 'var(--text-3)', fontWeight: 800 }}>
-            {timeLeft === 0 ? 'I Survived the Urge' : 'Surfing... Just breathe.'}
-          </button>
+    <Modal isOpen={isOpen} onClose={onCancel} maxWidth="500px">
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ display: 'inline-flex', padding: '20px', background: 'var(--color-accent-dim)', borderRadius: '50%', marginBottom: '24px' }}>
+          <Wind size={40} color="var(--color-accent)" />
         </div>
-      </motion.div>
-    </div>
+        <h2 style={{ fontSize: '32px', fontWeight: 900, color: 'var(--color-text-1)', margin: '0 0 16px 0' }}>Urge Surfing</h2>
+        <div style={{ fontSize: '48px', fontWeight: 900, fontFamily: 'monospace', color: 'var(--color-text-1)', marginBottom: '40px' }}>
+          {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+        </div>
+        <textarea
+          value={note} onChange={e => setNote(e.target.value)} rows={3}
+          placeholder="What is your brain lying to you about right now?"
+          style={{ width: '100%', padding: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', marginBottom: '24px', fontSize: '15px', color: 'var(--color-text-1)', boxSizing: 'border-box' }}
+        />
+        <button onClick={() => onComplete(note)} disabled={timeLeft > 0} style={{ width: '100%', padding: '20px', background: timeLeft === 0 ? 'var(--color-success, #22c55e)' : 'var(--color-surface)', border: 'none', borderRadius: '12px', color: timeLeft === 0 ? '#fff' : 'var(--color-text-3)', fontWeight: 800, cursor: timeLeft === 0 ? 'pointer' : 'not-allowed' }}>
+          {timeLeft === 0 ? 'I Survived the Urge' : 'Surfing... Just breathe.'}
+        </button>
+      </div>
+    </Modal>
   );
 };
 
@@ -439,18 +411,14 @@ const Discipline = () => {
       </div>
 
       {/* Modals */}
-      <AnimatePresence>
-        {showReset && (() => {
-          const s = Math.floor((Date.now() - new Date(data.lastUpdated).getTime()) / 1000);
-          const currentD = Math.floor(s / 86400);
-          const currentH = Math.floor((s % 86400) / 3600);
-          return <ResetModal currentDays={currentD} currentHours={currentH} onConfirm={handleReset} onCancel={() => setShowReset(false)} />;
-        })()}
-      </AnimatePresence>
+      {(() => {
+        const s = Math.floor((Date.now() - new Date(data.lastUpdated || Date.now()).getTime()) / 1000);
+        const currentD = Math.floor(s / 86400);
+        const currentH = Math.floor((s % 86400) / 3600);
+        return <ResetModal isOpen={showReset} currentDays={currentD} currentHours={currentH} onConfirm={handleReset} onCancel={() => setShowReset(false)} />;
+      })()}
 
-      <AnimatePresence>
-        {showUrge && <UrgeModal onComplete={handleUrgeSurfed} onCancel={() => setShowUrge(false)} />}
-      </AnimatePresence>
+      <UrgeModal isOpen={showUrge} onComplete={handleUrgeSurfed} onCancel={() => setShowUrge(false)} />
     </div>
   );
 };

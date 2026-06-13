@@ -126,4 +126,38 @@ export const createNotification = async (userId, type, title, body = null, actio
     }
 };
 
+/**
+ * POST /api/notifications/trigger-weekly
+ */
+app.post('/trigger-weekly', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const now = new Date();
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())); // Sunday
+        startOfWeek.setHours(0,0,0,0);
+        
+        // Check if weekly report notification exists for this week
+        const { rows } = await pool.query(
+            `SELECT id FROM notifications WHERE user_id = $1 AND type = 'weekly_report' AND created_at >= $2 LIMIT 1`,
+            [userId, startOfWeek.toISOString()]
+        );
+        
+        if (rows.length === 0) {
+            await createNotification(
+                userId,
+                'weekly_report',
+                'Your Week in Review is Ready',
+                'Check your progress, financials, and habits from last week.',
+                '/reports',
+                24
+            );
+            return c.json({ created: true });
+        }
+        
+        return c.json({ created: false, reason: 'already_exists' });
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
 export default app;

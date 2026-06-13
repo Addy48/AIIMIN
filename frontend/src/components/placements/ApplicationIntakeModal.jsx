@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import Modal from '../ui/Modal';
 
 const STATUS_CONFIG = {
   wishlist: { label: 'Wishlist', color: '#8C8C8C', icon: '📝' },
@@ -19,21 +18,11 @@ export default function ApplicationIntakeModal({
   resumes, 
   handleSaveApplication 
 }) {
-  if (!showAppModal) return null;
-
   return (
-    <AnimatePresence>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowAppModal(false)} style={{ position: 'absolute', inset: 0, background: 'var(--glass-bg)', backdropFilter: 'blur(10px)' }} />
-        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="modal-content application-intake-modal" style={{ position: 'relative' }}>
-          <button type="button" onClick={() => setShowAppModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}>
-            <X size={20} />
-          </button>
+    <Modal isOpen={showAppModal} onClose={() => setShowAppModal(false)} title={editingApp ? 'Update Application' : 'Opportunity Intake'} maxWidth="800px">
           <div className="application-intake-layout">
             <aside className="application-intake-rail">
               <div>
-                <div className="modal-eyebrow">Opportunity Intake</div>
-                <h2>{editingApp ? 'Update application' : 'Track opportunity'}</h2>
                 <p>Capture role, resume, source links, outreach date, and notes in one clean record.</p>
               </div>
               <div className="intake-summary-grid">
@@ -96,8 +85,6 @@ export default function ApplicationIntakeModal({
               </div>
             </form>
           </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+    </Modal>
   );
 }

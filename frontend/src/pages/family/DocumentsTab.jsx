@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Eye, EyeOff, Trash2, Edit2 } from 'lucide-react';
 import { fvApi, DOC_TYPES, CloseBtn, Field, getDaysUntil, expiryClass, expiryLabel, maskNumber } from './fvUtils';
 
+import Modal from '../../components/ui/Modal';
+
 /* ── Add/Edit Doc Modal ── */
 const DocModal = ({ doc, members, onClose, onSave }) => {
   const isEdit = !!doc?.id;
@@ -30,13 +32,7 @@ const DocModal = ({ doc, members, onClose, onSave }) => {
   const sel = { className: 'fv-input fv-select' };
 
   return (
-    <div className="fv-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="fv-modal">
-        <div className="fv-modal-hdr">
-          <h3 className="fv-modal-title">{isEdit ? 'Edit Document' : 'Add Document'}</h3>
-          <CloseBtn onClick={onClose} />
-        </div>
-
+    <Modal isOpen={true} onClose={onClose} title={isEdit ? 'Edit Document' : 'Add Document'} maxWidth="500px">
         <div className="fv-form-grid">
           <Field label="Member" full>
             <select {...sel} value={form.member_id} onChange={e => set('member_id', e.target.value)}>
@@ -69,8 +65,7 @@ const DocModal = ({ doc, members, onClose, onSave }) => {
         <button onClick={submit} disabled={saving} style={{ marginTop:'20px', width:'100%', padding:'13px', background:'var(--color-accent)', border:'none', borderRadius:'12px', color:'#fff', fontSize:'13px', fontWeight:800, cursor:'pointer', fontFamily:'inherit' }}>
           {saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Document'}
         </button>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

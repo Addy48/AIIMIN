@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Plus, X, ChevronRight, ChevronLeft, Keyboard, Mic, AlertTriangle } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
+import PulseCheckModal from '../components/overview/PulseCheckModal';
 import { useCalendarEvents } from '../hooks/useCalendarEvents';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -39,30 +40,34 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
   };
 
   return (
-    <div style={{
+    <motion.div 
+      whileHover={{ scale: 1.02, y: -2 }}
+      transition={{ duration: 0.2 }}
+      style={{
       background: isToday ? 'var(--color-accent-dim)' : 'var(--color-surface)',
       border: `1px solid ${isToday ? 'var(--color-accent)' : 'var(--color-border)'}`,
-      borderRadius:'16px', padding:'12px', minHeight:'160px', display:'flex', flexDirection:'column', height: '100%'
+      boxShadow: isToday ? '0 4px 12px rgba(34,197,94,0.1)' : '0 2px 4px rgba(0,0,0,0.02)',
+      borderRadius:'16px', padding:'12px', display:'flex', flexDirection:'column', height: '100%'
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:'10px', borderBottom:'1px solid var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
-        <div style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:'10px', borderBottom: isToday ? '1px dashed rgba(34,197,94,0.3)' : '1px dashed var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
+        <div style={{ fontSize:'10px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)' }}>
           {day}
         </div>
-        <div style={{ fontSize:'10px', fontWeight:800, color: isToday ? 'var(--color-accent)' : 'var(--color-text-2)' }}>
+        <div style={{ fontSize:'12px', fontWeight:800, color: isToday ? 'var(--color-accent)' : 'var(--color-text-1)', background: isToday ? 'rgba(34,197,94,0.1)' : 'transparent', padding: isToday ? '2px 6px' : '0', borderRadius: '4px' }}>
           {new Date(dateStr).getDate()}
         </div>
       </div>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'5px', overflowY:'auto', scrollbarWidth:'none', minHeight: 0 }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'6px', overflowY:'auto', scrollbarWidth:'none', minHeight: 0 }}>
         {calendarEvents?.map(e => (
           <div key={e.id} style={{ fontSize:'10px', background:'var(--color-elevated)', borderLeft:`2px solid ${e.color||'var(--color-accent)'}`, padding:'4px 6px', borderRadius:'4px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', color:'var(--color-text-1)', fontWeight:600, display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ fontSize: '8px' }}>🕒</span> {e.title || e.summary}
           </div>
         ))}
         {tasks.map(t => (
-          <div key={t.id} style={{ display:'flex', alignItems:'center', gap:'6px' }}>
+          <div key={t.id} style={{ display:'flex', alignItems:'center', gap:'6px', background: t.done ? 'transparent' : 'var(--color-elevated)', padding: '4px 6px', borderRadius: '6px', border: t.done ? '1px solid transparent' : '1px solid var(--color-border)' }}>
             <input type="checkbox" checked={t.done} onChange={() => setTasks(p=>p.map(x=>x.id===t.id?{...x,done:!x.done}:x))}
               style={{ cursor:'pointer', accentColor:'var(--color-accent)', flexShrink:0 }} />
-            <span style={{ fontSize:'11px', color: t.done ? 'var(--color-text-3)' : 'var(--color-text-1)', textDecoration: t.done ? 'line-through' : 'none', flex:1, wordBreak:'break-word' }}>
+            <span style={{ fontSize:'11px', fontWeight: 600, color: t.done ? 'var(--color-text-3)' : 'var(--color-text-1)', textDecoration: t.done ? 'line-through' : 'none', flex:1, wordBreak:'break-word' }}>
               {t.text}
             </span>
             <button onClick={() => setTasks(p=>p.filter(x=>x.id!==t.id))} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--color-text-3)', padding:0, lineHeight:1 }}>
@@ -71,7 +76,7 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
           </div>
         ))}
         {adding ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', width: '100%', boxSizing: 'border-box', marginTop: 'auto' }}>
             <input autoFocus value={input} onChange={e=>setInput(e.target.value)}
               onKeyDown={e=>{if(e.key==='Enter')addTask();if(e.key==='Escape'){setAdding(false);setInput('');}}}
               onBlur={addTask}
@@ -87,15 +92,15 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
           </div>
         ) : (
           <button onClick={() => setAdding(true)} style={{
-            background:'none', border:'1.5px dashed var(--color-border)', borderRadius:'8px',
-            padding:'5px', fontSize:'10px', color:'var(--color-text-3)', cursor:'pointer',
-            display:'flex', alignItems:'center', justifyContent:'center', gap:'4px', marginTop:'auto', fontWeight:800
-          }}>
-            <Plus size={10} /> Add
+            background:'var(--color-elevated)', border:'1px dashed var(--color-border)', borderRadius:'6px',
+            padding:'6px', fontSize:'10px', color:'var(--color-text-3)', cursor:'pointer',
+            display:'flex', alignItems:'center', justifyContent:'center', gap:'4px', marginTop:'auto', fontWeight:800, transition: 'all 0.2s'
+          }} onMouseOver={(e) => e.target.style.background = 'var(--color-surface)'} onMouseOut={(e) => e.target.style.background = 'var(--color-elevated)'}>
+            <Plus size={10} /> Add Target
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 });
 
@@ -360,6 +365,8 @@ const Overview = () => {
         }
       />
 
+      <PulseCheckModal user={user} />
+
       {/* Main Grid */}
       <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px', alignItems: 'stretch' }} className="overview-grid">
 
@@ -454,7 +461,7 @@ const Overview = () => {
           </div>
 
           {/* Weekly Planner */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
                 <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Command Timeline</div>
@@ -474,7 +481,7 @@ const Overview = () => {
                 </button>
               </div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', flex: 1, minHeight: 0, gridAutoRows: '1fr' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', height: '260px' }}>
               {currentWeekDates.map(d => {
                 const dayEvents = allCalendarEvents?.filter(e => {
                   const t = new Date(e.start_time || e.start);

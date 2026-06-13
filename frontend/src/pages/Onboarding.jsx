@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Loader2, ChevronRight } from 'lucide-react';
+import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 
 /* ─── helpers ──────────────────────────────────────────────── */
-const USERNAME_RE = /^[A-Z0-9_.-]{8}$/;
 const PIN_DIGITS  = 6;
 
 const slide = (dir = 1) => ({
@@ -92,6 +91,23 @@ function StepIndicator({ current, total }) {
     );
 }
 
+const GOAL_OPTIONS = [
+    { id: 'career', label: 'Land a Top Job', icon: '💼' },
+    { id: 'health', label: 'Get in Shape', icon: '🏃‍♂️' },
+    { id: 'finance', label: 'Financial Freedom', icon: '💰' },
+    { id: 'skills', label: 'Master New Skills', icon: '🧠' },
+    { id: 'peace', label: 'Mental Peace', icon: '🧘‍♂️' }
+];
+
+const HABIT_OPTIONS = [
+    { id: 'workout', label: 'Morning Workout', icon: '💪' },
+    { id: 'read', label: 'Read 10 Pages', icon: '📚' },
+    { id: 'code', label: 'Code / DSA', icon: '💻' },
+    { id: 'journal', label: 'Journaling', icon: '📓' },
+    { id: 'meditate', label: 'Meditation', icon: '🧘' },
+    { id: 'water', label: 'Drink Water', icon: '💧' }
+];
+
 /* ─── Main Onboarding Component ─────────────────────────────── */
 export default function Onboarding() {
     const navigate = useNavigate();
@@ -102,11 +118,17 @@ export default function Onboarding() {
     const [username,   setUsername]   = useState('');
     const [pin,        setPin]        = useState('');
     const [confirmPin, setConfirmPin] = useState('');
+    
+    // New Onboarding fields
+    const [selectedGoals, setSelectedGoals] = useState([]);
+    const [selectedHabits, setSelectedHabits] = useState([]);
+    const [wakeTime, setWakeTime] = useState('07:00');
+
     const [loading,    setLoading]    = useState(false);
     const [error,      setError]      = useState('');
     const [usernameStatus, setUsernameStatus] = useState('idle'); // idle | checking | available | taken
 
-    const TOTAL_STEPS = 4;
+    const TOTAL_STEPS = 8; // 0 to 7. Step 8 is success
 
     // Pre-fill name from Google metadata
     useEffect(() => {
@@ -172,15 +194,45 @@ export default function Onboarding() {
         next();
     };
 
-    /* ── Step 3: Confirm PIN → submit ── */
-    const submitAll = async () => {
+    /* ── Step 3: Confirm PIN ── */
+    const submitConfirmPin = () => {
         if (confirmPin !== pin) { setError('PINs do not match'); setConfirmPin(''); return; }
+        next();
+    };
+
+    /* ── Step 4: Goals ── */
+    const toggleGoal = (id) => {
+        setSelectedGoals(prev => prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]);
+    };
+    const submitGoals = () => {
+        if (selectedGoals.length === 0) { setError('Please select at least one goal'); return; }
+        next();
+    }
+
+    /* ── Step 5: Habits ── */
+    const toggleHabit = (id) => {
+        setSelectedHabits(prev => prev.includes(id) ? prev.filter(habitId => habitId !== id) : [...prev, id]);
+    };
+    const submitHabits = () => {
+        if (selectedHabits.length === 0) { setError('Please select at least one habit'); return; }
+        next();
+    }
+
+    /* ── Step 6: Wake Up ── */
+    const submitWakeUp = () => {
+        if (!wakeTime) { setError('Please set your wake-up time'); return; }
+        next();
+    }
+
+    /* ── Step 7: Life Score / Final Submission ── */
+    const submitAll = async () => {
         setLoading(true);
         setError('');
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error('No session');
 
+            // 1. Complete profile
             const res = await fetch('/api/auth/complete-google-profile', {
                 method: 'POST',
                 headers: {
@@ -197,10 +249,37 @@ export default function Onboarding() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Setup failed');
 
-            // Move to success (step 4 = done screen)
+            // 2. We can save Wake Time to user settings
+            await fetch('/api/account/profile', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })
+            });
+
+            // Wait, we can save habits.
+            for (const hId of selectedHabits) {
+                const habitName = HABIT_OPTIONS.find(h => h.id === hId)?.label;
+                await fetch('/api/habits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ title: habitName, frequency: 'daily', category: 'health' })
+                });
+            }
+
+            // 3. Save goals
+            for (const gId of selectedGoals) {
+                const goalName = GOAL_OPTIONS.find(g => g.id === gId)?.label;
+                await fetch('/api/goals', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ title: goalName, category: 'life', status: 'in_progress', progress: 0 })
+                });
+            }
+
+            // Move to success (step 8 = done screen)
             setDir(1);
-            setStep(4);
-            await new Promise(r => setTimeout(r, 1800));
+            setStep(8);
+            await new Promise(r => setTimeout(r, 2400));
             navigate('/overview', { replace: true });
         } catch (err) {
             setError(err.message);
@@ -291,32 +370,172 @@ export default function Onboarding() {
             <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
                 <button onClick={back} style={s.ghostBtn} disabled={loading}>Back</button>
                 <button
-                    onClick={submitAll}
+                    onClick={submitConfirmPin}
                     disabled={confirmPin.length < PIN_DIGITS || loading}
                     style={{ ...s.primaryBtn, flex: 1, opacity: (confirmPin.length < PIN_DIGITS || loading) ? 0.6 : 1 }}
                 >
-                    {loading ? <><Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} /> Setting up…</> : <>Finish Setup <Check size={16} /></>}
+                    Continue <ChevronRight size={16} />
                 </button>
             </div>
         </motion.div>,
 
-        /* Step 4 — Success */
-        <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center' }}>
+        /* Step 4 — Goals */
+        <motion.div key="goals" {...slide(dir)}>
+            <h2 style={s.heading}>What are you working toward?</h2>
+            <p style={s.sub}>Select the goals that matter most to you right now.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                {GOAL_OPTIONS.map(g => {
+                    const selected = selectedGoals.includes(g.id);
+                    return (
+                        <div
+                            key={g.id}
+                            onClick={() => toggleGoal(g.id)}
+                            style={{
+                                ...s.optionCard,
+                                border: selected ? '1.5px solid var(--color-accent)' : '1.5px solid var(--border)',
+                                background: selected ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)' : 'var(--bg-elevated)',
+                            }}
+                        >
+                            <span style={{ fontSize: '20px' }}>{g.icon}</span>
+                            <span style={{ fontSize: '15px', fontWeight: selected ? 600 : 500, color: 'var(--text-1)' }}>{g.label}</span>
+                            {selected && <Check size={18} color="var(--color-accent)" style={{ marginLeft: 'auto' }} />}
+                        </div>
+                    )
+                })}
+            </div>
+            {error && <p style={s.err}>{error}</p>}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button onClick={back} style={s.ghostBtn} disabled={loading}>Back</button>
+                <button onClick={submitGoals} style={{ ...s.primaryBtn, flex: 1 }}>Continue <ChevronRight size={16} /></button>
+            </div>
+        </motion.div>,
+
+        /* Step 5 — Habits */
+        <motion.div key="habits" {...slide(dir)}>
+            <h2 style={s.heading}>Which habits matter to you?</h2>
+            <p style={s.sub}>Select a few to start your streak.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+                {HABIT_OPTIONS.map(h => {
+                    const selected = selectedHabits.includes(h.id);
+                    return (
+                        <div
+                            key={h.id}
+                            onClick={() => toggleHabit(h.id)}
+                            style={{
+                                ...s.optionCard,
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                textAlign: 'center',
+                                padding: '16px 12px',
+                                border: selected ? '1.5px solid var(--color-accent)' : '1.5px solid var(--border)',
+                                background: selected ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)' : 'var(--bg-elevated)',
+                            }}
+                        >
+                            <span style={{ fontSize: '24px', marginBottom: '8px' }}>{h.icon}</span>
+                            <span style={{ fontSize: '14px', fontWeight: selected ? 600 : 500, color: 'var(--text-1)' }}>{h.label}</span>
+                        </div>
+                    )
+                })}
+            </div>
+            {error && <p style={s.err}>{error}</p>}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button onClick={back} style={s.ghostBtn} disabled={loading}>Back</button>
+                <button onClick={submitHabits} style={{ ...s.primaryBtn, flex: 1 }}>Continue <ChevronRight size={16} /></button>
+            </div>
+        </motion.div>,
+
+        /* Step 6 — Wake-up Time */
+        <motion.div key="wakeup" {...slide(dir)}>
+            <h2 style={s.heading}>Set your wake-up time</h2>
+            <p style={s.sub}>We'll use this to prepare your morning brief and daily intelligence.</p>
+            
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', marginBottom: '30px' }}>
+                <input 
+                    type="time" 
+                    value={wakeTime}
+                    onChange={(e) => { setWakeTime(e.target.value); setError(''); }}
+                    style={{
+                        padding: '16px 24px',
+                        fontSize: '32px',
+                        fontFamily: 'var(--font-sans)',
+                        fontWeight: 700,
+                        background: 'var(--bg-elevated)',
+                        border: '1.5px solid var(--color-accent)',
+                        borderRadius: '16px',
+                        color: 'var(--text-1)',
+                        outline: 'none',
+                        textAlign: 'center'
+                    }}
+                />
+            </div>
+
+            {error && <p style={s.err}>{error}</p>}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button onClick={back} style={s.ghostBtn} disabled={loading}>Back</button>
+                <button onClick={submitWakeUp} style={{ ...s.primaryBtn, flex: 1 }}>Continue <ChevronRight size={16} /></button>
+            </div>
+        </motion.div>,
+
+        /* Step 7 — Life Score Baseline */
+        <motion.div key="lifescore" {...slide(dir)} style={{ textAlign: 'center' }}>
+            <motion.div 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', delay: 0.2 }}
+                style={{
+                    width: '120px', height: '120px', 
+                    borderRadius: '50%',
+                    background: 'conic-gradient(var(--color-accent) 50%, var(--bg-elevated) 50%)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 24px', position: 'relative'
+                }}
+            >
+                <div style={{
+                    width: '100px', height: '100px', borderRadius: '50%',
+                    background: 'var(--bg-card)', display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center'
+                }}>
+                    <span style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text-1)' }}>50</span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '1px' }}>Score</span>
+                </div>
+            </motion.div>
+
+            <h2 style={s.heading}>Your starting baseline</h2>
+            <p style={s.sub}>
+                Your Life Score is 50. As you track your {selectedHabits.length} habits and work towards your goals, this score will evolve.
+            </p>
+
+            {error && <p style={s.err}>{error}</p>}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '30px' }}>
+                <button onClick={back} style={s.ghostBtn} disabled={loading}>Back</button>
+                <button
+                    onClick={submitAll}
+                    disabled={loading}
+                    style={{ ...s.primaryBtn, flex: 1 }}
+                >
+                    {loading ? <><Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} /> Preparing OS…</> : <>Start My Journey <ChevronRight size={16} /></>}
+                </button>
+            </div>
+        </motion.div>,
+
+        /* Step 8 — Success (Animated Intro) */
+        <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', padding: '40px 0' }}>
             <motion.div
                 initial={{ scale: 0 }} animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
                 style={{
-                    width: '72px', height: '72px', borderRadius: '50%',
+                    width: '80px', height: '80px', borderRadius: '50%',
                     background: 'color-mix(in srgb, var(--color-accent) 15%, var(--bg-card))',
                     border: '2px solid var(--color-accent)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     margin: '0 auto 24px',
                 }}
             >
-                <Check size={32} color="var(--color-accent)" strokeWidth={2.5} />
+                <Star size={36} color="var(--color-accent)" fill="var(--color-accent)" strokeWidth={1.5} />
             </motion.div>
-            <h2 style={{ ...s.heading, textAlign: 'center' }}>You're all set, {fullName.split(' ')[0]}!</h2>
-            <p style={{ ...s.sub, textAlign: 'center' }}>Entering your dashboard…</p>
+            <h2 style={{ ...s.heading, textAlign: 'center', fontSize: '28px' }}>Your journey starts now</h2>
+            <p style={{ ...s.sub, textAlign: 'center', fontSize: '16px' }}>Entering Mission Control…</p>
+            <Loader2 size={24} color="var(--color-accent)" style={{ animation: 'spin 1.5s linear infinite', margin: '0 auto', opacity: 0.7 }} />
         </motion.div>,
     ];
 
@@ -329,6 +548,14 @@ export default function Onboarding() {
             <style>{`
                 @keyframes spin { to { transform: rotate(360deg); } }
                 .ob-input:focus { border-color: var(--color-accent) !important; outline: none; }
+                input[type="time"]::-webkit-calendar-picker-indicator {
+                    filter: invert(1);
+                    cursor: pointer;
+                    opacity: 0.6;
+                }
+                input[type="time"]::-webkit-calendar-picker-indicator:hover {
+                    opacity: 1;
+                }
             `}</style>
 
             <div style={{ width: '100%', maxWidth: '440px' }}>
@@ -352,8 +579,8 @@ export default function Onboarding() {
                         boxShadow: '0 32px 80px rgba(0,0,0,0.06)',
                     }}
                 >
-                    {/* Step indicator — only for steps 0–3 */}
-                    {step < 4 && <StepIndicator current={step} total={TOTAL_STEPS} />}
+                    {/* Step indicator — only for steps 0–7 */}
+                    {step < 8 && <StepIndicator current={step} total={TOTAL_STEPS} />}
 
                     <AnimatePresence mode="wait">
                         {stepContent[step]}
@@ -361,7 +588,7 @@ export default function Onboarding() {
                 </motion.div>
 
                 {/* Footer */}
-                {step < 4 && (
+                {step < 8 && (
                     <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-3)', marginTop: '20px' }}>
                         Step {step + 1} of {TOTAL_STEPS} · Your data is always private.
                     </p>
@@ -409,4 +636,13 @@ const s = {
         fontSize: '13px', color: '#ef4444', margin: '10px 0 0',
         fontWeight: 500,
     },
+    optionCard: {
+        display: 'flex',
+        alignItems: 'center',
+        padding: '14px 16px',
+        borderRadius: '12px',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        gap: '12px'
+    }
 };
