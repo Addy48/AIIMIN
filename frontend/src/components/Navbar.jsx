@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotifications';
 import { useThemeContext } from '../context/ThemeContext';
 import NotificationBell from './notifications/NotificationBell';
@@ -169,6 +169,7 @@ const timeAgo = (iso) => {
 
 const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDismiss, onClose, isDark }) => {
   const ref = useRef(null);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
     const handle = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
@@ -221,6 +222,13 @@ const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDi
             padding: '10px 14px', borderBottom: '1px solid var(--color-border)',
             display: 'flex', gap: '10px', alignItems: 'flex-start',
             background: !n.read_at ? 'var(--color-accent-dim)' : 'transparent',
+            cursor: n.action_url ? 'pointer' : 'default',
+          }} onClick={(e) => {
+              if (n.action_url && !e.defaultPrevented) {
+                if (!n.read_at) onMarkRead(n.id);
+                navigate(n.action_url);
+                onClose();
+              }
           }}>
             <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>{typeIcon(n.type)}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -231,8 +239,8 @@ const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDi
               <div style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: '3px', fontFamily: 'var(--font-sans)' }}>{timeAgo(n.created_at)}</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
-              {!n.read_at && <button onClick={() => onMarkRead(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22C55E', fontSize: '11px' }}>✓</button>}
-              <button onClick={() => onDismiss(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', fontSize: '11px' }}>✕</button>
+              {!n.read_at && <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMarkRead(n.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22C55E', fontSize: '11px' }}>✓</button>}
+              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDismiss(n.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', fontSize: '11px' }}>✕</button>
             </div>
           </div>
         ))}
