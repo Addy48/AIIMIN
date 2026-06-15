@@ -15,7 +15,7 @@ const Terms = () => {
                     AIIMIN is a personal productivity dashboard — a private life operating system that centralizes daily habits, goal tracking, journal entries, focus sessions, finance management, calendar integration, and personal analytics in one interface.
                 </Para>
                 <Para>
-                    AIIMIN is a personal project developed and maintained by a single developer (Aaditya Upadhyay) for personal and limited-access use. It integrates with Google APIs (Calendar, YouTube) to display the user's own data inside their dashboard.
+                    AIIMIN is a personal project developed and maintained by a single developer (Hasmatullah Kumar) for personal and limited-access use. It integrates with Google APIs (Calendar, YouTube) to display the user's own data inside their dashboard.
                 </Para>
             </Section>
 
@@ -80,7 +80,7 @@ const Terms = () => {
 
             <Section title="8. Intellectual Property">
                 <Para>
-                    All content, features, and functionality of the AIIMIN service — including but not limited to its design, code, text, graphics, and user interface — are the exclusive property of Aaditya Upadhyay and are protected by applicable intellectual property laws.
+                    All content, features, and functionality of the AIIMIN service — including but not limited to its design, code, text, graphics, and user interface — are the exclusive property of Hasmatullah Kumar and are protected by applicable intellectual property laws.
                 </Para>
                 <Para>
                     Your personal data and content that you enter into the dashboard (goals, journal entries, notes, etc.) remain your property. You grant AIIMIN a limited, non-exclusive license to store and process this data solely to provide the Service.
@@ -89,7 +89,7 @@ const Terms = () => {
 
             <Section title="9. Data Deletion">
                 <Para>
-                    You have the right to request deletion of your account and all associated data at any time. To do so, email <a href="mailto:aadityaupadhyay10@gmail.com" style={{ color: 'var(--accent)' }}>aadityaupadhyay10@gmail.com</a> or visit the <a href="/data-deletion" style={{ color: 'var(--accent)' }}>Data Deletion page</a>. All data will be permanently deleted within 30 days of a verified request.
+                    You have the right to request deletion of your account and all associated data at any time. To do so, email <a href="mailto:you@example.com" style={{ color: 'var(--accent)' }}>you@example.com</a> or visit the <a href="/data-deletion" style={{ color: 'var(--accent)' }}>Data Deletion page</a>. All data will be permanently deleted within 30 days of a verified request.
                 </Para>
             </Section>
 
@@ -132,8 +132,8 @@ const Terms = () => {
             <Section title="15. Contact">
                 <Para>
                     If you have any questions about these Terms, please contact:<br />
-                    <strong>Aaditya Upadhyay</strong><br />
-                    Email: <a href="mailto:aadityaupadhyay10@gmail.com" style={{ color: 'var(--accent)' }}>aadityaupadhyay10@gmail.com</a><br />
+                    <strong>Hasmatullah Kumar</strong><br />
+                    Email: <a href="mailto:you@example.com" style={{ color: 'var(--accent)' }}>you@example.com</a><br />
                     Website: <a href="https://www.aiimin.in" style={{ color: 'var(--accent)' }}>www.aiimin.in</a>
                 </Para>
             </Section>

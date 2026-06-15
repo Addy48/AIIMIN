@@ -14,7 +14,14 @@ let _pool = null;
 export const getPool = () => {
     if (_pool) return _pool;
 
-    const connectionString = process.env.DATABASE_URL;
+    let connectionString = process.env.DATABASE_URL;
+    if (connectionString) {
+        // Fallback for Supabase IPv4 deprecation on old PgBouncer port and new pooler
+        connectionString = connectionString.replace(':6543', ':5432');
+        // If Vercel is using the new pooler domain, force it to direct host
+        connectionString = connectionString.replace(/aws-0-[a-z0-9-]+\.pooler\.supabase\.com/g, 'db.yubxgftugxbwtywyhcsv.supabase.co');
+        connectionString = connectionString.replace(/pooler\.supabase\.com/g, 'db.yubxgftugxbwtywyhcsv.supabase.co');
+    }
     if (!connectionString) {
         const msg = '[DB] FATAL: DATABASE_URL is not set. Cannot initialize database pool.';
         console.error(msg);
