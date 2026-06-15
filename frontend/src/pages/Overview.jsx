@@ -173,49 +173,45 @@ const TrajectoryProgress = React.memo(() => {
     };
   };
 
-  React.useEffect(() => {
-    const p = getProgress();
-    const setDial = (id, val) => {
+  useEffect(() => {
+    const setDial = (id, val, sub = null) => {
       const ring = document.getElementById(`orbit-ring-${id}`);
       if (ring) ring.style.width = `${Math.min(100, Math.max(0, val))}%`;
       const pct  = document.getElementById(`orbit-pct-${id}`);
       if (pct)  pct.textContent = `${val.toFixed(2)}%`;
+      if (sub) {
+        const subEl = document.getElementById(`orbit-sub-${id}`);
+        if (subEl) subEl.textContent = sub;
+      }
     };
-    const t = setTimeout(() => {
-      setDial('year',  p.year.val);
-      setDial('month', p.month.val);
-      setDial('week',  p.week.val);
-      setDial('day',   p.day.val);
-    }, 120);
-    return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  useEffect(() => {
+    const t = setTimeout(() => {
+      const p = getProgress();
+      setDial('year',  p.year.val, p.year.sub);
+      setDial('month', p.month.val, p.month.sub);
+      setDial('week',  p.week.val, p.week.sub);
+      setDial('day',   p.day.val, p.day.sub);
+    }, 120);
+
     let raf;
-    let last = 0;
+    let last = performance.now();
     const tick = (ts) => {
       if (ts - last > 1000) {
         last = ts;
         const p = getProgress();
-        [
-          ['year',  p.year.val,  p.year.sub],
-          ['month', p.month.val, p.month.sub],
-          ['week',  p.week.val,  p.week.sub],
-          ['day',   p.day.val,   p.day.sub],
-        ].forEach(([id, val, sub]) => {
-          const ring = document.getElementById(`orbit-ring-${id}`);
-          if (ring) ring.style.width = `${Math.min(100, Math.max(0, val))}%`;
-          const pct  = document.getElementById(`orbit-pct-${id}`);
-          if (pct)  pct.textContent = `${val.toFixed(2)}%`;
-          const subEl = document.getElementById(`orbit-sub-${id}`);
-          if (subEl) subEl.textContent = sub;
-        });
+        setDial('year',  p.year.val, p.year.sub);
+        setDial('month', p.month.val, p.month.sub);
+        setDial('week',  p.week.val, p.week.sub);
+        setDial('day',   p.day.val, p.day.sub);
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+
+    return () => {
+      clearTimeout(t);
+      cancelAnimationFrame(raf);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -244,6 +240,71 @@ const TrajectoryProgress = React.memo(() => {
   );
 });
 
+/* ── Today's Micro-Task ── */
+const TodayMicroTask = () => {
+  const [task, setTask] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('aiimin_microtask_v1')) || { text: '', done: false, date: new Date().toDateString() };
+    } catch { return { text: '', done: false, date: new Date().toDateString() }; }
+  });
+  const [isEditing, setIsEditing] = useState(!task.text || task.date !== new Date().toDateString());
+
+  useEffect(() => {
+    if (task.date !== new Date().toDateString()) {
+      const resetTask = { text: '', done: false, date: new Date().toDateString() };
+      setTask(resetTask);
+      setIsEditing(true);
+      localStorage.setItem('aiimin_microtask_v1', JSON.stringify(resetTask));
+    } else {
+      localStorage.setItem('aiimin_microtask_v1', JSON.stringify(task));
+    }
+  }, [task]);
+
+  const handleSave = (e) => {
+    if (e.key === 'Enter' && task.text.trim()) {
+      setIsEditing(false);
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'12px', display: 'flex', justifyContent: 'space-between' }}>
+        <span>Today's Micro-Task</span>
+        {task.text && !isEditing && (
+          <span onClick={() => setIsEditing(true)} style={{ cursor: 'pointer', color: 'var(--color-accent)' }}>Edit</span>
+        )}
+      </div>
+      <div style={{ 
+        background: task.done ? 'rgba(34, 197, 94, 0.05)' : 'var(--color-surface)', 
+        border: `1px solid ${task.done ? 'rgba(34, 197, 94, 0.3)' : 'var(--color-border)'}`, 
+        borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px' 
+      }}>
+        {isEditing ? (
+          <input 
+            autoFocus
+            value={task.text}
+            onChange={(e) => setTask({ ...task, text: e.target.value })}
+            onKeyDown={handleSave}
+            placeholder="What's the one small thing that must get done today?"
+            style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--color-text-1)', fontSize: '15px', fontWeight: 600, outline: 'none' }}
+          />
+        ) : (
+          <>
+            <div onClick={() => setTask({ ...task, done: !task.done })} style={{ 
+              width: '24px', height: '24px', borderRadius: '50%', border: `2px solid ${task.done ? '#10B981' : 'var(--color-border)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: task.done ? '#10B981' : 'transparent', transition: 'all 0.2s'
+            }}>
+              {task.done && <span style={{ color: '#fff', fontSize: '12px', fontWeight: 900 }}>✓</span>}
+            </div>
+            <span style={{ fontSize: '15px', fontWeight: 600, color: task.done ? 'var(--color-text-3)' : 'var(--color-text-1)', textDecoration: task.done ? 'line-through' : 'none', flex: 1 }}>
+              {task.text}
+            </span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
 /* ── Main Overview ── */
 const Overview = () => {
@@ -460,6 +521,8 @@ const Overview = () => {
             </div>
           </div>
 
+          <TodayMicroTask />
+
           {/* Weekly Planner */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
@@ -481,8 +544,9 @@ const Overview = () => {
                 </button>
               </div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', height: '260px' }}>
-              {currentWeekDates.map(d => {
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '8px', margin: '0 -16px', padding: '0 16px 8px 16px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', height: '260px', minWidth: '700px' }}>
+                {currentWeekDates.map(d => {
                 const dayEvents = allCalendarEvents?.filter(e => {
                   const t = new Date(e.start_time || e.start);
                   const m = String(t.getMonth() + 1).padStart(2, '0');
@@ -491,6 +555,7 @@ const Overview = () => {
                 });
                 return <WeekCell key={d.dateStr} day={d.day} dateStr={d.dateStr} isToday={d.isToday} calendarEvents={dayEvents} />;
               })}
+              </div>
             </div>
           </div>
 
@@ -502,16 +567,19 @@ const Overview = () => {
           <CommandCenter user={user} />
 
           <TrajectoryProgress />
+          
+
 
         </div>
       </div>
 
       {/* Responsive */}
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .overview-grid { grid-template-columns: 1fr !important; }
-          .week-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .metric-row { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 768px) {
+          .metric-row { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>

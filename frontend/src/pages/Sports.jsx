@@ -11,14 +11,26 @@ const MatchCard = ({ match, isF1 = false }) => {
     return (
       <div className="hover-border-accent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', transition: 'all 0.3s ease', cursor: 'pointer' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-2)', fontWeight: 800 }}>
+          <div style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-2)', fontWeight: 800, flexShrink: 0 }}>
             🏎️
           </div>
           <div>
             <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-text-1)' }}>{match.name}</div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-3)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Calendar size={12} /> {match.statusShort}
+            <div style={{ fontSize: '12px', color: 'var(--color-text-3)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={12} /> {match.statusShort}</span>
+              {match.venue && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>• {match.venue}</span>}
+              {match.period && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>• Session: {match.period}</span>}
+              {match.statusDetail && match.statusDetail !== match.statusShort && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>• {match.statusDetail}</span>}
             </div>
+            {match.drivers && match.drivers.length > 0 && (
+              <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
+                {match.drivers.map((d, i) => (
+                  <span key={i} style={{ fontSize: '11px', fontWeight: 700, padding: '4px 8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--color-text-2)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: 'var(--color-text-4)' }}>P{d.position}</span> {d.name} {d.time && <span style={{ color: 'var(--color-text-3)' }}>({d.time})</span>}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

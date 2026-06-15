@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { upsertRow } from '../services/dbService';
+import { upsertRow, getRows } from '../services/dbService';
 import TimePicker from './TimePicker';
 import MomentumBar from './MomentumBar';
 import toast from '../utils/toast';
@@ -23,6 +23,44 @@ const DailyLogForm = ({ user, externalMood }) => {
         journalEntry: '',
         mood: null,
     });
+
+    // Fetch today's log if it exists
+    useEffect(() => {
+        const fetchTodayLog = async () => {
+            if (!user?.id || user.isGuest) return;
+            const dateObj = new Date();
+            const today = dateObj.toISOString().split('T')[0];
+            try {
+                const logs = await getRows('daily_logs', { eq: { user_id: user.id, date: today } });
+                if (logs && logs.length > 0) {
+                    const log = logs[0];
+                    setFormData({
+                        sleepStart: log.sleep_start || '',
+                        sleepEnd: log.sleep_end || '',
+                        gymDone: log.gym_done || false,
+                        gymDuration: log.gym_duration || 0,
+                        breakfastDone: log.breakfast_done || false,
+                        steps: log.steps || 0,
+                        waterBottles: log.water_bottles || 0,
+                        learningDone: log.learning_done || false,
+                        learningTopic: log.learning_topic || '',
+                        journalEntry: log.journal_entry || '',
+                        mood: log.mood || null,
+                    });
+                    // Only set dirty if we got an external mood that overrides DB
+                    if (externalMood !== null && externalMood !== undefined && externalMood !== log.mood) {
+                        setFormData(prev => ({ ...prev, mood: externalMood }));
+                        setIsDirty(true);
+                    } else {
+                        setIsDirty(false); // Clean initial load
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch today's log", err);
+            }
+        };
+        fetchTodayLog();
+    }, [user?.id]); // Note: externalMood is handled in the effect below
 
     // Sync mood from MoodTracker whenever it changes
     useEffect(() => {
@@ -109,13 +147,6 @@ const DailyLogForm = ({ user, externalMood }) => {
             setTimeout(() => setJustSaved(false), 3000);
 
             setTimeout(() => {
-                setFormData({
-                    sleepStart: '', sleepEnd: '',
-                    gymDone: false, gymDuration: 0,
-                    breakfastDone: false, steps: 0, waterBottles: 0,
-                    learningDone: false, learningTopic: '',
-                    journalEntry: '', mood: null,
-                });
                 setIsDirty(false);
             }, 500);
         } catch (error) {
