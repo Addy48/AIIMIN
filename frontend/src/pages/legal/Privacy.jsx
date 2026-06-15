@@ -91,7 +91,7 @@ const Privacy = () => {
 
             <Section title="7. Data Deletion">
                 <Para>You have the right to request deletion of your data at any time. To request deletion:</Para>
-                <Para>1. Email us at <a href="mailto:aadityaupadhyay10@gmail.com" style={{ color: 'var(--accent)' }}>aadityaupadhyay10@gmail.com</a> with the subject "Data Deletion Request".</Para>
+                <Para>1. Email us at <a href="mailto:you@example.com" style={{ color: 'var(--accent)' }}>you@example.com</a> with the subject "Data Deletion Request".</Para>
                 <Para>2. Or visit our <a href="/data-deletion" style={{ color: 'var(--accent)' }}>Data Deletion</a> page for self-service options.</Para>
                 <Para>All data will be permanently deleted within 30 days of a verified deletion request.</Para>
                 <Para>Additionally, you can revoke AIIMIN's Google OAuth access at any time from your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Google Account Permissions</a> page, which will immediately cut off all Google data access.</Para>
@@ -126,12 +126,12 @@ const Privacy = () => {
                 <Para>• <strong>Right to correction:</strong> You can update your profile information directly in your dashboard settings.</Para>
                 <Para>• <strong>Right to deletion:</strong> You can request permanent deletion of all your data at any time.</Para>
                 <Para>• <strong>Right to revoke Google access:</strong> You can disconnect AIIMIN from your Google account at any time.</Para>
-                <Para>To exercise any of these rights, contact us at <a href="mailto:aadityaupadhyay10@gmail.com" style={{ color: 'var(--accent)' }}>aadityaupadhyay10@gmail.com</a>.</Para>
+                <Para>To exercise any of these rights, contact us at <a href="mailto:you@example.com" style={{ color: 'var(--accent)' }}>you@example.com</a>.</Para>
             </Section>
 
             <Section title="12. Contact">
                 <Para>If you have any questions, concerns, or requests regarding this Privacy Policy or the data we hold about you, please contact:</Para>
-                <Para><strong>Aaditya Upadhyay</strong><br />Developer and sole operator of AIIMIN<br />Email: <a href="mailto:aadityaupadhyay10@gmail.com" style={{ color: 'var(--accent)' }}>aadityaupadhyay10@gmail.com</a><br />Website: <a href="https://www.aiimin.in" style={{ color: 'var(--accent)' }}>www.aiimin.in</a></Para>
+                <Para><strong>Hasmatullah Kumar</strong><br />Developer and sole operator of AIIMIN<br />Email: <a href="mailto:you@example.com" style={{ color: 'var(--accent)' }}>you@example.com</a><br />Website: <a href="https://www.aiimin.in" style={{ color: 'var(--accent)' }}>www.aiimin.in</a></Para>
             </Section>
         </LegalLayout>
     );

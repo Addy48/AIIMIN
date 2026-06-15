@@ -410,12 +410,12 @@ const Brand = () => {
                     <div style={styles.grid}>
                         <div style={styles.card}>
                             <div style={styles.cardTitle}>Developer & Owner</div>
-                            <div style={styles.cardText}>Aaditya Upadhyay<br />Solo developer and user of AIIMIN</div>
+                            <div style={styles.cardText}>Hasmatullah Kumar<br />Solo developer and user of AIIMIN</div>
                         </div>
                         <div style={styles.card}>
                             <div style={styles.cardTitle}>Email</div>
                             <div style={styles.cardText}>
-                                <a href="mailto:aadityaupadhyay10@gmail.com" style={{ color: '#a5b4fc', textDecoration: 'none' }}>aadityaupadhyay10@gmail.com</a>
+                                <a href="mailto:you@example.com" style={{ color: '#a5b4fc', textDecoration: 'none' }}>you@example.com</a>
                             </div>
                         </div>
                         <div style={styles.card}>
@@ -445,7 +445,7 @@ const Brand = () => {
             <div style={styles.footer}>
                 <div style={styles.container}>
                     <p style={styles.footerText}>
-                        © {new Date().getFullYear()} AIIMIN. Built by Aaditya Upadhyay. Personal use only.
+                        © {new Date().getFullYear()} AIIMIN. Built by Hasmatullah Kumar. Personal use only.
                     </p>
                 </div>
             </div>

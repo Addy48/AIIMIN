@@ -14,7 +14,7 @@ const About = () => {
             </Section>
             <Section title="Privacy Commitment">
                 <Para>Your data is not sold, monetized, or shared with anyone. It lives in a private database, encrypted at rest, and exists solely to power your own dashboard. There are no ads, no tracking pixels, and no analytics services running on this platform.</Para>
-                <Para>For full details, see the <a href="/privacy" style={{ color: 'var(--accent)' }}>Privacy Policy</a>. For questions, reach out at <a href="mailto:aadityaupadhyay10@gmail.com" style={{ color: 'var(--accent)' }}>aadityaupadhyay10@gmail.com</a>.</Para>
+                <Para>For full details, see the <a href="/privacy" style={{ color: 'var(--accent)' }}>Privacy Policy</a>. For questions, reach out at <a href="mailto:you@example.com" style={{ color: 'var(--accent)' }}>you@example.com</a>.</Para>
             </Section>
         </LegalLayout>
     );

@@ -339,7 +339,7 @@ export default function AccountPage() {
                                     <input
                                         value={draftProfile?.username || ''}
                                         onChange={e => setDraftProfile(p => ({ ...p, username: e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 20) }))}
-                                        placeholder="Username (e.g. AADIYA10)"
+                                        placeholder="Username (e.g. HASMAT99)"
                                         style={{
                                             padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
                                             border: '1px solid var(--border)', background: 'var(--bg-elevated)',
