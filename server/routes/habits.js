@@ -13,7 +13,7 @@ app.get('/', requireAuth, async (c) => {
         const userId = c.get('userId');
         const { status = 'active', category } = c.req.query();
 
-        let q = 'SELECT id, name, emoji, category, frequency, status, created_at FROM habits WHERE user_id = $1';
+        let q = 'SELECT id, name, emoji, category, frequency, status, meta, created_at FROM habits WHERE user_id = $1';
         const params = [userId];
         if (status) { params.push(status); q += ` AND status = $${params.length}`; }
         if (category) { params.push(category); q += ` AND category = $${params.length}`; }
@@ -30,13 +30,13 @@ app.get('/', requireAuth, async (c) => {
 app.post('/', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
-        const { name, emoji = '🎯', category, frequency = 'daily' } = await c.req.json();
+        const { name, emoji = '🎯', category, frequency = 'daily', meta = {} } = await c.req.json();
         if (!name?.trim()) return c.json({ error: 'name is required' }, 400);
 
         const { rows } = await pool.query(
-            `INSERT INTO habits (user_id, name, emoji, category, frequency)
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [userId, name.trim(), emoji, category || null, frequency]
+            `INSERT INTO habits (user_id, name, emoji, category, frequency, meta)
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [userId, name.trim(), emoji, category || null, frequency, meta]
         );
         return c.json(rows[0], 201);
     } catch (err) {
@@ -49,7 +49,7 @@ app.put('/:id', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const id = c.req.param('id');
-        const { name, emoji, category, frequency, status } = await c.req.json();
+        const { name, emoji, category, frequency, status, meta } = await c.req.json();
 
         const sets = [];
         const params = [];
@@ -58,6 +58,7 @@ app.put('/:id', requireAuth, async (c) => {
         if (category !== undefined) { params.push(category); sets.push(`category = $${params.length}`); }
         if (frequency !== undefined) { params.push(frequency); sets.push(`frequency = $${params.length}`); }
         if (status !== undefined) { params.push(status); sets.push(`status = $${params.length}`); }
+        if (meta !== undefined) { params.push(meta); sets.push(`meta = $${params.length}`); }
         if (sets.length === 0) return c.json({ error: 'No fields to update' }, 400);
 
         params.push(id, userId);

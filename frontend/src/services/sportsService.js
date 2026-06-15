@@ -50,21 +50,32 @@ const parseESPNEvents = (data) => {
       venue: comp.venue?.fullName || '',
       notes: comp.notes?.map(n => n.headline || n.text).filter(Boolean) || [],
       home: {
-        name: home.team?.displayName || home.team?.name || 'TBD',
-        short: home.team?.shortDisplayName || home.team?.abbreviation || home.team?.name?.substring(0,3)?.toUpperCase(),
-        logo: home.team?.logo || '',
+        name: home.team?.displayName || home.team?.name || home.competitor?.displayName || 'TBD',
+        short: home.team?.shortDisplayName || home.team?.abbreviation || home.team?.name?.substring(0,3)?.toUpperCase() || home.competitor?.abbreviation || 'TBD',
+        logo: home.team?.logo || home.competitor?.logo || '',
         score: home.score || '',
         winner: home.winner,
       },
       away: {
-        name: away.team?.displayName || away.team?.name || 'TBD',
-        short: away.team?.shortDisplayName || away.team?.abbreviation || away.team?.name?.substring(0,3)?.toUpperCase(),
-        logo: away.team?.logo || '',
+        name: away.team?.displayName || away.team?.name || away.competitor?.displayName || 'TBD',
+        short: away.team?.shortDisplayName || away.team?.abbreviation || away.team?.name?.substring(0,3)?.toUpperCase() || away.competitor?.abbreviation || 'TBD',
+        logo: away.team?.logo || away.competitor?.logo || '',
         score: away.score || '',
         winner: away.winner,
       },
       league: data.leagues?.[0]?.name || '',
     };
+  });
+};
+
+/* ── Filter Stale Finished Matches (approx start + duration + 30m) ── */
+const filterStale = (events, durationHrs = 2) => {
+  const now = Date.now();
+  // Match duration + 30 minutes delay
+  const maxAge = (durationHrs * 60 * 60 * 1000) + (30 * 60 * 1000);
+  return events.filter(ev => {
+    if (!ev.isFinished || !ev.date) return true;
+    return (now - new Date(ev.date).getTime()) < maxAge;
   });
 };
 
@@ -85,20 +96,18 @@ const sortEvents = (events) => {
 
 /* ── Football (Soccer) ── */
 export const fetchFootball = async () => {
+  // Only requested leagues: Prem League, La Liga, National Teams
   const leagues = [
     { slug: 'eng.1', name: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
-    { slug: 'UEFA.CHAMPIONS', name: 'Champions League', flag: '⭐' },
     { slug: 'esp.1', name: 'La Liga', flag: '🇪🇸' },
-    { slug: 'ita.1', name: 'Serie A', flag: '🇮🇹' },
-    { slug: 'ger.1', name: 'Bundesliga', flag: '🇩🇪' },
-    { slug: 'fra.1', name: 'Ligue 1', flag: '🇫🇷' },
-    { slug: 'usa.1', name: 'MLS', flag: '🇺🇸' },
+    { slug: 'fifa.world', name: 'National Teams', flag: '🌍' },
   ];
 
   const results = await Promise.allSettled(
     leagues.map(l => fetchJSON(`${ESPN}/soccer/${l.slug}/scoreboard`)
       .then(d => {
         let events = parseESPNEvents(d);
+        events = filterStale(events, 2); // Soccer ~2h duration + 30m delay
         events = sortEvents(events).slice(0, 8); // Top 8 matches per league
         return { league: l, events };
       })
@@ -138,7 +147,12 @@ export const fetchCricket = async () => {
               logo: away.logo || '',
             }
           };
+        }).filter(ev => {
+          if (league.name && league.name.includes('Indian Premier League')) return true;
+          const allowed = ['India', 'India A', 'Australia', 'England', 'South Africa', 'New Zealand', 'Pakistan', 'Sri Lanka', 'West Indies'];
+          return allowed.includes(ev.home.name) || allowed.includes(ev.away.name);
         }) : [];
+        events = filterStale(events, 6); // Cricket ~6h
         events = sortEvents(events).slice(0, 6);
         return {
           league: { name: league.name, flag: '🏏' },
@@ -165,6 +179,7 @@ export const fetchBasketball = async () => {
       leagues.map(l => fetchJSON(`${ESPN}/basketball/${l.slug}/scoreboard`)
         .then(d => {
           let events = parseESPNEvents(d);
+          events = filterStale(events, 2.5); // Basketball ~2.5h
           events = sortEvents(events).slice(0, 10);
           return { league: l, events };
         })
@@ -179,10 +194,47 @@ export const fetchBasketball = async () => {
 /* ── F1 ── */
 export const fetchF1 = async () => {
   try {
-    // ESPN provides F1 events without CORS issues, Ergast is too slow.
     const data = await fetchJSON(`${ESPN}/racing/f1/scoreboard`);
-    let events = parseESPNEvents(data);
+    if (!data?.events?.length) return { upcoming: [], next: null, last: null };
+    
+    let events = data.events.map(ev => {
+      const comp = ev.competitions?.[0] || {};
+      const status = comp.status?.type || {};
+      const statusDetail = comp.status?.type?.shortDetail || comp.status?.type?.detail || '';
+      
+      // Extract top 3 drivers if available
+      let drivers = [];
+      if (comp.competitors && comp.competitors.length > 0) {
+        drivers = comp.competitors.slice(0, 3).map(c => ({
+          name: c.athlete?.displayName || c.athlete?.shortName || 'TBD',
+          position: c.status?.position || c.order,
+          time: c.status?.displayTime || c.status?.time || ''
+        }));
+      }
+
+      return {
+        id: ev.id,
+        date: ev.date,
+        name: ev.name || ev.shortName,
+        status: status.name,
+        statusShort: status.completed ? 'FINISHED' : (
+          status.state === 'pre' && ev.date
+            ? new Date(ev.date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            : statusDetail
+        ),
+        statusDetail: comp.status?.type?.detail || '',
+        period: comp.status?.period,
+        isLive: status.state === 'in',
+        isFinished: status.completed || status.state === 'post',
+        venue: comp.venue?.fullName || '',
+        drivers: drivers
+      };
+    });
+
     events = sortEvents(events);
+    // Filter out F1 events older than 3 hours (2.5h duration + 30m delay)
+    events = filterStale(events, 2.5);
+
     return {
       upcoming: events,
       next: events.find(e => !e.isFinished) || null,

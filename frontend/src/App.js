@@ -14,7 +14,6 @@ import Contact from './pages/legal/Contact';
 import Brand from './pages/legal/Brand';
 
 // Layout & eager components
-import MobileApp from './components/mobile/MobileApp';
 import DashboardLayout from './components/layout/DashboardLayout';
 import FeedbackWidget from './components/FeedbackWidget';
 import ProductTour from './components/onboarding/ProductTour';
@@ -34,7 +33,7 @@ import ErrorBoundary from './components/system/ErrorBoundary';
 const Overview = React.lazy(() => import('./pages/Overview'));
 const Insights = React.lazy(() => import('./pages/Insights'));
 const CalendarPage = React.lazy(() => import('./pages/CalendarPage'));
-const ReportsPage = React.lazy(() => import('./pages/Reports'));
+
 const Finance = React.lazy(() => import('./pages/Finance'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const LabFullPage = React.lazy(() => import('./pages/LabFullPage'));
@@ -49,6 +48,8 @@ const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
 const FocusRoom     = React.lazy(() => import('./pages/FocusRoom'));
 const FamilyPage    = React.lazy(() => import('./pages/Family'));
 const AccountPage   = React.lazy(() => import('./pages/AccountPage'));
+const ReportsPage   = React.lazy(() => import('./pages/Reports'));
+const SeedData      = React.lazy(() => import('./pages/SeedData'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -82,22 +83,17 @@ function AuthedApp() {
 
 function AppContent({ user, session }) {
   const location = useLocation();
-  const isMobileRoute = location.pathname === '/m';
-
-  // Basic check for mobile form factor (used for smart default routing)
-  const isMobileDevice = typeof window !== 'undefined' && (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768);
-
-  // Removed dynamic viewport manipulation to restore default zoom behavior
+  // Basic check for mobile form factor removed, mobile now uses main layout
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-base)' }}>
       <Routes>
 
         {/* ── Auth ── */}
-        <Route path="/login" element={!user ? <Login /> : <Navigate to={isMobileDevice ? '/m' : '/overview'} replace />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to="/overview" replace />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/login" replace />} />
-        <Route path="/" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
+        <Route path="/" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
 
         {/* ── Authenticated shell ── */}
         <Route element={
@@ -107,7 +103,7 @@ function AppContent({ user, session }) {
           <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
-          <Route path="/reports" element={<Lazy><ReportsPage /></Lazy>} />
+
           <Route path="/sports" element={<Lazy><SportsPage /></Lazy>} />
           <Route path="/journal" element={<Lazy><JournalPage /></Lazy>} />
           <Route path="/finance" element={<Lazy><Finance /></Lazy>} />
@@ -122,10 +118,9 @@ function AppContent({ user, session }) {
           <Route path="/focus"       element={<Lazy><FocusRoom /></Lazy>} />
           <Route path="/family"      element={<Lazy><FamilyPage /></Lazy>} />
           <Route path="/account"     element={<Lazy><AccountPage /></Lazy>} />
+          <Route path="/reports"     element={<Lazy><ReportsPage /></Lazy>} />
+          <Route path="/seed-data"   element={<Lazy><SeedData /></Lazy>} />
         </Route>
-
-        {/* ── Mobile PWA ── */}
-        <Route path="/m" element={user ? <MobileApp user={user} /> : <Navigate to="/login" replace />} />
 
         {/* ── Public legal & brand ── */}
         <Route path="/privacy" element={<Privacy />} />
@@ -137,14 +132,14 @@ function AppContent({ user, session }) {
         <Route path="/brand" element={<Brand />} />
 
         {/* ── 404 ── */}
-        <Route path="*" element={<Navigate to={user ? (isMobileDevice ? '/m' : '/overview') : '/login'} replace />} />
+        <Route path="*" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
 
       </Routes>
 
       {/* Global Widgets */}
-      {!isMobileRoute && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-      {!isMobileRoute && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
-      {!isMobileRoute && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      {location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+      {location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+      {location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
   );
 }

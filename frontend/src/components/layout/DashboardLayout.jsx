@@ -97,7 +97,7 @@ const DashboardLayout = ({ user }) => {
 
       <main style={{
         width: '100%',
-        padding: '40px var(--content-pad) 120px',
+        padding: 'var(--content-pad) var(--content-pad) 120px',
         display: 'flex',
         flexDirection: 'column',
         minHeight: 'calc(100vh - var(--nav-height))',
