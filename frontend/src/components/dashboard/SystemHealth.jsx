@@ -12,25 +12,39 @@ const SystemHealth = () => {
     const runChecks = async () => {
       // Network Check
       if (navigator.onLine) {
-        if (mounted) setNetworkStatus({ label: 'Network Uplink', status: 'Connected', color: '#10B981' });
+        const start = performance.now();
+        try {
+          await fetch(window.location.origin, { method: 'HEAD', cache: 'no-store' });
+          const latency = Math.round(performance.now() - start);
+          if (mounted) setNetworkStatus({ label: 'Network Latency', status: `${latency}ms`, color: latency < 100 ? '#10B981' : '#F59E0B' });
+        } catch (e) {
+          if (mounted) setNetworkStatus({ label: 'Network Uplink', status: 'Connected', color: '#10B981' });
+        }
       } else {
         if (mounted) setNetworkStatus({ label: 'Network Uplink', status: 'Offline', color: '#EF4444' });
       }
 
       // DB Check
       try {
-        const { error } = await supabase.auth.getSession();
+        const start = performance.now();
+        const { error } = await supabase.from('profiles').select('id').limit(1);
+        const latency = Math.round(performance.now() - start);
         if (error) throw error;
-        if (mounted) setDbStatus({ label: 'Database Sync', status: 'Optimal', color: '#10B981' });
+        if (mounted) setDbStatus({ label: 'Database Latency', status: `${latency}ms`, color: latency < 300 ? '#10B981' : '#F59E0B' });
       } catch (e) {
         if (mounted) setDbStatus({ label: 'Database Sync', status: 'Broken', color: '#EF4444' });
       }
       
       // Cache Check
       try {
-        localStorage.setItem('_test_cache', '1');
-        localStorage.removeItem('_test_cache');
-        if (mounted) setCacheStatus({ label: 'Local Storage', status: 'Active', color: '#10B981' });
+        let total = 0;
+        for (let x in localStorage) {
+          if (localStorage.hasOwnProperty(x)) {
+            total += ((localStorage[x].length + x.length) * 2);
+          }
+        }
+        const kb = (total / 1024).toFixed(1);
+        if (mounted) setCacheStatus({ label: 'Local Storage', status: `${kb} KB used`, color: '#10B981' });
       } catch (e) {
         if (mounted) setCacheStatus({ label: 'Local Storage', status: 'Failed', color: '#EF4444' });
       }
