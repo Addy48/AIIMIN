@@ -606,8 +606,12 @@ const Login = () => {
       if (data && data.email) setError('OS-ID is already taken.');
       else { setDirection(1); setStep(3); }
     } catch (err) {
-      if (err.response && err.response.status === 404) { setDirection(1); setStep(3); }
-      else setError(err.message || 'Error checking OS-ID. Please try again.');
+      // 404 means OS-ID is available — proceed to next step
+      if (err.status === 404 || (err.response && err.response.status === 404)) {
+        setDirection(1); setStep(3);
+      } else {
+        setError('Error checking OS-ID. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
