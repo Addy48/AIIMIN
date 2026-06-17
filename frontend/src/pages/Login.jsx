@@ -595,11 +595,18 @@ const Login = () => {
   }, [mode, step]);
 
   // ── Username step ──
-  const isUsernameValid = usernameVal.length === 8 && /^[A-Z0-9_.-]+$/.test(usernameVal) && (usernameVal.match(/[0-9]/g) || []).length <= 4;
+  const validateUsername = (val) => {
+    if (!val) return 'OS-ID cannot be empty.';
+    if (val.length !== 8) return 'OS-ID must be exactly 8 characters long.';
+    if (!/^[A-Z0-9@,._\-=+*^$#!]+$/.test(val)) return 'Only letters, numbers, and @,._-=+*^$#! are allowed.';
+    if ((val.match(/[0-9]/g) || []).length > 4) return 'Maximum 4 digits allowed.';
+    return null;
+  };
 
   const handleUsernameNext = async (e) => {
     if (e) e.preventDefault();
-    if (!isUsernameValid) { setError('OS-ID does not meet requirements.'); return; }
+    const validationError = validateUsername(usernameVal);
+    if (validationError) { setError(validationError); return; }
     setError(null); setLoading(true);
     try {
       const data = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(usernameVal.trim())}`, { auth: false });
@@ -618,7 +625,7 @@ const Login = () => {
   };
 
   const handleUsernameChange = (e) => {
-    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '');
+    const val = e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '');
     if (val.length <= 8) setUsernameVal(val);
   };
 

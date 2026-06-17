@@ -342,16 +342,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
 
     return (
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px 0', position: 'relative' }}>
-            {onClose && (
-                <button 
-                  onClick={onClose}
-                  style={{ position: 'absolute', top: '24px', right: '40px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
-                  onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-                >
-                  <span>←</span> Back to Lab
-                </button>
-            )}
+
             
             {/* Mode Switcher */}
             {(phase === 'ready' && debatePhase === 'setup') && (

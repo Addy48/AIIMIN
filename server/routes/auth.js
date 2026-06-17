@@ -6,13 +6,16 @@ import { requireAuth } from '../middleware/auth.js';
 const app = new Hono();
 
 const COOKIE_NAME = 'aiimin_session';
-// OS-ID: 4-8 uppercase letters/numbers, max 4 digits
-const USERNAME_PATTERN = /^[A-Z0-9]{4,8}$/;
+// OS-ID: exactly 8 chars, max 4 digits
+const USERNAME_PATTERN = /^[A-Z0-9@,._\-=+*^$#!]+$/;
 const PIN_PATTERN = /^\d{6}$/;
 
 const validateOsId = (username) => {
+    if (username.length !== 8) {
+        return 'OS-ID must be exactly 8 characters long.';
+    }
     if (!USERNAME_PATTERN.test(username)) {
-        return 'OS-ID must be 4-8 uppercase letters/numbers only';
+        return 'Only letters, numbers, and @,._-=+*^$#! are allowed.';
     }
     const digits = (username.match(/[0-9]/g) || []).length;
     if (digits > 4) {

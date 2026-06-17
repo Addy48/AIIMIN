@@ -120,16 +120,7 @@ export default function AptitudeTest({ onClose }) {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '80px 20px 40px', height: '100%', overflowY: 'auto', position: 'relative' }}>
-      {onClose && (
-        <button 
-          onClick={onClose}
-          style={{ position: 'absolute', top: '24px', right: '20px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <span>←</span> Back to Lab
-        </button>
-      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           Question {currentIdx + 1} of {QUESTIONS.length}

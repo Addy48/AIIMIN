@@ -578,7 +578,7 @@ export default function QuantitativeMaths({ onClose }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {(view === 'quiz' || view === 'history') && (
             <button onClick={() => setView('sets')} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '10px', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-2)', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>
-              <ArrowLeft size={14} /> Back to Lab
+              <ArrowLeft size={14} /> Back to Sets
             </button>
           )}
           <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text-1)' }}>
