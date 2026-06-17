@@ -266,16 +266,7 @@ function ReadingLog({ userId, isDark, onClose }) {
   };
   return (
     <div style={{ padding: "32px", position: "relative" }}>
-      {onClose && (
-        <button 
-          onClick={onClose}
-          style={{ position: 'absolute', top: '24px', right: '32px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <span>←</span> Back to Lab
-        </button>
-      )}
+
       <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: text3, marginBottom: "8px" }}>Reading Log</div>
       <h2 style={{ fontSize: "24px", fontWeight: 700, color: text1, margin: "0 0 24px" }}>Log what you read</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>

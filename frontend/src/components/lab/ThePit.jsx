@@ -52,16 +52,7 @@ export default function ThePit({ userId, isDark, onClose }) {
 
   return (
     <div style={{ padding: '80px 40px 40px', maxWidth: '850px', margin: '0 auto', position: 'relative', height: '100%', overflowY: 'auto' }}>
-      {onClose && (
-        <button 
-          onClick={onClose}
-          style={{ position: 'absolute', top: '24px', right: '40px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <span>←</span> Back to Lab
-        </button>
-      )}
+
       <div style={{ marginBottom: '40px' }}>
         <h2 style={{ fontSize: '40px', fontWeight: 800, color: text1, margin: '0 0 12px' }}>The Pit</h2>
         <p style={{ fontSize: '18px', color: text2 }}>Where discipline is forged. No excuses, just output.</p>
