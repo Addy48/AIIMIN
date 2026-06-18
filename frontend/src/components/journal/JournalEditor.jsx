@@ -23,7 +23,7 @@ const COVERS = [
 
 const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }) => {
   const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
+  const isDark = theme === 'vercel' || theme === 'midnight';
 
   const border = 'var(--color-border)';
   const text1 = 'var(--color-text-1)';

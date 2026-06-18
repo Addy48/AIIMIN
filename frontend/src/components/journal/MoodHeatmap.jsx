@@ -11,7 +11,7 @@ const MOODS = [
 
 export default function MoodHeatmap({ entries, onSelectEntry }) {
   const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
+  const isDark = theme === 'vercel' || theme === 'midnight';
   
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
