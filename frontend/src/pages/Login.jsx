@@ -924,12 +924,12 @@ const Login = () => {
                           label={`Max 4 numbers (${(usernameVal.match(/[0-9]/g) || []).length}/4)`}
                         />
                         <ValidationRow
-                          ok={usernameVal.length > 0 && /^[A-Z0-9_.-]+$/.test(usernameVal)}
-                          label="Letters, numbers, _, ., - only"
+                          ok={usernameVal.length > 0 && /^[A-Z0-9@,._\-=+*^$#!]+$/i.test(usernameVal)}
+                          label="Letters, numbers, @,._-=+*^$#! only"
                         />
                       </div>
                       <ErrorMsg msg={error} />
-                      <PrimaryBtn disabled={!isUsernameValid} loading={loading}>Continue →</PrimaryBtn>
+                      <PrimaryBtn disabled={!(usernameVal.length === 8 && (usernameVal.match(/[0-9]/g) || []).length <= 4 && /^[A-Z0-9@,._\-=+*^$#!]+$/i.test(usernameVal))} loading={loading}>Continue →</PrimaryBtn>
                     </form>
                   </motion.div>
                 )}
