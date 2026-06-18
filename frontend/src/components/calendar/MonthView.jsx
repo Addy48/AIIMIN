@@ -13,7 +13,7 @@ const EVENT_COLORS = {
 
 const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
   const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
+  const isDark = theme === 'vercel' || theme === 'midnight';
 
   const d = new Date(currentDate);
   const year = d.getFullYear();

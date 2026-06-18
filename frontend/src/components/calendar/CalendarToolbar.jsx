@@ -11,7 +11,7 @@ const VIEWS = [
 
 const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewEvent, session, syncStatus, onPullGoogle, onPushGoogle }) => {
   const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
+  const isDark = theme === 'vercel' || theme === 'midnight';
   const d = new Date(currentDate);
 
   const border = 'var(--color-border)';

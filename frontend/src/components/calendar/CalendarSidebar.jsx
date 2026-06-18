@@ -17,7 +17,7 @@ const SYS_LABELS = {
 
 const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSystemFilterChange }) => {
   const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
+  const isDark = theme === 'vercel' || theme === 'midnight';
 
   const d = new Date(currentDate);
   const year = d.getFullYear();

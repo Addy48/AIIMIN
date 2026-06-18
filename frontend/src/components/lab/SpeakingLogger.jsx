@@ -97,7 +97,7 @@ const WaveformVisualizer = ({ isRecording, color, isAi = false }) => {
 
 export default function SpeakingLogger({ onComplete, onClose }) {
     const { theme } = useThemeContext();
-    const isDark = theme === 'dark';
+    const isDark = theme === 'vercel' || theme === 'midnight';
     
     const getUnseenPromptIndex = (category) => {
         try {
