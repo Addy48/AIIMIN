@@ -289,16 +289,7 @@ export default function ATSAnalyzer({ onClose }) {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 28, position: 'relative' }}>
-      {onClose && (
-        <button 
-          onClick={onClose}
-          style={{ position: 'absolute', top: '-10px', right: '0px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '99px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', transition: 'all 0.2s', zIndex: 100 }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <span>←</span> Back to Lab
-        </button>
-      )}
+
 
       {/* ── Header ── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
@@ -313,9 +304,7 @@ export default function ATSAnalyzer({ onClose }) {
             Paste the Job Description and your Resume text. We'll identify missing keywords and suggest tailored bullet points to beat the ATS.
           </p>
         </div>
-        {onClose && (
-          <button onClick={onClose} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '18px' }}>✕</button>
-        )}
+
       </div>
       {isGuest && (
           <div style={{

@@ -169,11 +169,7 @@ export default function SystemDesign({ onClose }) {
         <button onClick={() => { setCurrentIdx(0); setScore(0); setShowResult(false); setSelectedOpt(null); }} style={{ padding: '14px 32px', background: 'var(--color-text-1)', color: 'var(--color-base)', borderRadius: '12px', fontSize: '15px', fontWeight: 800, border: 'none', cursor: 'pointer', marginRight: '12px' }}>
           Retry Scenarios
         </button>
-        {onClose && (
-          <button onClick={onClose} style={{ padding: '14px 32px', background: 'var(--color-surface)', color: 'var(--color-text-1)', border: '1px solid var(--color-border)', borderRadius: '12px', fontSize: '15px', fontWeight: 800, cursor: 'pointer' }}>
-            Exit
-          </button>
-        )}
+
       </div>
     );
   }
