@@ -24,6 +24,7 @@ import {
   Smile,
   CheckCircle,
   StickyNote,
+  Mic,
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────
@@ -133,6 +134,16 @@ const ALL_ACTIONS = [
     keywords: ['lab', 'experiments', 'analytics'],
   },
   {
+    id: 'nav_vocal_mastery',
+    label: 'Go to Vocal Mastery',
+    description: 'AI Voice logging & debate',
+    route: '/lab?module=speaking',
+    icon: Mic,
+    category: 'Navigation',
+    type: 'navigate',
+    keywords: ['voice', 'speaking', 'vocal', 'mastery', 'logger', 'command'],
+  },
+  {
     id: 'nav_family',
     label: 'Go to Family Vault',
     description: 'Family health & bonds',
@@ -175,6 +186,16 @@ const ALL_ACTIONS = [
 
   // ── Quick Actions ────────────────────────────
   {
+    id: 'ai_log',
+    label: 'Smart AI Log',
+    description: 'Tell AI what happened (voice or text) and let it sort',
+    icon: Brain,
+    category: 'Quick Log',
+    type: 'ai_log',
+    placeholder: 'Tell AI what you did... (Enter to save)',
+    keywords: ['ai', 'smart', 'log', 'voice', 'auto', 'brain'],
+  },
+  {
     id: 'log_win',
     label: 'Log a Win',
     description: 'Capture a quick win or achievement',
@@ -197,6 +218,17 @@ const ALL_ACTIONS = [
     supabaseTable: 'notes',
     placeholder: 'Type your note… (Enter to save)',
     keywords: ['note', 'idea', 'thought', 'log note', 'jot'],
+  },
+
+  {
+    id: 'voice_log',
+    label: 'Voice Log',
+    description: 'Quickly dictate a note or log entry',
+    icon: Mic,
+    category: 'Quick Log',
+    type: 'voice',
+    supabaseTable: 'notes',
+    keywords: ['voice', 'dictate', 'audio', 'log voice', 'record'],
   },
   {
     id: 'check_mood',
@@ -262,6 +294,11 @@ export default function CommandPalette() {
   const [inlineText, setInlineText]     = useState('');
   const [successMsg, setSuccessMsg]     = useState('');
 
+  // Voice State
+  const [isListening, setIsListening] = useState(false);
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const recognitionRef = useRef(null);
+
   const inputRef       = useRef(null);
   const inlineInputRef = useRef(null);
   const listRef        = useRef(null);
@@ -283,7 +320,58 @@ export default function CommandPalette() {
     setInlineText('');
     setSuccessMsg('');
     setSearch('');
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
   }, []);
+
+  /* ── Voice Dictation logic ────────────────── */
+  const toggleListening = useCallback(() => {
+    if (isListening) {
+      if (recognitionRef.current) recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        setSuccessMsg("Browser doesn't support speech recognition.");
+        return;
+      }
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      
+      recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setInlineText(transcript);
+      };
+      
+      recognition.onerror = (e) => console.error('Speech recognition error', e);
+      
+      try {
+        recognition.start();
+        setIsListening(true);
+        recognitionRef.current = recognition;
+      } catch (err) {
+        console.error('Failed to start recognition', err);
+      }
+    }
+  }, [isListening]);
+
+  /* ── Spacebar to toggle voice ─────────────── */
+  useEffect(() => {
+    const onVoiceKeyDown = (e) => {
+      if ((activeAction?.type === 'voice' || activeAction?.type === 'ai_log') && e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        toggleListening();
+      }
+    };
+    window.addEventListener('keydown', onVoiceKeyDown);
+    return () => window.removeEventListener('keydown', onVoiceKeyDown);
+  }, [activeAction, toggleListening]);
 
   /* ── Global keyboard listener ─────────────── */
   useEffect(() => {
@@ -335,11 +423,14 @@ export default function CommandPalette() {
       if (action.type === 'navigate') {
         closePalette();
         navigate(action.route);
-      } else if (action.type === 'inline_input' || action.type === 'mood') {
+      } else if (action.type === 'inline_input' || action.type === 'mood' || action.type === 'voice' || action.type === 'ai_log') {
         setActiveAction(action);
         setInlineText('');
         setSuccessMsg('');
-        setTimeout(() => inlineInputRef.current?.focus(), 80);
+        setIsAiProcessing(false);
+        if (action.type === 'inline_input' || action.type === 'ai_log') {
+          setTimeout(() => inlineInputRef.current?.focus(), 80);
+        }
       }
     },
     [closePalette, navigate]
@@ -356,6 +447,48 @@ export default function CommandPalette() {
     }
     
     try {
+        if (activeAction.type === 'ai_log') {
+             setIsAiProcessing(true);
+             const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
+             if(!GEMINI_API_KEY) {
+                 setSuccessMsg('No Gemini API Key found.');
+                 setIsAiProcessing(false);
+                 return;
+             }
+             
+             const prompt = `Categorize the following text into one of these types: "win", "note", "mood", "task", "journal". Then extract the relevant text or value. Text: "${inlineText.trim()}". Respond strictly with JSON format: {"type": "win|note|mood|task|journal", "content": "extracted text or 1-10 value"}`;
+             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
+                 method: 'POST', headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+             });
+             const data = await res.json();
+             const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+             
+             let parsed = { type: 'note', content: inlineText.trim() };
+             try {
+                 const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                 if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+             } catch(e) {}
+             
+             if (parsed.type === 'win') {
+                 await supabase.from('wins').insert([{ user_id: user.id, text: parsed.content, day_of: new Date().toISOString().split('T')[0] }]);
+             } else if (parsed.type === 'mood') {
+                 const mVal = parseInt(parsed.content) || 5;
+                 await supabase.from('lab_mindset_logs').insert([{ user_id: user.id, state: mVal >= 7 ? 'Flow' : mVal >= 4 ? 'Neutral' : 'Burnout', notes: `AI Logged Mood: ${parsed.content}`, day_of: new Date().toISOString().split('T')[0] }]);
+             } else if (parsed.type === 'task') {
+                 await supabase.from('tasks').insert([{ user_id: user.id, text: parsed.content, is_completed: false, order_index: 0 }]);
+             } else if (parsed.type === 'journal') {
+                 await supabase.from('journal_entries').insert([{ user_id: user.id, title: 'AI Log', content: parsed.content, created_at: new Date().toISOString() }]);
+             } else {
+                 await supabase.from('notes').insert([{ user_id: user.id, text: parsed.content, created_at: new Date().toISOString() }]);
+             }
+             
+             setIsAiProcessing(false);
+             setSuccessMsg(`✓ AI categorised & logged as ${parsed.type}!`);
+             setTimeout(() => closePalette(), 1200);
+             return;
+        }
+
         if (activeAction.action === 'log_win') {
              await supabase.from('wins').insert([{ user_id: user.id, text: inlineText.trim(), day_of: new Date().toISOString().split('T')[0] }]);
         } else if (activeAction.action === 'log_note') {
@@ -365,6 +498,7 @@ export default function CommandPalette() {
         setTimeout(() => closePalette(), 800);
     } catch(e) {
         console.error(e);
+        setIsAiProcessing(false);
         setSuccessMsg('Error saving log.');
     }
   }, [inlineText, activeAction, closePalette, user]);
@@ -503,6 +637,30 @@ export default function CommandPalette() {
               fontFamily: 'var(--font-sans)',
             }}
           />
+          <button
+            onClick={() => {
+              const aiLogAction = ALL_ACTIONS.find(a => a.id === 'ai_log');
+              if (aiLogAction) {
+                executeAction(aiLogAction);
+                if (!isListening) setTimeout(() => toggleListening(), 150);
+              }
+            }}
+            title="Start Voice Log"
+            style={{
+              background: isListening ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+              border: 'none',
+              color: isListening ? '#ef4444' : 'var(--color-text-3)',
+              cursor: 'pointer',
+              padding: '6px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s'
+            }}
+          >
+            <Mic size={16} style={{ animation: isListening ? 'pulse 2s infinite' : 'none' }} />
+          </button>
           <kbd
             style={{
               fontSize: '11px',
@@ -607,21 +765,129 @@ export default function CommandPalette() {
                     </span>
                     <button
                       onClick={saveInlineText}
-                      disabled={!inlineText.trim()}
+                      disabled={!inlineText.trim() || isAiProcessing}
                       style={{
-                        background: inlineText.trim() ? 'var(--color-accent)' : 'var(--color-elevated)',
-                        color: inlineText.trim() ? '#fff' : 'var(--color-text-3)',
+                        background: inlineText.trim() && !isAiProcessing ? 'var(--color-accent)' : 'var(--color-elevated)',
+                        color: inlineText.trim() && !isAiProcessing ? '#fff' : 'var(--color-text-3)',
                         border: 'none',
                         borderRadius: '7px',
                         padding: '5px 14px',
                         fontSize: '12px',
                         fontWeight: 600,
-                        cursor: inlineText.trim() ? 'pointer' : 'default',
+                        cursor: inlineText.trim() && !isAiProcessing ? 'pointer' : 'default',
                         fontFamily: 'var(--font-sans)',
                         transition: 'background 0.15s',
                       }}
                     >
-                      Save
+                      {isAiProcessing ? 'Processing...' : 'Save'}
+                    </button>
+                  </div>
+                </div>
+              ) : activeAction.type === 'ai_log' ? (
+                /* Text & Voice AI Input */
+                <div style={{ padding: '16px 18px' }}>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: CATEGORY_TEXT['Quick Log'],
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      marginBottom: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <activeAction.icon size={12} />
+                    {activeAction.label}
+                  </div>
+                  
+                  <div style={{ position: 'relative' }}>
+                      <textarea
+                        ref={inlineInputRef}
+                        value={inlineText}
+                        onChange={(e) => setInlineText(e.target.value)}
+                        onKeyDown={onInlineKeyDown}
+                        placeholder={isListening ? 'Listening...' : activeAction.placeholder}
+                        style={{
+                          width: '100%',
+                          border: '1px solid var(--color-border)',
+                          background: isListening ? 'rgba(99, 179, 237, 0.05)' : 'var(--color-elevated)',
+                          borderRadius: '10px',
+                          padding: '12px 14px',
+                          outline: 'none',
+                          fontSize: '15px',
+                          color: 'var(--color-text-1)',
+                          fontFamily: 'var(--font-sans)',
+                          boxSizing: 'border-box',
+                          transition: 'all 0.15s',
+                          minHeight: '80px',
+                          resize: 'none',
+                          lineHeight: 1.5
+                        }}
+                        onFocus={(e) =>
+                          (e.target.style.borderColor = 'var(--color-accent)')
+                        }
+                        onBlur={(e) =>
+                          (e.target.style.borderColor = 'var(--color-border)')
+                        }
+                      />
+                      <button
+                        onClick={toggleListening}
+                        style={{
+                          position: 'absolute',
+                          right: '12px',
+                          bottom: '12px',
+                          background: isListening ? 'rgba(239, 68, 68, 0.1)' : 'var(--color-elevated)',
+                          color: isListening ? '#ef4444' : 'var(--color-text-3)',
+                          border: '1px solid',
+                          borderColor: isListening ? 'rgba(239, 68, 68, 0.2)' : 'var(--color-border)',
+                          borderRadius: '8px',
+                          padding: '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.15s'
+                        }}
+                        title="Toggle Voice (Space)"
+                      >
+                        <Mic size={16} style={{ animation: isListening ? 'pulse 2s infinite' : 'none' }} />
+                      </button>
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: '12px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-3)' }}>
+                      Press <strong>Enter</strong> to let AI process · <strong>Space</strong> for voice
+                    </span>
+                    <button
+                      onClick={saveInlineText}
+                      disabled={!inlineText.trim() || isAiProcessing || isListening}
+                      style={{
+                        background: inlineText.trim() && !isAiProcessing && !isListening ? 'var(--color-accent)' : 'var(--color-elevated)',
+                        color: inlineText.trim() && !isAiProcessing && !isListening ? '#fff' : 'var(--color-text-3)',
+                        border: 'none',
+                        borderRadius: '7px',
+                        padding: '6px 16px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: inlineText.trim() && !isAiProcessing && !isListening ? 'pointer' : 'default',
+                        fontFamily: 'var(--font-sans)',
+                        transition: 'background 0.15s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      {isAiProcessing ? <><Brain size={14} style={{ animation: 'pulse 1s infinite' }} /> Processing...</> : 'Send to AI'}
                     </button>
                   </div>
                 </div>
@@ -691,6 +957,100 @@ export default function CommandPalette() {
                         </span>
                       </button>
                     ))}
+                  </div>
+                </div>
+              ) : activeAction.type === 'voice' ? (
+                /* Voice Dictation area */
+                <div style={{ padding: '16px 18px' }}>
+                  <div
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: CATEGORY_TEXT['Quick Log'],
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                      marginBottom: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                    }}
+                  >
+                    <Mic size={12} />
+                    {activeAction.label}
+                  </div>
+                  
+                  <div
+                    style={{
+                      width: '100%',
+                      border: '1px solid var(--color-border)',
+                      background: 'var(--color-elevated)',
+                      borderRadius: '10px',
+                      padding: '14px 14px',
+                      minHeight: '80px',
+                      fontSize: '15px',
+                      color: 'var(--color-text-1)',
+                      fontFamily: 'var(--font-sans)',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      position: 'relative'
+                    }}
+                  >
+                     {inlineText ? (
+                       <span style={{ width: '100%', whiteSpace: 'pre-wrap' }}>{inlineText}</span>
+                     ) : (
+                       <span style={{ color: 'var(--color-text-3)', fontStyle: 'italic', width: '100%', textAlign: 'center', marginTop: '16px' }}>
+                         {isListening ? 'Listening... Speak now' : 'Press Space to start/stop dictating'}
+                       </span>
+                     )}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: '12px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <button
+                      onClick={toggleListening}
+                      style={{
+                        background: isListening ? 'rgba(239, 68, 68, 0.1)' : 'var(--color-elevated)',
+                        color: isListening ? '#ef4444' : 'var(--color-text-2)',
+                        border: '1px solid',
+                        borderColor: isListening ? 'rgba(239, 68, 68, 0.2)' : 'var(--color-border)',
+                        borderRadius: '7px',
+                        padding: '6px 14px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.15s'
+                      }}
+                    >
+                      <Mic size={14} style={{ animation: isListening ? 'pulse 2s infinite' : 'none' }} />
+                      {isListening ? 'Stop Dictating (Space)' : 'Start Dictating (Space)'}
+                    </button>
+                    
+                    <button
+                      onClick={saveInlineText}
+                      disabled={!inlineText.trim() || isListening}
+                      style={{
+                        background: inlineText.trim() && !isListening ? 'var(--color-accent)' : 'var(--color-elevated)',
+                        color: inlineText.trim() && !isListening ? '#fff' : 'var(--color-text-3)',
+                        border: 'none',
+                        borderRadius: '7px',
+                        padding: '6px 16px',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        cursor: inlineText.trim() && !isListening ? 'pointer' : 'default',
+                        transition: 'background 0.15s',
+                      }}
+                    >
+                      Save Note
+                    </button>
                   </div>
                 </div>
               ) : null}

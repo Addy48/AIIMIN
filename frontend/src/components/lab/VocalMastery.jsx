@@ -95,7 +95,7 @@ const WaveformVisualizer = ({ isRecording, color, isAi = false }) => {
     );
 };
 
-export default function SpeakingLogger({ onComplete, onClose }) {
+export default function VocalMastery({ onComplete, onClose }) {
     const { theme } = useThemeContext();
     const isDark = theme === 'vercel' || theme === 'midnight';
     
@@ -161,8 +161,16 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     const [debateTopic, setDebateTopic] = useState(() => getUnseenDebateTopic());
     const [debatePhase, setDebatePhase] = useState('setup'); // setup | waiting_key | active
     const [isAiSpeaking, setIsAiSpeaking] = useState(false);
-
+    const [messages, setMessages] = useState([]);
+    const [isThinking, setIsThinking] = useState(false);
+    
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
     const timerRef = useRef(null);
+    
+    const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
+
+
 
     const activeTopic = TOPICS.find(t => t.label === selectedTopic) || TOPICS[0];
     const prompts = CATEGORIZED_PROMPTS[selectedTopic] || CATEGORIZED_PROMPTS['Technology'];
@@ -173,6 +181,20 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     const border = 'var(--color-border)';
     const surface = 'var(--color-surface)';
     const elevated = 'var(--color-elevated)';
+
+    // --- Voice Initialization ---
+    useEffect(() => {
+        const loadVoices = () => { window.speechSynthesis.getVoices(); };
+        loadVoices();
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+    }, []);
+
+    const getBestVoice = () => {
+        const voices = window.speechSynthesis.getVoices();
+        return voices.find(v => v.name.includes('Google US English') || v.name.includes('Samantha') || v.name.includes('Daniel') || v.name.includes('Premium')) || voices[0];
+    };
 
     // --- Monologue Handlers ---
     const spinTopic = () => {
@@ -234,36 +256,40 @@ export default function SpeakingLogger({ onComplete, onClose }) {
     };
 
     // --- Debate Handlers ---
-    const [messages, setMessages] = useState([]);
-    const [isDebating, setIsDebating] = useState(false);
-    const mediaRecorderRef = useRef(null);
-    const audioChunksRef = useRef([]);
-
-    const VOICE_API_KEY = process.env.REACT_APP_VOICE_API_KEY || 'REDACTED_GOOGLE_API_KEY';
-
     const startDebate = () => {
-        if (!VOICE_API_KEY) {
+        if (!GEMINI_API_KEY) {
             setDebatePhase('waiting_key');
             return;
         }
         setDebatePhase('active');
         const initialText = `Let's begin. The topic is: "${debateTopic}". Please state your opening argument.`;
-        setMessages([{ role: "model", parts: [{ text: initialText }] }]);
+        setMessages([]); // Start empty so user audio is the first message
         
         const u = new SpeechSynthesisUtterance(initialText);
+        const bestVoice = getBestVoice();
+        if (bestVoice) u.voice = bestVoice;
+        u.rate = 1.05;
+        
         u.onstart = () => setIsAiSpeaking(true);
         u.onend = () => setIsAiSpeaking(false);
         window.speechSynthesis.speak(u);
     };
 
-    const handleHoldToSpeakStart = async () => {
+    const startVoiceRecording = async () => {
         if (isAiSpeaking) {
             window.speechSynthesis.cancel();
             setIsAiSpeaking(false);
         }
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            
+            // Fallback for Safari which might not support audio/webm
+            let options = { mimeType: 'audio/webm' };
+            if (!MediaRecorder.isTypeSupported('audio/webm')) {
+                options = { mimeType: 'audio/mp4' };
+            }
+            
+            const mediaRecorder = new MediaRecorder(stream, options);
             mediaRecorderRef.current = mediaRecorder;
             audioChunksRef.current = [];
 
@@ -272,28 +298,28 @@ export default function SpeakingLogger({ onComplete, onClose }) {
             };
 
             mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const audioBlob = new Blob(audioChunksRef.current, { type: options.mimeType });
                 stream.getTracks().forEach(track => track.stop());
-                await processUserAudio(audioBlob);
+                await processUserAudio(audioBlob, options.mimeType);
             };
 
             mediaRecorder.start();
             setPhase('recording');
         } catch (err) {
             console.error('Mic error:', err);
-            alert("Microphone access is required.");
+            alert("Microphone access is required or unsupported on this browser.");
         }
     };
 
-    const handleHoldToSpeakStop = () => {
+    const stopVoiceRecording = () => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
             mediaRecorderRef.current.stop();
             setPhase('ready');
         }
     };
 
-    const processUserAudio = async (audioBlob) => {
-        setIsDebating(true);
+    const processUserAudio = async (audioBlob, mimeType) => {
+        setIsThinking(true);
         const base64Audio = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result.split(',')[1]);
@@ -303,42 +329,90 @@ export default function SpeakingLogger({ onComplete, onClose }) {
         const newContents = [...messages, {
             role: "user",
             parts: [
-                { inlineData: { mimeType: "audio/webm", data: base64Audio } }
+                { inlineData: { mimeType: mimeType, data: base64Audio } }
             ]
         }];
         setMessages(newContents);
 
-        if (!VOICE_API_KEY) {
-            console.error("Voice API Key is missing");
-            setIsDebating(false);
+        if (!GEMINI_API_KEY) {
+            console.error("Gemini API Key is missing");
+            setIsThinking(false);
             return;
         }
 
         try {
-            const res = await fetch(`https://api.voice-provider.com/generate?key=${VOICE_API_KEY}`, {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    topic: debateTopic,
+                    systemInstruction: {
+                        parts: [{ text: `You are an expert sparring partner for the topic: "${debateTopic}". Keep your response concise (under 3 sentences) to simulate a fast-paced debate. Respond directly to the user's audio.` }]
+                    },
                     contents: newContents
                 })
             });
             
+            if (!res.ok) {
+                const errorData = await res.json();
+                console.error("Gemini API Error:", errorData);
+                throw new Error(errorData.error?.message || "Failed to process audio");
+            }
+            
             const data = await res.json();
-            const responseText = data.text || "I couldn't process that.";
+            const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that.";
             
             setMessages([...newContents, { role: "model", parts: [{ text: responseText }] }]);
             
             const u = new SpeechSynthesisUtterance(responseText);
+            const bestVoice = getBestVoice();
+            if (bestVoice) u.voice = bestVoice;
+            u.rate = 1.05;
+            
             u.onstart = () => setIsAiSpeaking(true);
             u.onend = () => setIsAiSpeaking(false);
             window.speechSynthesis.speak(u);
         } catch (err) {
-            console.error(err);
+            console.error("Audio processing failed:", err);
+            const errorMsg = "Sorry, I had trouble hearing that. Could you try again?";
+            setMessages([...newContents, { role: "model", parts: [{ text: `[Error] ${err.message}` }] }]);
+            
+            const u = new SpeechSynthesisUtterance(errorMsg);
+            u.onstart = () => setIsAiSpeaking(true);
+            u.onend = () => setIsAiSpeaking(false);
+            window.speechSynthesis.speak(u);
         } finally {
-            setIsDebating(false);
+            setIsThinking(false);
         }
     };
+
+    // Spacebar toggling
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.code === 'Space') {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                e.preventDefault();
+                
+                if (mode === 'monologue') {
+                    if (phase === 'ready') {
+                        startRecording();
+                    } else if (phase === 'recording') {
+                        stopRecording();
+                    }
+                } else if (mode === 'debate') {
+                    if (debatePhase === 'active' && !isThinking && !isAiSpeaking) {
+                        if (phase !== 'recording') {
+                            startVoiceRecording();
+                        } else {
+                            stopVoiceRecording();
+                        }
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [mode, phase, debatePhase, isThinking, isAiSpeaking]);
 
     return (
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px 0', position: 'relative' }}>
@@ -437,7 +511,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                                         <RotateCcw size={20} /> Randomize
                                     </button>
                                     <button onClick={startRecording} style={{ background: activeTopic.color, color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '16px', fontSize: '18px', fontWeight: 700, cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                        <Mic size={20} /> Start 60s Session
+                                        <Mic size={20} /> Start (Press Space)
                                     </button>
                                 </div>
                             </div>
@@ -454,7 +528,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                         </div>
                         <WaveformVisualizer isRecording={true} color={activeTopic.color} />
                         <div style={{ fontSize: '28px', color: text1, fontStyle: 'italic', marginBottom: '40px', fontFamily: 'var(--font-serif)' }}>"{prompts[promptIndex]}"</div>
-                        <button onClick={stopRecording} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '16px', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}>Complete Early</button>
+                        <button onClick={stopRecording} style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '20px 48px', borderRadius: '16px', fontSize: '18px', fontWeight: 700, cursor: 'pointer' }}>Complete Early (Press Space)</button>
                     </motion.div>
                 )}
 
@@ -558,7 +632,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                         <div style={{ backgroundColor: surface, padding: '40px', borderRadius: '16px', border: `1px solid ${border}`, textAlign: 'center' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, marginBottom: '12px' }}>Voice API Key Required</h2>
                             <p style={{ color: text2, lineHeight: 1.6, marginBottom: '24px', maxWidth: '400px', margin: '0 auto 24px auto' }}>
-                                To power the real-time bidirectional voice debate, AIIMIN requires a Voice API key. Ensure REACT_APP_VOICE_API_KEY is set in your .env file.
+                                To power the real-time bidirectional voice debate, AIIMIN requires a Gemini API key. Ensure REACT_APP_GEMINI_API_KEY is set in your .env file.
                             </p>
                             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                                 <button onClick={() => setDebatePhase('setup')} style={{ background: surface, color: text1, border: `1px solid ${border}`, padding: '12px 24px', borderRadius: '10px', fontWeight: 600, cursor: 'pointer' }}>Back to Setup</button>
@@ -591,7 +665,7 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                                     </div>
                                 </div>
                             ))}
-                            {isDebating && (
+                            {isThinking && (
                                 <div style={{ alignSelf: 'flex-start', color: text3, fontSize: '15px', display: 'flex', alignItems: 'center', gap: '8px', padding: '0 8px' }}>
                                     <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1 }}>Thinking & Evaluating...</motion.div>
                                 </div>
@@ -602,25 +676,26 @@ export default function SpeakingLogger({ onComplete, onClose }) {
                             {phase === 'recording' || isAiSpeaking ? (
                                 <WaveformVisualizer isRecording={true} color="#6366f1" isAi={isAiSpeaking} />
                             ) : (
-                                <div style={{ height: '160px', display: 'flex', alignItems: 'center', color: text3, fontSize: '15px', fontWeight: 600 }}>Hold mic button below to respond</div>
+                                <div style={{ height: '160px', display: 'flex', alignItems: 'center', color: text3, fontSize: '15px', fontWeight: 600 }}>Click mic button or press Space to respond</div>
                             )}
 
                             <button 
-                                onMouseDown={handleHoldToSpeakStart} 
-                                onMouseUp={handleHoldToSpeakStop}
-                                onMouseLeave={handleHoldToSpeakStop}
-                                disabled={isDebating}
+                                onClick={() => {
+                                    if (phase !== 'recording') startVoiceRecording();
+                                    else stopVoiceRecording();
+                                }}
+                                disabled={isThinking}
                                 style={{ 
-                                    background: isDebating ? surface : (phase === 'recording' ? '#ef4444' : '#6366f1'), 
-                                    color: isDebating ? text3 : '#fff', 
-                                    border: isDebating ? `1px solid ${border}` : 'none', 
+                                    background: isThinking ? surface : (phase === 'recording' ? '#ef4444' : '#6366f1'), 
+                                    color: isThinking ? text3 : '#fff', 
+                                    border: isThinking ? `1px solid ${border}` : 'none', 
                                     padding: '24px 56px', borderRadius: '100px', fontWeight: 800, fontSize: '18px', 
-                                    cursor: isDebating ? 'not-allowed' : 'pointer', display: 'flex', gap: '12px', alignItems: 'center', 
+                                    cursor: isThinking ? 'not-allowed' : 'pointer', display: 'flex', gap: '12px', alignItems: 'center', 
                                     boxShadow: phase === 'recording' ? '0 0 0 12px rgba(239, 68, 68, 0.2)' : '0 12px 32px rgba(99,102,241,0.3)',
                                     transition: 'all 0.2s', userSelect: 'none'
                                 }}
                             >
-                                <Mic size={24} /> {phase === 'recording' ? 'Recording... Release to send' : 'Hold to Speak'}
+                                <Mic size={24} /> {phase === 'recording' ? 'Recording... Press Space to Send' : 'Press Space to Speak'}
                             </button>
                         </div>
                     </motion.div>
