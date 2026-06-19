@@ -7,6 +7,9 @@ export default function DecisionMatrix({ onBack }) {
   const [inversion, setInversion] = useState('');
   const [secondOrder, setSecondOrder] = useState('');
   const [regret, setRegret] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiSynthesis, setAiSynthesis] = useState('');
+  const [error, setError] = useState('');
   
   const steps = [
     {
@@ -50,6 +53,51 @@ export default function DecisionMatrix({ onBack }) {
   const handleNext = () => {
     if (step < steps.length) {
       setStep(step + 1);
+    }
+  };
+
+  const generateSynthesis = async () => {
+    if (!process.env.REACT_APP_GEMINI_API_KEY) {
+      setError('Gemini API key is not configured.');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setError('');
+    setAiSynthesis('');
+    
+    try {
+      const prompt = `You are an elite decision-making strategist and objective truth-teller (think Charlie Munger combined with an unemotional supercomputer).
+The user is facing a high-stakes decision and has processed it through several mental models.
+
+Dilemma: ${dilemma}
+Inversion (Worst-case & Prevention): ${inversion}
+Second-Order Effects: ${secondOrder}
+Regret Minimization: ${regret}
+
+Provide a blunt, highly analytical synthesis of their decision matrix.
+Point out any cognitive biases, emotional reasoning, or logical flaws in their inputs.
+Summarize the true trade-off they are making.
+Provide a definitive, probabilistically-weighted recommendation or the final question they must answer to break the tie.
+Format: Keep it highly concise (max 3 paragraphs). Use plain text.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.REACT_APP_GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3 }
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error.message);
+      
+      setAiSynthesis(data.candidates[0].content.parts[0].text);
+    } catch (err) {
+      setError(err.message || 'Failed to synthesize decision');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -146,7 +194,7 @@ export default function DecisionMatrix({ onBack }) {
                 <p style={{ margin: 0, color: 'var(--color-text-1)' }}>{dilemma}</p>
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
                 {[1, 2, 3].map(i => (
                   <div key={i} style={{ textAlign: 'left', background: 'var(--color-bg)', padding: '1.25rem', borderRadius: '12px', border: `1px solid ${steps[i].color}40` }}>
                     <strong style={{ color: steps[i].color, display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{steps[i].title}</strong>
@@ -155,10 +203,49 @@ export default function DecisionMatrix({ onBack }) {
                 ))}
               </div>
 
+              {/* AI Synthesis Section */}
+              <div style={{ textAlign: 'left', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '1.5rem', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <h4 style={{ margin: 0, color: 'var(--color-text-1)', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.2rem' }}>🧠</span> AI Synthesis
+                  </h4>
+                  {!aiSynthesis && !isAnalyzing && (
+                    <button
+                      onClick={generateSynthesis}
+                      style={{
+                        background: 'var(--color-accent)', color: '#fff', border: 'none', padding: '0.5rem 1rem',
+                        borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '6px'
+                      }}
+                    >
+                      Generate Objective Analysis
+                    </button>
+                  )}
+                </div>
+
+                {isAnalyzing && (
+                  <div style={{ color: 'var(--color-text-2)', fontSize: '0.95rem', fontStyle: 'italic' }}>
+                    Analyzing mental models and searching for cognitive biases...
+                  </div>
+                )}
+
+                {error && (
+                  <div style={{ color: '#EF4444', fontSize: '0.9rem', padding: '0.75rem', background: '#EF444410', borderRadius: '8px' }}>
+                    {error}
+                  </div>
+                )}
+
+                {aiSynthesis && (
+                  <div style={{ color: 'var(--color-text-1)', fontSize: '0.95rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+                    {aiSynthesis}
+                  </div>
+                )}
+              </div>
+
               <button
-                onClick={() => { setStep(0); setDilemma(''); setInversion(''); setSecondOrder(''); setRegret(''); }}
+                onClick={() => { setStep(0); setDilemma(''); setInversion(''); setSecondOrder(''); setRegret(''); setAiSynthesis(''); setError(''); }}
                 style={{
-                  marginTop: '2rem', background: 'transparent', border: '1px solid var(--color-border)',
+                  background: 'transparent', border: '1px solid var(--color-border)',
                   color: 'var(--color-text-1)', padding: '0.75rem 1.5rem', borderRadius: '8px', fontSize: '0.95rem',
                   cursor: 'pointer', transition: 'all 0.2s'
                 }}
