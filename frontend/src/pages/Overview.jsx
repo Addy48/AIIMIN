@@ -3,25 +3,32 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight, Keyboard, Mic, AlertTriangle } from 'lucide-react';
+import { Plus, X, ChevronRight, ChevronLeft, Keyboard, Mic, AlertTriangle } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
+import { useCalendarEvents } from '../hooks/useCalendarEvents';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 
-const WeekCell = React.memo(({ day, isToday }) => {
+const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
   const [tasks, setTasks] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(`aiimin_tasks_${day}`) || '[]');
+      return JSON.parse(localStorage.getItem(`aiimin_tasks_${dateStr}`) || '[]');
     } catch { return []; }
   });
   const [adding, setAdding] = useState(false);
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    localStorage.setItem(`aiimin_tasks_${day}`, JSON.stringify(tasks));
-  }, [tasks, day]);
+    localStorage.setItem(`aiimin_tasks_${dateStr}`, JSON.stringify(tasks));
+  }, [tasks, dateStr]);
+
+  useEffect(() => {
+    try {
+      setTasks(JSON.parse(localStorage.getItem(`aiimin_tasks_${dateStr}`) || '[]'));
+    } catch { setTasks([]); }
+  }, [dateStr]);
 
   const addTask = () => {
     if (input.trim()) {
@@ -37,10 +44,20 @@ const WeekCell = React.memo(({ day, isToday }) => {
       border: `1px solid ${isToday ? 'var(--color-accent)' : 'var(--color-border)'}`,
       borderRadius:'16px', padding:'12px', minHeight:'160px', display:'flex', flexDirection:'column', height: '100%'
     }}>
-      <div style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)', marginBottom:'10px', borderBottom:'1px solid var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
-        {day}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:'10px', borderBottom:'1px solid var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
+        <div style={{ fontSize:'9px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)' }}>
+          {day}
+        </div>
+        <div style={{ fontSize:'10px', fontWeight:800, color: isToday ? 'var(--color-accent)' : 'var(--color-text-2)' }}>
+          {new Date(dateStr).getDate()}
+        </div>
       </div>
       <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'5px', overflowY:'auto', scrollbarWidth:'none', minHeight: 0 }}>
+        {calendarEvents?.map(e => (
+          <div key={e.id} style={{ fontSize:'10px', background:'var(--color-elevated)', borderLeft:`2px solid ${e.color||'var(--color-accent)'}`, padding:'4px 6px', borderRadius:'4px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', color:'var(--color-text-1)', fontWeight:600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '8px' }}>🕒</span> {e.title || e.summary}
+          </div>
+        ))}
         {tasks.map(t => (
           <div key={t.id} style={{ display:'flex', alignItems:'center', gap:'6px' }}>
             <input type="checkbox" checked={t.done} onChange={() => setTasks(p=>p.map(x=>x.id===t.id?{...x,done:!x.done}:x))}
@@ -210,13 +227,13 @@ const TrajectoryProgress = React.memo(() => {
     }}>
       <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span>Trajectory Execution</span>
-        <span style={{ padding: '4px 10px', background: 'var(--color-surface)', borderRadius: '99px', border: '1px solid var(--color-border)' }}>Live</span>
+        <span style={{ color: '#F97316' }}>LIVE</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', margin: 'auto 0' }}>
-        <LinearProgress id="day"   label="Day"    color="#22D3EE" sublabel={initial.day.sub}   />
-        <LinearProgress id="week"  label="Week"   color="#A78BFA" sublabel={initial.week.sub}  />
-        <LinearProgress id="month" label="Month"  color="#F472B6" sublabel={initial.month.sub} />
-        <LinearProgress id="year"  label="Year"   color="#FB923C" sublabel={initial.year.sub}  />
+        <LinearProgress id="day"   label="Day"    color="#48A860" sublabel={initial.day.sub}   />
+        <LinearProgress id="week"  label="Week"   color="#3B82F6" sublabel={initial.week.sub}  />
+        <LinearProgress id="month" label="Month"  color="#EC4899" sublabel={initial.month.sub} />
+        <LinearProgress id="year"  label="Year"   color="#F97316" sublabel={initial.year.sub}  />
       </div>
     </div>
   );
@@ -225,9 +242,34 @@ const TrajectoryProgress = React.memo(() => {
 
 /* ── Main Overview ── */
 const Overview = () => {
-  const { user: authUser } = useAuth();
+  const { user: authUser, session } = useAuth();
   const user = useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
   const navigate = useNavigate();
+
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const currentWeekDates = useMemo(() => {
+    const today = new Date();
+    const dayOfWeek = (today.getDay() + 6) % 7;
+    const startOfWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - dayOfWeek + (weekOffset * 7));
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const dates = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startOfWeek);
+      d.setDate(d.getDate() + i);
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${d.getFullYear()}-${m}-${dd}`;
+      dates.push({ day: DAYS[i], dateStr, isToday: weekOffset === 0 && i === dayOfWeek, rawDate: d });
+    }
+    return dates;
+  }, [weekOffset]);
+
+  const rangeStart = currentWeekDates[0].dateStr;
+  const rangeEnd = currentWeekDates[6].dateStr;
+  
+  const { events: allCalendarEvents } = useCalendarEvents(session, rangeStart, rangeEnd);
 
   const [urgentReminders, setUrgentReminders] = useState([]);
 
@@ -294,8 +336,8 @@ const Overview = () => {
     return Math.ceil((((d - y) / 86400000) + 1) / 7);
   };
 
-  const weekNum = getWeekNum(now);
-  const todayIdx = (now.getDay() + 6) % 7;
+  const displayWeekDate = new Date(currentWeekDates[0].rawDate);
+  const weekNum = getWeekNum(displayWeekDate);
 
 
 
@@ -339,37 +381,25 @@ const Overview = () => {
             </div>
           )}
 
-          {/* Quick Access Horizontal Strip */}
-          <div style={{ display:'flex', gap:'12px', overflowX:'auto', paddingBottom:'4px', scrollbarWidth: 'none' }}>
-            {[
-              { to:'/family',      label:'Family',      icon:'👨‍👩‍👧', color:'#EC4899' },
-              { to:'/journal',     label:'Journal',     icon:'📓', color:'#F59E0B' },
-              { to:'/finance',     label:'Wealth',      icon:'💰', color:'#22C55E' },
-              { to:'/habits',      label:'Habits',      icon:'✅', color:'#3B82F6' },
-              { to:'/notes',       label:'Notes',       icon:'🗒️', color:'#8B5CF6' },
-              { to:'/sports',      label:'Sports',      icon:'⚽', color:'#EF4444' },
-              { to:'/placements',  label:'Career',      icon:'🎯', color:'#14B8A6' },
-            ].map(item => (
-              <Link key={item.to} to={item.to} style={{ textDecoration:'none', flex: 1, minWidth: '100px' }}>
-                <motion.div 
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  style={{
-                    display:'flex', flexDirection: 'column', alignItems:'center', gap:'8px', padding:'16px 12px',
-                    background:'var(--color-surface)', border:'1px solid var(--color-border)',
-                    borderRadius:'20px', cursor:'pointer', transition:'border-color 0.2s',
-                    textAlign: 'center'
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = item.color}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
-                >
-                  <div style={{ background: `${item.color}15`, color: item.color, width: '44px', height: '44px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', marginBottom: '4px' }}>
-                    {item.icon}
-                  </div>
-                  <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-text-1)', letterSpacing: '0.02em' }}>{item.label}</div>
-                </motion.div>
-              </Link>
-            ))}
+          {/* QUICK CAPTURE */}
+          <div>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
+              <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)' }}>Quick Capture</div>
+              <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-accent)', cursor:'pointer' }}>Smart Log &rarr;</div>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'16px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'16px', padding:'16px' }}>
+              {[
+                { label: 'Log a Habit', icon: '✅', to: '/habits' },
+                { label: 'Journal Entry', icon: '✏️', to: '/journal' },
+                { label: 'Track Expense', icon: '💸', to: '/finance' },
+                { label: 'Add Goal', icon: '🎯', to: '/placements' }
+              ].map((item, i) => (
+                <Link key={i} to={item.to} style={{ textDecoration:'none', display:'flex', flexDirection:'column', alignItems:'center', gap:'12px', padding:'20px 12px', border:'1.5px dashed var(--color-border)', borderRadius:'12px', transition:'all 0.2s', background:'var(--color-elevated)' }} onMouseEnter={e=>e.currentTarget.style.borderColor='var(--color-accent)'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+                  <div style={{ fontSize:'24px' }}>{item.icon}</div>
+                  <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-text-2)' }}>{item.label}</div>
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* Countdown Hero */}
@@ -405,37 +435,55 @@ const Overview = () => {
             </div>
           </div>
 
-          {/* Action Center */}
+          {/* RECENT WINS */}
           <div>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
-              <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Productivity Labs</div>
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:'20px' }}>
-              <button onClick={() => navigate('/lab?module=typing')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#10B981'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
-                <div style={{ background:'rgba(16, 185, 129, 0.1)', color:'#10B981', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Keyboard size={24} /></div>
-                <div>
-                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Typing Lab</div>
-                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Speed & accuracy</div>
+            <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'16px' }}>Recent Wins</div>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:'12px' }}>
+              {[
+                { text: 'Morning Workout — 2h ago', icon: '🔥', color: '#22C55E' },
+                { text: 'Journal — yesterday', icon: '✏️', color: '#8B5CF6' },
+                { text: 'Saved ₹500 — 3h ago', icon: '💰', color: '#F59E0B' }
+              ].map((win, i) => (
+                <div key={i} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'99px' }}>
+                  <div style={{ width:'6px', height:'6px', borderRadius:'50%', background: win.color }} />
+                  <span style={{ fontSize:'14px' }}>{win.icon}</span>
+                  <span style={{ fontSize:'13px', fontWeight:600, color:'var(--color-text-2)' }}>{win.text}</span>
                 </div>
-              </button>
-              <button onClick={() => navigate('/lab?module=speaking')} style={{ background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'20px', padding:'24px', textAlign:'left', cursor:'pointer', transition:'all 0.2s', display:'flex', flexDirection:'column', gap:'16px' }} onMouseEnter={e=>e.currentTarget.style.borderColor='#8B5CF6'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
-                <div style={{ background:'rgba(139, 92, 246, 0.1)', color:'#8B5CF6', width:'48px', height:'48px', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center' }}><Mic size={24} /></div>
-                <div>
-                  <div style={{ fontSize:'16px', fontWeight:800, color:'var(--color-text-1)' }}>Speaking Lab</div>
-                  <div style={{ fontSize:'12px', color:'var(--color-text-3)', marginTop:'6px', lineHeight:1.4 }}>Communication mastery</div>
-                </div>
-              </button>
+              ))}
             </div>
           </div>
 
           {/* Weekly Planner */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
-              <div style={{ fontSize:'14px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.08em', color:'var(--color-text-1)' }}>Master Planner</div>
-              <div style={{ fontSize:'12px', color:'var(--color-text-3)', fontWeight:700, padding: '4px 12px', background: 'var(--color-elevated)', borderRadius: '99px' }}>Week {weekNum}</div>
+              <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Command Timeline</div>
+                <div style={{ fontSize:'10px', fontWeight:800, color:'#22C55E', background:'rgba(34,197,94,0.1)', padding:'4px 8px', borderRadius:'6px', display:'flex', alignItems:'center', gap:'4px' }}>
+                  <span style={{ width:'4px', height:'4px', borderRadius:'50%', background:'#22C55E' }} />
+                  AI SCHEDULE
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-surface)', padding: '4px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+                  <button onClick={() => setWeekOffset(p => p - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-2)', display: 'flex', alignItems: 'center', padding: '4px' }}><ChevronLeft size={16} /></button>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-1)', width: '60px', textAlign: 'center' }}>Week {weekNum}</div>
+                  <button onClick={() => setWeekOffset(p => p + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-2)', display: 'flex', alignItems: 'center', padding: '4px' }}><ChevronRight size={16} /></button>
+                </div>
+                <button onClick={() => setWeekOffset(0)} style={{ fontSize:'11px', fontWeight:700, color:'var(--color-text-2)', background:'var(--color-surface)', border:'1px solid var(--color-border)', padding:'6px 12px', borderRadius:'8px', cursor:'pointer' }}>
+                  Today
+                </button>
+              </div>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', flex: 1, minHeight: 0, gridAutoRows: '1fr' }}>
-              {DAYS.map((day, i) => <WeekCell key={day} day={day} isToday={i===todayIdx} />)}
+              {currentWeekDates.map(d => {
+                const dayEvents = allCalendarEvents?.filter(e => {
+                  const t = new Date(e.start_time || e.start);
+                  const m = String(t.getMonth() + 1).padStart(2, '0');
+                  const dd = String(t.getDate()).padStart(2, '0');
+                  return `${t.getFullYear()}-${m}-${dd}` === d.dateStr;
+                });
+                return <WeekCell key={d.dateStr} day={d.day} dateStr={d.dateStr} isToday={d.isToday} calendarEvents={dayEvents} />;
+              })}
             </div>
           </div>
 
