@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useThemeContext } from '../../context/ThemeContext';
 import { EventTagSelector } from './EventCard';
+import Modal from '../ui/Modal';
 
 /**
  * EventModal — Create/Edit event modal with Life OS system_type selector.
@@ -78,39 +79,8 @@ const EventModal = ({ isOpen, onClose, onSave, event = null, onDelete }) => {
     };
 
     return (
-        <div onClick={onClose} style={{
-            position: 'fixed', inset: 0, zIndex: 10000,
-            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)', display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            animation: 'fadeIn 200ms var(--ease)',
-        }}>
-            <div onClick={e => e.stopPropagation()} style={{
-                width: '520px', maxHeight: '90vh', overflow: 'auto',
-                borderRadius: '24px', background: bg,
-                border: `1px solid ${border}`,
-                boxShadow: 'var(--glass-shadow-lg)',
-                position: 'relative', zIndex: 1,
-                animation: 'scaleUp 250ms var(--ease)',
-            }}>
-                {/* Header */}
-                <div style={{ 
-                    padding: '24px 32px', borderBottom: `1px solid ${border}`, 
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center' 
-                }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: 700, color: text1, margin: 0, fontFamily: 'var(--font-sans)' }}>
-                        {event ? 'Edit Event' : 'New Event'}
-                    </h3>
-                    <button onClick={onClose} style={{ 
-                        background: 'var(--color-elevated)', border: `1px solid ${border}`, 
-                        borderRadius: '10px', width: '32px', height: '32px', 
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                        color: text2, fontSize: '18px', cursor: 'pointer',
-                        transition: 'all 200ms var(--ease)'
-                    }} onMouseEnter={e => e.currentTarget.style.color = text1}>✕</button>
-                </div>
-
-                <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <Modal isOpen={isOpen} onClose={onClose} title={event ? 'Edit Event' : 'New Event'} maxWidth="520px">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     {/* Row: Title */}
                     <div>
                         <label style={labelStyle}>Title</label>
@@ -252,13 +222,8 @@ const EventModal = ({ isOpen, onClose, onSave, event = null, onDelete }) => {
                             </button>
                         </div>
                     </div>
-                </div>
             </div>
-            <style>{`
-                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes scaleUp { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-            `}</style>
-        </div>
+        </Modal>
     );
 };
 

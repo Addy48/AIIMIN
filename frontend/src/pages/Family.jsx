@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import PageHeader from '../components/layout/PageHeader';
-import { Plus, X, Shield, FileText, Heart, Activity, Clock, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { Plus, X, Shield, FileText, Heart, Activity, Clock, AlertTriangle, Eye, EyeOff, Car, Wallet, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -12,6 +12,9 @@ const TABS = [
   { id: 'documents', label: 'Documents', icon: FileText },
   { id: 'insurance', label: 'Insurance', icon: Heart },
   { id: 'health', label: 'Health', icon: Activity },
+  { id: 'vehicles', label: 'Vehicles', icon: Car },
+  { id: 'finance', label: 'Finance', icon: Wallet },
+  { id: 'relationships', label: 'Relationships', icon: Users },
   { id: 'reminders', label: 'Reminders', icon: Clock },
   { id: 'emergency', label: 'Emergency', icon: AlertTriangle }
 ];
@@ -114,6 +117,9 @@ export default function FamilyPage() {
   const [documents, setDocuments] = useState([]);
   const [insurance, setInsurance] = useState([]);
   const [health, setHealth] = useState([]);
+  const [vehicles, setVehicles] = useState([]);
+  const [finance, setFinance] = useState([]);
+  const [relationships, setRelationships] = useState([]);
   const [reminders, setReminders] = useState([]);
   const [emergency, setEmergency] = useState([]);
 
@@ -122,6 +128,9 @@ export default function FamilyPage() {
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [isInsModalOpen, setIsInsModalOpen] = useState(false);
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
+  const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
+  const [isFinanceModalOpen, setIsFinanceModalOpen] = useState(false);
+  const [isRelationshipModalOpen, setIsRelationshipModalOpen] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
 
@@ -138,15 +147,21 @@ export default function FamilyPage() {
         supabase.from('family_documents').select('*').order('created_at', { ascending: false }),
         supabase.from('family_insurance').select('*').order('created_at', { ascending: false }),
         supabase.from('family_health').select('*').order('created_at', { ascending: false }),
+        supabase.from('family_vehicles').select('*').order('created_at', { ascending: false }),
+        supabase.from('family_finance').select('*').order('created_at', { ascending: false }),
+        supabase.from('family_relationships').select('*').order('created_at', { ascending: false }),
         supabase.from('family_reminders').select('*').order('due_date', { ascending: true }),
         supabase.from('family_emergency_contacts').select('*').order('is_pinned', { ascending: false })
       ]);
 
-      const [m, d, i, h, r, e] = await Promise.race([fetchPromise, timeoutPromise]);
+      const [m, d, i, h, v, f, rel, r, e] = await Promise.race([fetchPromise, timeoutPromise]);
       setMembers(m.data || []);
       setDocuments(d.data || []);
       setInsurance(i.data || []);
       setHealth(h.data || []);
+      setVehicles(v.data || []);
+      setFinance(f.data || []);
+      setRelationships(rel.data || []);
       setReminders(r.data || []);
       setEmergency(e.data || []);
     } catch (error) {
@@ -250,6 +265,62 @@ export default function FamilyPage() {
     });
     if (error) toast.error('Failed to add health profile');
     else { toast.success('Health profile added'); setIsHealthModalOpen(false); fetchData(); }
+  };
+
+  const handleAddVehicle = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const { data, error } = await supabase.from('family_vehicles').insert({
+      user_id: user.id,
+      make_model: fd.get('make_model'),
+      registration_number: fd.get('registration_number'),
+      insurance_provider: fd.get('insurance_provider'),
+      insurance_expiry: fd.get('insurance_expiry') || null,
+      puc_expiry: fd.get('puc_expiry') || null,
+      service_due_date: fd.get('service_due_date') || null
+    }).select();
+    if (error) toast.error('Failed to add vehicle');
+    else {
+      toast.success('Vehicle added');
+      if (fd.get('insurance_expiry')) {
+        await autoCreateReminder(`${fd.get('registration_number')} Insurance Exp`, fd.get('insurance_expiry'), 'vehicle_insurance', data[0].id);
+      }
+      if (fd.get('puc_expiry')) {
+        await autoCreateReminder(`${fd.get('registration_number')} PUC Exp`, fd.get('puc_expiry'), 'vehicle_puc', data[0].id);
+      }
+      setIsVehicleModalOpen(false); fetchData();
+    }
+  };
+
+  const handleAddFinance = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const { error } = await supabase.from('family_finance').insert({
+      user_id: user.id,
+      member_id: fd.get('member_id') || null,
+      account_type: fd.get('account_type'),
+      institution_name: fd.get('institution_name'),
+      account_number: fd.get('account_number'),
+      current_balance: fd.get('current_balance') ? parseFloat(fd.get('current_balance')) : null,
+      notes: fd.get('notes')
+    });
+    if (error) toast.error('Failed to add finance record');
+    else { toast.success('Finance record added'); setIsFinanceModalOpen(false); fetchData(); }
+  };
+
+  const handleAddRelationship = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const { error } = await supabase.from('family_relationships').insert({
+      user_id: user.id,
+      name: fd.get('name'),
+      relation_type: fd.get('relation_type'),
+      anniversary_date: fd.get('anniversary_date') || null,
+      birthday: fd.get('birthday') || null,
+      notes: fd.get('notes')
+    });
+    if (error) toast.error('Failed to add relationship record');
+    else { toast.success('Relationship record added'); setIsRelationshipModalOpen(false); fetchData(); }
   };
 
   const handleAddReminder = async (e) => {
@@ -551,6 +622,114 @@ export default function FamilyPage() {
           </div>
         )}
 
+        {/* VEHICLES TAB */}
+        {activeTab === 'vehicles' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+              <button onClick={() => setIsVehicleModalOpen(true)} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '10px 20px', borderRadius: '12px', color: 'var(--color-text-1)', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><Plus size={16}/> Add Vehicle</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+              {vehicles.map(v => {
+                const isInsExpiring = v.insurance_expiry && new Date(v.insurance_expiry) < new Date(Date.now() + 30 * 86400000);
+                const isPucExpiring = v.puc_expiry && new Date(v.puc_expiry) < new Date(Date.now() + 30 * 86400000);
+                return (
+                  <div key={v.id} style={{ background: 'var(--color-surface)', border: `1px solid ${isInsExpiring || isPucExpiring ? '#EF4444' : 'var(--color-border)'}`, borderRadius: '24px', padding: '24px', position: 'relative' }}>
+                    <button onClick={() => handleDelete('family_vehicles', v.id)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}><X size={16}/></button>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '4px' }}>{v.make_model}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px', fontFamily: 'var(--font-mono)' }}>{v.registration_number}</div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: 'var(--color-text-2)' }}>
+                      <div><strong style={{ color: 'var(--color-text-1)' }}>Insurance:</strong> <br/>{v.insurance_provider || '—'}</div>
+                      <div style={{ color: isInsExpiring ? '#EF4444' : 'inherit' }}><strong style={{ color: isInsExpiring ? '#EF4444' : 'var(--color-text-1)' }}>Ins Exp:</strong> <br/>{v.insurance_expiry || '—'}</div>
+                      <div style={{ color: isPucExpiring ? '#EF4444' : 'inherit' }}><strong style={{ color: isPucExpiring ? '#EF4444' : 'var(--color-text-1)' }}>PUC Exp:</strong> <br/>{v.puc_expiry || '—'}</div>
+                      <div><strong style={{ color: 'var(--color-text-1)' }}>Service Due:</strong> <br/>{v.service_due_date || '—'}</div>
+                    </div>
+                  </div>
+                );
+              })}
+              {vehicles.length === 0 && (
+                <EmptyState 
+                  icon={Car} 
+                  title="No Vehicles Added" 
+                  description="Track your family's cars and bikes. We'll remind you before insurance or PUC expires." 
+                  buttonText="Add Vehicle" 
+                  onAction={() => setIsVehicleModalOpen(true)} 
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* FINANCE TAB */}
+        {activeTab === 'finance' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+              <button onClick={() => setIsFinanceModalOpen(true)} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '10px 20px', borderRadius: '12px', color: 'var(--color-text-1)', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><Plus size={16}/> Add Finance Record</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+              {finance.map(f => (
+                <div key={f.id} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '24px', position: 'relative' }}>
+                  <button onClick={() => handleDelete('family_finance', f.id)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}><X size={16}/></button>
+                  {f.member_id && <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{getMemberName(f.member_id)}</div>}
+                  <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '4px' }}>{f.institution_name}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{f.account_type}</div>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: 'var(--color-text-2)' }}>
+                    <div>
+                      <strong style={{ color: 'var(--color-text-1)', display: 'block', marginBottom: '4px' }}>Account No:</strong>
+                      <MaskedText text={f.account_number} />
+                    </div>
+                    <div><strong style={{ color: 'var(--color-text-1)' }}>Balance:</strong> <br/>{f.current_balance ? `₹${f.current_balance}` : '—'}</div>
+                  </div>
+                  {f.notes && <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '12px', borderRadius: '8px' }}>{f.notes}</div>}
+                </div>
+              ))}
+              {finance.length === 0 && (
+                <EmptyState 
+                  icon={Wallet} 
+                  title="No Finance Records" 
+                  description="Track bank accounts, mutual funds, FDs, and loans securely in one place." 
+                  buttonText="Add Finance Record" 
+                  onAction={() => setIsFinanceModalOpen(true)} 
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* RELATIONSHIPS TAB */}
+        {activeTab === 'relationships' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+              <button onClick={() => setIsRelationshipModalOpen(true)} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', padding: '10px 20px', borderRadius: '12px', color: 'var(--color-text-1)', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><Plus size={16}/> Add Relationship</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {relationships.map(rel => (
+                <div key={rel.id} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '24px', position: 'relative' }}>
+                  <button onClick={() => handleDelete('family_relationships', rel.id)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}><X size={16}/></button>
+                  <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '4px' }}>{rel.name}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{rel.relation_type}</div>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: 'var(--color-text-2)' }}>
+                    {rel.birthday && <div><strong style={{ color: 'var(--color-text-1)' }}>Birthday:</strong> <br/>{rel.birthday}</div>}
+                    {rel.anniversary_date && <div><strong style={{ color: 'var(--color-text-1)' }}>Anniversary:</strong> <br/>{rel.anniversary_date}</div>}
+                  </div>
+                  {rel.notes && <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '12px', borderRadius: '8px' }}>{rel.notes}</div>}
+                </div>
+              ))}
+              {relationships.length === 0 && (
+                <EmptyState 
+                  icon={Users} 
+                  title="No Relationships Tracked" 
+                  description="Keep track of extended family and friends' important dates and preferences." 
+                  buttonText="Add Relationship" 
+                  onAction={() => setIsRelationshipModalOpen(true)} 
+                />
+              )}
+            </div>
+          </div>
+        )}
+
         {/* REMINDERS TAB */}
         {activeTab === 'reminders' && (
           <div>
@@ -690,6 +869,49 @@ export default function FamilyPage() {
           <label style={{ display: 'block', fontSize: '12px', color: 'var(--color-text-2)', marginBottom: '4px' }}>Due Date</label>
           <input name="due_date" type="date" required className="family-input" />
           <button type="submit" className="family-btn">Save Reminder</button>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isVehicleModalOpen} onClose={() => setIsVehicleModalOpen(false)} title="Add Vehicle">
+        <form onSubmit={handleAddVehicle}>
+          <input name="make_model" placeholder="Make & Model (e.g., Honda City)" required className="family-input" />
+          <input name="registration_number" placeholder="Registration No. (e.g., MH01AB1234)" required className="family-input" />
+          <input name="insurance_provider" placeholder="Insurance Provider" className="family-input" />
+          <label style={{ display: 'block', fontSize: '12px', color: 'var(--color-text-2)', marginBottom: '4px' }}>Insurance Expiry Date</label>
+          <input name="insurance_expiry" type="date" className="family-input" />
+          <label style={{ display: 'block', fontSize: '12px', color: 'var(--color-text-2)', marginBottom: '4px' }}>PUC Expiry Date</label>
+          <input name="puc_expiry" type="date" className="family-input" />
+          <label style={{ display: 'block', fontSize: '12px', color: 'var(--color-text-2)', marginBottom: '4px' }}>Service Due Date</label>
+          <input name="service_due_date" type="date" className="family-input" />
+          <button type="submit" className="family-btn">Save Vehicle</button>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isFinanceModalOpen} onClose={() => setIsFinanceModalOpen(false)} title="Add Finance Record">
+        <form onSubmit={handleAddFinance}>
+          <select name="member_id" className="family-input">
+            <option value="">Select Member (Optional)...</option>
+            {members.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+          <input name="account_type" placeholder="Type (e.g., Bank Account, Mutual Fund, Loan)" required className="family-input" />
+          <input name="institution_name" placeholder="Institution Name (e.g., HDFC Bank, Zerodha)" required className="family-input" />
+          <input name="account_number" placeholder="Account Number / Folio Number" className="family-input" />
+          <input name="current_balance" type="number" step="0.01" placeholder="Current Balance / Amount" className="family-input" />
+          <textarea name="notes" placeholder="Notes (e.g., Nominee details, purpose)" className="family-input" style={{ height: '80px', resize: 'none' }} />
+          <button type="submit" className="family-btn">Save Record</button>
+        </form>
+      </Modal>
+
+      <Modal isOpen={isRelationshipModalOpen} onClose={() => setIsRelationshipModalOpen(false)} title="Add Relationship">
+        <form onSubmit={handleAddRelationship}>
+          <input name="name" placeholder="Name" required className="family-input" />
+          <input name="relation_type" placeholder="Relationship (e.g., Uncle, Friend, Colleague)" required className="family-input" />
+          <label style={{ display: 'block', fontSize: '12px', color: 'var(--color-text-2)', marginBottom: '4px' }}>Birthday</label>
+          <input name="birthday" type="date" className="family-input" />
+          <label style={{ display: 'block', fontSize: '12px', color: 'var(--color-text-2)', marginBottom: '4px' }}>Anniversary</label>
+          <input name="anniversary_date" type="date" className="family-input" />
+          <textarea name="notes" placeholder="Notes (e.g., Gift preferences, recent events)" className="family-input" style={{ height: '80px', resize: 'none' }} />
+          <button type="submit" className="family-btn">Save Relationship</button>
         </form>
       </Modal>
 

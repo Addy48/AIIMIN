@@ -1,6 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import Modal from '../ui/Modal';
 
 export default function ResumeArchiveModal({ 
   showResumeModal, 
@@ -13,17 +12,8 @@ export default function ResumeArchiveModal({
   selectedFile, 
   setSelectedFile 
 }) {
-  if (!showResumeModal) return null;
-
   return (
-    <AnimatePresence>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowResumeModal(false)} style={{ position: 'absolute', inset: 0, background: 'var(--glass-bg)', backdropFilter: 'blur(10px)' }} />
-        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="modal-content" style={{ maxWidth: '440px', position: 'relative' }}>
-          <button type="button" onClick={() => setShowResumeModal(false)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}>
-            <X size={20} />
-          </button>
-          <h2 style={{ fontSize: '28px', fontWeight: 500, fontFamily: 'var(--font-serif)', marginBottom: '16px' }}>Archive Version</h2>
+    <Modal isOpen={showResumeModal} onClose={() => setShowResumeModal(false)} title="Archive Version" maxWidth="440px">
           
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '24px', gap: '16px' }}>
             <button 
@@ -127,8 +117,6 @@ export default function ResumeArchiveModal({
               <button type="submit" className="btn-primary">Archive to Vault</button>
             </div>
           </form>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+    </Modal>
   );
 }
