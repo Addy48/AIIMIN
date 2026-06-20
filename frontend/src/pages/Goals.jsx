@@ -260,7 +260,7 @@ const Goals = () => {
   useEffect(() => {
     const fetchGoals = async () => {
       try {
-        const data = await apiGet('/api/goals');
+        const data = await apiGet('/goals');
         setGoals(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Failed to fetch goals from API:', err);
@@ -284,7 +284,7 @@ const Goals = () => {
     setGoals(p => [newGoal, ...p]);
     
     try {
-      const created = await apiPost('/api/goals', g);
+      const created = await apiPost('/goals', g);
       setGoals(p => p.map(goal => goal.id === tempId ? created : goal));
       toast.success('Goal added');
     } catch (err) {
@@ -301,7 +301,7 @@ const Goals = () => {
     try {
       // Only PUT if it's a real ID from backend (not optimistic temp id)
       if (!String(updated.id).startsWith('temp_')) {
-        await apiPut(`/api/goals/${updated.id}`, updated);
+        await apiPut(`/goals/${updated.id}`, updated);
       }
     } catch (err) {
       console.error('Update goal error:', err);
@@ -315,7 +315,7 @@ const Goals = () => {
     
     try {
       if (!String(id).startsWith('temp_')) {
-        await apiDelete(`/api/goals/${id}`);
+        await apiDelete(`/goals/${id}`);
         toast.success('Goal deleted');
       }
     } catch (err) {

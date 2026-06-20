@@ -8,6 +8,7 @@ import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
 import PulseCheckModal from '../components/overview/PulseCheckModal';
 import { useCalendarEvents } from '../hooks/useCalendarEvents';
+import UniversalLogger from '../components/dashboard/UniversalLogger';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -570,11 +571,14 @@ const Overview = () => {
         {/* RIGHT sidebar */}
         <div style={{ display:'flex', flexDirection:'column', gap:'32px', minHeight: 0 }}>
 
+          {/* Universal Logger */}
+          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '20px' }}>
+            <UniversalLogger onSuccess={() => {}} />
+          </div>
+
           <CommandCenter user={user} />
 
           <TrajectoryProgress />
-          
-
 
         </div>
       </div>

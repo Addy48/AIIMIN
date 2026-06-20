@@ -1182,4 +1182,99 @@ Do not include markdown formatting like \`\`\`json.`;
     }
 });
 
+// ==========================================
+// AI TEXT / SMS IMPORT
+// ==========================================
+wealthRoutes.post('/import/ai', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const { text } = await c.req.json();
+        if (!text || !text.trim()) {
+            return c.json({ error: 'No text provided' }, 400);
+        }
+
+        const { GoogleGenAI } = await import('@google/genai');
+        const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+        const today = new Date().toISOString().split('T')[0];
+        const systemPrompt = `You are a financial transaction parser for an Indian personal finance app.
+Given any unstructured text (bank SMS alerts, WhatsApp logs, expense notes, AI conversations, etc.),
+extract all financial transactions and return ONLY a valid JSON array (no markdown, no explanation).
+
+Each transaction object must have:
+- date: YYYY-MM-DD string (infer from context; if unknown use today: ${today})
+- amount: positive number (absolute value)
+- type: "expense" | "income" | "transfer"
+- category: a sensible category like "Food & Dining", "Transportation", "Shopping", "Utilities", "Entertainment", "Health", "Salary", "Transfer", "Other"
+- description: short description of the transaction
+
+Example output:
+[
+  {"date":"${today}","amount":450,"type":"expense","category":"Food & Dining","description":"Groceries at DMart"},
+  {"date":"${today}","amount":1200,"type":"expense","category":"Utilities","description":"Electricity bill"},
+  {"date":"${today}","amount":5000,"type":"income","category":"Salary","description":"Salary advance"}
+]
+
+Rules:
+- If the text says "spent", "paid", "debit", "debited", or "-" before an amount → type is "expense"
+- If the text says "received", "credit", "credited", "salary", "refund" → type is "income"
+- Convert amounts with commas (1,200) to plain numbers (1200)
+- Skip non-financial text
+- Return [] if no transactions found`;
+
+        const result = await genai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: [{ role: 'user', parts: [{ text: `Parse these transactions:\n\n${text.trim()}` }] }],
+            config: { systemInstruction: systemPrompt }
+        });
+
+        const rawText = result.text.trim().replace(/```json\n?|```/g, '');
+        let transactions;
+        try {
+            transactions = JSON.parse(rawText);
+            if (!Array.isArray(transactions)) throw new Error('Not an array');
+        } catch (e) {
+            return c.json({ error: 'AI could not parse transactions', raw: rawText }, 422);
+        }
+
+        if (transactions.length === 0) {
+            return c.json({ success: true, imported: 0, message: 'No transactions found in the text' });
+        }
+
+        // Fetch user's default account
+        const accountRes = await pool.query(
+            'SELECT id FROM public.accounts WHERE user_id = $1 AND is_default = true LIMIT 1',
+            [userId]
+        );
+        const defaultAccountId = accountRes.rows[0]?.id || null;
+
+        let imported = 0;
+        for (const tx of transactions) {
+            try {
+                const amount = tx.type === 'expense' ? -Math.abs(tx.amount) : Math.abs(tx.amount);
+                await pool.query(
+                    `INSERT INTO public.money_transactions
+                    (user_id, date, category, description, amount, currency, source, account_id, type)
+                    VALUES ($1, $2, $3, $4, $5, 'INR', 'ai_import', $6, $7)`,
+                    [userId, tx.date || today, tx.category || 'Other', tx.description || '', amount, defaultAccountId, tx.type || 'expense']
+                );
+                if (defaultAccountId) {
+                    await pool.query(
+                        'UPDATE public.accounts SET balance = balance + $1 WHERE id = $2 AND user_id = $3',
+                        [amount, defaultAccountId, userId]
+                    );
+                }
+                imported++;
+            } catch (txErr) {
+                console.warn('Failed to insert AI transaction:', txErr.message);
+            }
+        }
+
+        return c.json({ success: true, imported, message: `AI imported ${imported} transactions` });
+    } catch (err) {
+        console.error('[wealth/import/ai] Error:', err.message);
+        return c.json({ error: 'Failed to process AI import', message: err.message }, 500);
+    }
+});
+
 export default wealthRoutes;
