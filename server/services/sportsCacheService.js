@@ -395,15 +395,16 @@ const fetchCricket = async () => {
   }
 };
 
-/* ── F1 via Ergast API ── */
+// --- F1 API (Using Ergast Mirror via api.jolpi.ca) ---
+// Jolpi can be slow; use a 4s timeout so it doesn't hold up the rest of the sports for too long.
 const fetchF1 = async () => {
   try {
     const [nextRace, lastRace, driverStandings, constructorStandings, schedule] = await Promise.allSettled([
-      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/next.json`),
-      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/last/results.json`),
-      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/driverStandings.json`),
-      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/constructorStandings.json`),
-      fetchJSON(`https://api.jolpi.ca/ergast/f1/current.json`),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/next.json`, 4000),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/last/results.json`, 4000),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/driverStandings.json`, 4000),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current/constructorStandings.json`, 4000),
+      fetchJSON(`https://api.jolpi.ca/ergast/f1/current.json`, 4000),
     ]);
 
     const next = nextRace.status === 'fulfilled' && nextRace.value?.MRData ? nextRace.value.MRData.RaceTable?.Races?.[0] : null;

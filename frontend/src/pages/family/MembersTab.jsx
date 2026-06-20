@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, X } from 'lucide-react';
 import { fvApi, RELATIONS, BLOOD_GROUPS, AVATAR_COLORS, CloseBtn, Field, maskNumber } from './fvUtils';
 
+import Modal from '../../components/ui/Modal';
+
 /* ── Avatar ── */
 const Avatar = ({ member }) => (
   <div style={{
@@ -44,13 +46,7 @@ const MemberModal = ({ member, onClose, onSave }) => {
   const sel = { className: 'fv-input fv-select' };
 
   return (
-    <div className="fv-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="fv-modal">
-        <div className="fv-modal-hdr">
-          <h3 className="fv-modal-title">{isEdit ? 'Edit Member' : 'Add Family Member'}</h3>
-          <CloseBtn onClick={onClose} />
-        </div>
-
+    <Modal isOpen={true} onClose={onClose} title={isEdit ? 'Edit Member' : 'Add Family Member'} maxWidth="500px">
         {/* Avatar color picker */}
         <div style={{ marginBottom:'20px' }}>
           <label className="fv-label">Avatar Color</label>
@@ -94,8 +90,7 @@ const MemberModal = ({ member, onClose, onSave }) => {
         <button onClick={submit} disabled={!form.name.trim() || saving} style={{ marginTop:'20px', width:'100%', padding:'13px', background:'var(--color-accent)', border:'none', borderRadius:'12px', color:'#fff', fontSize:'13px', fontWeight:800, cursor:'pointer', fontFamily:'inherit', opacity: form.name.trim() ? 1 : 0.5 }}>
           {saving ? 'Saving...' : isEdit ? 'Save Changes' : 'Add Member'}
         </button>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

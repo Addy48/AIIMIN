@@ -75,5 +75,27 @@ export const useNotifications = () => {
         return () => clearInterval(pollRef.current);
     }, [fetchCount]);
 
+    // Trigger weekly report generation
+    useEffect(() => {
+        if (!session) return;
+        const triggerWeeklyReport = async () => {
+            const now = new Date();
+            const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+            startOfWeek.setHours(0,0,0,0);
+            const weekKey = `aiimin_weekly_report_${startOfWeek.getTime()}`;
+            
+            if (!localStorage.getItem(weekKey)) {
+                try {
+                    const res = await apiPost('/notifications/trigger-weekly', {}, { session });
+                    if (res?.created || res?.reason === 'already_exists') {
+                        localStorage.setItem(weekKey, 'true');
+                        fetchCount();
+                    }
+                } catch { /* silent */ }
+            }
+        };
+        triggerWeeklyReport();
+    }, [session, fetchCount]);
+
     return { notifications, unreadCount, loading, fetchAll, markRead, markAllRead, dismiss };
 };

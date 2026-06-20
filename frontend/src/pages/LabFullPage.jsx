@@ -5,8 +5,8 @@ import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
 import SpeakingLogger from '../components/lab/SpeakingLogger';
 import TypingTest from '../components/lab/TypingTest';
-import PersonalityForge from '../components/lab/PersonalityForge';
-import ThePit from '../components/lab/ThePit';
+import DecisionMatrix from '../components/lab/DecisionMatrix';
+import DopamineProtocol from '../components/lab/DopamineProtocol';
 import ATSAnalyzer from './ATSAnalyzer';
 import AptitudeTest from '../components/lab/AptitudeTest';
 import QuantitativeMaths from '../components/lab/QuantitativeMaths';
@@ -14,6 +14,7 @@ import TechSimulator from '../components/lab/TechSimulator';
 import STARMethod from '../components/lab/STARMethod';
 import DomainFlashcards from '../components/lab/DomainFlashcards';
 import SystemDesign from '../components/lab/SystemDesign';
+import { calculateLifeScore } from '../utils/lifeScoreEngine';
 import './lab/lab.css';
 
 /* ─────────────────────────────────────────────────────────────
@@ -33,6 +34,7 @@ export default function LabFullPage() {
   const [activeModule, setActiveModule] = useState(null);
   const [typingStats, setTypingStats] = useState(null);
   const [todayMindset, setTodayMindset] = useState(null);
+  const [lifeScore, setLifeScore] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Check URL parameters for active module
@@ -57,12 +59,13 @@ export default function LabFullPage() {
     setLoading(true);
     try {
       const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
-      const [typingRes, mindsetRes] = await Promise.all([
+      const [typingRes, mindsetRes, ls] = await Promise.all([
         supabase.from("lab_typing_tests").select("wpm,accuracy_pct,day_of,test_invalid")
           .eq("user_id", user.id).gte("day_of", weekAgo).order("wpm", { ascending: false }),
         supabase.from("lab_mindset_logs").select("state,logged_at,day_of")
           .eq("user_id", user.id).eq("day_of", new Date().toISOString().split("T")[0])
           .order("logged_at", { ascending: false }).limit(1),
+        calculateLifeScore(user)
       ]);
       const validTests = (typingRes.data || []).filter(t => !t.test_invalid);
       const bestWpm = validTests.length > 0 ? Math.max(...validTests.map(t => t.wpm)) : null;
@@ -71,6 +74,7 @@ export default function LabFullPage() {
         : null;
       setTypingStats({ bestWpm, avgAccuracy, testsThisWeek: validTests.length, totalTests: typingRes.data?.length || 0 });
       setTodayMindset((mindsetRes.data || [])[0] || null);
+      setLifeScore(ls);
     } catch (e) { /* silent */ }
     finally { setLoading(false); }
   }, [user]); // eslint-disable-line
@@ -79,20 +83,30 @@ export default function LabFullPage() {
 
   if (!user) return null;
 
-  const modules = [
-    { key: "typing",     emoji: "⌨️",  label: "Typing Speed",   desc: "WPM & accuracy benchmark",       color: "#3B82F6" },
-    { key: "speaking",   emoji: "🎙️", label: "Speaking Logger", desc: "60-sec vocal response & review", color: "#8B5CF6" },
-    { key: "personality",emoji: "🧬",  label: "Personality Forge",desc: "Core trait & value alignment",  color: "#EC4899" },
-    { key: "pit",       emoji: "⛓️",  label: "The Pit",        desc: "Hard-mode & resilience logs",   color: "#EF4444" },
-    { key: "reading",    emoji: "📖",  label: "Reading Log",    desc: "Log books, articles & ratings",  color: "#10B981" },
-    { key: "aptitude", emoji: "🧠", label: "Aptitude Tests", desc: "Logical reasoning & pattern recognition", color: "#F59E0B" },
-    { key: "quant", emoji: "📐", label: "Quantitative Maths", desc: "Speed math for screening rounds", color: "#F97316" },
-    { key: "techsim", emoji: "💻", label: "Tech Simulator", desc: "Code output prediction & tricky MCQs", color: "#06B6D4" },
-    { key: "star", emoji: "⭐", label: "STAR Method", desc: "Behavioral interview storytelling", color: "#EAB308" },
-    { key: "resume", emoji: "📄", label: "Resume ATS Matcher", desc: "Match your resume against Job Descriptions", color: "#6366F1" },
-    { key: "flashcards", emoji: "🗂️", label: "Domain Flashcards", desc: "Spaced repetition for tech stacks", color: "#14B8A6" },
-    { key: "sysdesign", emoji: "🏗️", label: "System Design", desc: "Architecture whiteboard sandbox", color: "#8B5CF6" },
-  ];
+  const categorizedModules = {
+    "Mental Models & Focus": [
+      { key: "decision", emoji: "🤔", label: "Decision Matrix", desc: "De-bias choices via mental models", color: "#3B82F6" },
+      { key: "dopamine", emoji: "📉", label: "Dopamine Detox", desc: "Stimulus tracking & baseline recovery", color: "#10B981" },
+      { key: "reading", emoji: "📖", label: "Reading Log", desc: "Log books, articles & ratings", color: "#8B5CF6" }
+    ],
+    "Cognitive Training": [
+      { key: "typing",     emoji: "⌨️",  label: "Typing Speed",   desc: "WPM & accuracy benchmark",       color: "#3B82F6" },
+      { key: "aptitude", emoji: "🧠", label: "Aptitude Tests", desc: "Logical reasoning & pattern recognition", color: "#F59E0B" },
+      { key: "quant", emoji: "📐", label: "Quantitative Maths", desc: "Speed math for screening rounds", color: "#F97316" }
+    ],
+    "Interview Prep": [
+      { key: "speaking",   emoji: "🎙️", label: "Speaking Logger", desc: "60-sec vocal response & review", color: "#8B5CF6" },
+      { key: "star", emoji: "⭐", label: "STAR Method", desc: "Behavioral interview storytelling", color: "#EAB308" },
+      { key: "resume", emoji: "📄", label: "Resume ATS Matcher", desc: "Match your resume against Job Descriptions", color: "#6366F1" }
+    ],
+    "Skill Forge": [
+      { key: "techsim", emoji: "💻", label: "Tech Simulator", desc: "Code output prediction & tricky MCQs", color: "#06B6D4" },
+      { key: "flashcards", emoji: "🗂️", label: "Domain Flashcards", desc: "Spaced repetition for tech stacks", color: "#14B8A6" },
+      { key: "sysdesign", emoji: "🏗️", label: "System Design", desc: "Architecture whiteboard sandbox", color: "#8B5CF6" }
+    ]
+  };
+
+  const modules = Object.values(categorizedModules).flat();
 
   return (
     <div style={{ flex: 1 }}>
@@ -143,8 +157,8 @@ export default function LabFullPage() {
             <div style={{ padding: '0', flex: 1, height: '100%', overflowY: 'auto', minHeight: 0 }}>
               {activeModule === 'typing'      && <TypingTest userId={user.id} onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
               {activeModule === 'speaking'    && <SpeakingLogger onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
-              {activeModule === 'personality' && <PersonalityForge userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
-              {activeModule === 'pit'         && <ThePit userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
+              {activeModule === 'decision'    && <DecisionMatrix onBack={() => setActiveModule(null)} />}
+              {activeModule === 'dopamine'    && <DopamineProtocol onBack={() => setActiveModule(null)} />}
               {activeModule === 'reading'     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
               {activeModule === 'resume'      && <ATSAnalyzer onClose={() => setActiveModule(null)} />}
               {activeModule === 'aptitude'    && <AptitudeTest onClose={() => setActiveModule(null)} />}
@@ -164,32 +178,43 @@ export default function LabFullPage() {
                 { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#3B82F6" },
                 { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#22C55E" },
                 { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#F59E0B" },
-                { label: "Mindset Today", value: todayMindset?.state ?? "—", color: "#8B5CF6" },
+                { label: "Life Score", value: lifeScore?.score ?? "—", color: "#8B5CF6", desc: lifeScore?.delta >= 0 ? `+${lifeScore?.delta}` : lifeScore?.delta },
               ].map(stat => (
                 <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "10px", padding: "16px", borderTop: `3px solid ${stat.color}` }}>
                   <div style={{ fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{stat.label}</div>
-                  <div style={{ fontSize: "22px", fontWeight: 700, color: text1, letterSpacing: "-0.02em", lineHeight: 1, textTransform: "capitalize" }}>{stat.value}</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+                    <div style={{ fontSize: "22px", fontWeight: 700, color: text1, letterSpacing: "-0.02em", lineHeight: 1, textTransform: "capitalize" }}>{stat.value}</div>
+                    {stat.desc && <div style={{ fontSize: "11px", fontWeight: 600, color: stat.desc.startsWith('+') ? '#22C55E' : '#EF4444' }}>{stat.desc}</div>}
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          <div style={{ marginBottom: "16px", fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em" }}>Modules</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
-            {modules.map(m => (
-              <button key={m.key} onClick={() => {
-                setActiveModule(m.key);
-                const newUrl = new URL(window.location);
-                newUrl.searchParams.set('module', m.key);
-                window.history.pushState({}, '', newUrl);
-              }}
-                style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "14px", padding: "24px", textAlign: "left", cursor: "pointer", transition: "all 150ms ease", borderLeft: `4px solid ${m.color}` }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-                <div style={{ fontSize: "26px", marginBottom: "12px" }}>{m.emoji}</div>
-                <div style={{ fontSize: "14px", fontWeight: 700, color: text1, marginBottom: "5px" }}>{m.label}</div>
-                <div style={{ fontSize: "12px", color: text2 }}>{m.desc}</div>
-              </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+            {Object.entries(categorizedModules).map(([category, mods]) => (
+              <div key={category}>
+                <div style={{ marginBottom: "16px", fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', background: 'var(--color-accent)', borderRadius: '50%' }} /> {category}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
+                  {mods.map(m => (
+                    <button key={m.key} onClick={() => {
+                      setActiveModule(m.key);
+                      const newUrl = new URL(window.location);
+                      newUrl.searchParams.set('module', m.key);
+                      window.history.pushState({}, '', newUrl);
+                    }}
+                      style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "14px", padding: "24px", textAlign: "left", cursor: "pointer", transition: "all 150ms ease", borderLeft: `4px solid ${m.color}` }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+                      <div style={{ fontSize: "26px", marginBottom: "12px" }}>{m.emoji}</div>
+                      <div style={{ fontSize: "14px", fontWeight: 700, color: text1, marginBottom: "5px" }}>{m.label}</div>
+                      <div style={{ fontSize: "12px", color: text2 }}>{m.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
 

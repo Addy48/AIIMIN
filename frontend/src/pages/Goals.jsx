@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, BookOpen, Briefcase, Heart, Brain, Trash2, Clock } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
+import Modal from '../components/ui/Modal';
 
 /* ── Constants ─────────────────────────────────────────────── */
 const PILLARS = [
@@ -140,16 +141,9 @@ const GoalCard = ({ goal, onUpdate, onDelete }) => {
 };
 
 /* ── Add Goal Modal ────────────────────────────────────────── */
-const GoalModal = ({ onClose, onSave }) => {
+const GoalModal = ({ isOpen, onClose, onSave }) => {
   const [goal, setGoal] = useState(blankGoal());
   const pillar = PILLARS.find(p => p.key === goal.pillar) || PILLARS[0];
-
-  // Close on Escape key
-  useEffect(() => {
-    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', handleKey);
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [onClose]);
 
   const updateMilestone = (i, text) => setGoal(g => ({ ...g, milestones: g.milestones.map((m, idx) => idx === i ? { ...m, text } : m) }));
   const addMilestone = () => goal.milestones.length < 5 && setGoal(g => ({ ...g, milestones: [...g.milestones, { text: '', done: false }] }));
@@ -170,35 +164,7 @@ const GoalModal = ({ onClose, onSave }) => {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '24px' }}
-      onClick={e => e.target === e.currentTarget && onClose()}>
-      <motion.div initial={{ opacity: 0, scale: 0.96, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }}
-        style={{ 
-            background: 'var(--bg-card)', 
-            border: '1px solid var(--border)', 
-            borderRadius: '24px', 
-            width: '100%', 
-            maxWidth: '560px', 
-            maxHeight: '85vh', 
-            overflowY: 'auto',
-            boxShadow: '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--border)',
-            display: 'flex',
-            flexDirection: 'column',
-        }}>
-        {/* Modal header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px 32px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-          <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', margin: 0, fontFamily: 'var(--font-serif)' }}>Define Commitment</h3>
-          <button 
-            onClick={onClose} 
-            style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-3)', cursor: 'pointer', padding: '8px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-3)'; e.currentTarget.style.borderColor = 'var(--border)'; }}
-          >
-            <X size={18} strokeWidth={2.5} />
-          </button>
-        </div>
-        <div style={{ padding: '32px', overflowY: 'auto' }}>
-
+    <Modal isOpen={isOpen} onClose={onClose} title="Define Commitment" maxWidth="560px">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div>
             <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Domain</div>
@@ -284,9 +250,7 @@ const GoalModal = ({ onClose, onSave }) => {
             Confirm Commitment
           </button>
         </div>
-        </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 };
 
@@ -467,9 +431,7 @@ const Goals = () => {
         </motion.div>
       )}
 
-      <AnimatePresence>
-        {showModal && <GoalModal onClose={() => setShowModal(false)} onSave={addGoal} />}
-      </AnimatePresence>
+      <GoalModal isOpen={showModal} onClose={() => setShowModal(false)} onSave={addGoal} />
     </div>
   );
 };

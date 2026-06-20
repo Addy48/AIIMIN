@@ -9,7 +9,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import toast from '../utils/toast';
 import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
-import DesktopWindow from '../components/ui/DesktopWindow';
+import Modal from '../components/ui/Modal';
 import PageHeader from '../components/layout/PageHeader';
 import EntryForm from '../components/finance/EntryForm';
 import FinanceOverview from '../components/finance/FinanceOverview';
@@ -641,10 +641,7 @@ savingsRate: (sRate * 100).toFixed(1),
       )}
 
       {/* Add Account Modal */}
-      <AnimatePresence>
-        {accountModalOpen && (
-          <DesktopWindow title={newAccount.id ? 'Edit Account' : 'New Bank Account'} subtitle="accounts.finance" onClose={() => setAccountModalOpen(false)} width="520px">
-            <div style={{ padding: '32px' }}>
+      <Modal isOpen={accountModalOpen} onClose={() => setAccountModalOpen(false)} title={newAccount.id ? 'Edit Account' : 'New Bank Account'} maxWidth="520px">
               <form onSubmit={handleAddAccount} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px' }}>Account Name</label>
@@ -669,16 +666,10 @@ savingsRate: (sRate * 100).toFixed(1),
                   {newAccount.id ? 'Save Changes' : 'Create Account'}
                 </button>
               </form>
-            </div>
-          </DesktopWindow>
-        )}
-      </AnimatePresence>
+      </Modal>
 
       {/* Entry Modal */}
-      <AnimatePresence>
-        {entryOpen && (
-          <DesktopWindow title="Record Finance Entry" subtitle="transactions.finance" onClose={() => setEntryOpen(false)} width="560px" maxHeight="88vh">
-            <div style={{ padding: '24px' }}>
+      <Modal isOpen={entryOpen} onClose={() => setEntryOpen(false)} title="Record Finance Entry" maxWidth="560px">
               <EntryForm 
                 user={user} 
                 accounts={accounts} 
@@ -689,16 +680,10 @@ savingsRate: (sRate * 100).toFixed(1),
                   toast.success('Entry synchronized.');
                 }} 
               />
-            </div>
-          </DesktopWindow>
-        )}
-      </AnimatePresence>
+      </Modal>
 
       {/* Add Asset Modal */}
-      <AnimatePresence>
-        {assetModalOpen && (
-          <DesktopWindow title={newAsset.id ? 'Edit Position' : 'New Position'} subtitle="wealth.finance" onClose={() => setAssetModalOpen(false)} width="520px">
-            <div style={{ padding: '32px' }}>
+      <Modal isOpen={assetModalOpen} onClose={() => setAssetModalOpen(false)} title={newAsset.id ? 'Edit Position' : 'New Position'} maxWidth="520px">
               <form onSubmit={handleAddAsset} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px' }}>Asset Name</label>
@@ -728,16 +713,10 @@ savingsRate: (sRate * 100).toFixed(1),
                   {newAsset.id ? 'Save Changes' : 'Create Position'}
                 </button>
               </form>
-            </div>
-          </DesktopWindow>
-        )}
-      </AnimatePresence>
+      </Modal>
 
       {/* Add Budget Modal */}
-      <AnimatePresence>
-        {budgetModalOpen && (
-          <DesktopWindow title={newBudget.id ? 'Edit Budget' : 'New Budget'} subtitle="budget.finance" onClose={() => setBudgetModalOpen(false)} width="520px">
-            <div style={{ padding: '32px' }}>
+      <Modal isOpen={budgetModalOpen} onClose={() => setBudgetModalOpen(false)} title={newBudget.id ? 'Edit Budget' : 'New Budget'} maxWidth="520px">
               <form onSubmit={handleAddBudget} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '8px' }}>Category Name</label>
@@ -751,16 +730,10 @@ savingsRate: (sRate * 100).toFixed(1),
                   {newBudget.id ? 'Save Changes' : 'Create Budget'}
                 </button>
               </form>
-            </div>
-          </DesktopWindow>
-        )}
-      </AnimatePresence>
+      </Modal>
 
       {/* Excel Import Modal */}
-      <AnimatePresence>
-        {importOpen && (
-          <DesktopWindow title="Import Spreadsheet" subtitle="money-import.finance" onClose={() => setImportOpen(false)} width="520px">
-            <div style={{ padding: '28px' }}>
+      <Modal isOpen={importOpen} onClose={() => setImportOpen(false)} title="Import Spreadsheet" maxWidth="520px">
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--color-accent-dim)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
                   <FileSpreadsheet size={30} />
@@ -813,10 +786,7 @@ savingsRate: (sRate * 100).toFixed(1),
                   <button onClick={() => setImportStatus('idle')} style={{ marginTop: '20px', background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Try Again</button>
                 </div>
               )}
-            </div>
-          </DesktopWindow>
-        )}
-      </AnimatePresence>
+      </Modal>
 
       <style>{`
         .nordic-card {

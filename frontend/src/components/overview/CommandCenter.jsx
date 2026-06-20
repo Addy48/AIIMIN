@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Check, ChevronRight, Flame } from 'lucide-react';
 import { apiGet } from '../../utils/api';
+import { calculateLifeScore } from '../../utils/lifeScoreEngine';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const PRIORITIES_KEY = 'aiimin_cmd_priorities';
@@ -62,6 +63,11 @@ export default function CommandCenter({ user }) {
   const [habits, setHabits] = useState([]);
   const [habitLogs, setHabitLogs] = useState({});
   const [finSnap, setFinSnap] = useState(null);
+  const [lifeScore, setLifeScore] = useState(null);
+
+  useEffect(() => {
+    calculateLifeScore(user).then(setLifeScore);
+  }, [user, habits, habitLogs, priorities]);
 
   // Load habits from localStorage
   useEffect(() => {
@@ -141,6 +147,30 @@ export default function CommandCenter({ user }) {
           {new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}
         </span>
       </div>
+
+      {/* ── Section 0: Life Score ── */}
+      {lifeScore && (
+        <Section icon="🧠" label="Life Score" right={<span style={{ color: lifeScore.delta >= 0 ? '#22C55E' : '#EF4444' }}>{lifeScore.delta >= 0 ? '+' : ''}{lifeScore.delta} today</span>}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ position: 'relative', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg viewBox="0 0 36 36" style={{ position: 'absolute', width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--color-elevated)" strokeWidth="3" />
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--color-accent)" strokeWidth="3" strokeDasharray={`${lifeScore.score}, 100`} />
+              </svg>
+              <span style={{ fontSize: '16px', fontWeight: 900, color: 'var(--color-text-1)' }}>{lifeScore.score}</span>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-2)', lineHeight: 1.4 }}>
+                {lifeScore.explanation}
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Behav: {lifeScore.contributors.behavioral.score}</div>
+                <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Mental: {lifeScore.contributors.mental_clarity.score}</div>
+              </div>
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* ── Section 1: Top 3 Priorities ── */}
       <Section icon="🎯" label="Today's Priorities" right={priorities.length > 0 ? `${doneCount}/${priorities.length}` : null} rightColor="var(--color-accent)">

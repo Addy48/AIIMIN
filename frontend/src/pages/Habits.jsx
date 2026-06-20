@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Circle, Plus, X, Trash2, BarChart2, Check } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
+import YearlyHabitMatrix from '../components/overview/YearlyHabitMatrix';
+import Modal from '../components/ui/Modal';
 
 
 const DEFAULT_HABITS = [
@@ -158,7 +160,7 @@ const HabitRow = ({ habit, logs, todayKey, onToggle, onDelete, onEdit }) => {
 };
 
 /* ── Add Habit Modal ── */
-const AddModal = ({ onClose, onAdd }) => {
+const AddModal = ({ isOpen, onClose, onAdd }) => {
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('⭐');
   const [cat, setCat] = useState('Health');
@@ -179,15 +181,8 @@ const AddModal = ({ onClose, onAdd }) => {
   const inp = { background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '10px 14px', color: 'var(--color-text-1)', fontSize: '13px', fontFamily: 'inherit', outline: 'none', width: '100%', boxSizing: 'border-box' };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
-      onClick={e => e.target === e.currentTarget && onClose()}>
-      <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--border)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-1)', margin: 0 }}>New Habit</h3>
-          <button onClick={onClose} style={{ width: '36px', height: '36px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', cursor: 'pointer' }}><X size={18} /></button>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <Modal isOpen={isOpen} onClose={onClose} title="New Habit" maxWidth="480px">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Icon</div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -240,8 +235,7 @@ const AddModal = ({ onClose, onAdd }) => {
             Create Habit
           </button>
         </div>
-      </motion.div>
-    </div>
+    </Modal>
   );
 };
 
@@ -398,10 +392,9 @@ const Habits = () => {
       {/* Weekly heatmap */}
       <WeeklyHeatmap habits={habits} logs={logs} />
 
-      {/* Add Modal */}
-      <AnimatePresence>
-        {adding && <AddModal onClose={() => setAdding(false)} onAdd={addHabit} />}
-      </AnimatePresence>
+      <YearlyHabitMatrix />
+
+      <AddModal isOpen={adding} onClose={() => setAdding(false)} onAdd={addHabit} />
     </div>
   );
 };
