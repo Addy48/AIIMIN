@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
+import { useUser } from '@clerk/clerk-react';
+import { apiPost, apiGet, getCurrentAccessToken } from '../utils/api';
 import { supabase } from '../utils/supabase';
 
 /* ─── helpers ──────────────────────────────────────────────── */
@@ -130,15 +132,17 @@ export default function Onboarding() {
 
     const TOTAL_STEPS = 8; // 0 to 7. Step 8 is success
 
-    // Pre-fill name from Google metadata
+    const { user, isLoaded } = useUser();
+
+    // Pre-fill name from Clerk user object
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) { navigate('/login', { replace: true }); return; }
-            const meta = session.user?.user_metadata;
-            if (meta?.full_name) setFullName(meta.full_name);
-            else if (meta?.name) setFullName(meta.name);
-        });
-    }, [navigate]);
+        if (isLoaded && user) {
+            if (user.fullName) setFullName(user.fullName);
+            else if (user.firstName) setFullName(user.firstName);
+        } else if (isLoaded && !user) {
+            navigate('/login', { replace: true });
+        }
+    }, [user, isLoaded, navigate]);
 
     // Username availability check (debounced)
     useEffect(() => {
@@ -229,15 +233,15 @@ export default function Onboarding() {
         setLoading(true);
         setError('');
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('No session');
+            const token = await getCurrentAccessToken();
+            if (!token) throw new Error('No session');
 
             // 1. Complete profile
             const res = await fetch('/api/auth/complete-google-profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${session.access_token}`,
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     username: username.trim().toUpperCase(),
@@ -252,7 +256,7 @@ export default function Onboarding() {
             // 2. We can save Wake Time to user settings
             await fetch('/api/account/profile', {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })
             });
 
@@ -261,7 +265,7 @@ export default function Onboarding() {
                 const habitName = HABIT_OPTIONS.find(h => h.id === hId)?.label;
                 await fetch('/api/habits', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                     body: JSON.stringify({ title: habitName, frequency: 'daily', category: 'health' })
                 });
             }
@@ -271,7 +275,7 @@ export default function Onboarding() {
                 const goalName = GOAL_OPTIONS.find(g => g.id === gId)?.label;
                 await fetch('/api/goals', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                     body: JSON.stringify({ title: goalName, category: 'life', status: 'in_progress', progress: 0 })
                 });
             }

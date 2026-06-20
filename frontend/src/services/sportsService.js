@@ -127,11 +127,12 @@ export const fetchCricket = async () => {
         let events = league.events ? league.events.map(ev => {
           const home = ev.competitors?.find(c => c.homeAway === 'home') || ev.competitors?.[0] || {};
           const away = ev.competitors?.find(c => c.homeAway === 'away') || ev.competitors?.[1] || {};
+          const isPre = ev.status === 'pre';
           return {
             id: ev.id,
             date: ev.date,
             name: ev.name || ev.shortName,
-            statusShort: ev.fullStatus?.type?.shortDetail || ev.summary || ev.status,
+            statusShort: isPre && ev.date ? (new Date(ev.date).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' IST') : (ev.fullStatus?.type?.shortDetail || ev.summary || ev.status),
             statusDetail: ev.fullStatus?.type?.detail || ev.summary || '',
             isLive: ev.status === 'in',
             isFinished: ev.status === 'post',
