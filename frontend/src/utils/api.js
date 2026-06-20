@@ -8,10 +8,29 @@ export const buildAuthHeaders = (extraHeaders = {}) => ({
     ...extraHeaders,
 });
 
+/**
+ * Get auth token — prefers Clerk JWT if available, falls back to
+ * Supabase session for legacy compatibility during migration.
+ */
 export const getCurrentAccessToken = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || '';
+    // If Clerk is initialised, use its JWT
+    if (typeof window !== 'undefined' && typeof window.__clerk_getToken === 'function') {
+        try {
+            const clerkToken = await window.__clerk_getToken();
+            if (clerkToken) return clerkToken;
+        } catch (_) {
+            // fall through to Supabase
+        }
+    }
+    // Legacy Supabase fallback
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) return session.access_token;
+    } catch (_) {}
+    return (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || '';
 };
+
+
 
 const resolveHeaders = async ({ headers = {}, json = true } = {}) => {
     const token = await getCurrentAccessToken();
@@ -31,6 +50,7 @@ export const apiRequest = async (path, options = {}) => {
         params,
         headers,
         responseType = 'json',
+        signal,
     } = options;
 
     const resolvedHeaders = await resolveHeaders({
@@ -46,6 +66,7 @@ export const apiRequest = async (path, options = {}) => {
     const fetchOptions = {
         method,
         headers: resolvedHeaders,
+        ...(signal ? { signal } : {}),
     };
 
     if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
@@ -53,6 +74,7 @@ export const apiRequest = async (path, options = {}) => {
     }
 
     const response = await fetch(url, fetchOptions);
+
 
     if (!response.ok) {
         let errMsg = `Request failed (${response.status})`;

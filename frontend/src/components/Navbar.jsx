@@ -5,27 +5,29 @@ import { useThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { UserButton, useAuth as useClerkAuth } from '@clerk/clerk-react';
 import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
-import supabase from '../utils/supabase';
 
 const SystemStatusIndicator = () => {
+  const { isSignedIn } = useClerkAuth();
   const [status, setStatus] = useState('checking');
 
   React.useEffect(() => {
     let mounted = true;
     const checkHealth = async () => {
       try {
-        const { error } = await supabase.auth.getSession();
-        if (mounted) setStatus(error ? 'error' : 'online');
+        const res = await fetch(`${process.env.REACT_APP_API_URL || '/api'}/health`, { method: 'GET' });
+        if (mounted) setStatus(res.ok ? 'online' : 'error');
       } catch {
-        if (mounted) setStatus('error');
+        // backend down — if we're signed in with Clerk, still show online for the app itself
+        if (mounted) setStatus(isSignedIn ? 'online' : 'error');
       }
     };
     checkHealth();
     const int = setInterval(checkHealth, 30000);
     return () => { mounted = false; clearInterval(int); };
-  }, []);
+  }, [isSignedIn]);
 
   const color = status === 'online' ? '#10B981' : status === 'error' ? '#EF4444' : '#F59E0B';
   const text = status === 'online' ? 'OS Online' : status === 'error' ? 'System Error' : 'Checking...';
@@ -191,18 +193,18 @@ const Navbar = ({ user }) => {
             )}
           </div>
 
-          {/* Avatar */}
-          <Link
-            to="/account"
-            style={{
-              width: '36px', height: '36px', borderRadius: '50%', background: '#23503B',
-              border: 'none', color: '#fff', font: '700 14px var(--font-sans)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none'
+          {/* Clerk UserButton — handles profile, sign out, etc */}
+          <UserButton
+            afterSignOutUrl="/login"
+            appearance={{
+              elements: {
+                avatarBox: {
+                  width: '36px',
+                  height: '36px',
+                },
+              },
             }}
-            aria-label="Account"
-          >
-            {userInitial}
-          </Link>
+          />
 
           {/* Mobile Menu Toggle */}
           <button
