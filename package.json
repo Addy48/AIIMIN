@@ -13,6 +13,7 @@
     "test": "node --test server/services/*.test.js"
   },
   "dependencies": {
+    "@clerk/backend": "^3.8.2",
     "@hono/node-server": "^2.0.3",
     "@supabase/supabase-js": "^2.106.1",
     "@vercel/blob": "^2.4.0",

@@ -3,9 +3,15 @@ import { getCookie } from 'hono/cookie';
 import * as dotenv from 'dotenv';
 import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { ensureUserProfile } from '../services/userProfileService.js';
+import crypto from 'node:crypto';
 dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
 
-// Clerk JWT verification (installed lazily to avoid crashing if not configured)
+function generateUuidFromClerkId(clerkId) {
+    const hash = crypto.createHash('md5').update(clerkId).digest('hex');
+    return `${hash.slice(0,8)}-${hash.slice(8,12)}-4${hash.slice(13,16)}-a${hash.slice(17,20)}-${hash.slice(20,32)}`;
+}
+
+// Clerk JWT verification
 let clerkVerifyToken = null;
 const initClerk = async () => {
     if (clerkVerifyToken) return;
@@ -16,6 +22,18 @@ const initClerk = async () => {
         const clerk = createClerkClient({ secretKey });
         clerkVerifyToken = async (token) => {
             const payload = await clerk.verifyToken(token);
+            if (payload?.sub) {
+                let email = payload.email || payload.email_address;
+                if (!email) {
+                    try {
+                        const clerkUser = await clerk.users.getUser(payload.sub);
+                        email = clerkUser.emailAddresses?.[0]?.emailAddress || '';
+                    } catch (err) {
+                        console.warn('[auth] Failed to fetch user from Clerk API:', err.message);
+                    }
+                }
+                payload.email = email;
+            }
             return payload;
         };
         console.log('[auth] Clerk verification enabled');
@@ -25,15 +43,12 @@ const initClerk = async () => {
 };
 initClerk();
 
-
-
 const COOKIE_NAME = 'aiimin_session';
 
-// Profile cache with TTL-based eviction to prevent memory leaks
+// Profile cache
 const profileCache = new Map();
-const CACHE_TTL_MS = 10_000; // 10 seconds
+const CACHE_TTL_MS = 10_000;
 
-// Periodic cleanup: evict expired cache entries every 60 seconds
 setInterval(() => {
     const now = Date.now();
     for (const [key, entry] of profileCache.entries()) {
@@ -44,7 +59,6 @@ setInterval(() => {
 }, 60_000);
 
 export const requireAuth = async (c, next) => {
-    // 1. Extract token from cookie, then Bearer header, then query param
     let token = getCookie(c, COOKIE_NAME);
     if (!token) {
         const authHeader = c.req.header('authorization');
@@ -58,7 +72,6 @@ export const requireAuth = async (c, next) => {
         return c.json({ error: 'Unauthorized: missing token' }, 401);
     }
 
-    // Dev-only mock bypass
     if (process.env.NODE_ENV !== 'production' && token === 'mock-test-token') {
         c.set('user', { id: '88888888-8888-4888-8888-888888888888', email: 'dev@aiimin.in', role: 'user', onboarding_stage: 1, username: 'DEVUSER' });
         c.set('userId', '88888888-8888-4888-8888-888888888888');
@@ -68,7 +81,6 @@ export const requireAuth = async (c, next) => {
     let decoded = null;
     let authUser = null;
 
-    // 2. Verify Supabase access token first. This is the production source of truth.
     try {
         const supabase = getSupabaseAdmin();
         const { data: { user }, error } = await supabase.auth.getUser(token);
@@ -81,13 +93,27 @@ export const requireAuth = async (c, next) => {
     }
 
     if (!decoded) {
-        // 3. Fallback: Try Clerk JWT verification
         if (clerkVerifyToken) {
             try {
                 const payload = await clerkVerifyToken(token);
                 if (payload?.sub) {
-                    decoded = { id: payload.sub, email: payload.email_address || payload.email || '' };
-                    authUser = { id: payload.sub, email: decoded.email };
+                    const clerkId = payload.sub;
+                    let email = payload.email || '';
+                    let dbId = null;
+
+                    if (email) {
+                        const { rows } = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+                        if (rows.length > 0) {
+                            dbId = rows[0].id;
+                        }
+                    }
+
+                    if (!dbId) {
+                        dbId = generateUuidFromClerkId(clerkId);
+                    }
+
+                    decoded = { id: dbId, email: email, clerkId: clerkId };
+                    authUser = { id: dbId, email: email };
                 }
             } catch (clerkErr) {
                 console.warn('[auth] Clerk token verify failed:', clerkErr.message);
@@ -99,7 +125,6 @@ export const requireAuth = async (c, next) => {
         return c.json({ error: 'Unauthorized: invalid or expired token' }, 401);
     }
 
-    // 4. Enrich with profile from DB (cached)
     try {
         const now = Date.now();
         let cached = profileCache.get(decoded.id);
@@ -143,3 +168,4 @@ export const requireAuth = async (c, next) => {
 
     await next();
 };
+
