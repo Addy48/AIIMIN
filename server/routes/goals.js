@@ -10,7 +10,7 @@ app.get('/', requireAuth, async (c) => {
         const userId = c.get('userId');
         const { status = 'in_progress', category } = c.req.query();
 
-        let q = 'SELECT id, title, category, status, progress, created_at FROM goals WHERE user_id = $1';
+        let q = 'SELECT id, title, category, status, progress, meta, created_at FROM goals WHERE user_id = $1';
         const params = [userId];
         if (status) { params.push(status); q += ` AND status = $${params.length}`; }
         if (category) { params.push(category); q += ` AND category = $${params.length}`; }
@@ -27,13 +27,13 @@ app.get('/', requireAuth, async (c) => {
 app.post('/', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
-        const { title, category = 'life', status = 'in_progress', progress = 0 } = await c.req.json();
+        const { title, category = 'life', status = 'in_progress', progress = 0, meta = {} } = await c.req.json();
         if (!title?.trim()) return c.json({ error: 'title is required' }, 400);
 
         const { rows } = await pool.query(
-            `INSERT INTO goals (user_id, title, category, status, progress)
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [userId, title.trim(), category, status, progress]
+            `INSERT INTO goals (user_id, title, category, status, progress, meta)
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [userId, title.trim(), category, status, progress, meta]
         );
         return c.json(rows[0], 201);
     } catch (err) {
@@ -46,7 +46,7 @@ app.put('/:id', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const id = c.req.param('id');
-        const { title, category, status, progress } = await c.req.json();
+        const { title, category, status, progress, meta } = await c.req.json();
 
         const sets = [];
         const params = [];
@@ -54,6 +54,7 @@ app.put('/:id', requireAuth, async (c) => {
         if (category !== undefined) { params.push(category); sets.push(`category = $${params.length}`); }
         if (status !== undefined) { params.push(status); sets.push(`status = $${params.length}`); }
         if (progress !== undefined) { params.push(progress); sets.push(`progress = $${params.length}`); }
+        if (meta !== undefined) { params.push(meta); sets.push(`meta = $${params.length}`); }
         
         if (sets.length === 0) return c.json({ error: 'No fields to update' }, 400);
 

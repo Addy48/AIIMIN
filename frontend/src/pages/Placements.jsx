@@ -7,6 +7,7 @@ import { FileSearch, FileText } from 'lucide-react';
 import ATSAnalyzer from './ATSAnalyzer';
 import ApplicationIntakeModal from '../components/placements/ApplicationIntakeModal';
 import ResumeArchiveModal from '../components/placements/ResumeArchiveModal';
+import { useReadinessScore } from '../hooks/useReadinessScore';
 
 const STATUS_CONFIG = {
   wishlist: { label: 'Wishlist', color: '#8C8C8C', icon: '📝' },
@@ -32,10 +33,20 @@ export default function Placements() {
   const [showResumeModal, setShowResumeModal] = useState(false);
   const [editingApp, setEditingApp] = useState(null);
 
-  // Trajectory Intelligence Readiness Scorecard States
+  // Trajectory Intelligence Readiness Scorecard States (Real Metrics)
+  const { dsaMetrics: realDsa, communicationMetrics: realComms, systemDesignMetrics: realSys, loading: metricsLoading } = useReadinessScore(user);
+  
   const [dsaMetrics, setDsaMetrics] = useState({ score: 82, desc: 'Top 5% of candidate pool' });
   const [communicationMetrics, setCommunicationMetrics] = useState({ score: 75, desc: 'Clear & articulate' });
   const [systemDesignMetrics, setSystemDesignMetrics] = useState({ score: 45, desc: 'Needs targeted review' });
+
+  useEffect(() => {
+    if (!user.isGuest && !metricsLoading) {
+      if (realDsa.score > 0) setDsaMetrics(realDsa);
+      if (realComms.score > 0) setCommunicationMetrics(realComms);
+      if (realSys.score > 0) setSystemDesignMetrics(realSys);
+    }
+  }, [realDsa, realComms, realSys, user.isGuest, metricsLoading]);
 
   // Momentum States
   const [momentumScore, setMomentumScore] = useState(75);
@@ -140,20 +151,7 @@ export default function Placements() {
 
       const habitsRaw = habitsData.status === 'fulfilled' ? (habitsData.value || []) : [];
 
-      // Readiness metrics — silent fallback, never toast
-      try {
-        const readinessData = await apiGet('/placements/readiness');
-        if (readinessData?.dsa) {
-          setDsaMetrics(readinessData.dsa);
-          setCommunicationMetrics(readinessData.communication);
-          setSystemDesignMetrics(readinessData.systemDesign);
-        }
-      } catch {
-        // Use static defaults — no toast, no console error
-        setDsaMetrics({ score: 65, desc: 'No solved problems logged yet' });
-        setCommunicationMetrics({ score: 60, desc: 'Record speaking logs to benchmark' });
-        setSystemDesignMetrics({ score: 40, desc: 'Target key systems in resumes' });
-      }
+      // We remove the apiGet('/placements/readiness') as we now use useReadinessScore
 
       // Momentum calculation from habits
       const completedLogs = habitsRaw.filter(h => h.status === 'done' || h.completed_at);

@@ -3,6 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, BookOpen, Briefcase, Heart, Brain, Trash2, Clock } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import Modal from '../components/ui/Modal';
+import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
+import toast from '../utils/toast';
+
+/* ── Local cache helpers ─────────────────────────────────────── */
+const GOALS_KEY = 'aiimin_goals_cache_v1';
+const loadGoals = () => { try { return JSON.parse(localStorage.getItem(GOALS_KEY) || '[]'); } catch { return []; } };
+const saveGoals = (g) => localStorage.setItem(GOALS_KEY, JSON.stringify(g));
 
 /* ── Constants ─────────────────────────────────────────────── */
 const PILLARS = [
@@ -27,15 +34,6 @@ const PRIORITIES = [
   { level: 'Low', color: '#3b82f6' }
 ];
 
-const LS_KEY = 'aiimin_goals_v2';
-
-const loadGoals = () => {
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
-  catch { return []; }
-};
-
-const saveGoals = (g) => localStorage.setItem(LS_KEY, JSON.stringify(g));
-
 const daysUntil = (dateStr) => {
   if (!dateStr) return null;
   const diff = new Date(dateStr) - new Date();
@@ -43,7 +41,7 @@ const daysUntil = (dateStr) => {
 };
 
 const blankGoal = () => ({
-  id: Date.now().toString(),
+  id: 'temp_' + Date.now().toString(),
   title: '',
   pillar: 'career',
   priority: 'Medium',
@@ -57,9 +55,7 @@ const blankGoal = () => ({
 /* ── Goal Card ────────────────────────────────────────────── */
 const GoalCard = ({ goal, onUpdate, onDelete }) => {
   const pillar = PILLARS.find(p => p.key === goal.pillar) || PILLARS[0];
-  const total = goal.milestones?.length || 0;
-  const done = goal.milestones?.filter(m => m.done).length || 0;
-  const progress = total ? Math.round((done / total) * 100) : 0;
+  const progress = goal.milestones?.length ? Math.round((goal.milestones.filter(m => m.done).length / goal.milestones.length) * 100) : 0;
   const days = daysUntil(goal.targetDate);
   const statusColor = STATUS_COLORS[goal.status] || '#6b7280';
 
@@ -98,25 +94,24 @@ const GoalCard = ({ goal, onUpdate, onDelete }) => {
           </div>
           <div style={{ textAlign: 'right' }}>
             <select 
-                value={goal.status} 
-                onChange={e => onUpdate({ ...goal, status: e.target.value })}
-                style={{ 
-                    fontSize: '10px', 
-                    fontWeight: 800, 
-                    color: statusColor, 
-                    background: 'transparent', 
-                    border: 'none', 
-                    cursor: 'pointer', 
-                    outline: 'none',
-                    textTransform: 'uppercase'
-                }}
+              value={goal.status} 
+              onChange={e => onUpdate({ ...goal, status: e.target.value })}
+              style={{ background: 'none', border: 'none', color: statusColor, fontSize: '10px', fontWeight: 800, cursor: 'pointer', outline: 'none', padding: 0 }}
             >
-              {STATUS_OPTS.map(s => <option key={s} value={s}>{s}</option>)}
+              {STATUS_OPTS.map(o => <option key={o} value={o} style={{ background: '#111', color: '#fff' }}>{o}</option>)}
             </select>
           </div>
         </div>
 
-        {/* Dense Milestones */}
+        {goal.targetDate && (
+          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', fontSize: '10px', color: days !== null && days < 7 ? '#ef4444' : 'var(--color-text-3)', fontWeight: 600 }}>
+            <Clock size={10} /> 
+            {days !== null ? (days < 0 ? `Overdue by ${Math.abs(days)}d` : days === 0 ? 'Due Today' : `${days}d left`) : 'No date'}
+          </div>
+        )}
+
+
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {goal.milestones?.map((m, i) => m.text && (
             <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '2px 4px', borderRadius: '4px', background: m.done ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
@@ -261,15 +256,73 @@ const Goals = () => {
   const [filter, setFilter] = useState('all');
   const [viewMode, setViewMode] = useState('pipeline');
 
+  // Load from API on mount
   useEffect(() => {
-    setGoals(loadGoals());
+    const fetchGoals = async () => {
+      try {
+        const data = await apiGet('/api/goals');
+        setGoals(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch goals from API:', err);
+        // Fallback to local cache
+        setGoals(loadGoals());
+      }
+    };
+    fetchGoals();
   }, []);
 
-  useEffect(() => saveGoals(goals), [goals]);
+  // Save to local cache as backup
+  useEffect(() => {
+    const timer = setTimeout(() => saveGoals(goals), 500);
+    return () => clearTimeout(timer);
+  }, [goals]);
 
-  const addGoal = (g) => setGoals(p => [g, ...p]);
-  const updateGoal = (updated) => setGoals(p => p.map(g => g.id === updated.id ? updated : g));
-  const deleteGoal = (id) => setGoals(p => p.filter(g => g.id !== id));
+  const addGoal = async (g) => {
+    // Optimistic
+    const tempId = `temp_${Date.now()}`;
+    const newGoal = { ...g, id: tempId };
+    setGoals(p => [newGoal, ...p]);
+    
+    try {
+      const created = await apiPost('/api/goals', g);
+      setGoals(p => p.map(goal => goal.id === tempId ? created : goal));
+      toast.success('Goal added');
+    } catch (err) {
+      console.error('Add goal error:', err);
+      toast.error('Failed to save to server');
+      // If backend fails, keep the optimistic one and it'll sync to local cache
+    }
+  };
+
+  const updateGoal = async (updated) => {
+    // Optimistic
+    setGoals(p => p.map(g => g.id === updated.id ? updated : g));
+    
+    try {
+      // Only PUT if it's a real ID from backend (not optimistic temp id)
+      if (!String(updated.id).startsWith('temp_')) {
+        await apiPut(`/api/goals/${updated.id}`, updated);
+      }
+    } catch (err) {
+      console.error('Update goal error:', err);
+      toast.error('Sync failed');
+    }
+  };
+
+  const deleteGoal = async (id) => {
+    // Optimistic
+    setGoals(p => p.filter(g => g.id !== id));
+    
+    try {
+      if (!String(id).startsWith('temp_')) {
+        await apiDelete(`/api/goals/${id}`);
+        toast.success('Goal deleted');
+      }
+    } catch (err) {
+      console.error('Delete goal error:', err);
+      toast.error('Delete failed to sync');
+    }
+  };
 
   const baseGoals = viewMode === 'archive' ? goals.filter(g => g.status === 'Achieved') : goals.filter(g => g.status !== 'Achieved');
   const filtered = filter === 'all' ? baseGoals : baseGoals.filter(g => g.pillar === filter);

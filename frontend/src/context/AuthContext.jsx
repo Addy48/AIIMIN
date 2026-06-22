@@ -218,13 +218,32 @@ export function AuthProvider({ children }) {
     const signOut = async () => {
         try {
             try { await apiPost('/auth/logout'); } catch(e) {}
-            await supabase.auth.signOut();
+            // Run Supabase sign out, but do not await it indefinitely if it hangs
+            try {
+                await Promise.race([
+                    supabase.auth.signOut(),
+                    new Promise(resolve => setTimeout(resolve, 2000))
+                ]);
+            } catch (e) {
+                console.warn('Supabase sign out failed/timed out, clearing local session anyway');
+            }
+            
             localStorage.removeItem('aiimin_session_fallback');
             setUser(null);
             setSession(null);
             toast.success('Logged out successfully');
+            
+            // Force redirect to login just in case
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 300);
         } catch (error) {
             console.error('Error logging out:', error);
+            // Fallback clear
+            localStorage.removeItem('aiimin_session_fallback');
+            setUser(null);
+            setSession(null);
+            window.location.href = '/login';
         }
     };
 

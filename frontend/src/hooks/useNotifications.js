@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { apiDelete, apiGet, apiPatch, apiPost } from '../utils/api';
+import supabase from '../utils/supabase';
 
 export const useNotifications = () => {
     const { session } = useAuth();
@@ -28,9 +29,43 @@ export const useNotifications = () => {
         if (!session) return;
         setLoading(true);
         try {
-            const data = await apiGet('/notifications', { session, params: { limit: 30 } });
-            setNotifications(data);
-            setUnreadCount(data.filter(n => !n.read_at).length);
+            const data = await apiGet('/notifications', { session, params: { limit: 30 } }).catch(() => []);
+            
+            // Generate local alerts
+            const localNotifs = [];
+            const today = new Date().toLocaleDateString('en-CA');
+            
+            // Check daily log
+            const { data: log } = await supabase.from('daily_logs').select('id').eq('user_id', session.user.id).eq('date', today).maybeSingle();
+            if (!log) {
+                localNotifs.push({
+                    id: 'local_daily_log',
+                    type: 'commitment_miss',
+                    title: 'Daily Log Required',
+                    body: 'Your daily system check-in is pending. Log your metrics to maintain system integrity.',
+                    action_url: '/overview',
+                    created_at: new Date().toISOString(),
+                    read_at: null
+                });
+            }
+
+            // Check if it's late and sleep is missing
+            const currentHour = new Date().getHours();
+            if (currentHour >= 22) {
+                localNotifs.push({
+                    id: 'local_sleep_warning',
+                    type: 'drift_alert',
+                    title: 'System Wind-Down',
+                    body: 'It is past 22:00. Begin your wind-down protocol to ensure optimal recovery for tomorrow.',
+                    action_url: '/journal',
+                    created_at: new Date().toISOString(),
+                    read_at: null
+                });
+            }
+
+            const combined = [...localNotifs, ...(Array.isArray(data) ? data : [])];
+            setNotifications(combined);
+            setUnreadCount(combined.filter(n => !n.read_at).length);
         } catch { /* silent */ } finally {
             setLoading(false);
         }
@@ -38,6 +73,11 @@ export const useNotifications = () => {
 
     const markRead = useCallback(async (id) => {
         if (!session) return;
+        if (id.startsWith('local_')) {
+             setNotifications(prev => prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
+             setUnreadCount(c => Math.max(0, c - 1));
+             return;
+        }
         try {
             await apiPatch(`/notifications/${id}/read`, {}, { session });
             setNotifications(prev =>
@@ -58,6 +98,14 @@ export const useNotifications = () => {
 
     const dismiss = useCallback(async (id) => {
         if (!session) return;
+        if (id.startsWith('local_')) {
+             setNotifications(prev => prev.filter(n => n.id !== id));
+             setUnreadCount(prev => {
+                 const wasUnread = notifications.find(n => n.id === id && !n.read_at);
+                 return wasUnread ? Math.max(0, prev - 1) : prev;
+             });
+             return;
+        }
         try {
             await apiDelete(`/notifications/${id}`, null, { session });
             setNotifications(prev => prev.filter(n => n.id !== id));

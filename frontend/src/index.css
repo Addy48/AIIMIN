@@ -294,3 +294,47 @@ button:disabled, button[disabled] {
   padding: var(--content-pad) var(--content-pad) 100px var(--content-pad);
   animation: fadeUp 0.4s var(--ease) forwards;
 }
+
+/* ─── Mobile Responsiveness ──────────────────────────── */
+@media (max-width: 900px) {
+  /* Hide desktop nav elements on mobile */
+  .desktop-nav-links { display: none !important; }
+  .mobile-menu-btn { display: flex !important; }
+  
+  /* Reduce global padding on smaller screens */
+  :root {
+    --content-pad: 16px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Force multi-column layouts into single columns */
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Ensure charts and cards don't overflow */
+  .card, .insight-card, .nordic-card, .glass-panel {
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+@media (min-width: 901px) {
+  .mobile-menu-btn { display: none !important; }
+}
+
+/* ─── Responsive Grids ───────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+
+@media (max-width: 900px) {
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-5 {
+    grid-template-columns: 1fr !important;
+  }
+}

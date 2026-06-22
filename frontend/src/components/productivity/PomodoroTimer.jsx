@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Play, Pause, Square, RotateCcw, Flame } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useThemeContext } from '../../context/ThemeContext';
+import { apiGet, apiPut } from '../../utils/api';
+import toast from '../../utils/toast';
 
 const MODES = {
   focus: { time: 25 * 60, label: 'Deep Work', color: '#E2725B' },
@@ -17,6 +19,23 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
   const [mode, setMode] = useState('focus'); // focus, shortBreak, longBreak
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
   const [task, setTask] = useState('');
+  
+  // Goal Linking State
+  const [goals, setGoals] = useState([]);
+  const [selectedGoalId, setSelectedGoalId] = useState('');
+
+  // Fetch Goals on Mount
+  useEffect(() => {
+    const fetchGoals = async () => {
+      try {
+        const data = await apiGet('/api/goals');
+        setGoals(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.warn('Could not fetch goals for focus room:', err);
+      }
+    };
+    fetchGoals();
+  }, []);
 
   const switchMode = useCallback((newMode) => {
     setMode(newMode);
@@ -34,8 +53,23 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
       setIsActive(false);
       clearInterval(interval);
       if (mode === 'focus') {
-        setSessionsCompleted(s => s + 1);
-        if ((sessionsCompleted + 1) % 4 === 0) {
+        const newSessions = sessionsCompleted + 1;
+        setSessionsCompleted(newSessions);
+        
+        // Log Goal Progress if a goal is linked
+        if (selectedGoalId) {
+          const linkedGoal = goals.find(g => g.id === selectedGoalId);
+          if (linkedGoal) {
+            const updatedTimeSpent = (linkedGoal.timeSpent || 0) + 25;
+            apiPut(`/api/goals/${linkedGoal.id}`, { ...linkedGoal, timeSpent: updatedTimeSpent })
+              .then(() => toast.success(`Logged 25m to: ${linkedGoal.title}`))
+              .catch(() => toast.error('Failed to log time to goal'));
+          }
+        } else {
+          toast.success('Focus session completed!');
+        }
+
+        if (newSessions % 4 === 0) {
           switchMode('longBreak');
         } else {
           switchMode('shortBreak');
@@ -45,7 +79,7 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
       }
     }
     return () => clearInterval(interval);
-  }, [isActive, timeLeft, mode, sessionsCompleted, switchMode]);
+  }, [isActive, timeLeft, mode, sessionsCompleted, switchMode, selectedGoalId, goals]);
 
   const toggleTimer = () => setIsActive(!isActive);
 
@@ -92,8 +126,8 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
           />
         </div>
 
-        {/* Task Input Area */}
-        <div style={{ width: '100%', marginBottom: '40px', position: 'relative' }}>
+        {/* Task & Goal Input Area */}
+        <div style={{ width: '100%', marginBottom: '40px', position: 'relative', display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'center' }}>
           <input 
             type="text" 
             placeholder="What is your singular focus right now?" 
@@ -106,6 +140,23 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
               outline: 'none', fontFamily: 'var(--font-sans)'
             }}
           />
+          
+          <select
+             value={selectedGoalId}
+             onChange={(e) => setSelectedGoalId(e.target.value)}
+             style={{
+               background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+               border: isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--color-border)',
+               color: selectedGoalId ? text1 : text3,
+               padding: '8px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: 600,
+               outline: 'none', cursor: 'pointer', maxWidth: '300px', width: '100%'
+             }}
+          >
+            <option value="">🎯 Link to a Goal (Optional)</option>
+            {goals.map(g => (
+              <option key={g.id} value={g.id}>{g.title}</option>
+            ))}
+          </select>
         </div>
 
         {/* Timer Display */}
