@@ -1,9 +1,60 @@
 import React, { useState, useRef } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotifications';
 import { useThemeContext } from '../context/ThemeContext';
+import { useAuth } from '../hooks/useAuth';
+import { Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
+import supabase from '../utils/supabase';
+
+const SystemStatusIndicator = () => {
+  const [status, setStatus] = useState('checking');
+
+  React.useEffect(() => {
+    let mounted = true;
+    const checkHealth = async () => {
+      try {
+        const { error } = await supabase.auth.getSession();
+        if (mounted) setStatus(error ? 'error' : 'online');
+      } catch {
+        if (mounted) setStatus('error');
+      }
+    };
+    checkHealth();
+    const int = setInterval(checkHealth, 30000);
+    return () => { mounted = false; clearInterval(int); };
+  }, []);
+
+  const color = status === 'online' ? '#10B981' : status === 'error' ? '#EF4444' : '#F59E0B';
+  const text = status === 'online' ? 'OS Online' : status === 'error' ? 'System Error' : 'Checking...';
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '6px',
+      padding: '6px 12px', background: 'rgba(255,255,255,0.03)',
+      border: '1px solid var(--color-border)', borderRadius: '20px',
+      cursor: 'default'
+    }} title={text}>
+      <div style={{
+        width: '6px', height: '6px', borderRadius: '50%',
+        background: color, boxShadow: `0 0 8px ${color}`,
+        animation: status === 'online' ? 'pulse 2s infinite' : 'none'
+      }} />
+      <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-2)', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+        {text}
+      </span>
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+    </div>
+  );
+};
 
 
 
@@ -26,8 +77,16 @@ const NAV_LINKS = [
 const Navbar = ({ user }) => {
   const { notifications, unreadCount, loading, fetchAll, markRead, markAllRead, dismiss } = useNotifications();
   const { theme, toggleTheme } = useThemeContext();
+  const { signOut } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const bellRef = useRef(null);
+  const location = useLocation();
+
+  // Close mobile menu on route change
+  React.useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const userInitial = (user?.full_name?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
   const isDark = theme === 'vercel' || theme === 'midnight';
@@ -73,8 +132,8 @@ const Navbar = ({ user }) => {
           </div>
         </div>
 
-        {/* CENTER: Nav links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        {/* CENTER: Nav links (Desktop) */}
+        <div className="desktop-nav-links" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           {NAV_LINKS.filter(link => !(user?.isGuest && link.hideFromGuest)).map(({ to, label }) => (
             <NavLink
               key={`${to}-${label}`}
@@ -99,6 +158,8 @@ const Navbar = ({ user }) => {
 
         {/* RIGHT: Actions */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+
+          <SystemStatusIndicator />
 
           {/* Theme toggle */}
           <button
@@ -142,8 +203,95 @@ const Navbar = ({ user }) => {
           >
             {userInitial}
           </Link>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              width: '36px', height: '36px', borderRadius: '8px', background: 'transparent',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-1)', cursor: 'pointer',
+              display: 'none', alignItems: 'center', justifyContent: 'center',
+            }}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            style={{
+              position: 'fixed',
+              top: 'var(--nav-height)',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'var(--color-base)',
+              zIndex: 999,
+              overflowY: 'auto',
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}
+          >
+            {NAV_LINKS.filter(link => !(user?.isGuest && link.hideFromGuest)).map(({ to, label }) => (
+              <NavLink
+                key={`${to}-${label}-mobile`}
+                to={to}
+                style={({ isActive }) => ({
+                  fontSize: '18px',
+                  fontWeight: isActive ? 700 : 500,
+                  fontFamily: 'var(--font-sans)',
+                  color: isActive ? 'var(--color-text-1)' : 'var(--color-text-2)',
+                  textDecoration: 'none',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  background: isActive ? 'var(--color-elevated)' : 'transparent',
+                  border: isActive ? '1px solid var(--color-border-lit)' : '1px solid transparent',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                })}
+              >
+                {label}
+              </NavLink>
+            ))}
+            
+            <div style={{ marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid var(--color-border)' }}>
+               <button
+                 onClick={async () => {
+                   setMobileMenuOpen(false);
+                   await signOut();
+                 }}
+                 style={{
+                   width: '100%',
+                   padding: '16px',
+                   borderRadius: '12px',
+                   background: 'rgba(239, 68, 68, 0.1)',
+                   color: 'var(--color-danger, #ef4444)',
+                   border: '1px solid rgba(239, 68, 68, 0.2)',
+                   fontWeight: '600',
+                   fontSize: '16px',
+                   cursor: 'pointer'
+                 }}
+               >
+                 Sign Out
+               </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </>
   );

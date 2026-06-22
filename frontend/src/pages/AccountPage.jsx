@@ -8,6 +8,7 @@ import { apiDelete, apiGet, apiPatch } from '../utils/api';
 import { useThemeContext } from '../context/ThemeContext';
 import PageHeader from '../components/layout/PageHeader';
 import Modal from '../components/ui/Modal';
+import SystemHealth from '../components/dashboard/SystemHealth';
 
 const Section = ({ title, children }) => (
     <div style={{ marginBottom: '24px' }}>
@@ -137,6 +138,27 @@ export default function AccountPage() {
     const [execWindow, setExecWindow] = useState(() => {
         return Number(localStorage.getItem('aiimin_execution_window')) || 61;
     });
+
+    const [deviceInfo, setDeviceInfo] = useState({ os: 'Unknown OS', browser: 'Unknown Browser', isMobile: false });
+
+    useEffect(() => {
+        const ua = navigator.userAgent || '';
+        let os = 'Unknown OS';
+        let isMobile = false;
+        if (/Mac/i.test(ua)) os = 'Mac OS';
+        else if (/Win/i.test(ua)) os = 'Windows';
+        else if (/Linux/i.test(ua)) os = 'Linux';
+        if (/Android/i.test(ua)) { os = 'Android'; isMobile = true; }
+        else if (/iPhone|iPad|iPod/i.test(ua)) { os = 'iOS'; isMobile = true; }
+
+        let browser = 'Unknown Browser';
+        if (/Chrome/i.test(ua)) browser = 'Chrome';
+        else if (/Safari/i.test(ua)) browser = 'Safari';
+        else if (/Firefox/i.test(ua)) browser = 'Firefox';
+        else if (/Edge/i.test(ua)) browser = 'Edge';
+
+        setDeviceInfo({ os, browser, isMobile });
+    }, []);
 
     useEffect(() => {
         if (!session) {
@@ -286,10 +308,12 @@ export default function AccountPage() {
                                     )}
                                 </div>
                             </Row>
-                            <Row label="Username" border={true}>
-                                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>
-                                    {profile?.username ? `@${profile.username}` : 'Not set'}
-                                </span>
+                            <Row label="OS ID" border={true}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-1)', background: 'var(--bg-surface)', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--border)', letterSpacing: '0.05em' }}>
+                                        {profile?.os_id || profile?.username || 'GEN-0000'}
+                                    </span>
+                                </div>
                             </Row>
                             <Row label="Timezone" border={true}>
                                 <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-2)' }}>
@@ -340,7 +364,7 @@ export default function AccountPage() {
                                     <input
                                         value={draftProfile?.username || ''}
                                         onChange={e => setDraftProfile(p => ({ ...p, username: e.target.value.toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 20) }))}
-                                        placeholder="Username (e.g. HASMAT99)"
+                                        placeholder="OS ID / Username (e.g. AU48)"
                                         style={{
                                             padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
                                             border: '1px solid var(--border)', background: 'var(--bg-elevated)',
@@ -385,6 +409,12 @@ export default function AccountPage() {
                                     </div>
                                 </div>
                             )}
+                        </Section>
+
+                        <Section title="System Diagnostics">
+                            <div style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}>
+                                <SystemHealth />
+                            </div>
                         </Section>
 
                         <Section title="Appearance">
@@ -494,6 +524,40 @@ export default function AccountPage() {
                             </div>
                         </Section>
 
+                        <Section title="Account Actions">
+                            <div style={{ padding: '24px', background: 'var(--bg-elevated)', borderRadius: '12px' }}>
+                                <button onClick={async () => {
+                                    await signOut();
+                                    window.location.href = '/login';
+                                }} style={{
+                                    width: '100%', padding: '14px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--danger, #ef4444)',
+                                    border: '1px solid rgba(239, 68, 68, 0.2)', borderRadius: '12px', fontSize: '15px', fontWeight: 800, cursor: 'pointer',
+                                    transition: 'all 0.2s ease', marginBottom: '16px'
+                                }}>
+                                    Sign Out
+                                </button>
+                                <button onClick={() => setDeleteConfirm(deleteConfirm === 'DELETE' ? '' : 'DELETE')} style={{
+                                    width: '100%', padding: '14px', background: 'transparent', color: 'var(--text-3)',
+                                    border: '1px solid var(--border)', borderRadius: '12px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                                }}>
+                                    Delete Account
+                                </button>
+                                {deleteConfirm === 'DELETE' && (
+                                    <div style={{ marginTop: '12px', padding: '16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '12px' }}>
+                                        <p style={{ color: 'var(--danger)', fontSize: '13px', fontWeight: 700, marginBottom: '12px', lineHeight: 1.5 }}>
+                                            This action is permanent and cannot be undone. All your data will be erased.
+                                        </p>
+                                        <button onClick={handleDelete} disabled={deleting} style={{
+                                            padding: '10px 16px', background: 'var(--danger)', color: 'white', border: 'none', borderRadius: '8px',
+                                            fontSize: '13px', fontWeight: 800, cursor: 'pointer', opacity: deleting ? 0.5 : 1
+                                        }}>
+                                            {deleting ? 'Deleting...' : 'Confirm Deletion'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </Section>
+
                         <Section title="Reports &amp; Analytics">
                             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <div style={{ fontSize: '13px', color: 'var(--text-3)', lineHeight: 1.5, fontWeight: 500 }}>
@@ -580,27 +644,15 @@ export default function AccountPage() {
                             <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--bg-elevated)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                        <div style={{ fontSize: '24px' }}>💻</div>
+                                        <div style={{ fontSize: '24px' }}>{deviceInfo.isMobile ? '📱' : '💻'}</div>
                                         <div>
-                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>MacBook Pro (Mac OS)</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Chrome • New York, USA</div>
+                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Current Device ({deviceInfo.os})</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>{deviceInfo.browser} • Active</div>
                                         </div>
                                     </div>
                                     <div style={{ fontSize: '12px', fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 12px', borderRadius: '8px' }}>
                                         Current Session
                                     </div>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--bg-elevated)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                        <div style={{ fontSize: '24px' }}>📱</div>
-                                        <div>
-                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>iPhone 14 Pro (iOS)</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px' }}>Safari • New York, USA</div>
-                                        </div>
-                                    </div>
-                                    <button style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-2)', background: 'var(--bg-surface)', border: '1px solid var(--border)', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer' }}>
-                                        Revoke
-                                    </button>
                                 </div>
                             </div>
                         </Section>
@@ -640,22 +692,34 @@ export default function AccountPage() {
                                         </div>
                                         <div>
                                             <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Google</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>Connected</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>
+                                                {session?.user?.app_metadata?.providers?.includes('google') ? 'Connected' : 'Not connected'}
+                                            </div>
                                         </div>
                                     </div>
-                                    <button style={{ padding: '8px 16px', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-2)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Disconnect</button>
+                                    {session?.user?.app_metadata?.providers?.includes('google') ? (
+                                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 12px', borderRadius: '8px' }}>Active</div>
+                                    ) : (
+                                        <button style={{ padding: '8px 16px', background: 'var(--text-1)', border: 'none', borderRadius: '8px', color: 'var(--bg-primary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Connect</button>
+                                    )}
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', border: '1px solid var(--border)', borderRadius: '12px', background: 'var(--bg-surface)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <div style={{ width: '32px', height: '32px', background: '#000', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>
+                                        <div style={{ width: '32px', height: '32px', background: 'var(--text-1)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--bg-primary)"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
                                         </div>
                                         <div>
-                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Facebook</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>Not connected</div>
+                                            <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>Email / Password</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '2px' }}>
+                                                {session?.user?.app_metadata?.providers?.includes('email') ? session?.user?.email : 'Not connected'}
+                                            </div>
                                         </div>
                                     </div>
-                                    <button style={{ padding: '8px 16px', background: 'var(--text-1)', border: 'none', borderRadius: '8px', color: 'var(--bg-primary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Connect</button>
+                                    {session?.user?.app_metadata?.providers?.includes('email') ? (
+                                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '6px 12px', borderRadius: '8px' }}>Active</div>
+                                    ) : (
+                                        <button style={{ padding: '8px 16px', background: 'var(--text-1)', border: 'none', borderRadius: '8px', color: 'var(--bg-primary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Connect</button>
+                                    )}
                                 </div>
                             </div>
                         </Section>

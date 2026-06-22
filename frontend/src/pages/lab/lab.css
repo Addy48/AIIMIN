@@ -10,6 +10,7 @@
     max-width: var(--content-max);
     margin: 0 auto;
     min-height: 100vh;
+    overflow-y: auto;
 }
 
 /* ── Header ─────────────────────────────────────── */

@@ -14,6 +14,8 @@ import TechSimulator from '../components/lab/TechSimulator';
 import STARMethod from '../components/lab/STARMethod';
 import DomainFlashcards from '../components/lab/DomainFlashcards';
 import SystemDesign from '../components/lab/SystemDesign';
+import AddictionTracker from '../components/lab/AddictionTracker';
+import PersonalitySwipe from '../components/lab/PersonalitySwipe';
 import { calculateLifeScore } from '../utils/lifeScoreEngine';
 import './lab/lab.css';
 
@@ -87,7 +89,8 @@ export default function LabFullPage() {
     "Mental Models & Focus": [
       { key: "decision", emoji: "🤔", label: "Decision Matrix", desc: "De-bias choices via mental models", color: "#3B82F6" },
       { key: "dopamine", emoji: "📉", label: "Dopamine Detox", desc: "Stimulus tracking & baseline recovery", color: "#10B981" },
-      { key: "reading", emoji: "📖", label: "Reading Log", desc: "Log books, articles & ratings", color: "#8B5CF6" }
+      { key: "addiction", emoji: "🔒", label: "Addiction Tracker", desc: "Private craving & trigger logging", color: "#EF4444" },
+      { key: "personality", emoji: "🧬", label: "Personality AI", desc: "Behavioral swiping insights", color: "#F43F5E" }
     ],
     "Cognitive Training": [
       { key: "typing",     emoji: "⌨️",  label: "Typing Speed",   desc: "WPM & accuracy benchmark",       color: "#3B82F6" },
@@ -167,6 +170,8 @@ export default function LabFullPage() {
               {activeModule === 'star'        && <STARMethod onClose={() => setActiveModule(null)} />}
               {activeModule === 'flashcards'  && <DomainFlashcards onClose={() => setActiveModule(null)} />}
               {activeModule === 'sysdesign'   && <SystemDesign onClose={() => setActiveModule(null)} />}
+              {activeModule === 'addiction'   && <AddictionTracker onClose={() => setActiveModule(null)} />}
+              {activeModule === 'personality' && <PersonalitySwipe onClose={() => setActiveModule(null)} />}
             </div>
           </div>
         </div>

@@ -1,10 +1,10 @@
 import React from 'react';
 import DailyLogForm from '../DailyLogForm';
-import PomodoroTimer from '../PomodoroTimer';
+import PomodoroTimer from '../productivity/PomodoroTimer';
 import MoodTracker from '../MoodTracker';
 import Streaks from '../Streaks';
 import MoneyManager from '../MoneyManager';
-import Reports from '../Reports';
+// Removed Reports import
 import QuickCapture from '../dashboard/QuickCapture';
 import WinsEngine from '../WinsEngine';
 import MomentumBar from '../MomentumBar';
@@ -20,8 +20,8 @@ import SleepAnalytics from '../SleepAnalytics';
 import StatCard from '../dashboard/StatCard';
 import ExpandedStatPanel from '../dashboard/ExpandedStatPanel';
 import DesktopXPBar from '../dashboard/DesktopXPBar';
-import DailyQuests from '../mobile/DailyQuests';
-import AchievementsGallery from '../mobile/AchievementsGallery';
+// Removed DailyQuests import
+// Removed AchievementsGallery import
 import DailyQuote from '../dashboard/DailyQuote';
 import IdentityStack from '../identity/IdentityStack';
 import AspirationMeters from '../identity/AspirationMeters';
@@ -150,14 +150,14 @@ export function OverviewSection({ user, firstName, statsData, expandedCard, setE
             <SystemHealthRings scores={lhsData?.systemScores} trends={trendMap} drift={reportData?.stabilityAndDrift} />
             <SystemBottleneckCard scores={lhsData?.systemScores} drift={reportData?.stabilityAndDrift || []} />
             <MomentumBar user={user} />
-            <DailyQuests dateStr={todayStr} logData={desktopLogSnapshot} />
+            {/* DailyQuests removed */}
             <DailyQuote logSnapshot={desktopLogSnapshot} />
 
             <div style={{ marginTop: '24px' }}>
                 <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.14em', marginBottom: '12px' }}>
                     Daily Pulse
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }} className="metrics-row">
+                <div className="metrics-row grid-5">
                     {statsData.map((stat, index) => (
                         <StatCard key={stat.id} stat={stat} index={index} expandedCard={expandedCard} setExpandedCard={setExpandedCard} />
                     ))}
@@ -241,7 +241,7 @@ export function ReflectionSection({ user, recentLogs, pomoCyclesTotal, dsaCountT
             <SectionLabel icon="👁">Reflection System</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
                 <MoodTracker user={user} onMoodChange={() => { }} />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                <div className="grid-2">
                     <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
                         <QuickCapture user={user} />
                     </div>
@@ -304,14 +304,14 @@ export function InsightsSection({ lhsData, reportData, recentLogs, showReview, o
                 </div>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            <div className="grid-2">
                 {/* ── Cognitive Mastery ── */}
                 <section className="glass-panel" style={{ padding: '32px', borderRadius: '24px', border: `1px solid ${border}`, background: 'var(--bg-card)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                         <h3 style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: text1, margin: 0 }}>Cognitive Logic</h3>
                         <div style={{ padding: '4px 10px', borderRadius: '20px', background: '#3B82F615', color: '#3B82F6', fontSize: '11px', fontWeight: 800 }}>Lvl 14</div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+                    <div className="grid-2" style={{ marginBottom: '24px' }}>
                         <div style={{ padding: '20px', borderRadius: '16px', background: 'var(--bg-elevated)', border: `1px solid ${border}` }}>
                             <div style={{ fontSize: '10px', color: text3, textTransform: 'uppercase', marginBottom: '8px', fontWeight: 700 }}>Processing Speed</div>
                             <div style={{ fontSize: '24px', fontWeight: 800 }}>84 <span style={{ fontSize: '12px', color: text3 }}>WPM</span></div>
@@ -384,7 +384,7 @@ export function InsightsSection({ lhsData, reportData, recentLogs, showReview, o
                     </div>
                  </div>
                  
-                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
+                 <div className="grid-3">
                     <div style={{ padding: '24px', borderRadius: '20px', background: 'var(--bg-elevated)', border: `1px solid ${border}`, textAlign: 'center' }}>
                         <div style={{ fontSize: '32px', marginBottom: '12px' }}>😴</div>
                         <div style={{ fontSize: '11px', color: text3, textTransform: 'uppercase', fontWeight: 800, marginBottom: '8px' }}>Sleep Efficiency</div>
@@ -436,10 +436,10 @@ export function ReportsSection({ user }) {
         <div id="sys-reports" style={{ scrollMarginTop: '100px' }}>
             <SectionLabel icon="📄">Reports</SectionLabel>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px' }}>
-                <Reports user={user} />
-                <PDFReportGenerator />
+                {/* Reports removed */}
+                <PDFReportGenerator user={user} />
                 <div style={{ marginTop: '24px' }}>
-                    <AchievementsGallery user={user} />
+                    {/* AchievementsGallery removed */}
                 </div>
             </div>
         </div>
