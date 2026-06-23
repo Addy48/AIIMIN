@@ -655,7 +655,6 @@ export default function Placements() {
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-3)', marginBottom: '24px' }}>{res.type}</div>
                 <div style={{ marginTop: 'auto' }}>
-)}
                   <a href={res.url} target="_blank" rel="noreferrer" style={{ fontSize: '13px', color: 'var(--color-rust)', textDecoration: 'none', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     Open Resource ↗
                   </a>

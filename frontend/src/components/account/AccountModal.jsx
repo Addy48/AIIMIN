@@ -97,7 +97,7 @@ const ChangePassword = () => {
 };
 
 const AccountModal = ({ isOpen, onClose }) => {
-    const { session, signOut } = useAuth();
+    const { user, session, signOut } = useAuth();
     const { theme, setTheme } = useThemeContext();
     const [profile, setProfile] = useState(null);
     const [draftProfile, setDraftProfile] = useState(null);
@@ -117,15 +117,15 @@ const AccountModal = ({ isOpen, onClose }) => {
         if (!isOpen || !session) return;
         setLoading(true);
         apiGet('/account/profile', { session }).then((p) => {
-            const fallbackName = p?.full_name || p?.username || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'User';
+            const fallbackName = p?.full_name || p?.username || user?.username || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'User';
             const fallbackTimezone = p?.timezone || session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-            const normalizedProfile = { ...p, full_name: fallbackName, username: p?.username || '', timezone: fallbackTimezone };
+            const normalizedProfile = { ...p, full_name: fallbackName, username: p?.username || user?.username || session?.user?.user_metadata?.username || '', timezone: fallbackTimezone };
             setProfile(normalizedProfile);
             setDraftProfile(normalizedProfile);
         }).catch(err => {
             console.error('[AccountModal] fetch error:', err);
         }).finally(() => setLoading(false));
-    }, [isOpen, session]);
+    }, [isOpen, session, user]);
 
     // Prevent body scroll when modal is open
     useEffect(() => {

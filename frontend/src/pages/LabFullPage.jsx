@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { supabase } from '../utils/supabase';
-import SpeakingLogger from '../components/lab/SpeakingLogger';
+import VocalMastery from '../components/lab/VocalMastery';
 import TypingTest from '../components/lab/TypingTest';
 import DecisionMatrix from '../components/lab/DecisionMatrix';
 import DopamineProtocol from '../components/lab/DopamineProtocol';
@@ -18,6 +18,8 @@ import AddictionTracker from '../components/lab/AddictionTracker';
 import PersonalitySwipe from '../components/lab/PersonalitySwipe';
 import { calculateLifeScore } from '../utils/lifeScoreEngine';
 import './lab/lab.css';
+
+import GrowthLoop from '../components/lab/GrowthLoop';
 
 /* ─────────────────────────────────────────────────────────────
    LabFullPage — reads directly from Supabase, no backend needed
@@ -48,7 +50,16 @@ export default function LabFullPage() {
     }
   }, [location.search]);
 
-
+  // Hook into popstate to update activeModule on browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const mod = params.get('module');
+      setActiveModule(mod || null);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const cardBg = 'var(--color-surface)';
   const border = 'var(--color-border)';
@@ -98,7 +109,7 @@ export default function LabFullPage() {
       { key: "quant", emoji: "📐", label: "Quantitative Maths", desc: "Speed math for screening rounds", color: "#F97316" }
     ],
     "Interview Prep": [
-      { key: "speaking",   emoji: "🎙️", label: "Speaking Logger", desc: "60-sec vocal response & review", color: "#8B5CF6" },
+      { key: "speaking",   emoji: "🎙️", label: "Vocal Mastery", desc: "60-sec vocal response & review", color: "#8B5CF6" },
       { key: "star", emoji: "⭐", label: "STAR Method", desc: "Behavioral interview storytelling", color: "#EAB308" },
       { key: "resume", emoji: "📄", label: "Resume ATS Matcher", desc: "Match your resume against Job Descriptions", color: "#6366F1" }
     ],
@@ -112,54 +123,121 @@ export default function LabFullPage() {
   const modules = Object.values(categorizedModules).flat();
 
   return (
-    <div style={{ flex: 1 }}>
-      <div style={{ marginBottom: "36px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div>
-          <div style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: text3, marginBottom: "8px" }}>
-            Lab · Personal Development
-          </div>
-          <h1 style={{ font: "var(--text-hero)", color: text1, margin: 0, letterSpacing: "-0.02em" }}>
-            Iteration on self.
-          </h1>
-        </div>
-      </div>
-
-      {activeModule ? (
-        <div style={{ animation: 'fadeIn 0.2s ease-out', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 140px)' }}>
-          {/* Back to Lab bar */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexShrink: 0 }}>
-            <div style={{ fontSize: '18px', fontWeight: 800, color: text1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {modules.find(m => m.key === activeModule)?.emoji} {modules.find(m => m.key === activeModule)?.label}
+    <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', minHeight: 'calc(100vh - 120px)' }}>
+      {/* Sidebar Navigation */}
+      {!activeModule && (
+        <div style={{ 
+          width: '260px', 
+          flexShrink: 0, 
+          position: 'sticky', 
+          top: '80px', 
+          height: 'calc(100vh - 120px)', 
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '24px',
+          paddingBottom: '120px',
+          borderRight: `1px solid ${border}`,
+          paddingRight: '20px'
+        }}>
+          <div>
+            <div style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: text3, marginBottom: "8px" }}>
+              Personal Development
             </div>
-            <button
+            <h1 style={{ font: "var(--text-hero)", color: text1, margin: 0, letterSpacing: "-0.02em", fontSize: '32px' }}>
+              The Lab.
+            </h1>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <SidebarButton 
+              active={!activeModule} 
               onClick={() => {
                 setActiveModule(null);
                 const newUrl = new URL(window.location);
                 newUrl.searchParams.delete('module');
                 window.history.pushState({}, '', newUrl);
-              }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                borderRadius: '12px', padding: '10px 18px',
-                color: 'var(--text-1)', cursor: 'pointer', fontSize: '13px', fontWeight: 700,
-                transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.12)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
-            >
-              Back to Lab
-            </button>
+              }} 
+              emoji="📊" 
+              label="Overview" 
+              color="#3B82F6"
+            />
           </div>
 
-          <div style={{
-            background: cardBg, border: `1px solid ${border}`,
-            borderRadius: '16px', overflow: 'hidden', flex: 1, minHeight: 0,
-            boxShadow: '0 20px 40px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column'
-          }}>
-            <div style={{ padding: '0', flex: 1, height: '100%', overflowY: 'auto', minHeight: 0 }}>
+          {Object.entries(categorizedModules).map(([category, mods]) => (
+            <div key={category}>
+              <div style={{ marginBottom: "8px", fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ width: '6px', height: '6px', background: 'var(--color-accent)', borderRadius: '50%' }} /> {category}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {mods.map(m => (
+                  <SidebarButton 
+                    key={m.key} 
+                    active={activeModule === m.key} 
+                    onClick={() => {
+                      setActiveModule(m.key);
+                      const newUrl = new URL(window.location);
+                      newUrl.searchParams.set('module', m.key);
+                      window.history.pushState({}, '', newUrl);
+                    }} 
+                    emoji={m.emoji} 
+                    label={m.label} 
+                    color={m.color}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div style={{ 
+        flex: 1, 
+        minWidth: 0, 
+        ...(activeModule ? { minHeight: 'calc(100vh - 120px)' } : { height: 'calc(100vh - 120px)', overflowY: 'auto' }),
+        paddingRight: activeModule ? '0' : '20px', 
+        paddingBottom: '60px' 
+      }}>
+        {activeModule ? (
+          <div style={{ animation: 'fadeIn 0.2s ease-out' }}>
+              {/* Unified Back to Lab Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', paddingBottom: '24px', borderBottom: `1px solid ${border}` }}>
+                <button 
+                  onClick={() => {
+                    setActiveModule(null);
+                    const newUrl = new URL(window.location);
+                    newUrl.searchParams.delete('module');
+                    window.history.pushState({}, '', newUrl);
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '10px 20px', borderRadius: '99px',
+                    background: 'var(--color-surface)', border: `1px solid ${border}`,
+                    color: text1, fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-elevated)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  Back to Lab
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {(() => {
+                    const modData = modules.find(m => m.key === activeModule);
+                    return modData ? (
+                      <>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: modData.color, boxShadow: `0 0 10px ${modData.color}` }} />
+                        <span style={{ fontSize: '16px', fontWeight: 700, color: text1, letterSpacing: '-0.01em' }}>{modData.label}</span>
+                      </>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+              
               {activeModule === 'typing'      && <TypingTest userId={user.id} onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
-              {activeModule === 'speaking'    && <SpeakingLogger onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
+              {activeModule === 'speaking'    && <VocalMastery onComplete={() => fetchStats()} onClose={() => setActiveModule(null)} />}
               {activeModule === 'decision'    && <DecisionMatrix onBack={() => setActiveModule(null)} />}
               {activeModule === 'dopamine'    && <DopamineProtocol onBack={() => setActiveModule(null)} />}
               {activeModule === 'reading'     && <ReadingLog userId={user.id} isDark={isDark} onClose={() => { fetchStats(); setActiveModule(null); }} />}
@@ -172,66 +250,71 @@ export default function LabFullPage() {
               {activeModule === 'sysdesign'   && <SystemDesign onClose={() => setActiveModule(null)} />}
               {activeModule === 'addiction'   && <AddictionTracker onClose={() => setActiveModule(null)} />}
               {activeModule === 'personality' && <PersonalitySwipe onClose={() => setActiveModule(null)} />}
-            </div>
           </div>
-        </div>
-      ) : (
-        <>
-          {!loading && typingStats && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "32px" }}>
-              {[
-                { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#3B82F6" },
-                { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#22C55E" },
-                { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#F59E0B" },
-                { label: "Life Score", value: lifeScore?.score ?? "—", color: "#8B5CF6", desc: lifeScore?.delta >= 0 ? `+${lifeScore?.delta}` : lifeScore?.delta },
-              ].map(stat => (
-                <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "10px", padding: "16px", borderTop: `3px solid ${stat.color}` }}>
-                  <div style={{ fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{stat.label}</div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
-                    <div style={{ fontSize: "22px", fontWeight: 700, color: text1, letterSpacing: "-0.02em", lineHeight: 1, textTransform: "capitalize" }}>{stat.value}</div>
-                    {stat.desc && <div style={{ fontSize: "11px", fontWeight: 600, color: stat.desc.startsWith('+') ? '#22C55E' : '#EF4444' }}>{stat.desc}</div>}
+        ) : (
+          <div style={{ animation: 'fadeIn 0.2s ease-out' }}>
+            <GrowthLoop />
+
+            <h2 style={{ fontSize: '24px', fontWeight: 800, color: text1, margin: '0 0 24px 0', letterSpacing: '-0.02em' }}>
+              Overview & Analytics
+            </h2>
+
+            {!loading && typingStats && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
+                {[
+                  { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#3B82F6" },
+                  { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#22C55E" },
+                  { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#F59E0B" },
+                  { label: "Life Score", value: lifeScore?.score ?? "—", color: "#8B5CF6", desc: lifeScore?.delta >= 0 ? `+${lifeScore?.delta}` : lifeScore?.delta },
+                ].map(stat => (
+                  <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "12px", padding: "20px", borderTop: `4px solid ${stat.color}`, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                    <div style={{ fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{stat.label}</div>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
+                      <div style={{ fontSize: "28px", fontWeight: 800, color: text1, letterSpacing: "-0.02em", lineHeight: 1, textTransform: "capitalize" }}>{stat.value}</div>
+                      {stat.desc && <div style={{ fontSize: "12px", fontWeight: 600, color: stat.desc.toString().startsWith('+') ? '#22C55E' : '#EF4444' }}>{stat.desc}</div>}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-            {Object.entries(categorizedModules).map(([category, mods]) => (
-              <div key={category}>
-                <div style={{ marginBottom: "16px", fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', background: 'var(--color-accent)', borderRadius: '50%' }} /> {category}
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "14px" }}>
-                  {mods.map(m => (
-                    <button key={m.key} onClick={() => {
-                      setActiveModule(m.key);
-                      const newUrl = new URL(window.location);
-                      newUrl.searchParams.set('module', m.key);
-                      window.history.pushState({}, '', newUrl);
-                    }}
-                      style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "14px", padding: "24px", textAlign: "left", cursor: "pointer", transition: "all 150ms ease", borderLeft: `4px solid ${m.color}` }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-                      <div style={{ fontSize: "26px", marginBottom: "12px" }}>{m.emoji}</div>
-                      <div style={{ fontSize: "14px", fontWeight: 700, color: text1, marginBottom: "5px" }}>{m.label}</div>
-                      <div style={{ fontSize: "12px", color: text2 }}>{m.desc}</div>
-                    </button>
-                  ))}
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )}
 
-          {!loading && typingStats && typingStats.totalTests > 0 && (
-            <div style={{ marginTop: "32px" }}>
-              <div style={{ fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>Recent Typing Tests</div>
-              <TypingHistory userId={user.id} isDark={isDark} cardBg={cardBg} border={border} text1={text1} text2={text2} text3={text3} />
-            </div>
-          )}
-        </>
-      )}
+            {!loading && typingStats && typingStats.totalTests > 0 && (
+              <div>
+                <div style={{ fontSize: "12px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>Recent Typing Tests</div>
+                <TypingHistory userId={user.id} isDark={isDark} cardBg={cardBg} border={border} text1={text1} text2={text2} text3={text3} />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
+  );
+}
+
+function SidebarButton({ active, onClick, emoji, label, color }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '12px',
+        padding: '10px 14px', borderRadius: '8px', border: 'none',
+        background: active ? `color-mix(in srgb, ${color} 15%, transparent)` : 'transparent',
+        color: active ? color : 'var(--color-text-2)',
+        cursor: 'pointer', textAlign: 'left',
+        transition: 'all 0.15s',
+        fontWeight: active ? 700 : 500,
+        fontSize: '14px'
+      }}
+      onMouseEnter={e => {
+        if (!active) e.currentTarget.style.background = 'var(--color-elevated)';
+      }}
+      onMouseLeave={e => {
+        if (!active) e.currentTarget.style.background = 'transparent';
+      }}
+    >
+      <span style={{ fontSize: '16px', filter: active ? 'none' : 'grayscale(0.5)', opacity: active ? 1 : 0.7 }}>{emoji}</span>
+      <span>{label}</span>
+    </button>
   );
 }
 

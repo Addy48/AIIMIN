@@ -8,6 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import toast from '../utils/toast';
 import { useAudio } from '../context/AudioContext';
 
+import { useAuth } from '../hooks/useAuth';
+
 // ── Session presets ──────────────────────────────────────────────────────────
 const PRESETS = [
   { label: '15m', work: 15, break: 3, long: 10 },
@@ -154,13 +156,13 @@ const LiveTimerDisplay = ({ status, phase, totalSeconds, onComplete, phaseInfo }
       </AnimatePresence>
       <div style={{ 
         marginTop: '40px',
-        fontSize: status === 'running' ? '140px' : '100px', 
+        fontSize: status === 'running' ? '180px' : '130px', 
         fontWeight: 200, 
-        fontFamily: 'var(--font-mono, monospace)', 
+        fontFamily: 'var(--font-sans)', 
         letterSpacing: '-0.06em', 
         color: status === 'dead' ? '#EF4444' : 'var(--color-text-1)', 
         lineHeight: 1, 
-        textShadow: status === 'running' ? `0 0 60px ${phaseInfo.color}60` : 'none', 
+        textShadow: status === 'running' ? `0 0 80px ${phaseInfo.color}80, 0 0 20px ${phaseInfo.color}40` : 'none', 
         transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)' 
       }}>
         {mins}:{secs}
@@ -180,6 +182,7 @@ const LiveTimerDisplay = ({ status, phase, totalSeconds, onComplete, phaseInfo }
 // ── Main FocusRoom Component ─────────────────────────────────────────────────
 export default function FocusRoom() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [preset, setPreset] = useState(PRESETS[1]); // 25m default
   const [phase, setPhase] = useState('work'); // work | short | long
   const [cycleCount, setCycleCount] = useState(0);
@@ -292,13 +295,15 @@ export default function FocusRoom() {
     <div style={{
       position: 'relative',
       minHeight: 'calc(100vh - var(--nav-height) - 40px)',
-      backgroundColor: 'var(--color-card)',
+      backgroundColor: 'var(--color-bg)',
+      backgroundImage: `radial-gradient(circle at 50% 0%, ${phaseInfo.bgGlow} 0%, var(--color-bg) 100%)`,
       color: 'var(--color-text-1)',
       overflow: 'hidden', display: 'flex', flexDirection: 'column',
-      borderRadius: '24px',
+      borderRadius: '32px',
       border: '1px solid var(--color-border)',
-      boxShadow: 'var(--shadow-lg)',
-      margin: '0 auto', width: '100%'
+      boxShadow: `0 20px 60px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.08), inset 0 0 80px ${phaseInfo.bgGlow}`,
+      margin: '0 auto', width: '100%',
+      transition: 'background-image 1s ease, box-shadow 1s ease'
     }}>
       {/* ── AMBIENT DEEP GLOW BACKGROUND ── */}
       <motion.div 
@@ -322,10 +327,15 @@ export default function FocusRoom() {
       }} />
 
       {/* ── TOP NAV ── */}
-      <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '40px 56px' }}>
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '48px 64px' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.3em', color: 'var(--color-text-3)' }}>Immersion</div>
-          <div style={{ fontSize: '24px', fontWeight: 400, letterSpacing: '-0.03em', color: 'var(--color-text-1)', fontFamily: 'var(--font-serif, serif)' }}>Flow Engine</div>
+          <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.3em', color: phaseInfo.color, opacity: 0.9, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ height: 6, width: 6, borderRadius: '50%', background: phaseInfo.color, boxShadow: `0 0 10px ${phaseInfo.color}`, animation: status === 'running' ? 'pulse 2s infinite' : 'none' }} />
+            Immersion Engine
+          </div>
+          <div style={{ fontSize: '28px', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--color-text-1)', fontFamily: 'var(--font-serif)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            Let's build something extraordinary today, {user?.full_name?.split(' ')[0] || 'Architect'}.
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
@@ -343,22 +353,22 @@ export default function FocusRoom() {
           )}
           
           {/* Stats */}
-          <div style={{ display: 'flex', gap: '32px', background: 'var(--color-surface)', padding: '14px 32px', borderRadius: '24px', border: '1px solid var(--color-border)', backdropFilter: 'blur(10px)' }}>
+          <div style={{ display: 'flex', gap: '32px', background: 'rgba(255,255,255,0.02)', padding: '14px 32px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '4px' }}>Deep Work</div>
               <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--color-text-1)' }}>{todayMinutes}<span style={{ fontSize: '12px', color: 'var(--color-text-3)', marginLeft: '2px' }}>m</span></div>
             </div>
-            <div style={{ width: '1px', background: 'var(--color-border)' }} />
+            <div style={{ width: '1px', background: 'rgba(255,255,255,0.05)' }} />
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '4px' }}>Cycles</div>
               <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--color-text-1)' }}>{todaySessions}</div>
             </div>
             {streakLabel && (
               <>
-                <div style={{ width: '1px', background: 'var(--color-border)' }} />
+                <div style={{ width: '1px', background: 'rgba(255,255,255,0.05)' }} />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '4px' }}>Momentum</div>
-                  <div style={{ fontSize: '18px', fontWeight: 500, color: '#F59E0B' }}>{streakLabel}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 600, color: '#F59E0B', textShadow: '0 0 15px rgba(245,158,11,0.4)' }}>{streakLabel}</div>
                 </div>
               </>
             )}
@@ -389,7 +399,7 @@ export default function FocusRoom() {
             <motion.div 
               initial={{ opacity: 0, y: -20, height: 0 }} 
               animate={{ opacity: 1, y: 0, height: 'auto' }} 
-              exit={{ opacity: 0, y: -20, height: 0, filter: 'blur(10px)' }}
+              exit={{ opacity: 0, y: -30, height: 0, filter: 'blur(10px)', scale: 0.95 }}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginBottom: '60px' }}
             >
               <div style={{ display: 'flex', gap: '8px', background: 'var(--color-surface)', padding: '6px', borderRadius: '99px', border: '1px solid var(--color-border)', backdropFilter: 'blur(20px)' }}>
@@ -442,25 +452,44 @@ export default function FocusRoom() {
           width: '700px', marginTop: '60px', transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
           opacity: status === 'running' ? 0.3 : 1, transform: status === 'running' ? 'scale(0.95) translateY(20px)' : 'scale(1) translateY(0)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: status === 'running' ? phaseInfo.color : 'var(--color-text-3)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: '16px' }}>
-            {status === 'running' ? <Lock size={14} /> : <Target size={14} />}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: status === 'running' ? phaseInfo.color : 'var(--color-text-3)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: '20px' }}>
+            {status === 'running' ? <Lock size={16} /> : <Target size={16} />}
             {status === 'running' ? 'LOCKED INTENT' : 'SINGULAR FOCUS INTENT'}
           </div>
-          <input
-            id="mainIntentInput"
-            value={mainIntent}
-            onChange={e => saveIntent(e.target.value)}
-            disabled={status === 'running'}
-            placeholder="What is your singular mission right now?"
-            style={{
-              background: 'transparent', border: 'none', color: 'var(--color-text-1)',
-              fontSize: '36px', fontWeight: 200, outline: 'none', width: '100%',
-              textAlign: 'center', letterSpacing: '-0.02em',
-              fontFamily: 'var(--font-serif, serif)',
-              borderBottom: status === 'idle' ? '1px solid var(--color-border)' : 'none',
-              paddingBottom: '16px', transition: 'border 0.3s'
-            }}
-          />
+          <div style={{ 
+            position: 'relative', width: '100%',
+            background: status === 'running' ? 'transparent' : 'var(--color-surface)',
+            border: status === 'running' ? 'none' : '1px solid var(--color-border)',
+            borderRadius: '24px',
+            padding: status === 'running' ? '0' : '20px 40px',
+            boxShadow: status === 'running' ? 'none' : '0 20px 40px rgba(0,0,0,0.2)',
+            transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+            backdropFilter: 'blur(20px)'
+          }}>
+            <input
+              id="mainIntentInput"
+              value={mainIntent}
+              onChange={e => saveIntent(e.target.value)}
+              disabled={status === 'running'}
+              placeholder="What is your singular mission right now?"
+              style={{
+                background: 'transparent', border: 'none', color: 'var(--color-text-1)',
+                fontSize: status === 'running' ? '46px' : '28px', 
+                fontWeight: status === 'running' ? 300 : 400, outline: 'none', width: '100%',
+                textAlign: 'center', letterSpacing: '-0.02em',
+                fontFamily: 'var(--font-serif)',
+                paddingBottom: status === 'running' ? '20px' : '0', 
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+            />
+            {/* Animated underline */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: '10%', right: '10%', height: '2px',
+              background: `linear-gradient(90deg, transparent, ${phaseInfo.color}, transparent)`,
+              transform: 'scaleX(0.8)', opacity: 0.8, transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+              display: status === 'idle' ? 'none' : 'block'
+            }} />
+          </div>
         </div>
       </div>
 
