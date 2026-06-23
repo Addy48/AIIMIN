@@ -172,14 +172,20 @@ export default function AccountPage() {
         Promise.race([fetchPromise, timeoutPromise]).then((p) => {
             const fallbackName = p?.full_name || p?.username || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'User';
             const fallbackTimezone = p?.timezone || session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-            const normalizedProfile = { ...p, full_name: fallbackName, username: p?.username || '', timezone: fallbackTimezone };
-            setProfile(normalizedProfile);
+            // Strictly extract the OS ID from the user metadata/session first
+            const metaUsername = session?.user?.user_metadata?.username || session?.user?.user_metadata?.os_id;
+            const profileUsername = p?.username || p?.os_id;
+            const emailPrefix = session?.user?.email ? session.user.email.split('@')[0].toUpperCase() : '';
+            const extractedUsername = metaUsername || profileUsername || emailPrefix;
+            
+            const normalizedProfile = { ...p, full_name: fallbackName, username: extractedUsername || '', timezone: fallbackTimezone, os_id: extractedUsername || '' };            setProfile(normalizedProfile);
             setDraftProfile(normalizedProfile);
         }).catch(err => {
             console.warn('[AccountPage] fetch error/timeout:', err);
             const fallbackName = session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'User';
             const fallbackTimezone = session?.user?.user_metadata?.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
-            const normalizedProfile = { full_name: fallbackName, username: '', timezone: fallbackTimezone };
+            const extractedUsername = session?.user?.user_metadata?.username || (session?.user?.email?.includes('@aiimin.com') ? session.user.email.split('@')[0].toUpperCase() : '');
+            const normalizedProfile = { full_name: fallbackName, username: extractedUsername || '', timezone: fallbackTimezone };
             setProfile(normalizedProfile);
             setDraftProfile(normalizedProfile);
         }).finally(() => setLoading(false));

@@ -39,7 +39,7 @@ const parseESPNEvents = (data) => {
       status: status.name,
       statusShort: status.completed ? 'FT' : (
         status.state === 'pre' && ev.date
-          ? new Date(ev.date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          ? new Date(ev.date).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' IST'
           : statusDetail
       ),
       statusDetail: comp.status?.type?.detail || '',
@@ -219,7 +219,7 @@ export const fetchF1 = async () => {
         status: status.name,
         statusShort: status.completed ? 'FINISHED' : (
           status.state === 'pre' && ev.date
-            ? new Date(ev.date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            ? new Date(ev.date).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' IST'
             : statusDetail
         ),
         statusDetail: comp.status?.type?.detail || '',

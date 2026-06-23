@@ -7,6 +7,8 @@ import { sportsService } from '../services/sportsService';
 import PageHeader from '../components/layout/PageHeader';
 
 const MatchCard = ({ match, isF1 = false }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   if (isF1) {
     return (
       <div className="hover-border-accent" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', transition: 'all 0.3s ease', cursor: 'pointer' }}>
@@ -44,7 +46,7 @@ const MatchCard = ({ match, isF1 = false }) => {
   }
 
   return (
-    <div className="hover-border-accent" style={{ display: 'flex', flexDirection: 'column', padding: '16px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
+    <div className="hover-border-accent" onClick={() => setIsExpanded(!isExpanded)} style={{ display: 'flex', flexDirection: 'column', padding: '16px 20px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)', transition: 'all 0.3s ease', cursor: 'pointer', position: 'relative', overflow: 'hidden' }}>
       {match.isLive && <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: 'linear-gradient(90deg, #EF4444, transparent)' }} />}
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -71,6 +73,47 @@ const MatchCard = ({ match, isF1 = false }) => {
         </div>
         <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-text-1)' }}>{match.away.score}</div>
       </div>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }} 
+            animate={{ opacity: 1, height: 'auto' }} 
+            exit={{ opacity: 0, height: 0 }}
+            style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}
+          >
+            {match.venue && <div style={{ fontSize: '13px', color: 'var(--color-text-3)' }}><strong style={{ color: 'var(--color-text-2)' }}>Venue:</strong> {match.venue}</div>}
+            {match.league && <div style={{ fontSize: '13px', color: 'var(--color-text-3)' }}><strong style={{ color: 'var(--color-text-2)' }}>League:</strong> {match.league}</div>}
+            {match.notes && match.notes.length > 0 && (
+              <div style={{ fontSize: '13px', color: 'var(--color-text-3)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <strong style={{ color: 'var(--color-text-2)' }}>Notes:</strong>
+                <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                  {match.notes.map((n, i) => <li key={i}>{n}</li>)}
+                </ul>
+              </div>
+            )}
+            {!match.isLive && !match.isFinished && (
+               <div style={{ fontSize: '13px', color: 'var(--color-text-3)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                 <strong style={{ color: 'var(--color-text-2)' }}>Status:</strong>
+                 <span>Match yet to start</span>
+                 {match.date && (
+                   <div style={{ marginTop: '4px' }}>
+                     <strong style={{ color: 'var(--color-text-2)' }}>Starts At:</strong> {new Date(match.date).toLocaleString('en-US', { timeZone: 'Asia/Kolkata', weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })} IST
+                   </div>
+                 )}
+               </div>
+            )}
+            {match.isLive && (
+               <div style={{ fontSize: '13px', color: 'var(--color-text-3)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                 <strong style={{ color: 'var(--color-text-2)' }}>Status:</strong>
+                 <span>Ongoing ({match.statusDetail || 'In Progress'})</span>
+                 {match.clock && <div><strong style={{ color: 'var(--color-text-2)' }}>Clock:</strong> {match.clock}</div>}
+                 {match.period && <div><strong style={{ color: 'var(--color-text-2)' }}>Period:</strong> {match.period}</div>}
+               </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
