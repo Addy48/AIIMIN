@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ClerkProvider } from '@clerk/clerk-react';
 
 // Eagerly loaded Auth & public pages
 import Login from './pages/Login';
@@ -24,7 +25,7 @@ import GuestTour from './components/onboarding/GuestTour';
 
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './context/ClerkAuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
@@ -58,19 +59,23 @@ const Fallback = () => (
 );
 const Lazy = ({ children }) => <React.Suspense fallback={<Fallback />}>{children}</React.Suspense>;
 
+const CLERK_PK = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
+
 /* ── Root App ─────────────────────────────────────────────────────── */
 function App() {
   return (
     <ErrorBoundary label="Application">
-      <ThemeProvider>
-        <AuthProvider>
-          <AudioProvider>
-            <BrowserRouter>
-              <AuthedApp />
-            </BrowserRouter>
-          </AudioProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <ClerkProvider publishableKey={CLERK_PK} afterSignOutUrl="/login">
+        <ThemeProvider>
+          <AuthProvider>
+            <AudioProvider>
+              <BrowserRouter>
+                <AuthedApp />
+              </BrowserRouter>
+            </AudioProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </ClerkProvider>
     </ErrorBoundary>
   );
 }

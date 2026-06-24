@@ -335,8 +335,11 @@ const Habits = () => {
   }, []);
 
   const fetchHabits = async () => {
+    // Abort after 5 seconds so the page never hangs forever
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     try {
-      const rows = await apiGet('/api/habits');
+      const rows = await apiGet('/api/habits', { signal: controller.signal });
       // Ensure meta is initialized
       const processedHabits = (rows || []).map(h => ({
         ...h,
@@ -344,12 +347,19 @@ const Habits = () => {
       }));
       setHabits(processedHabits);
     } catch (err) {
-      console.error('Failed to load habits:', err);
-      setError('Failed to load habits. Please try again.');
+      if (err.name === 'AbortError') {
+        console.warn('fetchHabits: request timed out');
+        setError('Could not reach the server. Check your connection or start the backend.');
+      } else {
+        console.error('Failed to load habits:', err);
+        setError('Failed to load habits. Please try again.');
+      }
     } finally {
+      clearTimeout(timeout);
       setLoading(false);
     }
   };
+
 
   const completedToday = habits.filter(h => (h.meta?.completedDates || []).includes(todayKey)).length;
   const pct = habits.length ? Math.round((completedToday / habits.length) * 100) : 0;

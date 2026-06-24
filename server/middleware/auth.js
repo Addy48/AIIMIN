@@ -5,6 +5,28 @@ import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { ensureUserProfile } from '../services/userProfileService.js';
 dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
 
+// Clerk JWT verification (installed lazily to avoid crashing if not configured)
+let clerkVerifyToken = null;
+const initClerk = async () => {
+    if (clerkVerifyToken) return;
+    const secretKey = process.env.CLERK_SECRET_KEY;
+    if (!secretKey || secretKey.startsWith('PASTE_YOUR')) return;
+    try {
+        const { createClerkClient } = await import('@clerk/backend');
+        const clerk = createClerkClient({ secretKey });
+        clerkVerifyToken = async (token) => {
+            const payload = await clerk.verifyToken(token);
+            return payload;
+        };
+        console.log('[auth] Clerk verification enabled');
+    } catch (e) {
+        console.warn('[auth] Clerk backend SDK not installed, skipping Clerk JWT verification:', e.message);
+    }
+};
+initClerk();
+
+
+
 const COOKIE_NAME = 'aiimin_session';
 
 // Profile cache with TTL-based eviction to prevent memory leaks
@@ -56,6 +78,21 @@ export const requireAuth = async (c, next) => {
         }
     } catch (supaErr) {
         console.error('[auth] Supabase token verify error:', supaErr.message);
+    }
+
+    if (!decoded) {
+        // 3. Fallback: Try Clerk JWT verification
+        if (clerkVerifyToken) {
+            try {
+                const payload = await clerkVerifyToken(token);
+                if (payload?.sub) {
+                    decoded = { id: payload.sub, email: payload.email_address || payload.email || '' };
+                    authUser = { id: payload.sub, email: decoded.email };
+                }
+            } catch (clerkErr) {
+                console.warn('[auth] Clerk token verify failed:', clerkErr.message);
+            }
+        }
     }
 
     if (!decoded) {
