@@ -38,6 +38,9 @@ const Finance = () => {
   const [entryType, setEntryType] = useState('expense'); // Default type for the modal
   const [importStatus, setImportStatus] = useState('idle'); // idle | processing | success | error
   const [dragActive, setDragActive] = useState(false);
+  const [importTab, setImportTab] = useState('file'); // 'file' | 'ai'
+  const [aiImportText, setAiImportText] = useState('');
+  const [aiImportStatus, setAiImportStatus] = useState('idle');
   const [transMonthFilter, setTransMonthFilter] = useState('ALL');
   const [transAccountFilter, setTransAccountFilter] = useState('ALL');
   const [transSearch, setTransSearch] = useState('');
@@ -115,9 +118,8 @@ const Finance = () => {
       formData.append('file', file);
 
       // Use raw fetch so we don't set Content-Type (browser auto-sets multipart boundary)
-      const { getCurrentSession, API_URL } = await import('../utils/api');
-      const currentSession = await getCurrentSession();
-      const token = currentSession?.access_token;
+      const { getCurrentAccessToken, API_URL } = await import('../utils/api');
+      const token = await getCurrentAccessToken();
 
       const response = await fetch(`${API_URL}/wealth/import`, {
         method: 'POST',
@@ -141,6 +143,42 @@ const Finance = () => {
       console.error("Excel Import Error:", err);
       toast.error(err.message || "Failed to process the spreadsheet.");
       setImportStatus('error');
+    }
+  };
+
+
+  const handleAiImport = async () => {
+    if (!aiImportText.trim()) return;
+    setAiImportStatus('processing');
+    try {
+      const { getCurrentAccessToken, API_URL } = await import('../utils/api');
+      const token = await getCurrentAccessToken();
+      const response = await fetch(`${API_URL}/wealth/import/ai`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: aiImportText }),
+      });
+      const res = await response.json();
+      if (res.success) {
+        toast.success(`Imported ${res.imported || 0} transactions via AI`);
+        setAiImportStatus('success');
+        await loadFinanceData();
+        setTimeout(() => {
+          setImportOpen(false);
+          setAiImportStatus('idle');
+          setAiImportText('');
+          setImportTab('file');
+        }, 2000);
+      } else {
+        throw new Error(res.error || 'AI Import failed');
+      }
+    } catch (err) {
+      console.error('AI Import Error:', err);
+      toast.error(err.message || 'Failed to process text');
+      setAiImportStatus('error');
     }
   };
 
@@ -732,60 +770,109 @@ savingsRate: (sRate * 100).toFixed(1),
               </form>
       </Modal>
 
-      {/* Excel Import Modal */}
-      <Modal isOpen={importOpen} onClose={() => setImportOpen(false)} title="Import Spreadsheet" maxWidth="520px">
-              <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--color-accent-dim)', color: 'var(--color-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                  <FileSpreadsheet size={30} />
-                </div>
-                <h2 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--color-text-1)', marginBottom: '8px', fontFamily: 'var(--font-serif)' }}>Import Spreadsheet</h2>
-                <p style={{ fontSize: '13px', color: 'var(--color-text-3)', lineHeight: 1.6 }}>Sync your 'Money Manager' transactions instantly.</p>
+      {/* Import Modal */}
+      <Modal isOpen={importOpen} onClose={() => { setImportOpen(false); setImportStatus('idle'); setAiImportStatus('idle'); setImportTab('file'); }} title="Import Transactions" maxWidth="560px">
+        {/* Tab Switcher */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'var(--color-elevated)', borderRadius: '12px', padding: '4px' }}>
+          {[{id: 'file', label: '📁 Spreadsheet / CSV'}, {id: 'ai', label: '🤖 AI Text / SMS'}].map(tab => (
+            <button key={tab.id} onClick={() => setImportTab(tab.id)} style={{
+              flex: 1, padding: '10px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+              background: importTab === tab.id ? 'var(--color-surface)' : 'transparent',
+              color: importTab === tab.id ? 'var(--color-text-1)' : 'var(--color-text-3)',
+              fontSize: '13px', fontWeight: 700,
+              boxShadow: importTab === tab.id ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+              transition: 'all 0.2s',
+            }}>{tab.label}</button>
+          ))}
+        </div>
+
+        {importTab === 'file' && (
+          <div>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-3)', lineHeight: 1.6, marginBottom: '20px', textAlign: 'center' }}>Upload any Excel, CSV, or bank export file. Our AI parser understands any format.</p>
+            {importStatus === 'idle' && (
+              <div 
+                onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop}
+                style={{
+                  height: '180px', border: `2px dashed ${dragActive ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                  borderRadius: '16px', background: dragActive ? 'var(--color-accent-dim)' : 'var(--bg-elevated)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', transition: 'all 0.2s ease'
+                }}
+                onClick={() => document.getElementById('excel-input').click()}
+              >
+                <input id="excel-input" type="file" accept=".xlsx,.xls,.csv" onChange={e => handleFileUpload(e.target.files[0])} style={{ display: 'none' }} />
+                <Upload size={28} style={{ color: 'var(--color-text-3)', marginBottom: '12px', opacity: 0.5 }} />
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-2)' }}>Drop file or <span style={{ color: 'var(--color-accent)' }}>browse</span></span>
+                <span style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: '6px' }}>Excel, CSV, any bank export format</span>
               </div>
+            )}
+            {importStatus === 'processing' && (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <div className="spinner" style={{ margin: '0 auto 24px' }} />
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-1)' }}>Parsing file...</span>
+              </div>
+            )}
+            {importStatus === 'success' && (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#10B981' }}>
+                <CheckCircle2 size={44} style={{ margin: '0 auto 16px' }} />
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>Import Complete!</div>
+              </div>
+            )}
+            {importStatus === 'error' && (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-rust)' }}>
+                <AlertCircle size={44} style={{ margin: '0 auto 16px' }} />
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>Import Failed</div>
+                <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginTop: '6px' }}>Check the file format.</div>
+                <button onClick={() => setImportStatus('idle')} style={{ marginTop: '20px', background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Try Again</button>
+              </div>
+            )}
+          </div>
+        )}
 
-              {importStatus === 'idle' && (
-                <div 
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
+        {importTab === 'ai' && (
+          <div>
+            <p style={{ fontSize: '13px', color: 'var(--color-text-3)', lineHeight: 1.6, marginBottom: '16px', textAlign: 'center' }}>Paste any text — bank SMS alerts, WhatsApp expense logs, AI chat history, or notes. AIIMIN will extract and categorise transactions.</p>
+            {aiImportStatus === 'idle' || aiImportStatus === 'error' ? (
+              <div>
+                <textarea
+                  value={aiImportText}
+                  onChange={e => setAiImportText(e.target.value)}
+                  placeholder={`Example:\n"Spent ₹450 on groceries at DMart on 18 Jun\nPaid ₹1200 for electricity bill\nReceived ₹5000 salary advance\nCoffee ₹80 at Starbucks"`}
                   style={{
-                    height: '180px', border: `2px dashed ${dragActive ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                    borderRadius: '16px', background: dragActive ? 'var(--color-accent-dim)' : 'var(--bg-elevated)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', transition: 'all 0.2s ease'
+                    width: '100%', minHeight: '180px', padding: '14px', borderRadius: '12px',
+                    border: '1px solid var(--color-border)', background: 'var(--color-elevated)',
+                    color: 'var(--color-text-1)', fontSize: '13px', lineHeight: 1.6,
+                    fontFamily: 'inherit', resize: 'vertical', outline: 'none', boxSizing: 'border-box',
                   }}
-                  onClick={() => document.getElementById('excel-input').click()}
-                >
-                  <input id="excel-input" type="file" accept=".xlsx,.xls,.csv" onChange={e => handleFileUpload(e.target.files[0])} style={{ display: 'none' }} />
-                  <Upload size={28} style={{ color: 'var(--color-text-3)', marginBottom: '12px', opacity: 0.5 }} />
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-2)' }}>Drop file or <span style={{ color: 'var(--color-accent)' }}>browse</span></span>
-                  <span style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: '6px' }}>Excel or CSV formats supported</span>
-                </div>
-              )}
-
-              {importStatus === 'processing' && (
-                <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div className="spinner" style={{ margin: '0 auto 24px' }} />
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-1)' }}>Parsing spreadsheet...</span>
-                </div>
-              )}
-
-              {importStatus === 'success' && (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: '#10B981' }}>
-                  <CheckCircle2 size={44} style={{ margin: '0 auto 16px' }} />
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>Sync Complete</div>
-                  <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginTop: '6px' }}>Your portfolio is up to date.</div>
-                </div>
-              )}
-
-              {importStatus === 'error' && (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-rust)' }}>
-                  <AlertCircle size={44} style={{ margin: '0 auto 16px' }} />
-                  <div style={{ fontSize: '16px', fontWeight: 600 }}>Sync Error</div>
-                  <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginTop: '6px' }}>Could not read file. Check the format.</div>
-                  <button onClick={() => setImportStatus('idle')} style={{ marginTop: '20px', background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-1)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '12px' }}>Try Again</button>
-                </div>
-              )}
+                />
+                {aiImportStatus === 'error' && <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '8px', textAlign: 'center' }}>AI parsing failed. Try reformatting your text.</div>}
+                <button
+                  onClick={handleAiImport}
+                  disabled={!aiImportText.trim()}
+                  style={{
+                    marginTop: '16px', width: '100%', padding: '14px', borderRadius: '12px',
+                    background: aiImportText.trim() ? 'var(--color-accent)' : 'var(--color-border)',
+                    color: aiImportText.trim() ? '#fff' : 'var(--color-text-3)',
+                    border: 'none', fontSize: '14px', fontWeight: 700, cursor: aiImportText.trim() ? 'pointer' : 'default',
+                    transition: 'all 0.2s',
+                  }}
+                >🤖 Analyse & Import</button>
+              </div>
+            ) : aiImportStatus === 'processing' ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <div className="spinner" style={{ margin: '0 auto 24px' }} />
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-1)' }}>AI is reading your transactions...</span>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-3)', marginTop: '8px' }}>This may take a few seconds.</p>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#10B981' }}>
+                <CheckCircle2 size={44} style={{ margin: '0 auto 16px' }} />
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>AI Import Complete!</div>
+                <p style={{ fontSize: '13px', color: 'var(--color-text-3)', marginTop: '8px' }}>Transactions have been categorized and saved.</p>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
 
       <style>{`
