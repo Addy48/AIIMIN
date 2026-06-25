@@ -141,32 +141,10 @@ const Settings = () => {
     }
   }, [session, isUsingMock, mockData]);
 
-  const handlePasswordUpdate = async () => {
-    if (!newPwd || newPwd.length < 8) { toast.error('Password must be at least 8 characters'); return; }
-    if (newPwd !== confirmPwd) { toast.error('Passwords do not match'); return; }
-    setPwdLoading(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPwd });
-      if (error) throw error;
-      toast.success('Password updated successfully');
-      setNewPwd(''); setConfirmPwd('');
-    } catch (err) {
-      toast.error(err.message || 'Failed to update password');
-    } finally {
-      setPwdLoading(false);
-    }
-  };
-
-  const handleNameSave = async () => {
-    try {
-      await supabase.auth.updateUser({ data: { username: nameVal.toUpperCase() } });
-      toast.success('Username updated');
-      setEditingName(false);
-    } catch {
-      toast.error('Failed to update username');
-    }
-  };
-
+    // Password updates are now handled by Clerk
+    const handleNameSave = () => {
+        toast.error("Please update your name via your profile avatar.");
+    };
   const handleDeleteAllData = useCallback(async () => {
     if (!window.confirm('This will wipe all your tracked data but KEEP your account. Proceed?')) return;
     const input = window.prompt('Type "wipe data" to confirm:');
@@ -305,38 +283,10 @@ const Settings = () => {
               </button>
             }
           />
-          <div style={{ paddingTop: '4px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-2)', marginBottom: '12px' }}>Change Password</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showPwd ? 'text' : 'password'}
-                  value={newPwd}
-                  onChange={e => setNewPwd(e.target.value)}
-                  placeholder="New password"
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '10px 36px 10px 12px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'var(--color-elevated)', color: 'var(--color-text-1)', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
-                />
-                <button onClick={() => setShowPwd(v => !v)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)' }}>
-                  {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
-                </button>
-              </div>
-              <input
-                type={showPwd ? 'text' : 'password'}
-                value={confirmPwd}
-                onChange={e => setConfirmPwd(e.target.value)}
-                placeholder="Confirm password"
-                style={{ padding: '10px 12px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'var(--color-elevated)', color: 'var(--color-text-1)', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
-              />
-            </div>
-            <button onClick={handlePasswordUpdate} disabled={pwdLoading || !newPwd} style={{
-              padding: '10px 20px', borderRadius: '10px', border: 'none',
-              background: newPwd ? 'var(--color-accent)' : 'var(--color-elevated)',
-              color: newPwd ? '#fff' : 'var(--color-text-3)',
-              fontSize: '13px', fontWeight: 700, cursor: newPwd ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', gap: '6px',
-            }}>
-              <Lock size={14} /> {pwdLoading ? 'Updating...' : 'Update Password'}
-            </button>
+          <div style={{ paddingTop: '24px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-2)', lineHeight: 1.5, marginBottom: '20px' }}>
+              Security and authentication are now powered by Clerk. To update your password, email, or linked accounts, click your profile avatar in the navigation bar.
+            </p>
           </div>
         </Section>
 

@@ -5,7 +5,7 @@ import { useThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserButton, useAuth as useClerkAuth } from '@clerk/clerk-react';
+import { useAuth as useClerkAuth } from '@clerk/clerk-react';
 import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
 
@@ -193,18 +193,18 @@ const Navbar = ({ user }) => {
             )}
           </div>
 
-          {/* Clerk UserButton — handles profile, sign out, etc */}
-          <UserButton
-            afterSignOutUrl="/login"
-            appearance={{
-              elements: {
-                avatarBox: {
-                  width: '36px',
-                  height: '36px',
-                },
-              },
+          {/* Avatar */}
+          <Link
+            to="/account"
+            style={{
+              width: '36px', height: '36px', borderRadius: '50%', background: '#23503B',
+              border: 'none', color: '#fff', font: '700 14px var(--font-sans)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none'
             }}
-          />
+            aria-label="Account"
+          >
+            {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+          </Link>
 
           {/* Mobile Menu Toggle */}
           <button

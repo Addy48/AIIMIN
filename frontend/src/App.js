@@ -4,7 +4,6 @@ import { ClerkProvider } from '@clerk/clerk-react';
 
 // Eagerly loaded Auth & public pages
 import Login from './pages/Login';
-import AuthCallback from './pages/AuthCallback';
 import Onboarding from './pages/Onboarding';
 import Privacy from './pages/legal/Privacy';
 import Terms from './pages/legal/Terms';
@@ -95,8 +94,7 @@ function AppContent({ user, session }) {
       <Routes>
 
         {/* ── Auth ── */}
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/overview" replace />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/login/*" element={session ? <Navigate to="/overview" replace /> : <Login />} />
         <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/login" replace />} />
         <Route path="/" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
 

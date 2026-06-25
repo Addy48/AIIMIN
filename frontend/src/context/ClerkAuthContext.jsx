@@ -39,27 +39,28 @@ export function AuthProvider({ children }) {
    * Shape the Clerk user into the existing app's user object format.
    * The app reads: id, full_name, username, email, role, isGuest, avatar
    */
-  const user = isSignedIn && clerkUser
-    ? {
-        id: clerkUser.id,
-        full_name: clerkUser.fullName || clerkUser.firstName || clerkUser.username || 'User',
-        username: clerkUser.username || clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] || 'user',
-        email: clerkUser.primaryEmailAddress?.emailAddress || '',
-        avatar: clerkUser.imageUrl || null,
-        role: 'user',
-        isGuest: false,
-        // Extra clerk data available if needed
-        clerkUser,
-      }
-    : null;
+  const user = React.useMemo(() => {
+    if (!isSignedIn || !clerkUser) return null;
+    return {
+      id: clerkUser.id,
+      full_name: clerkUser.fullName || clerkUser.firstName || clerkUser.username || 'User',
+      username: clerkUser.username || clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] || 'user',
+      email: clerkUser.primaryEmailAddress?.emailAddress || '',
+      avatar: clerkUser.imageUrl || null,
+      role: 'user',
+      isGuest: false,
+      // Extra clerk data available if needed
+      clerkUser,
+    };
+  }, [isSignedIn, clerkUser]);
 
   /**
    * Fake "session" object — the app checks `if (session)` to gate routes.
    * We provide a truthy object when Clerk says signed in.
    */
-  const session = isSignedIn
-    ? { user: clerkUser, provider: 'clerk' }
-    : null;
+  const session = React.useMemo(() => {
+    return isSignedIn ? { user: clerkUser, provider: 'clerk' } : null;
+  }, [isSignedIn, clerkUser]);
 
   /**
    * Get Clerk JWT for API calls. Called by utils/api.js.
