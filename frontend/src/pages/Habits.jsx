@@ -181,7 +181,7 @@ const AddModal = ({ isOpen, onClose, onAdd }) => {
         }
       };
       
-      const newHabit = await apiPost('/api/habits', payload);
+      const newHabit = await apiPost('/habits', payload);
       onAdd({
         ...newHabit,
         meta: newHabit.meta || payload.meta
@@ -339,7 +339,7 @@ const Habits = () => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     try {
-      const rows = await apiGet('/api/habits', { signal: controller.signal });
+      const rows = await apiGet('/habits', { signal: controller.signal });
       // Ensure meta is initialized
       const processedHabits = (rows || []).map(h => ({
         ...h,
@@ -384,7 +384,7 @@ const Habits = () => {
     
     // API Call
     try {
-      await apiPut(`/api/habits/${habit.id}`, { meta: updatedMeta });
+      await apiPut(`/habits/${habit.id}`, { meta: updatedMeta });
     } catch (err) {
       console.error('Failed to toggle habit', err);
       // Revert on failure
@@ -395,7 +395,7 @@ const Habits = () => {
   const deleteHabit = async (id) => {
     setHabits(p => p.filter(h => h.id !== id));
     try {
-      await apiDelete(`/api/habits/${id}`);
+      await apiDelete(`/habits/${id}`);
     } catch (err) {
       console.error('Failed to delete habit', err);
       fetchHabits();

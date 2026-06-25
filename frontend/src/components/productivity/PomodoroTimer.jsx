@@ -28,7 +28,7 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
   useEffect(() => {
     const fetchGoals = async () => {
       try {
-        const data = await apiGet('/api/goals');
+        const data = await apiGet('/goals');
         setGoals(Array.isArray(data) ? data : []);
       } catch (err) {
         console.warn('Could not fetch goals for focus room:', err);
@@ -61,7 +61,7 @@ const PomodoroTimer = ({ onComplete, onClose }) => {
           const linkedGoal = goals.find(g => g.id === selectedGoalId);
           if (linkedGoal) {
             const updatedTimeSpent = (linkedGoal.timeSpent || 0) + 25;
-            apiPut(`/api/goals/${linkedGoal.id}`, { ...linkedGoal, timeSpent: updatedTimeSpent })
+            apiPut(`/goals/${linkedGoal.id}`, { ...linkedGoal, timeSpent: updatedTimeSpent })
               .then(() => toast.success(`Logged 25m to: ${linkedGoal.title}`))
               .catch(() => toast.error('Failed to log time to goal'));
           }
