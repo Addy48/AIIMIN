@@ -1,5 +1,3 @@
-import supabase from './supabase';
-
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 export const buildAuthHeaders = (extraHeaders = {}) => ({
@@ -22,11 +20,7 @@ export const getCurrentAccessToken = async () => {
             // fall through to Supabase
         }
     }
-    // Legacy Supabase fallback
-    try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) return session.access_token;
-    } catch (_) {}
+    // Legacy fallback
     return (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || '';
 };
 

@@ -40,61 +40,18 @@ const Row = ({ label, children, border = true }) => (
 );
 
 const ChangePassword = () => {
-    const [newPw, setNewPw] = useState('');
-    const [confirmPw, setConfirmPw] = useState('');
-    const [msg, setMsg] = useState('');
-    const [saving, setSaving] = useState(false);
-    const [showNewPw, setShowNewPw] = useState(false);
-    const [showConfirmPw, setShowConfirmPw] = useState(false);
-
-    const handleChange = async () => {
-        if (newPw.length < 6) { setMsg('Min 6 characters'); return; }
-        if (newPw !== confirmPw) { setMsg('Passwords do not match'); return; }
-        setSaving(true);
-        setMsg('');
-        const { error } = await supabase.auth.updateUser({ password: newPw });
-        if (error) { setMsg(error.message); }
-        else { setMsg('Password updated ✓'); setNewPw(''); setConfirmPw(''); }
-        setSaving(false);
-        setTimeout(() => setMsg(''), 4000);
-    };
-
-    const inputStyle = {
-        padding: '10px 14px', borderRadius: '10px', fontSize: '13px',
-        border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-        color: 'var(--text-1)', width: '100%', outline: 'none', fontWeight: 600
-    };
-
-    const eyeBtn = (show, toggle) => (
-        <button type="button" onClick={toggle} tabIndex={-1} style={{
-            position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--text-3)', fontSize: '16px', padding: 0,
-            display: 'flex', alignItems: 'center', lineHeight: 1, userSelect: 'none',
-        }} aria-label={show ? 'Hide' : 'Show'}>
-            {show ? '🙈' : '👁'}
-        </button>
-    );
-
     return (
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <div style={{ position: 'relative' }}>
-                <input type={showNewPw ? 'text' : 'password'} placeholder="New password" value={newPw} onChange={e => setNewPw(e.target.value)} style={{ ...inputStyle, paddingRight: '40px' }} />
-                {eyeBtn(showNewPw, () => setShowNewPw(p => !p))}
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ fontSize: '14px', color: 'var(--text-1)', fontWeight: 'bold' }}>
+                Password Management
             </div>
-            <div style={{ position: 'relative' }}>
-                <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm new password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} style={{ ...inputStyle, paddingRight: '40px' }} />
-                {eyeBtn(showConfirmPw, () => setShowConfirmPw(p => !p))}
+            <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>
+                Security and authentication are now powered by Clerk. To update your password, email, or linked accounts, click your profile avatar in the navigation bar.
             </div>
-            {msg && <div style={{ fontSize: '12px', color: msg.includes('✓') ? '#22c55e' : 'var(--danger)', fontWeight: 700 }}>{msg}</div>}
-            <button onClick={handleChange} disabled={saving || !newPw || !confirmPw} style={{
-                padding: '12px', background: 'var(--accent)', color: 'white', border: 'none',
-                borderRadius: '12px', fontSize: '13px', fontWeight: 800, cursor: 'pointer',
-                opacity: (saving || !newPw || !confirmPw) ? 0.5 : 1
-            }}>{saving ? 'Saving...' : 'Update Password'}</button>
         </div>
     );
 };
+
 
 const AccountModal = ({ isOpen, onClose }) => {
     const { user, session, signOut } = useAuth();

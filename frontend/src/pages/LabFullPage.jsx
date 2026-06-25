@@ -130,13 +130,13 @@ export default function LabFullPage() {
           width: '260px', 
           flexShrink: 0, 
           position: 'sticky', 
-          top: '80px', 
-          height: 'calc(100vh - 120px)', 
+          top: '20px', 
+          maxHeight: 'calc(100vh - 40px)', 
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
           gap: '24px',
-          paddingBottom: '120px',
+          paddingBottom: '80px',
           borderRight: `1px solid ${border}`,
           paddingRight: '20px'
         }}>
@@ -363,8 +363,7 @@ function ReadingLog({ userId, isDark, onClose }) {
     if (!form.title.trim()) return;
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      await supabase.from("lab_reading_log").insert({ user_id: user.id, ...form, pages: Number(form.pages)||0, logged_at: new Date().toISOString() });
+      await supabase.from("lab_reading_log").insert({ user_id: userId, ...form, pages: Number(form.pages)||0, logged_at: new Date().toISOString() });
       setSaved(true); setTimeout(onClose, 1200);
     } catch { setSaving(false); }
   };
