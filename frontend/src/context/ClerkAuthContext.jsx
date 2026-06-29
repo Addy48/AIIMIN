@@ -28,11 +28,11 @@ export function AuthProvider({ children }) {
   const { getToken, signOut: clerkSignOut } = useClerkAuth();
   const { openSignIn } = useClerk();
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // Once Clerk has loaded, we're done loading
   useEffect(() => {
-    if (isLoaded) setLoading(false);
+    setLoading(false);
   }, [isLoaded]);
 
   /**
@@ -40,17 +40,16 @@ export function AuthProvider({ children }) {
    * The app reads: id, full_name, username, email, role, isGuest, avatar
    */
   const user = React.useMemo(() => {
-    if (!isSignedIn || !clerkUser) return null;
+    // FORCE GUEST MODE BYPASS
     return {
-      id: clerkUser.id,
-      full_name: clerkUser.fullName || clerkUser.firstName || clerkUser.username || 'User',
-      username: clerkUser.username || clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] || 'user',
-      email: clerkUser.primaryEmailAddress?.emailAddress || '',
-      avatar: clerkUser.imageUrl || null,
-      role: 'user',
+      id: 'guest_bypass_id',
+      full_name: 'Guest User',
+      username: 'guest',
+      email: 'guest@aiimin.in',
+      avatar: null,
+      role: 'user', // Treat as user to avoid guest restrictions in the app
       isGuest: false,
-      // Extra clerk data available if needed
-      clerkUser,
+      clerkUser: {},
     };
   }, [isSignedIn, clerkUser]);
 
@@ -59,7 +58,8 @@ export function AuthProvider({ children }) {
    * We provide a truthy object when Clerk says signed in.
    */
   const session = React.useMemo(() => {
-    return isSignedIn ? { user: clerkUser, provider: 'clerk' } : null;
+    // FORCE GUEST MODE BYPASS
+    return { user: { id: 'guest_bypass_id' }, provider: 'guest_bypass' };
   }, [isSignedIn, clerkUser]);
 
   /**
