@@ -5,6 +5,7 @@ import { useUser } from '@clerk/clerk-react';
 import { supabase } from '../../utils/supabase';
 import { useThemeContext } from '../../context/ThemeContext';
 import { DEBATE_TOPICS, CATEGORIZED_PROMPTS } from '../../data/SpeakingTopics';
+import { proxyGeminiGenerate } from '../../utils/serverAi';
 
 const TOPICS = [
     { label: 'HR Topics', icon: <MessageSquare size={16} />, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
@@ -168,10 +169,6 @@ export default function VocalMastery({ onComplete, onClose }) {
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
     const timerRef = useRef(null);
-    
-    const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-
-
 
     const activeTopic = TOPICS.find(t => t.label === selectedTopic) || TOPICS[0];
     const prompts = CATEGORIZED_PROMPTS[selectedTopic] || CATEGORIZED_PROMPTS['Technology'];
@@ -257,10 +254,6 @@ export default function VocalMastery({ onComplete, onClose }) {
 
     // --- Debate Handlers ---
     const startDebate = () => {
-        if (!GEMINI_API_KEY) {
-            setDebatePhase('waiting_key');
-            return;
-        }
         setDebatePhase('active');
         const initialText = `Let's begin. The topic is: "${debateTopic}". Please state your opening argument.`;
         setMessages([]); // Start empty so user audio is the first message
@@ -334,32 +327,16 @@ export default function VocalMastery({ onComplete, onClose }) {
         }];
         setMessages(newContents);
 
-        if (!GEMINI_API_KEY) {
-            console.error("Gemini API Key is missing");
-            setIsThinking(false);
-            return;
-        }
-
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    systemInstruction: {
-                        parts: [{ text: `You are an expert sparring partner for the topic: "${debateTopic}". Keep your response concise (under 3 sentences) to simulate a fast-paced debate. Respond directly to the user's audio.` }]
-                    },
-                    contents: newContents
-                })
+            const data = await proxyGeminiGenerate({
+                model: 'gemini-2.0-flash',
+                systemInstruction: {
+                    parts: [{ text: `You are an expert sparring partner for the topic: "${debateTopic}". Keep your response concise (under 3 sentences).` }]
+                },
+                contents: newContents,
             });
-            
-            if (!res.ok) {
-                const errorData = await res.json();
-                console.error("Gemini API Error:", errorData);
-                throw new Error(errorData.error?.message || "Failed to process audio");
-            }
-            
-            const data = await res.json();
-            const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that.";
+
+            const responseText = data.text || "I couldn't process that.";
             
             setMessages([...newContents, { role: "model", parts: [{ text: responseText }] }]);
             
