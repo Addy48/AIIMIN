@@ -19,8 +19,15 @@ backend/.env.production
 # Build outputs
 frontend/build/
 
+# SSH keys (never commit)
+*.pem
+aiimin.pem
+
 # Vercel
 .vercel
+
+# MCP local config (may contain secrets — use .mcp.json.example)
+.mcp.json
 
 # Tools & editors
 .claude/

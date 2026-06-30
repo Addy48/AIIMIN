@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "neon": {
+      "type": "http",
+      "url": "https://mcp.neon.tech/mcp"
+    },
+    "supabase": {
+      "command": "node",
+      "args": ["server/supabase-mcp.js"],
+      "env": {
+        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key-here"
+      }
+    }
+  }
+}
