@@ -4,6 +4,7 @@ import { supabase } from '../../utils/supabase';
 import { apiPost } from '../../utils/api';
 import { Smile, Zap, Moon, Save, Trash2, X, Sparkles, Brain, HelpCircle, Calendar, FileText, Hash, Type, MoreHorizontal, Plus } from 'lucide-react';
 import { useThemeContext } from '../../context/ThemeContext';
+import { getJournalPrompts } from '../../services/aiService';
 
 const MOODS = [
   { val: 1, emoji: '😞', label: 'Rough', color: '#ef4444' },
@@ -144,36 +145,12 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
     if (!content.trim()) return;
     setAnalyzingPrompts(true);
     try {
-      const VOICE_API_KEY = process.env.REACT_APP_VOICE_API_KEY || 'REDACTED_GOOGLE_API_KEY';
-      const prompt = `You are a professional journaling guide. Read the following journal entry and generate exactly 3 deep, personalized, open-ended reflection questions that will help the user think deeper.
-      
-      Journal text:
-      "${content}"
-      
-      Respond ONLY with a valid JSON array of strings, like this:
-      ["question 1", "question 2", "question 3"]
-      
-      Do not include markdown code fences.`;
-
-      const response = await fetch(`https://api.voice-provider.com/generate?key=${VOICE_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      });
-
-      const data = await response.json();
-      let textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (textResponse) {
-        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(textResponse);
-        if (Array.isArray(parsed)) {
-          setAiPrompts(parsed);
-          return;
-        }
+      const prompts = await getJournalPrompts(content);
+      if (Array.isArray(prompts) && prompts.length > 0) {
+        setAiPrompts(prompts);
+        return;
       }
-      throw new Error("Invalid response shape");
+      throw new Error('Invalid response shape');
     } catch (e) {
       console.error(e);
       setAiPrompts([

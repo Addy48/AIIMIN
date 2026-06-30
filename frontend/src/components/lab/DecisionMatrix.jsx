@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generateWithGemini } from '../../utils/serverAi';
 
 export default function DecisionMatrix({ onBack }) {
   const [step, setStep] = useState(0);
@@ -57,43 +58,20 @@ export default function DecisionMatrix({ onBack }) {
   };
 
   const generateSynthesis = async () => {
-    if (!process.env.REACT_APP_GEMINI_API_KEY) {
-      setError('Gemini API key is not configured.');
-      return;
-    }
-
     setIsAnalyzing(true);
     setError('');
     setAiSynthesis('');
     
     try {
-      const prompt = `You are an elite decision-making strategist and objective truth-teller (think Charlie Munger combined with an unemotional supercomputer).
-The user is facing a high-stakes decision and has processed it through several mental models.
+      const prompt = `You are an elite decision-making strategist. Synthesize this decision matrix bluntly (max 3 paragraphs).
 
 Dilemma: ${dilemma}
-Inversion (Worst-case & Prevention): ${inversion}
+Inversion: ${inversion}
 Second-Order Effects: ${secondOrder}
-Regret Minimization: ${regret}
+Regret Minimization: ${regret}`;
 
-Provide a blunt, highly analytical synthesis of their decision matrix.
-Point out any cognitive biases, emotional reasoning, or logical flaws in their inputs.
-Summarize the true trade-off they are making.
-Provide a definitive, probabilistically-weighted recommendation or the final question they must answer to break the tie.
-Format: Keep it highly concise (max 3 paragraphs). Use plain text.`;
-
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.REACT_APP_GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3 }
-        })
-      });
-
-      const data = await response.json();
-      if (data.error) throw new Error(data.error.message);
-      
-      setAiSynthesis(data.candidates[0].content.parts[0].text);
+      const text = await generateWithGemini({ prompt, maxTokens: 900, temperature: 0.3 });
+      setAiSynthesis(text);
     } catch (err) {
       setError(err.message || 'Failed to synthesize decision');
     } finally {

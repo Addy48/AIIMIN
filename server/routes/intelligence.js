@@ -12,6 +12,9 @@ import { summarizeLifeHealth } from '../services/lifeHealthEngine.js';
 import { generateWeeklyReview } from '../services/weeklyReviewEngine.js';
 import { generateReportPayload } from '../services/reportGenerator.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
+import { withVoiceRules } from '../lib/aiVoice.js';
+import { aiLimiter } from '../middleware/rateLimiter.js';
+import { trackExternalCall } from '../services/apiUsageService.js';
 
 const app = new Hono();
 
@@ -117,6 +120,208 @@ app.get('/report', requireAuth, async (c) => {
     } catch (err) {
         console.error('Error generating report:', err);
         return c.json({ error: 'Failed to generate intelligence report', message: err.message }, 500);
+    }
+});
+
+// ==========================================
+// SERVER-SIDE AI PROXIES (no client API keys)
+// ==========================================
+app.post('/generate', requireAuth, aiLimiter, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return c.json({ error: 'GEMINI_API_KEY not configured on server' }, 503);
+        }
+
+        const { messages = [], systemPrompt = null, maxTokens = 1024, temperature = 0.7 } = await c.req.json();
+        if (!messages.length) {
+            return c.json({ error: 'messages required' }, 400);
+        }
+
+        await trackExternalCall({
+            userId,
+            provider: 'gemini',
+            endpoint: '/intelligence/generate',
+            units: 1,
+        });
+
+        const { GoogleGenAI } = await import('@google/genai');
+        const genai = new GoogleGenAI({ apiKey });
+
+        const prompt = messages.map((m) => `${m.role}: ${m.content}`).join('\n');
+        const result = await genai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            config: {
+                systemInstruction: systemPrompt ? withVoiceRules(systemPrompt) : undefined,
+                maxOutputTokens: maxTokens,
+                temperature,
+            },
+        });
+
+        return c.json({ text: result.text || '' });
+    } catch (err) {
+        console.error('[intelligence/generate]', err.message);
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+app.post('/gemini-proxy', requireAuth, aiLimiter, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return c.json({ error: 'GEMINI_API_KEY not configured on server' }, 503);
+        }
+
+        const { model = 'gemini-2.0-flash', ...payload } = await c.req.json();
+
+        await trackExternalCall({
+            userId,
+            provider: 'gemini',
+            endpoint: '/intelligence/gemini-proxy',
+            units: 1,
+        });
+
+        const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }
+        );
+
+        const data = await res.json();
+        if (!res.ok) {
+            return c.json(data, res.status);
+        }
+
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        return c.json({ text, candidates: data.candidates });
+    } catch (err) {
+        console.error('[intelligence/gemini-proxy]', err.message);
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+app.post('/chat', requireAuth, aiLimiter, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const {
+            provider = 'groq',
+            messages = [],
+            systemPrompt = null,
+            maxTokens = 1024,
+            temperature = 0.7,
+        } = await c.req.json();
+
+        if (!messages.length) {
+            return c.json({ error: 'messages required' }, 400);
+        }
+
+        const fullMessages = systemPrompt
+            ? [{ role: 'system', content: withVoiceRules(systemPrompt) }, ...messages]
+            : messages;
+
+        if (provider === 'groq') {
+            const apiKey = process.env.GROQ_API_KEY;
+            if (!apiKey) {
+                return c.json({ error: 'GROQ_API_KEY not configured on server' }, 503);
+            }
+
+            await trackExternalCall({
+                userId,
+                provider: 'groq',
+                endpoint: '/intelligence/chat',
+                units: 1,
+            });
+
+            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: fullMessages,
+                    max_tokens: maxTokens,
+                    temperature,
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                return c.json({ error: data.error?.message || 'Groq request failed' }, res.status);
+            }
+
+            return c.json({ text: data.choices?.[0]?.message?.content || '' });
+        }
+
+        if (provider === 'moonshot' || provider === 'kimi') {
+            const apiKey = process.env.NVIDIA_API_KEY;
+            if (!apiKey) {
+                return c.json({ error: 'NVIDIA_API_KEY not configured on server' }, 503);
+            }
+
+            await trackExternalCall({
+                userId,
+                provider: 'moonshot',
+                endpoint: '/intelligence/chat',
+                units: 1,
+            });
+
+            const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: 'moonshotai/kimi-k2.6',
+                    messages: fullMessages,
+                    max_tokens: maxTokens,
+                    temperature,
+                }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) {
+                return c.json({ error: data.error?.message || data.message || 'Moonshot request failed' }, res.status);
+            }
+
+            return c.json({ text: data.choices?.[0]?.message?.content || '' });
+        }
+
+        return c.json({ error: 'Invalid provider' }, 400);
+    } catch (err) {
+        console.error('[intelligence/chat]', err.message);
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+app.post('/usage-report', requireAuth, aiLimiter, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const { provider, endpoint, units = 1 } = await c.req.json();
+        const allowed = new Set(['groq', 'gemini', 'moonshot']);
+        if (!allowed.has(provider)) {
+            return c.json({ error: 'Invalid provider' }, 400);
+        }
+        await trackExternalCall({
+            userId,
+            provider,
+            endpoint: endpoint || '/client',
+            units,
+        });
+        return c.json({ success: true });
+    } catch (err) {
+        if (err.code === 'BUDGET_EXCEEDED') {
+            return c.json({ error: 'Provider daily limit reached' }, 429);
+        }
+        return c.json({ error: err.message }, 500);
     }
 });
 
