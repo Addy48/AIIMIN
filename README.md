@@ -1,6 +1,6 @@
-# AIIMIN — Personal Life Operating System
+# AIIMIN — Personal Performance Dashboard
 
-> A precision-engineered self-tracking dashboard that turns scattered daily habits into measurable behavioral momentum. Built by a solo developer as a production-grade full-stack system.
+> A full-stack dashboard I built to track daily habits, focus, finances, and reflection in one place — with gamification, analytics, and a mobile logging view. Solo project, production-deployed.
 
 <p align="center">
   <a href="https://aiimin.in" target="_blank"><img src="https://img.shields.io/badge/Live%20Demo-aiimin.in-ff6b35?style=for-the-badge&logo=vercel" alt="Live Demo" /></a>
@@ -9,7 +9,7 @@
   &nbsp;
   <img src="https://img.shields.io/badge/Hono-4.x-e36002?style=for-the-badge" alt="Hono" />
   &nbsp;
-  <img src="https://img.shields.io/badge/PostgreSQL-Neon-00e699?style=for-the-badge&logo=postgresql" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Supabase-00e699?style=for-the-badge&logo=postgresql" alt="PostgreSQL" />
   &nbsp;
   <img src="https://img.shields.io/badge/Deployed-Vercel-black?style=for-the-badge&logo=vercel" alt="Vercel" />
 </p>
@@ -20,7 +20,7 @@
 
 People who want to improve themselves face a fragmentation problem: their gym data is in one app, finances in another, mood in a journal, focus in a timer. None of these talk to each other. You can't know that your sleep debt is the reason your focus crashed on Wednesday unless something correlates those signals automatically.
 
-**AIIMIN** is a single unified operating system for personal performance. It:
+**AIIMIN** is a personal dashboard I built to pull those signals into one app. It:
 - Collects 15+ daily signals (sleep, gym, steps, water, mood, energy, learning, money, wins)
 - Finds hidden causal correlations across those signals using Spearman rank statistics
 - Gamifies consistency to drive long-term habit formation
@@ -344,4 +344,4 @@ Built as a solo full-stack project to track and optimize personal performance.
 
 ---
 
-*Private project. All rights reserved.*
+*Portfolio project — live at [aiimin.in](https://aiimin.in). Source available for review; not licensed for redistribution.*
