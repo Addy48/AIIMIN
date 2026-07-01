@@ -46,7 +46,7 @@ const ChangePassword = () => {
                 Password Management
             </div>
             <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>
-                Security and authentication are now powered by Clerk. To update your password, email, or linked accounts, click your profile avatar in the navigation bar.
+                Security and account settings will move to AWS Cognito. Password and linked-account changes are paused during the auth migration.
             </div>
         </div>
     );

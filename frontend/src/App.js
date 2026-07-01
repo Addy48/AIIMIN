@@ -1,10 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { ClerkProvider } from '@clerk/clerk-react';
 
 // Eagerly loaded Auth & public pages
 import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
+import WaitlistLanding from './pages/WaitlistLanding';
+import { WaitlistPendingScreen } from './components/waitlist/WaitlistQuickFeedback';
 import Privacy from './pages/legal/Privacy';
 import Terms from './pages/legal/Terms';
 import DataDeletion from './pages/legal/DataDeletion';
@@ -24,7 +25,8 @@ import GuestTour from './components/onboarding/GuestTour';
 
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
-import { AuthProvider } from './context/ClerkAuthContext';
+import { useAccessGate } from './hooks/useAccessGate';
+import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
@@ -58,23 +60,19 @@ const Fallback = () => (
 );
 const Lazy = ({ children }) => <React.Suspense fallback={<Fallback />}>{children}</React.Suspense>;
 
-const CLERK_PK = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
-
 /* ── Root App ─────────────────────────────────────────────────────── */
 function App() {
   return (
     <ErrorBoundary label="Application">
-      <ClerkProvider publishableKey={CLERK_PK} afterSignOutUrl="/login">
-        <ThemeProvider>
-          <AuthProvider>
-            <AudioProvider>
-              <BrowserRouter>
-                <AuthedApp />
-              </BrowserRouter>
-            </AudioProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </ClerkProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AudioProvider>
+            <BrowserRouter>
+              <AuthedApp />
+            </BrowserRouter>
+          </AudioProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
@@ -87,21 +85,59 @@ function AuthedApp() {
 
 function AppContent({ user, session }) {
   const location = useLocation();
-  // Basic check for mobile form factor removed, mobile now uses main layout
+  const { isSignedIn } = useAuth();
+  const { canAccessApp, loading: accessLoading, isWaitlistMode } = useAccessGate();
+
+  const showWaitlistAtRoot = isWaitlistMode && !canAccessApp && !accessLoading;
+  const showPendingScreen = isWaitlistMode && isSignedIn && !canAccessApp && !accessLoading
+    && !['/login', '/'].includes(location.pathname)
+    && !location.pathname.startsWith('/privacy')
+    && !location.pathname.startsWith('/terms')
+    && !location.pathname.startsWith('/contact')
+    && !location.pathname.startsWith('/about')
+    && !location.pathname.startsWith('/security')
+    && !location.pathname.startsWith('/data-deletion')
+    && !location.pathname.startsWith('/brand');
+
+  if (accessLoading && isWaitlistMode) {
+    return <Fallback />;
+  }
+
+  if (showPendingScreen) {
+    return <WaitlistPendingScreen />;
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-base)' }}>
       <Routes>
 
-        {/* ── Auth ── */}
-        <Route path="/login/*" element={session ? <Navigate to="/overview" replace /> : <Login />} />
-        <Route path="/onboarding" element={session ? <Onboarding /> : <Navigate to="/login" replace />} />
-        <Route path="/" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
+        {/* Waitlist landing at / for public visitors */}
+        {showWaitlistAtRoot && (
+          <Route path="/" element={<WaitlistLanding />} />
+        )}
 
-        {/* ── Authenticated shell ── */}
+        {/* Auth */}
+        <Route path="/login/*" element={
+          isWaitlistMode && !canAccessApp
+            ? <Login />
+            : (session ? <Navigate to="/overview" replace /> : <Login />)
+        } />
+        <Route path="/onboarding" element={
+          isWaitlistMode && !canAccessApp
+            ? <Navigate to="/" replace />
+            : (session ? <Onboarding /> : <Navigate to="/login" replace />)
+        } />
+        {!showWaitlistAtRoot && (
+          <Route path="/" element={<Navigate to={canAccessApp && session ? '/overview' : '/login'} replace />} />
+        )}
+
+        {/* Authenticated shell */}
         <Route element={
-          session ? <DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} /> : 
-          <Navigate to="/login" replace />
+          isWaitlistMode && !canAccessApp
+            ? <Navigate to="/" replace />
+            : (session
+              ? <DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} />
+              : <Navigate to="/login" replace />)
         }>
           <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />
           <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
@@ -135,14 +171,15 @@ function AppContent({ user, session }) {
         <Route path="/brand" element={<Brand />} />
 
         {/* ── 404 ── */}
-        <Route path="*" element={<Navigate to={user ? '/overview' : '/login'} replace />} />
+        <Route path="*" element={<Navigate to={showWaitlistAtRoot && !session ? '/' : (user ? '/overview' : '/login')} replace />} />
 
       </Routes>
 
       {/* Global Widgets */}
-      {location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-      {location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
-      {location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      {canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+      {canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+      {isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
+      {!isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
   );
 }
