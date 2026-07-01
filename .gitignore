@@ -29,6 +29,10 @@ aiimin.pem
 # MCP local config (may contain secrets — use .mcp.json.example)
 .mcp.json
 
+# Account Design Lab — local prototypes only (not for production)
+frontend/src/pages/account/sections/DesignSection.jsx
+frontend/src/pages/account/sections/design/
+
 # Tools & editors
 .claude/
 .sst/

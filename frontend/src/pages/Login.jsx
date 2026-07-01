@@ -1,7 +1,9 @@
 import React from 'react';
-import { SignIn } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
 import { useThemeContext } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
+
+const IS_WAITLIST_MODE = process.env.REACT_APP_WAITLIST_MODE === 'true';
 
 export default function Login() {
   const { theme } = useThemeContext();
@@ -9,7 +11,6 @@ export default function Login() {
 
   return (
     <div className="login-root">
-      {/* ─── LEFT PANEL ─── */}
       <div className="login-left">
         <div className="login-left-glow" />
         <div className="login-left-logo">
@@ -31,137 +32,42 @@ export default function Login() {
           transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="login-left-pills"
         >
-          {['✦ Finance & Goals', '✦ Habits & Lab', '✦ Journal & Focus'].map(p => (
+          {['✦ Finance & Goals', '✦ Habits & Lab', '✦ Journal & Focus'].map((p) => (
             <span key={p} className="login-pill">{p}</span>
           ))}
         </motion.div>
       </div>
 
-      {/* ─── RIGHT PANEL ─── */}
       <div className="login-right">
-        <motion.div 
+        <motion.div
           className="login-form-wrap"
           initial={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
           animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
           transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* Native Header */}
           <div className="login-native-header">
             <h1 className="login-native-title">Sign in.</h1>
-            <p className="login-native-subtitle">Welcome back. Enter your details to continue.</p>
+            <p className="login-native-subtitle">
+              {IS_WAITLIST_MODE
+                ? 'Approved testers only. Everyone else — join the waitlist.'
+                : 'Account sign-in is being rebuilt on AWS Cognito.'}
+            </p>
           </div>
 
-          <SignIn
-            routing="hash"
-            redirectUrl="/overview"
-            signUpUrl="/login#/sign-up"
-            appearance={{
-              variables: {
-                colorPrimary: '#1E5C3A',
-                colorBackground: 'transparent',
-                colorText: isDark ? '#f5f5f5' : '#111',
-                colorTextSecondary: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                colorInputBackground: isDark ? 'rgba(255,255,255,0.05)' : '#ffffff',
-                colorInputText: isDark ? '#f5f5f5' : '#111',
-                borderRadius: '16px',
-                fontFamily: 'Inter, system-ui, sans-serif',
-              },
-              elements: {
-                rootBox: {
-                  width: '100%',
-                },
-                cardBox: {
-                  boxShadow: 'none',
-                  background: 'transparent',
-                  border: 'none',
-                },
-                card: {
-                  boxShadow: 'none',
-                  background: 'transparent',
-                  border: 'none',
-                  padding: 0,
-                  gap: '24px',
-                },
-                header: {
-                  display: 'none', // Hide Clerk's header
-                },
-                footer: {
-                  background: 'transparent',
-                  padding: 0,
-                  border: 'none',
-                },
-                footerAction: {
-                  display: 'none', // Hide footer action
-                },
-                formFieldInput: {
-                  background: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
-                  border: '1px solid transparent',
-                  borderRadius: '14px',
-                  padding: '16px 18px',
-                  boxShadow: isDark ? 'none' : '0 2px 10px rgba(0,0,0,0.02)',
-                  fontSize: '15px',
-                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                },
-                formButtonPrimary: {
-                  background: '#1E5C3A',
-                  color: '#fff',
-                  fontWeight: 600,
-                  borderRadius: '14px',
-                  padding: '16px',
-                  boxShadow: '0 4px 14px rgba(30, 92, 58, 0.25)',
-                  fontSize: '16px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  marginTop: '12px',
-                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                },
-                socialButtonsBlockButton: {
-                  border: 'none',
-                  borderRadius: '14px',
-                  background: isDark ? 'rgba(255,255,255,0.06)' : '#ffffff',
-                  padding: '16px',
-                  boxShadow: isDark ? 'none' : '0 4px 14px rgba(0,0,0,0.04)',
-                  fontSize: '15px',
-                  fontWeight: 500,
-                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                },
-                dividerRow: {
-                  margin: '8px 0',
-                },
-                dividerLine: {
-                  background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-                  height: '1px',
-                },
-                dividerText: {
-                  color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
-                  background: 'var(--color-base)',
-                  padding: '0 16px',
-                  fontSize: '13px',
-                },
-                identityPreview: {
-                  background: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
-                  border: 'none',
-                  boxShadow: isDark ? 'none' : '0 2px 10px rgba(0,0,0,0.02)',
-                  borderRadius: '14px',
-                  padding: '16px',
-                },
-                identityPreviewEditButtonIcon: {
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                },
-                formFieldLabelRow: {
-                  marginBottom: '10px',
-                },
-                formFieldLabel: {
-                  fontWeight: 500,
-                  fontSize: '13.5px',
-                  color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                }
-              },
-            }}
-          />
+          <div className="login-placeholder-card">
+            <p className="login-placeholder-text">
+              We removed the old auth provider and are finishing AWS Cognito login.
+              If you are on the approved tester list, sign-in will return here soon.
+            </p>
+            {IS_WAITLIST_MODE ? (
+              <Link to="/" className="login-cta">Back to waitlist</Link>
+            ) : (
+              <Link to="/contact" className="login-cta">Contact support</Link>
+            )}
+          </div>
         </motion.div>
       </div>
 
-      {/* ─── STYLES ─── */}
       <style>{`
         .login-root {
           display: flex;
@@ -170,7 +76,6 @@ export default function Login() {
           background: var(--color-base);
         }
 
-        /* LEFT */
         .login-left {
           width: 45%;
           max-width: 600px;
@@ -200,10 +105,7 @@ export default function Login() {
             radial-gradient(ellipse 40% 40% at 10% 80%, rgba(0,0,0,0.4) 0%, transparent 60%);
         }
 
-        .login-left-logo {
-          position: relative;
-          z-index: 2;
-        }
+        .login-left-logo { position: relative; z-index: 2; }
 
         .login-wordmark-white {
           font-family: var(--font-serif);
@@ -230,7 +132,6 @@ export default function Login() {
           line-height: 1.05;
           letter-spacing: -0.035em;
           margin: 0;
-          opacity: 0.98;
         }
 
         .login-left-pills {
@@ -251,13 +152,8 @@ export default function Login() {
           color: rgba(255,255,255,0.95);
           font-size: 13px;
           font-weight: 600;
-          font-family: var(--font-sans);
-          letter-spacing: 0.02em;
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
         }
 
-        /* RIGHT */
         .login-right {
           flex: 1;
           min-height: 100vh;
@@ -266,23 +162,15 @@ export default function Login() {
           align-items: center;
           justify-content: center;
           padding: 48px 32px;
-          box-sizing: border-box;
-          overflow-y: auto;
-          position: relative;
         }
 
         .login-form-wrap {
           width: 100%;
           max-width: 400px;
-          display: flex;
-          flex-direction: column;
         }
 
         .login-native-header {
-          margin-bottom: 40px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
+          margin-bottom: 32px;
         }
 
         .login-native-title {
@@ -291,80 +179,45 @@ export default function Login() {
           font-weight: 800;
           color: var(--color-text-1);
           letter-spacing: -0.04em;
-          line-height: 1.1;
-          margin: 0;
+          margin: 0 0 8px;
         }
 
         .login-native-subtitle {
-          font-family: var(--font-sans);
           font-size: 16px;
           color: var(--color-text-3);
           margin: 0;
-          letter-spacing: -0.01em;
+          line-height: 1.5;
         }
 
-        /* CLERK BRANDING OVERRIDES */
-        .cl-internal-b3alnr, 
-        .cl-watermark,
-        [class*="cl-internal-"] > a[href*="clerk.com"],
-        .cl-internal-1dauvpw,
-        .cl-internal-1hp5nqm {
-          display: none !important;
+        .login-placeholder-card {
+          padding: 24px;
+          border-radius: 16px;
+          border: 1px solid var(--color-border);
+          background: ${isDark ? 'rgba(255,255,255,0.03)' : '#fff'};
         }
 
-        /* Input & Button hover states for premium feel */
-        .cl-formFieldInput:hover, 
-        .cl-formFieldInput:focus {
-          box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
-          border-color: rgba(0,0,0,0.05) !important;
-          transform: translateY(-1px);
-        }
-        
-        .cl-socialButtonsBlockButton:hover {
-          box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
-          transform: translateY(-2px);
+        .login-placeholder-text {
+          margin: 0 0 20px;
+          font-size: 14px;
+          line-height: 1.6;
+          color: var(--color-text-2);
         }
 
-        .cl-formButtonPrimary:hover {
-          box-shadow: 0 8px 24px rgba(30, 92, 58, 0.35) !important;
-          transform: translateY(-2px);
-          filter: brightness(1.05);
+        .login-cta {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          padding: 14px 18px;
+          border-radius: 14px;
+          background: #1E5C3A;
+          color: #fff;
+          font-weight: 600;
+          text-decoration: none;
         }
 
-        /* Dark mode input hover fix */
-        @media (prefers-color-scheme: dark) {
-          .login-root {
-            --login-shadow-hover: 0 4px 20px rgba(255,255,255,0.05);
-          }
-          .cl-formFieldInput:hover, 
-          .cl-formFieldInput:focus {
-            box-shadow: var(--login-shadow-hover) !important;
-            border-color: rgba(255,255,255,0.1) !important;
-          }
-          .cl-socialButtonsBlockButton:hover {
-            box-shadow: var(--login-shadow-hover) !important;
-          }
-        }
-
-        /* Mobile: hide left panel */
         @media (max-width: 900px) {
-          .login-left {
-            display: none;
-          }
-          .login-right {
-            min-height: 100vh;
-          }
-          .login-native-title {
-            font-size: 36px;
-          }
-        }
-
-        /* Tablets: tighten */
-        @media (max-width: 1100px) and (min-width: 901px) {
-          .login-left {
-            width: 40%;
-            padding: 40px 36px;
-          }
+          .login-left { display: none; }
         }
       `}</style>
     </div>

@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIIMIN — Logo Design System (20 Concepts)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1e1e1e;
+    --border: #2a2a2a;
+    --text-1: #ededed;
+    --text-2: #a1a1aa;
+    --text-3: #6b6b7b;
+    --green: #10B981;
+    --green-dark: #1E5C3A;
+    --green-dim: rgba(16,185,129,0.12);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Figtree', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text-1);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ──────────────────────────── */
+  .header {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 32px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-family: 'Bodoni Moda', serif;
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .header h1 span { color: var(--green); }
+  .header p {
+    color: var(--text-2);
+    font-size: 15px;
+    max-width: 700px;
+  }
+  .header .meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .header .meta span {
+    background: var(--surface-2);
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── Market Study ────────────────────── */
+  .study {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .study h2 {
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    margin-bottom: 24px;
+  }
+  .study-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .study-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .study-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .study-card .brand-tag {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--green);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .study-card p {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+
+  /* ── Section headers ─────────────────── */
+  .section-header {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 32px 16px;
+  }
+  .section-header h2 {
+    font-size: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--green);
+  }
+  .section-header p {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-top: 4px;
+  }
+
+  /* ── Logo Grid ───────────────────────── */
+  .logo-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 32px 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .logo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .logo-card:hover {
+    border-color: var(--green);
+    transform: translateY(-2px);
+  }
+  .logo-preview {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    position: relative;
+  }
+  .logo-preview svg {
+    width: 80px;
+    height: 80px;
+  }
+  .logo-preview .bg-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--text-2);
+    transition: all 0.15s ease;
+  }
+  .logo-preview .bg-toggle:hover { border-color: var(--green); }
+  .logo-preview.light-bg { background: #f5f5f5; }
+  .logo-preview.light-bg svg { filter: none; }
+
+  .logo-info {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .logo-info .number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--green);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .logo-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .logo-info p {
+    font-size: 12px;
+    color: var(--text-3);
+    line-height: 1.4;
+  }
+  .logo-info .tags {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .logo-info .tag {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--green-dim);
+    color: var(--green);
+  }
+
+  /* ── Wordmark row ────────────────────── */
+  .wordmark-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+  }
+  .wordmark-row svg { width: 28px; height: 28px; flex-shrink: 0; }
+  .wordmark-row .wm-text {
+    font-family: 'Bodoni Moda', serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-1);
+  }
+
+  /* ── Footer ──────────────────────────── */
+  .footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 32px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-3);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+  <h1>AIIMIN <span>Logo System</span></h1>
+  <p>20 production-grade logo concepts for the Personal Operating System. Each design is a working SVG — scalable from favicon (16px) to billboard. Built from market analysis of Vercel, Linear, Notion, Stripe, Arc, Raycast, and Supabase.</p>
+  <div class="meta">
+    <span>20 Concepts</span>
+    <span>SVG Vector</span>
+    <span>Dark + Light</span>
+    <span>July 2026</span>
+  </div>
+</div>
+
+<!-- ═══ MARKET STUDY ═══ -->
+<div class="study">
+  <h2>// Market Study — What Great Logos Do</h2>
+  <div class="study-grid">
+    <div class="study-card">
+      <span class="brand-tag">▲ VERCEL</span>
+      <h3>Pure Geometry</h3>
+      <p>A single filled triangle. Zero ornament. Works at 12px favicon and on a billboard. The lesson: the best logos are shapes a child could draw from memory.</p>
+    </div>
+    <div class="study-card">
+      <span class="brand-tag">◇ LINEAR</span>
+      <h3>Functional Precision</h3>
+      <p>An abstract L in a circle that reads like a precision drafting tool. It communicates the product promise (speed, no friction) through form alone.</p>
+    </div>
+    <div class="study-card">
+      <span class="brand-tag">⚡ SUPABASE</span>
+      <h3>Kinetic Energy</h3>
+      <p>Intersecting lightning bolts = speed + power. The bright green cuts through corporate blue. High-contrast accent colors demand attention on screen.</p>
+    </div>
+    <div class="study-card">
+      <span class="brand-tag">⌘ RAYCAST</span>
+      <h3>The Command Interface</h3>
+      <p>An abstract cursor/beam that suggests "launch anything." For a personal OS, the logo should feel like a launcher — a portal to everything.</p>
+    </div>
+    <div class="study-card">
+      <span class="brand-tag">◎ ARC BROWSER</span>
+      <h3>Crafted Personality</h3>
+      <p>A tilted, colorful arc. It breaks from the sterile circle of every other browser. For AIIMIN: don't default to safe geometry. Show personality.</p>
+    </div>
+    <div class="study-card">
+      <span class="brand-tag">▣ NOTION</span>
+      <h3>Dimensional Warmth</h3>
+      <p>An isometric 3D "N" with a pencil stroke. It feels human, approachable. AIIMIN needs this balance — technical precision + emotional warmth.</p>
+    </div>
+    <div class="study-card">
+      <span class="brand-tag">⬡ STRIPE</span>
+      <h3>Diagonal Momentum</h3>
+      <p>Two diagonal slashes suggest forward motion and speed of transactions. Diagonal lines universally read as "movement" — a powerful tool for a growth app.</p>
+    </div>
+    <div class="study-card">
+      <span class="brand-tag">★ AIIMIN BRIEF</span>
+      <h3>What Our Logo Must Do</h3>
+      <p>Communicate: personal OS, multi-domain life, ambition, system-level control, growth, daily ritual. Work at: 16px favicon, 32px tab, 80px navbar, 200px+ splash.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TRACK A: LETTERMARKS ═══ -->
+<div class="section-header">
+  <h2>// Track A — Lettermarks & Monograms</h2>
+  <p>Abstract representations of "A" and "II" from the name AIIMIN</p>
+</div>
+<div class="logo-grid">
+
+  <!-- LOGO 01 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 10 L85 82 H15 Z" stroke="#10B981" stroke-width="4" fill="none"/>
+        <line x1="35" y1="58" x2="65" y2="58" stroke="#10B981" stroke-width="4"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">01</span>
+      <h3>The Open Triangle</h3>
+      <p>Pure geometric A — outlined, not filled. The crossbar suggests stability. Reads as: foundational, transparent, structural.</p>
+      <div class="tags"><span class="tag">minimal</span><span class="tag">geometric</span><span class="tag">vercel-family</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M50 10 L85 82 H15 Z" stroke="#10B981" stroke-width="5" fill="none"/><line x1="35" y1="58" x2="65" y2="58" stroke="#10B981" stroke-width="5"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 02 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 15 L80 80 H60 L50 55 L40 80 H20 Z" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">02</span>
+      <h3>The Notch A</h3>
+      <p>A filled with an inverted notch cut from the center — like a mountain with a valley. Suggests peak performance with self-awareness.</p>
+      <div class="tags"><span class="tag">bold</span><span class="tag">filled</span><span class="tag">distinctive</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M50 15 L80 80 H60 L50 55 L40 80 H20 Z" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 03 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 12 L88 85" stroke="#10B981" stroke-width="6" stroke-linecap="round"/>
+        <path d="M50 12 L12 85" stroke="#10B981" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="50" cy="56" r="5" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">03</span>
+      <h3>The Focal A</h3>
+      <p>Two diverging lines from apex with a focus dot at center. No crossbar — the dot IS the crossbar. Reads: aimed, centered, intentional.</p>
+      <div class="tags"><span class="tag">focus</span><span class="tag">minimal</span><span class="tag">target</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M50 12 L88 85" stroke="#10B981" stroke-width="7" stroke-linecap="round"/><path d="M50 12 L12 85" stroke="#10B981" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="56" r="6" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 04 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="15" width="8" height="70" rx="4" fill="#10B981"/>
+        <rect x="62" y="15" width="8" height="70" rx="4" fill="#10B981"/>
+        <circle cx="50" cy="50" r="4" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">04</span>
+      <h3>The Parallel Pillars</h3>
+      <p>Two vertical bars (the "II" in AIIMIN) connected by a central node. Gateway metaphor — entering a focused state. Inspired by pause button reinterpretation.</p>
+      <div class="tags"><span class="tag">II-motif</span><span class="tag">gateway</span><span class="tag">calm</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><rect x="30" y="15" width="8" height="70" rx="4" fill="#10B981"/><rect x="62" y="15" width="8" height="70" rx="4" fill="#10B981"/><circle cx="50" cy="50" r="4" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 05 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M25 80 L50 20 L75 80" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M30 80 L50 30 L70 80" stroke="#1E5C3A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">05</span>
+      <h3>The Depth A</h3>
+      <p>Two nested A-shapes — outer bright, inner dark green. Creates depth and layering. Reads: multi-layered system, levels within levels.</p>
+      <div class="tags"><span class="tag">depth</span><span class="tag">layered</span><span class="tag">premium</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M25 80 L50 20 L75 80" stroke="#10B981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M30 80 L50 30 L70 80" stroke="#1E5C3A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ TRACK B: SYSTEM SYMBOLS ═══ -->
+<div class="section-header">
+  <h2>// Track B — System & OS Symbols</h2>
+  <p>Marks that communicate "operating system," "control center," "life dashboard"</p>
+</div>
+<div class="logo-grid">
+
+  <!-- LOGO 06 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="35" stroke="#10B981" stroke-width="3"/>
+        <circle cx="50" cy="50" r="8" fill="#10B981"/>
+        <line x1="50" y1="15" x2="50" y2="30" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+        <line x1="50" y1="70" x2="50" y2="85" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+        <line x1="15" y1="50" x2="30" y2="50" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+        <line x1="70" y1="50" x2="85" y2="50" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">06</span>
+      <h3>The Command Center</h3>
+      <p>A crosshair/reticle with a solid core. Four directional ticks = four life domains (habits, finance, discipline, focus). You are at the center.</p>
+      <div class="tags"><span class="tag">command</span><span class="tag">control</span><span class="tag">OS</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="35" stroke="#10B981" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#10B981"/><line x1="50" y1="15" x2="50" y2="30" stroke="#10B981" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="70" x2="50" y2="85" stroke="#10B981" stroke-width="4" stroke-linecap="round"/><line x1="15" y1="50" x2="30" y2="50" stroke="#10B981" stroke-width="4" stroke-linecap="round"/><line x1="70" y1="50" x2="85" y2="50" stroke="#10B981" stroke-width="4" stroke-linecap="round"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 07 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="15" y="15" width="30" height="30" rx="6" fill="#10B981"/>
+        <rect x="55" y="15" width="30" height="30" rx="6" fill="#1E5C3A"/>
+        <rect x="15" y="55" width="30" height="30" rx="6" fill="#1E5C3A"/>
+        <rect x="55" y="55" width="30" height="30" rx="6" fill="#10B981" opacity="0.5"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">07</span>
+      <h3>The Grid OS</h3>
+      <p>Four quadrants, each a different opacity of green. Like a dashboard with four modules. Inspired by Windows tiles but far more refined. Each tile = a life domain.</p>
+      <div class="tags"><span class="tag">dashboard</span><span class="tag">modular</span><span class="tag">multi-domain</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><rect x="15" y="15" width="30" height="30" rx="6" fill="#10B981"/><rect x="55" y="15" width="30" height="30" rx="6" fill="#1E5C3A"/><rect x="15" y="55" width="30" height="30" rx="6" fill="#1E5C3A"/><rect x="55" y="55" width="30" height="30" rx="6" fill="#10B981" opacity="0.5"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 08 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="30" r="6" fill="#10B981"/>
+        <circle cx="27" cy="70" r="6" fill="#10B981"/>
+        <circle cx="73" cy="70" r="6" fill="#10B981"/>
+        <line x1="50" y1="36" x2="27" y2="64" stroke="#10B981" stroke-width="2.5"/>
+        <line x1="50" y1="36" x2="73" y2="64" stroke="#10B981" stroke-width="2.5"/>
+        <line x1="27" y1="70" x2="73" y2="70" stroke="#10B981" stroke-width="2.5"/>
+        <circle cx="50" cy="50" r="3" fill="#1E5C3A"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">08</span>
+      <h3>The Trinity Node</h3>
+      <p>Three connected nodes forming a triangle with a center node. Represents interconnected life domains with you at the gravitational center. Similar to your reference but elevated.</p>
+      <div class="tags"><span class="tag">network</span><span class="tag">connected</span><span class="tag">systemic</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="30" r="7" fill="#10B981"/><circle cx="27" cy="70" r="7" fill="#10B981"/><circle cx="73" cy="70" r="7" fill="#10B981"/><line x1="50" y1="36" x2="27" y2="64" stroke="#10B981" stroke-width="3"/><line x1="50" y1="36" x2="73" y2="64" stroke="#10B981" stroke-width="3"/><line x1="27" y1="70" x2="73" y2="70" stroke="#10B981" stroke-width="3"/><circle cx="50" cy="50" r="4" fill="#1E5C3A"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 09 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="36" stroke="#10B981" stroke-width="3"/>
+        <circle cx="50" cy="50" r="22" stroke="#10B981" stroke-width="2.5"/>
+        <circle cx="50" cy="50" r="10" stroke="#10B981" stroke-width="2"/>
+        <circle cx="50" cy="50" r="3" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">09</span>
+      <h3>The Orbit Rings</h3>
+      <p>Concentric circles radiating from a solid core. Like a personal solar system — you at the center, domains orbiting around you. Clean, balanced, hypnotic.</p>
+      <div class="tags"><span class="tag">orbital</span><span class="tag">centered</span><span class="tag">calm</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><circle cx="50" cy="50" r="36" stroke="#10B981" stroke-width="4"/><circle cx="50" cy="50" r="22" stroke="#10B981" stroke-width="3"/><circle cx="50" cy="50" r="10" stroke="#10B981" stroke-width="2.5"/><circle cx="50" cy="50" r="3" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 10 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 14 L50 86" stroke="#10B981" stroke-width="4" stroke-linecap="round"/>
+        <path d="M14 50 L86 50" stroke="#10B981" stroke-width="4" stroke-linecap="round"/>
+        <path d="M24 24 L76 76" stroke="#1E5C3A" stroke-width="3" stroke-linecap="round"/>
+        <path d="M76 24 L24 76" stroke="#1E5C3A" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="6" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">10</span>
+      <h3>The Compass Rose</h3>
+      <p>Eight directional vectors all converging on a center point. Cardinal = primary domains, diagonal = secondary. You navigate all directions from one center.</p>
+      <div class="tags"><span class="tag">navigation</span><span class="tag">direction</span><span class="tag">all-in-one</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M50 14 L50 86" stroke="#10B981" stroke-width="5" stroke-linecap="round"/><path d="M14 50 L86 50" stroke="#10B981" stroke-width="5" stroke-linecap="round"/><path d="M24 24 L76 76" stroke="#1E5C3A" stroke-width="4" stroke-linecap="round"/><path d="M76 24 L24 76" stroke="#1E5C3A" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="50" r="7" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ TRACK C: GROWTH & MOMENTUM ═══ -->
+<div class="section-header">
+  <h2>// Track C — Growth, Momentum & Ambition</h2>
+  <p>Logos that scream "upward trajectory" and "leveling up" — for the ambitious</p>
+</div>
+<div class="logo-grid">
+
+  <!-- LOGO 11 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 75 L40 55 L55 65 L80 25" stroke="#10B981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M68 25 L80 25 L80 37" stroke="#10B981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">11</span>
+      <h3>The Trajectory</h3>
+      <p>An upward growth line with an arrow tip. Simple, universal. Like a stock chart going up. Reads: progress, momentum, ambition paying off.</p>
+      <div class="tags"><span class="tag">growth</span><span class="tag">momentum</span><span class="tag">stripe-like</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M20 75 L40 55 L55 65 L80 25" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M68 25 L80 25 L80 37" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 12 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="18" y="60" width="12" height="25" rx="3" fill="#1E5C3A"/>
+        <rect x="35" y="45" width="12" height="40" rx="3" fill="#1E5C3A"/>
+        <rect x="52" y="30" width="12" height="55" rx="3" fill="#10B981"/>
+        <rect x="69" y="15" width="12" height="70" rx="3" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">12</span>
+      <h3>The Level Up</h3>
+      <p>Four ascending bars — short to tall, dark to bright green. Like XP levels or progress tiers. Each bar = a level of personal growth. Gamification in a mark.</p>
+      <div class="tags"><span class="tag">gamified</span><span class="tag">levels</span><span class="tag">progression</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><rect x="18" y="60" width="12" height="25" rx="3" fill="#1E5C3A"/><rect x="35" y="45" width="12" height="40" rx="3" fill="#1E5C3A"/><rect x="52" y="30" width="12" height="55" rx="3" fill="#10B981"/><rect x="69" y="15" width="12" height="70" rx="3" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 13 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 70 L50 30 L70 70" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M38 70 L50 42 L62 70" stroke="#1E5C3A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="50" cy="25" r="4" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">13</span>
+      <h3>The Summit</h3>
+      <p>Two nested mountain peaks with a star/dot at the apex. You're climbing toward the peak. The inner peak = your current level, outer = your potential.</p>
+      <div class="tags"><span class="tag">ambition</span><span class="tag">peak</span><span class="tag">aspirational</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M30 70 L50 30 L70 70" stroke="#10B981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M38 70 L50 42 L62 70" stroke="#1E5C3A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="50" cy="25" r="5" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 14 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 85 L50 20" stroke="#10B981" stroke-width="4" stroke-linecap="round"/>
+        <path d="M35 35 L50 20 L65 35" stroke="#10B981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M30 50 L50 35 L70 50" stroke="#1E5C3A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">14</span>
+      <h3>The Launch Vector</h3>
+      <p>An upward arrow with double chevrons — like a rocket launch or a "swipe up" gesture. Pure velocity. Reads: launch your day, launch your life.</p>
+      <div class="tags"><span class="tag">velocity</span><span class="tag">launch</span><span class="tag">kinetic</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M50 85 L50 20" stroke="#10B981" stroke-width="5" stroke-linecap="round"/><path d="M35 35 L50 20 L65 35" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M30 50 L50 35 L70 50" stroke="#1E5C3A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 15 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 50 m-30,0 a30,30 0 1,1 60,0" stroke="#10B981" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M50 50 m-18,0 a18,18 0 1,1 36,0" stroke="#1E5C3A" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <circle cx="50" cy="50" r="5" fill="#10B981"/>
+        <line x1="50" y1="50" x2="50" y2="80" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">15</span>
+      <h3>The Gauge</h3>
+      <p>A speedometer/gauge with needle pointing up — like a dashboard instrument. Two arcs at different radii. Reads: performance measured, optimized, controlled.</p>
+      <div class="tags"><span class="tag">performance</span><span class="tag">dashboard</span><span class="tag">metric</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M50 50 m-30,0 a30,30 0 1,1 60,0" stroke="#10B981" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M50 50 m-18,0 a18,18 0 1,1 36,0" stroke="#1E5C3A" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="50" cy="50" r="6" fill="#10B981"/><line x1="50" y1="50" x2="50" y2="80" stroke="#10B981" stroke-width="4" stroke-linecap="round"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ TRACK D: ABSTRACT / CONCEPTUAL ═══ -->
+<div class="section-header">
+  <h2>// Track D — Abstract & Conceptual</h2>
+  <p>Marks that don't look like anything specific — they just FEEL right</p>
+</div>
+<div class="logo-grid">
+
+  <!-- LOGO 16 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M25 75 Q50 10 75 75" stroke="#10B981" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <circle cx="50" cy="38" r="4" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">16</span>
+      <h3>The Arc</h3>
+      <p>A single elegant parabolic curve with a zenith dot. Like Arc browser but simpler. The curve represents a life trajectory — rises, peaks, and the dot marks where you are NOW.</p>
+      <div class="tags"><span class="tag">elegant</span><span class="tag">arc</span><span class="tag">trajectory</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M25 75 Q50 10 75 75" stroke="#10B981" stroke-width="6" stroke-linecap="round" fill="none"/><circle cx="50" cy="38" r="5" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 17 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,15 85,50 50,85 15,50" stroke="#10B981" stroke-width="4" fill="none"/>
+        <polygon points="50,30 70,50 50,70 30,50" fill="#10B981" opacity="0.3"/>
+        <circle cx="50" cy="50" r="4" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">17</span>
+      <h3>The Diamond Core</h3>
+      <p>Outer diamond outline with a semi-transparent inner diamond and solid center. Represents refinement — raw carbon → diamond. You're becoming your best self.</p>
+      <div class="tags"><span class="tag">refinement</span><span class="tag">premium</span><span class="tag">identity</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><polygon points="50,15 85,50 50,85 15,50" stroke="#10B981" stroke-width="5" fill="none"/><polygon points="50,30 70,50 50,70 30,50" fill="#10B981" opacity="0.3"/><circle cx="50" cy="50" r="5" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 18 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 70 C30 30, 70 30, 70 70" stroke="#10B981" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M70 30 C70 70, 30 70, 30 30" stroke="#1E5C3A" stroke-width="4" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">18</span>
+      <h3>The Infinity Weave</h3>
+      <p>Two interlocking curves creating an abstract infinity symbol in a square frame. Dual green tones. Reads: continuous improvement, life is a loop, not a line.</p>
+      <div class="tags"><span class="tag">infinity</span><span class="tag">continuous</span><span class="tag">flow</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M30 70 C30 30, 70 30, 70 70" stroke="#10B981" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M70 30 C70 70, 30 70, 30 30" stroke="#1E5C3A" stroke-width="5" stroke-linecap="round" fill="none"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 19 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 15 L80 35 L80 65 L50 85 L20 65 L20 35 Z" stroke="#10B981" stroke-width="3.5" fill="none"/>
+        <path d="M50 15 L50 85" stroke="#1E5C3A" stroke-width="2" stroke-dasharray="4 4"/>
+        <path d="M20 35 L80 65" stroke="#1E5C3A" stroke-width="2" stroke-dasharray="4 4"/>
+        <path d="M80 35 L20 65" stroke="#1E5C3A" stroke-width="2" stroke-dasharray="4 4"/>
+        <circle cx="50" cy="50" r="5" fill="#10B981"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">19</span>
+      <h3>The Hex Matrix</h3>
+      <p>A hexagon with internal dashed symmetry lines and a solid center node. Like a molecular structure or honeycomb cell. Reads: engineered, systematic, structured life.</p>
+      <div class="tags"><span class="tag">structured</span><span class="tag">molecular</span><span class="tag">engineered</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><path d="M50 15 L80 35 L80 65 L50 85 L20 65 L20 35 Z" stroke="#10B981" stroke-width="4.5" fill="none"/><path d="M50 15 L50 85" stroke="#1E5C3A" stroke-width="2.5" stroke-dasharray="4 4"/><path d="M20 35 L80 65" stroke="#1E5C3A" stroke-width="2.5" stroke-dasharray="4 4"/><path d="M80 35 L20 65" stroke="#1E5C3A" stroke-width="2.5" stroke-dasharray="4 4"/><circle cx="50" cy="50" r="6" fill="#10B981"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+  <!-- LOGO 20 -->
+  <div class="logo-card">
+    <div class="logo-preview" onclick="this.classList.toggle('light-bg')">
+      <div class="bg-toggle">☀</div>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="20" width="60" height="60" rx="14" stroke="#10B981" stroke-width="4" fill="none"/>
+        <path d="M50 32 L50 68" stroke="#10B981" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M38 44 L50 32 L62 44" stroke="#10B981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="logo-info">
+      <span class="number">20</span>
+      <h3>The Upload</h3>
+      <p>An upward arrow inside a superellipse (squircle). Like an "upload" or "export" icon — but it means: upload yourself to the next level. Clean enough for an app icon.</p>
+      <div class="tags"><span class="tag">app-icon</span><span class="tag">upload</span><span class="tag">next-level</span></div>
+    </div>
+    <div class="wordmark-row">
+      <svg viewBox="0 0 100 100" fill="none"><rect x="20" y="20" width="60" height="60" rx="14" stroke="#10B981" stroke-width="5" fill="none"/><path d="M50 32 L50 68" stroke="#10B981" stroke-width="4.5" stroke-linecap="round"/><path d="M38 44 L50 32 L62 44" stroke="#10B981" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span class="wm-text">AIIMIN</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="footer">
+  <p>AIIMIN LOGO SYSTEM — 20 CONCEPTS — CLICK ☀ ON ANY LOGO TO TOGGLE DARK/LIGHT PREVIEW</p>
+  <p style="margin-top:8px; color: var(--text-2);">All logos are production SVG vectors. Right-click → Inspect → Copy SVG to export.</p>
+</div>
+
+</body>
+</html>

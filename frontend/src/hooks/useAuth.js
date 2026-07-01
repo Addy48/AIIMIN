@@ -1,2 +1,1 @@
-export { useAuth as default, useAuth } from '../context/ClerkAuthContext';
-
+export { useAuth as default, useAuth } from '../context/AuthContext';
