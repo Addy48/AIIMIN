@@ -100,11 +100,7 @@ const THEMES = [
  */
 const Settings = () => {
   const { user, session } = useAuth();
-  // Get Clerk user for advanced info
-  const clerkUser = user?.clerkUser || null;
-  const googleAccount = clerkUser?.externalAccounts?.find(a => a.provider === 'google');
-  const hasGoogle = !!googleAccount;
-  const authMethod = hasGoogle ? 'Google OAuth' : (clerkUser?.username ? 'Username + Password' : 'Email + Password');
+  const authMethod = user?.email ? 'Email account' : '—';
   const { theme, setTheme } = useThemeContext();
   const [notifReminders, setNotifReminders] = useState(() => localStorage.getItem('aiimin_notif_reminders') === 'true');
   const [notifInsights, setNotifInsights] = useState(() => localStorage.getItem('aiimin_notif_insights') === 'true');
@@ -146,9 +142,8 @@ const Settings = () => {
     }
   }, [session, isUsingMock, mockData]);
 
-    // Password updates are now handled by Clerk
     const handleNameSave = () => {
-        toast.error("Please update your name via your profile avatar.");
+        toast.error('Profile updates will return with Cognito sign-in.');
     };
   const handleDeleteAllData = useCallback(async () => {
     if (!window.confirm('This will wipe all your tracked data but KEEP your account. Proceed?')) return;

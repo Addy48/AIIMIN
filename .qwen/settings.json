@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/aaditya/Downloads/**)",
+      "Read(//Users/aaditya/Desktop/AIIMIN/ALLDEV DOCS/**)",
+      "Bash(ls *)",
+      "Bash(git log *)",
+      "Bash(mkdir *)",
+      "Bash(python3 *)",
+      "Bash(curl *)",
+      "Bash(bash *)",
+      "Bash(file *)",
+      "Bash(od *)",
+      "Bash(cp *)",
+      "Bash(sed *)",
+      "Bash(npm run *)",
+      "Bash(npm *)",
+      "Bash(node *)",
+      "Bash(cat *)",
+      "Bash(true)"
+    ]
+  },
+  "$version": 4
+}

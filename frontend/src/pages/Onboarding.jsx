@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiGet, getCurrentAccessToken } from '../utils/api';
 import { supabase } from '../utils/supabase';
 
@@ -132,17 +132,16 @@ export default function Onboarding() {
 
     const TOTAL_STEPS = 8; // 0 to 7. Step 8 is success
 
-    const { user, isLoaded } = useUser();
+    const { user, isSignedIn, loading: authLoading } = useAuth();
 
-    // Pre-fill name from Clerk user object
+    // Pre-fill name from signed-in user
     useEffect(() => {
-        if (isLoaded && user) {
-            if (user.fullName) setFullName(user.fullName);
-            else if (user.firstName) setFullName(user.firstName);
-        } else if (isLoaded && !user) {
+        if (!authLoading && user) {
+            if (user.full_name) setFullName(user.full_name);
+        } else if (!authLoading && !isSignedIn) {
             navigate('/login', { replace: true });
         }
-    }, [user, isLoaded, navigate]);
+    }, [user, isSignedIn, authLoading, navigate]);
 
     // Username availability check (debounced)
     useEffect(() => {

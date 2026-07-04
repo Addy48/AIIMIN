@@ -1,0 +1,17 @@
+---
+description: Keep knowledge base synced after feature changes
+alwaysApply: true
+---
+
+When implementation changes behavior, schema, or route contracts:
+
+1. Update `docs/knowledge/_manifest.json` if entity status or entry points changed.
+2. Update the relevant entity note in `docs/knowledge/02-Features/**`.
+3. Append (never replace) a dated entry in that entity's `Changelog.md`.
+4. If launch behavior changed, patch `docs/knowledge/00-Command-Center.md`.
+
+Do not remove prior historical notes. Add a new patch entry describing:
+- what changed
+- why it changed
+- files changed
+- current status

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, RotateCcw, Globe, Code, Heart, Coffee, Zap, MessageSquare, BrainCircuit, Mic2, AlertCircle } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../utils/supabase';
 import { useThemeContext } from '../../context/ThemeContext';
 import { DEBATE_TOPICS, CATEGORIZED_PROMPTS } from '../../data/SpeakingTopics';
@@ -99,7 +99,7 @@ const WaveformVisualizer = ({ isRecording, color, isAi = false }) => {
 
 export default function VocalMastery({ onComplete, onClose }) {
     const { isDark } = useThemeContext();
-    const { user: clerkUser } = useUser();
+    const { user } = useAuth();
     
     const getUnseenPromptIndex = (category) => {
         try {
@@ -233,9 +233,9 @@ export default function VocalMastery({ onComplete, onClose }) {
     const handleSave = async () => {
         setSaving(true);
         try {
-            if (clerkUser) {
+            if (user?.id) {
                 await supabase.from('lab_speaking_logs').insert({
-                    user_id: clerkUser.id,
+                    user_id: user.id,
                     ...scores,
                     topic: selectedTopic,
                     prompt: prompts[promptIndex] || null,

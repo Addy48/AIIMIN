@@ -7,22 +7,11 @@ export const buildAuthHeaders = (extraHeaders = {}) => ({
 });
 
 /**
- * Get auth token — prefers Clerk JWT if available, falls back to
- * Supabase session for legacy compatibility during migration.
+ * Get auth token from localStorage session (Cognito migration in progress).
  */
-export const getCurrentAccessToken = async () => {
-    // If Clerk is initialised, use its JWT
-    if (typeof window !== 'undefined' && typeof window.__clerk_getToken === 'function') {
-        try {
-            const clerkToken = await window.__clerk_getToken();
-            if (clerkToken) return clerkToken;
-        } catch (_) {
-            // fall through to Supabase
-        }
-    }
-    // Legacy fallback
-    return (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || '';
-};
+export const getCurrentAccessToken = async () => (
+  (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || ''
+);
 
 
 

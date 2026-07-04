@@ -5,12 +5,12 @@ import { useThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth as useClerkAuth } from '@clerk/clerk-react';
+import { useAuth } from '../hooks/useAuth';
 import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
 
 const SystemStatusIndicator = () => {
-  const { isSignedIn } = useClerkAuth();
+  const { isSignedIn } = useAuth();
   const [status, setStatus] = useState('checking');
 
   React.useEffect(() => {
@@ -20,7 +20,7 @@ const SystemStatusIndicator = () => {
         const res = await fetch(`${process.env.REACT_APP_API_URL || '/api'}/health`, { method: 'GET' });
         if (mounted) setStatus(res.ok ? 'online' : 'error');
       } catch {
-        // backend down — if we're signed in with Clerk, still show online for the app itself
+        // backend down — if signed in, still show online for the app shell
         if (mounted) setStatus(isSignedIn ? 'online' : 'error');
       }
     };

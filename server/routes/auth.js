@@ -161,6 +161,27 @@ app.post('/login', async (c) => {
 });
 
 /**
+ * GET /auth/access — waitlist gate for signed-in users
+ */
+app.get('/access', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const authUser = c.get('user');
+
+    const access = await resolveAccess({
+        email: authUser?.email,
+        cognitoSub: c.get('cognitoSub') || authUser?.cognitoSub || null,
+        userId,
+    });
+
+    return c.json({
+        canAccessApp: access.canAccess,
+        canAccess: access.canAccess,
+        role: access.role,
+        tier: access.tier,
+    });
+});
+
+/**
  * GET /auth/me
  */
 app.get('/me', requireAuth, async (c) => {
