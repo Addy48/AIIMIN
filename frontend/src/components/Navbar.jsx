@@ -5,7 +5,6 @@ import { useThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../hooks/useAuth';
 import NotificationBell from './notifications/NotificationBell';
 import Logo from './Logo';
 
