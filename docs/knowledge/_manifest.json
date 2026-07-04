@@ -1,0 +1,51 @@
+{
+  "lastUpdated": "2026-07-04",
+  "entrypoint": "docs/knowledge/00-Command-Center.md",
+  "entities": {
+    "sports": {
+      "moc": "docs/knowledge/02-Features/Sports/Sports.md",
+      "changelog": "docs/knowledge/02-Features/Sports/Changelog.md",
+      "routes": [
+        "GET /api/sports",
+        "POST /api/sports/refresh",
+        "POST /api/sports/refresh/system"
+      ],
+      "services": [
+        "server/services/sportsCacheService.js",
+        "frontend/src/services/sportsService.js"
+      ],
+      "status": "dual-cricket-failover-live"
+    },
+    "font_scale": {
+      "moc": "docs/knowledge/02-Features/Account/Personalization.md",
+      "status": "backend-synced"
+    },
+    "calendar": {
+      "moc": "docs/knowledge/02-Features/Calendar/Calendar.md",
+      "status": "schema-modernized"
+    },
+    "typography": {
+      "moc": "docs/knowledge/02-Features/Typography/Typography.md",
+      "status": "token-rollout-phase1-complete"
+    },
+    "waitlist": {
+      "moc": "docs/knowledge/02-Features/Waitlist/Waitlist.md",
+      "changelog": "docs/knowledge/02-Features/Waitlist/Changelog.md",
+      "routes": [
+        "GET /api/waitlist/count",
+        "POST /api/waitlist",
+        "POST /api/waitlist/feedback"
+      ],
+      "status": "username-reservation-live"
+    },
+    "api_usage": {
+      "moc": "docs/knowledge/02-Features/DevTools/ApiUsage.md",
+      "changelog": "docs/knowledge/02-Features/DevTools/Changelog.md",
+      "routes": [
+        "GET /api/admin/api-usage",
+        "GET /api/admin/api-usage/providers"
+      ],
+      "status": "dev-dashboard-live"
+    }
+  }
+}

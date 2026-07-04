@@ -3,45 +3,7 @@ import { getCookie } from 'hono/cookie';
 import * as dotenv from 'dotenv';
 import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { ensureUserProfile } from '../services/userProfileService.js';
-import crypto from 'node:crypto';
 dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
-
-function generateUuidFromClerkId(clerkId) {
-    const hash = crypto.createHash('md5').update(clerkId).digest('hex');
-    return `${hash.slice(0,8)}-${hash.slice(8,12)}-4${hash.slice(13,16)}-a${hash.slice(17,20)}-${hash.slice(20,32)}`;
-}
-
-// Clerk JWT verification
-let clerkVerifyToken = null;
-const initClerk = async () => {
-    if (clerkVerifyToken) return;
-    const secretKey = process.env.CLERK_SECRET_KEY;
-    if (!secretKey || secretKey.startsWith('PASTE_YOUR')) return;
-    try {
-        const { createClerkClient } = await import('@clerk/backend');
-        const clerk = createClerkClient({ secretKey });
-        clerkVerifyToken = async (token) => {
-            const payload = await clerk.verifyToken(token);
-            if (payload?.sub) {
-                let email = payload.email || payload.email_address;
-                if (!email) {
-                    try {
-                        const clerkUser = await clerk.users.getUser(payload.sub);
-                        email = clerkUser.emailAddresses?.[0]?.emailAddress || '';
-                    } catch (err) {
-                        console.warn('[auth] Failed to fetch user from Clerk API:', err.message);
-                    }
-                }
-                payload.email = email;
-            }
-            return payload;
-        };
-        console.log('[auth] Clerk verification enabled');
-    } catch (e) {
-        console.warn('[auth] Clerk backend SDK not installed, skipping Clerk JWT verification:', e.message);
-    }
-};
-initClerk();
 
 const COOKIE_NAME = 'aiimin_session';
 
@@ -90,35 +52,6 @@ export const requireAuth = async (c, next) => {
         }
     } catch (supaErr) {
         console.error('[auth] Supabase token verify error:', supaErr.message);
-    }
-
-    if (!decoded) {
-        if (clerkVerifyToken) {
-            try {
-                const payload = await clerkVerifyToken(token);
-                if (payload?.sub) {
-                    const clerkId = payload.sub;
-                    let email = payload.email || '';
-                    let dbId = null;
-
-                    if (email) {
-                        const { rows } = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-                        if (rows.length > 0) {
-                            dbId = rows[0].id;
-                        }
-                    }
-
-                    if (!dbId) {
-                        dbId = generateUuidFromClerkId(clerkId);
-                    }
-
-                    decoded = { id: dbId, email: email, clerkId: clerkId };
-                    authUser = { id: dbId, email: email };
-                }
-            } catch (clerkErr) {
-                console.warn('[auth] Clerk token verify failed:', clerkErr.message);
-            }
-        }
     }
 
     if (!decoded) {
