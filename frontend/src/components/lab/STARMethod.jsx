@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ArrowRight, RefreshCw, Send, BrainCircuit, CheckCircle2 } from 'lucide-react';
+import { generateWithGemini } from '../../utils/serverAi';
 
 const QUESTIONS = [
   {
@@ -53,38 +54,24 @@ export default function STARMethod({ onClose }) {
   const [score, setScore] = useState(0);
   
   const question = QUESTIONS[currentIdx];
-  const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
 
   const handleAnalyze = async () => {
     const combinedResponse = `Situation: ${starResponse.s}\nTask: ${starResponse.t}\nAction: ${starResponse.a}\nResult: ${starResponse.r}`;
     if (!starResponse.s.trim() && !starResponse.t.trim() && !starResponse.a.trim() && !starResponse.r.trim()) return;
-    if (!GEMINI_API_KEY) {
-      setFeedback("API Key missing. Cannot analyze.");
-      return;
-    }
-    
+
     setIsAnalyzing(true);
 
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: {
-            parts: [{ text: "You are an expert tech interviewer and career coach. The user is practicing the STAR method (Situation, Task, Action, Result) for behavioral interviews. You will be given the interviewer's question, and the user's response. Evaluate the response strictly based on the STAR method framework. Provide a score out of 10. Keep your feedback highly constructive, actionable, and formatted cleanly. Point out what was good, and what was missing (e.g., if they forgot the 'Result' part). Return a JSON response with two keys: 'score' (number) and 'feedback' (string with markdown or text)." }]
-          },
-          generationConfig: { responseMimeType: "application/json" },
-          contents: [{
-            role: "user",
-            parts: [{ text: `Question: ${question.text}\nUser Response:\n${combinedResponse}` }]
-          }]
-        })
+      const rawText = await generateWithGemini({
+        systemPrompt: "You are an expert tech interviewer and career coach. Evaluate STAR responses. Return JSON: { score: number, feedback: string }. Valid JSON only.",
+        prompt: `Question: ${question.text}\nUser Response:\n${combinedResponse}`,
+        maxTokens: 800,
+        temperature: 0.4,
       });
 
-      const data = await res.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (rawText) {
-         const parsed = JSON.parse(rawText);
+         const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+         const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : rawText);
          setFeedback(parsed.feedback);
          setScore(parsed.score);
       }
