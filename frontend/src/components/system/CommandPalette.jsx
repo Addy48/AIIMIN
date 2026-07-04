@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../utils/supabase';
+import { generateWithGemini } from '../../utils/serverAi';
 import {
   Search,
   Compass,
@@ -449,20 +450,8 @@ export default function CommandPalette() {
     try {
         if (activeAction.type === 'ai_log') {
              setIsAiProcessing(true);
-             const GEMINI_API_KEY = process.env.REACT_APP_GEMINI_API_KEY;
-             if(!GEMINI_API_KEY) {
-                 setSuccessMsg('No Gemini API Key found.');
-                 setIsAiProcessing(false);
-                 return;
-             }
-             
              const prompt = `Categorize the following text into one of these types: "win", "note", "mood", "task", "journal". Then extract the relevant text or value. Text: "${inlineText.trim()}". Respond strictly with JSON format: {"type": "win|note|mood|task|journal", "content": "extracted text or 1-10 value"}`;
-             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`, {
-                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-             });
-             const data = await res.json();
-             const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+             const responseText = await generateWithGemini({ prompt, maxTokens: 256, temperature: 0.2 });
              
              let parsed = { type: 'note', content: inlineText.trim() };
              try {

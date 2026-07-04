@@ -1,7 +1,9 @@
 import { Pool } from 'pg';
+import { getDatabaseUrl } from '../scripts/lib/load-env.mjs';
 
 const pool = new Pool({
-    connectionString: 'postgresql://REDACTED:REDACTED@db.REDACTED.supabase.co:6543/postgres'
+    connectionString: getDatabaseUrl(),
+    ssl: { rejectUnauthorized: false },
 });
 
 async function createTables() {
@@ -41,9 +43,11 @@ async function createTables() {
         `);
         console.log('Created sports_cache table');
 
+        await pool.end();
         process.exit(0);
     } catch (err) {
         console.error('Error creating tables:', err);
+        await pool.end();
         process.exit(1);
     }
 }
