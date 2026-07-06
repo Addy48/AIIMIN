@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-04",
+  "lastUpdated": "2026-07-06",
   "entrypoint": "docs/knowledge/00-Command-Center.md",
   "entities": {
     "sports": {
@@ -36,7 +36,7 @@
         "POST /api/waitlist",
         "POST /api/waitlist/feedback"
       ],
-      "status": "username-reservation-live"
+      "status": "landing-upgrade-v6-live"
     },
     "api_usage": {
       "moc": "docs/knowledge/02-Features/DevTools/ApiUsage.md",

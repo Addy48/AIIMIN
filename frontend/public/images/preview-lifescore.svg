@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 700" width="1120" height="700">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A0A0C"/>
+      <stop offset="100%" stop-color="#111113"/>
+    </linearGradient>
+    <linearGradient id="card-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#16161A" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#101013" stop-opacity="0.8"/>
+    </linearGradient>
+    <linearGradient id="ring-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A3A2A"/>
+      <stop offset="100%" stop-color="#2E664A"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="1120" height="700" fill="url(#bg)" rx="14" />
+  
+  <!-- Header -->
+  <text x="64" y="80" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="700" fill="#EDE4D3">Life Score</text>
+  <text x="64" y="112" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#888892">Consistency across sleep, habits, focus, mood</text>
+
+  <!-- Circular Progress Ring -->
+  <g transform="translate(260, 320)">
+    <!-- Outer glow / faint ring -->
+    <circle cx="0" cy="0" r="140" fill="none" stroke="#16161A" stroke-width="24" />
+    <!-- Active ring (82%) -->
+    <circle cx="0" cy="0" r="140" fill="none" stroke="url(#ring-glow)" stroke-width="24" stroke-dasharray="879.6" stroke-dashoffset="158.3" stroke-linecap="round" transform="rotate(-90)" filter="url(#glow)" />
+    <!-- Inner text -->
+    <text x="0" y="10" font-family="'JetBrains Mono', monospace" font-size="64" font-weight="700" fill="#EDE4D3" text-anchor="middle">82<tspan font-size="32" fill="#888892">%</tspan></text>
+    <text x="0" y="44" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="500" fill="#2E664A" text-anchor="middle" letter-spacing="2">EXCELLENT</text>
+  </g>
+
+  <!-- Metric Cards 2x2 Grid -->
+  <g transform="translate(560, 140)">
+    <!-- Sleep Card -->
+    <g transform="translate(0, 0)">
+      <rect width="220" height="150" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="24" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Sleep</text>
+      <text x="24" y="76" font-family="'JetBrains Mono', monospace" font-size="32" font-weight="700" fill="#EDE4D3">7.2<tspan font-size="16" fill="#888892">h</tspan></text>
+      <!-- Small Bar Chart -->
+      <rect x="24" y="100" width="8" height="24" fill="#2E664A" rx="2" />
+      <rect x="38" y="90" width="8" height="34" fill="#2E664A" rx="2" />
+      <rect x="52" y="110" width="8" height="14" fill="#1A3A2A" rx="2" />
+      <rect x="66" y="96" width="8" height="28" fill="#2E664A" rx="2" />
+      <rect x="80" y="84" width="8" height="40" fill="#2E664A" rx="2" />
+    </g>
+
+    <!-- Focus Card -->
+    <g transform="translate(244, 0)">
+      <rect width="220" height="150" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="24" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Focus</text>
+      <text x="24" y="76" font-family="'JetBrains Mono', monospace" font-size="32" font-weight="700" fill="#EDE4D3">19<tspan font-size="16" fill="#888892"> sess</tspan></text>
+      <!-- Small Trend Line -->
+      <path d="M24 124 L44 110 L64 118 L84 94 L104 100 L124 80" fill="none" stroke="#2E664A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="124" cy="80" r="4" fill="#EDE4D3" />
+    </g>
+
+    <!-- Habits Card -->
+    <g transform="translate(0, 174)">
+      <rect width="220" height="150" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="24" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Habits</text>
+      <text x="24" y="76" font-family="'JetBrains Mono', monospace" font-size="32" font-weight="700" fill="#EDE4D3">6/8<tspan font-size="16" fill="#888892"> done</tspan></text>
+      <!-- Completion Dots -->
+      <circle cx="30" cy="110" r="6" fill="#2E664A" />
+      <circle cx="48" cy="110" r="6" fill="#2E664A" />
+      <circle cx="66" cy="110" r="6" fill="#2E664A" />
+      <circle cx="84" cy="110" r="6" fill="#2E664A" />
+      <circle cx="102" cy="110" r="6" fill="#2E664A" />
+      <circle cx="120" cy="110" r="6" fill="#2E664A" />
+      <circle cx="138" cy="110" r="6" fill="#1A1A1E" stroke="#2A2A32" stroke-width="2" />
+      <circle cx="156" cy="110" r="6" fill="#1A1A1E" stroke="#2A2A32" stroke-width="2" />
+    </g>
+
+    <!-- Mood Card -->
+    <g transform="translate(244, 174)">
+      <rect width="220" height="150" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="24" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Mood</text>
+      <text x="24" y="76" font-family="'JetBrains Mono', monospace" font-size="32" font-weight="700" fill="#EDE4D3">7.4<tspan font-size="16" fill="#888892">/10</tspan></text>
+      <!-- Emoji Indicator -->
+      <rect x="24" y="94" width="40" height="32" rx="16" fill="#2E664A" fill-opacity="0.2" />
+      <text x="44" y="117" font-family="system-ui" font-size="20" text-anchor="middle">😊</text>
+      <rect x="72" y="94" width="40" height="32" rx="16" fill="#1A1A1E" />
+      <text x="92" y="117" font-family="system-ui" font-size="20" text-anchor="middle" opacity="0.5">😐</text>
+    </g>
+  </g>
+
+  <!-- 7-Day Bar Chart at Bottom -->
+  <g transform="translate(64, 520)">
+    <rect width="984" height="140" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+    <text x="32" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Weekly Performance</text>
+    
+    <!-- Bars -->
+    <g transform="translate(32, 60)">
+      <!-- Mon -->
+      <rect x="0" y="24" width="64" height="36" fill="#1A3A2A" rx="4" />
+      <text x="32" y="76" font-family="'JetBrains Mono', monospace" font-size="12" fill="#888892" text-anchor="middle">MON</text>
+      
+      <!-- Tue -->
+      <rect x="131" y="8" width="64" height="52" fill="#2E664A" rx="4" />
+      <text x="163" y="76" font-family="'JetBrains Mono', monospace" font-size="12" fill="#888892" text-anchor="middle">TUE</text>
+      
+      <!-- Wed -->
+      <rect x="262" y="16" width="64" height="44" fill="#24513B" rx="4" />
+      <text x="294" y="76" font-family="'JetBrains Mono', monospace" font-size="12" fill="#888892" text-anchor="middle">WED</text>
+      
+      <!-- Thu -->
+      <rect x="393" y="0" width="64" height="60" fill="url(#ring-glow)" rx="4" />
+      <text x="425" y="76" font-family="'JetBrains Mono', monospace" font-size="12" fill="#EDE4D3" font-weight="700" text-anchor="middle">THU</text>
+      
+      <!-- Fri -->
+      <rect x="524" y="32" width="64" height="28" fill="#1A3A2A" rx="4" />
+      <text x="556" y="76" font-family="'JetBrains Mono', monospace" font-size="12" fill="#888892" text-anchor="middle">FRI</text>
+
+      <!-- Sat -->
+      <rect x="655" y="12" width="64" height="48" fill="#2E664A" rx="4" />
+      <text x="687" y="76" font-family="'JetBrains Mono', monospace" font-size="12" fill="#888892" text-anchor="middle">SAT</text>
+
+      <!-- Sun -->
+      <rect x="786" y="20" width="64" height="40" fill="#24513B" rx="4" />
+      <text x="818" y="76" font-family="'JetBrains Mono', monospace" font-size="12" fill="#888892" text-anchor="middle">SUN</text>
+    </g>
+  </g>
+</svg>
