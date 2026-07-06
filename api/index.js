@@ -67,7 +67,12 @@ const routeMap = {
     'ats':           () => import('../server/routes/ats.js'),
     'blob':          () => import('../server/services/blobService.js'),
     'feedback':      () => import('../server/routes/feedback.js'),
-    'family':        () => import('../server/routes/family.js'),
+    'waitlist':      () => import('../server/routes/waitlist.js'),
+    'admin':         () => import('../server/routes/admin.js'),
+    'cron':          () => import('../server/routes/cron.js'),
+    'billing':       () => import('../server/routes/billing.js'),
+    'discipline':    () => import('../server/routes/discipline.js'),
+    'focus':         () => import('../server/routes/focus.js'),
 };
 
 async function loadRouter(name) {

@@ -1,0 +1,30 @@
+[
+  {
+    "file": "/Users/aaditya/Desktop/DASHBOARD PROJECT/frontend/public/images/preview-lifescore.webp",
+    "label": "lifescore",
+    "w": 874,
+    "h": 760,
+    "exists": true
+  },
+  {
+    "file": "/Users/aaditya/Desktop/DASHBOARD PROJECT/frontend/public/images/preview-daily-board.webp",
+    "label": "daily-board",
+    "w": 2240,
+    "h": 1400,
+    "exists": true
+  },
+  {
+    "file": "/Users/aaditya/Desktop/DASHBOARD PROJECT/frontend/public/images/preview-patterns.webp",
+    "label": "patterns",
+    "w": 2240,
+    "h": 1400,
+    "exists": true
+  },
+  {
+    "file": "/Users/aaditya/Desktop/DASHBOARD PROJECT/frontend/public/images/preview-daily-board-mobile.webp",
+    "label": "mobile",
+    "w": 670,
+    "h": 840,
+    "exists": true
+  }
+]

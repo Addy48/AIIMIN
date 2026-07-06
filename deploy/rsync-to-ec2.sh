@@ -13,8 +13,8 @@ rsync -avz --delete \
   --exclude .git \
   --exclude .env \
   --exclude '*.pem' \
-  -e "ssh -o StrictHostKeyChecking=accept-new -i ${KEY}" \
+  -e "ssh -o StrictHostKeyChecking=accept-new -i \"${KEY}\"" \
   ./ "ubuntu@${EIP}:${REMOTE_DIR}/"
 
 echo "Synced to ubuntu@${EIP}:${REMOTE_DIR}"
-echo "Next: ssh -i ${KEY} ubuntu@${EIP} 'cd AIIMIN && npm install --omit=dev && pm2 restart aiimin-api || pm2 start deploy/ecosystem.config.cjs'"
+echo "Next: ssh -i \"${KEY}\" ubuntu@${EIP} 'cd AIIMIN && npm install --omit=dev --ignore-scripts && pm2 reload deploy/ecosystem.config.cjs --update-env'"

@@ -37,23 +37,26 @@ async function main() {
   const devs = parseList('DEV_EMAILS').length ? parseList('DEV_EMAILS') : DEFAULT_DEVS;
   const testers = parseList('TESTER_EMAILS').length ? parseList('TESTER_EMAILS') : DEFAULT_TESTERS;
 
-  for (const email of devs) {
+async function upsertAllowlist(email, role, tier = 'elite') {
+  const updated = await pool.query(
+    `UPDATE tester_allowlist SET role = $2, tier = $3 WHERE lower(email) = lower($1)`,
+    [email, role, tier],
+  );
+  if (updated.rowCount === 0) {
     await pool.query(
-      `INSERT INTO tester_allowlist (email, role, notes)
-       VALUES ($1, 'dev', 'seeded dev')
-       ON CONFLICT (email) DO UPDATE SET role = 'dev'`,
-      [email],
+      `INSERT INTO tester_allowlist (email, role, tier) VALUES ($1, $2, $3)`,
+      [email, role, tier],
     );
+  }
+}
+
+  for (const email of devs) {
+    await upsertAllowlist(email, 'dev');
     console.log('dev:', email);
   }
 
   for (const email of testers) {
-    await pool.query(
-      `INSERT INTO tester_allowlist (email, role, notes)
-       VALUES ($1, 'tester', 'seeded tester')
-       ON CONFLICT (email) DO UPDATE SET role = 'tester'`,
-      [email],
-    );
+    await upsertAllowlist(email, 'tester');
     console.log('tester:', email);
   }
 

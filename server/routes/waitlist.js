@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
 import {
   validateEmail,
-  validateRequiredName,
+  validateName,
   validateOsId,
   escapeHtml,
 } from '../middleware/validate.js';
@@ -50,6 +50,56 @@ function sanitizeEmail(raw) {
   return String(raw || '').trim().toLowerCase();
 }
 
+const REFERRAL_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function generateReferralCode() {
+  let code = '';
+  for (let i = 0; i < 6; i += 1) {
+    code += REFERRAL_ALPHABET[Math.floor(Math.random() * REFERRAL_ALPHABET.length)];
+  }
+  return code;
+}
+
+async function createUniqueReferralCode() {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const code = generateReferralCode();
+    const { rows } = await pool.query(
+      'SELECT 1 FROM waitlist_emails WHERE referral_code = $1 LIMIT 1',
+      [code],
+    );
+    if (!rows.length) return code;
+  }
+  throw new Error('Failed to generate referral code');
+}
+
+async function getWaitlistPosition(email) {
+  const { rows } = await pool.query(
+    `SELECT position FROM (
+       SELECT email,
+              ROW_NUMBER() OVER (ORDER BY created_at ASC, id ASC) AS position
+       FROM waitlist_emails
+     ) ranked
+     WHERE lower(email) = lower($1)
+     LIMIT 1`,
+    [email],
+  );
+  return rows[0]?.position ?? null;
+}
+
+async function applyReferralBonus(referrerCode) {
+  if (!referrerCode) return;
+  const normalized = String(referrerCode).trim().toUpperCase();
+  if (!normalized) return;
+  await pool.query(
+    `UPDATE waitlist_emails
+     SET referral_count = referral_count + 1
+     WHERE referral_code = $1`,
+    [normalized],
+  ).catch((err) => {
+    if (!/referral_count|referral_code/i.test(err.message)) throw err;
+  });
+}
+
 async function isUsernameTaken(username) {
   const normalized = String(username || '').trim().toUpperCase();
   const { rows } = await pool.query(
@@ -67,13 +117,15 @@ async function notifyOwnerWaitlistSignup({ email, firstName, reservedUsername, s
   const ownerEmail = getOwnerNotifyEmail();
   const safeEmail = escapeHtml(email);
   const safeName = escapeHtml(firstName);
-  const safeUsername = escapeHtml(reservedUsername);
-  const subject = `[AIIMIN Waitlist] New signup: ${email} (@${reservedUsername})`;
+  const safeUsername = reservedUsername ? escapeHtml(reservedUsername) : '';
+  const subject = reservedUsername
+    ? `[AIIMIN Waitlist] New signup: ${email} (@${reservedUsername})`
+    : `[AIIMIN Waitlist] New signup: ${email}`;
   const html = `
     <p><strong>New waitlist signup</strong></p>
     <p>Email: ${safeEmail}</p>
-    <p>First name: ${safeName}</p>
-    <p>Reserved OS-ID: @${safeUsername}</p>
+    <p>First name: ${safeName || '—'}</p>
+    ${safeUsername ? `<p>Reserved OS-ID: @${safeUsername}</p>` : '<p>Reserved OS-ID: (not claimed yet)</p>'}
     <p>Source: ${escapeHtml(source || 'landing_page')}</p>
     <p>Time: ${new Date().toISOString()}</p>
   `;
@@ -218,30 +270,53 @@ app.post('/', waitlistLimiter, async (c) => {
     const email = emailCheck.value;
 
     const nameInput = body.first_name ?? body.name;
-    const nameCheck = validateRequiredName(nameInput);
-    if (!nameCheck.ok) {
-      return c.json({ error: nameCheck.error }, 400);
-    }
+    const nameCheck = validateName(nameInput);
     const firstName = nameCheck.value;
 
-    const usernameCheck = validateOsId(body.reserved_username ?? body.username);
-    if (!usernameCheck.ok) {
-      return c.json({ error: usernameCheck.error }, 400);
+    const usernameInput = body.reserved_username ?? body.username;
+    let reservedUsername = null;
+    if (usernameInput != null && String(usernameInput).trim() !== '') {
+      const usernameCheck = validateOsId(usernameInput);
+      if (!usernameCheck.ok) {
+        return c.json({ error: usernameCheck.error }, 400);
+      }
+      reservedUsername = usernameCheck.value;
     }
-    const reservedUsername = usernameCheck.value;
 
-    if (await isUsernameTaken(reservedUsername)) {
+    if (reservedUsername && await isUsernameTaken(reservedUsername)) {
       return c.json({ error: 'That OS-ID is already taken — try another' }, 409);
     }
 
     const source = String(body.source || 'landing_page').slice(0, 100);
     const interest = String(body.interest || '').trim().slice(0, 200) || null;
+    const referredByRaw = body.referred_by ?? body.ref ?? null;
+    const referredBy = referredByRaw
+      ? String(referredByRaw).trim().toUpperCase().slice(0, 12)
+      : null;
+
+    let referralCode;
+    try {
+      referralCode = await createUniqueReferralCode();
+    } catch (err) {
+      console.error('[Waitlist] referral code error:', err.message);
+      referralCode = null;
+    }
 
     try {
       await pool.query(
-        `INSERT INTO waitlist_emails (email, name, first_name, reserved_username, source)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [email, firstName, firstName, reservedUsername, interest ? `${source}:${interest}` : source],
+        `INSERT INTO waitlist_emails (
+           email, name, first_name, reserved_username, source, referral_code, referred_by
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          email,
+          firstName,
+          firstName,
+          reservedUsername,
+          interest ? `${source}:${interest}` : source,
+          referralCode,
+          referredBy,
+        ],
       );
     } catch (err) {
       if (err.code === '23505') {
@@ -249,19 +324,61 @@ app.post('/', waitlistLimiter, async (c) => {
         if (constraint.includes('reserved_username')) {
           return c.json({ error: 'That OS-ID is already taken — try another' }, 409);
         }
-        return c.json({ success: true, already_registered: true, message: "You're already registered." });
+        const position = await getWaitlistPosition(email);
+        const { rows } = await pool.query(
+          'SELECT referral_code, referral_count FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
+          [email],
+        ).catch(() => ({ rows: [] }));
+        return c.json({
+          success: true,
+          already_registered: true,
+          message: "You're already registered.",
+          position,
+          referral_code: rows[0]?.referral_code || null,
+          referral_count: rows[0]?.referral_count ?? 0,
+        });
       }
-      console.error('[Waitlist] insert error:', err.message);
-      return c.json({ error: 'Failed to join waitlist' }, 500);
+      if (/referral_code|referred_by/i.test(err.message)) {
+        await pool.query(
+          `INSERT INTO waitlist_emails (email, name, first_name, reserved_username, source)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [email, firstName, firstName, reservedUsername, interest ? `${source}:${interest}` : source],
+        );
+      } else {
+        console.error('[Waitlist] insert error:', err.message);
+        return c.json({ error: 'Failed to join waitlist' }, 500);
+      }
     }
 
-    console.log(`[Waitlist] New signup: ${email} (${firstName}) @${reservedUsername}`);
+    if (referredBy) {
+      await applyReferralBonus(referredBy).catch((err) => {
+        console.warn('[Waitlist] referral bonus failed:', err.message);
+      });
+    }
+
+    const position = await getWaitlistPosition(email);
+    let referralCount = 0;
+    if (referralCode) {
+      const { rows } = await pool.query(
+        'SELECT referral_count FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
+        [email],
+      ).catch(() => ({ rows: [] }));
+      referralCount = rows[0]?.referral_count ?? 0;
+    }
+
+    const effectivePosition = position && referralCount
+      ? Math.max(1, position - referralCount * 5)
+      : position;
+
+    console.log(`[Waitlist] New signup: ${email} (${firstName || 'no-name'}) ${reservedUsername ? `@${reservedUsername}` : '(no-osid)'} #${effectivePosition || '?'}`);
 
     try {
       await sendEmail(email, 'waitlist_confirmation', {
         email,
         name: firstName,
         reserved_username: reservedUsername,
+        position: effectivePosition,
+        referral_code: referralCode,
       });
     } catch (err) {
       console.warn('[Waitlist] confirmation email failed:', err.message);
@@ -278,6 +395,9 @@ app.post('/', waitlistLimiter, async (c) => {
       success: true,
       message: "You're on the list.",
       reserved_username: reservedUsername,
+      position: effectivePosition,
+      referral_code: referralCode,
+      referral_count: referralCount,
     });
   } catch (err) {
     console.error('[Waitlist] POST error:', err.message);

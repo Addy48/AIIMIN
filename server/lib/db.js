@@ -5,7 +5,7 @@
  */
 import pg from 'pg';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
+dotenv.config();
 
 const { Pool } = pg;
 

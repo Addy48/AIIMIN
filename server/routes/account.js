@@ -9,6 +9,7 @@ import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 
 import { decrypt, encrypt } from '../lib/crypto.js';
+import { getUserProfile, patchUserProfile } from '../services/userProfileService.js';
 
 const app = new Hono();
 const USERNAME_PATTERN = /^[A-Z0-9_.-]{3,20}$/;
@@ -106,6 +107,49 @@ app.patch('/profile', requireAuth, async (c) => {
         // }).catch(e => console.error('[account/profile] Auth sync failed:', e));
 
         return c.json(data);
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+/**
+ * GET /api/account/user-profile — identity + preferences (frontend AuthContext + useUserProfile)
+ */
+app.get('/user-profile', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const { rows } = await pool.query(
+            'SELECT id, email, full_name, username, role, onboarding_stage, timezone, avatar_url, created_at FROM users WHERE id = $1',
+            [userId],
+        );
+        const user = rows[0];
+        if (!user) return c.json({ error: 'User not found' }, 404);
+
+        const prefs = await getUserProfile(pool, userId).catch(() => null);
+        return c.json({
+            user_id: user.id,
+            ...user,
+            ...(prefs || {}),
+            onboarding_complete: Boolean(prefs?.onboarding_complete),
+        });
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+/**
+ * PATCH /api/account/user-profile
+ */
+app.patch('/user-profile', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const body = await c.req.json();
+        const updated = await patchUserProfile(pool, userId, body);
+        const { rows } = await pool.query(
+            'SELECT id, email, full_name, username, role, avatar_url FROM users WHERE id = $1',
+            [userId],
+        );
+        return c.json({ user_id: userId, ...rows[0], ...(updated || {}) });
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }

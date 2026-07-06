@@ -99,21 +99,21 @@ export const EMAIL_TEMPLATES = {
     ),
   }),
   waitlist_confirmation: (v) => ({
-    subject: "You're on the AIIMIN waitlist ✓",
+    subject: `You're on the AIIMIN waitlist${v.name ? `, ${v.name}` : ''} 🎯`,
     html: layout(
-      'Spot secured.',
-      `<p>Hey ${v.name ? escapeHtml(v.name) : 'there'} — you're in line for early access.</p>
+      "You're in.",
+      `<p>Hey ${v.name ? escapeHtml(v.name) : 'there'} — you're on the AIIMIN waitlist${v.position ? ` at position <strong class="accent">#${escapeHtml(String(v.position))}</strong>` : ''}.</p>
        ${v.reserved_username ? `<p><strong class="accent">Your OS-ID is locked:</strong> @${escapeHtml(v.reserved_username)}</p>` : ''}
-       <p>We're building a life OS that connects habits, focus, finance, sports, and AI — so you stop juggling six apps that don't talk to each other.</p>
-       <p><strong class="accent">Waitlist perks:</strong></p>
+       <p><strong class="accent">What happens next</strong></p>
        <ul style="color:#A0A0B0;line-height:1.7;padding-left:20px;">
-         <li>OS-ID username reservation (yours at launch)</li>
-         <li>Core tier free for 3 months</li>
-         <li>Early prototype access before public launch</li>
-         <li>Priority sports feed + onboarding</li>
-       </ul>`,
+         <li>Life Score ships first — target September 2026</li>
+         <li>Waitlist members get the founding kit, complimentary Core, and 16% off Elite (₹83/mo)</li>
+         <li>Invited testers: register by <strong>31 July</strong> for Elite free for a year</li>
+       </ul>
+       ${v.referral_code ? `<p>Share your link to move up: <a href="https://aiimin.in/?ref=${escapeHtml(v.referral_code)}">https://aiimin.in/?ref=${escapeHtml(v.referral_code)}</a></p>` : ''}
+       <p>Questions? Reply to this email — it goes to a real person.</p>`,
       'https://aiimin.in',
-      'Explore the landing →',
+      'Back to the waitlist →',
     ),
   }),
   waitlist_invite: () => ({
