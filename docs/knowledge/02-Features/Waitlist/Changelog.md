@@ -1,5 +1,20 @@
 # Waitlist Changelog
 
+## 2026-07-07 (Waitlist email redesign — Nordic brand)
+
+- Rebuilt `waitlist_confirmation`, `waitlist_owner_notify`, and `waitlist_invite` in `server/lib/emailTemplates.js`.
+- Nordic palette (#F0EDE8 parchment, #1E5C3A forest accent), Familjen Grotesk + Figtree, hosted logo from `aiimin.in/AIIMIN_logo.svg`.
+- Confirmation: position badge, OS-ID block, founding perks list, referral link, founder note.
+- Owner notify: structured signup table + total count; feedback uses same branded layout.
+- Files: `server/lib/emailTemplates.js`, `server/routes/waitlist.js`
+
+## 2026-07-07 (EC2 DB fix — Supavisor aws-1 pooler)
+
+- Fixed waitlist DB on EC2: use `aws-1-ap-south-1.pooler.supabase.com:5432` (session pooler), user `postgres.yubxgftugxbwtywyhcsv`, not `db.*.supabase.co` (IPv6-only) or `aws-0` shard.
+- `server/lib/db.js`: explicit `.env` load, strip `sslmode=require`, `resolveDatabaseUrl()` for legacy direct URLs.
+- Added `scripts/verify-db-connection.mjs` and `scripts/probe-supabase-pooler.mjs`.
+- Production waitlist signup verified: position + count increment on `api.aiimin.in`.
+
 ## 2026-07-06 (cleanup + ship modular waitlist v9)
 
 - Removed dead CSS: old roadmap timeline/bar, pre-signup OS-ID checkbox, founder-signal.

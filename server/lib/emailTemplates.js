@@ -1,5 +1,6 @@
 /**
- * HTML email templates (ENG-04) — dark theme, 600px max width.
+ * HTML email templates — Nordic waitlist brand (parchment + forest ink).
+ * Fonts: Familjen Grotesk (display) + Figtree (body) with safe fallbacks.
  */
 function escapeHtml(str) {
   return String(str || '')
@@ -9,129 +10,379 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-const BASE_STYLE = `
-  body { margin:0; padding:0; background:#0A0C10; font-family:system-ui,-apple-system,sans-serif; }
-  .wrap { max-width:600px; margin:0 auto; padding:32px 24px; }
-  .card { background:#111318; border:1px solid #252836; border-radius:12px; padding:28px; }
-  h1 { color:#EDEDED; font-size:22px; margin:0 0 12px; }
-  p { color:#A1A1AA; font-size:15px; line-height:1.6; margin:0 0 16px; }
-  .accent { color:#2563EB; }
-  .btn { display:inline-block; background:#2563EB; color:#fff !important; text-decoration:none; padding:12px 24px; border-radius:8px; font-weight:700; font-size:14px; }
-  .footer { font-size:12px; color:#6B6B7B; margin-top:24px; }
-`;
+const BRAND = {
+  base: '#F0EDE8',
+  surface: '#FAFAF9',
+  elevated: '#EDE8DF',
+  border: '#E2DDD7',
+  text1: '#1A1A1A',
+  text2: '#4A5340',
+  text3: '#9A9186',
+  accent: '#1E5C3A',
+  accentDark: '#164530',
+  accentSoft: '#E8F0EB',
+  white: '#FFFFFF',
+  logoUrl: 'https://aiimin.in/AIIMIN_logo.svg',
+  siteUrl: 'https://www.aiimin.in',
+};
 
-function layout(title, bodyHtml, ctaHref, ctaLabel) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${BASE_STYLE}</style></head>
-<body><div class="wrap"><div class="card">
-<h1>${title}</h1>
-${bodyHtml}
-${ctaHref ? `<p><a class="btn" href="${ctaHref}">${ctaLabel || 'Open AIIMIN'}</a></p>` : ''}
-<p class="footer">AIIMIN · Built in India · <a href="https://aiimin.in/account?section=notifications" style="color:#6B6B7B">Unsubscribe</a></p>
-</div></div></body></html>`;
+const FONT_LINK = 'https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap';
+const FONT_DISPLAY = "'Familjen Grotesk', Georgia, 'Times New Roman', serif";
+const FONT_BODY = "'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif";
+
+function formatSignedUpAt(iso) {
+  try {
+    return new Date(iso).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  } catch {
+    return iso || '—';
+  }
+}
+
+function waitlistLayout({
+  preheader = '',
+  eyebrow = '',
+  title,
+  bodyHtml,
+  ctaHref,
+  ctaLabel,
+  footerNote,
+}) {
+  const preheaderBlock = preheader
+    ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;opacity:0;color:transparent;font-size:1px;line-height:1px;">${escapeHtml(preheader)}</div>`
+    : '';
+
+  const eyebrowBlock = eyebrow
+    ? `<p style="margin:0 0 8px;font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:${BRAND.accent};">${escapeHtml(eyebrow)}</p>`
+    : '';
+
+  const ctaBlock = ctaHref
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 0;">
+        <tr>
+          <td style="border-radius:10px;background:${BRAND.accent};">
+            <a href="${ctaHref}" style="display:inline-block;padding:14px 28px;font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.white};text-decoration:none;border-radius:10px;">${escapeHtml(ctaLabel || 'Open AIIMIN')}</a>
+          </td>
+        </tr>
+      </table>`
+    : '';
+
+  const footerExtra = footerNote
+    ? `<p style="margin:16px 0 0;font-family:${FONT_BODY};font-size:13px;line-height:1.6;color:${BRAND.text3};">${footerNote}</p>`
+    : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>${escapeHtml(title)}</title>
+  <link href="${FONT_LINK}" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:${BRAND.base};font-family:${FONT_BODY};color:${BRAND.text1};">
+${preheaderBlock}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BRAND.base};">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">
+        <tr>
+          <td style="padding:0 0 20px;text-align:center;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center">
+              <tr>
+                <td style="padding-right:12px;vertical-align:middle;">
+                  <img src="${BRAND.logoUrl}" width="44" height="44" alt="AIIMIN" style="display:block;border:0;border-radius:12px;">
+                </td>
+                <td style="vertical-align:middle;text-align:left;">
+                  <span style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:700;letter-spacing:-0.04em;color:${BRAND.text1};">AIIMIN</span>
+                  <div style="font-family:${FONT_BODY};font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.text3};margin-top:2px;">Personal Operating System</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:16px;padding:32px 28px;box-shadow:0 12px 40px rgba(26,26,26,0.06);">
+            ${eyebrowBlock}
+            <h1 style="margin:0 0 20px;font-family:${FONT_DISPLAY};font-size:28px;font-weight:600;line-height:1.2;color:${BRAND.text1};">${title}</h1>
+            ${bodyHtml}
+            ${ctaBlock}
+            ${footerExtra}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 8px 0;text-align:center;font-family:${FONT_BODY};font-size:12px;line-height:1.6;color:${BRAND.text3};">
+            Built in India · <a href="${BRAND.siteUrl}" style="color:${BRAND.accent};text-decoration:none;">aiimin.in</a>
+            <br>You're receiving this because you interacted with the AIIMIN waitlist.
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>`;
+}
+
+function perkRow(label, detail) {
+  return `<tr>
+    <td style="padding:10px 0;border-bottom:1px solid ${BRAND.border};vertical-align:top;">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${BRAND.accent};margin-right:10px;vertical-align:middle;"></span>
+      <strong style="font-family:${FONT_BODY};font-size:14px;color:${BRAND.text1};">${escapeHtml(label)}</strong>
+      <div style="margin:4px 0 0 18px;font-family:${FONT_BODY};font-size:13px;line-height:1.5;color:${BRAND.text2};">${detail}</div>
+    </td>
+  </tr>`;
+}
+
+function detailRow(label, value) {
+  return `<tr>
+    <td style="padding:10px 14px;border-bottom:1px solid ${BRAND.border};font-family:${FONT_BODY};font-size:13px;color:${BRAND.text3};width:38%;">${escapeHtml(label)}</td>
+    <td style="padding:10px 14px;border-bottom:1px solid ${BRAND.border};font-family:${FONT_BODY};font-size:14px;font-weight:500;color:${BRAND.text1};">${value}</td>
+  </tr>`;
+}
+
+function legacyLayout(title, bodyHtml, ctaHref, ctaLabel) {
+  return waitlistLayout({ title, bodyHtml, ctaHref, ctaLabel });
 }
 
 export const EMAIL_TEMPLATES = {
   streak_recovery: (v) => ({
     subject: `Your ${v.streak_days || '—'}-day streak broke. That's okay.`,
-    html: layout(
+    html: legacyLayout(
       'Streaks break. What matters is what you do next.',
-      `<p>Your ${v.streak_days}-day streak ended yesterday. Most people restart within 48 hours — you're still in that window.</p>
-       <p>One tap. Day one again.</p>`,
+      `<p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0 0 16px;">Your ${escapeHtml(String(v.streak_days))}-day streak ended yesterday. Most people restart within 48 hours — you're still in that window.</p>
+       <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0;">One tap. Day one again.</p>`,
       'https://aiimin.in/discipline',
       'Start again →',
     ),
   }),
   idle_day3: () => ({
     subject: 'Your habits are waiting.',
-    html: layout(
+    html: legacyLayout(
       '3 days away.',
-      '<p>You logged in 3 days ago. Your streak data is still here — pick up where you left off.</p>',
+      `<p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0;">You logged in 3 days ago. Your streak data is still here — pick up where you left off.</p>`,
       'https://aiimin.in/habits',
       'Mark a habit →',
     ),
   }),
   idle_day7: () => ({
     subject: 'Your life OS is waiting.',
-    html: layout(
+    html: legacyLayout(
       'A week without you.',
-      '<p>Your dashboard still has your goals, journal entries, and streak history. Nothing was deleted.</p>',
+      `<p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0;">Your dashboard still has your goals, journal entries, and streak history. Nothing was deleted.</p>`,
       'https://aiimin.in/overview',
       'Open Overview →',
     ),
   }),
   idle_day14: () => ({
     subject: "Miss you. Here's what you've built.",
-    html: layout(
+    html: legacyLayout(
       '14 days.',
-      '<p>You built something worth returning to. Your data is safe. Come back when you are ready.</p>',
+      `<p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0;">You built something worth returning to. Your data is safe. Come back when you are ready.</p>`,
       'https://aiimin.in/overview',
       'See your stats →',
     ),
   }),
   weekly_digest: (v) => ({
     subject: 'Your week in numbers.',
-    html: layout(
+    html: legacyLayout(
       'Weekly digest',
-      `<p><strong class="accent">${v.streak_days || 0}-day</strong> discipline streak · <strong>${v.focus_hours || 0}h</strong> deep work · <strong>${v.journal_entries || 0}</strong> journal entries.</p>
-       <p>You tracked <strong>${v.habit_count || 0}</strong> habits and spent <strong>₹${v.net_spend || 0}</strong> this week.</p>
-       <p>Open the app for your full Life Score breakdown.</p>`,
+      `<p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0 0 16px;"><strong style="color:${BRAND.accent};">${escapeHtml(String(v.streak_days || 0))}-day</strong> discipline streak · <strong>${escapeHtml(String(v.focus_hours || 0))}h</strong> deep work · <strong>${escapeHtml(String(v.journal_entries || 0))}</strong> journal entries.</p>
+       <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0;">You tracked <strong>${escapeHtml(String(v.habit_count || 0))}</strong> habits and spent <strong>₹${escapeHtml(String(v.net_spend || 0))}</strong> this week.</p>`,
       'https://aiimin.in/overview',
       'Read digest →',
     ),
   }),
   document_expiry: (v) => ({
     subject: `${v.doc_type || 'Document'} expires in ${v.days_until || '—'} days.`,
-    html: layout(
+    html: legacyLayout(
       'Document expiry reminder',
-      `<p>${v.member_name}'s <strong>${v.doc_type}</strong> expires on <strong>${v.expiry_date}</strong> (${v.days_until} days).</p>
-       <p>Upload a renewal or update the expiry date in Family Vault.</p>`,
+      `<p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0;">${escapeHtml(v.member_name)}'s <strong>${escapeHtml(v.doc_type)}</strong> expires on <strong>${escapeHtml(v.expiry_date)}</strong> (${escapeHtml(String(v.days_until))} days).</p>`,
       'https://aiimin.in/family',
       'Open Family Vault →',
     ),
   }),
   post_purchase: (v) => ({
     subject: `Welcome to ${v.tier_name || 'Core'}.`,
-    html: layout(
-      `Welcome to ${v.tier_name || 'Core'}.`,
-      '<p>Your upgrade is active. New features are unlocked below your current content — nothing was taken away.</p>',
+    html: legacyLayout(
+      `Welcome to ${escapeHtml(v.tier_name || 'Core')}.`,
+      `<p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0;">Your upgrade is active. New features are unlocked below your current content — nothing was taken away.</p>`,
       'https://aiimin.in/overview',
       'Explore what unlocked →',
     ),
   }),
-  waitlist_confirmation: (v) => ({
-    subject: `You're on the AIIMIN waitlist${v.name ? `, ${v.name}` : ''} 🎯`,
-    html: layout(
-      "You're in.",
-      `<p>Hey ${v.name ? escapeHtml(v.name) : 'there'} — you're on the AIIMIN waitlist${v.position ? ` at position <strong class="accent">#${escapeHtml(String(v.position))}</strong>` : ''}.</p>
-       ${v.reserved_username ? `<p><strong class="accent">Your OS-ID is locked:</strong> @${escapeHtml(v.reserved_username)}</p>` : ''}
-       <p><strong class="accent">What happens next</strong></p>
-       <ul style="color:#A0A0B0;line-height:1.7;padding-left:20px;">
-         <li>Life Score ships first — target September 2026</li>
-         <li>Waitlist members get the founding kit, complimentary Core, and 16% off Elite (₹83/mo)</li>
-         <li>Invited testers: register by <strong>31 July</strong> for Elite free for a year</li>
-       </ul>
-       ${v.referral_code ? `<p>Share your link to move up: <a href="https://aiimin.in/?ref=${escapeHtml(v.referral_code)}">https://aiimin.in/?ref=${escapeHtml(v.referral_code)}</a></p>` : ''}
-       <p>Questions? Reply to this email — it goes to a real person.</p>`,
-      'https://aiimin.in',
-      'Back to the waitlist →',
-    ),
-  }),
+
+  waitlist_confirmation: (v) => {
+    const name = v.name ? escapeHtml(v.name) : 'there';
+    const position = v.position ? escapeHtml(String(v.position)) : null;
+    const referralCode = v.referral_code ? escapeHtml(v.referral_code) : null;
+    const referralUrl = referralCode ? `https://www.aiimin.in/?ref=${referralCode}` : null;
+    const osId = v.reserved_username ? escapeHtml(v.reserved_username) : null;
+
+    const positionBadge = position
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+          <tr>
+            <td style="background:${BRAND.accentSoft};border:1px solid #C5D9CC;border-radius:999px;padding:8px 16px;font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${BRAND.accent};">
+              Founding queue · spot #${position}
+            </td>
+          </tr>
+        </table>`
+      : '';
+
+    const osIdBlock = osId
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;background:${BRAND.elevated};border:1px solid ${BRAND.border};border-radius:12px;">
+          <tr><td style="padding:16px 18px;">
+            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.text3};margin-bottom:6px;">Your OS-ID is locked</div>
+            <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:600;color:${BRAND.accent};">@${osId}</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.5;color:${BRAND.text2};margin-top:6px;">Reserved for this email at launch. No one else can claim it.</div>
+          </td></tr>
+        </table>`
+      : `<p style="font-family:${FONT_BODY};font-size:14px;line-height:1.6;color:${BRAND.text2};margin:0 0 24px;padding:14px 16px;background:${BRAND.elevated};border-radius:12px;border:1px dashed ${BRAND.border};">
+          <strong style="color:${BRAND.text1};">Tip:</strong> Return to the waitlist page after signup to reserve your personal OS-ID — an 8-character handle that ships with your account.
+        </p>`;
+
+    const referralBlock = referralUrl
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;background:${BRAND.accentSoft};border:1px solid #C5D9CC;border-radius:12px;">
+          <tr><td style="padding:18px;">
+            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Move up the queue</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-bottom:12px;">Share your link — every friend who joins bumps you up <strong>5 spots</strong>.</div>
+            <a href="${referralUrl}" style="font-family:${FONT_BODY};font-size:13px;font-weight:500;color:${BRAND.accent};word-break:break-all;">${referralUrl}</a>
+          </td></tr>
+        </table>`
+      : '';
+
+    const bodyHtml = `
+      ${positionBadge}
+      <p style="font-family:${FONT_BODY};font-size:16px;line-height:1.65;color:${BRAND.text2};margin:0 0 20px;">
+        Hey ${name} — you're officially on the AIIMIN founding waitlist. We're building a personal operating system for habits, money, focus, and recovery — one screen, every day.
+      </p>
+      ${osIdBlock}
+      <p style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin:0 0 12px;">What's locked in for you</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;">
+        ${perkRow('Complimentary Core', 'Full Core tier at launch — waitlist only.')}
+        ${perkRow('Founding Pro — ₹49/mo', '12 months at founding price (list ₹59/mo).')}
+        ${perkRow('Founding Elite — ₹79/mo', '12 months at founding price (list ₹99/mo).')}
+        ${perkRow('Founding starter kit', 'Onboarding bundle reserved for early signups.')}
+        ${perkRow('Life Score first', 'Target launch: <strong>September 2026</strong>. You will hear from us before anyone else.')}
+      </table>
+      ${referralBlock}
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 0;border-left:3px solid ${BRAND.accent};">
+        <tr><td style="padding:0 0 0 16px;">
+          <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.65;color:${BRAND.text2};margin:0;">
+            <strong style="color:${BRAND.text1};">A note from the builder</strong><br>
+            AIIMIN started as my own daily system — not another productivity app. Reply to this email anytime; it reaches a real person, not a bot.
+            <br><br>— Aaditya
+          </p>
+        </td></tr>
+      </table>`;
+
+    return {
+      subject: position
+        ? `You're on the AIIMIN waitlist — spot #${v.position}`
+        : `You're on the AIIMIN waitlist${v.name ? `, ${v.name}` : ''}`,
+      html: waitlistLayout({
+        preheader: position
+          ? `Spot #${v.position} secured. Founding perks locked in — complimentary Core, ₹49 Pro, ₹79 Elite.`
+          : 'Founding perks locked in. Complimentary Core at launch + founding pricing.',
+        eyebrow: 'Founding access',
+        title: "You're in the queue.",
+        bodyHtml,
+        ctaHref: BRAND.siteUrl,
+        ctaLabel: 'Back to the waitlist',
+        footerNote: 'Invited testers: register by <strong>31 July</strong> for Elite free for one year.',
+      }),
+    };
+  },
+
   waitlist_invite: () => ({
-    subject: "You're invited to AIIMIN.",
-    html: layout(
-      'Your early access is ready.',
-      '<p>You were approved from the waitlist. Sign in with this email to explore the full dashboard before public launch.</p>',
-      'https://aiimin.in/login',
-      'Sign in →',
-    ),
+    subject: "You're invited to AIIMIN — early access is ready",
+    html: waitlistLayout({
+      preheader: 'Your tester invite is active. Sign in to explore the full dashboard.',
+      eyebrow: 'Early access',
+      title: 'Your invite is ready.',
+      bodyHtml: `<p style="font-family:${FONT_BODY};font-size:16px;line-height:1.65;color:${BRAND.text2};margin:0 0 16px;">
+        You were approved from the waitlist. Sign in with this email to explore habits, money, focus, and the full dashboard before public launch.
+      </p>
+      <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.6;color:${BRAND.text2};margin:0;padding:14px 16px;background:${BRAND.elevated};border-radius:12px;border:1px solid ${BRAND.border};">
+        Tester registration closes <strong>31 July</strong>. Elite tier is complimentary for one year when you activate before the deadline.
+      </p>`,
+      ctaHref: 'https://www.aiimin.in/login',
+      ctaLabel: 'Sign in to AIIMIN',
+    }),
   }),
-  waitlist_owner_notify: (v) => ({
-    subject: v.subject || `[AIIMIN] Waitlist activity`,
-    html: layout(
-      'New waitlist activity',
-      v.html || `<p>Email: ${v.email || '—'}</p>`,
-    ),
-  }),
+
+  waitlist_owner_notify: (v) => {
+    if (v.html && !v.type) {
+      return {
+        subject: v.subject || '[AIIMIN] Waitlist activity',
+        html: waitlistLayout({
+          eyebrow: 'Admin alert',
+          title: 'Waitlist activity',
+          bodyHtml: v.html,
+        }),
+      };
+    }
+
+    if (v.type === 'feedback') {
+      const sentiment = escapeHtml(v.sentiment || 'note');
+      const fromLine = v.email && v.email !== 'anonymous'
+        ? escapeHtml(v.email)
+        : 'Anonymous';
+      return {
+        subject: v.subject || `[AIIMIN] Waitlist feedback · ${sentiment}`,
+        html: waitlistLayout({
+          preheader: `New waitlist feedback (${sentiment})`,
+          eyebrow: 'Feedback',
+          title: 'Someone left a note.',
+          bodyHtml: `
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid ${BRAND.border};border-radius:12px;overflow:hidden;margin:0 0 20px;">
+              ${detailRow('Sentiment', `<span style="color:${BRAND.accent};font-weight:600;">${sentiment}</span>`)}
+              ${detailRow('From', fromLine)}
+              ${detailRow('Source', escapeHtml(v.source || 'landing'))}
+            </table>
+            <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.7;color:${BRAND.text2};margin:0;padding:16px 18px;background:${BRAND.elevated};border-radius:12px;border:1px solid ${BRAND.border};">
+              ${escapeHtml(v.message || '(no message)')}
+            </p>`,
+          ctaHref: BRAND.siteUrl,
+          ctaLabel: 'Open waitlist',
+        }),
+      };
+    }
+
+    const safeEmail = escapeHtml(v.email || '—');
+    const safeName = escapeHtml(v.name || '—');
+    const safeUsername = v.reserved_username ? escapeHtml(v.reserved_username) : null;
+    const totalCount = v.total_count != null ? escapeHtml(String(v.total_count)) : null;
+
+    return {
+      subject: v.subject || (safeUsername
+        ? `[AIIMIN] New signup · ${v.email} (@${v.reserved_username})`
+        : `[AIIMIN] New signup · ${v.email}`),
+      html: waitlistLayout({
+        preheader: totalCount
+          ? `New waitlist signup. Total signups: ${totalCount}.`
+          : 'New person joined the AIIMIN waitlist.',
+        eyebrow: 'Waitlist',
+        title: 'New founding signup',
+        bodyHtml: `
+          <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.6;color:${BRAND.text2};margin:0 0 20px;">
+            Someone just reserved a spot on the waitlist${totalCount ? ` — you're now at <strong style="color:${BRAND.accent};">${totalCount}</strong> total signups` : ''}.
+          </p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid ${BRAND.border};border-radius:12px;overflow:hidden;">
+            ${detailRow('Email', `<a href="mailto:${safeEmail}" style="color:${BRAND.accent};text-decoration:none;">${safeEmail}</a>`)}
+            ${detailRow('First name', safeName)}
+            ${detailRow('OS-ID', safeUsername ? `<span style="font-family:${FONT_DISPLAY};color:${BRAND.accent};">@${safeUsername}</span>` : `<span style="color:${BRAND.text3};">Not claimed yet</span>`)}
+            ${detailRow('Source', escapeHtml(v.source || 'landing_page'))}
+            ${detailRow('Signed up', formatSignedUpAt(v.signed_up_at))}
+          </table>`,
+        ctaHref: BRAND.siteUrl,
+        ctaLabel: 'View landing page',
+      }),
+    };
+  },
 };
 
 export function renderEmail(templateId, variables = {}) {

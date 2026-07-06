@@ -115,28 +115,21 @@ async function isUsernameTaken(username) {
 
 async function notifyOwnerWaitlistSignup({ email, firstName, reservedUsername, source }) {
   const ownerEmail = getOwnerNotifyEmail();
-  const safeEmail = escapeHtml(email);
-  const safeName = escapeHtml(firstName);
-  const safeUsername = reservedUsername ? escapeHtml(reservedUsername) : '';
-  const subject = reservedUsername
-    ? `[AIIMIN Waitlist] New signup: ${email} (@${reservedUsername})`
-    : `[AIIMIN Waitlist] New signup: ${email}`;
-  const html = `
-    <p><strong>New waitlist signup</strong></p>
-    <p>Email: ${safeEmail}</p>
-    <p>First name: ${safeName || '—'}</p>
-    ${safeUsername ? `<p>Reserved OS-ID: @${safeUsername}</p>` : '<p>Reserved OS-ID: (not claimed yet)</p>'}
-    <p>Source: ${escapeHtml(source || 'landing_page')}</p>
-    <p>Time: ${new Date().toISOString()}</p>
-  `;
+  let totalCount = null;
+  try {
+    const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM waitlist_emails');
+    totalCount = rows[0]?.count ?? null;
+  } catch {
+  }
   try {
     await sendEmail(ownerEmail, 'waitlist_owner_notify', {
+      type: 'signup',
       email,
       name: firstName,
       reserved_username: reservedUsername,
       source: source || 'landing_page',
-      html,
-      subject,
+      signed_up_at: new Date().toISOString(),
+      total_count: totalCount,
     });
   } catch (err) {
     console.warn('[Waitlist] owner notify failed:', err.message);
@@ -237,17 +230,13 @@ app.post('/feedback', feedbackLimiter, async (c) => {
     });
 
     const ownerEmail = getOwnerNotifyEmail();
-    const subject = `[AIIMIN Feedback] ${sentiment} — waitlist`;
-    const html = `
-      <p><strong>Waitlist feedback</strong> (${escapeHtml(sentiment)})</p>
-      ${emailRaw ? `<p>From: ${escapeHtml(emailRaw)}</p>` : '<p>Anonymous</p>'}
-      <p>${escapeHtml(message || '(no message)')}</p>
-    `;
     try {
       await sendEmail(ownerEmail, 'waitlist_owner_notify', {
-        subject,
-        html,
+        type: 'feedback',
+        sentiment,
         email: emailRaw || 'anonymous',
+        message: message || '(no message)',
+        source: body.source || 'landing',
       });
     } catch (err) {
       console.warn('[Waitlist] feedback notify failed:', err.message);
