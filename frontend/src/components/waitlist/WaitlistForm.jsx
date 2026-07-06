@@ -165,6 +165,7 @@ function ConfirmationPanel({
 
 export default function WaitlistForm({
   compact = false,
+  variant = 'default',
   onSuccess,
   showUrgency = true,
   showFeatureVote = true,
@@ -308,7 +309,16 @@ export default function WaitlistForm({
   const osHasError = reserveNow && osTouched && username && !!validateOsId(username);
 
   return (
-    <form onSubmit={submit} className={`waitlist-form ${compact ? 'waitlist-form-compact' : ''}`}>
+    <form onSubmit={submit} className={`waitlist-form ${compact ? 'waitlist-form-compact' : ''} ${variant === 'hero' ? 'waitlist-form-hero' : ''}`}>
+      {variant === 'hero' && !compact && (
+        <div className="waitlist-form-hero-head">
+          <span className="waitlist-form-badge">Launching Sept 2026</span>
+          <h2 className="waitlist-form-heading">Get early access</h2>
+          <p className="waitlist-form-lead">
+            Be one of the first to join — reserve your OS-ID and unlock founding member perks at go-live.
+          </p>
+        </div>
+      )}
       <div className={`waitlist-form-row waitlist-form-row-top ${compact ? 'waitlist-form-row-stack' : ''}`}>
         <div className="waitlist-field">
           <label htmlFor={firstNameId} className="waitlist-label">

@@ -184,13 +184,13 @@ app.post('/approve', requireAuth, async (c) => {
     const role = body.role === 'dev' ? 'dev' : 'tester';
 
     await pool.query(
-      `INSERT INTO tester_allowlist (email, role, approved_at, approved_by, notes)
-       VALUES ($1, $2, NOW(), $3, $4)
+      `INSERT INTO tester_allowlist (email, role, tier, invited_by)
+       VALUES ($1, $2, 'elite', $3)
        ON CONFLICT (email) DO UPDATE SET
          role = EXCLUDED.role,
-         approved_at = NOW(),
-         approved_by = EXCLUDED.approved_by`,
-      [email, role, c.get('userId'), body.notes || null],
+         tier = EXCLUDED.tier,
+         invited_by = COALESCE(EXCLUDED.invited_by, tester_allowlist.invited_by)`,
+      [email, role, c.get('userId')],
     );
 
     try {
