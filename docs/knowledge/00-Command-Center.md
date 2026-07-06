@@ -53,7 +53,7 @@ When `REACT_APP_WAITLIST_MODE=true`:
 
 Pricing (landing copy): Explore (free), Core ₹29/mo, Pro ₹59/mo (₹49 founding for waitlist), Elite ₹99/mo (₹79 founding for waitlist).
 
-Apply `server/migrations/034_waitlist_referrals.sql` for referral_code / referred_by columns.
+Apply `server/migrations/034_waitlist_referrals.sql` for referral_code / referred_by columns — **applied on Supabase 2026-07-06**.
 
 ## Launch Runbook (LC-01 to LC-14)
 
