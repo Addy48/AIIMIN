@@ -1,16 +1,32 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Lightbulb, Send, Sparkles } from 'lucide-react';
 import Wordmark from '../brand/Wordmark';
-import { ShippedPrimaryButton } from '../design/ShippedUI';
 import { useAuth } from '../../hooks/useAuth';
-
-const API_BASE = process.env.REACT_APP_API_URL || '/api';
+import { API_URL } from '../../utils/api';
+import '../../styles/waitlistLanding.css';
 
 const SENTIMENTS = [
-  { id: 'love', label: '🔥 Love it', color: '#10b981' },
-  { id: 'curious', label: '🤔 Curious', color: '#2563EB' },
-  { id: 'feature', label: '💡 Feature idea', color: '#f59e0b' },
+  { id: 'love', label: 'Love it', tone: 'positive' },
+  { id: 'curious', label: 'Curious', tone: 'info' },
+  { id: 'feature', label: 'Feature idea', tone: 'warning' },
+];
+
+const FEATURE_AREAS = [
+  'Habits & streaks',
+  'Money tracking',
+  'Focus & Pomodoro',
+  'Sleep analytics',
+  'Sports briefing',
+  'Weekly reviews',
+];
+
+const PROMPT_STARTERS = [
+  'One dashboard for gym, sleep, and study streaks',
+  'Student-friendly money tracking with monthly caps',
+  'Cricket + F1 context without opening 5 apps',
+  'A weekly life score that tells me what to fix next',
 ];
 
 export default function WaitlistQuickFeedback({ compact = false }) {
@@ -19,6 +35,19 @@ export default function WaitlistQuickFeedback({ compact = false }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selectedArea, setSelectedArea] = useState('');
+  const [usedStarters, setUsedStarters] = useState([]);
+
+  const appendStarter = (text) => {
+    setMessage((prev) => {
+      const trimmed = prev.trim();
+      if (!trimmed) return `${text}.`;
+      if (trimmed.includes(text)) return prev;
+      return `${trimmed}\n\nAlso: ${text.toLowerCase()}.`;
+    });
+    setUsedStarters((prev) => (prev.includes(text) ? prev : [...prev, text]));
+    setStatus(null);
+  };
 
   const submit = async (e) => {
     e?.preventDefault();
@@ -26,12 +55,16 @@ export default function WaitlistQuickFeedback({ compact = false }) {
     setLoading(true);
     setStatus(null);
     try {
-      const res = await fetch(`${API_BASE}/waitlist/feedback`, {
+      const composed = selectedArea && message.trim()
+        ? `[${selectedArea}] ${message.trim()}`
+        : message.trim();
+
+      const res = await fetch(`${API_URL}/waitlist/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sentiment,
-          message: message.trim(),
+          message: composed,
           email: email.trim() || undefined,
           source: 'landing_quick',
         }),
@@ -40,6 +73,7 @@ export default function WaitlistQuickFeedback({ compact = false }) {
       if (!res.ok) throw new Error(data.error);
       setStatus('success');
       setMessage('');
+      setSelectedArea('');
     } catch {
       setStatus('error');
     } finally {
@@ -49,140 +83,159 @@ export default function WaitlistQuickFeedback({ compact = false }) {
 
   if (status === 'success') {
     return (
-      <p style={{ fontSize: '14px', color: '#10b981', margin: 0, textAlign: 'center' }}>
-        Got it — thank you. We read every note.
-      </p>
+      <div className="waitlist-feedback-success-card">
+        <Sparkles size={18} />
+        <p>Got it — your note is in the launch queue.</p>
+        <small>We read every response and rank features by waitlist demand.</small>
+      </div>
     );
   }
 
   return (
-    <form onSubmit={submit} style={{ width: '100%', maxWidth: compact ? 420 : 520, margin: '0 auto' }}>
-      <p style={{ fontSize: '13px', color: '#6B6B7B', margin: '0 0 12px', textAlign: 'center' }}>
-        One tap — tell us what you want from a life OS
+    <form onSubmit={submit} className={`waitlist-feedback-form ${compact ? 'waitlist-feedback-form-compact' : ''}`}>
+      {!compact && (
+        <div className="waitlist-feedback-priority">
+          <Lightbulb size={15} />
+          <span>Top requests right now: habits, money clarity, and weekly pattern insights.</span>
+        </div>
+      )}
+
+      <p className="waitlist-feedback-hint">
+        Pick a vibe, write freely — or tap an idea starter below to add to your note (edit anything).
       </p>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 12 }}>
+
+      <div className="waitlist-feedback-sentiments">
         {SENTIMENTS.map((s) => (
           <button
             key={s.id}
             type="button"
             onClick={() => setSentiment(s.id)}
-            style={{
-              padding: '8px 14px',
-              borderRadius: 999,
-              border: sentiment === s.id ? `1px solid ${s.color}` : '1px solid #323650',
-              background: sentiment === s.id ? `${s.color}22` : 'transparent',
-              color: sentiment === s.id ? s.color : '#A0A0B0',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-            }}
+            className={`waitlist-feedback-chip ${sentiment === s.id ? `waitlist-feedback-chip-active waitlist-feedback-chip-${s.tone}` : ''}`}
           >
             {s.label}
           </button>
         ))}
       </div>
-      <input
-        type="text"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Optional: one line on what you'd track…"
-        maxLength={280}
-        style={inputStyle}
-      />
+
       {!compact && (
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email (optional — if you want a reply)"
-          style={{ ...inputStyle, marginTop: 8 }}
-        />
+        <div className="waitlist-feedback-areas">
+          {FEATURE_AREAS.map((area) => (
+            <button
+              key={area}
+              type="button"
+              onClick={() => setSelectedArea((prev) => (prev === area ? '' : area))}
+              className={`waitlist-feedback-area ${selectedArea === area ? 'waitlist-feedback-area-active' : ''}`}
+            >
+              {area}
+            </button>
+          ))}
+        </div>
       )}
-      <div style={{ marginTop: 12, textAlign: 'center' }}>
-        <ShippedPrimaryButton
-          type="submit"
-          loading={loading}
-          disabled={loading || (!message.trim() && !email.trim())}
-          style={btnStyle}
-        >
-          Send feedback
-        </ShippedPrimaryButton>
+
+      {!compact && (
+        <div className="waitlist-feedback-suggestions">
+          <p className="waitlist-feedback-starter-label">Idea starters — tap to add, not replace</p>
+          {PROMPT_STARTERS.map((starter) => (
+            <button
+              key={starter}
+              type="button"
+              className={`waitlist-feedback-suggestion ${usedStarters.includes(starter) ? 'waitlist-feedback-suggestion-used' : ''}`}
+              onClick={() => appendStarter(starter)}
+            >
+              + {starter}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="waitlist-field">
+        <label htmlFor="waitlist-feedback-message" className="waitlist-label">
+          Your idea <span>(optional but powerful)</span>
+        </label>
+        <textarea
+          id="waitlist-feedback-message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Write anything — habits, money, focus, sports, whatever you need from your life OS."
+          maxLength={280}
+          rows={compact ? 2 : 3}
+          className="waitlist-textarea"
+        />
+        <p className="waitlist-field-hint">{message.length}/280 characters</p>
       </div>
+
+      {!compact && (
+        <div className="waitlist-field">
+          <label htmlFor="waitlist-feedback-email" className="waitlist-label">
+            Email <span>(optional — for follow-up)</span>
+          </label>
+          <input
+            id="waitlist-feedback-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="meera.iyer@mail.com"
+            className="waitlist-input"
+          />
+        </div>
+      )}
+
+      <div className="waitlist-feedback-cta">
+        <button
+          type="submit"
+          disabled={loading || (!message.trim() && !email.trim())}
+          className="waitlist-submit-btn"
+        >
+          <Send size={14} />
+          {loading ? 'Sending...' : 'Send to launch team'}
+        </button>
+      </div>
+
+      {!compact && (
+        <p className="waitlist-feedback-footnote">
+          Your note helps decide which modules ship first in August and September waves.
+        </p>
+      )}
+
       {status === 'error' && (
-        <p style={{ color: '#EF4444', fontSize: 12, textAlign: 'center', marginTop: 8 }}>Try again in a moment.</p>
+        <p className="waitlist-feedback-error">Try again in a moment.</p>
       )}
     </form>
   );
 }
-
-const inputStyle = {
-  width: '100%',
-  height: 44,
-  padding: '0 16px',
-  borderRadius: 12,
-  border: '1px solid #323650',
-  background: 'rgba(255,255,255,0.04)',
-  color: '#EDEDED',
-  fontSize: 15,
-  outline: 'none',
-  fontFamily: 'inherit',
-  boxSizing: 'border-box',
-};
-
-const btnStyle = {
-  height: 44,
-  padding: '0 24px',
-  borderRadius: 999,
-  border: 'none',
-  background: '#2563EB',
-  color: '#fff',
-  fontSize: 14,
-  fontWeight: 700,
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-};
 
 /** Full-screen for signed-in users without access */
 export function WaitlistPendingScreen() {
   const { user, signOut } = useAuth();
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--color-base, #0A0C10)',
-      color: '#EDEDED',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 24,
-      textAlign: 'center',
-    }}>
-      <Wordmark style={{ marginBottom: 24 }} />
+    <div className="waitlist-pending-screen">
+      <div className="waitlist-pending-logo">
+        <Wordmark />
+      </div>
       <motion.h1
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 800, marginBottom: 12 }}
+        className="waitlist-pending-title"
       >
         You're on the waitlist
       </motion.h1>
-      <p style={{ color: '#A0A0B0', maxWidth: 420, lineHeight: 1.6, marginBottom: 8 }}>
-        Signed in as <strong style={{ color: '#EDEDED' }}>{user?.email}</strong>.
-        We're letting in testers in small waves before September launch.
+      <p className="waitlist-pending-copy">
+        Signed in as <strong>{user?.email}</strong>.
+        We're letting in testers in small waves before end-of-September launch.
       </p>
-      <p style={{ color: '#6B6B7B', fontSize: 14, maxWidth: 400, marginBottom: 32 }}>
-        Got an invite? It may take a minute after approval. Otherwise — you're in line. Core tier free for 3 months at launch.
+      <p className="waitlist-pending-note">
+        Got an invite? Register by 31 July for the VIP tester package — Elite free for a year plus full beta access. Waitlist members get the founding kit, Core subscription, and Elite discount at launch.
       </p>
-      <div style={{ width: '100%', maxWidth: 480, marginBottom: 32 }}>
+      <div className="waitlist-pending-feedback">
         <WaitlistQuickFeedback compact />
       </div>
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <Link to="/" style={{ color: '#2563EB', fontSize: 14, textDecoration: 'none' }}>← Back to landing</Link>
+      <div className="waitlist-pending-links">
+        <Link to="/" className="waitlist-pending-link">← Back to landing</Link>
         <button
           type="button"
           onClick={() => signOut?.()}
-          style={{ background: 'none', border: 'none', color: '#6B6B7B', fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}
+          className="waitlist-pending-signout"
         >
           Sign out
         </button>
