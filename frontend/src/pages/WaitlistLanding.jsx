@@ -1,22 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import {
-  Activity,
   ArrowRight,
   BadgeCheck,
-  Brain,
   BriefcaseBusiness,
-  CalendarClock,
   ChartColumnBig,
   ChevronDown,
-  Clock3,
   Gift,
   GraduationCap,
   KeyRound,
-  Landmark,
-  Lock,
   Laptop,
   MessageSquareQuote,
   Rocket,
@@ -24,17 +18,15 @@ import {
   Sparkles,
   Sun,
   Moon,
-  Target,
+  Activity,
   UserPlus,
-  Wallet,
   Waves,
-  Zap,
 } from 'lucide-react';
-import useTheme from '../hooks/useTheme';
+import useWaitlistSurfaceTheme from '../hooks/useWaitlistSurfaceTheme';
 import { API_URL } from '../utils/api';
 import WaitlistForm from '../components/waitlist/WaitlistForm';
-import WaitlistQuickFeedback from '../components/waitlist/WaitlistQuickFeedback';
 import Wordmark from '../components/brand/Wordmark';
+import { ArchBracketMark, EDITOR_PICK } from '../components/brand/archBracketMark';
 import '../styles/waitlistLanding.css';
 
 const fadeUp = {
@@ -70,167 +62,32 @@ const PERSONAS = [
   },
 ];
 
-const VALUE_PILLARS = [
-  {
-    icon: Target,
-    title: 'Track your full day',
-    desc: 'Habits, sleep, mood, money, and focus linked in a single timeline.',
-  },
-  {
-    icon: Brain,
-    title: 'See patterns quickly',
-    desc: 'AI surfaces what improves your weeks and what quietly breaks momentum.',
-  },
-  {
-    icon: Zap,
-    title: 'Level up consistently',
-    desc: 'Streak systems and review loops help you recover fast and keep growing.',
-  },
-];
-
 const HOW_IT_WORKS = [
   {
     icon: UserPlus,
-    title: 'Join waitlist',
-    desc: 'Sign up in under 20 seconds. Email is enough to reserve your spot.',
+    title: 'Join the waitlist',
+    desc: 'Sign up in under 20 seconds, then confirm your email.',
   },
   {
     icon: Sparkles,
     title: 'Set up your systems',
-    desc: 'Habits, focus, money, and growth modules are unlocked in guided waves.',
+    desc: 'At launch, configure habits, money, and focus modules in ~15 minutes.',
   },
   {
     icon: Waves,
-    title: 'Improve with feedback loops',
-    desc: 'Get weekly pattern insights so you can iterate faster and stay consistent.',
-  },
-];
-
-const LAUNCH_TARGET = '2026-09-30T23:59:59+05:30';
-const TESTER_DEADLINE = '2026-07-31T23:59:59+05:30';
-
-const LAUNCH_PHASES = [
-  {
-    phase: 'Now',
-    title: 'Tester registration',
-    desc: 'Personally invited testers claim the VIP package — Elite free for a year plus full beta access. Window closes 31 July.',
-    badge: 'Invite only',
-  },
-  {
-    phase: 'Aug',
-    title: 'Waitlist onboarding',
-    desc: 'Waitlist members get the founding kit, Core subscription, and Elite discount at public launch.',
-    badge: 'Waitlist priority',
-  },
-  {
-    phase: 'Sept',
-    title: 'Go-live target',
-    desc: 'We are targeting end of September 2026 for public launch. Exact date may shift slightly.',
-    badge: 'Everyone',
-  },
-];
-
-const SNEAK_PEEKS = [
-  {
-    stage: 'Wave 01',
-    title: 'Life Score',
-    desc: 'One score across sleep, habits, focus, and mood.',
-    eta: 'Beta rollout',
-  },
-  {
-    stage: 'Wave 02',
-    title: 'Discipline Engine',
-    desc: 'Relapse-safe streak recovery and momentum planning.',
-    eta: 'Beta rollout',
-  },
-  {
-    stage: 'Wave 03',
-    title: 'Money OS',
-    desc: 'Simple student-first spend tracking and monthly control.',
-    eta: 'Launch window',
-  },
-  {
-    stage: 'Wave 04',
-    title: 'Sports Briefing',
-    desc: 'Cricket, football, and F1 context without doom scrolling.',
-    eta: 'Launch window',
-  },
-];
-
-const WAITLIST_PERKS = [
-  {
-    icon: Gift,
-    title: 'Launch starter kit',
-    desc: 'Curated onboarding bundle to set up habits, money, and focus from day one.',
-    featured: true,
-  },
-  {
-    icon: Rocket,
-    title: 'Complimentary Core subscription',
-    desc: 'Full Core tier included at launch so you start with the complete daily OS.',
-    featured: true,
-  },
-  {
-    icon: BadgeCheck,
-    title: '40% off Elite for 12 months',
-    desc: 'Founding discount on our highest tier — the best deal we will ever offer publicly.',
-    featured: true,
-  },
-  {
-    icon: KeyRound,
-    title: 'Reserve your OS-ID',
-    desc: 'Lock your 8-character handle before public release.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Priority invite waves',
-    desc: 'Onboard before open registration fills up.',
-  },
-  {
-    icon: MessageSquareQuote,
-    title: 'Shape the roadmap',
-    desc: 'Your feedback decides what ships in the first launch waves.',
-  },
-];
-
-const ACCESS_PACKAGES = [
-  {
-    id: 'tester',
-    tag: 'VIP invite',
-    tagVariant: 'premium',
-    title: 'Invited testers',
-    deadline: (days) => `Register by 31 July · ${days} days left`,
-    perks: [
-      { icon: ShieldCheck, text: 'Elite (₹99/mo) free for 12 months — ₹1,188 value' },
-      { icon: Rocket, text: 'First access to every beta module before public release' },
-      { icon: KeyRound, text: 'Priority OS-ID reservation + direct founder feedback channel' },
-      { icon: Sparkles, text: 'Prototype features: Life Score, Discipline Engine, Sports Briefing' },
-      { icon: BadgeCheck, text: 'Priority support queue throughout the beta year' },
-    ],
-    cta: { label: 'Sign in to register', href: '/login', variant: 'primary' },
-  },
-  {
-    id: 'waitlist',
-    tag: 'Founding member',
-    tagVariant: 'founding',
-    title: 'Waitlist members',
-    deadline: () => 'Join anytime · live target end of Sept 2026',
-    perks: [
-      { icon: Gift, text: 'Launch starter kit — habits, money, and focus setup bundle' },
-      { icon: Rocket, text: 'Complimentary Core subscription at go-live' },
-      { icon: BadgeCheck, text: '40% off Elite for 12 months after launch' },
-      { icon: KeyRound, text: 'OS-ID reservation + priority onboarding waves' },
-      { icon: MessageSquareQuote, text: 'Roadmap voting — your ideas shape launch priority' },
-    ],
-    cta: { label: 'Join waitlist', href: '#waitlist-join', variant: 'primary' },
+    title: 'Build momentum daily',
+    desc: 'Use the dashboard every day — patterns emerge and you level up.',
   },
 ];
 
 const PRICING = [
   {
     tier: 'Explore',
-    price: 'Free',
-    note: 'Try the core flow',
+    tierAccent: 'explore',
+    price: '₹0',
+    note: 'Start here',
+    freeNote: 'Always free. No card needed.',
+    startHere: true,
     summary: ['Daily tracking', 'Starter analytics'],
     includes: [
       'Log sleep, mood, gym, water, and steps daily',
@@ -242,9 +99,9 @@ const PRICING = [
   },
   {
     tier: 'Core',
-    price: '₹25/mo',
-    note: 'Best for most users',
-    highlight: true,
+    tierAccent: 'core',
+    price: '₹29',
+    note: 'Essential daily systems — habits, money, and focus.',
     summary: ['Habits + money + focus', 'Weekly insights + reviews'],
     includes: [
       'Everything in Explore',
@@ -257,8 +114,14 @@ const PRICING = [
   },
   {
     tier: 'Pro',
-    price: '₹61/mo',
-    note: 'Advanced systems',
+    tierAccent: 'pro',
+    price: '₹59',
+    discounted: '₹49',
+    note: 'Most popular — full behavioural analytics.',
+    highlight: true,
+    popularBadgeLabel: 'Most popular · Founding ₹49',
+    waitlistBadge: true,
+    waitlistBadgeLabel: 'FOUNDING PRICE',
     summary: ['Deeper analytics', 'Expanded modules'],
     includes: [
       'Everything in Core',
@@ -271,8 +134,12 @@ const PRICING = [
   },
   {
     tier: 'Elite',
-    price: '₹99/mo',
+    tierAccent: 'elite',
+    price: '₹99',
+    discounted: '₹79',
     note: 'Priority power tier',
+    waitlistBadge: true,
+    waitlistBadgeLabel: 'FOUNDING PRICE',
     summary: ['Priority queue', 'Highest limits'],
     includes: [
       'Everything in Pro',
@@ -283,6 +150,75 @@ const PRICING = [
     ],
     bestFor: 'Testers and users who want the full life OS, no limits',
   },
+];
+
+const COMPARISON_MAX_PRICE = 1600;
+
+const COMPARISON_ROWS = [
+  { label: 'Notion + Todoist + Headspace', priceInr: 1600, priceLabel: '₹1,600/mo', combined: true },
+  { label: 'Notion Personal', priceInr: 650, priceLabel: '₹650/mo' },
+  { label: 'Headspace', priceInr: 550, priceLabel: '₹550/mo' },
+  { label: 'Todoist Pro', priceInr: 400, priceLabel: '₹400/mo' },
+];
+
+const AIIMIN_TIER_ROWS = [
+  { tier: 'Explore', label: 'AIIMIN Explore', price: '₹0', tierLevel: 0 },
+  { tier: 'Core', label: 'AIIMIN Core', price: '₹29/mo', tierLevel: 1 },
+  {
+    tier: 'Pro',
+    label: 'AIIMIN Pro',
+    listPrice: '₹59',
+    foundingPrice: '₹49/mo',
+    tierLevel: 2,
+    highlight: true,
+  },
+  {
+    tier: 'Elite',
+    label: 'AIIMIN Elite',
+    listPrice: '₹99',
+    foundingPrice: '₹79/mo',
+    tierLevel: 3,
+  },
+];
+
+const ACCESS_PACKAGES = [
+  {
+    id: 'tester',
+    tag: 'VIP invite',
+    tagVariant: 'premium',
+    title: 'Invited testers',
+    deadline: () => 'Register by 31 July',
+    perks: [
+      { icon: ShieldCheck, text: 'Elite (₹99/mo) free for 12 months — ₹1,188 value' },
+      { icon: Rocket, text: 'First access to every beta module before public release' },
+      { icon: KeyRound, text: 'Priority OS-ID reservation + direct founder feedback channel' },
+      { icon: Sparkles, text: 'Prototype features: Life Score, Discipline Engine, Sports Briefing' },
+    ],
+    cta: { label: 'Sign in to register', href: '/login' },
+  },
+  {
+    id: 'waitlist',
+    tag: 'Founding member',
+    tagVariant: 'founding',
+    title: 'Waitlist members',
+    deadline: () => 'Join anytime · live target end of Sept 2026',
+    perks: [
+      { icon: Gift, text: 'Launch starter kit — habits, money, and focus setup bundle' },
+      { icon: Rocket, text: 'Complimentary Core subscription at go-live' },
+      { icon: BadgeCheck, text: 'Pro founding price ₹49/mo (~17% off ₹59) for 12 months after launch' },
+      { icon: BadgeCheck, text: 'Elite founding price ₹79/mo (~20% off ₹99) for 12 months after launch' },
+      { icon: KeyRound, text: 'OS-ID reservation + priority onboarding waves' },
+      { icon: MessageSquareQuote, text: 'Roadmap voting — your ideas shape launch priority' },
+    ],
+    cta: { label: 'Reserve my spot', href: '#waitlist-join' },
+  },
+];
+
+const ROADMAP_MODULES = [
+  { icon: '✅', name: 'Life Score', date: 'Sep 2026', status: 'done', tooltip: 'Track sleep, food, gym, mood, and focus daily.' },
+  { icon: '🔨', name: 'Discipline Engine', date: 'Oct 2026', status: 'building', tooltip: 'Daily habits, streak recovery, and monthly control.' },
+  { icon: '🔨', name: 'Money OS', date: 'Nov 2026', status: 'building', tooltip: 'Spending and productivity in one app.' },
+  { icon: '📋', name: 'Spade Briefing', date: 'Q1 2027', status: 'planned', tooltip: 'Context and content without doomscrolling.' },
 ];
 
 const PREVIEW_SCREENS = [
@@ -340,30 +276,18 @@ const TESTIMONIALS = [
   },
 ];
 
-const CAMPUS_STRIP = ['BITS Pilani', 'IIT Delhi', 'NIT Trichy', 'Manipal', 'VIT', 'Ashoka'];
-
-const AFTER_SIGNUP = [
-  {
-    step: '01',
-    title: 'Instant confirmation',
-    desc: 'You get a waitlist email with your perk breakdown and launch timeline.',
-  },
-  {
-    step: '02',
-    title: 'Priority beta invites',
-    desc: 'Waitlist members onboard in waves through August as slots open.',
-  },
-  {
-    step: '03',
-    title: 'Launch by end of September',
-    desc: 'Starter kit, Core subscription, and Elite discount unlock at go-live.',
-  },
-];
-
 const FAQS = [
   {
     q: 'What is AIIMIN?',
-    a: 'AIIMIN is a personal life OS that combines habits, focus, money, and growth in one connected dashboard.',
+    a: 'AIIMIN is a personal life operating system — one dashboard where you track habits, sleep, mood, money, focus sessions, and daily wins. It connects the dots across your behaviour so you see patterns, not just logs. Built for Indian students and early professionals who want one system instead of five separate apps.',
+  },
+  {
+    q: 'What is the website vs the mobile app?',
+    a: 'Right now, AIIMIN is a desktop web dashboard at aiimin.in — the full analytics experience with charts, correlations, and multi-panel layouts. A native mobile companion app for quick on-the-go logging is in active development. Join the waitlist from any device; use the full dashboard on your laptop when we launch.',
+  },
+  {
+    q: 'Why is AIIMIN desktop-first?',
+    a: 'The dashboard is data-dense — weekly pattern charts, money analytics, and correlation views need screen space to be useful. We optimised for laptops and desktops so nothing feels cramped. A native mobile app for quick logging is coming; until then, join the waitlist on your phone and open AIIMIN on your laptop for the full experience.',
   },
   {
     q: 'When does AIIMIN launch?',
@@ -375,23 +299,19 @@ const FAQS = [
   },
   {
     q: 'What do waitlist members get?',
-    a: 'The founding member package: launch starter kit, complimentary Core at go-live, 40% off Elite for 12 months, OS-ID reservation, and priority onboarding.',
+    a: 'The founding member package: launch starter kit, complimentary Core subscription at go-live, Pro at ₹49/mo founding price (~17% off ₹59) for 12 months, Elite at ₹79/mo founding price (~20% off ₹99) for 12 months, OS-ID reservation, and priority onboarding. Core stays at standard ₹29/mo.',
   },
   {
     q: 'Is Explore free?',
-    a: 'Yes. Explore stays free forever. Waitlist and tester perks apply to paid tiers at launch.',
+    a: 'Yes. Explore stays free forever. Waitlist perks apply to complimentary Core, the Pro founding price (₹49/mo), and the Elite founding price (₹79/mo) — not to Core list price.',
   },
   {
     q: 'What is an OS-ID?',
     a: 'OS-ID is your unique AIIMIN handle. You can reserve it on the waitlist form or claim it during invite onboarding.',
   },
   {
-    q: 'Can I use AIIMIN on my phone?',
-    a: 'The full dashboard is built for laptop and desktop. It tracks dense daily data — habits, money, focus, and analytics — which does not work well in a mobile browser. A native mobile app is in development. Join the waitlist here; use a computer when your invite arrives.',
-  },
-  {
     q: 'Can I invite friends?',
-    a: 'Yes. We are adding referral priority waves during the invite rollout.',
+    a: 'Yes. Share your referral link after signup — every friend who joins moves you up 5 spots.',
   },
   {
     q: 'How is my data handled?',
@@ -399,11 +319,147 @@ const FAQS = [
   },
 ];
 
-function computeDaysToLaunch(targetIsoDate) {
-  const now = new Date();
-  const target = new Date(targetIsoDate);
-  const diffMs = target.getTime() - now.getTime();
-  return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+function comparisonBarWidth(priceInr) {
+  if (priceInr <= 0) return '0%';
+  return `${(priceInr / COMPARISON_MAX_PRICE) * 100}%`;
+}
+
+function ExternalPriceComparison() {
+  return (
+    <div className="price-comparison-external">
+      <h3 className="comparison-title">How AIIMIN compares to other apps</h3>
+      <div
+        className="comparison-chart"
+        role="img"
+        aria-label="Monthly price comparison against common productivity apps in India, approximate 2026 pricing"
+      >
+        {COMPARISON_ROWS.map((row) => {
+          const barWidth = comparisonBarWidth(row.priceInr);
+          return (
+            <div
+              key={row.label}
+              className={`comparison-row ${row.combined ? 'combined' : ''}`}
+            >
+              <span className="comparison-label">{row.label}</span>
+              <div className="comparison-track" aria-hidden="true">
+                {row.priceInr > 0 && (
+                  <div className="comparison-fill" style={{ width: barWidth }} />
+                )}
+              </div>
+              <span className="comparison-price">{row.priceLabel}</span>
+            </div>
+          );
+        })}
+      </div>
+      <p className="comparison-caption">
+        India monthly pricing, approximate July 2026. Bars scale proportionally on a single axis — no minimum-width adjustments.
+      </p>
+    </div>
+  );
+}
+
+function AiiminTierPriceList() {
+  return (
+    <div className="aiimin-tier-list">
+      <h3 className="comparison-title">AIIMIN tiers at a glance</h3>
+      <ul className="aiimin-tier-rows" aria-label="AIIMIN monthly tier prices">
+        {AIIMIN_TIER_ROWS.map((row) => (
+          <li
+            key={row.tier}
+            className={`aiimin-tier-row aiimin-tier-level-${row.tierLevel} ${row.highlight ? 'aiimin-tier-row-highlight' : ''}`}
+          >
+            <span className="aiimin-tier-label">{row.label}</span>
+            <span className="aiimin-tier-price">
+              {row.foundingPrice ? (
+                <>
+                  <span className="aiimin-tier-list-price">{row.listPrice}</span>
+                  <strong className="aiimin-tier-founding-price">{row.foundingPrice}</strong>
+                  <span className="aiimin-tier-founding-note">waitlist founding</span>
+                </>
+              ) : (
+                <strong>{row.price}</strong>
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="comparison-caption">
+        Listed at actual monthly prices — no bar chart so tier gaps stay honest. Pro and Elite founding prices apply to waitlist members at launch.
+      </p>
+    </div>
+  );
+}
+
+function PriceComparisonSection() {
+  return (
+    <div className="price-comparison">
+      <ExternalPriceComparison />
+      <AiiminTierPriceList />
+    </div>
+  );
+}
+
+function HeroPreviewMock() {
+  return (
+    <div className="waitlist-hero-preview waitlist-desktop-only">
+      <div className="hero-mock-dashboard" aria-label="Dashboard preview mockup">
+        <div className="hero-mock-chrome">
+          <span className="hero-mock-dot" />
+          <span className="hero-mock-dot" />
+          <span className="hero-mock-dot" />
+        </div>
+        <div className="hero-mock-body">
+          <div className="hero-mock-sidebar">
+            <span className="hero-mock-nav-item active" />
+            <span className="hero-mock-nav-item" />
+            <span className="hero-mock-nav-item" />
+            <span className="hero-mock-nav-item" />
+          </div>
+          <div className="hero-mock-main">
+            <div className="hero-mock-header">
+              <span className="hero-mock-title" />
+              <span className="hero-mock-pill" />
+            </div>
+            <div className="hero-mock-stats">
+              <div className="hero-mock-stat-card"><span className="hero-mock-stat-value">82%</span><span className="hero-mock-stat-label">Life score</span></div>
+              <div className="hero-mock-stat-card"><span className="hero-mock-stat-value">7.2h</span><span className="hero-mock-stat-label">Sleep</span></div>
+              <div className="hero-mock-stat-card"><span className="hero-mock-stat-value">8/10</span><span className="hero-mock-stat-label">Logged</span></div>
+            </div>
+            <div className="hero-mock-chart-wrap">
+              <p className="hero-mock-chart-y">Daily completion %</p>
+              <div className="hero-mock-chart">
+                {[68, 82, 74, 91, 78, 85, 88].map((h, i) => (
+                  <span key={`bar-${i}`} className="hero-mock-bar" style={{ height: `${h}%` }} />
+                ))}
+              </div>
+              <p className="hero-mock-chart-axis">Last 7 days</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="preview-caption">Daily completion trend — habits, sleep, and focus in one view.</p>
+    </div>
+  );
+}
+
+function MobilePreviewMock() {
+  return (
+    <div className="mobile-preview-mock" aria-label="Mobile logging preview mockup">
+      <div className="mobile-mock-header">
+        <span className="mobile-mock-ring" />
+        <span className="mobile-mock-streak">🔥 12</span>
+      </div>
+      <div className="mobile-mock-rows">
+        {['Sleep', 'Gym', 'Mood', 'Steps', 'Focus'].map((label) => (
+          <div key={label} className="mobile-mock-row">
+            <span className="mobile-mock-label">{label}</span>
+            <span className="mobile-mock-check" />
+          </div>
+        ))}
+      </div>
+      <div className="mobile-mock-save">Save day</div>
+    </div>
+  );
 }
 
 class WaitlistErrorBoundary extends React.Component {
@@ -434,35 +490,39 @@ class WaitlistErrorBoundary extends React.Component {
 }
 
 function WaitlistLandingContent() {
-  const { setForcedTheme } = useTheme();
+  const { isLight, toggleWaitlistTheme } = useWaitlistSurfaceTheme();
   const [count, setCount] = useState(null);
-  const [displayCount, setDisplayCount] = useState(0);
   const [openFaq, setOpenFaq] = useState(0);
-  const [selectedPricing, setSelectedPricing] = useState('Core');
-  const [daysToTesterDeadline, setDaysToTesterDeadline] = useState(() => computeDaysToLaunch(TESTER_DEADLINE));
-  const [waitlistTheme, setWaitlistTheme] = useState(() => {
-    if (typeof window === 'undefined') return 'nordic';
-    return localStorage.getItem('aiimin-waitlist-theme') || 'nordic';
-  });
+  const [selectedPricing, setSelectedPricing] = useState(null);
+  const [stickyHidden, setStickyHidden] = useState(false);
+  const faqRef = useRef(null);
+  const footerRef = useRef(null);
 
-  const pageUrl = typeof window !== 'undefined' ? window.location.href : 'https://aiimin.in';
-  const imageUrl = typeof window !== 'undefined' ? `${window.location.origin}/AIIMIN_logo.svg` : 'https://aiimin.in/AIIMIN_logo.svg';
+  const pageUrl = 'https://aiimin.in/';
+  const imageUrl = 'https://aiimin.in/og-image-v2.png';
 
   const launchStructuredData = useMemo(() => ({
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'AIIMIN Waitlist',
+    name: 'AIIMIN',
+    description: 'A data-dense personal dashboard for daily accountability, behavioral insights, money tracking, and habit building. Built for Indian students and early professionals.',
+    url: 'https://aiimin.in',
     applicationCategory: 'ProductivityApplication',
-    operatingSystem: 'Web',
-    url: pageUrl,
-    image: imageUrl,
-    description: 'Join AIIMIN waitlist to get early access to habits, focus, money, and growth systems.',
+    operatingSystem: 'Desktop Web',
     offers: {
-      '@type': 'Offer',
-      price: '0',
+      '@type': 'AggregateOffer',
+      lowPrice: '0',
+      highPrice: '99',
       priceCurrency: 'INR',
+      offerCount: '4',
     },
-  }), [imageUrl, pageUrl]);
+    audience: {
+      '@type': 'EducationalAudience',
+      educationalRole: 'student',
+      geographicArea: { '@type': 'Country', name: 'India' },
+    },
+    author: { '@type': 'Organization', name: 'AIIMIN', url: 'https://aiimin.in' },
+  }), []);
 
   const fetchCount = async () => {
     try {
@@ -479,59 +539,46 @@ function WaitlistLandingContent() {
   }, []);
 
   useEffect(() => {
-    setDaysToTesterDeadline(computeDaysToLaunch(TESTER_DEADLINE));
+    const targets = [faqRef.current, footerRef.current].filter(Boolean);
+    if (!targets.length) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const shouldHide = entries.some((entry) => entry.isIntersecting);
+        setStickyHidden(shouldHide);
+      },
+      { threshold: 0.08 },
+    );
+
+    targets.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
   }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('aiimin-waitlist-theme', waitlistTheme);
-    }
-    setForcedTheme(waitlistTheme);
-    return () => setForcedTheme(null);
-  }, [waitlistTheme, setForcedTheme]);
-
-  useEffect(() => {
-    if (typeof count !== 'number') return;
-    const from = 0;
-    const to = count;
-    const duration = 900;
-    let rafId = null;
-    const start = performance.now();
-
-    const step = (now) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - ((1 - progress) ** 3);
-      setDisplayCount(Math.round(from + (to - from) * eased));
-      if (progress < 1) rafId = requestAnimationFrame(step);
-    };
-
-    rafId = requestAnimationFrame(step);
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, [count]);
 
   return (
     <div className="waitlist-page" id="top">
       <Helmet>
-        <title>AIIMIN - Join the Waitlist for Your Personal Life OS</title>
+        <title>AIIMIN — Personal Life OS | Join the Waitlist</title>
         <meta
           name="description"
-          content="Track habits, focus, money, and growth in one connected life dashboard. Join the AIIMIN waitlist for early access."
+          content="AIIMIN is a data-dense personal dashboard for Indian students and young professionals. Track habits, money, focus, and mood in one screen. Join the waitlist — launching September 2026."
         />
+        <link rel="canonical" href={pageUrl} />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="AIIMIN - Join the Waitlist for Your Personal Life OS" />
+        <meta property="og:title" content="AIIMIN — Life OS from ₹0, Pro founding ₹49/mo" />
         <meta
           property="og:description"
-          content="Track habits, focus, money, and growth in one connected life dashboard. Join the AIIMIN waitlist for early access."
+          content="Track habits, money, focus, and mood in one dashboard. Explore free, Core ₹29/mo, Pro ₹49 founding price, Elite ₹79 for waitlist. Built for Indian students."
         />
         <meta property="og:url" content={pageUrl} />
         <meta property="og:image" content={imageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="en_IN" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AIIMIN - Join the Waitlist for Your Personal Life OS" />
+        <meta name="twitter:title" content="AIIMIN — Life OS from ₹0, Pro founding ₹49/mo" />
         <meta
           name="twitter:description"
-          content="Track habits, focus, money, and growth in one connected life dashboard. Join the AIIMIN waitlist for early access."
+          content="Track habits, money, focus, and mood in one dashboard. Explore free, Core ₹29/mo, Pro ₹49 founding price, Elite ₹79 for waitlist. Built for Indian students."
         />
         <meta name="twitter:image" content={imageUrl} />
         <script type="application/ld+json">{JSON.stringify(launchStructuredData)}</script>
@@ -539,122 +586,119 @@ function WaitlistLandingContent() {
 
       <header className="waitlist-nav" aria-label="Site navigation">
         <div className="waitlist-nav-inner">
-          <a href="#top" className="waitlist-nav-brand" aria-label="AIIMIN home">
+          <Link to="/brand" className="waitlist-nav-brand" aria-label="Explore AIIMIN brand">
+            <ArchBracketMark size={28} withChip colors={EDITOR_PICK} className="waitlist-nav-mark" />
             <Wordmark size={24} color="var(--color-text-1)" />
-          </a>
+          </Link>
           <div className="waitlist-nav-actions">
             <button
               type="button"
               className="waitlist-btn waitlist-btn-ghost waitlist-btn-theme"
-              onClick={() => setWaitlistTheme((prev) => (prev === 'nordic' ? 'vercel' : 'nordic'))}
-              aria-label={waitlistTheme === 'nordic' ? 'Switch to dark mode' : 'Switch to light mode'}
+              onClick={toggleWaitlistTheme}
+              aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
             >
-              {waitlistTheme === 'nordic' ? <Moon size={15} /> : <Sun size={15} />}
-              <span>{waitlistTheme === 'nordic' ? 'Dark' : 'Light'}</span>
+              {isLight ? <Moon size={15} /> : <Sun size={15} />}
+              <span>{isLight ? 'Dark' : 'Light'}</span>
             </button>
-            <a href="#waitlist-join" className="waitlist-btn waitlist-btn-primary">
+            <a href="#waitlist-join" className="waitlist-btn waitlist-btn-outline">
               <Sparkles size={15} />
-              Join waitlist
+              Reserve my spot
             </a>
           </div>
         </div>
       </header>
 
-      <div className="waitlist-mobile-only waitlist-desktop-notice" role="note">
-        <Laptop size={20} className="waitlist-desktop-notice-icon" />
-        <div>
-          <p className="waitlist-desktop-notice-title">Built for laptop &amp; desktop</p>
-          <p className="waitlist-desktop-notice-copy">
-            AIIMIN tracks dense daily data — habits, money, focus, and deep analytics. The full dashboard is not supported on mobile browsers. A native mobile app is in development. You can join the waitlist here; use a computer when your invite arrives.
-          </p>
+      <section className="waitlist-mobile-only mobile-hero-context">
+        <div className="waitlist-desktop-notice" role="note">
+          <Laptop size={18} className="waitlist-desktop-notice-icon" aria-hidden="true" />
+          <div>
+            <p className="waitlist-desktop-notice-title">Built for laptop &amp; desktop</p>
+            <p className="waitlist-desktop-notice-copy">
+              Join the waitlist on your phone. The full dashboard opens on your laptop — native mobile app in development.
+            </p>
+          </div>
         </div>
-      </div>
+        <h1>
+          <span className="hero-headline-lead">Your habits, <strong>money</strong>, focus, and mood.</span>
+          <br />
+          <span className="line-two"><strong>One screen.</strong> Every day.</span>
+        </h1>
+        <p>
+          AIIMIN is a personal dashboard for Indian students and early professionals.
+          Desktop-first — join the waitlist on your phone, use it on your laptop.
+        </p>
+        <div className="mobile-preview-wrap">
+          <MobilePreviewMock />
+        </div>
+      </section>
 
       <header className="waitlist-hero">
         <div className="waitlist-hero-glow" aria-hidden="true" />
-        <div className="waitlist-hero-grid">
-          <motion.div className="waitlist-hero-copy" initial="hidden" animate="visible" variants={fadeUp}>
-            <motion.div custom={0} variants={fadeUp}>
-              <Wordmark size={34} color="var(--color-text-1)" />
-            </motion.div>
-            <motion.p className="waitlist-kicker" custom={1} variants={fadeUp}>
-              Built for Indian students and early professionals
-            </motion.p>
-            <motion.h1 className="waitlist-title" custom={2} variants={fadeUp}>
-              Stop juggling apps.
-              <span> Run your life</span>
-              {' '}from one place.
-            </motion.h1>
-            <motion.p className="waitlist-subtitle" custom={3} variants={fadeUp}>
-              Invited testers unlock the VIP package — Elite free for a year plus full beta access. Waitlist members get the founding kit, Core subscription, and Elite discount at launch.
-            </motion.p>
-            <motion.div className="waitlist-hero-pills" custom={4} variants={fadeUp}>
-              <span className="waitlist-pill"><CalendarClock size={14} /> Live by end of Sept 2026</span>
-              <span className="waitlist-pill waitlist-pill-accent"><ShieldCheck size={14} /> Testers: VIP perks</span>
-              <span className="waitlist-pill"><Clock3 size={14} /> {daysToTesterDeadline}d left for testers</span>
-            </motion.div>
+        <motion.div className="waitlist-hero-top" initial="hidden" animate="visible" variants={fadeUp}>
+          <motion.div custom={0} variants={fadeUp}>
+            <Wordmark size={34} color="var(--color-text-1)" className="waitlist-desktop-only" />
           </motion.div>
+          <motion.p className="waitlist-kicker waitlist-desktop-only" custom={1} variants={fadeUp}>
+            Built for Indian students and early professionals
+          </motion.p>
+          <motion.h1 className="hero-headline waitlist-desktop-only" custom={2} variants={fadeUp}>
+            <span className="hero-headline-lead">Your habits, <strong>money</strong>, focus, and mood.</span>
+            <span className="line-two"><strong>One screen.</strong> Every day.</span>
+          </motion.h1>
+          <motion.p className="hero-subhead waitlist-desktop-only" custom={3} variants={fadeUp}>
+            AIIMIN is a data-dense personal dashboard built for Indian students and early professionals.
+            Track everything, see patterns, level up. Desktop-first. Launching September 2026.
+          </motion.p>
+          <motion.div className="benefit-strip waitlist-desktop-only" custom={4} variants={fadeUp}>
+            <div className="benefit-item"><span className="benefit-icon">📊</span><span className="benefit-text">Track everything</span></div>
+            <div className="benefit-item"><span className="benefit-icon">🔍</span><span className="benefit-text">See patterns</span></div>
+            <div className="benefit-item"><span className="benefit-icon">📈</span><span className="benefit-text">Level up</span></div>
+          </motion.div>
+          <motion.div className="hero-badges waitlist-desktop-only" custom={5} variants={fadeUp}>
+            <span className="hero-badge">🖥 Desktop-first</span>
+            <span className="hero-badge">📅 Sept 2026 launch</span>
+            <span className="hero-badge">⏰ Register by 31 July</span>
+          </motion.div>
+          <motion.div className="founder-signal waitlist-desktop-only" custom={6} variants={fadeUp}>
+            <span>
+              Built by <strong>Aaditya Upadhyay</strong> · B.Tech CSE, Manipal · Personal project · launching Sept 2026
+            </span>
+          </motion.div>
+        </motion.div>
 
-          <div className="waitlist-hero-side">
-            <motion.div className="waitlist-hero-form" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, duration: 0.55 }}>
-              <WaitlistForm onSuccess={fetchCount} />
-              <p className="waitlist-count">
-                {count === null ? (
-                  <span className="waitlist-count-skeleton" aria-hidden="true" />
-                ) : (
-                  `${displayCount.toLocaleString()} people already joined early access.`
-                )}
-              </p>
-              <p className="waitlist-login-link">
-                Already invited? <Link to="/login">Sign in</Link>
-              </p>
-            </motion.div>
-
-            <motion.div className="waitlist-preview-card waitlist-desktop-only" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.5 }}>
-              <div className="waitlist-mock-browser">
-                <span /><span /><span />
-                <p>aiimin.in/overview</p>
-              </div>
-              <p className="waitlist-preview-label">Live product preview</p>
-              <h3>Your life dashboard in one view</h3>
-              <div className="waitlist-preview-metrics">
-                <div><span>Consistency</span><strong>82%</strong></div>
-                <div><span>Focus Sessions</span><strong>19</strong></div>
-                <div><span>Money Clarity</span><strong>+12%</strong></div>
-              </div>
-              <div className="waitlist-preview-chart" aria-hidden="true">
-                {[48, 62, 55, 74, 68, 82, 76].map((h) => (
-                  <span key={h} style={{ height: `${h}%` }} />
-                ))}
-              </div>
-              <p className="waitlist-preview-footnote">Full dashboard access unlocks in invite wave 1.</p>
-            </motion.div>
-          </div>
+        <div className="waitlist-hero-row">
+          <motion.div
+            className="waitlist-hero-form-wrap"
+            id="waitlist-join"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.55 }}
+          >
+            <div className="waitlist-hero-form">
+              <p className="waitlist-mobile-form-title waitlist-mobile-only">Join the waitlist — founding member perks at launch</p>
+              <WaitlistForm onSuccess={fetchCount} showUrgency />
+              {count != null && count >= 100 && (
+                <p className="social-proof-line">
+                  Join {count.toLocaleString('en-IN')}+ founding members on the waitlist
+                </p>
+              )}
+            </div>
+            <div className="founder-signal waitlist-mobile-only">
+              <span>
+                Built by <strong>Aaditya Upadhyay</strong> · B.Tech CSE, Manipal · Personal project · launching Sept 2026
+              </span>
+            </div>
+          </motion.div>
+          <HeroPreviewMock />
         </div>
       </header>
 
       <main className="waitlist-main">
         <section className="waitlist-mobile-only waitlist-mobile-essentials">
-          <p className="waitlist-section-label">Early access</p>
-          <h2>Join now — use desktop later</h2>
           <ul className="waitlist-mobile-perk-list">
-            <li><ShieldCheck size={15} /> <strong>Testers:</strong> Elite free 1 year · register by 31 July</li>
-            <li><Gift size={15} /> <strong>Waitlist:</strong> starter kit + Core + 40% off Elite</li>
-            <li><CalendarClock size={15} /> Go-live target: end of September 2026</li>
+            <li>⏰ Tester cutoff: 31 July</li>
+            <li>📅 Go-live: end of September 2026</li>
           </ul>
-          <p className="waitlist-mobile-essentials-note">
-            Already invited? <Link to="/login">Sign in on desktop</Link> to register.
-          </p>
-        </section>
-
-        <section className="waitlist-section waitlist-campus-strip waitlist-desktop-only">
-          <p className="waitlist-section-label">Built for campus life</p>
-          <h2>Students across India are already lining up</h2>
-          <div className="waitlist-campus-logos">
-            {CAMPUS_STRIP.map((campus) => (
-              <span key={campus} className="waitlist-campus-badge">{campus}</span>
-            ))}
-          </div>
         </section>
 
         <section className="waitlist-section waitlist-desktop-only">
@@ -682,32 +726,94 @@ function WaitlistLandingContent() {
           </div>
         </section>
 
-        <section className="waitlist-section waitlist-section-alt waitlist-desktop-only">
-          <p className="waitlist-section-label">Why AIIMIN exists</p>
-          <h2>Stop juggling 10 apps for one life</h2>
+        <section className="waitlist-section pricing-section waitlist-desktop-only">
+          <p className="waitlist-section-label">Pricing</p>
+          <h2>Four tiers — from free Explore to full Elite</h2>
           <p className="waitlist-section-copy">
-            AIIMIN connects tracking, reflection, and execution so your data turns into action.
+            Most productivity stacks cost ₹500–₹1,600/month across separate apps.
+            AIIMIN bundles habits, money, focus, and mood from ₹0 — with Pro at ₹49/mo founding price for waitlist members.
           </p>
-          <div className="waitlist-grid waitlist-grid-3">
-            {VALUE_PILLARS.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.article
-                  key={item.title}
-                  custom={index}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.3 }}
-                  className="waitlist-card"
-                >
-                  <Icon size={18} className="waitlist-card-icon" />
-                  <h3>{item.title}</h3>
-                  <p>{item.desc}</p>
-                </motion.article>
-              );
-            })}
+          <div className="waitlist-pricing-grid">
+            {PRICING.map((item, index) => (
+              <motion.button
+                key={item.tier}
+                type="button"
+                custom={index}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.25 }}
+                className={`waitlist-pricing-card waitlist-pricing-tier-${item.tierAccent} ${item.highlight ? 'waitlist-pricing-highlight' : ''} ${selectedPricing === item.tier ? 'waitlist-pricing-active' : ''}`}
+                onClick={() => setSelectedPricing(item.tier)}
+                aria-pressed={selectedPricing === item.tier}
+              >
+                {item.startHere && <span className="waitlist-popular-badge">Start here</span>}
+                {item.popularBadgeLabel && (
+                  <span className="waitlist-popular-badge">{item.popularBadgeLabel}</span>
+                )}
+                {item.waitlistBadge && <div className="waitlist-badge">{item.waitlistBadgeLabel || 'WAITLIST PERK'}</div>}
+                <h3>{item.tier}</h3>
+                {item.discounted ? (
+                  <div className="tier-price">
+                    <span className="price-original">{item.price}</span>
+                    <span className="price-discounted">{item.discounted}</span>
+                    <span className="tier-price-period">/mo for waitlist members</span>
+                  </div>
+                ) : (
+                  <p className="waitlist-price tier-price">{item.price}</p>
+                )}
+                {item.freeNote && <p className="tier-free-note">{item.freeNote}</p>}
+                <p className="waitlist-pricing-note">{item.note}</p>
+                <ul className="waitlist-pricing-list">
+                  {item.summary.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+                <span className="waitlist-pricing-tap">
+                  Tap to see full breakdown
+                  <ChevronDown size={14} aria-hidden="true" />
+                </span>
+              </motion.button>
+            ))}
           </div>
+          {selectedPricing && (() => {
+            const active = PRICING.find((p) => p.tier === selectedPricing);
+            if (!active) return null;
+            return (
+              <motion.div
+                key={active.tier}
+                className="waitlist-pricing-detail"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div className="waitlist-pricing-tabs" role="tablist" aria-label="Pricing tier breakdown">
+                  {PRICING.map((tier) => (
+                    <button
+                      key={tier.tier}
+                      type="button"
+                      role="tab"
+                      aria-selected={selectedPricing === tier.tier}
+                      className={`waitlist-pricing-tab ${selectedPricing === tier.tier ? 'waitlist-pricing-tab-active' : ''}`}
+                      onClick={() => setSelectedPricing(tier.tier)}
+                    >
+                      {tier.tier}
+                    </button>
+                  ))}
+                </div>
+                <div className="waitlist-pricing-detail-head">
+                  <h3>{active.tier}: what you get</h3>
+                  <p>Best for: {active.bestFor}</p>
+                </div>
+                <ul className="waitlist-pricing-detail-list">
+                  {active.includes.map((line) => (
+                    <li key={line}><BadgeCheck size={14} /> {line}</li>
+                  ))}
+                </ul>
+              </motion.div>
+            );
+          })()}
+          <PriceComparisonSection />
         </section>
 
         <section className="waitlist-section waitlist-desktop-only">
@@ -766,67 +872,19 @@ function WaitlistLandingContent() {
           </div>
         </section>
 
-        <section className="waitlist-section waitlist-desktop-only">
-          <p className="waitlist-section-label">Launch timeline</p>
-          <h2>Two paths in — one product out</h2>
-          <p className="waitlist-section-copy">
-            Testers and waitlist members get different packages. Pick the path that matches how you arrived here.
-          </p>
-          <div className="waitlist-phase-grid">
-            {LAUNCH_PHASES.map((item, index) => (
-              <motion.article
-                key={item.title}
-                custom={index}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                className="waitlist-phase-card"
-              >
-                <span className="waitlist-phase-badge">{item.badge}</span>
-                <span className="waitlist-phase-label">{item.phase}</span>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </motion.article>
-            ))}
-          </div>
-        </section>
-
-        <section className="waitlist-section waitlist-section-alt waitlist-desktop-only">
-          <p className="waitlist-section-label">Product roadmap</p>
-          <h2>Shipping in waves before go-live</h2>
-          <p className="waitlist-section-copy">
-            We ship in waves so each module is tested with real usage before broad release.
-          </p>
-          <div className="waitlist-timeline">
-            {SNEAK_PEEKS.map((item, index) => (
-              <motion.article
-                key={item.title}
-                custom={index}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.25 }}
-                className="waitlist-timeline-item"
-              >
-                <span className="waitlist-timeline-dot" />
-                <div className="waitlist-timeline-body">
-                  <span className="waitlist-stage">{item.stage}</span>
-                  <h3>{item.title}</h3>
-                  <p>{item.desc}</p>
-                  <small>{item.eta}</small>
-                </div>
-              </motion.article>
-            ))}
-          </div>
-        </section>
-
         <section className="waitlist-section waitlist-access-tiers waitlist-desktop-only">
-          <p className="waitlist-section-label">Who gets what</p>
+          <p className="waitlist-section-label">Early access</p>
           <h2>Two paths in — testers get the VIP package</h2>
           <p className="waitlist-section-copy">
-            Invited testers get the highest-value perks including Elite free for a year. Waitlist members get the founding member bundle at public launch.
+            Invited testers and waitlist members get different packages. Pick the path that matches how you arrived.
           </p>
+          <div className="path-timeline">
+            <div className="timeline-step active"><span className="step-number">1</span><span className="step-label">Now: Sign up</span></div>
+            <div className="timeline-connector" />
+            <div className="timeline-step"><span className="step-number">2</span><span className="step-label">Launch: Onboard</span></div>
+            <div className="timeline-connector" />
+            <div className="timeline-step"><span className="step-number">3</span><span className="step-label">Day 1: Dashboard</span></div>
+          </div>
           <div className="waitlist-tier-compare">
             {ACCESS_PACKAGES.map((pkg, index) => (
               <motion.article
@@ -839,9 +897,7 @@ function WaitlistLandingContent() {
               >
                 <span className={`waitlist-tier-tag waitlist-tier-tag-${pkg.tagVariant}`}>{pkg.tag}</span>
                 <h3>{pkg.title}</h3>
-                <p className="waitlist-tier-deadline">
-                  {typeof pkg.deadline === 'function' ? pkg.deadline(daysToTesterDeadline) : pkg.deadline}
-                </p>
+                <p className="waitlist-tier-deadline">{pkg.deadline()}</p>
                 <ul className="waitlist-tier-list">
                   {pkg.perks.map((perk) => {
                     const Icon = perk.icon;
@@ -855,7 +911,6 @@ function WaitlistLandingContent() {
                 </ul>
                 {pkg.cta.href.startsWith('/') ? (
                   <Link to={pkg.cta.href} className="waitlist-btn waitlist-btn-primary waitlist-tier-cta">
-                    {pkg.id === 'waitlist' && <Sparkles size={15} />}
                     {pkg.cta.label}
                   </Link>
                 ) : (
@@ -869,132 +924,40 @@ function WaitlistLandingContent() {
           </div>
         </section>
 
-        <section className="waitlist-section waitlist-section-alt waitlist-desktop-only">
-          <p className="waitlist-section-label">Waitlist perks breakdown</p>
-          <h2>Everything waitlist members unlock at launch</h2>
-          <div className="waitlist-grid waitlist-grid-2">
-            {WAITLIST_PERKS.map((item, index) => {
-              const Icon = item.icon;
-              return (
-                <motion.article
-                  key={item.title}
-                  custom={index}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.25 }}
-                  className={`waitlist-card ${item.featured ? 'waitlist-perk-featured' : ''}`}
-                >
-                  {item.featured && <span className="waitlist-perk-badge">Launch perk</span>}
-                  <Icon size={18} className="waitlist-card-icon" />
-                  <h3>{item.title}</h3>
-                  <p>{item.desc}</p>
-                </motion.article>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="waitlist-section waitlist-after-signup waitlist-desktop-only">
-          <p className="waitlist-section-label">What happens next</p>
-          <h2>From signup to your first dashboard session</h2>
-          <div className="waitlist-after-grid">
-            {AFTER_SIGNUP.map((item, index) => (
-              <motion.article
-                key={item.step}
-                custom={index}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                className="waitlist-after-card"
-              >
-                <span className="waitlist-after-step">{item.step}</span>
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </motion.article>
-            ))}
-          </div>
-        </section>
-
-        <section className="waitlist-section waitlist-desktop-only">
-          <p className="waitlist-section-label">India-first pricing</p>
-          <h2>Transparent tiers from day one</h2>
-          <p className="waitlist-section-copy">Tap any tier to see exactly what is included.</p>
-          <div className="waitlist-pricing-grid">
-            {PRICING.map((item, index) => (
-              <motion.button
-                key={item.tier}
-                type="button"
-                custom={index}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.25 }}
-                className={`waitlist-pricing-card ${item.highlight ? 'waitlist-pricing-highlight' : ''} ${selectedPricing === item.tier ? 'waitlist-pricing-active' : ''}`}
-                onClick={() => setSelectedPricing(item.tier)}
-                aria-pressed={selectedPricing === item.tier}
-              >
-                {item.highlight && <span className="waitlist-popular-badge">Most popular</span>}
-                <h3>{item.tier}</h3>
-                <p className="waitlist-price">{item.price}</p>
-                <p className="waitlist-pricing-note">{item.note}</p>
-                <ul className="waitlist-pricing-list">
-                  {item.summary.map((bullet) => (
-                    <li key={bullet}>{bullet}</li>
-                  ))}
-                </ul>
-                <span className="waitlist-pricing-tap">Tap to see full breakdown</span>
-              </motion.button>
-            ))}
-          </div>
-          {selectedPricing && (() => {
-            const active = PRICING.find((p) => p.tier === selectedPricing);
-            if (!active) return null;
-            return (
-              <motion.div
-                key={active.tier}
-                className="waitlist-pricing-detail"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-              >
-                <div className="waitlist-pricing-detail-head">
-                  <h3>{active.tier} — what you get</h3>
-                  <p>Best for: {active.bestFor}</p>
+        <section className="waitlist-section roadmap-section waitlist-desktop-only">
+          <p className="waitlist-section-label">Roadmap</p>
+          <h2>What ships and when</h2>
+          <p className="waitlist-section-copy">We ship in modules. Each is tested before the next begins.</p>
+          <div className="roadmap-bar">
+            {ROADMAP_MODULES.map((mod, index) => (
+              <React.Fragment key={mod.name}>
+                {index > 0 && <div className="roadmap-connector" />}
+                <div className={`roadmap-module ${mod.status}`} data-tooltip={mod.tooltip} tabIndex={0}>
+                  <span className="module-icon">{mod.icon}</span>
+                  <span className="module-name">{mod.name}</span>
+                  <span className="module-date">{mod.date}</span>
                 </div>
-                <ul className="waitlist-pricing-detail-list">
-                  {active.includes.map((line) => (
-                    <li key={line}><BadgeCheck size={14} /> {line}</li>
-                  ))}
-                </ul>
-              </motion.div>
-            );
-          })()}
-        </section>
-
-        <section className="waitlist-section waitlist-proof-strip waitlist-desktop-only">
-          <div className="waitlist-proof-item"><BadgeCheck size={16} /> Built in India for students and early professionals</div>
-          <div className="waitlist-proof-item"><Wallet size={16} /> India-first pricing from ₹25/month</div>
-          <div className="waitlist-proof-item"><Lock size={16} /> Privacy-first signup and communication</div>
+              </React.Fragment>
+            ))}
+          </div>
         </section>
 
         <section className="waitlist-section waitlist-testimonials waitlist-desktop-only">
           <p className="waitlist-section-label">Early voices</p>
-          <h2>What early users say they need</h2>
+          <h2>What testers are saying</h2>
           <div className="waitlist-grid waitlist-grid-2 waitlist-testimonial-grid">
             {TESTIMONIALS.map((item, index) => (
               <motion.article
                 key={item.name}
-                  custom={index}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.2 }}
-                  className="waitlist-card waitlist-quote-card"
-                >
-                  <MessageSquareQuote size={18} className="waitlist-card-icon" />
-                  <p className="waitlist-quote-text">“{item.quote}”</p>
+                custom={index}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                className="waitlist-card waitlist-quote-card"
+              >
+                <MessageSquareQuote size={18} className="waitlist-card-icon" />
+                <p className="waitlist-quote-text">&ldquo;{item.quote}&rdquo;</p>
                 <div className="waitlist-quote-author">
                   <span className="waitlist-quote-avatar">{item.initials}</span>
                   <div>
@@ -1007,27 +970,7 @@ function WaitlistLandingContent() {
           </div>
         </section>
 
-        <section className="waitlist-section waitlist-feedback-wrap waitlist-desktop-only">
-          <div className="waitlist-feedback-layout">
-            <div className="waitlist-feedback-intro">
-              <p className="waitlist-section-label">Help shape the launch</p>
-              <h2>Tell us what your life OS should do first</h2>
-              <p className="waitlist-section-copy">
-                Your feedback becomes a launch priority score. We ship what the waitlist asks for most.
-              </p>
-              <ul className="waitlist-feedback-benefits">
-                <li><Sparkles size={14} /> Feature votes influence August and September waves</li>
-                <li><BadgeCheck size={14} /> Anonymous by default — email only if you want follow-up</li>
-                <li><Rocket size={14} /> Top requests get public roadmap updates</li>
-              </ul>
-            </div>
-            <div className="waitlist-feedback-panel">
-              <WaitlistQuickFeedback />
-            </div>
-          </div>
-        </section>
-
-        <section className="waitlist-section waitlist-faq-wrap">
+        <section className="waitlist-section waitlist-faq-wrap faq-section" ref={faqRef}>
           <p className="waitlist-section-label">FAQ</p>
           <h2>Questions before joining?</h2>
           <div className="waitlist-faq-list">
@@ -1050,13 +993,13 @@ function WaitlistLandingContent() {
           </div>
         </section>
 
-        <section className="waitlist-section waitlist-secondary-cta" id="waitlist-join">
+        <section className="waitlist-section waitlist-secondary-cta">
           <h2>Join the waitlist — founding member perks at launch</h2>
           <p className="waitlist-section-copy">
-            Starter kit, complimentary Core, and 40% off Elite. Invited testers get the VIP package — sign in instead.
+            Starter kit, complimentary Core, Pro founding ₹49/mo, and Elite founding ₹79/mo. Invited testers get the VIP package — sign in instead.
           </p>
           <div className="waitlist-secondary-cta-form">
-            <WaitlistForm compact onSuccess={fetchCount} />
+            <WaitlistForm compact onSuccess={fetchCount} showFeatureVote={false} />
           </div>
           <a href="#top" className="waitlist-back-top">
             Back to hero <ArrowRight size={14} />
@@ -1064,23 +1007,25 @@ function WaitlistLandingContent() {
         </section>
       </main>
 
-      <footer className="waitlist-footer">
-        <Wordmark size={22} color="var(--color-text-1)" />
-        <p>Built in India for students and early professionals.</p>
+      <footer className="waitlist-footer" ref={footerRef}>
+        <Link to="/brand" className="waitlist-footer-brand" aria-label="Explore AIIMIN brand">
+          <Wordmark size={22} color="var(--color-text-1)" />
+        </Link>
+        <p>Built by Aaditya Upadhyay · India-first life OS for students and early professionals.</p>
         <nav>
           <Link to="/privacy">Privacy</Link>
           <Link to="/terms">Terms</Link>
           <Link to="/contact">Contact</Link>
           <Link to="/login">Sign in</Link>
         </nav>
-        <p className="waitlist-footer-social">
-          <Landmark size={14} /> AIIMIN is designed around the Indian student and early-career context.
-        </p>
       </footer>
 
-      <a href="#waitlist-join" className="waitlist-mobile-cta waitlist-btn waitlist-btn-primary">
+      <a
+        href="#waitlist-join"
+        className={`waitlist-mobile-cta waitlist-btn waitlist-btn-primary sticky-cta ${stickyHidden ? 'hidden' : ''}`}
+      >
         <Sparkles size={15} />
-        Join waitlist
+        Reserve my spot
       </a>
     </div>
   );

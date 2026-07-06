@@ -1,6 +1,6 @@
 # AIIMIN Command Center
 
-Last updated: 2026-07-04
+Last updated: 2026-07-06
 Canonical for agents: this file + `docs/knowledge/_manifest.json`
 
 ## Product Snapshot
@@ -35,16 +35,25 @@ AIIMIN is a personal operating system for disciplined execution, reflection, and
 - Waitlist: `docs/knowledge/02-Features/Waitlist/Waitlist.md`
 - API Usage / Dev Tools: `docs/knowledge/02-Features/DevTools/ApiUsage.md`
 
-## Waitlist launch behavior (2026-07-04)
+## Waitlist launch behavior (2026-07-06)
 
 When `REACT_APP_WAITLIST_MODE=true`:
 
-- `/` shows waitlist landing with pricing preview + exclusive perks
-- Signup requires email, first name, and 8-char OS-ID reservation
+- `/` shows waitlist landing: hero with **light CSS dashboard mock** (chart axis labels), pricing at section 4 (Core ₹29, Pro ₹49 founding, Elite ₹79 founding), **split comparison** (external bars + AIIMIN tier list)
+- Wordmark in nav/footer links to `/brand` — **WaitlistBrand** for public waitlist visitors (theme synced with landing via `aiimin-waitlist-theme`); system OAuth brand at `/brand/system` or `/brand` when user has app access
+- **Pricing policy:** Pro founding ₹49/mo (~17% off ₹59) for waitlist; Elite founding ₹79/mo (~20% off ₹99); complimentary Core at launch; Core standard ₹29/mo
+- Primary CTA copy: **Reserve my spot** — nav outline button, form solid submit
+- Mobile desktop-notice inside hero container; hidden on desktop
+- Signup returns waitlist position + referral code; post-signup share (WhatsApp/X/copy) + inline feature vote; returning visitors restored from `localStorage` key `aiimin_waitlist`
+- Social proof counter only renders when signup count ≥ 100
+- Go-live target: end of September 2026. Tester registration closes 31 July.
+- Fonts on landing: Familjen Grotesk + Figtree + JetBrains Mono. Canonical/OG: `aiimin.in`, `og-image-v2.png`
 - Dev/tester emails in `DEV_EMAILS` / `TESTER_EMAILS` get elite tier + full app access
 - Public sign-in without allowlist → pending screen
 
-Pricing: Explore (free), Core ₹25, Pro ₹61, Elite ₹99.
+Pricing (landing copy): Explore (free), Core ₹29/mo, Pro ₹59/mo (₹49 founding for waitlist), Elite ₹99/mo (₹79 founding for waitlist).
+
+Apply `server/migrations/034_waitlist_referrals.sql` for referral_code / referred_by columns.
 
 ## Launch Runbook (LC-01 to LC-14)
 

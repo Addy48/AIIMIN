@@ -62,3 +62,30 @@ export async function ensureUserProfile(pool, authUser, overrides = {}) {
 
     return rows[0];
 }
+
+export async function getUserProfile(pool, userId) {
+    const { rows } = await pool.query(
+        `SELECT user_id, subscription_tier, prev_tier, font_scale, nav_preferences
+         FROM user_profiles WHERE user_id = $1 LIMIT 1`,
+        [userId],
+    );
+    return rows[0] || null;
+}
+
+export async function patchUserProfile(pool, userId, patch = {}) {
+    const allowed = ['subscription_tier', 'prev_tier', 'font_scale', 'nav_preferences'];
+    const entries = Object.entries(patch).filter(([k, v]) => allowed.includes(k) && v !== undefined);
+    if (!entries.length) return getUserProfile(pool, userId);
+
+    const sets = entries.map(([k], i) => `${k} = $${i + 2}`).join(', ');
+    const values = entries.map(([, v]) => v);
+
+    const { rows } = await pool.query(
+        `INSERT INTO user_profiles (user_id, ${entries.map(([k]) => k).join(', ')})
+         VALUES ($1, ${entries.map((_, i) => `$${i + 2}`).join(', ')})
+         ON CONFLICT (user_id) DO UPDATE SET ${sets}, updated_at = NOW()
+         RETURNING user_id, subscription_tier, prev_tier, font_scale, nav_preferences`,
+        [userId, ...values],
+    );
+    return rows[0] || null;
+}

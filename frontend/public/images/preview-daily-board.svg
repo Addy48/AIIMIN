@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 700" width="1120" height="700">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A0A0C"/>
+      <stop offset="100%" stop-color="#111113"/>
+    </linearGradient>
+    <linearGradient id="card-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#16161A" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#101013" stop-opacity="0.8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1120" height="700" fill="url(#bg)" rx="14" />
+  
+  <!-- Header -->
+  <text x="64" y="80" font-family="'JetBrains Mono', monospace" font-size="16" fill="#888892" letter-spacing="1">TUESDAY, 1 JULY 2026</text>
+  <text x="64" y="120" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="700" fill="#EDE4D3">Daily Execution Board</text>
+
+  <!-- Left Panel: Log Checklist -->
+  <g transform="translate(64, 160)">
+    <rect width="440" height="380" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+    <text x="32" y="44" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#EDE4D3">Today's Log</text>
+    
+    <!-- Checklist Items -->
+    <g transform="translate(32, 80)">
+      <!-- Item 1 -->
+      <rect x="0" y="0" width="24" height="24" rx="6" fill="#2E664A" />
+      <path d="M7 12 L11 16 L17 8" fill="none" stroke="#0A0A0C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#888892" text-decoration="line-through">Wake up before 6:30</text>
+      
+      <!-- Item 2 -->
+      <g transform="translate(0, 48)">
+        <rect x="0" y="0" width="24" height="24" rx="6" fill="#2E664A" />
+        <path d="M7 12 L11 16 L17 8" fill="none" stroke="#0A0A0C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#888892" text-decoration="line-through">Gym - upper body</text>
+      </g>
+      
+      <!-- Item 3 -->
+      <g transform="translate(0, 96)">
+        <rect x="0" y="0" width="24" height="24" rx="6" fill="#2E664A" />
+        <path d="M7 12 L11 16 L17 8" fill="none" stroke="#0A0A0C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#888892" text-decoration="line-through">4 Pomodoro sessions</text>
+      </g>
+      
+      <!-- Item 4 -->
+      <g transform="translate(0, 144)">
+        <rect x="0" y="0" width="24" height="24" rx="6" fill="transparent" stroke="#2A2A32" stroke-width="2" />
+        <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#EDE4D3">Read 30 pages</text>
+      </g>
+
+      <!-- Item 5 -->
+      <g transform="translate(0, 192)">
+        <rect x="0" y="0" width="24" height="24" rx="6" fill="#2E664A" />
+        <path d="M7 12 L11 16 L17 8" fill="none" stroke="#0A0A0C" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#888892" text-decoration="line-through">Track spending</text>
+      </g>
+      
+      <!-- Item 6 -->
+      <g transform="translate(0, 240)">
+        <rect x="0" y="0" width="24" height="24" rx="6" fill="transparent" stroke="#2A2A32" stroke-width="2" />
+        <text x="40" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#EDE4D3">Journal entry</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Right Panel: Key Metrics -->
+  <g transform="translate(544, 160)">
+    <!-- Steps -->
+    <g transform="translate(0, 0)">
+      <rect width="250" height="180" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="24" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Steps</text>
+      <text x="24" y="80" font-family="'JetBrains Mono', monospace" font-size="40" font-weight="700" fill="#EDE4D3">8,247</text>
+      <text x="24" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#2E664A" font-weight="600">+1.2k vs avg</text>
+    </g>
+
+    <!-- Water -->
+    <g transform="translate(266, 0)">
+      <rect width="250" height="180" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="24" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Water</text>
+      <text x="24" y="80" font-family="'JetBrains Mono', monospace" font-size="40" font-weight="700" fill="#EDE4D3">2.4<tspan font-size="20" fill="#888892">L</tspan></text>
+      <!-- Progress Bar -->
+      <rect x="24" y="130" width="202" height="8" rx="4" fill="#1A1A1E" />
+      <rect x="24" y="130" width="160" height="8" rx="4" fill="#2E664A" />
+    </g>
+
+    <!-- Spend -->
+    <g transform="translate(0, 200)">
+      <rect width="250" height="180" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="24" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Spend Today</text>
+      <text x="24" y="80" font-family="'JetBrains Mono', monospace" font-size="40" font-weight="700" fill="#EDE4D3">INR 342</text>
+      <text x="24" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892">Under budget</text>
+    </g>
+
+    <!-- Energy -->
+    <g transform="translate(266, 200)">
+      <rect width="250" height="180" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="24" y="36" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Energy Level</text>
+      <text x="24" y="80" font-family="'JetBrains Mono', monospace" font-size="40" font-weight="700" fill="#EDE4D3">8<tspan font-size="20" fill="#888892">/10</tspan></text>
+      <!-- Dots -->
+      <g transform="translate(24, 130)">
+        <circle cx="4" cy="4" r="4" fill="#2E664A" />
+        <circle cx="16" cy="4" r="4" fill="#2E664A" />
+        <circle cx="28" cy="4" r="4" fill="#2E664A" />
+        <circle cx="40" cy="4" r="4" fill="#2E664A" />
+        <circle cx="52" cy="4" r="4" fill="#2E664A" />
+        <circle cx="64" cy="4" r="4" fill="#2E664A" />
+        <circle cx="76" cy="4" r="4" fill="#2E664A" />
+        <circle cx="88" cy="4" r="4" fill="#2E664A" />
+        <circle cx="100" cy="4" r="4" fill="#1A1A1E" />
+        <circle cx="112" cy="4" r="4" fill="#1A1A1E" />
+      </g>
+    </g>
+  </g>
+
+  <!-- Bottom Timeline -->
+  <g transform="translate(64, 570)">
+    <rect width="996" height="70" rx="16" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+    <!-- Timeline Bar -->
+    <g transform="translate(24, 26)">
+      <!-- Sleep -->
+      <rect x="0" y="0" width="280" height="18" rx="4" fill="#1A1A1E" />
+      <text x="140" y="13" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#888892" text-anchor="middle" font-weight="600" letter-spacing="1">SLEEP</text>
+      <!-- Morning -->
+      <rect x="284" y="0" width="120" height="18" rx="4" fill="#1A3A2A" />
+      <text x="344" y="13" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#888892" text-anchor="middle" font-weight="600" letter-spacing="1">MORNING</text>
+      <!-- Work -->
+      <rect x="408" y="0" width="300" height="18" rx="4" fill="#2E664A" />
+      <text x="558" y="13" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#0A0A0C" text-anchor="middle" font-weight="600" letter-spacing="1">DEEP WORK</text>
+      <!-- Gym -->
+      <rect x="712" y="0" width="100" height="18" rx="4" fill="#24513B" />
+      <text x="762" y="13" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#EDE4D3" text-anchor="middle" font-weight="600" letter-spacing="1">GYM</text>
+      <!-- Evening (Empty) -->
+      <rect x="816" y="0" width="132" height="18" rx="4" fill="transparent" stroke="#1A1A1E" stroke-width="2" stroke-dasharray="4 4" />
+    </g>
+  </g>
+</svg>

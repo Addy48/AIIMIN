@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#EDE4D3"/>
+  <rect x="0" y="560" width="1200" height="70" fill="#1A3A2A"/>
+  <text x="600" y="605" fill="#EDE4D3" font-family="system-ui,sans-serif" font-size="22" font-weight="600" text-anchor="middle">Join the waitlist ’ aiimin.in</text>
+  <text x="80" y="120" fill="#0A0A0C" font-family="Georgia,serif" font-size="72" font-weight="700">AIIMIN</text>
+  <text x="80" y="180" fill="#1A3A2A" font-family="system-ui,sans-serif" font-size="36" font-weight="600">Your Life OS</text>
+  <text x="80" y="240" fill="#0A0A0C" fill-opacity="0.65" font-family="system-ui,sans-serif" font-size="22">Track habits, money, focus, and mood.</text>
+  <text x="80" y="275" fill="#0A0A0C" fill-opacity="0.65" font-family="system-ui,sans-serif" font-size="22">One dashboard. Built for Indian students.</text>
+  <text x="80" y="330" fill="#1A3A2A" font-family="system-ui,sans-serif" font-size="18" font-weight="600">¹0 to ¹225/mo · Launching September 2026</text>
+  <rect x="620" y="80" width="500" height="440" rx="16" fill="#F5F0E8" stroke="#1A3A2A" stroke-opacity="0.15"/>
+  <text x="648" y="130" fill="#0A0A0C" font-family="system-ui,sans-serif" font-size="22" font-weight="700">Daily execution board</text>
+  <rect x="648" y="160" width="444" height="56" rx="8" fill="#fff" stroke="#1A3A2A" stroke-opacity="0.1"/>
+  <text x="668" y="196" fill="#0A0A0C" font-family="system-ui,sans-serif" font-size="14">8/10 metrics · Life score 82%</text>
+  <rect x="648" y="232" width="200" height="100" rx="10" fill="#1A3A2A" fill-opacity="0.1"/>
+  <text x="668" y="290" fill="#1A3A2A" font-family="system-ui,sans-serif" font-size="36" font-weight="700">82%</text>
+  <rect x="868" y="232" width="224" height="100" rx="10" fill="#fff" stroke="#1A3A2A" stroke-opacity="0.1"/>
+  <rect x="888" y="300" width="28" height="20" rx="2" fill="#1A3A2A" fill-opacity="0.35"/>
+  <rect x="924" y="285" width="28" height="35" rx="2" fill="#1A3A2A" fill-opacity="0.5"/>
+  <rect x="960" y="292" width="28" height="28" rx="2" fill="#1A3A2A" fill-opacity="0.4"/>
+  <rect x="996" y="275" width="28" height="45" rx="2" fill="#1A3A2A" fill-opacity="0.55"/>
+  <rect x="648" y="352" width="444" height="140" rx="10" fill="#fff" stroke="#1A3A2A" stroke-opacity="0.08"/>
+  <text x="668" y="390" fill="#0A0A0C" fill-opacity="0.5" font-family="system-ui,sans-serif" font-size="12">Money clarity</text>
+  <text x="668" y="430" fill="#0A0A0C" font-family="system-ui,sans-serif" font-size="28" font-weight="700">¹3.2k tracked</text>
+</svg>

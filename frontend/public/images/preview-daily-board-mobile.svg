@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 670 420" width="670" height="420">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A0A0C"/>
+      <stop offset="100%" stop-color="#111113"/>
+    </linearGradient>
+    <linearGradient id="card-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#16161A" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#101013" stop-opacity="0.8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="670" height="420" fill="url(#bg)" rx="16" />
+  
+  <text x="32" y="44" font-family="'JetBrains Mono', monospace" font-size="12" fill="#888892" letter-spacing="1">TUESDAY, 1 JULY 2026</text>
+  <text x="32" y="76" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#EDE4D3">Daily Execution</text>
+
+  <!-- Left: Log -->
+  <g transform="translate(32, 100)">
+    <rect width="320" height="290" rx="12" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+    <text x="20" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#EDE4D3">Log</text>
+    
+    <g transform="translate(20, 56)">
+      <!-- Item 1 -->
+      <rect x="0" y="0" width="20" height="20" rx="6" fill="#2E664A" />
+      <path d="M5 10 L9 14 L15 6" fill="none" stroke="#0A0A0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="32" y="14" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" text-decoration="line-through">Wake up before 6:30</text>
+      
+      <!-- Item 2 -->
+      <g transform="translate(0, 40)">
+        <rect x="0" y="0" width="20" height="20" rx="6" fill="#2E664A" />
+        <path d="M5 10 L9 14 L15 6" fill="none" stroke="#0A0A0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <text x="32" y="14" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" text-decoration="line-through">Gym - upper body</text>
+      </g>
+      
+      <!-- Item 3 -->
+      <g transform="translate(0, 80)">
+        <rect x="0" y="0" width="20" height="20" rx="6" fill="#2E664A" />
+        <path d="M5 10 L9 14 L15 6" fill="none" stroke="#0A0A0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <text x="32" y="14" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" text-decoration="line-through">4 Pomodoros</text>
+      </g>
+
+      <!-- Item 4 -->
+      <g transform="translate(0, 120)">
+        <rect x="0" y="0" width="20" height="20" rx="6" fill="transparent" stroke="#2A2A32" stroke-width="2" />
+        <text x="32" y="14" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#EDE4D3">Read 30 pages</text>
+      </g>
+
+      <!-- Item 5 -->
+      <g transform="translate(0, 160)">
+        <rect x="0" y="0" width="20" height="20" rx="6" fill="#2E664A" />
+        <path d="M5 10 L9 14 L15 6" fill="none" stroke="#0A0A0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <text x="32" y="14" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" text-decoration="line-through">Track spending</text>
+      </g>
+
+      <!-- Item 6 -->
+      <g transform="translate(0, 200)">
+        <rect x="0" y="0" width="20" height="20" rx="6" fill="transparent" stroke="#2A2A32" stroke-width="2" />
+        <text x="32" y="14" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#EDE4D3">Journal entry</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Right: Metrics -->
+  <g transform="translate(368, 100)">
+    <!-- Metric 1 -->
+    <rect width="270" height="137" rx="12" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+    <text x="20" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Steps</text>
+    <text x="20" y="76" font-family="'JetBrains Mono', monospace" font-size="32" font-weight="700" fill="#EDE4D3">8,247</text>
+    <text x="20" y="116" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#2E664A" font-weight="600">+1.2k vs avg</text>
+    
+    <!-- Metric 2 -->
+    <g transform="translate(0, 153)">
+      <rect width="270" height="137" rx="12" fill="url(#card-bg)" stroke="#1A1A1E" stroke-width="1" />
+      <text x="20" y="32" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#888892" font-weight="500">Spend</text>
+      <text x="20" y="76" font-family="'JetBrains Mono', monospace" font-size="32" font-weight="700" fill="#EDE4D3">INR 342</text>
+      <text x="20" y="116" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#888892">Under budget</text>
+    </g>
+  </g>
+</svg>

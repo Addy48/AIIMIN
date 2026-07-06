@@ -3,7 +3,7 @@ import { getCookie } from 'hono/cookie';
 import * as dotenv from 'dotenv';
 import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { ensureUserProfile } from '../services/userProfileService.js';
-dotenv.config({ path: '/Users/aaditya/Desktop/DASHBOARD PROJECT/.env' });
+dotenv.config();
 
 const COOKIE_NAME = 'aiimin_session';
 
