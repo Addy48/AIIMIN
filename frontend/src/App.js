@@ -6,13 +6,15 @@ import Login from './pages/Login';
 import Onboarding from './pages/Onboarding';
 import WaitlistLanding from './pages/WaitlistLanding';
 import { WaitlistPendingScreen } from './components/waitlist/WaitlistQuickFeedback';
+import WaitlistThemeSync from './components/waitlist/WaitlistThemeSync';
 import Privacy from './pages/legal/Privacy';
 import Terms from './pages/legal/Terms';
 import DataDeletion from './pages/legal/DataDeletion';
 import Security from './pages/legal/Security';
 import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
-import Brand from './pages/legal/Brand';
+import Brand from './pages/Brand';
+import SystemBrand from './pages/legal/Brand';
 
 // Layout & eager components
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -109,6 +111,7 @@ function AppContent({ user, session }) {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-base)' }}>
+      <WaitlistThemeSync />
       <Routes>
 
         {/* Waitlist landing at / for public visitors */}
@@ -168,6 +171,7 @@ function AppContent({ user, session }) {
         <Route path="/security" element={<Security />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/brand/system" element={<SystemBrand />} />
         <Route path="/brand" element={<Brand />} />
 
         {/* ── 404 ── */}

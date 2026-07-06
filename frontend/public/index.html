@@ -18,10 +18,10 @@
   <meta name="color-scheme" content="dark light" />
 
   <!-- Primary Meta Tags -->
-  <title>AIIMIN - Dashboard</title>
-  <meta name="title" content="AIIMIN - Dashboard" />
+  <title>AIIMIN — Personal Life OS | Join the Waitlist</title>
+  <meta name="title" content="AIIMIN — Personal Life OS | Join the Waitlist" />
   <meta name="description"
-    content="AIIMIN is a calm, high-clarity personal dashboard for daily accountability, behavioral insights, and long-term habit tracking. Your life OS." />
+    content="AIIMIN is a data-dense personal dashboard for Indian students and young professionals. Track habits, money, focus, and mood in one screen. Join the waitlist — launching September 2026." />
   <meta name="keywords"
     content="productivity, habit tracker, daily log, behavioral insights, focus timer, life operating system, AIIMIN" />
   <meta name="author" content="AIIMIN" />
@@ -38,36 +38,37 @@
   <!-- ============================================================ -->
 
   <!-- Canonical -->
-  <link rel="canonical" href="https://aiimin.app/" />
+  <link rel="canonical" href="https://aiimin.in/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://aiimin.app/" />
-  <meta property="og:title" content="AIIMIN — Personal Life Operating System" />
+  <meta property="og:url" content="https://aiimin.in/" />
+  <meta property="og:title" content="AIIMIN — Your Life OS for ₹0 to ₹99/mo" />
   <meta property="og:description"
-    content="A calm, high-clarity dashboard for daily accountability, behavioral insights, and long-term habit tracking." />
-  <meta property="og:image" content="https://aiimin.app/og-image.png" />
+    content="Track habits, money, focus, and mood. One dashboard. Built for Indian students. Join the founding waitlist." />
+  <meta property="og:image" content="https://aiimin.in/og-image-v2.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:site_name" content="AIIMIN" />
-  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale" content="en_IN" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://aiimin.app/" />
-  <meta name="twitter:title" content="AIIMIN — Personal Life Operating System" />
+  <meta name="twitter:url" content="https://aiimin.in/" />
+  <meta name="twitter:title" content="AIIMIN — Your Life OS for ₹0 to ₹99/mo" />
   <meta name="twitter:description"
-    content="A calm, high-clarity dashboard for daily accountability, behavioral insights, and long-term habit tracking." />
-  <meta name="twitter:image" content="https://aiimin.app/og-image.png" />
+    content="Track habits, money, focus, and mood. One dashboard. Built for Indian students. Join the founding waitlist." />
+  <meta name="twitter:image" content="https://aiimin.in/og-image-v2.png" />
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-  <!-- Typography: Bodoni Moda (Serif Display) + Jost (Geometric Sans) -->
+  <!-- Typography: Familjen Grotesk (display) + Figtree (body) + JetBrains Mono (data) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
   <link
-    href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500;600;700&family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet" />
 
   <!-- Google Identity Services (for OAuth) -->
@@ -82,19 +83,29 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "AIIMIN",
-    "description": "A personal life operating system for daily accountability and behavioral insights.",
-    "url": "https://aiimin.app",
+    "description": "A data-dense personal dashboard for daily accountability, behavioral insights, money tracking, and habit building. Built for Indian students and early professionals.",
+    "url": "https://aiimin.in",
     "applicationCategory": "ProductivityApplication",
-    "operatingSystem": "Web",
+    "operatingSystem": "Desktop Web",
     "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
+      "@type": "AggregateOffer",
+      "lowPrice": "0",
+      "highPrice": "99",
+      "priceCurrency": "INR",
+      "offerCount": "4"
+    },
+    "audience": {
+      "@type": "EducationalAudience",
+      "educationalRole": "student",
+      "geographicArea": {
+        "@type": "Country",
+        "name": "India"
+      }
     },
     "author": {
       "@type": "Organization",
       "name": "AIIMIN",
-      "url": "https://aiimin.app"
+      "url": "https://aiimin.in"
     }
   }
   </script>
