@@ -1,5 +1,15 @@
 # Waitlist Changelog
 
+## 2026-07-07 (Resend template published — cap 300, prototypes removed)
+
+- Deleted preview/prototype artifacts: `scripts/preview-waitlist-emails.mjs`, `deploy/email-preview/`.
+- Published Resend template `aiimin-waitlist-confirmation` (c6 Gradient Grove); sends via `RESEND_WAITLIST_TEMPLATE_ID` when set.
+- Member counter: **#123 of 300** (`WAITLIST_MEMBER_OFFSET=122`, `WAITLIST_DISPLAY_CAP=300`).
+- Sync script: `node scripts/sync-resend-waitlist-template.mjs`
+- Test: `node scripts/test-email.mjs <email>`
+- Files: `server/lib/waitlistResendTemplate.js`, `server/lib/email.js`, `server/lib/waitlistEmailVariants.js`, `scripts/sync-resend-waitlist-template.mjs`, env examples
+- Status: deployed — ready for E2E waitlist test
+
 ## 2026-07-07 (Waitlist UX — hide position, OS-ID emails, confirmation polish)
 
 - Removed public waitlist position from UI (`WaitlistForm.jsx`) and confirmation email — replaced with "Founding member · perks locked" messaging (low signup count no longer shown).
