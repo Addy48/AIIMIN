@@ -1,5 +1,13 @@
 # Waitlist Changelog
 
+## 2026-07-08 (Arch Bracket logo everywhere + theme-aware marks)
+
+- Replaced legacy leaf logo (`Logo.jsx`) with **Arch Bracket** (`ThemedMark` / `BrandLockup`) across navbar, login, onboarding, auth callback, waitlist.
+- Light: Editor Pick · Dark: Route Y (`DARK_PICK`) — switches with app/waitlist theme.
+- Regenerated `favicon-light.svg`, `favicon-dark.svg`, `AIIMIN_logo.svg`, `AIIMIN_logo_dark.svg`.
+- Email header: dual logo images via `prefers-color-scheme`.
+- Files: `ThemedMark.jsx`, `archBracketMark.js`, `BrandLockup.jsx`, `Navbar.jsx`, `export-logo-assets.mjs`, favicons, email templates.
+
 ## 2026-07-08 (Dual light/dark email — prefers-color-scheme)
 
 - Waitlist confirmation adapts to device theme: **light c6** (default) + **dark Route Y** via `prefers-color-scheme`.

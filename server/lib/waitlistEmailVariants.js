@@ -3,7 +3,7 @@
  * Env: WAITLIST_MEMBER_OFFSET=122 · WAITLIST_DISPLAY_CAP=300 · RESEND_WAITLIST_TEMPLATE_ID
  */
 
-import { darkModeHeadBlock, LOGO_URL } from './waitlistEmailStyles.js';
+import { darkModeHeadBlock, LOGO_URL_LIGHT, LOGO_URL_DARK } from './waitlistEmailStyles.js';
 
 function escapeHtml(str) {
   return String(str || '')
@@ -75,7 +75,8 @@ function emailHeader() {
     <tr><td style="padding:28px 28px 24px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
         <td style="padding-right:12px;vertical-align:middle;">
-          <img src="${LOGO_URL}" width="44" height="44" alt="AIIMIN" border="0" style="display:block;border:0;border-radius:10px;">
+          <img class="wl-logo-light" src="${LOGO_URL_LIGHT}" width="44" height="44" alt="AIIMIN" border="0" style="display:block;border:0;border-radius:10px;">
+          <img class="wl-logo-dark" src="${LOGO_URL_DARK}" width="44" height="44" alt="AIIMIN" border="0" style="display:none;border:0;border-radius:10px;">
         </td>
         <td style="vertical-align:middle;text-align:left;">
           <span class="wl-brand" style="font-family:${FONT_DISPLAY};font-size:19px;font-weight:700;letter-spacing:0.3px;color:${BASE.text1};">AIIMIN</span>

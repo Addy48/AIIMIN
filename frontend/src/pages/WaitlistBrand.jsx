@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Moon, Sun } from 'lucide-react';
-import { ArchBracketMark, EDITOR_PICK } from '../components/brand/archBracketMark';
+import { ArchBracketMark, pickMarkColors } from '../components/brand/archBracketMark';
 import Wordmark from '../components/brand/Wordmark';
 import useWaitlistSurfaceTheme from '../hooks/useWaitlistSurfaceTheme';
 import '../styles/waitlistLanding.css';
@@ -33,7 +33,7 @@ export default function WaitlistBrand() {
       <main className="brand-main brand-main--story">
         <section className="brand-hero brand-hero--minimal">
           <div className="brand-logo-showcase">
-            <ArchBracketMark size={88} withChip colors={EDITOR_PICK} />
+            <ArchBracketMark size={88} withChip colors={pickMarkColors(isLight)} />
             <Wordmark size={42} color="var(--color-text-1)" className="brand-hero-wordmark" />
           </div>
           <p className="brand-kicker">Personal Life OS</p>
@@ -58,7 +58,7 @@ export default function WaitlistBrand() {
           <h2>What the logo represents</h2>
           <div className="brand-mark-explainer">
             <div className="brand-mark-visual">
-              <ArchBracketMark size={120} withChip colors={EDITOR_PICK} />
+              <ArchBracketMark size={120} withChip colors={pickMarkColors(isLight)} />
             </div>
             <div className="brand-mark-copy">
               <p>

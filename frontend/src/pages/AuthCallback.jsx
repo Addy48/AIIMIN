@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { apiGet } from '../utils/api';
+import ThemedMark from '../components/brand/ThemedMark';
+import Wordmark from '../components/brand/Wordmark';
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
@@ -135,8 +137,9 @@ const AuthCallback = () => {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
             >
                 {/* Logo */}
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 900, letterSpacing: '-0.04em', color: 'var(--text-1)' }}>
-                    AIIMIN
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <ThemedMark size={48} />
+                  <Wordmark size={28} weight={700} color="var(--text-1)" />
                 </div>
 
                 {/* Spinner */}
