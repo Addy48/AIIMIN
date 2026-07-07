@@ -21,6 +21,7 @@ frontend/build/
 
 # SSH keys (never commit)
 *.pem
+client_secret*.json
 aiimin.pem
 
 # Vercel
