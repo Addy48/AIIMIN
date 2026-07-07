@@ -13,6 +13,19 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (Final founder closing copy)
+
+- Bottom sign-off: "Thanks for believing in AIIMIN this early…" with reply-to-founder CTA.
+- Production theme c6 locked. Email work complete.
+
+## 2026-07-07 (c6 production copy — It starts here, no duplicate)
+
+- Final theme **c6 Gradient Grove** only; removed c1–c5.
+- Fixed duplicate headline: H1 "It starts here." · hero "You're shaping AIIMIN."
+- Marketing copy: personal founder tone, concrete perks, closing beat, non-repetitive.
+- Subject: `#N — FirstName, it starts here`
+- Default env: `WAITLIST_EMAIL_THEME=c6`
+
 ## 2026-07-07 (v8 final — website colors, Personal OS, count from #123)
 
 - Locked production template to **v8** only; removed v1–v7 variants.

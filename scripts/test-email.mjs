@@ -25,7 +25,7 @@ if (!to) {
   console.error(`Usage: node scripts/test-email.mjs <email> [--theme c1] [--all-themes]
 
 Themes: ${COLOR_THEME_IDS.join(', ')}
-Default: ${process.env.WAITLIST_EMAIL_THEME || 'c1'}`);
+Default: c6 (Gradient Grove)`);
   process.exit(1);
 }
 
