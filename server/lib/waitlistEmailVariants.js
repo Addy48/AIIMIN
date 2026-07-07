@@ -1,6 +1,6 @@
 /**
  * AIIMIN waitlist confirmation email — v8 / theme c6 (Gradient Grove) — production final.
- * Env: WAITLIST_EMAIL_THEME=c6 · WAITLIST_MEMBER_OFFSET=122 · WAITLIST_DISPLAY_CAP=500
+ * Env: WAITLIST_MEMBER_OFFSET=122 · WAITLIST_DISPLAY_CAP=300 · RESEND_WAITLIST_TEMPLATE_ID
  */
 
 function escapeHtml(str) {
@@ -48,7 +48,7 @@ const FONT_BODY = "'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif";
 const FONT_MONO = "'JetBrains Mono', 'Courier New', Courier, monospace";
 
 export const MEMBER_OFFSET = Number(process.env.WAITLIST_MEMBER_OFFSET || 122);
-export const DISPLAY_CAP = Number(process.env.WAITLIST_DISPLAY_CAP || 500);
+export const DISPLAY_CAP = Number(process.env.WAITLIST_DISPLAY_CAP || 300);
 
 export function toDisplayMemberNumber(actualPosition) {
   if (actualPosition == null || Number.isNaN(Number(actualPosition))) return null;
@@ -169,7 +169,7 @@ function timelineBlock() {
     </td></tr>`;
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 0;">
     <tr><td colspan="2" style="font-family:${FONT_BODY};font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:${BASE.text3};padding-bottom:12px;">What happens next</td></tr>
-    ${step('01', 'You\'re in the first 500', 'Founding pricing and Core access — locked to this email.')}
+    ${step('01', 'You\'re in the first 300', 'Founding pricing and Core access — locked to this email.')}
     ${step('02', '31 July', 'Tester keys go out. Activate before then for complimentary Elite, one year.')}
     ${step('03', 'September', 'Launch. You hear from us before anyone on the public feed.')}
   </table>`;
@@ -200,7 +200,7 @@ function renderV8(ctx) {
       ? `#${memberNumber} — ${firstName}, it starts here`
       : `${firstName}, it starts here`,
     html: emailShell({
-      preheader: `You're in the first 500. Core free at launch · Life Score · founding Pro ₹49/mo.`,
+      preheader: `You're in the first 300. Core free at launch · Life Score · founding Pro ₹49/mo.`,
       title: 'It starts here.',
       bodyHtml: `
         ${heroBand({
@@ -225,33 +225,22 @@ function renderV8(ctx) {
   };
 }
 
-export const COLOR_THEME_IDS = ['c6'];
-export const COLOR_THEMES = { c6: { id: 'c6', name: 'Gradient Grove', tagline: 'Production final' } };
-
-export function getColorThemeMeta() {
-  return [{ id: 'c6', name: 'Gradient Grove', tagline: 'Production final — parchment → mint gradient' }];
+export function buildWaitlistResendVariables(v = {}) {
+  const ctx = normalizeCtx(v);
+  const ctaHref = ctx.referralUrl || BASE.siteUrl;
+  return {
+    COUNT_LABEL: ctx.countLabel,
+    GREETING: ctx.firstName,
+    HERO_SUBLINE: `${ctx.firstName}, thanks for showing up before the crowd. Your future self will point at today.`,
+    OSID_HTML: ctx.osId ? osIdBlock(ctx.osId) : '',
+    REFERRAL_HTML: ctx.referralUrl ? referralBlock(ctx.referralUrl) : '',
+    CTA_URL: ctaHref,
+    CTA_LABEL: ctx.referralUrl ? 'Invite someone who gets it →' : 'Visit AIIMIN →',
+    MEMBER_NUM: ctx.memberNumber != null ? String(ctx.memberNumber) : '',
+  };
 }
 
 export function renderWaitlistConfirmation(v = {}) {
   const ctx = normalizeCtx(v);
   return { ...renderV8(ctx), variant: 'v8' };
-}
-
-export function renderAllColorThemes(sampleVars = {}) {
-  const defaults = {
-    name: 'Aaditya',
-    reserved_username: 'AU10',
-    referral_code: 'FOUND01',
-    member_number: 145,
-    total_count: DISPLAY_CAP,
-    ...sampleVars,
-  };
-  const rendered = renderWaitlistConfirmation(defaults);
-  return [{
-    id: 'c6',
-    name: 'Gradient Grove',
-    tagline: 'Production final',
-    subject: rendered.subject,
-    html: rendered.html,
-  }];
 }
