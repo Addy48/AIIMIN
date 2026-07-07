@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight, ChevronLeft, Keyboard, Mic, AlertTriangle } from 'lucide-react';
+import { Plus, X, ChevronRight, ChevronLeft, Keyboard, Mic, AlertTriangle, Sun, Moon } from 'lucide-react';
+import AnimatedNumber from '../components/ui/AnimatedNumber';
 import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
 import PulseCheckModal from '../components/overview/PulseCheckModal';
@@ -109,144 +110,264 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
   );
 });
 
-/* ── Stacked Linear Progress ── */
-const LinearProgress = ({ label, color, id, sublabel }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-1)' }}>
-          {label}
-        </div>
-        <div id={`orbit-sub-${id}`} style={{ fontSize: '10px', fontWeight: 600, color: 'var(--color-text-3)' }}>
-          {sublabel}
-        </div>
-      </div>
-      <div id={`orbit-pct-${id}`} style={{ fontSize: '13px', fontWeight: 900, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', lineHeight: 1 }}>
-        0%
+const clampPercent = (value) => Math.min(100, Math.max(0, value));
+
+const getTrajectorySnapshot = () => {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const nextYear = new Date(now.getFullYear() + 1, 0, 1);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const dayOfWeek = (now.getDay() + 6) % 7;
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+  startOfWeek.setHours(0, 0, 0, 0);
+  const nextWeek = new Date(startOfWeek.getTime() + 7 * 86400000);
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const nextDay = new Date(startOfDay.getTime() + 86400000);
+
+  const percentBetween = (start, end) => clampPercent(((now - start) / (end - start)) * 100);
+  const minutesLeft = Math.ceil((nextDay - now) / 60000);
+  const hoursLeft = Math.floor(minutesLeft / 60);
+  const minuteRemainder = minutesLeft % 60;
+  const daySub = hoursLeft > 0 ? `${hoursLeft}h ${minuteRemainder}m left` : `${minutesLeft}m left`;
+  const dayOfYear = Math.floor((now - startOfYear) / 86400000) + 1;
+  const daysInYear = Math.round((nextYear - startOfYear) / 86400000);
+  const monthDay = now.getDate();
+  const currentHour = now.getHours() + now.getMinutes() / 60;
+  const phase = currentHour < 11 ? 'Morning build' : currentHour < 17 ? 'Afternoon push' : currentHour < 21 ? 'Evening close' : 'Night reset';
+
+  return {
+    dayOfWeek,
+    dayOfYear,
+    daysInYear,
+    phase,
+    time: {
+      sunrise: '5:32 AM',
+      sunset: '7:12 PM',
+    },
+    executionRatio: Math.round((percentBetween(startOfDay, nextDay) * 0.54) + (dayOfWeek * 3.5)),
+    rows: [
+      { id: 'day', label: 'Day', value: percentBetween(startOfDay, nextDay), sub: daySub, color: 'var(--color-accent)' },
+      { id: 'week', label: 'Week', value: percentBetween(startOfWeek, nextWeek), sub: `${Math.ceil((nextWeek - now) / 86400000)}d left`, color: '#3B82F6' },
+      { id: 'month', label: 'Month', value: percentBetween(startOfMonth, nextMonth), sub: `${Math.ceil((nextMonth - now) / 86400000)}d left`, color: '#EC4899' },
+      { id: 'year', label: 'Year', value: percentBetween(startOfYear, nextYear), sub: `${Math.ceil((nextYear - now) / 86400000)}d left`, color: '#F97316' },
+    ],
+    weekRhythm: Array.from({ length: 7 }, (_, index) => {
+      if (index < dayOfWeek) return index % 2 === 0 ? 'strong' : 'active';
+      if (index === dayOfWeek) return 'today';
+      return 'idle';
+    }),
+    monthDay,
+  };
+};
+
+const TrajectoryArc = ({ progress, phase, time }) => {
+  const cx = 110;
+  const cy = 101;
+  const radius = 86;
+  const angle = Math.PI * (1 - progress / 100);
+  const sunX = cx + radius * Math.cos(angle);
+  const sunY = cy - radius * Math.sin(angle);
+  const circumference = Math.PI * radius;
+  const dashOffset = circumference * (1 - progress / 100);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', margin: '4px 0 10px' }}>
+      <svg viewBox="0 0 220 118" role="img" aria-label={`Day progress ${progress.toFixed(0)} percent`} style={{ width: '100%', maxWidth: '226px', height: '118px', overflow: 'visible' }}>
+        <defs>
+          <linearGradient id="trajectoryArcGradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.22" />
+            <stop offset="54%" stopColor="var(--color-accent)" stopOpacity="0.92" />
+            <stop offset="100%" stopColor="#F97316" stopOpacity="0.8" />
+          </linearGradient>
+          <radialGradient id="trajectorySunGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#F97316" stopOpacity="0.42" />
+            <stop offset="100%" stopColor="#F97316" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <line x1="18" y1="101" x2="202" y2="101" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="3 5" />
+        <path d="M 24 101 A 86 86 0 0 1 196 101" fill="none" stroke="var(--color-border)" strokeWidth="3" strokeLinecap="round" />
+        <path
+          d="M 24 101 A 86 86 0 0 1 196 101"
+          fill="none"
+          stroke="url(#trajectoryArcGradient)"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={dashOffset}
+          style={{ transition: 'stroke-dashoffset 700ms cubic-bezier(0.16, 1, 0.3, 1)' }}
+        />
+        {[25, 50, 75].map((mark) => {
+          const markAngle = Math.PI * (1 - mark / 100);
+          return (
+            <circle
+              key={mark}
+              cx={cx + radius * Math.cos(markAngle)}
+              cy={cy - radius * Math.sin(markAngle)}
+              r="2"
+              fill="var(--color-surface)"
+              stroke="var(--color-border)"
+              strokeWidth="1"
+            />
+          );
+        })}
+        <circle cx={sunX} cy={sunY} r="15" fill="url(#trajectorySunGlow)" />
+        <circle cx={sunX} cy={sunY} r="5.5" fill="#F97316" />
+        <circle cx={sunX - 1.5} cy={sunY - 1.5} r="2" fill="#FED7AA" />
+      </svg>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', maxWidth: '226px', color: 'var(--color-text-3)', fontSize: '10px', fontWeight: 700 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Sun size={11} />{time.sunrise}</span>
+        <span style={{ color: 'var(--color-text-2)', fontWeight: 800 }}>{phase}</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>{time.sunset}<Moon size={11} /></span>
       </div>
     </div>
-    <div style={{ height: '10px', background: 'var(--color-elevated)', borderRadius: '99px', overflow: 'hidden', border: '1px solid var(--color-border)', position: 'relative' }}>
-      <div style={{ position: 'absolute', inset: 0, opacity: 0.1, background: color }} />
-      <div id={`orbit-ring-${id}`} style={{
+  );
+};
+
+const TrajectoryRow = ({ row }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '12px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '7px', minWidth: 0 }}>
+        <span style={{ fontSize: '11px', fontWeight: 900, color: 'var(--color-text-1)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{row.label}</span>
+        <span style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 700, whiteSpace: 'nowrap' }}>{row.sub}</span>
+      </div>
+      <span style={{ fontSize: '11px', fontWeight: 900, color: row.color, fontVariantNumeric: 'tabular-nums' }}>{row.value.toFixed(1)}%</span>
+    </div>
+    <div style={{ height: '6px', borderRadius: '999px', background: 'var(--color-elevated)', border: '1px solid var(--color-border)', overflow: 'hidden', position: 'relative' }}>
+      {row.id === 'day' && (
+        <>
+          <span style={{ position: 'absolute', top: '-2px', bottom: '-2px', left: '33%', width: '1px', background: 'color-mix(in srgb, var(--color-text-3) 28%, transparent)' }} />
+          <span style={{ position: 'absolute', top: '-2px', bottom: '-2px', left: '66%', width: '1px', background: 'color-mix(in srgb, var(--color-text-3) 28%, transparent)' }} />
+        </>
+      )}
+      <div style={{
         height: '100%',
-        width: '0%',
-        background: color,
-        borderRadius: '99px',
-        transition: 'width 1.2s cubic-bezier(0.16,1,0.3,1)',
-        boxShadow: `0 0 10px ${color}88`
+        width: `${row.value}%`,
+        background: `linear-gradient(90deg, color-mix(in srgb, ${row.color} 62%, white), ${row.color})`,
+        borderRadius: 'inherit',
+        transition: 'width 700ms cubic-bezier(0.16, 1, 0.3, 1)',
       }} />
     </div>
   </div>
 );
 
 const TrajectoryProgress = React.memo(() => {
-  const getProgress = () => {
-    const now = new Date();
-    const startOfYear  = new Date(now.getFullYear(), 0, 1).getTime();
-    const nextYear     = new Date(now.getFullYear() + 1, 0, 1).getTime();
-    const yearElapsed  = ((now - startOfYear) / (nextYear - startOfYear)) * 100;
-
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-    const nextMonth    = new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime();
-    const monthElapsed = ((now - startOfMonth) / (nextMonth - startOfMonth)) * 100;
-
-    const dayOfWeek    = (now.getDay() + 6) % 7;
-    const startOfWeek  = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
-    startOfWeek.setHours(0, 0, 0, 0);
-    const nextWeek     = new Date(startOfWeek.getTime() + 7 * 86400000);
-    const weekElapsed  = ((now - startOfWeek) / (nextWeek - startOfWeek)) * 100;
-
-    const startOfDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    startOfDay.setHours(0, 0, 0, 0);
-    const nextDay      = new Date(startOfDay.getTime() + 86400000);
-    const dayElapsed   = ((now - startOfDay) / (nextDay - startOfDay)) * 100;
-
-    // "time left" labels
-    const daysInYear   = Math.ceil((nextYear - now) / 86400000);
-    const daysInMonth  = Math.ceil((nextMonth - now) / 86400000);
-    const daysInWeek   = Math.ceil((nextWeek  - now) / 86400000);
-    const minsInDay    = Math.ceil((nextDay   - now) / 60000);
-    const hoursInDay   = Math.floor(minsInDay / 60);
-    const minRem       = minsInDay % 60;
-    const daySubLabel  = hoursInDay > 0 ? `${hoursInDay}h ${minRem}m left` : `${minsInDay}m left`;
-
-    return {
-      year:  { val: yearElapsed,  sub: `${daysInYear}d left`  },
-      month: { val: monthElapsed, sub: `${daysInMonth}d left` },
-      week:  { val: weekElapsed,  sub: `${daysInWeek}d left`  },
-      day:   { val: dayElapsed,   sub: daySubLabel             },
-    };
-  };
+  const [snapshot, setSnapshot] = useState(() => getTrajectorySnapshot());
 
   useEffect(() => {
-    const setDial = (id, val, sub = null) => {
-      const ring = document.getElementById(`orbit-ring-${id}`);
-      if (ring) ring.style.width = `${Math.min(100, Math.max(0, val))}%`;
-      const pct  = document.getElementById(`orbit-pct-${id}`);
-      if (pct)  pct.textContent = `${val.toFixed(2)}%`;
-      if (sub) {
-        const subEl = document.getElementById(`orbit-sub-${id}`);
-        if (subEl) subEl.textContent = sub;
-      }
-    };
-
-    const t = setTimeout(() => {
-      const p = getProgress();
-      setDial('year',  p.year.val, p.year.sub);
-      setDial('month', p.month.val, p.month.sub);
-      setDial('week',  p.week.val, p.week.sub);
-      setDial('day',   p.day.val, p.day.sub);
-    }, 120);
-
-    let raf;
-    let last = performance.now();
-    const tick = (ts) => {
-      if (ts - last > 1000) {
-        last = ts;
-        const p = getProgress();
-        setDial('year',  p.year.val, p.year.sub);
-        setDial('month', p.month.val, p.month.sub);
-        setDial('week',  p.week.val, p.week.sub);
-        setDial('day',   p.day.val, p.day.sub);
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    return () => {
-      clearTimeout(t);
-      cancelAnimationFrame(raf);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const interval = setInterval(() => setSnapshot(getTrajectorySnapshot()), 30000);
+    return () => clearInterval(interval);
   }, []);
 
-  const initial = React.useMemo(() => getProgress(), []);
+  const dayProgress = snapshot.rows[0].value;
+  const safeExecutionRatio = clampPercent(snapshot.executionRatio);
 
   return (
     <div style={{
       background: 'linear-gradient(180deg, var(--color-surface) 0%, var(--color-elevated) 100%)',
       border: '1px solid var(--color-border)',
-      borderRadius: '24px', padding: '24px 32px',
-      flex: 1, display: 'flex', flexDirection: 'column', height: '100%',
+      borderRadius: '24px',
+      padding: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '14px',
       boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.02), 0 8px 24px rgba(0,0,0,0.04)',
-      minHeight: 0
+      minHeight: 0,
+      overflow: 'hidden',
     }}>
-      <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'var(--color-text-3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span>Trajectory Execution</span>
-        <span style={{ color: '#F97316', animation: 'pulse-slow 1.5s infinite' }}>LIVE</span>
-        <style>{`
-          @keyframes pulse-slow {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.2; }
-          }
-        `}</style>
+        <span className="trajectory-live-badge">
+          <span className="trajectory-live-dot" />
+          LIVE
+        </span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', margin: 'auto 0' }}>
-        <LinearProgress id="day"   label="Day"    color="#48A860" sublabel={initial.day.sub}   />
-        <LinearProgress id="week"  label="Week"   color="#3B82F6" sublabel={initial.week.sub}  />
-        <LinearProgress id="month" label="Month"  color="#EC4899" sublabel={initial.month.sub} />
-        <LinearProgress id="year"  label="Year"   color="#F97316" sublabel={initial.year.sub}  />
+
+      <TrajectoryArc progress={dayProgress} phase={snapshot.phase} time={snapshot.time} />
+
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '12px',
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: '16px',
+        padding: '12px 14px',
+      }}>
+        <div>
+          <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Time Invested</div>
+          <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 650, marginTop: '2px' }}>intentional day pressure</div>
+        </div>
+        <div style={{ color: 'var(--color-accent)', fontSize: '28px', lineHeight: 1, fontWeight: 950, letterSpacing: '-0.06em', fontVariantNumeric: 'tabular-nums' }}>
+          <AnimatedNumber value={safeExecutionRatio} duration={0.8} suffix="%" />
+        </div>
       </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {snapshot.rows.map((row) => <TrajectoryRow key={row.id} row={row} />)}
+      </div>
+
+      <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+        <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>This Week</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+          {DAYS.map((day, index) => {
+            const status = snapshot.weekRhythm[index];
+            return (
+              <div key={day} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                <span className={`trajectory-week-dot is-${status}`} />
+                <span style={{ fontSize: '8px', color: 'var(--color-text-3)', fontWeight: 800 }}>{day.slice(0, 1)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 750 }}>
+        Day <span style={{ color: 'var(--color-text-1)', fontWeight: 900 }}>{snapshot.dayOfYear}</span> of {snapshot.daysInYear} · Month day <span style={{ color: 'var(--color-text-1)', fontWeight: 900 }}>{snapshot.monthDay}</span>
+      </div>
+
+      <style>{`
+        @keyframes trajectoryPulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: .4; transform: scale(.72); }
+        }
+        .trajectory-live-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #F97316;
+          font-weight: 950;
+          letter-spacing: .08em;
+        }
+        .trajectory-live-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 999px;
+          background: #F97316;
+          animation: trajectoryPulse 1.8s ease-in-out infinite;
+        }
+        .trajectory-week-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          background: var(--color-border);
+          transition: background .2s ease, box-shadow .2s ease;
+        }
+        .trajectory-week-dot.is-active {
+          background: color-mix(in srgb, var(--color-accent) 62%, var(--color-border));
+        }
+        .trajectory-week-dot.is-strong,
+        .trajectory-week-dot.is-today {
+          background: var(--color-accent);
+        }
+        .trajectory-week-dot.is-today {
+          box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 4px var(--color-accent);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .trajectory-live-dot { animation: none; }
+        }
+      `}</style>
     </div>
   );
 });
@@ -453,10 +574,10 @@ const Overview = () => {
       )}
 
       {/* Main Grid */}
-      <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px', alignItems: 'stretch' }} className="overview-grid">
+      <div className="overview-grid">
 
         {/* LEFT column */}
-        <StaggerWrap style={{ display:'flex', flexDirection:'column', gap:'32px', minHeight: 0 }}>
+        <StaggerWrap style={{ display:'flex', flexDirection:'column', gap:'24px', minHeight: 0 }}>
           
           {/* Urgent Reminders Banner */}
           {urgentReminders.length > 0 && (
@@ -594,7 +715,7 @@ const Overview = () => {
         </StaggerWrap>
 
         {/* RIGHT sidebar */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'32px', minHeight: 0 }}>
+        <div className="overview-rail">
 
           {isVisible('logger') && (
           <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '20px' }}>
@@ -608,16 +729,6 @@ const Overview = () => {
 
         </div>
       </div>
-
-      {/* Responsive */}
-      <style>{`
-        @media (max-width: 1024px) {
-          .overview-grid { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 768px) {
-          .metric-row { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </div>
   );
 };
