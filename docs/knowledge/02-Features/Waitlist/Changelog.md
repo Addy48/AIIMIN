@@ -13,6 +13,13 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (Resend from address — admin.aiimin.in)
+
+- Fixed production send failure: verified domain is `admin.aiimin.in`, not root `aiimin.in`.
+- Default + env examples now use `noreply@admin.aiimin.in`.
+- EC2 + local test sends confirmed. SES IAM user + group deleted via AWS MCP.
+- Files: `server/lib/email.js`, env examples, `scripts/test-email.mjs`, `deploy/RESEND-SETUP.md`
+
 ## 2026-07-07 (Resend-only migration — SES removed)
 
 - Replaced AWS SES/nodemailer with official `resend` SDK in `server/lib/email.js`.

@@ -6,7 +6,9 @@ All transactional email (waitlist, re-engagement, billing) uses **Resend** via `
 
 1. [resend.com](https://resend.com) → sign up
 2. **API Keys** → Create → copy `re_...`
-3. **Domains** → Add `aiimin.in`
+3. **Domains** → Add `admin.aiimin.in` (verified subdomain on GoDaddy DNS)
+
+> **Note:** Root `aiimin.in` is separate. Use `noreply@admin.aiimin.in` as the from address until/unless you also verify the root domain.
 
 ## 2. DNS records (Vercel or Route53)
 
@@ -18,7 +20,7 @@ Resend shows required records after adding the domain:
 | CNAME × 3 | DKIM |
 | (optional) MX | Inbound if you use receiving later |
 
-Wait until Resend shows **Verified** for `aiimin.in`.
+Wait until Resend shows **Verified** for `admin.aiimin.in`.
 
 ## 3. Environment variables
 
@@ -26,7 +28,7 @@ Wait until Resend shows **Verified** for `aiimin.in`.
 
 ```bash
 RESEND_API_KEY=re_xxxxxxxx
-RESEND_FROM_EMAIL=noreply@aiimin.in
+RESEND_FROM_EMAIL=noreply@admin.aiimin.in
 RESEND_FROM_NAME=AIIMIN
 RESEND_REPLY_TO=aadityaupadhyay10@gmail.com
 ```
