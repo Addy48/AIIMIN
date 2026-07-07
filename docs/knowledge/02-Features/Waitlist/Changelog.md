@@ -1,5 +1,12 @@
 # Waitlist Changelog
 
+## 2026-07-07 (Task 3 — tester allowlist + login restore)
+
+- Seeded `tester_allowlist` via `scripts/seed-access-allowlist.mjs` (1 dev + 4 testers).
+- Restored Supabase auth: `AuthContext.jsx`, `Login.jsx`, `/auth/callback` route.
+- Fixed missing `resolveAccess` import in `server/routes/auth.js`.
+- Cognito Phase 2 guide: `deploy/COGNITO-SETUP.md`.
+
 ## 2026-07-07 (GHA health-check retry)
 
 - Deploy workflow waits up to 60s for `localhost:3001/api/health` after PM2 reload (`deploy/wait-for-api.sh`).
