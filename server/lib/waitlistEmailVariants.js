@@ -1,7 +1,6 @@
 /**
- * AIIMIN waitlist confirmation email — v8 final.
- * Color themes: c1–c6 (preview via scripts/preview-waitlist-emails.mjs)
- * Env: WAITLIST_EMAIL_THEME=c1 · WAITLIST_MEMBER_OFFSET=122 · WAITLIST_DISPLAY_CAP=500
+ * AIIMIN waitlist confirmation email — v8 / theme c6 (Gradient Grove) — production final.
+ * Env: WAITLIST_EMAIL_THEME=c6 · WAITLIST_MEMBER_OFFSET=122 · WAITLIST_DISPLAY_CAP=500
  */
 
 function escapeHtml(str) {
@@ -23,120 +22,30 @@ const BASE = {
   accent: '#1E5C3A',
   accentDark: '#164530',
   accentSoft: '#E8F0EB',
-  logoBg: '#23503B',
   white: '#FFFFFF',
   logoUrl: 'https://aiimin.in/AIIMIN_logo.svg',
   siteUrl: 'https://www.aiimin.in',
 };
 
-/** Website-native color combos for v8 */
-export const COLOR_THEMES = {
-  c1: {
-    id: 'c1',
-    name: 'Forest Classic',
-    tagline: 'Site default — deep green hero, parchment base',
-    heroBg: '#164530',
-    heroText: '#FFFFFF',
-    heroSub: 'rgba(255,255,255,0.78)',
-    badgeBg: '#1E5C3A',
-    badgeText: '#FFFFFF',
-    osIdBg: '#E8F0EB',
-    osIdBorder: '#C5D9CC',
-    osIdLabel: '#9A9186',
-    osIdText: '#164530',
-    perkBorder: '#1E5C3A',
-    ctaBg: '#1E5C3A',
-  },
-  c2: {
-    id: 'c2',
-    name: 'Mint Wash',
-    tagline: 'Light green hero — soft, airy, native to Nordic UI',
-    heroBg: '#E8F0EB',
-    heroText: '#164530',
-    heroSub: '#4A5340',
-    badgeBg: '#164530',
-    badgeText: '#FFFFFF',
-    osIdBg: '#FAFAF9',
-    osIdBorder: '#C5D9CC',
-    osIdLabel: '#9A9186',
-    osIdText: '#1E5C3A',
-    perkBorder: '#1E5C3A',
-    ctaBg: '#1E5C3A',
-  },
-  c3: {
-    id: 'c3',
-    name: 'Parchment Edge',
-    tagline: 'White card + green left stripe — Linear-clean',
-    heroBg: '#FAFAF9',
-    heroText: '#1A1A1A',
-    heroSub: '#4A5340',
-    badgeBg: '#E8F0EB',
-    badgeText: '#164530',
-    osIdBg: '#F0EDE8',
-    osIdBorder: '#E2DDD7',
-    osIdLabel: '#9A9186',
-    osIdText: '#1E5C3A',
-    perkBorder: '#1E5C3A',
-    ctaBg: '#164530',
-    heroBorder: '4px solid #1E5C3A',
-  },
-  c4: {
-    id: 'c4',
-    name: 'Grove Logo',
-    tagline: 'Logo green #23503B — matches AIIMIN mark',
-    heroBg: '#23503B',
-    heroText: '#FFFFFF',
-    heroSub: 'rgba(255,255,255,0.75)',
-    badgeBg: '#1E5C3A',
-    badgeText: '#FFFFFF',
-    osIdBg: '#E8F0EB',
-    osIdBorder: '#1E5C3A',
-    osIdLabel: '#4A5340',
-    osIdText: '#164530',
-    perkBorder: '#23503B',
-    ctaBg: '#23503B',
-  },
-  c5: {
-    id: 'c5',
-    name: 'Elevated Nordic',
-    tagline: 'Warm elevated #EDE8DF hero — waitlist card feel',
-    heroBg: '#EDE8DF',
-    heroText: '#1A1A1A',
-    heroSub: '#4A5340',
-    badgeBg: '#1E5C3A',
-    badgeText: '#FFFFFF',
-    osIdBg: '#FAFAF9',
-    osIdBorder: '#E2DDD7',
-    osIdLabel: '#9A9186',
-    osIdText: '#1E5C3A',
-    perkBorder: '#1E5C3A',
-    ctaBg: '#1E5C3A',
-  },
-  c6: {
-    id: 'c6',
-    name: 'Gradient Grove',
-    tagline: 'Parchment → mint gradient hero — landing page tint',
-    heroBg: 'linear-gradient(135deg, #F0EDE8 0%, #E8F0EB 55%, #E8F0EB 100%)',
-    heroText: '#164530',
-    heroSub: '#4A5340',
-    badgeBg: '#164530',
-    badgeText: '#FFFFFF',
-    osIdBg: '#FFFFFF',
-    osIdBorder: '#C5D9CC',
-    osIdLabel: '#9A9186',
-    osIdText: '#1E5C3A',
-    perkBorder: '#1E5C3A',
-    ctaBg: '#1E5C3A',
-    heroUseGradient: true,
-  },
+/** Production theme — Gradient Grove (matches waitlist landing tint) */
+const THEME = {
+  heroBg: 'linear-gradient(135deg, #F0EDE8 0%, #E8F0EB 55%, #E8F0EB 100%)',
+  heroText: '#164530',
+  heroSub: '#4A5340',
+  badgeBg: '#164530',
+  badgeText: '#FFFFFF',
+  osIdBg: '#FFFFFF',
+  osIdBorder: '#C5D9CC',
+  osIdLabel: '#9A9186',
+  osIdText: '#1E5C3A',
+  perkBorder: '#1E5C3A',
+  ctaBg: '#1E5C3A',
 };
 
 const FONT_LINK = 'https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap';
 const FONT_DISPLAY = "'Familjen Grotesk', Georgia, 'Times New Roman', serif";
 const FONT_BODY = "'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif";
 const FONT_MONO = "'JetBrains Mono', 'Courier New', Courier, monospace";
-
-const CONCRETE_PERK = 'Complimentary <strong>Core tier</strong> at launch, <strong>Life Score + XP ranks</strong> from day one, and founding Pro at <strong>₹49/mo</strong> — public users never get this bundle.';
 
 export const MEMBER_OFFSET = Number(process.env.WAITLIST_MEMBER_OFFSET || 122);
 export const DISPLAY_CAP = Number(process.env.WAITLIST_DISPLAY_CAP || 500);
@@ -162,19 +71,14 @@ function normalizeCtx(v = {}) {
   return { firstName, osId, referralCode, referralUrl, memberNumber: displayNum, totalCount: cap, countLabel };
 }
 
-function resolveTheme(v) {
-  const id = String(v.color_theme || process.env.WAITLIST_EMAIL_THEME || 'c1').toLowerCase();
-  return COLOR_THEMES[id] || COLOR_THEMES.c1;
-}
-
-function emailShell(theme, { preheader, title, bodyHtml, ctaHref, ctaLabel, footerNote }) {
+function emailShell({ preheader, title, bodyHtml, ctaHref, ctaLabel, footerNote }) {
   const pre = preheader
     ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;opacity:0;color:transparent;font-size:1px;line-height:1px;">${escapeHtml(preheader)}</div>`
     : '';
 
   const cta = ctaHref
     ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 0;">
-        <tr><td bgcolor="${theme.ctaBg}" style="border-radius:10px;background-color:${theme.ctaBg};">
+        <tr><td bgcolor="${THEME.ctaBg}" style="border-radius:10px;background-color:${THEME.ctaBg};">
           <a href="${ctaHref}" style="display:inline-block;padding:14px 32px;font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BASE.white};text-decoration:none;border-radius:10px;">${escapeHtml(ctaLabel || 'Continue')}</a>
         </td></tr>
       </table>`
@@ -222,113 +126,115 @@ ${pre}
 </body></html>`;
 }
 
-function heroBand(theme, { countLabel, headline, subline }) {
-  const bgStyle = theme.heroUseGradient
-    ? `background:${theme.heroBg};`
-    : `background-color:${theme.heroBg};`;
-  const border = theme.heroBorder ? `border-left:${theme.heroBorder};` : '';
-  const bgcolor = theme.heroUseGradient ? BASE.base : theme.heroBg;
-
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;border-radius:12px;overflow:hidden;border:1px solid ${BASE.border};${border}">
-    <tr><td bgcolor="${bgcolor}" style="${bgStyle}padding:22px 24px;">
+function heroBand({ countLabel, headline, subline }) {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;border-radius:12px;overflow:hidden;border:1px solid ${BASE.border};">
+    <tr><td bgcolor="${BASE.base}" style="background:${THEME.heroBg};padding:22px 24px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 12px;"><tr>
-        <td bgcolor="${theme.badgeBg}" style="background-color:${theme.badgeBg};border-radius:999px;padding:7px 14px;font-family:${FONT_MONO};font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${theme.badgeText};">${escapeHtml(countLabel)}</td>
+        <td bgcolor="${THEME.badgeBg}" style="background-color:${THEME.badgeBg};border-radius:999px;padding:7px 14px;font-family:${FONT_MONO};font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${THEME.badgeText};">${escapeHtml(countLabel)}</td>
       </tr></table>
-      <div style="font-family:${FONT_DISPLAY};font-size:24px;font-weight:600;line-height:1.25;color:${theme.heroText};margin-bottom:${subline ? '8px' : '0'};">${headline}</div>
-      ${subline ? `<div style="font-family:${FONT_BODY};font-size:14px;line-height:1.55;color:${theme.heroSub};">${subline}</div>` : ''}
+      <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:600;line-height:1.3;color:${THEME.heroText};margin-bottom:${subline ? '8px' : '0'};">${headline}</div>
+      ${subline ? `<div style="font-family:${FONT_BODY};font-size:14px;line-height:1.6;color:${THEME.heroSub};">${subline}</div>` : ''}
     </td></tr>
   </table>`;
 }
 
-function osIdBlock(theme, osId) {
+function osIdBlock(osId) {
   if (!osId) return '';
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 24px;">
-    <tr><td bgcolor="${theme.osIdBg}" style="background-color:${theme.osIdBg};border:1px solid ${theme.osIdBorder};border-radius:10px;padding:14px 18px;text-align:center;">
-      <div style="font-family:${FONT_BODY};font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:${theme.osIdLabel};margin-bottom:8px;">your AIIMIN identity</div>
-      <div style="font-family:${FONT_MONO};font-size:20px;font-weight:600;color:${theme.osIdText};letter-spacing:0.12em;line-height:1;">@${osId}</div>
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 22px;">
+    <tr><td bgcolor="${THEME.osIdBg}" style="background-color:${THEME.osIdBg};border:1px solid ${THEME.osIdBorder};border-radius:10px;padding:14px 18px;text-align:center;">
+      <div style="font-family:${FONT_BODY};font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:${THEME.osIdLabel};margin-bottom:8px;">your identity on AIIMIN</div>
+      <div style="font-family:${FONT_MONO};font-size:20px;font-weight:600;color:${THEME.osIdText};letter-spacing:0.12em;line-height:1;">@${osId}</div>
+      <div style="font-family:${FONT_BODY};font-size:12px;line-height:1.5;color:${BASE.text3};margin-top:8px;">Locked to this email · ships at launch</div>
     </td></tr>
   </table>`;
 }
 
-function perkConcrete(theme) {
-  return `<p style="font-family:${FONT_BODY};font-size:14px;line-height:1.65;color:${BASE.text2};margin:0 0 20px;padding:14px 16px;background:${BASE.elevated};border-radius:10px;border-left:3px solid ${theme.perkBorder};">${CONCRETE_PERK}</p>`;
+function perksBlock() {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;border:1px solid ${BASE.border};border-radius:12px;overflow:hidden;">
+    <tr><td style="padding:14px 16px;font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BASE.text3};background:${BASE.elevated};">What you locked in</td></tr>
+    <tr><td style="padding:14px 16px;border-top:1px solid ${BASE.border};font-family:${FONT_BODY};font-size:14px;line-height:1.65;color:${BASE.text2};">
+      <strong style="color:${BASE.text1};">Core tier</strong> — complimentary at launch<br>
+      <strong style="color:${BASE.text1};">Life Score + XP</strong> — your days start keeping score<br>
+      <strong style="color:${BASE.text1};">Founding Pro</strong> — ₹49/mo locked (public pays ₹59)
+    </td></tr>
+  </table>`;
 }
 
 function timelineBlock() {
-  const step = (n, t, d, on) => `<tr>
-    <td style="padding:0 0 14px;width:28px;vertical-align:top;font-family:${FONT_MONO};font-size:11px;color:${on ? BASE.accent : BASE.text3};">${n}</td>
-    <td style="padding:0 0 14px 8px;vertical-align:top;">
-      <div style="font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${on ? BASE.text1 : BASE.text2};">${t}</div>
+  const step = (n, t, d) => `<tr>
+    <td style="padding:0 0 12px;width:28px;vertical-align:top;font-family:${FONT_MONO};font-size:11px;color:${BASE.accent};">${n}</td>
+    <td style="padding:0 0 12px 8px;vertical-align:top;">
+      <div style="font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${BASE.text1};">${t}</div>
       <div style="font-family:${FONT_BODY};font-size:12px;line-height:1.5;color:${BASE.text3};margin-top:2px;">${d}</div>
     </td></tr>`;
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:20px 0 0;">
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 0;">
     <tr><td colspan="2" style="font-family:${FONT_BODY};font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:${BASE.text3};padding-bottom:12px;">What happens next</td></tr>
-    ${step('01', 'Locked in', 'Core tier + Life Score ship to your cohort before public launch.', true)}
-    ${step('02', '31 July', 'Tester keys for invited cohort — Elite free 1 year if you activate.')}
-    ${step('03', 'September', 'Public launch. You get access before the feed sees it.')}
+    ${step('01', 'You\'re in the first 500', 'Founding pricing and Core access — locked to this email.')}
+    ${step('02', '31 July', 'Tester keys go out. Activate before then for complimentary Elite, one year.')}
+    ${step('03', 'September', 'Launch. You hear from us before anyone on the public feed.')}
   </table>`;
 }
 
 function referralBlock(referralUrl) {
   if (!referralUrl) return '';
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;">
-    <tr><td style="padding:0 0 10px;font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BASE.text1};">Bring one person who'd get it</td></tr>
-    <tr><td style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BASE.text2};padding-bottom:12px;">Share your founding link — early Superhuman users grew one invite at a time.</td></tr>
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;padding-top:20px;border-top:1px solid ${BASE.border};">
+    <tr><td style="font-family:${FONT_BODY};font-size:15px;font-weight:600;color:${BASE.text1};padding-bottom:8px;">Help shape what we build</td></tr>
+    <tr><td style="font-family:${FONT_BODY};font-size:14px;line-height:1.65;color:${BASE.text2};padding-bottom:14px;">Founding members can invite people who'll actually use a Personal OS — not to inflate a list, but to find the right co-builders.</td></tr>
     <tr><td><a href="${referralUrl}" style="display:block;padding:11px 14px;background:${BASE.surface};border:1px solid ${BASE.border};border-radius:8px;font-family:${FONT_MONO};font-size:11px;color:${BASE.text2};text-decoration:none;word-break:break-all;text-align:center;">${referralUrl}</a></td></tr>
   </table>`;
 }
 
-function founderNote() {
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;border-top:1px solid ${BASE.border};padding-top:20px;">
-    <tr><td style="font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${BASE.text1};padding-bottom:6px;">— Aaditya, founder</td></tr>
-    <tr><td style="font-family:${FONT_BODY};font-size:14px;line-height:1.7;color:${BASE.text2};">One screen. One honest read on your day. Reply anytime — it reaches me directly.</td></tr>
+function founderClosing() {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;border-top:1px solid ${BASE.border};padding-top:22px;">
+    <tr><td style="font-family:${FONT_BODY};font-size:14px;line-height:1.75;color:${BASE.text2};">
+      Thanks for believing in AIIMIN this early. You're among the first people shaping what it becomes, and that means more than you might think. If you have an idea, a question, or feedback, just reply to this email — I read every message.
+    </td></tr>
+    <tr><td style="font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${BASE.text1};padding-top:14px;">— Aaditya</td></tr>
   </table>`;
 }
 
-function renderV8(ctx, theme) {
+function renderV8(ctx) {
   const { firstName, osId, referralUrl, countLabel, memberNumber } = ctx;
   return {
     subject: memberNumber
-      ? `#${memberNumber} — ${firstName}, your AIIMIN founding spot is locked`
-      : `${firstName} — your AIIMIN founding spot is locked`,
-    html: emailShell(theme, {
-      preheader: 'Core tier free · Life Score from day one · founding Pro ₹49/mo — first 500 only.',
+      ? `#${memberNumber} — ${firstName}, it starts here`
+      : `${firstName}, it starts here`,
+    html: emailShell({
+      preheader: `You're in the first 500. Core free at launch · Life Score · founding Pro ₹49/mo.`,
       title: 'It starts here.',
       bodyHtml: `
-        ${heroBand(theme, {
+        ${heroBand({
           countLabel,
-          headline: 'It starts here.',
-          subline: `${firstName}, your Personal OS journey begins before public launch.`,
+          headline: 'You\'re becoming one of the people shaping AIIMIN.',
+          subline: `${firstName}, thanks for showing up before the crowd. Your future self will point at today.`,
         })}
-        ${perkConcrete(theme)}
-        ${osIdBlock(theme, osId)}
+        <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.7;color:${BASE.text2};margin:0 0 18px;">
+          You weren't looking for another app. You were looking for a Personal OS — sleep, gym, mood, money, and focus in one loop that tells the truth about your days.
+        </p>
+        ${perksBlock()}
+        ${osIdBlock(osId)}
         ${timelineBlock()}
         ${referralBlock(referralUrl)}
-        ${founderNote()}`,
+        ${founderClosing()}`,
       ctaHref: referralUrl || BASE.siteUrl,
-      ctaLabel: referralUrl ? 'Share your founding link →' : 'Explore AIIMIN →',
-      footerNote: 'Tester invite? Register by <strong>31 July</strong> for complimentary Elite for one year.',
+      ctaLabel: referralUrl ? 'Invite someone who gets it →' : 'Visit AIIMIN →',
+      footerNote: 'Got a tester invite? Register by <strong>31 July</strong> for complimentary Elite for one year.',
     }),
-    theme: theme.id,
-    themeName: theme.name,
+    theme: 'c6',
+    themeName: 'Gradient Grove',
   };
 }
 
-export const COLOR_THEME_IDS = Object.keys(COLOR_THEMES);
+export const COLOR_THEME_IDS = ['c6'];
+export const COLOR_THEMES = { c6: { id: 'c6', name: 'Gradient Grove', tagline: 'Production final' } };
 
 export function getColorThemeMeta() {
-  return COLOR_THEME_IDS.map((id) => ({
-    id,
-    name: COLOR_THEMES[id].name,
-    tagline: COLOR_THEMES[id].tagline,
-  }));
+  return [{ id: 'c6', name: 'Gradient Grove', tagline: 'Production final — parchment → mint gradient' }];
 }
 
 export function renderWaitlistConfirmation(v = {}) {
-  const theme = resolveTheme(v);
   const ctx = normalizeCtx(v);
-  const result = renderV8(ctx, theme);
-  return { ...result, variant: 'v8' };
+  return { ...renderV8(ctx), variant: 'v8' };
 }
 
 export function renderAllColorThemes(sampleVars = {}) {
@@ -340,15 +246,12 @@ export function renderAllColorThemes(sampleVars = {}) {
     total_count: DISPLAY_CAP,
     ...sampleVars,
   };
-  return COLOR_THEME_IDS.map((id) => {
-    const theme = COLOR_THEMES[id];
-    const rendered = renderWaitlistConfirmation({ ...defaults, color_theme: id });
-    return {
-      id,
-      name: theme.name,
-      tagline: theme.tagline,
-      subject: rendered.subject,
-      html: rendered.html,
-    };
-  });
+  const rendered = renderWaitlistConfirmation(defaults);
+  return [{
+    id: 'c6',
+    name: 'Gradient Grove',
+    tagline: 'Production final',
+    subject: rendered.subject,
+    html: rendered.html,
+  }];
 }
