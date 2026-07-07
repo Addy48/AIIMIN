@@ -21,7 +21,7 @@ function TierPriceBlock({ item }) {
       </span>
       <div className="tier-price-main">
         <span className="tier-price-amount">{hasDiscount ? item.discounted : item.price}</span>
-        {!isFree && <span className="tier-price-unit">/mo</span>}
+        <span className="tier-price-unit">/mo</span>
       </div>
       <span
         className={`tier-price-waitlist-label ${
