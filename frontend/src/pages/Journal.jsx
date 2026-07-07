@@ -1,312 +1,485 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Flame, History, Download, PenLine, Feather, Brain, Sun, Coffee, BarChart2, X,
+} from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { useThemeContext } from '../context/ThemeContext';
+import { useUserProfile } from '../hooks/useUserProfile';
+import useThemeColors from '../hooks/useThemeColors';
+import { apiPost } from '../utils/api';
 import { supabase } from '../utils/supabase';
-import { Search, Plus, BookOpen, Feather } from 'lucide-react';
-import Notes from './Notes';
-import MoodHeatmap from '../components/journal/MoodHeatmap';
-import JournalEditor from '../components/journal/JournalEditor';
+import { trackEvent } from '../hooks/usePageAnalytics';
+import useMediaQuery from '../hooks/useMediaQuery';
+import FeatureTip from '../components/ui/FeatureTip';
+import FeatureGate from '../components/account/FeatureGate';
+import JournalSidebar from '../components/journal/JournalSidebar';
+import FreeWriteMode from '../components/journal/FreeWriteMode';
+import CBTRecordMode from '../components/journal/CBTRecordMode';
+import WhatWentWellMode from '../components/journal/WhatWentWellMode';
+import MorningPagesMode from '../components/journal/MorningPagesMode';
+import WeeklyReviewMode from '../components/journal/WeeklyReviewMode';
+import JournalWriteCanvas from '../components/journal/JournalWriteCanvas';
+import JournalReadView from '../components/journal/JournalReadView';
+import {
+  JOURNAL_MODES,
+  MODE_BY_PARAM,
+  serializeEntry,
+  parseEntry,
+  calcJournalStreak,
+  exportEntriesPlainText,
+  emotionTagToMood,
+  findEntryForDate,
+  getPlainTextFromPayload,
+  syncJournalToDailyLog,
+} from '../components/journal/journalUtils';
+import { useSwipeTabs } from '../hooks/useSwipeTabs';
+import '../styles/journalStudio.css';
 
-/* ── Configuration & Constants ── */
-const MOODS = [
-  { val: 1, emoji: '😞', label: 'Rough', color: '#ef4444' },
-  { val: 2, emoji: '😐', label: 'Meh', color: '#f59e0b' },
-  { val: 3, emoji: '😊', label: 'Okay', color: '#10b981' },
-  { val: 4, emoji: '😄', label: 'Good', color: '#3b82f6' },
-  { val: 5, emoji: '🔥', label: 'Great', color: '#8b5cf6' },
-];
+const MODE_META = {
+  write: { icon: <PenLine size={14} />, label: 'Today', param: 'write' },
+  free_write: { icon: <Feather size={14} />, label: 'Free Write', param: 'free' },
+  cbt: { icon: <Brain size={14} />, label: 'CBT Record', param: 'cbt' },
+  www: { icon: <Sun size={14} />, label: 'What Went Well', param: 'www' },
+  morning: { icon: <Coffee size={14} />, label: 'Morning Pages', param: 'morning' },
+  weekly: { icon: <BarChart2 size={14} />, label: 'Weekly Review', param: 'weekly' },
+};
 
+function mapMoodToEntryColumn(mood) {
+  return Math.max(1, Math.min(5, Math.round(Number(mood || 6) / 2)));
+}
 
-
-
-const JournalPage = () => {
+export default function JournalPage() {
   const { user } = useAuth();
-  const { theme } = useThemeContext();
-  const isDark = theme === 'dark';
+  const { profile } = useUserProfile();
+  const c = useThemeColors();
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const modeParam = searchParams.get('mode') || 'write';
+  const activeMode = MODE_BY_PARAM[modeParam] || 'write';
 
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedEntry, setSelectedEntry] = useState(null);
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('mindset'); // 'mindset' | 'notes'
+  const [modeFilter, setModeFilter] = useState('all');
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [analysisMap, setAnalysisMap] = useState({});
 
-  // Styling Tokens
-  const border = 'var(--color-border)';
-  const text1 = 'var(--color-text-1)';
-  const text2 = 'var(--color-text-2)';
-  const text3 = 'var(--color-text-3)';
-
-
-
+  const setMode = (param) => {
+    setSearchParams({ mode: param });
+    setSelectedEntry(null);
+  };
 
   const fetchEntries = useCallback(async () => {
-    if (!user) return;
+    if (!user?.id) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('journal_entries')
         .select('*')
         .eq('user_id', user.id)
-        .order('date', { ascending: false });
-      
+        .order('date', { ascending: false })
+        .limit(100);
       if (error) throw error;
-      setEntries(data || []);
-      setSelectedEntry(prev => {
-        if (prev || !data?.length) return prev;
-        return data[0];
+      const rows = data || [];
+      setEntries(rows);
+      setStreak(calcJournalStreak(rows));
+      const cached = {};
+      rows.forEach((entry) => {
+        try {
+          const raw = localStorage.getItem(`aiimin_journal_ai_${entry.id}`);
+          if (raw) cached[entry.id] = JSON.parse(raw);
+        } catch {
+          // ignore corrupt cache
+        }
       });
-    } catch (e) {
-      console.error("Journal fetch error:", e);
+      setAnalysisMap(cached);
+    } catch (err) {
+      console.error('[Journal] fetch failed:', err);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchEntries();
   }, [fetchEntries]);
 
-  const handleEntrySelect = (entry) => {
-    setSelectedEntry(entry);
-  };
-
-  const handleNewEntry = () => {
+  const syncWinsToGoals = async (wins = []) => {
+    if (!user?.id) return;
     const today = new Date().toISOString().split('T')[0];
-    const initialTemplate = `# Mindset & Momentum\n\n## 🎯 Core Aims & Focus for Today\n- \n\n## 🔥 Achievements & Wins\n- \n\n## 🌱 Approach to Life & Reflections\n- \n`;
-    const newEntry = {
-      id: 'temp-' + Date.now(),
+    const valid = wins.filter((win) => win?.text?.trim());
+    await Promise.all(valid.map((win) => supabase.from('wins').insert({
+      user_id: user.id,
       date: today,
-      encrypted_content: initialTemplate,
-      mood: 3,
-      energy_level: 3,
-      sleep_hours: 7
+      title: win.text.trim(),
+      description: win.why?.trim() || null,
+    })));
+  };
+
+  const persistEntryAnalysis = async (entryId, mode, payload, analysis) => {
+    const normalized = {
+      emotionalTone: analysis.emotion_tag,
+      cognitiveDistortion: analysis.cognitive_distortion,
+      theme: analysis.theme,
     };
-    setSelectedEntry(newEntry);
+    const enriched = serializeEntry(mode, { ...payload, ai: normalized });
+    await supabase
+      .from('journal_entries')
+      .update({ encrypted_content: enriched })
+      .eq('id', entryId)
+      .eq('user_id', user.id);
+    localStorage.setItem(`aiimin_journal_ai_${entryId}`, JSON.stringify(normalized));
+    setAnalysisMap((m) => ({ ...m, [entryId]: normalized }));
+    setEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, encrypted_content: enriched } : e)));
+    syncJournalToDailyLog({
+      userId: user?.id,
+      date: new Date().toISOString().split('T')[0],
+      mood: emotionTagToMood(analysis.emotion_tag),
+    }).catch(() => {});
   };
 
-  const deleteEntry = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this entry?")) return;
-    try {
-      const { error } = await supabase.from('journal_entries').delete().eq('id', id);
+  const saveEntry = async (mode, payload, moodValue = payload?.mood || 6) => {
+    if (!user?.id) return;
+    const today = new Date().toISOString().split('T')[0];
+    const mood = Number(moodValue) || 6;
+    const payloadWithMeta = {
+      ...payload,
+      meta: { ...(payload.meta || {}), mood },
+    };
+    const encrypted_content = serializeEntry(mode, payloadWithMeta);
+    const existing = findEntryForDate(entries, today, mode);
+    const row = {
+      user_id: user.id,
+      date: today,
+      encrypted_content,
+      mood: mapMoodToEntryColumn(mood),
+      energy_level: 3,
+      sleep_hours: 7,
+    };
+
+    let saved;
+    if (existing?.id) {
+      const { data, error } = await supabase
+        .from('journal_entries')
+        .update(row)
+        .eq('id', existing.id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
       if (error) throw error;
-      setEntries(entries.filter(e => e.id !== id));
-      if (selectedEntry?.id === id) {
-        setSelectedEntry(entries[0] || null);
-      }
-    } catch (e) {
-      console.error("Delete error:", e);
-    }
-  };
-
-  const handleSaveSuccess = (savedEntry, isNew) => {
-    if (isNew) {
-      setEntries(prev => [savedEntry, ...prev]);
-      setSelectedEntry(savedEntry);
+      saved = data;
     } else {
-      setEntries(prev => prev.map(e => e.id === savedEntry.id ? savedEntry : e));
-      setSelectedEntry(prev => prev?.id === savedEntry.id ? savedEntry : prev);
+      const { data, error } = await supabase
+        .from('journal_entries')
+        .insert(row)
+        .select()
+        .single();
+      if (error) throw error;
+      saved = data;
     }
+
+    setEntries((prev) => {
+      if (existing) {
+        return prev.map((entry) => (entry.id === saved.id ? saved : entry));
+      }
+      return [saved, ...prev];
+    });
+    setSelectedEntry(null);
+    const nextEntries = existing
+      ? entries.map((entry) => (entry.id === saved.id ? saved : entry))
+      : [saved, ...entries];
+    setStreak(calcJournalStreak(nextEntries));
+    trackEvent('journal_saved', { mode });
+    if (mode === 'www' && payload.wins) syncWinsToGoals(payload.wins).catch(() => {});
+    syncJournalToDailyLog({
+      userId: user.id,
+      date: today,
+      journalEntry: getPlainTextFromPayload(mode, payload),
+      mood,
+    }).catch(() => {});
+    apiPost('/daily-logs/journal/ai-analyze', {
+      content: encrypted_content,
+      entry_id: saved.id,
+      mood: mapMoodToEntryColumn(mood),
+    })
+      .then((analysis) => {
+        if (analysis?.emotion_tag) {
+          persistEntryAnalysis(saved.id, mode, payloadWithMeta, analysis).catch(() => {});
+        }
+      })
+      .catch(() => {});
   };
 
-  const filteredEntries = entries.filter(e =>
-    !search || e.encrypted_content?.toLowerCase().includes(search.toLowerCase())
+  const handleExport = () => {
+    const blob = new Blob([exportEntriesPlainText(entries)], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `aiimin-journal-${new Date().toISOString().split('T')[0]}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const today = new Date().toISOString().split('T')[0];
+  const todayModeEntry = useMemo(() => findEntryForDate(entries, today, activeMode), [entries, today, activeMode]);
+  const todayMorning = useMemo(() => findEntryForDate(entries, today, 'morning'), [entries, today]);
+  const todayWrite = useMemo(() => findEntryForDate(entries, today, 'write'), [entries, today]);
+  const modeIndex = JOURNAL_MODES.findIndex((m) => m.id === activeMode);
+  const { onTouchStart, onTouchEnd } = useSwipeTabs(
+    JOURNAL_MODES,
+    modeIndex >= 0 ? modeIndex : 0,
+    (index) => setMode(JOURNAL_MODES[index]?.param || 'write'),
+    { enabled: isMobile },
   );
 
-  const groupedEntries = filteredEntries.reduce((acc, entry) => {
-    const date = new Date(entry.date);
-    const key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(entry);
-    return acc;
-  }, {});
+  const sidebar = (
+    <JournalSidebar
+      entries={entries}
+      loading={loading}
+      search={search}
+      onSearch={setSearch}
+      modeFilter={modeFilter}
+      onModeFilter={setModeFilter}
+      selectedId={selectedEntry?.id}
+      onSelect={(entry) => {
+        setSelectedEntry(entry);
+        if (isMobile) setSidebarOpen(false);
+      }}
+      onExport={handleExport}
+      analysisMap={analysisMap}
+    />
+  );
 
   return (
-    <div style={{ 
-      display: 'flex', flexDirection: 'column', 
-      height: 'calc(100vh - var(--nav-height) - 40px)',
-      background: isDark ? 'var(--color-base)' : '#FBFBFA',
-      margin: '-20px -24px',
-    }}>
-      {/* ── TOP NAV ── */}
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '16px', borderBottom: `1px solid ${border}` }}>
-        <div style={{ display: 'flex', background: 'var(--bg-elevated)', borderRadius: '12px', padding: '4px' }}>
-          <button 
-            onClick={() => setActiveTab('mindset')}
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-              fontWeight: 600, fontSize: '13px',
-              background: activeTab === 'mindset' ? 'var(--color-accent)' : 'transparent',
-              color: activeTab === 'mindset' ? '#fff' : text2,
-              transition: 'all 0.2s'
-            }}
-          >
-            <Feather size={16} /> Journal
-          </button>
-          <button 
-            onClick={() => setActiveTab('notes')}
-            style={{ 
-              display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-              fontWeight: 600, fontSize: '13px',
-              background: activeTab === 'notes' ? 'var(--color-accent)' : 'transparent',
-              color: activeTab === 'notes' ? '#fff' : text2,
-              transition: 'all 0.2s'
-            }}
-          >
-            <BookOpen size={16} /> Notes
-          </button>
+    <div
+      className="journal-studio"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - var(--nav-height) - 40px)',
+        margin: '-20px -24px',
+        background: c.base,
+        minHeight: 0,
+      }}
+    >
+      <div style={{
+        padding: '18px 20px 0',
+        borderBottom: `1px solid ${c.border}`,
+        background: c.surface2,
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+          <div>
+            <h1 className="text-h2" style={{ margin: 0, color: c.text1 }}>Journal.</h1>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: c.text3 }}>
+              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {streak > 0 && (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 10px',
+                borderRadius: 999,
+                background: c.surface3,
+                border: `1px solid ${c.border}`,
+                color: c.accent,
+                fontSize: 11,
+                fontWeight: 800,
+              }}>
+                <Flame size={14} /> {streak}d
+              </span>
+            )}
+            {isMobile && (
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Open history"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '8px 12px',
+                  borderRadius: 10,
+                  border: `1px solid ${c.border}`,
+                  background: c.surface3,
+                  color: c.text2,
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              >
+                <History size={14} /> History
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleExport}
+              aria-label="Export journal"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 12px',
+                borderRadius: 10,
+                border: `1px solid ${c.border}`,
+                background: c.surface3,
+                color: c.text2,
+                cursor: 'pointer',
+                fontWeight: 700,
+                fontSize: 12,
+              }}
+            >
+              <Download size={14} /> Export
+            </button>
+          </div>
+        </div>
+
+        <FeatureTip
+          tipId="journal_tip"
+          message="Type or speak today's note. Templates live in the row below when you need structure."
+          seenTips={profile?.seen_tips || []}
+        />
+
+        <div className="journal-studio__templates">
+          {JOURNAL_MODES.map((m) => {
+            const meta = MODE_META[m.id] || {};
+            const isActive = activeMode === m.id;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setMode(m.param)}
+                className={`journal-studio__template-pill ${isActive ? 'journal-studio__template-pill--active' : ''}`}
+              >
+                <span style={{ opacity: isActive ? 1 : 0.7 }}>{meta.icon}</span>
+                {meta.label || m.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {activeTab === 'notes' ? (
-        <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
-          <Notes />
-        </div>
-      ) : (
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: '320px 1fr', 
-          flex: 1,
-          background: isDark ? 'var(--color-base)' : '#FBFBFA',
-          overflow: 'hidden',
-        }}>
-          
-          {/* ── SIDEBAR ── */}
-      <aside style={{ 
-        borderRight: `1px solid ${border}`,
-        background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)',
-        display: 'flex',
-        flexDirection: 'column',
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : '280px 1fr',
+        flex: 1,
+        minHeight: 0,
+        overflow: 'hidden',
       }}>
-        <div style={{ padding: '32px 24px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '11px', fontWeight: 800, color: text3, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Notebook</h2>
-            <button 
-              onClick={handleNewEntry}
-              style={{ 
-                background: 'var(--color-accent-dim)', border: `1px solid var(--color-accent-soft)`, 
-                color: 'var(--color-accent)', cursor: 'pointer', padding: '6px', borderRadius: '8px',
-                display: 'flex', alignItems: 'center', transition: 'all 200ms ease'
-              }}
-              className="hover-glow"
-            ><Plus size={16} /></button>
-          </div>
-          <div style={{ position: 'relative' }}>
-            <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: text3, opacity: 0.6 }} />
-            <input 
-              type="text"
-              placeholder="Search reflections..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
+        {!isMobile && sidebar}
+
+        <main
+          style={{ minHeight: 0, overflowY: 'auto', background: c.surface1 }}
+          className="custom-scrollbar"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedEntry?.id || activeMode}
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -8 }}
+              transition={{ duration: 0.18 }}
+              style={{ minHeight: '100%' }}
+            >
+              {selectedEntry ? (
+                <JournalReadView entry={selectedEntry} onNewEntry={() => setSelectedEntry(null)} />
+              ) : (
+                <>
+                  {activeMode === 'write' && (
+                    <JournalWriteCanvas
+                      key={`write-${todayWrite?.id || 'new'}`}
+                      initialBody={parseEntry(todayWrite?.encrypted_content).body || ''}
+                      initialMood={parseEntry(todayWrite?.encrypted_content).meta?.mood || 6}
+                      onSave={(payload) => saveEntry('write', { body: payload.body }, payload.mood)}
+                      prompt="Start with what feels true right now. Keep it honest and simple."
+                      saveLabel={todayWrite ? 'Update entry' : 'Save entry'}
+                    />
+                  )}
+                  {activeMode === 'free_write' && <FreeWriteMode onSave={(p) => saveEntry('free_write', p)} />}
+                  {activeMode === 'cbt' && (
+                    <FeatureGate feature="journal_ai" requiredTier="core" label="CBT Record with AI analysis">
+                      <CBTRecordMode onSave={(p) => saveEntry('cbt', p, p?.mood)} />
+                    </FeatureGate>
+                  )}
+                  {activeMode === 'www' && <WhatWentWellMode onSave={(p) => saveEntry('www', p, p?.mood)} />}
+                  {activeMode === 'morning' && (
+                    <MorningPagesMode
+                      todayEntry={todayMorning ? parseEntry(todayMorning.encrypted_content) : null}
+                      onSave={(p) => saveEntry('morning', { body: p.body, meta: p.meta || {} }, p.mood)}
+                      initialBody={parseEntry(todayModeEntry?.encrypted_content).body || ''}
+                    />
+                  )}
+                  {activeMode === 'weekly' && (
+                    <WeeklyReviewMode
+                      onSave={(p) => saveEntry('weekly', p, p?.mood)}
+                      initialBody={parseEntry(todayModeEntry?.encrypted_content).body || ''}
+                      initialMood={parseEntry(todayModeEntry?.encrypted_content).meta?.mood || 6}
+                      initialStats={parseEntry(todayModeEntry?.encrypted_content).stats || null}
+                    />
+                  )}
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+
+      <AnimatePresence>
+        {isMobile && sidebarOpen && (
+          <>
+            <motion.button
+              type="button"
+              aria-label="Close history"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
               style={{
-                width: '100%', padding: '10px 12px 10px 36px', borderRadius: '10px',
-                border: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.03)' : '#fff',
-                fontSize: '13px', outline: 'none', color: text1, transition: 'all 0.2s'
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.45)',
+                border: 'none',
+                zIndex: 40,
               }}
             />
-          </div>
-        </div>
-
-        <MoodHeatmap entries={entries} onSelectEntry={handleEntrySelect} />
-
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 40px' }} className="custom-scrollbar">
-          {Object.keys(groupedEntries).length === 0 && !loading && (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: text3, fontSize: '12px', fontStyle: 'italic' }}>
-              Your story begins here.
-            </div>
-          )}
-          {Object.keys(groupedEntries).map(group => (
-            <div key={group} style={{ marginTop: '24px' }}>
-              <div style={{ fontSize: '10px', fontWeight: 700, color: text3, padding: '0 12px 10px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{group}</div>
-              {groupedEntries[group].map(entry => {
-                const active = selectedEntry?.id === entry.id;
-                const isRelapse = entry.encrypted_content?.includes('#relapse-reflection');
-                const isUrge = entry.encrypted_content?.includes('#urge-surfed');
-                
-                let firstLine = entry.encrypted_content?.trim().split('\n')[0] || 'Untitled Reflection';
-                if (firstLine.startsWith('#')) firstLine = firstLine.replace(/^#+\s*/, '');
-                
-                let title = firstLine;
-                if (isRelapse) title = '⚠️ Relapse Reflection';
-                if (isUrge) title = '🛡️ Urge Surfed';
-
-                const dateObj = new Date(entry.date);
-                return (
-                  <motion.div
-                    layout
-                    key={entry.id}
-                    onClick={() => handleEntrySelect(entry)}
-                    style={{
-                      padding: '12px', borderRadius: '10px', cursor: 'pointer',
-                      background: active ? (isDark ? 'rgba(255,255,255,0.06)' : '#fff') : (isRelapse ? 'rgba(239, 68, 68, 0.05)' : isUrge ? 'rgba(16, 185, 129, 0.05)' : 'transparent'),
-                      marginBottom: '4px',
-                      border: active ? `1px solid ${border}` : (isRelapse ? '1px solid rgba(239, 68, 68, 0.2)' : isUrge ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid transparent'),
-                      boxShadow: active ? 'var(--shadow-sm)' : 'none',
-                      transition: 'all 200ms ease',
-                    }}
-                    whileHover={{ x: 2, background: active ? (isDark ? 'rgba(255,255,255,0.08)' : '#fff') : (isRelapse ? 'rgba(239, 68, 68, 0.1)' : isUrge ? 'rgba(16, 185, 129, 0.1)' : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')) }}
-                  >
-                    <div style={{ 
-                      fontSize: '13px', fontWeight: active ? 700 : 600, 
-                      color: isRelapse ? '#ef4444' : isUrge ? '#10b981' : (active ? text1 : text2),
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '4px'
-                    }}>
-                      {title}
-                    </div>
-                    <div style={{ fontSize: '11px', color: text3, display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-mono)' }}>
-                      <span>{dateObj.getDate()} {dateObj.toLocaleString('default', { month: 'short' })}</span>
-                      <span style={{ opacity: 0.3 }}>|</span>
-                      <span>{MOODS.find(m => m.val === entry.mood)?.emoji}</span>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      </aside>
-
-      {/* ── EDITOR ── */}
-      {selectedEntry ? (
-        <JournalEditor 
-          selectedEntry={selectedEntry}
-          user={user}
-          onSaveSuccess={handleSaveSuccess}
-          onDelete={deleteEntry}
-          onClose={() => setSelectedEntry(null)}
-        />
-      ) : (
-        <main style={{ overflowY: 'auto', background: isDark ? 'var(--color-base)' : '#fff', position: 'relative' }} className="custom-scrollbar">
-          <div style={{ 
-            height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: text3, textAlign: 'center', padding: '40px'
-          }}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            <motion.aside
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 380, damping: 34 }}
+              style={{
+                position: 'fixed',
+                top: 'var(--nav-height)',
+                left: 0,
+                bottom: 0,
+                width: 'min(320px, 88vw)',
+                zIndex: 41,
+                boxShadow: 'var(--shadow-lg)',
+              }}
             >
-              <div style={{ fontSize: '64px', marginBottom: '24px', filter: 'grayscale(0.5)' }}>📝</div>
-              <h3 style={{ fontSize: '20px', color: text1, marginBottom: '12px', fontWeight: 700 }}>Architect Your Mindset</h3>
-              <p style={{ fontSize: '15px', maxWidth: '340px', margin: '0 auto', color: text3, lineHeight: 1.6 }}>
-                "This isn't a diary. It's a structured log of your ambitions, momentum, and approach to life."
-              </p>
-              <button 
-                onClick={handleNewEntry}
-                style={{ 
-                  marginTop: '32px', background: 'var(--color-accent)', color: '#fff',
-                  border: 'none', padding: '12px 32px', borderRadius: '12px', fontWeight: 700,
-                  cursor: 'pointer', boxShadow: 'var(--shadow-lg)'
-                }}
-                className="hover-glow"
-              >Start New Entry</button>
-            </motion.div>
-          </div>
-        </main>
-      )}
-    </div>
-    )}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 10, background: c.surface2, borderBottom: `1px solid ${c.border}` }}>
+                <button
+                  type="button"
+                  onClick={() => setSidebarOpen(false)}
+                  aria-label="Close sidebar"
+                  style={{ background: 'none', border: 'none', color: c.text3, cursor: 'pointer', padding: 6 }}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              {sidebar}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
-};
-
-export default JournalPage;
+}
