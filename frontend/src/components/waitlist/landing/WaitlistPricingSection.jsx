@@ -9,29 +9,26 @@ function TierPriceBlock({ item }) {
 
   return (
     <div className="tier-price-block">
-      <span className={`tier-price-list ${hasDiscount ? '' : 'tier-price-row-placeholder'}`}>
+      <span className={`tier-price-list ${hasDiscount ? '' : 'tier-price-row-placeholder'}`} aria-hidden={!hasDiscount}>
         {hasDiscount ? (
           <>
             {item.price}
             <span className="tier-price-list-unit">/mo</span>
           </>
         ) : (
-          <>
-            ₹00
-            <span className="tier-price-list-unit">/mo</span>
-          </>
+          '\u00a0'
         )}
       </span>
       <div className="tier-price-main">
         <span className="tier-price-amount">{hasDiscount ? item.discounted : item.price}</span>
-        <span className="tier-price-unit">/mo</span>
+        {!isFree && <span className="tier-price-unit">/mo</span>}
       </div>
       <span
         className={`tier-price-waitlist-label ${
           isFree || hasDiscount ? '' : 'tier-price-row-placeholder'
         }`}
       >
-        {isFree ? 'Always free' : 'Waitlist founding rate'}
+        {isFree ? 'Always free' : hasDiscount ? 'Waitlist founding rate' : '\u00a0'}
       </span>
     </div>
   );
