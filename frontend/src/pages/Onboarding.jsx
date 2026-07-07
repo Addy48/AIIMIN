@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { apiPost, apiPatch, apiGet, getCurrentAccessToken } from '../utils/api';
+import { apiPost, apiPatch, apiGet } from '../utils/api';
 import { persistAccessToken, readAccessToken } from '../utils/authSession';
 import supabase from '../utils/supabase';
 import { suggestOsIdFromName } from '../utils/osId';
@@ -24,17 +24,61 @@ const slide = (dir = 1) => ({
 /* ─── Numpad ────────────────────────────────────────────────── */
 const KEYS = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
 
-function Numpad({ value, onChange, disabled }) {
-    const tap = (k) => {
+function Numpad({ value, onChange, disabled, active }) {
+    const inputRef = useRef(null);
+
+    const tap = useCallback((k) => {
         if (disabled) return;
         if (k === '⌫') return onChange(value.slice(0, -1));
-        if (k === '')  return;
+        if (k === '') return;
         if (value.length >= PIN_DIGITS) return;
         onChange(value + k);
-    };
+    }, [disabled, onChange, value]);
+
+    useEffect(() => {
+        if (!active || disabled) return undefined;
+        inputRef.current?.focus({ preventScroll: true });
+
+        const onKeyDown = (e) => {
+            if (disabled) return;
+            if (/^[0-9]$/.test(e.key)) {
+                e.preventDefault();
+                if (value.length < PIN_DIGITS) onChange(value + e.key);
+            } else if (e.key === 'Backspace') {
+                e.preventDefault();
+                onChange(value.slice(0, -1));
+            }
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [active, disabled, onChange, value]);
 
     return (
-        <div style={{ width: '100%', maxWidth: '280px', margin: '0 auto' }}>
+        <div style={{ width: '100%', maxWidth: '280px', margin: '0 auto', position: 'relative' }}>
+            {/* Hidden input — captures physical + mobile keyboard; digits only shown as dots below */}
+            <input
+                ref={inputRef}
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="one-time-code"
+                value={value}
+                onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, PIN_DIGITS))}
+                disabled={disabled}
+                aria-label="PIN entry"
+                style={{
+                    position: 'absolute',
+                    width: '1px',
+                    height: '1px',
+                    padding: 0,
+                    margin: '-1px',
+                    overflow: 'hidden',
+                    clip: 'rect(0,0,0,0)',
+                    whiteSpace: 'nowrap',
+                    border: 0,
+                }}
+            />
             {/* Dots */}
             <div style={{ display: 'flex', gap: '14px', justifyContent: 'center', marginBottom: '32px' }}>
                 {Array.from({ length: PIN_DIGITS }).map((_, i) => (
@@ -238,33 +282,44 @@ export default function Onboarding() {
         setLoading(true);
         setError('');
         try {
-            const token = await getCurrentAccessToken();
-            if (!token) throw new Error('No session');
+            const upperUsername = username.trim().toUpperCase();
+            const trimmedName = fullName.trim();
+
+            // Refresh session before any API calls
+            let { data: { session: liveSession } } = await supabase.auth.getSession();
+            if (!liveSession?.access_token) {
+                const { data: refreshed } = await supabase.auth.refreshSession();
+                liveSession = refreshed.session;
+            }
+            if (!liveSession?.access_token) throw new Error('No session — please sign in again');
+            persistAccessToken(liveSession.access_token);
+            await checkSession(liveSession);
 
             // #region agent log
-            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'start',data:{hasToken:Boolean(token),hasEmail:Boolean(user?.email)},hypothesisId:'H1',timestamp:Date.now(),runId:'onboarding-submit'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'start',data:{hasToken:Boolean(liveSession?.access_token),hasEmail:Boolean(user?.email)},hypothesisId:'H1',timestamp:Date.now(),runId:'onboarding-submit-v2'})}).catch(()=>{});
             // #endregion
 
+            // Profile + OS-ID on server (no admin password — that revokes the OAuth JWT)
             await apiPost('/auth/complete-google-profile', {
-                username: username.trim().toUpperCase(),
-                pin,
-                full_name: fullName.trim(),
+                username: upperUsername,
+                full_name: trimmedName,
             });
 
-            // Setting PIN via admin API invalidates the Google OAuth JWT — re-sign-in with new PIN
-            const email = user?.email;
-            if (email) {
-                const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-                    email,
-                    password: pin,
-                });
-                if (signInErr) throw signInErr;
-                persistAccessToken(signInData.session.access_token);
-                await checkSession(signInData.session);
+            // Set PIN client-side — keeps the current session valid
+            const { error: pinErr } = await supabase.auth.updateUser({
+                password: pin,
+                data: { username: upperUsername, full_name: trimmedName },
+            });
+            if (pinErr) throw pinErr;
+
+            const { data: { session: afterPin } } = await supabase.auth.getSession();
+            if (afterPin?.access_token) {
+                persistAccessToken(afterPin.access_token);
+                await checkSession(afterPin);
             }
 
             // #region agent log
-            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'after re-sign-in',data:{hasNewToken:Boolean(readAccessToken())},hypothesisId:'H1',timestamp:Date.now(),runId:'onboarding-submit'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'after pin update',data:{hasNewToken:Boolean(readAccessToken())},hypothesisId:'H1',timestamp:Date.now(),runId:'onboarding-submit-v2'})}).catch(()=>{});
             // #endregion
 
             await apiPatch('/account/profile', {
@@ -351,7 +406,7 @@ export default function Onboarding() {
         <motion.div key="pin" {...slide(dir)}>
             <h2 style={s.heading}>Set your PIN</h2>
             <p style={s.sub}>A 6-digit PIN to log in without a password.</p>
-            <Numpad value={pin} onChange={v => { setPin(v); setError(''); }} disabled={loading} />
+            <Numpad value={pin} onChange={v => { setPin(v); setError(''); }} disabled={loading} active={step === 2} />
             {error && <p style={{ ...s.err, marginTop: '16px' }}>{error}</p>}
             <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
                 <button onClick={back} style={s.ghostBtn}>Back</button>
@@ -369,7 +424,7 @@ export default function Onboarding() {
         <motion.div key="confirm" {...slide(dir)}>
             <h2 style={s.heading}>Confirm your PIN</h2>
             <p style={s.sub}>Enter the same 6-digit PIN again to verify.</p>
-            <Numpad value={confirmPin} onChange={v => { setConfirmPin(v); setError(''); }} disabled={loading} />
+            <Numpad value={confirmPin} onChange={v => { setConfirmPin(v); setError(''); }} disabled={loading} active={step === 3} />
             {error && <p style={{ ...s.err, marginTop: '16px' }}>{error}</p>}
             <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
                 <button onClick={back} style={s.ghostBtn} disabled={loading}>Back</button>

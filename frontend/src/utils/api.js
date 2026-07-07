@@ -72,7 +72,7 @@ const resolveHeaders = async ({ headers = {}, json = true, auth = true } = {}) =
 
 export const getAuthHeaders = (extraHeaders = {}) => buildAuthHeaders(extraHeaders);
 
-export const apiRequest = async (path, options = {}) => {
+export const apiRequest = async (path, options = {}, retried = false) => {
     const {
         method = 'GET',
         data,
@@ -102,6 +102,15 @@ export const apiRequest = async (path, options = {}) => {
 
     const response = await fetch(url, fetchOptions);
 
+    if (response.status === 401 && !retried && options.auth !== false) {
+        try {
+            const { data: { session } } = await supabase.auth.refreshSession();
+            if (session?.access_token) {
+                persistAccessToken(session.access_token);
+                return apiRequest(path, options, true);
+            }
+        } catch (_) { /* retry below */ }
+    }
 
     if (!response.ok) {
         let errMsg = `Request failed (${response.status})`;
