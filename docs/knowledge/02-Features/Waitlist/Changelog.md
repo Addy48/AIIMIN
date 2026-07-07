@@ -13,6 +13,15 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (Email — Resend provider + setup guide)
+
+- Added Resend HTTP API alongside SES SMTP in `server/lib/email.js` (`EMAIL_PROVIDER=auto|resend|ses`).
+- Resend preferred when `RESEND_API_KEY` set; SES fallback on Resend failure in auto mode.
+- Added `scripts/test-email.mjs` and `deploy/EMAIL-SETUP.md` (sandbox verify, Resend, AWS escalation).
+- Why: SES production case pending; sandbox blocks unverified waitlist recipients.
+- Files: `server/lib/email.js`, `scripts/test-email.mjs`, `deploy/EMAIL-SETUP.md`, `deploy/.env.production.example`
+- Status: add Resend key + domain DNS on EC2 to unblock user confirmation emails
+
 ## 2026-07-07 (Waitlist — inline OS-ID, single owner email)
 
 - Moved optional OS-ID to signup form (below email) with live @preview — no post-signup reserve step.
