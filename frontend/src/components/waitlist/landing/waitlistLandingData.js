@@ -124,7 +124,6 @@ export const PRICING = [
     tierTagline: 'Log daily. Learn the loop.',
     price: '₹0',
     note: 'Your entry point — no card, no catch.',
-    freeNote: 'Always free. No card needed.',
     startHere: true,
     includes: [
       'Log sleep, mood, gym, water, and steps daily',

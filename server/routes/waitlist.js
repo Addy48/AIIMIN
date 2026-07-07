@@ -113,7 +113,13 @@ async function isUsernameTaken(username) {
   return rows.length > 0;
 }
 
-async function notifyOwnerWaitlistSignup({ email, firstName, reservedUsername, source }) {
+async function notifyOwnerWaitlistSignup({
+  email,
+  firstName,
+  reservedUsername,
+  source,
+  event = 'signup',
+}) {
   const ownerEmail = getOwnerNotifyEmail();
   let totalCount = null;
   try {
@@ -124,6 +130,7 @@ async function notifyOwnerWaitlistSignup({ email, firstName, reservedUsername, s
   try {
     await sendEmail(ownerEmail, 'waitlist_owner_notify', {
       type: 'signup',
+      event,
       email,
       name: firstName,
       reserved_username: reservedUsername,
@@ -133,6 +140,18 @@ async function notifyOwnerWaitlistSignup({ email, firstName, reservedUsername, s
     });
   } catch (err) {
     console.warn('[Waitlist] owner notify failed:', err.message);
+  }
+}
+
+async function sendOsIdLockedEmail({ email, firstName, reservedUsername }) {
+  try {
+    await sendEmail(email, 'waitlist_osid_locked', {
+      email,
+      name: firstName,
+      reserved_username: reservedUsername,
+    });
+  } catch (err) {
+    console.warn('[Waitlist] OS-ID locked email failed:', err.message);
   }
 }
 
@@ -315,9 +334,10 @@ app.post('/', waitlistLimiter, async (c) => {
         }
 
         let attachedUsername = null;
+        let osIdJustAttached = false;
         if (reservedUsername) {
           const { rows: existingRows } = await pool.query(
-            'SELECT reserved_username FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
+            'SELECT reserved_username, first_name, name FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
             [email],
           );
           const existingUsername = existingRows[0]?.reserved_username;
@@ -331,22 +351,41 @@ app.post('/', waitlistLimiter, async (c) => {
               [reservedUsername, email],
             );
             attachedUsername = reservedUsername;
+            osIdJustAttached = true;
           }
         }
 
-        const position = await getWaitlistPosition(email);
         const { rows } = await pool.query(
-          'SELECT referral_code, referral_count, reserved_username FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
+          'SELECT referral_code, referral_count, reserved_username, first_name, name FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
           [email],
         ).catch(() => ({ rows: [] }));
+        const resolvedUsername = attachedUsername || rows[0]?.reserved_username || null;
+        const resolvedName = firstName || rows[0]?.first_name || rows[0]?.name || null;
+
+        if (osIdJustAttached && resolvedUsername) {
+          await sendOsIdLockedEmail({
+            email,
+            firstName: resolvedName,
+            reservedUsername: resolvedUsername,
+          });
+          notifyOwnerWaitlistSignup({
+            email,
+            firstName: resolvedName,
+            reservedUsername: resolvedUsername,
+            source,
+            event: 'osid_reserved',
+          }).catch(() => {});
+        }
+
         return c.json({
           success: true,
-          already_registered: true,
-          message: "You're already registered.",
-          position,
+          already_registered: source !== 'post_signup_osid',
+          message: source === 'post_signup_osid' && osIdJustAttached
+            ? 'OS-ID locked.'
+            : "You're already registered.",
           referral_code: rows[0]?.referral_code || null,
           referral_count: rows[0]?.referral_count ?? 0,
-          reserved_username: attachedUsername || rows[0]?.reserved_username || null,
+          reserved_username: resolvedUsername,
         });
       }
       if (/referral_code|referred_by/i.test(err.message)) {
@@ -367,7 +406,6 @@ app.post('/', waitlistLimiter, async (c) => {
       });
     }
 
-    const position = await getWaitlistPosition(email);
     let referralCount = 0;
     if (referralCode) {
       const { rows } = await pool.query(
@@ -377,18 +415,13 @@ app.post('/', waitlistLimiter, async (c) => {
       referralCount = rows[0]?.referral_count ?? 0;
     }
 
-    const effectivePosition = position && referralCount
-      ? Math.max(1, position - referralCount * 5)
-      : position;
-
-    console.log(`[Waitlist] New signup: ${email} (${firstName || 'no-name'}) ${reservedUsername ? `@${reservedUsername}` : '(no-osid)'} #${effectivePosition || '?'}`);
+    console.log(`[Waitlist] New signup: ${email} (${firstName || 'no-name'}) ${reservedUsername ? `@${reservedUsername}` : '(no-osid)'}`);
 
     try {
       await sendEmail(email, 'waitlist_confirmation', {
         email,
         name: firstName,
         reserved_username: reservedUsername,
-        position: effectivePosition,
         referral_code: referralCode,
       });
     } catch (err) {
@@ -400,13 +433,13 @@ app.post('/', waitlistLimiter, async (c) => {
       firstName,
       reservedUsername,
       source,
+      event: 'signup',
     }).catch(() => {});
 
     return c.json({
       success: true,
       message: "You're on the list.",
       reserved_username: reservedUsername,
-      position: effectivePosition,
       referral_code: referralCode,
       referral_count: referralCount,
     });
