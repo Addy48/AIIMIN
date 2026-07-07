@@ -52,4 +52,5 @@ render.yaml
 !.env.example
 !**/.env.example
 !frontend/.env.production
+!frontend/.env.development
 !**/.env.production.example

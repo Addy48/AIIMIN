@@ -38,27 +38,20 @@ Recovered Jul 4 pre-waitlist work (Design Lab, 2-theme system, masthead nav, tra
 
 ## How to run locally vs production
 
-### Local — full dashboard testing
+### Local — full dashboard (default, no setup)
 
-```bash
-cp frontend/.env.example frontend/.env.local
-```
-
-In `frontend/.env.local`:
-```bash
-REACT_APP_WAITLIST_MODE=false
-REACT_APP_API_URL=http://localhost:3001/api
-REACT_APP_SUPABASE_URL=https://yubxgftugxbwtywyhcsv.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=<from Supabase dashboard>
-```
+`frontend/.env.development` is committed with `REACT_APP_WAITLIST_MODE=false`.  
+CRA loads it automatically for `npm start` / `npm run dev` — you land on login/overview, not the waitlist.
 
 ```bash
 npm run dev
 ```
 
+Optional override: copy `frontend/.env.example` → `frontend/.env.local` if you need different API keys.
+
 ### Local — test waitlist UX
 
-Set `REACT_APP_WAITLIST_MODE=true` in `.env.local`. Add your email to `REACT_APP_TESTER_EMAILS`.
+Set `REACT_APP_WAITLIST_MODE=true` in `frontend/.env.local` (overrides `.env.development`). Add your email to `REACT_APP_TESTER_EMAILS`.
 
 ### Production (Vercel)
 
@@ -103,6 +96,7 @@ SUPABASE_SERVICE_ROLE_KEY=...
 | OAuth session | `frontend/src/utils/authSession.js` |
 | Design Lab | `frontend/src/pages/account/sections/DesignSection.jsx` |
 | Production env | `frontend/.env.production` |
+| Dev env (waitlist off) | `frontend/.env.development` |
 | Build verifier | `frontend/scripts/verify-production-env.mjs` |
 | Waitlist API | `server/routes/waitlist.js` |
 | Vault docs | `docs/knowledge/00-Command-Center.md` |
@@ -128,4 +122,4 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ---
 
-*Updated 2026-07-08 — recovery branch stabilized, debug logs removed, build verified.*
+*Updated 2026-07-08 — dev defaults to full app via `.env.development`; waitlist CSS restored from v9 (71c52305).*

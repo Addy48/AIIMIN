@@ -51,22 +51,22 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
       whileHover={{ scale: 1.02, y: -2 }}
       transition={{ duration: 0.2 }}
       style={{
-      background: isToday ? 'var(--color-accent-dim)' : 'var(--color-surface)',
-      border: `1px solid ${isToday ? 'var(--color-accent)' : 'var(--color-border)'}`,
+      background: isToday ? 'var(--color-success-dim, rgba(16, 185, 129, 0.08))' : 'var(--color-surface)',
+      border: `1px solid ${isToday ? 'color-mix(in srgb, var(--color-success) 35%, var(--color-border))' : 'var(--color-border)'}`,
       boxShadow: isToday ? '0 4px 12px rgba(34,197,94,0.1)' : '0 2px 4px rgba(0,0,0,0.02)',
       borderRadius:'16px', padding:'12px', display:'flex', flexDirection:'column', height: '100%'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:'10px', borderBottom: isToday ? '1px dashed rgba(34,197,94,0.3)' : '1px dashed var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
-        <div style={{ fontSize:'10px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)' }}>
+        <div style={{ fontSize:'10px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-success)' : 'var(--color-text-3)' }}>
           {day}
         </div>
-        <div style={{ fontSize:'12px', fontWeight:800, color: isToday ? 'var(--color-accent)' : 'var(--color-text-1)', background: isToday ? 'rgba(34,197,94,0.1)' : 'transparent', padding: isToday ? '2px 6px' : '0', borderRadius: '4px' }}>
+        <div style={{ fontSize:'12px', fontWeight:800, color: isToday ? 'var(--color-success)' : 'var(--color-text-1)', background: isToday ? 'rgba(16, 185, 129, 0.1)' : 'transparent', padding: isToday ? '2px 6px' : '0', borderRadius: '4px' }}>
           {new Date(dateStr).getDate()}
         </div>
       </div>
       <div style={{ flex:1, display:'flex', flexDirection:'column', gap:'6px', overflowY:'auto', scrollbarWidth:'none', minHeight: 0 }}>
         {calendarEvents?.map(e => (
-          <div key={e.id} style={{ fontSize:'10px', background:'var(--color-elevated)', borderLeft:`2px solid ${e.color||'var(--color-accent)'}`, padding:'4px 6px', borderRadius:'4px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', color:'var(--color-text-1)', fontWeight:600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div key={e.id} style={{ fontSize:'10px', background:'var(--color-elevated)', borderLeft:`2px solid ${e.color||'var(--color-info)'}`, padding:'4px 6px', borderRadius:'4px', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', color:'var(--color-text-1)', fontWeight:600, display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span style={{ fontSize: '8px' }}>🕒</span> {e.title || e.summary}
           </div>
         ))}
@@ -88,7 +88,7 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
               onKeyDown={e=>{if(e.key==='Enter')addTask();if(e.key==='Escape'){setAdding(false);setInput('');}}}
               onBlur={addTask}
               placeholder="Add task..."
-              style={{ flex: 1, minWidth: 0, fontSize:'11px', background:'var(--color-elevated)', border:'1px solid var(--color-accent)', borderRadius:'6px', padding:'4px 8px', color:'var(--color-text-1)', outline:'none', fontFamily:'inherit', boxSizing:'border-box' }}
+              style={{ flex: 1, minWidth: 0, fontSize:'11px', background:'var(--color-elevated)', border:'1px solid var(--color-border-lit)', borderRadius:'6px', padding:'4px 8px', color:'var(--color-text-1)', outline:'none', fontFamily:'inherit', boxSizing:'border-box' }}
             />
             <button 
               onMouseDown={(e) => { e.preventDefault(); setAdding(false); setInput(''); }}
@@ -150,7 +150,7 @@ const getTrajectorySnapshot = (timezone) => {
     },
     executionRatio: Math.round((percentBetween(startOfDay, nextDay) * 0.54) + (dayOfWeek * 3.5)),
     rows: [
-      { id: 'day', label: 'Day', value: percentBetween(startOfDay, nextDay), sub: daySub, color: 'var(--color-accent)' },
+      { id: 'day', label: 'Day', value: percentBetween(startOfDay, nextDay), sub: daySub, color: 'var(--color-success)' },
       { id: 'week', label: 'Week', value: percentBetween(startOfWeek, nextWeek), sub: `${Math.ceil((nextWeek - now) / 86400000)}d left`, color: '#3B82F6' },
       { id: 'month', label: 'Month', value: percentBetween(startOfMonth, nextMonth), sub: `${Math.ceil((nextMonth - now) / 86400000)}d left`, color: '#EC4899' },
       { id: 'year', label: 'Year', value: percentBetween(startOfYear, nextYear), sub: `${Math.ceil((nextYear - now) / 86400000)}d left`, color: '#F97316' },
@@ -179,13 +179,13 @@ const TrajectoryArc = ({ progress, phase, time }) => {
       <svg viewBox="0 0 220 118" role="img" aria-label={`Day progress ${progress.toFixed(0)} percent`} style={{ width: '100%', maxWidth: '226px', height: '118px', overflow: 'visible' }}>
         <defs>
           <linearGradient id="trajectoryArcGradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.22" />
-            <stop offset="54%" stopColor="var(--color-accent)" stopOpacity="0.92" />
-            <stop offset="100%" stopColor="#F97316" stopOpacity="0.8" />
+            <stop offset="0%" stopColor="var(--color-success)" stopOpacity="0.18" />
+            <stop offset="54%" stopColor="var(--color-success)" stopOpacity="0.72" />
+            <stop offset="100%" stopColor="var(--color-warning)" stopOpacity="0.65" />
           </linearGradient>
           <radialGradient id="trajectorySunGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#F97316" stopOpacity="0.42" />
-            <stop offset="100%" stopColor="#F97316" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--color-warning)" stopOpacity="0.32" />
+            <stop offset="100%" stopColor="var(--color-warning)" stopOpacity="0" />
           </radialGradient>
         </defs>
         <line x1="18" y1="101" x2="202" y2="101" stroke="var(--color-border)" strokeWidth="1" strokeDasharray="3 5" />
@@ -215,8 +215,8 @@ const TrajectoryArc = ({ progress, phase, time }) => {
           );
         })}
         <circle cx={sunX} cy={sunY} r="15" fill="url(#trajectorySunGlow)" />
-        <circle cx={sunX} cy={sunY} r="5.5" fill="#F97316" />
-        <circle cx={sunX - 1.5} cy={sunY - 1.5} r="2" fill="#FED7AA" />
+        <circle cx={sunX} cy={sunY} r="5.5" fill="var(--color-warning)" />
+        <circle cx={sunX - 1.5} cy={sunY - 1.5} r="2" fill="#FDE68A" />
       </svg>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', maxWidth: '226px', color: 'var(--color-text-3)', fontSize: '10px', fontWeight: 700 }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Sun size={11} />{time.sunrise}</span>
@@ -305,7 +305,7 @@ const TrajectoryProgress = React.memo(() => {
           <div style={{ fontSize: '9px', fontWeight: 900, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Time Invested</div>
           <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 650, marginTop: '2px' }}>intentional day pressure</div>
         </div>
-        <div style={{ color: 'var(--color-accent)', fontSize: '28px', lineHeight: 1, fontWeight: 950, letterSpacing: '-0.06em', fontVariantNumeric: 'tabular-nums' }}>
+        <div style={{ color: 'var(--color-text-1)', fontSize: '28px', lineHeight: 1, fontWeight: 950, letterSpacing: '-0.06em', fontVariantNumeric: 'tabular-nums' }}>
           <AnimatedNumber value={safeExecutionRatio} duration={0.8} suffix="%" />
         </div>
       </div>
@@ -342,7 +342,7 @@ const TrajectoryProgress = React.memo(() => {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          color: #F97316;
+          color: var(--color-text-2);
           font-weight: 950;
           letter-spacing: .08em;
         }
@@ -350,7 +350,7 @@ const TrajectoryProgress = React.memo(() => {
           width: 6px;
           height: 6px;
           border-radius: 999px;
-          background: #F97316;
+          background: var(--color-success);
           animation: trajectoryPulse 1.8s ease-in-out infinite;
         }
         .trajectory-week-dot {
@@ -361,14 +361,14 @@ const TrajectoryProgress = React.memo(() => {
           transition: background .2s ease, box-shadow .2s ease;
         }
         .trajectory-week-dot.is-active {
-          background: color-mix(in srgb, var(--color-accent) 62%, var(--color-border));
+          background: color-mix(in srgb, var(--color-success) 45%, var(--color-border));
         }
         .trajectory-week-dot.is-strong,
         .trajectory-week-dot.is-today {
-          background: var(--color-accent);
+          background: var(--color-success);
         }
         .trajectory-week-dot.is-today {
-          box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 4px var(--color-accent);
+          box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 4px color-mix(in srgb, var(--color-success) 55%, var(--color-border));
         }
         @media (prefers-reduced-motion: reduce) {
           .trajectory-live-dot { animation: none; }
