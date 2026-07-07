@@ -13,6 +13,13 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (Waitlist reset + premium confirmation emails)
+
+- Cleared `waitlist_emails` for fresh start (`scripts/clear-waitlist.mjs`).
+- Upgraded `waitlist_confirmation` + `waitlist_invite` templates: product mock card, "what happens next" timeline, founder note, referral CTA (Dropbox-style), social proof strip.
+- Tactics: personalization, preheader, single CTA, scarcity (founding cohort), OS-ID identity lock, mobile-safe table layout.
+- Files: `server/lib/emailTemplates.js`
+
 ## 2026-07-07 (Resend from address — admin.aiimin.in)
 
 - Fixed production send failure: verified domain is `admin.aiimin.in`, not root `aiimin.in`.

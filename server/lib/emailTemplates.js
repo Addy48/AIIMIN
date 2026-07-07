@@ -138,30 +138,98 @@ function perkRow(label, detail, highlight = false) {
   </tr>`;
 }
 
-function lifeScoreTeaser() {
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;border:1px solid #C5D9CC;border-radius:14px;overflow:hidden;background:linear-gradient(180deg, ${BRAND.accentSoft} 0%, ${BRAND.surface} 100%);">
-    <tr><td style="padding:16px 18px 10px;font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.text3};">What you're unlocking</td></tr>
-    <tr><td style="padding:0 18px 16px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+function timelineStep(num, title, desc, active = false) {
+  const dotBg = active ? BRAND.accent : BRAND.border;
+  const dotColor = active ? BRAND.white : BRAND.text3;
+  const titleColor = active ? BRAND.text1 : BRAND.text2;
+  const border = active ? `border-left:3px solid ${BRAND.accent};` : '';
+  return `<tr>
+    <td style="padding:0 0 16px 0;${border}padding-left:${active ? '14px' : '0'};">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
-          <td width="33%" style="padding:8px;text-align:center;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:10px;">
-            <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:700;color:${BRAND.accent};">82</div>
-            <div style="font-size:10px;color:${BRAND.text3};text-transform:uppercase;letter-spacing:0.06em;">Life Score</div>
+          <td width="36" valign="top">
+            <div style="width:28px;height:28px;border-radius:50%;background:${dotBg};color:${dotColor};font-family:${FONT_BODY};font-size:12px;font-weight:700;line-height:28px;text-align:center;">${num}</div>
           </td>
-          <td width="4"></td>
-          <td width="33%" style="padding:8px;text-align:center;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:10px;">
-            <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:700;color:${BRAND.accent};">1</div>
-            <div style="font-size:10px;color:${BRAND.text3};text-transform:uppercase;letter-spacing:0.06em;">Screen</div>
-          </td>
-          <td width="4"></td>
-          <td width="33%" style="padding:8px;text-align:center;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:10px;">
-            <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:700;color:${BRAND.accent};">₹0</div>
-            <div style="font-size:10px;color:${BRAND.text3};text-transform:uppercase;letter-spacing:0.06em;">To start</div>
+          <td valign="top" style="padding-left:10px;">
+            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${titleColor};margin-bottom:3px;">${escapeHtml(title)}</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text3};">${desc}</div>
           </td>
         </tr>
       </table>
-      <p style="margin:12px 0 0;font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};">Habits, money, focus, mood, sleep — wired into one daily loop. Not five apps. One command layer.</p>
+    </td>
+  </tr>`;
+}
+
+function whatHappensNext() {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:14px;">
+    <tr><td style="padding:18px 20px 8px;font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:${BRAND.text3};">What happens next</td></tr>
+    <tr><td style="padding:0 20px 18px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        ${timelineStep('✓', "You're on the list", 'Founding perks locked to this email. No action needed.', true)}
+        ${timelineStep('2', 'Early access keys', 'Invited testers get dashboard access <strong>before</strong> public launch.', false)}
+        ${timelineStep('3', 'September 2026', 'Full launch — your OS-ID, Core tier, and founding pricing activate.', false)}
+      </table>
     </td></tr>
+  </table>`;
+}
+
+function productMockCard() {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;border:1px solid ${BRAND.border};border-radius:16px;overflow:hidden;background:${BRAND.text1};">
+    <tr><td style="padding:14px 16px 10px;border-bottom:1px solid #333;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span style="font-family:${FONT_DISPLAY};font-size:13px;font-weight:600;color:#F0EDE8;">Today's command layer</span></td>
+          <td align="right"><span style="font-family:${FONT_BODY};font-size:10px;color:#9A9186;letter-spacing:0.08em;text-transform:uppercase;">Preview</span></td>
+        </tr>
+      </table>
+    </td></tr>
+    <tr><td style="padding:16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="72" valign="top" style="padding-right:14px;">
+            <div style="width:56px;height:56px;border-radius:50%;border:4px solid ${BRAND.accent};background:conic-gradient(${BRAND.accent} 0% 75%, #333 75% 100%);display:flex;align-items:center;justify-content:center;">
+              <span style="font-family:${FONT_DISPLAY};font-size:14px;font-weight:700;color:#F0EDE8;line-height:56px;text-align:center;display:block;width:56px;">75%</span>
+            </div>
+          </td>
+          <td valign="top">
+            <div style="font-family:${FONT_BODY};font-size:11px;color:#9A9186;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Life Score</div>
+            <div style="font-family:${FONT_DISPLAY};font-size:26px;font-weight:700;color:#F0EDE8;line-height:1;margin-bottom:8px;">82 <span style="font-size:13px;color:${BRAND.accent};">↑</span></div>
+            <div style="font-family:${FONT_BODY};font-size:11px;color:#9A9186;">Sleep · Gym · Focus · Mood · Money</div>
+          </td>
+        </tr>
+      </table>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:14px;">
+        <tr>
+          <td width="32%" style="padding:8px;background:#2d2d2d;border-radius:8px;text-align:center;">
+            <div style="font-family:${FONT_DISPLAY};font-size:16px;font-weight:700;color:${BRAND.accent};">🔥 12</div>
+            <div style="font-size:9px;color:#9A9186;text-transform:uppercase;">Streak</div>
+          </td>
+          <td width="2%"></td>
+          <td width="32%" style="padding:8px;background:#2d2d2d;border-radius:8px;text-align:center;">
+            <div style="font-family:${FONT_DISPLAY};font-size:16px;font-weight:700;color:#F0EDE8;">2.5h</div>
+            <div style="font-size:9px;color:#9A9186;text-transform:uppercase;">Focus</div>
+          </td>
+          <td width="2%"></td>
+          <td width="32%" style="padding:8px;background:#2d2d2d;border-radius:8px;text-align:center;">
+            <div style="font-family:${FONT_DISPLAY};font-size:16px;font-weight:700;color:#F0EDE8;">₹340</div>
+            <div style="font-size:9px;color:#9A9186;text-transform:uppercase;">Spent</div>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:12px 0 0;font-family:${FONT_BODY};font-size:12px;line-height:1.5;color:#9A9186;text-align:center;">One screen. No tab-switching. No guilt.</p>
+    </td></tr>
+  </table>`;
+}
+
+function socialProofStrip() {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+    <tr>
+      <td style="padding:12px 16px;background:${BRAND.elevated};border-radius:12px;text-align:center;">
+        <span style="font-family:${FONT_BODY};font-size:12px;font-weight:500;color:${BRAND.text2};">
+          <span style="color:${BRAND.accent};font-weight:700;">Founding cohort</span> · Built in Jaipur for students who ship · Not another Notion clone
+        </span>
+      </td>
+    </tr>
   </table>`;
 }
 
@@ -252,71 +320,81 @@ export const EMAIL_TEMPLATES = {
 
     const foundingBadge = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
           <tr>
-            <td style="background:linear-gradient(90deg, ${BRAND.accent} 0%, ${BRAND.accentDark} 100%);border-radius:999px;padding:9px 18px;font-family:${FONT_BODY};font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.white};">
-              ✦ Founding member — perks locked
+            <td style="background:linear-gradient(135deg, ${BRAND.accent} 0%, ${BRAND.accentDark} 100%);border-radius:999px;padding:10px 20px;font-family:${FONT_BODY};font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:${BRAND.white};box-shadow:0 4px 14px rgba(30,92,58,0.25);">
+              ✦ Founding Member #${referralCode ? referralCode.slice(0, 4) : 'LOCK'}
             </td>
           </tr>
         </table>`;
 
     const osIdBlock = osId
       ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:linear-gradient(135deg, ${BRAND.accentSoft} 0%, ${BRAND.elevated} 100%);border:1px solid #C5D9CC;border-radius:14px;">
-          <tr><td style="padding:18px 20px;text-align:center;">
-            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:${BRAND.text3};margin-bottom:8px;">Your OS-ID is locked</div>
-            <div style="font-family:${FONT_DISPLAY};font-size:30px;font-weight:700;color:${BRAND.accent};letter-spacing:0.04em;">@${osId}</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-top:10px;">Ships with your account at launch. Nobody else can claim this handle.</div>
+          <tr><td style="padding:20px 22px;text-align:center;">
+            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:${BRAND.text3};margin-bottom:8px;">Your identity is locked</div>
+            <div style="font-family:${FONT_DISPLAY};font-size:34px;font-weight:700;color:${BRAND.accent};letter-spacing:0.02em;">@${osId}</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-top:10px;">Like claiming your @handle before launch — ships with your account. Nobody else gets this.</div>
           </td></tr>
         </table>`
-      : '';
+      : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:${BRAND.elevated};border:1px dashed ${BRAND.border};border-radius:14px;">
+          <tr><td style="padding:16px 20px;text-align:center;">
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};">💡 <strong>Pro tip:</strong> Reserve your OS-ID on the waitlist page — claim your @handle before someone else does.</div>
+          </td></tr>
+        </table>`;
 
     const referralBlock = referralUrl
-      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;background:${BRAND.elevated};border:1px solid ${BRAND.border};border-radius:14px;">
-          <tr><td style="padding:18px 20px;">
-            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Your founding link</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-bottom:12px;">Share AIIMIN with one friend who'd actually use it. Every signup through your link strengthens your founding package.</div>
-            <a href="${referralUrl}" style="display:inline-block;padding:10px 14px;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:8px;font-family:monospace;font-size:12px;font-weight:500;color:${BRAND.accent};text-decoration:none;word-break:break-all;">${referralUrl}</a>
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;background:linear-gradient(180deg, ${BRAND.elevated} 0%, ${BRAND.surface} 100%);border:1px solid ${BRAND.border};border-radius:14px;">
+          <tr><td style="padding:20px 22px;">
+            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:${BRAND.accent};margin-bottom:6px;">Move up faster</div>
+            <div style="font-family:${FONT_BODY};font-size:15px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Share AIIMIN with one person who'd actually use it</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-bottom:14px;">Every friend who joins through your link strengthens your founding package. Dropbox grew this way — so can we.</div>
+            <a href="${referralUrl}" style="display:block;padding:12px 16px;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:10px;font-family:monospace;font-size:12px;font-weight:500;color:${BRAND.accent};text-decoration:none;word-break:break-all;text-align:center;">${referralUrl}</a>
           </td></tr>
         </table>`
       : '';
 
     const bodyHtml = `
       ${foundingBadge}
-      <p style="font-family:${FONT_BODY};font-size:17px;line-height:1.6;color:${BRAND.text1};margin:0 0 8px;font-weight:600;">
-        ${firstName}, you're in.
+      <p style="font-family:${FONT_BODY};font-size:18px;line-height:1.45;color:${BRAND.text1};margin:0 0 6px;font-weight:600;">
+        ${firstName}, you're in the founding cohort.
       </p>
       <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0 0 20px;">
-        You just secured a spot on the AIIMIN founding waitlist — the personal Life OS built for Indian students who are tired of juggling Notion, spreadsheets, and guilt.
+        Most people juggle 5 apps and still don't know if they had a good day. You just secured early access to the one screen that tells the truth — habits, money, focus, mood, sleep, wired into a single daily loop.
       </p>
-      ${lifeScoreTeaser()}
+      ${socialProofStrip()}
+      ${productMockCard()}
       ${osIdBlock}
-      <p style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin:0 0 10px;">Locked in at launch</p>
+      ${whatHappensNext()}
+      <p style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin:0 0 10px;">Locked in at launch — waitlist only</p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;">
-        ${perkRow('Complimentary Core', 'Full Core tier at go-live — <strong>waitlist only</strong>, never offered again.', true)}
-        ${perkRow('Founding Pro — ₹49/mo', '12 months at founding rate (list ₹59). Behavioural analytics that connect.')}
+        ${perkRow('Complimentary Core', 'Full Core tier at go-live. <strong>Never offered again</strong> after public launch.', true)}
+        ${perkRow('Founding Pro — ₹49/mo', '12 months at founding rate (list ₹59). Behavioural analytics that actually connect.')}
         ${perkRow('Founding Elite — ₹79/mo', '12 months at founding rate (list ₹99). Every module, highest limits.')}
-        ${perkRow('Life Score + streaks', 'Your daily completion ring, XP ranks, and pattern insights — from day one.')}
-        ${perkRow('September 2026', 'You hear from us <strong>before</strong> public launch. Early testers get first keys.')}
+        ${perkRow('Life Score + XP ranks', 'Daily completion ring, streak multipliers, and pattern insights from day one.')}
+        ${perkRow('First keys before everyone', 'You hear from us <strong>before</strong> September public launch.')}
       </table>
       ${referralBlock}
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;padding:16px 18px;background:${BRAND.elevated};border-radius:12px;border-left:4px solid ${BRAND.accent};">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;padding:18px 20px;background:linear-gradient(135deg, ${BRAND.elevated} 0%, ${BRAND.accentSoft} 100%);border-radius:14px;border-left:4px solid ${BRAND.accent};">
         <tr><td>
-          <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.65;color:${BRAND.text2};margin:0;">
-            <strong style="color:${BRAND.text1};">From the builder</strong><br>
-            I built AIIMIN because I needed one screen that told the truth about my day — not another app to maintain. Reply to this email; it reaches me directly.
-            <br><br>— Aaditya
+          <p style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.text3};margin:0 0 8px;">A note from the builder</p>
+          <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.7;color:${BRAND.text2};margin:0;font-style:italic;">
+            "I built AIIMIN because I was tired of maintaining apps instead of living. One honest screen about my day — that's it. You're early. That matters."
           </p>
+          <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.6;color:${BRAND.text1};margin:12px 0 0;font-weight:600;">
+            — Aaditya, founder
+          </p>
+          <p style="font-family:${FONT_BODY};font-size:12px;line-height:1.5;color:${BRAND.text3};margin:8px 0 0;">Reply to this email — it reaches me directly. I read every one.</p>
         </td></tr>
       </table>`;
 
     return {
-      subject: `${firstName}, your AIIMIN founding spot is locked ✦`,
+      subject: `${firstName}, you're in — founding access locked ✦`,
       html: waitlistLayout({
-        preheader: 'Complimentary Core at launch + founding pricing. One screen for habits, money, focus, and mood.',
-        eyebrow: 'Founding access',
+        preheader: 'Your founding perks are locked. One screen for habits, money, focus & mood — built for students who ship.',
+        eyebrow: 'Founding cohort',
         title: 'Welcome to the inside.',
         bodyHtml,
         ctaHref: referralUrl || BRAND.siteUrl,
-        ctaLabel: referralUrl ? 'Share your founding link' : 'Back to AIIMIN',
-        footerNote: 'Invited testers: register by <strong>31 July</strong> for Elite free for one year.',
+        ctaLabel: referralUrl ? 'Share your founding link →' : 'Explore AIIMIN →',
+        footerNote: 'Invited testers: register by <strong>31 July</strong> for complimentary Elite for one year.',
       }),
     };
   },
@@ -350,19 +428,29 @@ export const EMAIL_TEMPLATES = {
   },
 
   waitlist_invite: () => ({
-    subject: "You're invited to AIIMIN — early access is ready",
+    subject: "Your AIIMIN key is ready — early access unlocked",
     html: waitlistLayout({
-      preheader: 'Your tester invite is active. Sign in to explore the full dashboard.',
+      preheader: 'You were approved from the founding waitlist. Sign in now — tester window closes 31 July.',
       eyebrow: 'Early access',
-      title: 'Your invite is ready.',
-      bodyHtml: `<p style="font-family:${FONT_BODY};font-size:16px;line-height:1.65;color:${BRAND.text2};margin:0 0 16px;">
-        You were approved from the waitlist. Sign in with this email to explore habits, money, focus, and the full dashboard before public launch.
-      </p>
-      <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.6;color:${BRAND.text2};margin:0;padding:14px 16px;background:${BRAND.elevated};border-radius:12px;border:1px solid ${BRAND.border};">
-        Tester registration closes <strong>31 July</strong>. Elite tier is complimentary for one year when you activate before the deadline.
-      </p>`,
+      title: 'The dashboard is yours.',
+      bodyHtml: `
+        ${socialProofStrip()}
+        <p style="font-family:${FONT_BODY};font-size:16px;line-height:1.65;color:${BRAND.text2};margin:0 0 18px;">
+          You were hand-picked from the founding waitlist. Sign in with <strong>this email</strong> to explore the full Life OS — habits, money, focus, mood, streaks, and XP — before anyone else sees it.
+        </p>
+        ${productMockCard()}
+        ${whatHappensNext()}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0;">
+          <tr><td style="padding:16px 18px;background:linear-gradient(135deg, ${BRAND.accentSoft} 0%, ${BRAND.elevated} 100%);border-radius:12px;border:1px solid #C5D9CC;">
+            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.accent};margin-bottom:6px;">Deadline</div>
+            <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.6;color:${BRAND.text2};margin:0;">
+              Tester registration closes <strong>31 July</strong>. Activate before then for <strong>complimentary Elite for one year</strong> — our thank-you for being early.
+            </p>
+          </td></tr>
+        </table>`,
       ctaHref: 'https://www.aiimin.in/login',
-      ctaLabel: 'Sign in to AIIMIN',
+      ctaLabel: 'Unlock my dashboard →',
+      footerNote: 'Questions? Reply to this email — founder reads every message.',
     }),
   }),
 
