@@ -10,6 +10,8 @@ html {
   position: relative;
   --font-display: 'Familjen Grotesk', var(--font-serif);
   --font-body: 'Figtree', var(--font-sans);
+  --waitlist-cta: #1e5c3a;
+  --waitlist-cta-deep: #163d28;
 }
 
 .waitlist-page::before {
@@ -1931,21 +1933,21 @@ html {
   color: #ffffff;
   background: linear-gradient(
     165deg,
-    color-mix(in srgb, #22c55e 92%, white) 0%,
-    #22c55e 55%,
-    color-mix(in srgb, #16a34a 88%, black) 100%
+    color-mix(in srgb, var(--waitlist-cta) 90%, white) 0%,
+    var(--waitlist-cta) 52%,
+    var(--waitlist-cta-deep) 100%
   );
-  border-color: color-mix(in srgb, #22c55e 60%, transparent);
+  border-color: color-mix(in srgb, var(--waitlist-cta) 65%, transparent);
   box-shadow:
-    0 1px 0 color-mix(in srgb, white 25%, transparent) inset,
-    0 10px 24px color-mix(in srgb, #22c55e 32%, transparent);
+    0 1px 0 color-mix(in srgb, white 22%, transparent) inset,
+    0 10px 24px color-mix(in srgb, var(--waitlist-cta) 28%, transparent);
 }
 
 .waitlist-btn-primary:hover {
   transform: translateY(-1px);
   box-shadow:
-    0 1px 0 color-mix(in srgb, white 30%, transparent) inset,
-    0 14px 32px color-mix(in srgb, #22c55e 40%, transparent);
+    0 1px 0 color-mix(in srgb, white 28%, transparent) inset,
+    0 14px 32px color-mix(in srgb, var(--waitlist-cta) 36%, transparent);
 }
 
 .waitlist-btn-primary:active {
@@ -3644,12 +3646,12 @@ html {
   width: 100%;
   padding: 0 22px;
   border-radius: var(--r-pill);
-  border: 1px solid color-mix(in srgb, #22c55e 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--waitlist-cta) 58%, transparent);
   background: linear-gradient(
     165deg,
-    color-mix(in srgb, #22c55e 95%, white) 0%,
-    #22c55e 45%,
-    color-mix(in srgb, #16a34a 85%, black) 100%
+    color-mix(in srgb, var(--waitlist-cta) 92%, white) 0%,
+    var(--waitlist-cta) 48%,
+    var(--waitlist-cta-deep) 100%
   );
   color: #ffffff;
   font-weight: 700;
@@ -3662,17 +3664,17 @@ html {
   justify-content: center;
   gap: 8px;
   box-shadow:
-    0 1px 0 color-mix(in srgb, white 30%, transparent) inset,
-    0 10px 24px color-mix(in srgb, #22c55e 28%, transparent),
-    0 2px 40px -4px color-mix(in srgb, #22c55e 18%, transparent);
+    0 1px 0 color-mix(in srgb, white 22%, transparent) inset,
+    0 10px 24px color-mix(in srgb, var(--waitlist-cta) 26%, transparent),
+    0 2px 40px -4px color-mix(in srgb, var(--waitlist-cta) 16%, transparent);
   letter-spacing: 0.01em;
 }
 
 .waitlist-submit-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow:
-    0 1px 0 color-mix(in srgb, white 30%, transparent) inset,
-    0 14px 32px color-mix(in srgb, #22c55e 38%, transparent);
+    0 1px 0 color-mix(in srgb, white 26%, transparent) inset,
+    0 14px 32px color-mix(in srgb, var(--waitlist-cta) 34%, transparent);
 }
 
 .waitlist-submit-btn:active:not(:disabled) {
