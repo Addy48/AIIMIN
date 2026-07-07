@@ -9,10 +9,12 @@ import PrivacySection from './sections/PrivacySection';
 import SubscriptionSection from './sections/SubscriptionSection';
 import DataSection from './sections/DataSection';
 import LegalSection from './sections/LegalSection';
+import DesignSection from './sections/DesignSection';
 
 const SECTIONS = [
   { id: 'profile', label: 'My Profile', helper: 'Identity, location, and completion' },
-  { id: 'personalization', label: 'Personalization', helper: 'Sports, habits, defaults' },
+  { id: 'personalization', label: 'Personalization', helper: 'Themes, nav pins, life modes' },
+  { id: 'design', label: 'Design Lab', helper: 'Overview prototypes, themes, UI library' },
   { id: 'notifications', label: 'Notifications', helper: 'Reminders and alerts' },
   { id: 'privacy', label: 'Privacy & Security', helper: 'Access and account safety' },
   { id: 'subscription', label: 'Subscription', helper: 'Plan and billing' },
@@ -28,6 +30,7 @@ const SECTION_MAP = {
   subscription: SubscriptionSection,
   data: DataSection,
   legal: LegalSection,
+  design: DesignSection,
 };
 
 export default function AccountPage() {
