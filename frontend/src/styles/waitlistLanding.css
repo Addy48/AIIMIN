@@ -17,10 +17,22 @@ html {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.035;
   background-image: radial-gradient(circle at 1px 1px, var(--color-text-1) 1px, transparent 0);
   background-size: 3px 3px;
   z-index: 0;
+}
+
+.waitlist-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--color-accent) 8%, transparent), transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 40%, transparent) 0%, transparent 35%);
 }
 
 .waitlist-announcement {
@@ -41,8 +53,8 @@ html {
 }
 
 .mobile-hero-context {
-  padding: 1.5rem 1rem 0;
-  text-align: center;
+  padding: 1.25rem 1rem 0;
+  text-align: left;
   max-width: 1160px;
   margin: 0 auto;
 }
@@ -58,6 +70,16 @@ html {
 
 .mobile-hero-context h1 strong {
   font-weight: 700;
+}
+
+.mobile-hero-context .hero-exclusive-badge {
+  margin-bottom: 12px;
+}
+
+.mobile-hero-context h1 .hero-serif {
+  font-family: 'Bodoni Moda', var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
 }
 
 .mobile-hero-context h1 .line-two {
@@ -152,10 +174,24 @@ html {
 .hero-mock-dashboard {
   width: 100%;
   background: color-mix(in srgb, var(--color-surface) 88%, #ede4d3);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--color-success) 22%, var(--color-border));
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 16px 40px color-mix(in srgb, var(--color-text-1) 10%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 35%, transparent) inset,
+    0 24px 48px -16px color-mix(in srgb, var(--color-text-1) 16%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.hero-mock-stat-card {
+  padding: 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 18%, var(--color-border));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 1px 0 color-mix(in srgb, white 25%, transparent) inset;
 }
 
 .hero-mock-chrome {
@@ -233,16 +269,6 @@ html {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-}
-
-.hero-mock-stat-card {
-  padding: 10px;
-  border-radius: 10px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .hero-mock-stat-value {
@@ -347,6 +373,217 @@ html {
   font-weight: 700;
 }
 
+.hero-headline .hero-serif {
+  font-family: 'Bodoni Moda', var(--font-serif);
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.hero-exclusive-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent-dim) 55%, var(--color-overlay));
+  color: var(--color-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.hero-feature-list {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+}
+
+.hero-feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-2);
+}
+
+.hero-feature-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-success) 18%, var(--color-overlay));
+  color: var(--color-success);
+  margin-top: 1px;
+}
+
+.hero-trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.hero-trust-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-2);
+  margin-right: 4px;
+}
+
+.hero-trust-pill {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-2);
+  opacity: 0.72;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-overlay) 70%, transparent);
+}
+
+.waitlist-social-proof {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.waitlist-avatar-stack {
+  display: flex;
+  align-items: center;
+  padding-left: 4px;
+}
+
+.waitlist-avatar-chip {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-base);
+  margin-left: -10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #fff;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-text-1) 12%, transparent);
+}
+
+.waitlist-avatar-chip:first-child {
+  margin-left: 0;
+}
+
+.waitlist-social-proof-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text-2);
+}
+
+.waitlist-social-proof-text strong {
+  color: var(--color-text-1);
+  font-weight: 700;
+}
+
+.waitlist-mobile-social {
+  margin-top: 14px;
+  justify-content: center;
+}
+
+.waitlist-mobile-social .waitlist-social-proof {
+  justify-content: center;
+  margin-top: 0;
+}
+
+.waitlist-theme-segment {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-overlay) 80%, transparent);
+}
+
+.waitlist-theme-segment-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border: none;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--color-text-2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.waitlist-theme-segment-btn.active {
+  background: var(--color-surface);
+  color: var(--color-text-1);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--color-text-1) 8%, transparent);
+}
+
+.waitlist-form-hero-head {
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.waitlist-form-badge {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--color-success) 14%, var(--color-overlay));
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent);
+  color: var(--color-success);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.waitlist-form-heading {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-text-1);
+}
+
+.waitlist-form-lead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-2);
+}
+
+.waitlist-form-hero .waitlist-submit-btn {
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 30%, transparent) inset,
+    0 10px 24px color-mix(in srgb, var(--color-accent) 28%, transparent),
+    0 4px 20px -2px color-mix(in srgb, var(--color-accent) 22%, transparent),
+    0 8px 32px -8px color-mix(in srgb, var(--color-success) 35%, transparent);
+}
+
 .hero-headline .hero-headline-lead {
   display: block;
 }
@@ -422,13 +659,133 @@ html {
 
 .waitlist-hero-row {
   display: grid;
-  grid-template-columns: minmax(0, 0.4fr) minmax(0, 0.6fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  gap: clamp(24px, 4vw, 48px);
   align-items: start;
+  position: relative;
+  z-index: 1;
+}
+
+.waitlist-hero-split {
+  align-items: center;
+}
+
+.waitlist-hero-copy {
+  padding: clamp(28px, 4vw, 40px);
+  border-radius: var(--r-xl);
+  background: color-mix(in srgb, var(--color-surface) 72%, #ede4d3);
+  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, white 50%, transparent) inset;
+}
+
+.hero-brand-row {
+  margin-bottom: 4px;
+}
+
+.hero-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 160ms var(--ease), transform 160ms var(--ease);
+}
+
+.hero-brand-lockup:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.hero-brand-lockup:focus-visible {
+  outline: none;
+  border-radius: 8px;
+  box-shadow: var(--shadow-focus);
+}
+
+.mobile-hero-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.mobile-hero-topbar .hero-brand-lockup {
+  flex-shrink: 0;
+}
+
+.waitlist-hero-floatbar {
+  position: absolute;
+  top: clamp(12px, 2vw, 20px);
+  right: clamp(16px, 3vw, 24px);
+  z-index: 3;
+}
+
+.hero-preview-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.hero-preview-pill {
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-overlay) 80%, transparent);
+  color: var(--color-text-2);
+}
+
+.hero-preview-pill.active {
+  background: var(--color-text-1);
+  color: var(--color-text-inverse);
+  border-color: transparent;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-text-1) 18%, transparent);
+}
+
+.waitlist-hero-side {
+  display: grid;
+  gap: 16px;
+}
+
+.waitlist-hero-orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.35;
+}
+
+.waitlist-hero-orbit::before,
+.waitlist-hero-orbit::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--color-text-1) 8%, transparent);
+}
+
+.waitlist-hero-orbit::before {
+  width: min(720px, 90vw);
+  height: min(720px, 90vw);
+  top: 50%;
+  left: 28%;
+  transform: translate(-50%, -50%);
+}
+
+.waitlist-hero-orbit::after {
+  width: min(480px, 70vw);
+  height: min(480px, 70vw);
+  top: 42%;
+  left: 32%;
+  transform: translate(-50%, -50%);
+  opacity: 0.7;
 }
 
 .waitlist-hero-form-wrap {
-  scroll-margin-top: 88px;
+  scroll-margin-top: 20px;
 }
 
 .dashboard-preview {
@@ -1481,7 +1838,7 @@ html {
 .waitlist-hero {
   max-width: 1160px;
   margin: 0 auto;
-  padding: clamp(56px, 9vw, 108px) 24px 54px;
+  padding: clamp(28px, 4vw, 48px) 24px 54px;
   position: relative;
   z-index: 1;
 }
@@ -1568,15 +1925,15 @@ html {
 
 .waitlist-hero-form {
   position: relative;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border-lit);
+  background: color-mix(in srgb, var(--color-surface) 94%, white);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
   border-radius: var(--r-xl);
   box-shadow:
-    var(--glass-shadow),
-    0 0 60px -20px color-mix(in srgb, var(--color-accent) 12%, transparent),
-    inset 0 1px 0 0 color-mix(in srgb, white 6%, transparent);
-  backdrop-filter: blur(24px) saturate(1.4);
-  padding: 22px;
+    0 4px 6px color-mix(in srgb, var(--color-text-1) 4%, transparent),
+    0 24px 48px -12px color-mix(in srgb, var(--color-text-1) 14%, transparent),
+    0 0 0 1px color-mix(in srgb, white 40%, transparent) inset;
+  backdrop-filter: blur(20px) saturate(1.2);
+  padding: clamp(20px, 3vw, 28px);
   isolation: isolate;
 }
 
@@ -3112,8 +3469,15 @@ html {
     padding: 8px 10px;
   }
 
-  .waitlist-btn-theme span {
-    display: none;
+  .waitlist-theme-segment-btn {
+    padding: 7px 9px;
+    font-size: 0;
+    gap: 0;
+  }
+
+  .waitlist-theme-segment-btn svg {
+    width: 15px;
+    height: 15px;
   }
 
   .waitlist-pricing-grid {

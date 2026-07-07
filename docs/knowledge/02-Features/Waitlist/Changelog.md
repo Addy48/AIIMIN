@@ -1,5 +1,27 @@
 # Waitlist Changelog
 
+## 2026-07-06 (backend audit — migrations + approve fix)
+
+- Applied on Supabase: `034_waitlist_referrals.sql` (referral_code, referred_by, referral_count) and `033_tester_allowlist_role_guard.sql`.
+- Fixed: `POST /api/waitlist/approve` — INSERT used non-existent `approved_at`/`approved_by` columns; now uses live schema (`email`, `role`, `tier`, `invited_by`).
+- Status: DB ready for referral signups; EC2 deploy + SES env still required for production email; sign-in placeholder blocks tester login until Cognito/Supabase OAuth restored.
+- Files: `server/routes/waitlist.js`, Supabase migrations via MCP.
+
+## 2026-07-06 (navless hero, left-column brand lockup)
+
+- Removed: sticky top navbar on waitlist landing.
+- Added: **AIIMIN** brand lockup (mark + wordmark) top of left hero column → links to `/brand`; theme toggle floats top-right of hero.
+- Changed: left column parchment panel (NORD-style split); preview pills + glass stat cards on dashboard mock.
+- Files: `WaitlistLanding.jsx`, `waitlistLanding.css`
+
+## 2026-07-06 (reference-inspired hero polish)
+
+- Changed: Garnerly/QriosX-style split hero — copy + checkmark features left, elevated form card + preview right.
+- Added: exclusive early access badge, Bodoni serif accent on "money", avatar stack social proof, muted trust tool pills.
+- Added: form card header ("Get early access", launching badge), segmented Light/Dark nav toggle, static orbital background rings.
+- Files: `WaitlistLanding.jsx`, `WaitlistForm.jsx`, `WaitlistSocialProof.jsx`, `waitlistLanding.css`
+- Status: pending build verify.
+
 ## 2026-07-06 (split waitlist vs system brand, theme sync)
 
 - Changed: `/brand` routes to **WaitlistBrand** (forest-green, nordic/vercel) for waitlist visitors; **SystemBrand** (`legal/Brand.jsx`) for authenticated app users or non-waitlist builds.
