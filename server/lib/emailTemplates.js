@@ -100,7 +100,7 @@ ${preheaderBlock}
                 </td>
                 <td style="vertical-align:middle;text-align:left;">
                   <span style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:700;letter-spacing:-0.04em;color:${BRAND.text1};">AIIMIN</span>
-                  <div style="font-family:${FONT_BODY};font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.text3};margin-top:2px;">Personal Operating System</div>
+                  <div style="font-family:${FONT_BODY};font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.text3};margin-top:2px;">Personal OS</div>
                 </td>
               </tr>
             </table>
