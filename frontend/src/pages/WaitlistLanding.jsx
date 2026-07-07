@@ -21,10 +21,12 @@ import {
   Activity,
   UserPlus,
   Waves,
+  Check,
 } from 'lucide-react';
 import useWaitlistSurfaceTheme from '../hooks/useWaitlistSurfaceTheme';
 import { API_URL } from '../utils/api';
 import WaitlistForm from '../components/waitlist/WaitlistForm';
+import WaitlistSocialProof from '../components/waitlist/WaitlistSocialProof';
 import Wordmark from '../components/brand/Wordmark';
 import { ArchBracketMark, EDITOR_PICK } from '../components/brand/archBracketMark';
 import '../styles/waitlistLanding.css';
@@ -38,6 +40,14 @@ const fadeUp = {
     transition: { delay: index * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] },
   }),
 };
+
+const HERO_FEATURES = [
+  'One dashboard for habits, money, focus, and mood — no app hopping.',
+  'Founding perks: complimentary Core + Pro at ₹49/mo for 12 months.',
+  'Reserve your unique 8-character OS-ID before launch.',
+];
+
+const TRUST_TOOLS = ['Notion', 'Todoist', 'Headspace', 'Excel trackers'];
 
 const PERSONAS = [
   {
@@ -399,9 +409,52 @@ function PriceComparisonSection() {
   );
 }
 
+function ThemeToggle({ isLight, onToggle }) {
+  return (
+    <div className="waitlist-theme-segment" role="group" aria-label="Theme">
+      <button
+        type="button"
+        className={`waitlist-theme-segment-btn ${isLight ? 'active' : ''}`}
+        onClick={() => { if (!isLight) onToggle(); }}
+        aria-pressed={isLight}
+        aria-label="Light mode"
+      >
+        <Sun size={14} />
+        Light
+      </button>
+      <button
+        type="button"
+        className={`waitlist-theme-segment-btn ${!isLight ? 'active' : ''}`}
+        onClick={() => { if (isLight) onToggle(); }}
+        aria-pressed={!isLight}
+        aria-label="Dark mode"
+      >
+        <Moon size={14} />
+        Dark
+      </button>
+    </div>
+  );
+}
+
+function HeroBrandLockup({ markSize = 32, wordmarkSize = 28 }) {
+  return (
+    <Link to="/brand" className="hero-brand-lockup" aria-label="Explore AIIMIN brand guidelines">
+      <ArchBracketMark size={markSize} withChip colors={EDITOR_PICK} className="hero-brand-mark" />
+      <Wordmark size={wordmarkSize} color="var(--color-text-1)" />
+    </Link>
+  );
+}
+
+const PREVIEW_PILLS = ['Daily tracking', 'Pattern view', 'Life score'];
+
 function HeroPreviewMock() {
   return (
     <div className="waitlist-hero-preview waitlist-desktop-only">
+      <div className="hero-preview-pills" aria-hidden="true">
+        {PREVIEW_PILLS.map((label, index) => (
+          <span key={label} className={`hero-preview-pill ${index === 0 ? 'active' : ''}`}>{label}</span>
+        ))}
+      </div>
       <div className="hero-mock-dashboard" aria-label="Dashboard preview mockup">
         <div className="hero-mock-chrome">
           <span className="hero-mock-dot" />
@@ -584,31 +637,11 @@ function WaitlistLandingContent() {
         <script type="application/ld+json">{JSON.stringify(launchStructuredData)}</script>
       </Helmet>
 
-      <header className="waitlist-nav" aria-label="Site navigation">
-        <div className="waitlist-nav-inner">
-          <Link to="/brand" className="waitlist-nav-brand" aria-label="Explore AIIMIN brand">
-            <ArchBracketMark size={28} withChip colors={EDITOR_PICK} className="waitlist-nav-mark" />
-            <Wordmark size={24} color="var(--color-text-1)" />
-          </Link>
-          <div className="waitlist-nav-actions">
-            <button
-              type="button"
-              className="waitlist-btn waitlist-btn-ghost waitlist-btn-theme"
-              onClick={toggleWaitlistTheme}
-              aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
-            >
-              {isLight ? <Moon size={15} /> : <Sun size={15} />}
-              <span>{isLight ? 'Dark' : 'Light'}</span>
-            </button>
-            <a href="#waitlist-join" className="waitlist-btn waitlist-btn-outline">
-              <Sparkles size={15} />
-              Reserve my spot
-            </a>
-          </div>
-        </div>
-      </header>
-
       <section className="waitlist-mobile-only mobile-hero-context">
+        <div className="mobile-hero-topbar">
+          <HeroBrandLockup markSize={28} wordmarkSize={22} />
+          <ThemeToggle isLight={isLight} onToggle={toggleWaitlistTheme} />
+        </div>
         <div className="waitlist-desktop-notice" role="note">
           <Laptop size={18} className="waitlist-desktop-notice-icon" aria-hidden="true" />
           <div>
@@ -618,14 +651,15 @@ function WaitlistLandingContent() {
             </p>
           </div>
         </div>
+        <span className="hero-exclusive-badge">✦ Exclusive early access</span>
         <h1>
-          <span className="hero-headline-lead">Your habits, <strong>money</strong>, focus, and mood.</span>
+          <span className="hero-headline-lead">Your habits, <strong className="hero-serif">money</strong>, focus, and mood.</span>
           <br />
           <span className="line-two"><strong>One screen.</strong> Every day.</span>
         </h1>
         <p>
-          AIIMIN is a personal dashboard for Indian students and early professionals.
-          Desktop-first — join the waitlist on your phone, use it on your laptop.
+          AIIMIN is your personal Life OS for Indian students and early professionals.
+          Desktop-first — join now, use the full dashboard on your laptop at launch.
         </p>
         <div className="mobile-preview-wrap">
           <MobilePreviewMock />
@@ -633,63 +667,79 @@ function WaitlistLandingContent() {
       </section>
 
       <header className="waitlist-hero">
+        <div className="waitlist-hero-orbit" aria-hidden="true" />
         <div className="waitlist-hero-glow" aria-hidden="true" />
-        <motion.div className="waitlist-hero-top" initial="hidden" animate="visible" variants={fadeUp}>
-          <motion.div custom={0} variants={fadeUp}>
-            <Wordmark size={34} color="var(--color-text-1)" className="waitlist-desktop-only" />
-          </motion.div>
-          <motion.p className="waitlist-kicker waitlist-desktop-only" custom={1} variants={fadeUp}>
-            Built for Indian students and early professionals
-          </motion.p>
-          <motion.h1 className="hero-headline waitlist-desktop-only" custom={2} variants={fadeUp}>
-            <span className="hero-headline-lead">Your habits, <strong>money</strong>, focus, and mood.</span>
-            <span className="line-two"><strong>One screen.</strong> Every day.</span>
-          </motion.h1>
-          <motion.p className="hero-subhead waitlist-desktop-only" custom={3} variants={fadeUp}>
-            AIIMIN is a data-dense personal dashboard built for Indian students and early professionals.
-            Track everything, see patterns, level up. Desktop-first. Launching September 2026.
-          </motion.p>
-          <motion.div className="benefit-strip waitlist-desktop-only" custom={4} variants={fadeUp}>
-            <div className="benefit-item"><span className="benefit-icon">📊</span><span className="benefit-text">Track everything</span></div>
-            <div className="benefit-item"><span className="benefit-icon">🔍</span><span className="benefit-text">See patterns</span></div>
-            <div className="benefit-item"><span className="benefit-icon">📈</span><span className="benefit-text">Level up</span></div>
-          </motion.div>
-          <motion.div className="hero-badges waitlist-desktop-only" custom={5} variants={fadeUp}>
-            <span className="hero-badge">🖥 Desktop-first</span>
-            <span className="hero-badge">📅 Sept 2026 launch</span>
-            <span className="hero-badge">⏰ Register by 31 July</span>
-          </motion.div>
-          <motion.div className="founder-signal waitlist-desktop-only" custom={6} variants={fadeUp}>
-            <span>
-              Built by <strong>Aaditya Upadhyay</strong> · B.Tech CSE, Manipal · Personal project · launching Sept 2026
-            </span>
-          </motion.div>
-        </motion.div>
-
-        <div className="waitlist-hero-row">
+        <div className="waitlist-hero-floatbar waitlist-desktop-only">
+          <ThemeToggle isLight={isLight} onToggle={toggleWaitlistTheme} />
+        </div>
+        <div className="waitlist-hero-row waitlist-hero-split">
           <motion.div
-            className="waitlist-hero-form-wrap"
-            id="waitlist-join"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18, duration: 0.55 }}
+            className="waitlist-hero-copy waitlist-desktop-only"
+            initial="hidden"
+            animate="visible"
+            variants={fadeUp}
           >
-            <div className="waitlist-hero-form">
-              <p className="waitlist-mobile-form-title waitlist-mobile-only">Join the waitlist — founding member perks at launch</p>
-              <WaitlistForm onSuccess={fetchCount} showUrgency />
-              {count != null && count >= 100 && (
-                <p className="social-proof-line">
-                  Join {count.toLocaleString('en-IN')}+ founding members on the waitlist
-                </p>
-              )}
-            </div>
-            <div className="founder-signal waitlist-mobile-only">
+            <motion.div className="hero-brand-row" custom={0} variants={fadeUp}>
+              <HeroBrandLockup />
+            </motion.div>
+            <motion.span className="hero-exclusive-badge" custom={1} variants={fadeUp}>
+              ✦ Exclusive early access
+            </motion.span>
+            <motion.h1 className="hero-headline" custom={2} variants={fadeUp}>
+              <span className="hero-headline-lead">
+                Your habits, <strong className="hero-serif">money</strong>, focus, and mood.
+              </span>
+              <span className="line-two"><strong>One screen.</strong> Every day.</span>
+            </motion.h1>
+            <motion.p className="hero-subhead" custom={3} variants={fadeUp}>
+              AIIMIN is a data-dense personal Life OS — track behaviour, see patterns, and compound momentum without five separate apps.
+            </motion.p>
+            <motion.ul className="hero-feature-list" custom={4} variants={fadeUp}>
+              {HERO_FEATURES.map((feature) => (
+                <li key={feature}>
+                  <span className="hero-feature-check" aria-hidden="true"><Check size={14} strokeWidth={2.5} /></span>
+                  {feature}
+                </li>
+              ))}
+            </motion.ul>
+            <motion.div custom={5} variants={fadeUp}>
+              <WaitlistSocialProof count={count} />
+            </motion.div>
+            <motion.div className="hero-trust-strip" custom={6} variants={fadeUp} aria-label="Replaces common tool stacks">
+              <span className="hero-trust-label">Replaces stacks like</span>
+              {TRUST_TOOLS.map((tool) => (
+                <span key={tool} className="hero-trust-pill">{tool}</span>
+              ))}
+            </motion.div>
+            <motion.div className="founder-signal" custom={7} variants={fadeUp}>
               <span>
                 Built by <strong>Aaditya Upadhyay</strong> · B.Tech CSE, Manipal · Personal project · launching Sept 2026
               </span>
-            </div>
+            </motion.div>
           </motion.div>
-          <HeroPreviewMock />
+
+          <motion.div
+            className="waitlist-hero-side"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12, duration: 0.55 }}
+          >
+            <div className="waitlist-hero-form-wrap" id="waitlist-join">
+              <div className="waitlist-hero-form">
+                <p className="waitlist-mobile-form-title waitlist-mobile-only">Join the waitlist — founding member perks at launch</p>
+                <WaitlistForm variant="hero" onSuccess={fetchCount} showUrgency />
+              </div>
+              <div className="waitlist-mobile-only waitlist-mobile-social">
+                <WaitlistSocialProof count={count} />
+              </div>
+              <div className="founder-signal waitlist-mobile-only">
+                <span>
+                  Built by <strong>Aaditya Upadhyay</strong> · B.Tech CSE, Manipal · Personal project · launching Sept 2026
+                </span>
+              </div>
+            </div>
+            <HeroPreviewMock />
+          </motion.div>
         </div>
       </header>
 
