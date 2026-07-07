@@ -1,5 +1,13 @@
 # Waitlist Changelog
 
+## 2026-07-08 (Dual light/dark email — prefers-color-scheme)
+
+- Waitlist confirmation adapts to device theme: **light c6** (default) + **dark Route Y** via `prefers-color-scheme`.
+- Dark palette: `#0A0A0C` panel, ivory text, `#4C9770` accent — matches user mockup.
+- Logo: real `AIIMIN_logo.svg` in header (left-aligned, both themes).
+- Shared styles: `server/lib/waitlistEmailStyles.js`; Resend template re-synced.
+- Status: deployed — test in Apple Mail / Gmail dark mode.
+
 ## 2026-07-07 (Resend template published — cap 300, prototypes removed)
 
 - Deleted preview/prototype artifacts: `scripts/preview-waitlist-emails.mjs`, `deploy/email-preview/`.
