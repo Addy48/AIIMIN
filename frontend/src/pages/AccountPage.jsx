@@ -47,7 +47,7 @@ const ChangePassword = () => {
                 Password Management
             </div>
             <div style={{ fontSize: '13px', color: 'var(--text-2)' }}>
-                Security and account settings will move to AWS Cognito. Password and linked-account changes are paused during the auth migration.
+                Password and linked-account changes use Supabase Auth. Google sign-in users can set a PIN during onboarding.
             </div>
         </div>
     );

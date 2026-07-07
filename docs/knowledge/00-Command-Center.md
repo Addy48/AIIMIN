@@ -22,7 +22,7 @@ AIIMIN is a personal operating system for disciplined execution, reflection, and
 ## Build Status (Launch Lens)
 
 - Code progress: high for core product features
-- Launch blockers: Clerk production domains, final env setup, launch checklist verification
+- Launch blockers: final env setup (GA4/Sentry), launch checklist verification, tester onboarding E2E
 - C-items in progress: C1-C7 tracked in feature notes below
 
 ## Feature Map
@@ -76,7 +76,7 @@ Source: `AIIMIN_PROGRESS_SUMMARY.md`
 
 ## Environment Matrix (Critical)
 
-- Auth: `REACT_APP_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`
+- Auth (Supabase): `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - Data: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 - Billing: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_CORE`, `STRIPE_PRICE_PRO`, `STRIPE_WEBHOOK_SECRET`
 - Email: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO` (Resend — SES removed)
