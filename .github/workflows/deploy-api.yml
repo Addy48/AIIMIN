@@ -11,10 +11,12 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
@@ -22,13 +24,34 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 15m
           script_stop: true
           script: |
             set -euo pipefail
-            cd ~/AIIMIN
+            APP_DIR="$HOME/AIIMIN"
+            REPO_URL="https://github.com/Addy48/AIIMIN.git"
+            ENV_BACKUP="$HOME/aiimin-env-backup"
+            export NODE_OPTIONS="--dns-result-order=ipv4first --max-old-space-size=384"
+
+            echo "==> AIIMIN deploy start"
+            [[ -f "$APP_DIR/.env" ]] && cp "$APP_DIR/.env" "$ENV_BACKUP"
+
+            if [[ ! -d "$APP_DIR/.git" ]]; then
+              echo "==> No git repo — cloning"
+              [[ -d "$APP_DIR" ]] && mv "$APP_DIR" "${APP_DIR}-rsync-backup-$(date +%s)"
+              git clone --depth 1 --branch main "$REPO_URL" "$APP_DIR"
+            fi
+
+            [[ -f "$ENV_BACKUP" ]] && cp "$ENV_BACKUP" "$APP_DIR/.env"
+            cd "$APP_DIR"
             git fetch origin main
             git reset --hard origin/main
-            npm ci --omit=dev
+            echo "==> at $(git rev-parse --short HEAD)"
+
+            npm install --omit=dev --ignore-scripts --no-audit --no-fund
             pm2 reload deploy/ecosystem.config.cjs --update-env || pm2 start deploy/ecosystem.config.cjs
             pm2 save
-            curl -fsS https://api.aiimin.in/api/health || curl -fsS http://localhost:3001/api/health
+            curl -fsS http://localhost:3001/api/health
+            echo "==> deploy OK"
