@@ -303,3 +303,59 @@
   --ambient-1: radial-gradient(circle at 0% 0%, rgba(0, 240, 255, 0.15), transparent 40%);
   --ambient-2: radial-gradient(circle at 100% 100%, rgba(0, 255, 136, 0.1), transparent 40%);
 }
+
+/* ────────────────────────────────────────────────────────
+   THEME: AIIMIN DARK (canonical — orange action, green completion)
+───────────────────────────────────────────────────────── */
+[data-theme="aiimin-dark"] {
+  color-scheme: dark;
+  --color-base:    #14171A;
+  --color-surface: #1E2228;
+  --color-elevated: #262B33;
+  --color-overlay: #2E343D;
+  --color-border:     #333942;
+  --color-border-lit: #434A54;
+  --color-text-1:      #F0EDE8;
+  --color-text-2:      #9CA3AF;
+  --color-text-3:      #6B7280;
+  --color-accent:       #FF6B35;
+  --color-accent-dark:  #E85A24;
+  --color-accent-dim:   rgba(255, 107, 53, 0.12);
+  --color-accent-glow:  rgba(255, 107, 53, 0.18);
+  --color-success:  #10B981;
+  --color-warning:  #FACC15;
+  --color-danger:   #EF4444;
+  --color-info:     #3B82F6;
+  --shadow-focus: 0 0 0 2px rgba(255, 107, 53, 0.32);
+  --glass-bg:         rgba(20, 23, 26, 0.88);
+  --glass-border:     rgba(255, 255, 255, 0.06);
+  --glass-border-lit: rgba(255, 255, 255, 0.10);
+}
+
+/* ────────────────────────────────────────────────────────
+   THEME: AIIMIN LIGHT (canonical — editorial calm)
+───────────────────────────────────────────────────────── */
+[data-theme="aiimin-light"] {
+  color-scheme: light;
+  --color-base:    #F5F3EF;
+  --color-surface: #FFFFFF;
+  --color-elevated: #FAFAF8;
+  --color-overlay: #F0EDE8;
+  --color-border:     #E2E0DB;
+  --color-border-lit: #D1CEC8;
+  --color-text-1:      #14171A;
+  --color-text-2:      #4B5563;
+  --color-text-3:      #6B7280;
+  --color-accent:       #E85A24;
+  --color-accent-dark:  #C44E1A;
+  --color-accent-dim:   rgba(232, 90, 36, 0.10);
+  --color-accent-glow:  rgba(232, 90, 36, 0.14);
+  --color-success:  #1E5C3A;
+  --color-warning:  #D97706;
+  --color-danger:   #DC2626;
+  --color-info:     #1D4ED8;
+  --shadow-focus: 0 0 0 2px rgba(232, 90, 36, 0.22);
+  --glass-bg:         rgba(255, 255, 255, 0.92);
+  --glass-border:     rgba(20, 23, 26, 0.08);
+  --glass-border-lit: rgba(20, 23, 26, 0.12);
+}

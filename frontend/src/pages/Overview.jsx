@@ -7,6 +7,10 @@ import { Plus, X, ChevronRight, ChevronLeft, Keyboard, Mic, AlertTriangle } from
 import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
 import PulseCheckModal from '../components/overview/PulseCheckModal';
+import MondayInsight from '../components/overview/MondayInsight';
+import WeekInNumbers from '../components/overview/WeekInNumbers';
+import { useOverviewWidgets } from '../components/overview/OverviewWidgetGrid';
+import { StaggerWrap } from '../components/design/ShippedMotion';
 import { useCalendarEvents } from '../hooks/useCalendarEvents';
 import UniversalLogger from '../components/dashboard/UniversalLogger';
 
@@ -318,6 +322,7 @@ const Overview = () => {
   const { user: authUser, session } = useAuth();
   const user = useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
   const navigate = useNavigate();
+  const { isVisible, allHidden, Picker } = useOverviewWidgets();
 
   const [weekOffset, setWeekOffset] = useState(0);
 
@@ -435,11 +440,23 @@ const Overview = () => {
 
       <PulseCheckModal user={user} />
 
+      <Picker />
+
+      {allHidden && (
+        <div style={{
+          padding: '20px 24px', borderRadius: 16, marginBottom: 24,
+          background: 'var(--color-accent-dim)', border: '1px solid var(--color-border)',
+          color: 'var(--color-text-2)', fontSize: 14, lineHeight: 1.6,
+        }}>
+          All overview widgets are hidden. Use <strong style={{ color: 'var(--color-text-1)' }}>Customize widgets</strong> above to turn sections back on.
+        </div>
+      )}
+
       {/* Main Grid */}
       <div style={{ display:'grid', gridTemplateColumns:'minmax(0, 1fr) 340px', gap:'32px', alignItems: 'stretch' }} className="overview-grid">
 
         {/* LEFT column */}
-        <div style={{ display:'flex', flexDirection:'column', gap:'32px', minHeight: 0 }}>
+        <StaggerWrap style={{ display:'flex', flexDirection:'column', gap:'32px', minHeight: 0 }}>
           
           {/* Urgent Reminders Banner */}
           {urgentReminders.length > 0 && (
@@ -456,7 +473,11 @@ const Overview = () => {
             </div>
           )}
 
-          {/* QUICK CAPTURE */}
+          {isVisible('monday_insight') && <MondayInsight user={user} />}
+
+          {isVisible('week_numbers') && <WeekInNumbers user={user} />}
+
+          {isVisible('quick_capture') && (
           <div>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
               <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)' }}>Quick Capture</div>
@@ -476,8 +497,9 @@ const Overview = () => {
               ))}
             </div>
           </div>
+          )}
 
-          {/* Countdown Hero */}
+          {isVisible('countdown') && (
           <div style={{
             background:'linear-gradient(135deg, rgba(30,92,58,0.95) 0%, rgba(13,59,38,1) 100%)',
             backdropFilter: 'blur(10px)',
@@ -509,8 +531,9 @@ const Overview = () => {
               </Link>
             </div>
           </div>
+          )}
 
-          {/* RECENT WINS */}
+          {isVisible('wins') && (
           <div>
             <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'16px' }}>Recent Wins</div>
             <div style={{ display:'flex', flexWrap:'wrap', gap:'12px' }}>
@@ -527,10 +550,11 @@ const Overview = () => {
               ))}
             </div>
           </div>
+          )}
 
-          <TodayMicroTask />
+          {isVisible('micro_task') && <TodayMicroTask />}
 
-          {/* Weekly Planner */}
+          {isVisible('timeline') && (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
@@ -565,20 +589,22 @@ const Overview = () => {
               </div>
             </div>
           </div>
+          )}
 
-        </div>
+        </StaggerWrap>
 
         {/* RIGHT sidebar */}
         <div style={{ display:'flex', flexDirection:'column', gap:'32px', minHeight: 0 }}>
 
-          {/* Universal Logger */}
+          {isVisible('logger') && (
           <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '20px' }}>
             <UniversalLogger onSuccess={() => {}} />
           </div>
+          )}
 
-          <CommandCenter user={user} />
+          {isVisible('command_center') && <CommandCenter user={user} />}
 
-          <TrajectoryProgress />
+          {isVisible('trajectory') && <TrajectoryProgress />}
 
         </div>
       </div>
