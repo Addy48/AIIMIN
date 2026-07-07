@@ -1731,6 +1731,72 @@ html {
   color: var(--color-text-2);
 }
 
+.confirmation-osid-skipped {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--color-text-2);
+}
+
+.waitlist-field-osid {
+  margin-top: 4px;
+}
+
+.waitlist-label-optional {
+  font-weight: 500;
+  color: var(--color-accent);
+  letter-spacing: 0.02em;
+}
+
+.waitlist-osid-row {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--color-surface);
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+.waitlist-osid-row:focus-within {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent);
+}
+
+.waitlist-osid-prefix {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  border-right: 1px solid var(--color-border);
+}
+
+.waitlist-input-osid {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+.waitlist-osid-preview {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--color-text-2);
+}
+
+.waitlist-osid-preview strong {
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+}
+
+.waitlist-osid-preview-meta {
+  color: var(--color-text-3);
+}
+
 .confirmation-perks {
   margin: 18px 0 0;
   padding: 14px 16px;

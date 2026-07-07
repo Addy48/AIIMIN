@@ -143,15 +143,18 @@ async function notifyOwnerWaitlistSignup({
   }
 }
 
-async function sendOsIdLockedEmail({ email, firstName, reservedUsername }) {
+async function sendWaitlistConfirmation({ email, firstName, reservedUsername, referralCode }) {
   try {
-    await sendEmail(email, 'waitlist_osid_locked', {
+    await sendEmail(email, 'waitlist_confirmation', {
       email,
       name: firstName,
       reserved_username: reservedUsername,
+      referral_code: referralCode,
     });
+    return true;
   } catch (err) {
-    console.warn('[Waitlist] OS-ID locked email failed:', err.message);
+    console.error('[Waitlist] confirmation email failed:', { email, error: err.message });
+    return false;
   }
 }
 
@@ -361,31 +364,26 @@ app.post('/', waitlistLimiter, async (c) => {
         ).catch(() => ({ rows: [] }));
         const resolvedUsername = attachedUsername || rows[0]?.reserved_username || null;
         const resolvedName = firstName || rows[0]?.first_name || rows[0]?.name || null;
+        const resolvedReferralCode = rows[0]?.referral_code || null;
 
+        let confirmationEmailSent = false;
         if (osIdJustAttached && resolvedUsername) {
-          await sendOsIdLockedEmail({
+          confirmationEmailSent = await sendWaitlistConfirmation({
             email,
             firstName: resolvedName,
             reservedUsername: resolvedUsername,
+            referralCode: resolvedReferralCode,
           });
-          notifyOwnerWaitlistSignup({
-            email,
-            firstName: resolvedName,
-            reservedUsername: resolvedUsername,
-            source,
-            event: 'osid_reserved',
-          }).catch(() => {});
         }
 
         return c.json({
           success: true,
-          already_registered: source !== 'post_signup_osid',
-          message: source === 'post_signup_osid' && osIdJustAttached
-            ? 'OS-ID locked.'
-            : "You're already registered.",
-          referral_code: rows[0]?.referral_code || null,
+          already_registered: true,
+          message: osIdJustAttached ? 'OS-ID locked.' : "You're already registered.",
+          referral_code: resolvedReferralCode,
           referral_count: rows[0]?.referral_count ?? 0,
           reserved_username: resolvedUsername,
+          confirmation_email_sent: confirmationEmailSent,
         });
       }
       if (/referral_code|referred_by/i.test(err.message)) {
@@ -417,16 +415,12 @@ app.post('/', waitlistLimiter, async (c) => {
 
     console.log(`[Waitlist] New signup: ${email} (${firstName || 'no-name'}) ${reservedUsername ? `@${reservedUsername}` : '(no-osid)'}`);
 
-    try {
-      await sendEmail(email, 'waitlist_confirmation', {
-        email,
-        name: firstName,
-        reserved_username: reservedUsername,
-        referral_code: referralCode,
-      });
-    } catch (err) {
-      console.warn('[Waitlist] confirmation email failed:', err.message);
-    }
+    const confirmationEmailSent = await sendWaitlistConfirmation({
+      email,
+      firstName,
+      reservedUsername,
+      referralCode,
+    });
 
     notifyOwnerWaitlistSignup({
       email,
@@ -442,6 +436,7 @@ app.post('/', waitlistLimiter, async (c) => {
       reserved_username: reservedUsername,
       referral_code: referralCode,
       referral_count: referralCount,
+      confirmation_email_sent: confirmationEmailSent,
     });
   } catch (err) {
     console.error('[Waitlist] POST error:', err.message);

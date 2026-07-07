@@ -13,6 +13,14 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (Waitlist — inline OS-ID, single owner email)
+
+- Moved optional OS-ID to signup form (below email) with live @preview — no post-signup reserve step.
+- One owner notify per new signup (includes OS-ID when provided); removed second owner email on post-reserve.
+- API returns `confirmation_email_sent` so UI explains when SES fails to deliver (sandbox unverified addresses).
+- Files: `WaitlistForm.jsx`, `waitlistLanding.css`, `server/routes/waitlist.js`
+- Status: ready for deploy
+
 ## 2026-07-07 (Onboarding + API URL fix)
 
 - Fixed: `frontend/src/utils/api.js` `buildApiUrl` — absolute `REACT_APP_API_URL` (e.g. `https://api.aiimin.in/api`) no longer double-prefixes `window.location.origin`.
