@@ -55,6 +55,8 @@ Pricing (landing copy): Explore (free), Core ₹29/mo, Pro ₹59/mo (₹49 found
 
 ## Product patches (2026-07-08)
 
+- **Recovery branch** (`recovery/pre-waitlist-full`): Design Lab, Journal Studio, masthead nav, trajectory sun-arc, Finance fixes recovered on top of waitlist auth — see `docs/RECOVERY-2026-07-08.md`
+- **Local vs prod:** `REACT_APP_WAITLIST_MODE=false` in `.env.local` for full dashboard; production `true` via committed `frontend/.env.production`
 - **Finance → Wealth tab:** fixed crash from asset breakdown shape mismatch and API field mapping (`asset_name` / `current_value` vs camelCase UI)
 - **Overview Trajectory:** sunrise/sunset now computed client-side via `suncalc` from profile `users.timezone` (no GPS)
 - **Journal Studio:** editorial layout polish; all modes retained (write, voice, mood strip, CBT/WWW/morning/weekly)

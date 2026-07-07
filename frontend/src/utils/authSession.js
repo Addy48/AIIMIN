@@ -4,26 +4,6 @@
  */
 
 const TOKEN_KEY = 'aiimin_session_fallback';
-const DEBUG_ENDPOINT = 'http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c';
-const DEBUG_SESSION = '40de69';
-
-function debugLog(location, message, data = {}, hypothesisId = '') {
-  // #region agent log
-  fetch(DEBUG_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': DEBUG_SESSION },
-    body: JSON.stringify({
-      sessionId: DEBUG_SESSION,
-      location,
-      message,
-      data,
-      hypothesisId,
-      timestamp: Date.now(),
-      runId: 'pkce-debug',
-    }),
-  }).catch(() => {});
-  // #endregion
-}
 
 export function isOAuthCallbackRoute() {
   return typeof window !== 'undefined' && window.location.pathname === '/auth/callback';
@@ -74,7 +54,6 @@ export async function requireFreshAccessToken(supabase) {
     const { data, error } = await supabase.auth.refreshSession();
     if (!error && data.session?.access_token) {
       persistAccessToken(data.session.access_token);
-      debugLog('authSession.js:requireFresh', 'refreshed expired token', {}, 'H6');
       return data.session.access_token;
     }
     clearAccessToken();
@@ -122,7 +101,6 @@ export async function ensureSupabaseSession(supabase) {
   let { data: { session } } = await supabase.auth.getSession();
   if (session?.access_token) {
     persistAccessToken(session.access_token);
-    debugLog('authSession.js:ensure', 'getSession ok', {}, 'H5');
     return session;
   }
 
@@ -134,7 +112,6 @@ export async function ensureSupabaseSession(supabase) {
     });
     if (!error && data.session?.access_token) {
       persistAccessToken(data.session.access_token);
-      debugLog('authSession.js:ensure', 'hydrated from sb storage', {}, 'H5');
       return data.session;
     }
   }
@@ -142,23 +119,18 @@ export async function ensureSupabaseSession(supabase) {
   const { data: refreshed } = await supabase.auth.refreshSession();
   if (refreshed.session?.access_token) {
     persistAccessToken(refreshed.session.access_token);
-    debugLog('authSession.js:ensure', 'refreshSession ok', {}, 'H5');
     return refreshed.session;
   }
 
   const cached = readAccessToken();
   if (cached && !isAccessTokenExpired(cached)) {
-    // Last resort: JWT still within exp — Supabase client may not be hydrated yet
-    debugLog('authSession.js:ensure', 'non-expired fallback JWT only', { len: cached.length }, 'H5');
     return { access_token: cached };
   }
 
   if (cached) {
-    debugLog('authSession.js:ensure', 'expired fallback JWT discarded', {}, 'H6');
     clearAccessToken();
   }
 
-  debugLog('authSession.js:ensure', 'no session found', {}, 'H5');
   return null;
 }
 
@@ -175,7 +147,7 @@ function waitForAuthSession(supabase, timeoutMs) {
   return new Promise((resolve, reject) => {
     let settled = false;
 
-    const finish = (session, source) => {
+    const finish = (session) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
@@ -184,7 +156,6 @@ function waitForAuthSession(supabase, timeoutMs) {
       subscription?.unsubscribe();
       if (session?.access_token) persistAccessToken(session.access_token);
       clearOAuthUrl();
-      debugLog('authSession.js:finish', 'session resolved', { source, hasToken: Boolean(session?.access_token) }, 'H3');
       resolve(session);
     };
 
@@ -195,7 +166,6 @@ function waitForAuthSession(supabase, timeoutMs) {
       clearInterval(poll);
       clearTimeout(deferredCheck);
       const cached = readAccessToken();
-      debugLog('authSession.js:timeout', 'wait timed out', { hasCached: Boolean(cached) }, 'H1');
       if (cached) {
         resolve({ access_token: cached });
         return;
@@ -205,31 +175,20 @@ function waitForAuthSession(supabase, timeoutMs) {
 
     const poll = setInterval(() => {
       const cached = readAccessToken();
-      if (cached) {
-        debugLog('authSession.js:poll', 'token found via poll', {}, 'H3');
-        finish({ access_token: cached }, 'poll');
-      }
+      if (cached) finish({ access_token: cached });
     }, 200);
 
-    // detectSessionInUrl may finish before this listener mounts — deferred getSession is safe here
     const deferredCheck = setTimeout(async () => {
       if (settled) return;
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        debugLog('authSession.js:deferredGetSession', 'deferred getSession', {
-          hasSession: Boolean(session?.access_token),
-          err: error?.message || null,
-        }, 'H3');
-        if (session?.access_token) finish(session, 'deferred-getSession');
-      } catch (err) {
-        debugLog('authSession.js:deferredGetSession', 'deferred getSession threw', { err: err?.message }, 'H3');
-      }
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) finish(session);
+      } catch (_) { /* ignore */ }
     }, 800);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      debugLog('authSession.js:onAuthStateChange', 'auth event', { event, hasSession: Boolean(session?.access_token) }, 'H3');
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.access_token) {
-        finish(session, `event:${event}`);
+        finish(session);
       }
     });
   });
@@ -244,31 +203,19 @@ export async function resolveOAuthSession(supabase, { searchParams, timeoutMs = 
     || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('code') : null);
   const hashTokens = parseOAuthHash();
 
-  debugLog('authSession.js:resolveOAuthSession', 'entry', {
-    hasCode: Boolean(code),
-    hasHashTokens: Boolean(hashTokens?.access_token),
-    path: typeof window !== 'undefined' ? window.location.pathname + window.location.search.slice(0, 20) : '',
-  }, 'H1');
-
-  // Already persisted by AuthContext detectSessionInUrl handler
   const existing = readAccessToken();
   if (existing) {
-    debugLog('authSession.js:existing', 'cached token found immediately', {}, 'H3');
     clearOAuthUrl();
     const hydrated = await ensureSupabaseSession(supabase);
     return hydrated || { access_token: existing };
   }
 
-  // PKCE (?code=): detectSessionInUrl auto-exchanges on client init — only wait for session event
   if (code) {
-    debugLog('authSession.js:pkce', 'waiting for detectSessionInUrl (no manual exchange)', { codeLen: code.length }, 'H1');
     const waited = await waitForAuthSession(supabase, timeoutMs);
     return (await ensureSupabaseSession(supabase)) || waited;
   }
 
-  // Implicit hash flow (#access_token=)
   if (hashTokens?.access_token && hashTokens.refresh_token) {
-    debugLog('authSession.js:hash', 'setSession from hash', {}, 'H2');
     persistAccessToken(hashTokens.access_token);
     const { data, error } = await withTimeout(
       supabase.auth.setSession({
@@ -278,10 +225,7 @@ export async function resolveOAuthSession(supabase, { searchParams, timeoutMs = 
       timeoutMs,
       'setSession',
     );
-    if (error) {
-      debugLog('authSession.js:hashError', 'setSession failed', { err: error.message }, 'H2');
-      throw error;
-    }
+    if (error) throw error;
     clearOAuthUrl();
     return data.session;
   }
@@ -292,6 +236,5 @@ export async function resolveOAuthSession(supabase, { searchParams, timeoutMs = 
     return { access_token: hashTokens.access_token };
   }
 
-  debugLog('authSession.js:fallback', 'no code/hash — wait for event', {}, 'H3');
   return waitForAuthSession(supabase, timeoutMs);
 }
