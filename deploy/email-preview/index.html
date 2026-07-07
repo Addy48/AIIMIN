@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIIMIN Waitlist Email Variants</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: #0A0A0C; color: #EDE4D3; }
+    .hero { padding: 32px 24px; border-bottom: 1px solid #2a2a2e; }
+    .hero h1 { margin: 0 0 8px; font-size: 28px; }
+    .hero p { margin: 0; color: #9A9186; max-width: 640px; line-height: 1.6; }
+    .grid { display: grid; gap: 24px; padding: 24px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+    .card { background: #141416; border: 1px solid #2a2a2e; border-radius: 12px; overflow: hidden; }
+    .card header { padding: 16px 18px; border-bottom: 1px solid #2a2a2e; }
+    .id { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #1E5C3A; letter-spacing: 0.1em; }
+    .card h2 { margin: 6px 0 4px; font-size: 18px; color: #fff; }
+    .tag { margin: 0 0 10px; font-size: 13px; color: #9A9186; }
+    .subject { margin: 0; font-size: 12px; color: #c8c0b4; }
+    iframe { width: 100%; height: 520px; border: 0; background: #F0EDE8; }
+    footer { padding: 12px 18px; border-top: 1px solid #2a2a2e; }
+    footer a { color: #1E5C3A; text-decoration: none; font-size: 13px; }
+    code { background: #1e1e22; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>Waitlist email variants (8)</h1>
+    <p>Pick a winner, then set <code>WAITLIST_EMAIL_VARIANT=v8</code> on EC2 (default: <strong>v8 Hybrid Recommended</strong>). Send test: <code>node scripts/test-email.mjs you@gmail.com --variant v3</code></p>
+  </div>
+  <div class="grid">
+    <article class="card">
+      <header>
+        <span class="id">V1</span>
+        <h2>Noir System</h2>
+        <p class="tag">Critique rec: ink hero, mono OS-ID, green CTA only</p>
+        <p class="subject"><strong>Subject:</strong> Aaditya — Founding member #142 of 500</p>
+      </header>
+      <iframe src="./v1-noir-system.html" title="Noir System"></iframe>
+      <footer>
+        <a href="./v1-noir-system.html" target="_blank">Open full screen</a>
+      </footer>
+    </article>
+
+    <article class="card">
+      <header>
+        <span class="id">V2</span>
+        <h2>Linear Minimal</h2>
+        <p class="tag">White space, thin rules, one accent line</p>
+        <p class="subject"><strong>Subject:</strong> Founding access · Founding member #142 of 500</p>
+      </header>
+      <iframe src="./v2-linear-minimal.html" title="Linear Minimal"></iframe>
+      <footer>
+        <a href="./v2-linear-minimal.html" target="_blank">Open full screen</a>
+      </footer>
+    </article>
+
+    <article class="card">
+      <header>
+        <span class="id">V3</span>
+        <h2>Cron Timeline</h2>
+        <p class="tag">Process-forward, count in badge, timeline dominant</p>
+        <p class="subject"><strong>Subject:</strong> Founding member #142 of 500 — AIIMIN founding cohort</p>
+      </header>
+      <iframe src="./v3-cron-timeline.html" title="Cron Timeline"></iframe>
+      <footer>
+        <a href="./v3-cron-timeline.html" target="_blank">Open full screen</a>
+      </footer>
+    </article>
+
+    <article class="card">
+      <header>
+        <span class="id">V4</span>
+        <h2>Superhuman Exclusivity</h2>
+        <p class="tag">Concrete perk first, referral as hero CTA</p>
+        <p class="subject"><strong>Subject:</strong> You're #142 on the AIIMIN founding list</p>
+      </header>
+      <iframe src="./v4-superhuman-exclusivity.html" title="Superhuman Exclusivity"></iframe>
+      <footer>
+        <a href="./v4-superhuman-exclusivity.html" target="_blank">Open full screen</a>
+      </footer>
+    </article>
+
+    <article class="card">
+      <header>
+        <span class="id">V5</span>
+        <h2>Arc Contrast</h2>
+        <p class="tag">Display type hero, parchment + ink OS-ID only</p>
+        <p class="subject"><strong>Subject:</strong> Aaditya — welcome to the founding cohort</p>
+      </header>
+      <iframe src="./v5-arc-contrast.html" title="Arc Contrast"></iframe>
+      <footer>
+        <a href="./v5-arc-contrast.html" target="_blank">Open full screen</a>
+      </footer>
+    </article>
+
+    <article class="card">
+      <header>
+        <span class="id">V6</span>
+        <h2>On Deck Cohort</h2>
+        <p class="tag">Community cohort framing, numbered membership</p>
+        <p class="subject"><strong>Subject:</strong> Cohort member #142 — AIIMIN</p>
+      </header>
+      <iframe src="./v6-on-deck-cohort.html" title="On Deck Cohort"></iframe>
+      <footer>
+        <a href="./v6-on-deck-cohort.html" target="_blank">Open full screen</a>
+      </footer>
+    </article>
+
+    <article class="card">
+      <header>
+        <span class="id">V7</span>
+        <h2>Robinhood Number</h2>
+        <p class="tag">Giant member number as hero moment</p>
+        <p class="subject"><strong>Subject:</strong> You're #142 · AIIMIN founding list</p>
+      </header>
+      <iframe src="./v7-robinhood-number.html" title="Robinhood Number"></iframe>
+      <footer>
+        <a href="./v7-robinhood-number.html" target="_blank">Open full screen</a>
+      </footer>
+    </article>
+
+    <article class="card">
+      <header>
+        <span class="id">V8</span>
+        <h2>Hybrid Recommended</h2>
+        <p class="tag">Ink + ivory + mono OS-ID + count + concrete perk + green CTA only</p>
+        <p class="subject"><strong>Subject:</strong> #142 — Aaditya, your AIIMIN founding spot is locked</p>
+      </header>
+      <iframe src="./v8-hybrid-recommended.html" title="Hybrid Recommended"></iframe>
+      <footer>
+        <a href="./v8-hybrid-recommended.html" target="_blank">Open full screen</a>
+      </footer>
+    </article></div>
+</body>
+</html>

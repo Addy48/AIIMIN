@@ -1,7 +1,8 @@
 /**
  * HTML email templates — Nordic waitlist brand (parchment + forest ink).
- * Fonts: Familjen Grotesk (display) + Figtree (body) with safe fallbacks.
+ * Fonts: Familjen Grotesk (display) + Figtree (body) + JetBrains Mono (system IDs).
  */
+import { renderWaitlistConfirmation } from './waitlistEmailVariants.js';
 function escapeHtml(str) {
   return String(str || '')
     .replace(/&/g, '&amp;')
@@ -26,9 +27,10 @@ const BRAND = {
   siteUrl: 'https://www.aiimin.in',
 };
 
-const FONT_LINK = 'https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap';
+const FONT_LINK = 'https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap';
 const FONT_DISPLAY = "'Familjen Grotesk', Georgia, 'Times New Roman', serif";
 const FONT_BODY = "'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif";
+const FONT_MONO = "'JetBrains Mono', 'Courier New', Courier, monospace";
 
 function formatSignedUpAt(iso) {
   try {
@@ -293,76 +295,7 @@ export const EMAIL_TEMPLATES = {
     ),
   }),
 
-  waitlist_confirmation: (v) => {
-    const firstName = v.name ? escapeHtml(v.name.split(' ')[0]) : 'friend';
-    const referralCode = v.referral_code ? escapeHtml(v.referral_code) : null;
-    const referralUrl = referralCode ? `https://www.aiimin.in/?ref=${referralCode}` : null;
-    const osId = v.reserved_username ? escapeHtml(v.reserved_username) : null;
-
-    const osIdBlock = osId
-      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;background:${BRAND.accentSoft};border:2px solid #C5D9CC;border-radius:16px;">
-          <tr><td style="padding:20px 22px;text-align:center;">
-            <div style="font-family:${FONT_BODY};font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:${BRAND.text3};margin-bottom:10px;">Your identity on AIIMIN</div>
-            <div style="font-family:${FONT_DISPLAY};font-size:34px;font-weight:700;color:${BRAND.accent};letter-spacing:0.02em;line-height:1;">@${osId}</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-top:12px;">Locked to your email. Ships at launch — no one else can claim it.</div>
-          </td></tr>
-        </table>`
-      : '';
-
-    const referralBlock = referralUrl
-      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;background:${BRAND.elevated};border:1px solid ${BRAND.border};border-radius:14px;">
-          <tr><td style="padding:20px 22px;">
-            <div style="font-family:${FONT_BODY};font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:${BRAND.accent};margin-bottom:8px;">Move up the list</div>
-            <div style="font-family:${FONT_BODY};font-size:15px;font-weight:600;color:${BRAND.text1};margin-bottom:8px;">Know someone who'd actually use this?</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.6;color:${BRAND.text2};margin-bottom:14px;">Share your personal link. Every friend who joins through you strengthens your founding package — the way early Superhuman and Notion users did.</div>
-            <a href="${referralUrl}" style="display:block;padding:12px 16px;background:${BRAND.surface};border:1px dashed ${BRAND.accent};border-radius:10px;font-family:monospace;font-size:12px;font-weight:500;color:${BRAND.accent};text-decoration:none;word-break:break-all;text-align:center;">${referralUrl}</a>
-          </td></tr>
-        </table>`
-      : '';
-
-    const timelineBlock = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;padding:20px 22px;background:${BRAND.elevated};border-radius:14px;border:1px solid ${BRAND.border};">
-      <tr><td style="padding-bottom:16px;font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${BRAND.text1};">What happens next</td></tr>
-      ${timelineStep('1', 'You\'re on the inside', 'Founding perks are locked to this email. No action needed right now.', true)}
-      ${timelineStep('2', 'July 2026 — tester keys', 'Invited testers get early access before anyone else. Deadline: <strong>31 July</strong>.')}
-      ${timelineStep('3', 'September 2026 — launch', 'You hear from us first. Complimentary Core + founding pricing activate at go-live.')}
-    </table>`;
-
-    const perksBlock = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;">
-      <tr><td style="padding-bottom:12px;font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${BRAND.text1};">What you locked in</td></tr>
-      ${perkRow('Complimentary Core', 'Full Core tier at launch — <strong>founding waitlist only</strong>. Never offered again publicly.', true)}
-      ${perkRow('Founding Pro — ₹49/mo', '12 months at founding rate. Behavioural analytics that actually connect your data.')}
-      ${perkRow('Founding Elite — ₹79/mo', '12 months at founding rate. Every module, highest limits.')}
-      ${perkRow('Life Score + XP', 'Daily completion ring, ranks, streaks, and pattern insights from day one.')}
-    </table>`;
-
-    const bodyHtml = `
-      ${heroBand('Founding member', `${firstName}, you're in.`)}
-      <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.7;color:${BRAND.text2};margin:0 0 4px;">
-        You secured a spot before public launch — on the personal Life OS built for Indian students who are done juggling Notion tabs, Excel sheets, and guilt.
-      </p>
-      <p style="font-family:${FONT_BODY};font-size:13px;line-height:1.6;color:${BRAND.text3};margin:0 0 22px;font-style:italic;">
-        "One screen. One honest read on your day." — that's the whole point.
-      </p>
-      ${lifeScoreTeaser()}
-      ${osIdBlock}
-      ${perksBlock}
-      ${timelineBlock}
-      ${referralBlock}
-      ${founderNote()}`;
-
-    return {
-      subject: `${firstName} — you're in. (AIIMIN founding access)`,
-      html: waitlistLayout({
-        preheader: 'Your founding perks are locked. Complimentary Core at launch + early access before anyone else.',
-        eyebrow: 'Founding access confirmed',
-        title: 'Welcome to the inside.',
-        bodyHtml,
-        ctaHref: referralUrl || BRAND.siteUrl,
-        ctaLabel: referralUrl ? 'Share your founding link →' : 'Explore AIIMIN →',
-        footerNote: 'Tester invite? Register by <strong>31 July</strong> for complimentary Elite for one year.',
-      }),
-    };
-  },
+  waitlist_confirmation: (v) => renderWaitlistConfirmation(v),
 
   waitlist_osid_locked: (v) => {
     const name = v.name ? escapeHtml(v.name) : 'there';
