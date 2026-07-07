@@ -5,6 +5,7 @@ import { AlertTriangle } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { apiGet } from '../utils/api';
 import { resolveOAuthSession } from '../utils/authSession';
+import { useAuth } from '../hooks/useAuth';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
 
@@ -13,6 +14,7 @@ const SESSION_TIMEOUT_MS = 15_000;
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { checkSession } = useAuth();
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('Establishing secure connection…');
     const finishedRef = useRef(false);
@@ -99,10 +101,19 @@ const AuthCallback = () => {
                     searchParams,
                     timeoutMs: SESSION_TIMEOUT_MS - 1000,
                 });
+
+                // Hydrate AuthContext before routing — prevents waitlist gate race
+                let hydrated = session;
+                if (!session?.user?.email) {
+                    const { data: { session: full } } = await supabase.auth.getSession();
+                    hydrated = full || session;
+                }
+                await checkSession(hydrated);
+
                 // #region agent log
-                fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'AuthCallback.jsx:resolved',message:'session resolved',data:{hasToken:Boolean(session?.access_token)},hypothesisId:'H3',timestamp:Date.now(),runId:'pkce-debug'})}).catch(()=>{});
+                fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'AuthCallback.jsx:resolved',message:'session resolved',data:{hasToken:Boolean(hydrated?.access_token),hasEmail:Boolean(hydrated?.user?.email)},hypothesisId:'H1',timestamp:Date.now(),runId:'access-gate'})}).catch(()=>{});
                 // #endregion
-                await finishWithSession(session);
+                await finishWithSession(hydrated);
             } catch (err) {
                 // #region agent log
                 fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'AuthCallback.jsx:error',message:'callback failed',data:{err:err?.message},hypothesisId:'H1',timestamp:Date.now(),runId:'pkce-debug'})}).catch(()=>{});
