@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 
 // Eagerly loaded Auth & public pages
 import Login from './pages/Login';
+import AuthCallback from './pages/AuthCallback';
 import Onboarding from './pages/Onboarding';
 import WaitlistLanding from './pages/WaitlistLanding';
 import { WaitlistPendingScreen } from './components/waitlist/WaitlistQuickFeedback';
@@ -125,6 +126,7 @@ function AppContent({ user, session }) {
             ? <Login />
             : (session ? <Navigate to="/overview" replace /> : <Login />)
         } />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/onboarding" element={
           isWaitlistMode && !canAccessApp
             ? <Navigate to="/" replace />
