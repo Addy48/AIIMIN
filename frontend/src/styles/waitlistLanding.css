@@ -216,33 +216,33 @@ html {
 
 .hero-mock-dashboard {
   width: 100%;
-  background: color-mix(in srgb, var(--color-surface) 88%, #ede4d3);
-  border: 1px solid color-mix(in srgb, var(--color-success) 22%, var(--color-border));
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-base));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 20%, var(--color-border));
   border-radius: 18px;
   overflow: hidden;
   box-shadow:
-    0 1px 0 color-mix(in srgb, white 35%, transparent) inset,
-    0 24px 48px -16px color-mix(in srgb, var(--color-text-1) 16%, transparent);
+    0 1px 0 color-mix(in srgb, var(--color-accent) 10%, transparent) inset,
+    0 24px 48px -16px color-mix(in srgb, var(--color-text-1) 20%, transparent);
   backdrop-filter: blur(12px);
 }
 
 .hero-mock-stat-card {
   padding: 10px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-success) 18%, var(--color-border));
+  background: color-mix(in srgb, var(--color-surface) 88%, var(--color-base));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 16%, var(--color-border));
   display: flex;
   flex-direction: column;
   gap: 4px;
-  box-shadow: 0 1px 0 color-mix(in srgb, white 25%, transparent) inset;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-accent) 8%, transparent) inset;
 }
 
 .hero-mock-chrome {
   display: flex;
   gap: 6px;
   padding: 10px 14px;
-  background: color-mix(in srgb, var(--color-surface) 70%, #e8dfd0);
-  border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-overlay) 75%, var(--color-surface));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 12%, var(--color-border));
 }
 
 .hero-mock-dot {
@@ -263,8 +263,8 @@ html {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border-right: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 80%, #f5efe4);
+  border-right: 1px solid color-mix(in srgb, var(--color-accent) 10%, var(--color-border));
+  background: color-mix(in srgb, var(--color-overlay) 55%, var(--color-surface));
 }
 
 .hero-mock-nav-item {
@@ -751,16 +751,43 @@ html {
   align-items: stretch;
 }
 
+.waitlist-hero-copy,
+.waitlist-hero-form {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--r-xl);
+  background: color-mix(in srgb, var(--color-surface) 94%, var(--color-base));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 14%, var(--color-border));
+  box-shadow:
+    0 4px 6px color-mix(in srgb, var(--color-text-1) 4%, transparent),
+    0 24px 48px -12px color-mix(in srgb, var(--color-text-1) 14%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 6%, transparent) inset;
+  backdrop-filter: blur(20px) saturate(1.2);
+}
+
+.waitlist-hero-copy::before,
+.waitlist-hero-form::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-accent) 22%, transparent),
+    transparent 45%,
+    color-mix(in srgb, var(--color-accent) 12%, transparent)
+  );
+  opacity: 0.45;
+  z-index: -1;
+  pointer-events: none;
+}
+
 .waitlist-hero-copy {
   display: flex;
   flex-direction: column;
   min-height: 100%;
   height: 100%;
   padding: clamp(22px, 3vw, 32px);
-  border-radius: var(--r-xl);
-  background: color-mix(in srgb, var(--color-surface) 72%, #ede4d3);
-  border: 1px solid color-mix(in srgb, var(--color-border) 85%, transparent);
-  box-shadow: 0 1px 0 color-mix(in srgb, white 50%, transparent) inset;
 }
 
 .waitlist-hero-copy-preview {
@@ -2450,35 +2477,14 @@ html {
 }
 
 .waitlist-hero-form {
-  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: color-mix(in srgb, var(--color-surface) 94%, white);
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-  border-radius: var(--r-xl);
-  box-shadow:
-    0 4px 6px color-mix(in srgb, var(--color-text-1) 4%, transparent),
-    0 24px 48px -12px color-mix(in srgb, var(--color-text-1) 14%, transparent),
-    0 0 0 1px color-mix(in srgb, white 40%, transparent) inset;
-  backdrop-filter: blur(20px) saturate(1.2);
   padding: clamp(20px, 3vw, 28px);
-  isolation: isolate;
 }
 
 .waitlist-hero-form::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-accent) 22%, transparent),
-    transparent 45%,
-    color-mix(in srgb, var(--color-accent) 12%, transparent)
-  );
   opacity: 0.4;
-  z-index: -1;
 }
 
 .waitlist-preview-card {
@@ -4134,6 +4140,7 @@ html {
   }
 
   .waitlist-hero-glow,
+  .waitlist-hero-copy::before,
   .waitlist-hero-form::before,
   .waitlist-badge,
   .waitlist-mobile-cta,
