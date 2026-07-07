@@ -92,12 +92,21 @@ const AuthCallback = () => {
         const handleCallback = async () => {
             try {
                 setStatus('Verifying identity…');
+                // #region agent log
+                fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'AuthCallback.jsx:handleCallback',message:'callback start',data:{hasCode:Boolean(searchParams.get('code')),hasHash:Boolean(window.location.hash)},hypothesisId:'H4',timestamp:Date.now(),runId:'pkce-debug'})}).catch(()=>{});
+                // #endregion
                 const session = await resolveOAuthSession(supabase, {
                     searchParams,
                     timeoutMs: SESSION_TIMEOUT_MS - 1000,
                 });
+                // #region agent log
+                fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'AuthCallback.jsx:resolved',message:'session resolved',data:{hasToken:Boolean(session?.access_token)},hypothesisId:'H3',timestamp:Date.now(),runId:'pkce-debug'})}).catch(()=>{});
+                // #endregion
                 await finishWithSession(session);
             } catch (err) {
+                // #region agent log
+                fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'AuthCallback.jsx:error',message:'callback failed',data:{err:err?.message},hypothesisId:'H1',timestamp:Date.now(),runId:'pkce-debug'})}).catch(()=>{});
+                // #endregion
                 console.error('[AuthCallback] error:', err);
                 fail(err?.message?.includes('timed out')
                     ? 'Sign-in took too long. Please try again.'
