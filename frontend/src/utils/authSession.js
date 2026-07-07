@@ -65,6 +65,62 @@ export function clearOAuthUrl() {
   }
 }
 
+export function readSupabaseStoredSession() {
+  try {
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith('sb-') || !key.endsWith('-auth-token')) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw);
+      if (parsed?.access_token) return parsed;
+    }
+  } catch (_) { /* ignore */ }
+  return null;
+}
+
+/**
+ * Return a usable session — hydrate Supabase client from its storage or our fallback JWT.
+ */
+export async function ensureSupabaseSession(supabase) {
+  let { data: { session } } = await supabase.auth.getSession();
+  if (session?.access_token) {
+    persistAccessToken(session.access_token);
+    debugLog('authSession.js:ensure', 'getSession ok', {}, 'H5');
+    return session;
+  }
+
+  const stored = readSupabaseStoredSession();
+  if (stored?.access_token && stored?.refresh_token) {
+    const { data, error } = await supabase.auth.setSession({
+      access_token: stored.access_token,
+      refresh_token: stored.refresh_token,
+    });
+    if (!error && data.session?.access_token) {
+      persistAccessToken(data.session.access_token);
+      debugLog('authSession.js:ensure', 'hydrated from sb storage', {}, 'H5');
+      return data.session;
+    }
+  }
+
+  const { data: refreshed } = await supabase.auth.refreshSession();
+  if (refreshed.session?.access_token) {
+    persistAccessToken(refreshed.session.access_token);
+    debugLog('authSession.js:ensure', 'refreshSession ok', {}, 'H5');
+    return refreshed.session;
+  }
+
+  const cached = readAccessToken();
+  if (cached) {
+    persistAccessToken(cached);
+    debugLog('authSession.js:ensure', 'fallback JWT only', { len: cached.length }, 'H5');
+    return { access_token: cached };
+  }
+
+  debugLog('authSession.js:ensure', 'no session found', {}, 'H5');
+  return null;
+}
+
 export function withTimeout(promise, ms, label = 'Auth') {
   return Promise.race([
     promise,
@@ -158,13 +214,15 @@ export async function resolveOAuthSession(supabase, { searchParams, timeoutMs = 
   if (existing) {
     debugLog('authSession.js:existing', 'cached token found immediately', {}, 'H3');
     clearOAuthUrl();
-    return { access_token: existing };
+    const hydrated = await ensureSupabaseSession(supabase);
+    return hydrated || { access_token: existing };
   }
 
   // PKCE (?code=): detectSessionInUrl auto-exchanges on client init — only wait for session event
   if (code) {
     debugLog('authSession.js:pkce', 'waiting for detectSessionInUrl (no manual exchange)', { codeLen: code.length }, 'H1');
-    return waitForAuthSession(supabase, timeoutMs);
+    const waited = await waitForAuthSession(supabase, timeoutMs);
+    return (await ensureSupabaseSession(supabase)) || waited;
   }
 
   // Implicit hash flow (#access_token=)
