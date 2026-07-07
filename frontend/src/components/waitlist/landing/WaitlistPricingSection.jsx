@@ -3,6 +3,40 @@ import { motion } from 'framer-motion';
 import { BadgeCheck, Check } from 'lucide-react';
 import { fadeUp, PRICING, STACK_MONTHLY_INR } from './waitlistLandingData';
 
+function TierPriceBlock({ item }) {
+  const hasDiscount = Boolean(item.discounted);
+  const isFree = Boolean(item.startHere);
+
+  return (
+    <div className="tier-price-block">
+      <span className={`tier-price-list ${hasDiscount ? '' : 'tier-price-row-placeholder'}`}>
+        {hasDiscount ? (
+          <>
+            {item.price}
+            <span className="tier-price-list-unit">/mo</span>
+          </>
+        ) : (
+          <>
+            ₹00
+            <span className="tier-price-list-unit">/mo</span>
+          </>
+        )}
+      </span>
+      <div className="tier-price-main">
+        <span className="tier-price-amount">{hasDiscount ? item.discounted : item.price}</span>
+        <span className="tier-price-unit">/mo</span>
+      </div>
+      <span
+        className={`tier-price-waitlist-label ${
+          isFree || hasDiscount ? '' : 'tier-price-row-placeholder'
+        }`}
+      >
+        {isFree ? 'Always free' : 'Waitlist founding rate'}
+      </span>
+    </div>
+  );
+}
+
 function CompactValueComparison() {
   const aiiminMax = 79;
   const stackPct = 100;
@@ -85,46 +119,18 @@ export default function WaitlistPricingSection() {
                   <TierIcon size={18} strokeWidth={2} />
                 </span>
                 <div className="pricing-tier-title-block">
-                  {item.startHere && <span className="pricing-tier-eyebrow">Free forever</span>}
-                  {item.recommended && <span className="pricing-tier-eyebrow pricing-tier-eyebrow--recommended">Recommended</span>}
+                  <div className="pricing-tier-eyebrow-slot" aria-hidden={!item.startHere && !item.recommended}>
+                    {item.startHere && <span className="pricing-tier-eyebrow">Free forever</span>}
+                    {item.recommended && (
+                      <span className="pricing-tier-eyebrow pricing-tier-eyebrow--recommended">Recommended</span>
+                    )}
+                  </div>
                   <h3>{item.tier}</h3>
                   <p className="pricing-tier-tagline">{item.tierTagline}</p>
                 </div>
               </div>
 
-              {item.discounted ? (
-                <div className="tier-price-block">
-                  <span className="tier-price-list">{item.price}<span className="tier-price-list-unit">/mo</span></span>
-                  <div className="tier-price-main">
-                    <span className="tier-price-amount">{item.discounted}</span>
-                    <span className="tier-price-unit">/mo</span>
-                  </div>
-                  <span className="tier-price-waitlist-label">Waitlist founding rate</span>
-                </div>
-              ) : item.startHere ? (
-                <div className="tier-price-block">
-                  <span className="tier-price-list tier-price-row-placeholder" aria-hidden="true">
-                    ₹00<span className="tier-price-list-unit">/mo</span>
-                  </span>
-                  <div className="tier-price-main">
-                    <span className="tier-price-amount">{item.price}</span>
-                  </div>
-                  <span className="tier-price-waitlist-label">Always free</span>
-                </div>
-              ) : (
-                <div className="tier-price-block">
-                  <span className="tier-price-list tier-price-row-placeholder" aria-hidden="true">
-                    ₹00<span className="tier-price-list-unit">/mo</span>
-                  </span>
-                  <div className="tier-price-main">
-                    <span className="tier-price-amount">{item.price}</span>
-                    <span className="tier-price-unit">/mo</span>
-                  </div>
-                  <span className="tier-price-waitlist-label tier-price-row-placeholder" aria-hidden="true">
-                    Waitlist founding rate
-                  </span>
-                </div>
-              )}
+              <TierPriceBlock item={item} />
 
               {item.freeNote && <p className="tier-free-note">{item.freeNote}</p>}
               <p className="waitlist-pricing-note">{item.note}</p>
