@@ -13,6 +13,15 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (v8 final — website colors, Personal OS, count from #123)
+
+- Locked production template to **v8** only; removed v1–v7 variants.
+- **6 color themes** (c1–c6) preview gallery — website-native greens/parchment, no dark ink blocks.
+- Tagline: **Personal OS** (under AIIMIN). Headline: **It starts here.**
+- Member display: `position + 122` → first signup shows **#123 of 500** (`WAITLIST_MEMBER_OFFSET`, `WAITLIST_DISPLAY_CAP`).
+- Default theme: `WAITLIST_EMAIL_THEME=c1` (Forest Classic).
+- Preview: `node scripts/preview-waitlist-emails.mjs`
+
 ## 2026-07-07 (8 waitlist email variants + design critique fixes)
 
 - Added `server/lib/waitlistEmailVariants.js` with **8 A/B variants** (v1–v8).
