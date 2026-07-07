@@ -13,6 +13,7 @@ import WeekInNumbers from '../components/overview/WeekInNumbers';
 import { useOverviewWidgets } from '../components/overview/OverviewWidgetGrid';
 import { StaggerWrap } from '../components/design/ShippedMotion';
 import { useCalendarEvents } from '../hooks/useCalendarEvents';
+import { getSolarTimes } from '../utils/solarTimes';
 import UniversalLogger from '../components/dashboard/UniversalLogger';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -112,7 +113,7 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
 
 const clampPercent = (value) => Math.min(100, Math.max(0, value));
 
-const getTrajectorySnapshot = () => {
+const getTrajectorySnapshot = (timezone) => {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const nextYear = new Date(now.getFullYear() + 1, 0, 1);
@@ -136,14 +137,16 @@ const getTrajectorySnapshot = () => {
   const currentHour = now.getHours() + now.getMinutes() / 60;
   const phase = currentHour < 11 ? 'Morning build' : currentHour < 17 ? 'Afternoon push' : currentHour < 21 ? 'Evening close' : 'Night reset';
 
+  const solar = getSolarTimes(now, timezone);
+
   return {
     dayOfWeek,
     dayOfYear,
     daysInYear,
     phase,
     time: {
-      sunrise: '5:32 AM',
-      sunset: '7:12 PM',
+      sunrise: solar.sunrise,
+      sunset: solar.sunset,
     },
     executionRatio: Math.round((percentBetween(startOfDay, nextDay) * 0.54) + (dayOfWeek * 3.5)),
     rows: [
@@ -252,12 +255,15 @@ const TrajectoryRow = ({ row }) => (
 );
 
 const TrajectoryProgress = React.memo(() => {
-  const [snapshot, setSnapshot] = useState(() => getTrajectorySnapshot());
+  const { user } = useAuth();
+  const timezone = user?.timezone;
+  const [snapshot, setSnapshot] = useState(() => getTrajectorySnapshot(timezone));
 
   useEffect(() => {
-    const interval = setInterval(() => setSnapshot(getTrajectorySnapshot()), 30000);
+    setSnapshot(getTrajectorySnapshot(timezone));
+    const interval = setInterval(() => setSnapshot(getTrajectorySnapshot(timezone)), 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [timezone]);
 
   const dayProgress = snapshot.rows[0].value;
   const safeExecutionRatio = clampPercent(snapshot.executionRatio);

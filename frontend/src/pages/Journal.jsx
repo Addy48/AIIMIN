@@ -265,33 +265,17 @@ export default function JournalPage() {
         minHeight: 0,
       }}
     >
-      <div style={{
-        padding: '18px 20px 0',
-        borderBottom: `1px solid ${c.border}`,
-        background: c.surface2,
-        flexShrink: 0,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-          <div>
-            <h1 className="text-h2" style={{ margin: 0, color: c.text1 }}>Journal.</h1>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: c.text3 }}>
+      <div className="journal-studio__header">
+        <div className="journal-studio__title-row">
+          <div className="journal-studio__title-block">
+            <h1 className="text-h2" style={{ color: c.text1 }}>Journal.</h1>
+            <p className="journal-studio__date">
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="journal-studio__header-actions">
             {streak > 0 && (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '6px 10px',
-                borderRadius: 999,
-                background: c.surface3,
-                border: `1px solid ${c.border}`,
-                color: c.accent,
-                fontSize: 11,
-                fontWeight: 800,
-              }}>
+              <span className="journal-studio__chip journal-studio__chip--accent">
                 <Flame size={14} /> {streak}d
               </span>
             )}
@@ -300,19 +284,7 @@ export default function JournalPage() {
                 type="button"
                 onClick={() => setSidebarOpen(true)}
                 aria-label="Open history"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '8px 12px',
-                  borderRadius: 10,
-                  border: `1px solid ${c.border}`,
-                  background: c.surface3,
-                  color: c.text2,
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
+                className="journal-studio__chip"
               >
                 <History size={14} /> History
               </button>
@@ -321,19 +293,7 @@ export default function JournalPage() {
               type="button"
               onClick={handleExport}
               aria-label="Export journal"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '8px 12px',
-                borderRadius: 10,
-                border: `1px solid ${c.border}`,
-                background: c.surface3,
-                color: c.text2,
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: 12,
-              }}
+              className="journal-studio__chip"
             >
               <Download size={14} /> Export
             </button>
@@ -365,18 +325,11 @@ export default function JournalPage() {
         </div>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : '280px 1fr',
-        flex: 1,
-        minHeight: 0,
-        overflow: 'hidden',
-      }}>
+      <div className={`journal-studio__layout${isMobile ? ' is-mobile' : ''}`}>
         {!isMobile && sidebar}
 
         <main
-          style={{ minHeight: 0, overflowY: 'auto', background: c.surface1 }}
-          className="custom-scrollbar"
+          className="journal-studio__main custom-scrollbar"
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >

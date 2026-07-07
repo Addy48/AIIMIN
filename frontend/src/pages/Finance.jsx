@@ -22,6 +22,32 @@ import ShippedSubNav from '../components/design/ShippedSubNav';
 
 
 
+const ASSET_TYPE_LABELS = {
+  gold: 'Gold',
+  stock: 'Stocks',
+  mutual_fund: 'Mutual Funds',
+  crypto: 'Crypto',
+  cash: 'Cash',
+  bank: 'Bank & Cash',
+};
+
+const normalizeAsset = (row) => ({
+  id: row.id,
+  name: row.asset_name || row.name || 'Unnamed',
+  type: row.asset_type || row.type || 'Other',
+  currentValue: Number(row.current_value ?? row.currentValue ?? 0),
+  investedAmount: Number(row.invested_value ?? row.investedAmount ?? 0),
+  units: Number(row.units ?? 0),
+});
+
+const toAssetPayload = (asset) => ({
+  asset_name: asset.name,
+  asset_type: asset.type,
+  current_value: Number(asset.currentValue) || 0,
+  invested_value: Number(asset.investedAmount) || 0,
+  units: Number(asset.units) || 0,
+});
+
 const Finance = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('OVERVIEW'); // OVERVIEW | ACCOUNTS | TRANSACTIONS | BUDGETS | WEALTH
@@ -78,10 +104,11 @@ const Finance = () => {
   const handleAddAsset = async (e) => {
     e.preventDefault();
     try {
+      const payload = toAssetPayload(newAsset);
       if (newAsset.id) {
-        await apiPut('/wealth/assets/' + newAsset.id, newAsset);
+        await apiPut('/wealth/assets/' + newAsset.id, payload);
       } else {
-        await apiPost('/wealth/assets', newAsset);
+        await apiPost('/wealth/assets', payload);
       }
       setAssetModalOpen(false);
       setNewAsset({ name: '', type: 'Stock', investedAmount: 0, currentValue: 0 });
@@ -228,7 +255,7 @@ const Finance = () => {
       const [transData, assetsData, accountsData, budgetsData] = await Promise.race([fetchPromise, timeoutPromise]);
 
       setTransactions(transData || []);
-      setAssets(assetsData || []);
+      setAssets((assetsData || []).map(normalizeAsset));
       setAccounts(accountsData || []);
       setBudgets(budgetsData || []);
     } catch (error) {
@@ -242,11 +269,11 @@ const Finance = () => {
   const totalBalance = useMemo(() => accounts.reduce((sum, a) => sum + Number(a.balance), 0), [accounts]);
 
   const totalNetWorth = useMemo(() => {
-    const assetTotal = assets.reduce((sum, a) => sum + Number(a.current_value), 0);
+    const assetTotal = assets.reduce((sum, a) => sum + Number(a.currentValue), 0);
     return assetTotal + totalBalance;
   }, [assets, totalBalance]);
   
-  const totalInvested = useMemo(() => assets.reduce((sum, a) => sum + Number(a.invested_value), 0), [assets]);
+  const totalInvested = useMemo(() => assets.reduce((sum, a) => sum + Number(a.investedAmount), 0), [assets]);
   const totalReturns = totalNetWorth - totalInvested;
   const returnPct = totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(2) : 0;
 
@@ -277,12 +304,14 @@ const Finance = () => {
       cash: 0,
       bank: accounts.reduce((sum, a) => sum + Number(a.balance), 0)
     };
-    assets.forEach(a => {
-      const type = a.asset_type.toLowerCase().replace(' ', '_');
-      if (breakdown.hasOwnProperty(type)) breakdown[type] += Number(a.current_value);
-      else breakdown.stock += Number(a.current_value); // Default to stock if unknown
+    assets.forEach((a) => {
+      const type = String(a.type || 'stock').toLowerCase().replace(/\s+/g, '_');
+      if (Object.prototype.hasOwnProperty.call(breakdown, type)) breakdown[type] += Number(a.currentValue);
+      else breakdown.stock += Number(a.currentValue);
     });
-    return breakdown;
+    return Object.entries(breakdown)
+      .filter(([, value]) => value > 0)
+      .map(([key, value]) => ({ name: ASSET_TYPE_LABELS[key] || key, value }));
   }, [assets, accounts]);
 
   // Analytics & Insights

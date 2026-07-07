@@ -1,6 +1,6 @@
 # AIIMIN Command Center
 
-Last updated: 2026-07-07
+Last updated: 2026-07-08
 Canonical for agents: this file + `docs/knowledge/_manifest.json`
 
 ## Product Snapshot
@@ -52,6 +52,14 @@ When `REACT_APP_WAITLIST_MODE=true`:
 - Public sign-in without allowlist → pending screen
 
 Pricing (landing copy): Explore (free), Core ₹29/mo, Pro ₹59/mo (₹49 founding for waitlist), Elite ₹99/mo (₹79 founding for waitlist).
+
+## Product patches (2026-07-08)
+
+- **Finance → Wealth tab:** fixed crash from asset breakdown shape mismatch and API field mapping (`asset_name` / `current_value` vs camelCase UI)
+- **Overview Trajectory:** sunrise/sunset now computed client-side via `suncalc` from profile `users.timezone` (no GPS)
+- **Journal Studio:** editorial layout polish; all modes retained (write, voice, mood strip, CBT/WWW/morning/weekly)
+- **Account → Subscription:** card layout aligned with waitlist pricing aesthetic; orange accent palette
+- **Personalization life modes:** presets apply nav, overview widgets, and sports defaults
 
 Apply `server/migrations/034_waitlist_referrals.sql` for referral_code / referred_by columns — **applied on Supabase 2026-07-06**.
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useThemeContext } from '../../../context/ThemeContext';
 import { apiPatch } from '../../../utils/api';
 import { Sun, Moon, Check } from 'lucide-react';
@@ -87,6 +87,18 @@ export default function PersonalizationSection({ profile, onProfileUpdate }) {
   const { fontScale, setFontScale } = useFontScale(profile?.font_scale, async (nextScale) => {
     await save({ font_scale: nextScale });
   });
+
+  useEffect(() => {
+    const onPersonaSync = (event) => {
+      const patch = event?.detail;
+      if (!patch) return;
+      if (patch.favorite_sports) setFavoriteSports(patch.favorite_sports);
+      if (patch.favorite_teams) setFavoriteTeams(patch.favorite_teams);
+      save(patch);
+    };
+    window.addEventListener('aiimin-persona-profile-sync', onPersonaSync);
+    return () => window.removeEventListener('aiimin-persona-profile-sync', onPersonaSync);
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>

@@ -3,17 +3,15 @@ import { Check, Star, Zap, Crown } from 'lucide-react';
 import { apiGet, apiPost } from '../../../utils/api';
 import toast from '../../../utils/toast';
 import { trackEvent } from '../../../hooks/usePageAnalytics';
+import '../../../styles/subscriptionSection.css';
 
-/* ─── Hardcoded tier definitions — always rendered, even if API is down ─── */
 const STATIC_TIERS = [
   {
     id: 'explore',
     name: 'Explore',
     price_inr: 0,
-    priceLabel: 'Free',
+    priceLabel: '₹0',
     icon: <Star size={18} />,
-    color: 'var(--color-text-3)',
-    accentColor: '#6B6B7B',
     description: 'Try the operating system with intentionally limited usage.',
     features: [
       'Habits tracking (up to 3)',
@@ -30,8 +28,6 @@ const STATIC_TIERS = [
     price_inr: 25,
     priceLabel: '₹25',
     icon: <Zap size={18} />,
-    color: 'var(--color-accent)',
-    accentColor: '#2563EB',
     description: 'Your full personal operating system.',
     popular: true,
     features: [
@@ -51,8 +47,6 @@ const STATIC_TIERS = [
     price_inr: 61,
     priceLabel: '₹61',
     icon: <Crown size={18} />,
-    color: '#F59E0B',
-    accentColor: '#F59E0B',
     description: 'Everything, plus your family.',
     features: [
       'Everything in Core',
@@ -109,8 +103,8 @@ export default function SubscriptionSection() {
   const currentTierIndex = TIER_ORDER.indexOf(currentTier);
 
   return (
-    <div>
-      <div style={{ marginBottom: 32 }}>
+    <div className="subscription-section">
+      <div>
         <p className="text-label" style={{ color: 'var(--color-text-3)', marginBottom: 6 }}>Account</p>
         <h1 className="text-h1" style={{ marginBottom: 8 }}>Subscription</h1>
         <p className="text-sm" style={{ color: 'var(--color-text-2)' }}>
@@ -118,20 +112,11 @@ export default function SubscriptionSection() {
         </p>
       </div>
 
-      {/* Current plan banner */}
       {!loading && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          background: 'var(--color-accent-dim)', border: '1px solid rgba(37,99,235,0.2)',
-          borderRadius: 'var(--r-lg)', padding: '14px 18px', marginBottom: 28,
-        }}>
-          <div style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: 'var(--color-accent)',
-            boxShadow: '0 0 8px rgba(37,99,235,0.6)',
-          }} />
+        <div className="subscription-current-banner">
+          <span className="subscription-current-dot" />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)' }}>
-            You're on the <strong style={{ color: 'var(--color-accent)' }}>
+            You&apos;re on the <strong style={{ color: 'var(--color-accent)' }}>
               {STATIC_TIERS.find((t) => t.id === currentTier)?.name || 'Explore'}
             </strong> plan
             {renewalDate && (
@@ -144,15 +129,10 @@ export default function SubscriptionSection() {
       )}
 
       {loading && (
-        <div className="skeleton" style={{ height: 48, borderRadius: 12, marginBottom: 28 }} />
+        <div className="skeleton" style={{ height: 48, borderRadius: 12 }} />
       )}
 
-      {/* 3-tier comparison */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: 16,
-      }}>
+      <div className="subscription-pricing-grid">
         {STATIC_TIERS.map((tier) => {
           const isCurrent = tier.id === currentTier;
           const tierIndex = TIER_ORDER.indexOf(tier.id);
@@ -161,116 +141,68 @@ export default function SubscriptionSection() {
           return (
             <div
               key={tier.id}
-              style={{
-                position: 'relative',
-                background: isCurrent ? `${tier.accentColor}08` : 'var(--color-surface)',
-                border: `1px solid ${isCurrent ? `${tier.accentColor}40` : 'var(--color-border)'}`,
-                borderRadius: 'var(--r-xl)',
-                padding: '24px 20px',
-                transition: 'border-color 0.15s',
-              }}
+              className={[
+                'subscription-pricing-card',
+                isCurrent ? 'is-current' : '',
+                tier.popular ? 'is-popular' : '',
+              ].filter(Boolean).join(' ')}
             >
-              {/* Popular badge */}
               {tier.popular && !isCurrent && (
-                <div style={{
-                  position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)',
-                  background: 'var(--color-accent)', color: '#fff',
-                  fontSize: 9, fontWeight: 800, letterSpacing: '0.1em',
-                  padding: '3px 10px', borderRadius: 999, textTransform: 'uppercase',
-                  whiteSpace: 'nowrap',
-                }}>
-                  Most Popular
-                </div>
+                <span className="subscription-tier-badge">Most Popular</span>
               )}
-
-              {/* Current badge */}
               {isCurrent && (
-                <div style={{
-                  position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)',
-                  background: tier.accentColor, color: isCurrent && tier.id === 'explore' ? 'var(--color-text-1)' : '#fff',
-                  fontSize: 9, fontWeight: 800, letterSpacing: '0.1em',
-                  padding: '3px 10px', borderRadius: 999, textTransform: 'uppercase',
-                  whiteSpace: 'nowrap',
-                }}>
-                  Current Plan
-                </div>
+                <span className="subscription-tier-badge is-current">Current Plan</span>
               )}
 
-              {/* Tier header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                <span style={{ color: tier.accentColor }}>{tier.icon}</span>
-                <span style={{ fontSize: 17, fontWeight: 800, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)' }}>
-                  {tier.name}
-                </span>
+              <div className="subscription-tier-header">
+                <span className="subscription-tier-icon">{tier.icon}</span>
+                <span className="subscription-tier-name">{tier.name}</span>
               </div>
 
-              <div style={{ marginBottom: 4 }}>
-                <span style={{
-                  fontSize: 26, fontWeight: 900, color: tier.accentColor,
-                  fontFamily: 'var(--font-mono)', letterSpacing: '-0.02em',
-                }}>
-                  {tier.priceLabel}
-                </span>
+              <div className="subscription-tier-price">
+                {tier.priceLabel}
                 {tier.price_inr > 0 && (
-                  <span style={{ fontSize: 11, color: 'var(--color-text-3)', marginLeft: 4 }}>/ month</span>
+                  <span className="subscription-tier-price-unit">/ month</span>
                 )}
               </div>
 
-              <p style={{ fontSize: 12, color: 'var(--color-text-2)', marginBottom: 20, lineHeight: 1.4 }}>
-                {tier.description}
-              </p>
+              <p className="subscription-tier-desc">{tier.description}</p>
 
-              {/* Features */}
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <ul className="subscription-tier-features">
                 {tier.features.map((f) => (
-                  <li key={f} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-                    <Check size={13} color={tier.accentColor} style={{ flexShrink: 0, marginTop: 2 }} />
-                    <span style={{ fontSize: 12, color: 'var(--color-text-2)', lineHeight: 1.4 }}>{f}</span>
+                  <li key={f}>
+                    <Check size={13} strokeWidth={2.5} />
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
 
-              {/* CTA */}
               {isCurrent ? (
-                <div style={{
-                  textAlign: 'center', padding: '10px',
-                  borderRadius: 'var(--r-md)', background: `${tier.accentColor}14`,
-                  fontSize: 12, fontWeight: 700, color: tier.accentColor,
-                }}>
-                  ✓ Active
-                </div>
+                <div className="subscription-tier-cta subscription-tier-cta--active">✓ Active</div>
               ) : isUpgrade ? (
                 <button
                   type="button"
                   disabled={checkoutLoading === tier.id || loading}
                   onClick={() => startCheckout(tier.id)}
-                  style={{
-                    width: '100%', padding: '11px', borderRadius: 'var(--r-md)',
-                    background: tier.id === 'core' ? 'var(--color-accent)' : `${tier.accentColor}18`,
-                    border: tier.id === 'core' ? 'none' : `1px solid ${tier.accentColor}40`,
-                    color: tier.id === 'core' ? '#fff' : tier.accentColor,
-                    fontSize: 13, fontWeight: 800, cursor: 'pointer',
-                    transition: 'all 0.15s',
-                    fontFamily: 'var(--font-sans)',
-                    opacity: loading ? 0.5 : 1,
-                  }}
+                  className={`subscription-tier-cta ${tier.id === 'core' ? 'subscription-tier-cta--primary' : 'subscription-tier-cta--ghost'}`}
+                  style={tier.id !== 'core' ? {
+                    border: '1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-border))',
+                    color: 'var(--color-accent)',
+                    background: 'var(--color-accent-dim)',
+                    cursor: 'pointer',
+                  } : undefined}
                 >
                   {checkoutLoading === tier.id ? 'Opening checkout…' : `Upgrade to ${tier.name}`}
                 </button>
               ) : (
-                <div style={{
-                  textAlign: 'center', padding: '10px',
-                  fontSize: 11, fontWeight: 500, color: 'var(--color-text-3)',
-                }}>
-                  Included in your plan
-                </div>
+                <div className="subscription-tier-cta subscription-tier-cta--ghost">Included in your plan</div>
               )}
             </div>
           );
         })}
       </div>
 
-      <p className="text-caption" style={{ marginTop: 20, color: 'var(--color-text-3)', textAlign: 'center' }}>
+      <p className="subscription-footnote text-caption">
         All prices in INR · Cancel any time · Billed monthly · Support: support@aiimin.in
       </p>
     </div>
