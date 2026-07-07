@@ -13,6 +13,14 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (8 waitlist email variants + design critique fixes)
+
+- Added `server/lib/waitlistEmailVariants.js` with **8 A/B variants** (v1–v8).
+- Critique fixes: ink/ivory contrast, JetBrains Mono OS-ID on `#0A0A0C`, green accent **only on CTA**, live `member_number` from Supabase, concrete perk copy.
+- Default production variant: **v8 Hybrid Recommended** (`WAITLIST_EMAIL_VARIANT`).
+- Preview gallery: `node scripts/preview-waitlist-emails.mjs` → `deploy/email-preview/index.html`
+- Test send: `node scripts/test-email.mjs email --variant v3` or `--all`
+
 ## 2026-07-07 (Premium waitlist email redesign)
 
 - Rewrote `waitlist_confirmation` with hero band, Life Score teaser, "What happens next" timeline, founder note, referral CTA (Superhuman/Linear-style exclusivity).
