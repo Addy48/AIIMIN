@@ -26,7 +26,15 @@ GitHub Actions runners use **random IPs**. EC2 security group must allow **SSH (
 
 AWS Console → EC2 → Security Groups → `aiimin-api-sg` → Inbound → SSH 22.
 
-### `npm ci` / install hangs or OOM
+### `curl: (7) Failed to connect to localhost port 3001`
+
+PM2 reload returns before Node binds the port (especially on t4g.nano). Workflow now retries health for up to 60s via `deploy/wait-for-api.sh`.
+
+If you `curl` right after `pm2 reload`, wait 5–10s or run:
+
+```bash
+source ~/AIIMIN/deploy/wait-for-api.sh && wait_for_api
+```
 
 t4g.nano has 512MB RAM. Workflow uses `npm install --omit=dev --ignore-scripts` with `NODE_OPTIONS=--max-old-space-size=384`.
 

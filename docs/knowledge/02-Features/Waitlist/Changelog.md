@@ -1,5 +1,10 @@
 # Waitlist Changelog
 
+## 2026-07-07 (GHA health-check retry)
+
+- Deploy workflow waits up to 60s for `localhost:3001/api/health` after PM2 reload (`deploy/wait-for-api.sh`).
+- Fixes false failures: `curl: (7) Failed to connect to localhost port 3001` on t4g.nano cold start.
+
 ## 2026-07-07 (GitHub Actions deploy fix)
 
 - `.github/workflows/deploy-api.yml`: auto-clone if `~/AIIMIN` has no `.git`, preserve `.env`, `npm install` instead of `npm ci`, longer SSH timeouts, `workflow_dispatch`.
