@@ -13,12 +13,12 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
-## 2026-07-07 (Waitlist reset + premium confirmation emails)
+## 2026-07-07 (Premium waitlist email redesign)
 
-- Cleared `waitlist_emails` for fresh start (`scripts/clear-waitlist.mjs`).
-- Upgraded `waitlist_confirmation` + `waitlist_invite` templates: product mock card, "what happens next" timeline, founder note, referral CTA (Dropbox-style), social proof strip.
-- Tactics: personalization, preheader, single CTA, scarcity (founding cohort), OS-ID identity lock, mobile-safe table layout.
-- Files: `server/lib/emailTemplates.js`
+- Rewrote `waitlist_confirmation` with hero band, Life Score teaser, "What happens next" timeline, founder note, referral CTA (Superhuman/Linear-style exclusivity).
+- Upgraded `waitlist_invite` to VIP early-access tone.
+- Waitlist cleared for fresh signups.
+- Files: `server/lib/emailTemplates.js`, `deploy/email-preview/waitlist-confirmation.html`
 
 ## 2026-07-07 (Resend from address — admin.aiimin.in)
 
