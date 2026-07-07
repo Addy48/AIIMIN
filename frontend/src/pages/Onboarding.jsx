@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiPatch, apiGet } from '../utils/api';
-import { persistAccessToken, readAccessToken } from '../utils/authSession';
+import { persistAccessToken, readAccessToken, ensureSupabaseSession } from '../utils/authSession';
 import supabase from '../utils/supabase';
 import { suggestOsIdFromName } from '../utils/osId';
 import ThemedMark from '../components/brand/ThemedMark';
@@ -285,42 +285,22 @@ export default function Onboarding() {
             const upperUsername = username.trim().toUpperCase();
             const trimmedName = fullName.trim();
 
-            // Refresh session before any API calls
-            let { data: { session: liveSession } } = await supabase.auth.getSession();
-            if (!liveSession?.access_token) {
-                const { data: refreshed } = await supabase.auth.refreshSession();
-                liveSession = refreshed.session;
+            let liveSession = await ensureSupabaseSession(supabase);
+            const token = liveSession?.access_token || readAccessToken();
+            if (!token) {
+                throw new Error('No session — please sign in again');
             }
-            if (!liveSession?.access_token) throw new Error('No session — please sign in again');
-            persistAccessToken(liveSession.access_token);
-            await checkSession(liveSession);
+            persistAccessToken(token);
+            if (liveSession?.user) await checkSession(liveSession);
 
             // #region agent log
-            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'start',data:{hasToken:Boolean(liveSession?.access_token),hasEmail:Boolean(user?.email)},hypothesisId:'H1',timestamp:Date.now(),runId:'onboarding-submit-v2'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'start',data:{hasToken:Boolean(token),hasSupabaseUser:Boolean(liveSession?.user),hasCtxUser:Boolean(user?.email)},hypothesisId:'H5',timestamp:Date.now(),runId:'onboarding-submit-v3'})}).catch(()=>{});
             // #endregion
 
-            // Profile + OS-ID on server (no admin password — that revokes the OAuth JWT)
             await apiPost('/auth/complete-google-profile', {
                 username: upperUsername,
                 full_name: trimmedName,
             });
-
-            // Set PIN client-side — keeps the current session valid
-            const { error: pinErr } = await supabase.auth.updateUser({
-                password: pin,
-                data: { username: upperUsername, full_name: trimmedName },
-            });
-            if (pinErr) throw pinErr;
-
-            const { data: { session: afterPin } } = await supabase.auth.getSession();
-            if (afterPin?.access_token) {
-                persistAccessToken(afterPin.access_token);
-                await checkSession(afterPin);
-            }
-
-            // #region agent log
-            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'after pin update',data:{hasNewToken:Boolean(readAccessToken())},hypothesisId:'H1',timestamp:Date.now(),runId:'onboarding-submit-v2'})}).catch(()=>{});
-            // #endregion
 
             await apiPatch('/account/profile', {
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -334,6 +314,35 @@ export default function Onboarding() {
             for (const gId of selectedGoals) {
                 const goalName = GOAL_OPTIONS.find(g => g.id === gId)?.label;
                 await apiPost('/goals', { title: goalName, category: 'life', status: 'in_progress', progress: 0 });
+            }
+
+            // PIN last — may revoke JWT; data is already saved
+            const email = user?.email;
+            liveSession = await ensureSupabaseSession(supabase);
+            if (liveSession?.user) {
+                const { error: pinErr } = await supabase.auth.updateUser({
+                    password: pin,
+                    data: { username: upperUsername, full_name: trimmedName },
+                });
+                if (!pinErr) {
+                    const refreshed = await ensureSupabaseSession(supabase);
+                    if (refreshed?.access_token) persistAccessToken(refreshed.access_token);
+                } else {
+                    await apiPost('/auth/set-pin', { pin });
+                }
+            } else {
+                await apiPost('/auth/set-pin', { pin });
+            }
+
+            if (email) {
+                const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+                    email,
+                    password: pin,
+                });
+                if (!signInErr && signInData?.session) {
+                    persistAccessToken(signInData.session.access_token);
+                    await checkSession(signInData.session);
+                }
             }
 
             setDir(1);

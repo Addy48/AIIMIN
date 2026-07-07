@@ -284,6 +284,37 @@ app.post('/complete-google-profile', requireAuth, async (c) => {
 });
 
 /**
+ * POST /auth/set-pin — set 6-digit PIN after onboarding data is saved (call last).
+ */
+app.post('/set-pin', requireAuth, async (c) => {
+    const userId = c.get('userId');
+
+    try {
+        const body = await c.req.json();
+        const { pin } = body;
+
+        if (!pin || !PIN_PATTERN.test(pin)) {
+            return c.json({ error: 'PIN must be exactly 6 digits' }, 400);
+        }
+
+        const supabase = getSupabaseAdmin();
+        const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+            password: pin,
+        });
+
+        if (updateError) {
+            console.error('[auth/set-pin] error:', updateError.message);
+            return c.json({ error: 'Failed to set PIN' }, 500);
+        }
+
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('[auth/set-pin] error:', err);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+});
+
+/**
  * POST /auth/logout
  */
 app.post('/logout', async (c) => {
