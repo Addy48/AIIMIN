@@ -255,7 +255,6 @@ html {
 .hero-mock-body {
   display: grid;
   grid-template-columns: 52px 1fr;
-  min-height: 220px;
 }
 
 .hero-mock-sidebar {
@@ -282,7 +281,7 @@ html {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .hero-mock-header {
@@ -329,8 +328,6 @@ html {
 }
 
 .hero-mock-chart-wrap {
-  flex: 1;
-  min-height: 100px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -346,12 +343,11 @@ html {
 }
 
 .hero-mock-chart {
-  flex: 1;
-  min-height: 80px;
+  height: 72px;
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  padding: 12px;
+  padding: 10px 12px;
   border-radius: 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -663,7 +659,7 @@ html {
 }
 
 .hero-trust-line {
-  margin: 0 0 18px;
+  margin: 0 0 12px;
   font-size: 13px;
   line-height: 1.5;
   color: var(--color-text-2);
@@ -742,7 +738,7 @@ html {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
   gap: clamp(20px, 3vw, 36px);
-  align-items: stretch;
+  align-items: start;
   position: relative;
   z-index: 1;
 }
@@ -785,30 +781,25 @@ html {
 .waitlist-hero-copy {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
-  height: 100%;
-  padding: clamp(22px, 3vw, 32px);
+  gap: 0;
+  padding: clamp(20px, 2.5vw, 28px);
 }
 
 .waitlist-hero-copy-preview {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  margin-top: auto;
-  padding-top: 16px;
+  margin-top: 14px;
+  padding-top: 0;
 }
 
 .waitlist-hero-preview--stretch {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
 
 .waitlist-hero-preview--stretch .hero-mock-dashboard {
-  flex: 1;
-  min-height: 220px;
+  flex: none;
+  min-height: 0;
 }
 
 .hero-brand-row {
@@ -883,23 +874,19 @@ html {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 100%;
-  height: 100%;
   position: sticky;
   top: 20px;
-  align-self: stretch;
+  align-self: start;
 }
 
 .waitlist-hero-form-wrap {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
   scroll-margin-top: 20px;
 }
 
 .waitlist-hero-form-aside {
-  margin-top: auto;
+  margin-top: 16px;
 }
 
 .waitlist-hero-form-social {
@@ -907,11 +894,11 @@ html {
 }
 
 .hero-form-aside {
-  margin-top: 18px;
-  padding-top: 18px;
+  margin-top: 0;
+  padding-top: 14px;
   border-top: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .hero-form-aside .waitlist-social-proof {
@@ -2477,10 +2464,9 @@ html {
 }
 
 .waitlist-hero-form {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  padding: clamp(20px, 3vw, 28px);
+  padding: clamp(18px, 2.5vw, 24px);
 }
 
 .waitlist-hero-form::before {
