@@ -1,5 +1,23 @@
 # Waitlist Changelog
 
+## 2026-07-08 (Auth callback — cross-browser OAuth fix)
+
+- Fixed Google login hang on `/auth/callback` for all browsers (Safari, Chrome, Firefox, Edge, mobile).
+- Root cause: `AuthContext` + `AuthCallback` both called `getSession()` during hash/PKCE processing → Supabase deadlock.
+- Added `frontend/src/utils/authSession.js`: PKCE `?code=`, legacy `#access_token=`, `onAuthStateChange` fallback, localStorage + sessionStorage (Safari private mode), 15s timeout.
+- `AuthContext` skips `getSession()` on `/auth/callback` — callback page owns session setup.
+- Supabase client: explicit `flowType: 'pkce'` for modern SPA OAuth.
+- Files: `authSession.js`, `AuthCallback.jsx`, `AuthContext.jsx`, `api.js`, `supabase.js`
+- Status: **deploy to Vercel** then retest LC-12 for all 6 testers
+
+## 2026-07-08 (Auth callback hang — OAuth deadlock fix)
+
+- Fixed: Google login stuck on "Verifying identity…" at `/auth/callback` when hash tokens present.
+- Root cause: `getSession()` during Supabase `onAuthStateChange` hash processing causes a known deadlock with `AuthContext`.
+- Fix: parse `#access_token` / `#refresh_token` and call `setSession()` directly; store token in localStorage before `/auth/me`; 12s timeout failsafe; defer `checkSession` in `AuthContext`.
+- Files: `frontend/src/pages/AuthCallback.jsx`, `frontend/src/context/AuthContext.jsx`, `frontend/src/utils/api.js`, `frontend/src/utils/supabase.js`
+- Status: **needs Vercel deploy** — then retest LC-12 Google login
+
 ## 2026-07-08 (Arch Bracket logo everywhere + theme-aware marks)
 
 - Replaced legacy leaf logo (`Logo.jsx`) with **Arch Bracket** (`ThemedMark` / `BrandLockup`) across navbar, login, onboarding, auth callback, waitlist.
