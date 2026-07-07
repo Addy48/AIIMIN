@@ -289,10 +289,6 @@ export default function Onboarding() {
             let liveSession = await ensureSupabaseSession(supabase);
             if (liveSession?.user) await checkSession(liveSession);
 
-            // #region agent log
-            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'start',data:{hasToken:Boolean(token),hasSupabaseUser:Boolean(liveSession?.user),hasCtxUser:Boolean(user?.email)},hypothesisId:'H5',timestamp:Date.now(),runId:'onboarding-submit-v4'})}).catch(()=>{});
-            // #endregion
-
             await apiPost('/auth/complete-google-profile', {
                 username: upperUsername,
                 full_name: trimmedName,
