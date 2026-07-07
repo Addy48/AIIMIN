@@ -134,11 +134,19 @@
   --space-9: 64px;
 
   /* ── Layout ─────────────────────────────────────── */
-  --nav-height:      80px;
+  --nav-height:      68px;
   --nav-height-mob:  64px;
+  --bottom-nav-height: 64px;
   --content-max:     1320px;
   --content-pad:     40px;
   --section-gap:     var(--space-6);
+
+  /* ── Z-index stack ──────────────────────────────── */
+  --z-nav:       1000;
+  --z-sticky:    900;
+  --z-dropdown:  1100;
+  --z-drawer:    999;
+  --z-overlay:   1200;
 
   /* ── Component heights ──────────────────────────── */
   --card-hero:    120px;
