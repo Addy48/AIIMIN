@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiPatch, apiGet, getCurrentAccessToken } from '../utils/api';
+import { persistAccessToken, readAccessToken } from '../utils/authSession';
+import supabase from '../utils/supabase';
 import { suggestOsIdFromName } from '../utils/osId';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
@@ -136,7 +138,7 @@ export default function Onboarding() {
 
     const TOTAL_STEPS = 8; // 0 to 7. Step 8 is success
 
-    const { user, isSignedIn, loading: authLoading } = useAuth();
+    const { user, isSignedIn, loading: authLoading, checkSession } = useAuth();
 
     // Pre-fill name from signed-in user
     useEffect(() => {
@@ -239,11 +241,31 @@ export default function Onboarding() {
             const token = await getCurrentAccessToken();
             if (!token) throw new Error('No session');
 
+            // #region agent log
+            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'start',data:{hasToken:Boolean(token),hasEmail:Boolean(user?.email)},hypothesisId:'H1',timestamp:Date.now(),runId:'onboarding-submit'})}).catch(()=>{});
+            // #endregion
+
             await apiPost('/auth/complete-google-profile', {
                 username: username.trim().toUpperCase(),
                 pin,
                 full_name: fullName.trim(),
             });
+
+            // Setting PIN via admin API invalidates the Google OAuth JWT — re-sign-in with new PIN
+            const email = user?.email;
+            if (email) {
+                const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+                    email,
+                    password: pin,
+                });
+                if (signInErr) throw signInErr;
+                persistAccessToken(signInData.session.access_token);
+                await checkSession(signInData.session);
+            }
+
+            // #region agent log
+            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'after re-sign-in',data:{hasNewToken:Boolean(readAccessToken())},hypothesisId:'H1',timestamp:Date.now(),runId:'onboarding-submit'})}).catch(()=>{});
+            // #endregion
 
             await apiPatch('/account/profile', {
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
