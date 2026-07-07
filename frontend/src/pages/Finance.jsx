@@ -18,6 +18,7 @@ import FinanceAccounts from '../components/finance/FinanceAccounts';
 import FinanceTransactions from '../components/finance/FinanceTransactions';
 import FinanceBudgets from '../components/finance/FinanceBudgets';
 import FinanceWealth from '../components/finance/FinanceWealth';
+import ShippedSubNav from '../components/design/ShippedSubNav';
 
 
 
@@ -487,38 +488,18 @@ savingsRate: (sRate * 100).toFixed(1),
       />
 
 
-      {/* Navigation Tabs */}
-      <div style={{
-        display: 'flex',
-        gap: '0',
-        borderBottom: '1px solid var(--color-border)',
-        marginBottom: '32px',
-        overflowX: 'auto',
-        scrollbarWidth: 'none',
-      }}>
-        {['OVERVIEW', 'ANALYTICS', 'ACCOUNTS', 'TRANSACTIONS', 'BUDGETS', 'WEALTH'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: '12px 20px',
-              fontSize: '13px',
-              fontWeight: activeTab === tab ? 600 : 400,
-              color: activeTab === tab ? 'var(--color-text-1)' : 'var(--color-text-3)',
-              border: 'none',
-              background: 'none',
-              borderBottom: activeTab === tab ? '2px solid var(--color-text-1)' : '2px solid transparent',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-sans)',
-              transition: 'all 0.15s ease',
-              whiteSpace: 'nowrap',
-              marginBottom: '-1px',
-            }}
-          >
-            {tab.charAt(0) + tab.slice(1).toLowerCase()}
-          </button>
-        ))}
-      </div>
+      <ShippedSubNav
+        tabs={[
+          { id: 'OVERVIEW', label: 'Overview' },
+          { id: 'ANALYTICS', label: 'Analytics' },
+          { id: 'ACCOUNTS', label: 'Accounts' },
+          { id: 'TRANSACTIONS', label: 'Transactions' },
+          { id: 'BUDGETS', label: 'Budgets' },
+          { id: 'WEALTH', label: 'Wealth' },
+        ]}
+        active={activeTab}
+        onChange={setActiveTab}
+      />
 
       {loading ? (
         <div style={{ padding: '24px', opacity: 0.7, pointerEvents: 'none' }}>
