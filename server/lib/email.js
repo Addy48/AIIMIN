@@ -5,7 +5,7 @@ import { Resend } from 'resend';
 import logger from './logger.js';
 import { renderEmail } from './emailTemplates.js';
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@aiimin.in';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@admin.aiimin.in';
 const FROM_NAME = process.env.RESEND_FROM_NAME || 'AIIMIN';
 const REPLY_TO = process.env.RESEND_REPLY_TO || 'aadityaupadhyay10@gmail.com';
 

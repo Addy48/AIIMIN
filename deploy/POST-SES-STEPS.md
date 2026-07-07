@@ -15,7 +15,7 @@ CRON_SECRET=<generate-random-32-chars>
 
 # Resend (replaces AWS SES)
 RESEND_API_KEY=re_xxxxxxxx
-RESEND_FROM_EMAIL=noreply@aiimin.in
+RESEND_FROM_EMAIL=noreply@admin.aiimin.in
 RESEND_FROM_NAME=AIIMIN
 RESEND_REPLY_TO=aadityaupadhyay10@gmail.com
 

@@ -5,17 +5,17 @@ Status: Waitlist live · Tester window closes **31 July** · Go-live target **Se
 
 ---
 
-## Phase 0 — Email (this week) ✅ in progress
+## Phase 0 — Email ✅ DONE (2026-07-07)
 
-| # | Task | Owner | Status |
-|---|------|-------|--------|
-| 0.1 | Migrate code from SES → Resend SDK | Dev | ✅ Done |
-| 0.2 | Add `aiimin.in` domain in Resend + DNS | You | **TODO** |
-| 0.3 | Set `RESEND_API_KEY` on EC2, remove SES vars | You | **TODO** |
-| 0.4 | `node scripts/test-email.mjs` → inbox | You | **TODO** |
-| 0.5 | Waitlist signup E2E → user + owner mail | You | **TODO** |
-| 0.6 | Decommission SES SMTP IAM user | You | After 0.5 |
-| 0.7 | **Rotate Resend API key** (was pasted in chat) | You | **URGENT** |
+| # | Task | Status |
+|---|------|--------|
+| 0.1 | Migrate code from SES → Resend SDK | ✅ Done |
+| 0.2 | Verify `admin.aiimin.in` in Resend + DNS | ✅ Done |
+| 0.3 | Set `RESEND_API_KEY` on EC2, remove SES vars | ✅ Done |
+| 0.4 | `node scripts/test-email.mjs` → inbox | ✅ Done |
+| 0.5 | Waitlist signup E2E → user + owner mail | **TODO** |
+| 0.6 | Decommission SES SMTP IAM user + group | ✅ Done |
+| 0.7 | **Rotate Resend API key** (was pasted in chat) | **URGENT** |
 
 See `deploy/RESEND-SETUP.md`.
 
@@ -94,7 +94,7 @@ DATABASE_URL
 SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
 RESEND_API_KEY
-RESEND_FROM_EMAIL=noreply@aiimin.in
+RESEND_FROM_EMAIL=noreply@admin.aiimin.in
 RESEND_FROM_NAME=AIIMIN
 RESEND_REPLY_TO=...
 OWNER_NOTIFY_EMAIL=...

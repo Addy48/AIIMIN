@@ -4,9 +4,12 @@
  * Usage: node scripts/test-email.mjs you@example.com
  */
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { sendEmail, getEmailProvider, isEmailConfigured } from '../server/lib/email.js';
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 const to = process.argv[2];
 if (!to) {
