@@ -114,17 +114,19 @@ export default function WaitlistPricingSection() {
             >
               <span className="pricing-tier-accent-bar" aria-hidden="true" />
               {item.recommended && <span className="pricing-tier-glow" aria-hidden="true" />}
+              {item.startHere && (
+                <span className="pricing-tier-eyebrow pricing-tier-eyebrow--floating">Free forever</span>
+              )}
+              {item.recommended && (
+                <span className="pricing-tier-eyebrow pricing-tier-eyebrow--recommended pricing-tier-eyebrow--floating">
+                  Recommended
+                </span>
+              )}
               <div className="pricing-tier-header">
                 <span className="pricing-tier-icon-wrap" aria-hidden="true">
                   <TierIcon size={18} strokeWidth={2} />
                 </span>
                 <div className="pricing-tier-title-block">
-                  <div className="pricing-tier-eyebrow-slot" aria-hidden={!item.startHere && !item.recommended}>
-                    {item.startHere && <span className="pricing-tier-eyebrow">Free forever</span>}
-                    {item.recommended && (
-                      <span className="pricing-tier-eyebrow pricing-tier-eyebrow--recommended">Recommended</span>
-                    )}
-                  </div>
                   <h3>{item.tier}</h3>
                   <p className="pricing-tier-tagline">{item.tierTagline}</p>
                 </div>
