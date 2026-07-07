@@ -48,6 +48,42 @@ export function clearAccessToken() {
   try { sessionStorage.removeItem(TOKEN_KEY); } catch (_) {}
 }
 
+/** Client-side exp check only — server still validates via getUser(). */
+export function isAccessTokenExpired(token, skewSeconds = 60) {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    if (!payload.exp) return false;
+    return Date.now() / 1000 >= payload.exp - skewSeconds;
+  } catch (_) {
+    return true;
+  }
+}
+
+/**
+ * Return a verified access token for API calls.
+ * Never returns a stale aiimin_session_fallback JWT without hydrating Supabase first.
+ */
+export async function requireFreshAccessToken(supabase) {
+  const session = await ensureSupabaseSession(supabase);
+  const token = session?.access_token;
+  if (!token) {
+    throw new Error('No session — please sign in again');
+  }
+  if (isAccessTokenExpired(token)) {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (!error && data.session?.access_token) {
+      persistAccessToken(data.session.access_token);
+      debugLog('authSession.js:requireFresh', 'refreshed expired token', {}, 'H6');
+      return data.session.access_token;
+    }
+    clearAccessToken();
+    throw new Error('Session expired — please sign in again');
+  }
+  persistAccessToken(token);
+  return token;
+}
+
 export function parseOAuthHash() {
   if (typeof window === 'undefined' || !window.location.hash) return null;
   const params = new URLSearchParams(window.location.hash.replace(/^#/, ''));
@@ -111,10 +147,15 @@ export async function ensureSupabaseSession(supabase) {
   }
 
   const cached = readAccessToken();
-  if (cached) {
-    persistAccessToken(cached);
-    debugLog('authSession.js:ensure', 'fallback JWT only', { len: cached.length }, 'H5');
+  if (cached && !isAccessTokenExpired(cached)) {
+    // Last resort: JWT still within exp — Supabase client may not be hydrated yet
+    debugLog('authSession.js:ensure', 'non-expired fallback JWT only', { len: cached.length }, 'H5');
     return { access_token: cached };
+  }
+
+  if (cached) {
+    debugLog('authSession.js:ensure', 'expired fallback JWT discarded', {}, 'H6');
+    clearAccessToken();
   }
 
   debugLog('authSession.js:ensure', 'no session found', {}, 'H5');

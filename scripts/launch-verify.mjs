@@ -4,9 +4,11 @@
  *
  * Usage:
  *   node scripts/launch-verify.mjs
+ *   node scripts/sync-react-env.mjs   # sync REACT_APP_* into root .env first
  *   API_URL=https://api.aiimin.in/api node scripts/launch-verify.mjs
  */
 import dotenv from 'dotenv';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import pg from 'pg';
@@ -14,9 +16,34 @@ import { resolveDatabaseUrl } from '../server/lib/db.js';
 import { isEmailConfigured, getEmailProvider } from '../server/lib/email.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+const root = path.join(__dirname, '..');
 
-const API_URL = (process.env.API_URL || process.env.REACT_APP_API_URL || 'https://api.aiimin.in/api').replace(/\/$/, '');
+function loadEnvLayer(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  dotenv.config({ path: filePath, override: false });
+}
+
+function loadFrontendReactEnv() {
+  const sources = [
+    path.join(root, 'frontend', '.env.production'),
+    path.join(root, 'frontend', '.env'),
+  ];
+  for (const filePath of sources) {
+    if (!fs.existsSync(filePath)) continue;
+    const parsed = dotenv.parse(fs.readFileSync(filePath));
+    for (const [key, val] of Object.entries(parsed)) {
+      if (key.startsWith('REACT_APP_') || key === 'SENTRY_DSN') {
+        if (!process.env[key]) process.env[key] = val;
+      }
+    }
+  }
+}
+
+loadEnvLayer(path.join(root, '.env'));
+loadFrontendReactEnv();
+
+const PROD_API_URL = 'https://api.aiimin.in/api';
+const API_URL = (process.env.API_URL || PROD_API_URL).replace(/\/$/, '');
 const FRONTEND_URL = process.env.PROD_FRONTEND_URL || 'https://www.aiimin.in';
 
 const EC2_REQUIRED = [
@@ -40,12 +67,15 @@ const VERCEL_REQUIRED = [
 ];
 
 const OPTIONAL = [
-  'REACT_APP_GA_MEASUREMENT_ID',
-  'REACT_APP_SENTRY_DSN',
-  'SENTRY_DSN',
   'RESEND_WAITLIST_TEMPLATE_ID',
   'WAITLIST_MEMBER_OFFSET',
   'WAITLIST_DISPLAY_CAP',
+];
+
+const OBSERVABILITY = [
+  'REACT_APP_GA_MEASUREMENT_ID',
+  'REACT_APP_SENTRY_DSN',
+  'SENTRY_DSN',
 ];
 
 function pass(msg) {
@@ -60,13 +90,25 @@ function warn(msg) {
   console.log(`  ⚠️  ${msg}`);
 }
 
-function checkEnv(keys, label) {
+function isPlaceholderGa(id) {
+  return !id || /X{4,}/i.test(id) || id === 'G-XXXXXXXXXX';
+}
+
+function isRealEnvValue(key, val) {
+  if (!val || !String(val).trim()) return false;
+  if (key === 'REACT_APP_GA_MEASUREMENT_ID' && isPlaceholderGa(val)) return false;
+  return true;
+}
+
+function checkEnv(keys, label, { optional = false } = {}) {
   console.log(`\n## ${label}`);
   let ok = true;
   for (const key of keys) {
     const val = process.env[key];
-    if (val && String(val).trim()) {
+    if (isRealEnvValue(key, val)) {
       pass(`${key} set`);
+    } else if (optional) {
+      warn(`${key} not set`);
     } else {
       fail(`${key} missing`);
       ok = false;
@@ -85,6 +127,37 @@ async function fetchJson(url, options = {}) {
     body = text.slice(0, 200);
   }
   return { status: res.status, body };
+}
+
+async function checkProductionBundle() {
+  console.log('\n## Vercel production bundle (live LC-04)');
+  try {
+    const htmlRes = await fetch(FRONTEND_URL, {
+      signal: AbortSignal.timeout(15000),
+      headers: { 'Cache-Control': 'no-cache' },
+    });
+    const html = await htmlRes.text();
+    const mainMatch = html.match(/\/static\/js\/main\.[a-f0-9]+\.js/);
+    if (!mainMatch) {
+      warn('Could not find main.js in production HTML');
+      return;
+    }
+    const jsUrl = new URL(mainMatch[0], FRONTEND_URL).href;
+    const jsRes = await fetch(jsUrl, { signal: AbortSignal.timeout(20000) });
+    const js = await jsRes.text();
+
+    const checks = [
+      { label: 'REACT_APP_API_URL → api.aiimin.in', ok: js.includes('api.aiimin.in') },
+      { label: 'REACT_APP_SUPABASE_URL baked in', ok: js.includes('yubxgftugxbwtywyhcsv.supabase.co') },
+      { label: 'Waitlist mode active', ok: /waitlist/i.test(js) },
+    ];
+    for (const { label, ok } of checks) {
+      if (ok) pass(label);
+      else warn(`${label} — not found in bundle`);
+    }
+  } catch (err) {
+    warn(`Production bundle check failed: ${err.message}`);
+  }
 }
 
 async function checkApi() {
@@ -176,16 +249,21 @@ function checkEmail() {
 }
 
 function checkObservability() {
-  console.log('\n## Observability (LC-09, LC-10)');
-  if (process.env.REACT_APP_GA_MEASUREMENT_ID) {
-    pass('GA4 measurement ID set locally');
+  console.log('\n## Observability (LC-09, LC-10 — optional until launch)');
+  const ga = process.env.REACT_APP_GA_MEASUREMENT_ID;
+  if (isRealEnvValue('REACT_APP_GA_MEASUREMENT_ID', ga)) {
+    pass(`GA4: ${ga}`);
+  } else if (ga && isPlaceholderGa(ga)) {
+    warn('REACT_APP_GA_MEASUREMENT_ID is placeholder (G-XXXXXXXXXX) — create GA4 property');
   } else {
-    warn('REACT_APP_GA_MEASUREMENT_ID missing — set on Vercel for LC-10');
+    warn('REACT_APP_GA_MEASUREMENT_ID missing — create at analytics.google.com');
   }
-  if (process.env.REACT_APP_SENTRY_DSN || process.env.SENTRY_DSN) {
+
+  const sentry = process.env.REACT_APP_SENTRY_DSN || process.env.SENTRY_DSN;
+  if (sentry) {
     pass('Sentry DSN set');
   } else {
-    warn('Sentry DSN missing — LC-09 pending');
+    warn('Sentry DSN missing — create project at sentry.io (LC-09, not blocking waitlist)');
   }
 }
 
@@ -194,13 +272,8 @@ async function main() {
   console.log(`API: ${API_URL}`);
   console.log(`Frontend: ${FRONTEND_URL}`);
 
-  checkEnv(EC2_REQUIRED, 'EC2 env (local .env proxy)');
-  console.log('\n## Vercel env (set in Vercel dashboard; local REACT_APP_* if present)');
-  for (const key of VERCEL_REQUIRED) {
-    const val = process.env[key];
-    if (val && String(val).trim()) pass(`${key} set locally`);
-    else warn(`${key} not in local .env — verify on Vercel (LC-04)`);
-  }
+  checkEnv(EC2_REQUIRED, 'EC2 env (root .env)');
+  checkEnv(VERCEL_REQUIRED, 'Frontend env (root .env + frontend/.env*)');
 
   console.log('\n## Optional env');
   for (const key of OPTIONAL) {
@@ -210,16 +283,24 @@ async function main() {
 
   checkEmail();
   checkObservability();
+  await checkProductionBundle();
   await checkApi();
   await checkFrontend();
   await checkAllowlist();
 
+  const missingReact = VERCEL_REQUIRED.filter((k) => !isRealEnvValue(k, process.env[k]));
+  if (missingReact.length > 0) {
+    console.log('\n## Fix missing frontend env locally');
+    console.log('  Run: node scripts/sync-react-env.mjs');
+    console.log('  Or copy frontend/.env.production → add REACT_APP_* to root .env');
+  }
+
   console.log('\n## Manual steps still required');
-  console.log('  · Phase 0.5: E2E waitlist signup on www.aiimin.in (confirmation + owner notify)');
+  console.log('  · Phase 0.5: E2E waitlist — node scripts/test-waitlist-e2e.mjs <email>');
   console.log('  · Phase 0.7: Rotate Resend API key if pasted in chat');
   console.log('  · LC-12: Each tester Google login → onboarding → /overview');
+  console.log('  · LC-09/10: GA4 + Sentry when ready (not blocking waitlist)');
   console.log('  · LC-01: IDOR + SQLi smoke (authenticated routes)');
-  console.log('\nRun: node scripts/test-waitlist-e2e.mjs <email>  (production signup test)');
 }
 
 main().catch((err) => {
