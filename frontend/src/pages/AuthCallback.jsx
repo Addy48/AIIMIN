@@ -1,17 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 import { apiGet } from '../utils/api';
+import { resolveOAuthSession } from '../utils/authSession';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
+
+const SESSION_TIMEOUT_MS = 15_000;
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('Establishing secure connection…');
+    const finishedRef = useRef(false);
 
     useEffect(() => {
         const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
@@ -28,35 +32,36 @@ const AuthCallback = () => {
             }
             setError(msg);
             setTimeout(() => navigate('/login'), 5000);
-            return;
+            return undefined;
         }
 
         if (queryStatus === 'error') {
             setError(reason || 'Authentication failed');
             setTimeout(() => navigate('/login'), 3000);
-            return;
+            return undefined;
         }
 
-        // Wait for Supabase to exchange the code for a session
-        const handleCallback = async () => {
+        let cancelled = false;
+
+        const fail = (msg) => {
+            if (cancelled || finishedRef.current) return;
+            finishedRef.current = true;
+            setError(msg);
+            setTimeout(() => navigate('/login'), 3000);
+        };
+
+        const finishWithSession = async (session) => {
+            if (cancelled || finishedRef.current) return;
+            const token = session?.access_token;
+            if (!token) {
+                fail('Could not establish session. Please try again.');
+                return;
+            }
+
+            finishedRef.current = true;
+            setStatus('Checking profile…');
+
             try {
-                setStatus('Verifying identity…');
-
-                // Give Supabase time to process the OAuth exchange
-                await new Promise(r => setTimeout(r, 800));
-
-                const { data: { session }, error: sessionErr } = await supabase.auth.getSession();
-
-                if (sessionErr || !session) {
-                    setError('Could not establish session. Please try again.');
-                    setTimeout(() => navigate('/login'), 3000);
-                    return;
-                }
-
-                localStorage.setItem('aiimin_session_fallback', session.access_token);
-
-                setStatus('Checking profile…');
-
                 const data = await apiGet('/auth/me');
                 const userProfile = data?.user;
 
@@ -68,24 +73,46 @@ const AuthCallback = () => {
 
                 if (isIncomplete) {
                     setStatus('Setting up your profile…');
-                    await new Promise(r => setTimeout(r, 400));
                     navigate('/onboarding', { replace: true });
                 } else {
                     setStatus('Welcome back!');
-                    await new Promise(r => setTimeout(r, 300));
                     navigate('/overview', { replace: true });
                 }
             } catch (err) {
+                console.error('[AuthCallback] profile check failed:', err);
+                // Valid JWT but profile fetch failed — still let them onboard
+                navigate('/onboarding', { replace: true });
+            }
+        };
+
+        const timeoutId = setTimeout(() => {
+            fail('Session setup timed out. Please try signing in again.');
+        }, SESSION_TIMEOUT_MS);
+
+        const handleCallback = async () => {
+            try {
+                setStatus('Verifying identity…');
+                const session = await resolveOAuthSession(supabase, {
+                    searchParams,
+                    timeoutMs: SESSION_TIMEOUT_MS - 1000,
+                });
+                await finishWithSession(session);
+            } catch (err) {
                 console.error('[AuthCallback] error:', err);
-                setError('Something went wrong. Redirecting…');
-                setTimeout(() => navigate('/login'), 3000);
+                fail(err?.message?.includes('timed out')
+                    ? 'Sign-in took too long. Please try again.'
+                    : 'Something went wrong. Redirecting…');
             }
         };
 
         handleCallback();
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timeoutId);
+        };
     }, [searchParams, navigate]);
 
-    /* ── Error state ─────────────────────────────────────────── */
     if (error) {
         return (
             <div style={{
@@ -123,7 +150,6 @@ const AuthCallback = () => {
         );
     }
 
-    /* ── Loading state ───────────────────────────────────────── */
     return (
         <div style={{
             minHeight: '100vh', background: 'var(--color-base)',
@@ -136,13 +162,11 @@ const AuthCallback = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
             >
-                {/* Logo */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
                   <ThemedMark size={48} />
                   <Wordmark size={28} weight={700} color="var(--text-1)" />
                 </div>
 
-                {/* Spinner */}
                 <div style={{ position: 'relative', width: '56px', height: '56px' }}>
                     <div style={{
                         position: 'absolute', inset: 0, borderRadius: '50%',
@@ -152,7 +176,6 @@ const AuthCallback = () => {
                     }} />
                 </div>
 
-                {/* Status text */}
                 <motion.p
                     key={status}
                     initial={{ opacity: 0, y: 6 }}

@@ -2,6 +2,12 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { apiGet, apiPost } from '../utils/api';
 import toast from '../utils/toast';
 import supabase from '../utils/supabase';
+import {
+    clearAccessToken,
+    isOAuthCallbackRoute,
+    persistAccessToken,
+    readAccessToken,
+} from '../utils/authSession';
 
 const AuthContext = createContext(null);
 
@@ -58,44 +64,54 @@ export function AuthProvider({ children }) {
     }, []);
 
     useEffect(() => {
-        // Failsafe timeout: if Supabase hangs or fails to resolve, unblock UI after 2.5s
+        const onCallbackPage = isOAuthCallbackRoute();
+
         const failsafe = setTimeout(() => {
             setLoading(false);
         }, 2500);
 
-        // Monitor Supabase Auth state changes dynamically
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-            console.log(`[Supabase Auth Event] ${event}`);
-            if (currentSession) {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+            if (currentSession?.access_token) {
                 setSession(currentSession);
-                localStorage.setItem('aiimin_session_fallback', currentSession.access_token);
-                try {
-                    await checkSession(currentSession);
-                } catch (err) {
-                    console.error('Failed to sync profile after auth event:', err);
-                    setUser(null);
+                persistAccessToken(currentSession.access_token);
+                // Defer profile sync — never call getSession inside this handler
+                if (event === 'SIGNED_IN' || (!onCallbackPage && event === 'INITIAL_SESSION')) {
+                    setTimeout(() => {
+                        checkSession(currentSession).catch((err) => {
+                            console.error('Failed to sync profile after auth event:', err);
+                        });
+                    }, 0);
                 }
-            } else {
+            } else if (event === 'SIGNED_OUT') {
                 setSession(null);
                 setUser(null);
-                localStorage.removeItem('aiimin_session_fallback');
+                clearAccessToken();
             }
             clearTimeout(failsafe);
             setLoading(false);
         });
 
-        // Initial check for active session
+        // On /auth/callback, AuthCallback owns session setup — skip getSession here (deadlock on all browsers)
+        if (onCallbackPage) {
+            const cached = readAccessToken();
+            if (cached) setLoading(false);
+            return () => {
+                clearTimeout(failsafe);
+                subscription.unsubscribe();
+            };
+        }
+
         supabase.auth.getSession().then(({ data: { session: activeSession } }) => {
             if (activeSession) {
                 setSession(activeSession);
-                localStorage.setItem('aiimin_session_fallback', activeSession.access_token);
+                persistAccessToken(activeSession.access_token);
                 checkSession(activeSession);
             } else {
-                localStorage.removeItem('aiimin_session_fallback');
+                clearAccessToken();
                 clearTimeout(failsafe);
                 setLoading(false);
             }
-        }).catch(err => {
+        }).catch((err) => {
             console.error('Initial getSession failed:', err);
             clearTimeout(failsafe);
             setLoading(false);
@@ -143,7 +159,7 @@ export function AuthProvider({ children }) {
             });
             if (error) throw error;
 
-            localStorage.setItem('aiimin_session_fallback', data.session.access_token);
+            persistAccessToken(data.session.access_token);
             setSession(data.session);
             
             // Fire checkSession in background, do NOT await it
@@ -192,7 +208,7 @@ export function AuthProvider({ children }) {
             });
             if (error) throw error;
 
-            localStorage.setItem('aiimin_session_fallback', data.session.access_token);
+            persistAccessToken(data.session.access_token);
             setSession(data.session);
             
             // Fire checkSession in background, do NOT await it so we don't block login on /auth/me
@@ -219,7 +235,7 @@ export function AuthProvider({ children }) {
         try {
             try { await apiPost('/auth/logout'); } catch(e) {}
             await supabase.auth.signOut();
-            localStorage.removeItem('aiimin_session_fallback');
+            clearAccessToken();
             setUser(null);
             setSession(null);
             toast.success('Logged out successfully');

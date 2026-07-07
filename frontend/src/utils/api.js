@@ -1,10 +1,11 @@
 import supabase from './supabase';
+import { persistAccessToken, readAccessToken } from './authSession';
 
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 export const buildAuthHeaders = (extraHeaders = {}) => ({
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') || '' : ''}`,
+    Authorization: `Bearer ${readAccessToken()}`,
     ...extraHeaders,
 });
 
@@ -36,18 +37,19 @@ export const buildApiUrl = (path, params) => {
  * Get auth token — refresh from Supabase session first, then localStorage fallback.
  */
 export const getCurrentAccessToken = async () => {
+    const cached = readAccessToken();
+    if (cached) return cached;
+
     try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.access_token) {
-            if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('aiimin_session_fallback', session.access_token);
-            }
+            persistAccessToken(session.access_token);
             return session.access_token;
         }
     } catch (_) {
-        // fall through to localStorage
+        // fall through
     }
-    return (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || '';
+    return '';
 };
 
 const resolveHeaders = async ({ headers = {}, json = true, auth = true } = {}) => {
