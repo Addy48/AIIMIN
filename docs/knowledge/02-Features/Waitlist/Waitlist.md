@@ -36,7 +36,7 @@ Landing (modular v9 — July 2026):
 1. User lands on `/` → `WaitlistLanding.jsx`
 2. Hero form: email (required), first name (optional)
 3. `POST /api/waitlist` — validates, optional referral link, returns `position`, `referral_code`, `referral_count`, `reserved_username` (duplicate email can attach OS-ID)
-4. Post-signup: optional OS-ID reserve; confirmation email via SES
+4. Optional OS-ID on signup form; confirmation email via Resend
 5. Owner notified
 
 ## Waitlist exclusives

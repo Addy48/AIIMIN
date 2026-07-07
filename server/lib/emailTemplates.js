@@ -127,14 +127,42 @@ ${preheaderBlock}
 </html>`;
 }
 
-function perkRow(label, detail) {
+function perkRow(label, detail, highlight = false) {
+  const bg = highlight ? `background:${BRAND.accentSoft};border-radius:10px;` : '';
   return `<tr>
-    <td style="padding:10px 0;border-bottom:1px solid ${BRAND.border};vertical-align:top;">
+    <td style="padding:12px 10px;border-bottom:1px solid ${BRAND.border};vertical-align:top;${bg}">
       <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${BRAND.accent};margin-right:10px;vertical-align:middle;"></span>
       <strong style="font-family:${FONT_BODY};font-size:14px;color:${BRAND.text1};">${escapeHtml(label)}</strong>
       <div style="margin:4px 0 0 18px;font-family:${FONT_BODY};font-size:13px;line-height:1.5;color:${BRAND.text2};">${detail}</div>
     </td>
   </tr>`;
+}
+
+function lifeScoreTeaser() {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;border:1px solid #C5D9CC;border-radius:14px;overflow:hidden;background:linear-gradient(180deg, ${BRAND.accentSoft} 0%, ${BRAND.surface} 100%);">
+    <tr><td style="padding:16px 18px 10px;font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.text3};">What you're unlocking</td></tr>
+    <tr><td style="padding:0 18px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="33%" style="padding:8px;text-align:center;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:10px;">
+            <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:700;color:${BRAND.accent};">82</div>
+            <div style="font-size:10px;color:${BRAND.text3};text-transform:uppercase;letter-spacing:0.06em;">Life Score</div>
+          </td>
+          <td width="4"></td>
+          <td width="33%" style="padding:8px;text-align:center;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:10px;">
+            <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:700;color:${BRAND.accent};">1</div>
+            <div style="font-size:10px;color:${BRAND.text3};text-transform:uppercase;letter-spacing:0.06em;">Screen</div>
+          </td>
+          <td width="4"></td>
+          <td width="33%" style="padding:8px;text-align:center;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:10px;">
+            <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:700;color:${BRAND.accent};">₹0</div>
+            <div style="font-size:10px;color:${BRAND.text3};text-transform:uppercase;letter-spacing:0.06em;">To start</div>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:12px 0 0;font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};">Habits, money, focus, mood, sleep — wired into one daily loop. Not five apps. One command layer.</p>
+    </td></tr>
+  </table>`;
 }
 
 function detailRow(label, value) {
@@ -217,77 +245,77 @@ export const EMAIL_TEMPLATES = {
 
   waitlist_confirmation: (v) => {
     const name = v.name ? escapeHtml(v.name) : 'there';
+    const firstName = v.name ? escapeHtml(v.name.split(' ')[0]) : 'friend';
     const referralCode = v.referral_code ? escapeHtml(v.referral_code) : null;
     const referralUrl = referralCode ? `https://www.aiimin.in/?ref=${referralCode}` : null;
     const osId = v.reserved_username ? escapeHtml(v.reserved_username) : null;
 
-    const foundingBadge = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+    const foundingBadge = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
           <tr>
-            <td style="background:${BRAND.accentSoft};border:1px solid #C5D9CC;border-radius:999px;padding:8px 16px;font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${BRAND.accent};">
-              Founding member · perks locked in
+            <td style="background:linear-gradient(90deg, ${BRAND.accent} 0%, ${BRAND.accentDark} 100%);border-radius:999px;padding:9px 18px;font-family:${FONT_BODY};font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:${BRAND.white};">
+              ✦ Founding member — perks locked
             </td>
           </tr>
         </table>`;
 
     const osIdBlock = osId
-      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;background:linear-gradient(135deg, ${BRAND.accentSoft} 0%, ${BRAND.elevated} 100%);border:1px solid #C5D9CC;border-radius:14px;">
-          <tr><td style="padding:18px 20px;">
-            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.text3};margin-bottom:6px;">Your OS-ID</div>
-            <div style="font-family:${FONT_DISPLAY};font-size:26px;font-weight:700;color:${BRAND.accent};letter-spacing:0.02em;">@${osId}</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-top:8px;">Reserved for this email at launch. No one else can claim it.</div>
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:linear-gradient(135deg, ${BRAND.accentSoft} 0%, ${BRAND.elevated} 100%);border:1px solid #C5D9CC;border-radius:14px;">
+          <tr><td style="padding:18px 20px;text-align:center;">
+            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:${BRAND.text3};margin-bottom:8px;">Your OS-ID is locked</div>
+            <div style="font-family:${FONT_DISPLAY};font-size:30px;font-weight:700;color:${BRAND.accent};letter-spacing:0.04em;">@${osId}</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-top:10px;">Ships with your account at launch. Nobody else can claim this handle.</div>
           </td></tr>
         </table>`
-      : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;background:${BRAND.elevated};border-radius:14px;border:1px dashed ${BRAND.border};">
-          <tr><td style="padding:16px 18px;">
-            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Claim your OS-ID</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};">Return to the waitlist page to lock an 8-character handle — it ships with your account on day one.</div>
-          </td></tr>
-        </table>`;
+      : '';
 
     const referralBlock = referralUrl
-      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;background:${BRAND.accentSoft};border:1px solid #C5D9CC;border-radius:14px;">
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 0;background:${BRAND.elevated};border:1px solid ${BRAND.border};border-radius:14px;">
           <tr><td style="padding:18px 20px;">
-            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Share AIIMIN, unlock founding bonuses</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-bottom:12px;">Every friend who joins through your link strengthens your founding package — share once, we track the rest.</div>
-            <a href="${referralUrl}" style="font-family:${FONT_BODY};font-size:13px;font-weight:500;color:${BRAND.accent};word-break:break-all;">${referralUrl}</a>
+            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Your founding link</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-bottom:12px;">Share AIIMIN with one friend who'd actually use it. Every signup through your link strengthens your founding package.</div>
+            <a href="${referralUrl}" style="display:inline-block;padding:10px 14px;background:${BRAND.surface};border:1px solid ${BRAND.border};border-radius:8px;font-family:monospace;font-size:12px;font-weight:500;color:${BRAND.accent};text-decoration:none;word-break:break-all;">${referralUrl}</a>
           </td></tr>
         </table>`
       : '';
 
     const bodyHtml = `
       ${foundingBadge}
-      <p style="font-family:${FONT_BODY};font-size:16px;line-height:1.65;color:${BRAND.text2};margin:0 0 20px;">
-        Hey ${name} — you're officially on the AIIMIN founding waitlist. We're building a personal operating system for habits, money, focus, and recovery — one screen, every day.
+      <p style="font-family:${FONT_BODY};font-size:17px;line-height:1.6;color:${BRAND.text1};margin:0 0 8px;font-weight:600;">
+        ${firstName}, you're in.
       </p>
+      <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.65;color:${BRAND.text2};margin:0 0 20px;">
+        You just secured a spot on the AIIMIN founding waitlist — the personal Life OS built for Indian students who are tired of juggling Notion, spreadsheets, and guilt.
+      </p>
+      ${lifeScoreTeaser()}
       ${osIdBlock}
-      <p style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin:0 0 12px;">What's locked in for you</p>
+      <p style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin:0 0 10px;">Locked in at launch</p>
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;">
-        ${perkRow('Complimentary Core', 'Full Core tier at launch — waitlist only.')}
-        ${perkRow('Founding Pro — ₹49/mo', '12 months at founding price (list ₹59/mo).')}
-        ${perkRow('Founding Elite — ₹79/mo', '12 months at founding price (list ₹99/mo).')}
-        ${perkRow('Founding starter kit', 'Onboarding bundle reserved for early signups.')}
-        ${perkRow('Life Score first', 'Target launch: <strong>September 2026</strong>. You will hear from us before anyone else.')}
+        ${perkRow('Complimentary Core', 'Full Core tier at go-live — <strong>waitlist only</strong>, never offered again.', true)}
+        ${perkRow('Founding Pro — ₹49/mo', '12 months at founding rate (list ₹59). Behavioural analytics that connect.')}
+        ${perkRow('Founding Elite — ₹79/mo', '12 months at founding rate (list ₹99). Every module, highest limits.')}
+        ${perkRow('Life Score + streaks', 'Your daily completion ring, XP ranks, and pattern insights — from day one.')}
+        ${perkRow('September 2026', 'You hear from us <strong>before</strong> public launch. Early testers get first keys.')}
       </table>
       ${referralBlock}
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 0;border-left:3px solid ${BRAND.accent};">
-        <tr><td style="padding:0 0 0 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 0;padding:16px 18px;background:${BRAND.elevated};border-radius:12px;border-left:4px solid ${BRAND.accent};">
+        <tr><td>
           <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.65;color:${BRAND.text2};margin:0;">
-            <strong style="color:${BRAND.text1};">A note from the builder</strong><br>
-            AIIMIN started as my own daily system — not another productivity app. Reply to this email anytime; it reaches a real person, not a bot.
+            <strong style="color:${BRAND.text1};">From the builder</strong><br>
+            I built AIIMIN because I needed one screen that told the truth about my day — not another app to maintain. Reply to this email; it reaches me directly.
             <br><br>— Aaditya
           </p>
         </td></tr>
       </table>`;
 
     return {
-      subject: `You're in — AIIMIN founding waitlist${v.name ? `, ${v.name}` : ''}`,
+      subject: `${firstName}, your AIIMIN founding spot is locked ✦`,
       html: waitlistLayout({
-        preheader: 'Founding perks locked in — complimentary Core at launch + founding pricing.',
+        preheader: 'Complimentary Core at launch + founding pricing. One screen for habits, money, focus, and mood.',
         eyebrow: 'Founding access',
-        title: "You're on the list.",
+        title: 'Welcome to the inside.',
         bodyHtml,
-        ctaHref: BRAND.siteUrl,
-        ctaLabel: 'Back to the waitlist',
+        ctaHref: referralUrl || BRAND.siteUrl,
+        ctaLabel: referralUrl ? 'Share your founding link' : 'Back to AIIMIN',
         footerNote: 'Invited testers: register by <strong>31 July</strong> for Elite free for one year.',
       }),
     };

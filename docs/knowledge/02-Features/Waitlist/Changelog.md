@@ -13,6 +13,16 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (Resend-only migration — SES removed)
+
+- Replaced AWS SES/nodemailer with official `resend` SDK in `server/lib/email.js`.
+- Removed all SES env vars from examples; added `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`.
+- Redesigned `waitlist_confirmation` email: Life Score teaser, founding perks, punchier subject line.
+- Added `deploy/RESEND-SETUP.md`, `deploy/LAUNCH-PLAN.md`; updated `POST-SES-STEPS.md`.
+- **Action:** verify `aiimin.in` in Resend DNS; rotate API key; set EC2 env; decommission SES SMTP IAM user.
+- Files: `server/lib/email.js`, `server/lib/emailTemplates.js`, `package.json`, deploy docs
+- Status: code ready — domain verification + EC2 env required
+
 ## 2026-07-07 (Email — Resend provider + setup guide)
 
 - Added Resend HTTP API alongside SES SMTP in `server/lib/email.js` (`EMAIL_PROVIDER=auto|resend|ses`).
