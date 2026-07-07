@@ -324,9 +324,30 @@ app.post('/', waitlistLimiter, async (c) => {
         if (constraint.includes('reserved_username')) {
           return c.json({ error: 'That OS-ID is already taken — try another' }, 409);
         }
+
+        let attachedUsername = null;
+        if (reservedUsername) {
+          const { rows: existingRows } = await pool.query(
+            'SELECT reserved_username FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
+            [email],
+          );
+          const existingUsername = existingRows[0]?.reserved_username;
+          if (existingUsername) {
+            attachedUsername = existingUsername;
+          } else if (await isUsernameTaken(reservedUsername)) {
+            return c.json({ error: 'That OS-ID is already taken — try another' }, 409);
+          } else {
+            await pool.query(
+              'UPDATE waitlist_emails SET reserved_username = $1 WHERE lower(email) = lower($2)',
+              [reservedUsername, email],
+            );
+            attachedUsername = reservedUsername;
+          }
+        }
+
         const position = await getWaitlistPosition(email);
         const { rows } = await pool.query(
-          'SELECT referral_code, referral_count FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
+          'SELECT referral_code, referral_count, reserved_username FROM waitlist_emails WHERE lower(email) = lower($1) LIMIT 1',
           [email],
         ).catch(() => ({ rows: [] }));
         return c.json({
@@ -336,6 +357,7 @@ app.post('/', waitlistLimiter, async (c) => {
           position,
           referral_code: rows[0]?.referral_code || null,
           referral_count: rows[0]?.referral_count ?? 0,
+          reserved_username: attachedUsername || rows[0]?.reserved_username || null,
         });
       }
       if (/referral_code|referred_by/i.test(err.message)) {

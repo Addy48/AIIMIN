@@ -288,3 +288,122 @@
   font-size: 13px;
   color: var(--color-text-2);
 }
+
+/* Waitlist brand story (simplified) */
+.brand-main--story {
+  max-width: 720px;
+}
+
+.brand-hero--minimal {
+  padding: clamp(2rem, 6vw, 4rem) 0 2rem;
+}
+
+.brand-logo-showcase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.brand-story-section {
+  padding: 2.5rem 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.brand-story-section h2 {
+  margin: 0 0 16px;
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 3vw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.brand-story-copy {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--color-text-2);
+}
+
+.brand-story-copy strong {
+  color: var(--color-text-1);
+  font-weight: 600;
+}
+
+.brand-mark-explainer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(20px, 4vw, 32px);
+  align-items: start;
+}
+
+.brand-mark-visual {
+  padding: 20px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--color-border);
+  background: #FAFAF8;
+}
+
+.brand-mark-copy p {
+  margin: 0 0 12px;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--color-text-2);
+}
+
+.brand-mark-copy strong {
+  color: var(--color-text-1);
+}
+
+.brand-mark-note {
+  margin-top: 16px !important;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem !important;
+  color: var(--color-text-2) !important;
+}
+
+.brand-story-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 2rem 0 3rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.brand-inline-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-2);
+  text-decoration: none;
+}
+
+.brand-inline-link:hover {
+  color: var(--color-text-1);
+}
+
+.brand-footer--minimal {
+  padding: 28px 24px 40px;
+}
+
+.brand-lockup-link {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-2);
+}
+
+.brand-lockup-link svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .brand-mark-explainer {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-mark-visual {
+    justify-self: center;
+  }
+}

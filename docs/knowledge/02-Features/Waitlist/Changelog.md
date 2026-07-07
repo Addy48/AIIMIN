@@ -1,5 +1,54 @@
 # Waitlist Changelog
 
+## 2026-07-06 (cleanup + ship modular waitlist v9)
+
+- Removed dead CSS: old roadmap timeline/bar, pre-signup OS-ID checkbox, founder-signal.
+- Vault: updated `Waitlist.md` + `_manifest.json` status for modular landing + phase ladder.
+- Ready to push: frontend landing modules, brand page, waitlist API duplicate-email OS-ID attach.
+
+## 2026-07-06 (launch journey — phase ladder)
+
+- Replaced cluttered 3-column journey+module grid with vertical **4-phase ladder**: Reserve access → Founding launch → Module rollout → Full OS expansion.
+- Each phase shows window, status pill, "Your move" vs "What unlocks", and access/approval note (waitlist vs tester).
+- Legend row: Open now · At launch · Rollout · Expansion.
+- Files: `WaitlistLaunchJourney.jsx`, `waitlistLandingData.js`, `waitlistLanding.css`
+
+## 2026-07-06 (modular refactor, hero parity, premium pricing, launch journey)
+
+- Refactored monolithic `WaitlistLanding.jsx` (~1000 lines) into thin orchestrator + `frontend/src/components/waitlist/landing/*` modules with shared `waitlistLandingData.js`.
+- Hero: full-width `waitlist-top-bar` (brand lockup + exclusive badge + theme toggle); equal-height split panels via stretch grid + flex columns.
+- Pricing: premium tier cards with icons, checkmark feature lists, elevated Pro glow/gradient; extracted `WaitlistPricingSection.jsx`.
+- Journey: merged "How it works" + roadmap into `WaitlistLaunchJourney.jsx` — three user steps woven with module ship cards.
+- Testimonials: credible regional personas (2 professors, 1 student, 1 working professional) — no IIT/IIM celebrity tone.
+- Files: `WaitlistLanding.jsx`, `waitlistLanding.css`, `components/waitlist/landing/*`
+
+## 2026-07-06 (pricing personality, access parity, roadmap motion, Life OS copy)
+
+- Hero: **One screen. Every day.** on top; habits/money/focus line below. Aggressive Life OS positioning (web + native app) — removed "dashboard" marketing.
+- Early access: tester card +2 perks (6 each); equal-height flex cards with CTAs pinned to bottom.
+- Roadmap: phased timeline with animated progress rail, status nodes (done/building/planned), phase labels + tooltips inline.
+- Pricing: per-tier accent bar, watermark letter, tagline, tinted gradients (slate/teal/green/amber).
+- Comparison: replaced long bar chart + table with compact **stack vs AIIMIN** visual + tier pills.
+- Files: `WaitlistLanding.jsx`, `waitlistLanding.css`
+
+## 2026-07-06 (conversion hero — less friction, fixed typography)
+
+- Fixed: hero left column top-aligned; preview moved to left, form-only on right (sticky).
+- Removed: duplicate 3-bullet checklist, preview pill tabs, segmented Light/Dark toggle.
+- Fixed: "money" uses same display font + accent color (no Bodoni italic bug).
+- Moved: OS-ID reservation to post-signup confirmation with Skip; removed pre-CTA checkbox.
+- Backend: duplicate email signup can attach `reserved_username` if not yet set.
+- Files: `WaitlistLanding.jsx`, `WaitlistForm.jsx`, `waitlistLanding.css`, `server/routes/waitlist.js`
+
+## 2026-07-06 (hero alignment, pricing polish, brand story page)
+
+- Fixed: hero left column top-aligned with form card (`align-items: start`) — no longer vertically centered between form + preview.
+- Removed: founder credit line from hero and footer.
+- Changed: pricing cards — neutral typography, single "Recommended" eyebrow on Pro, strikethrough list + founding price stack (no green FOUNDING PRICE pills).
+- Changed: "AIIMIN tiers at a glance" → clean 3-column table (Plan / Standard / Waitlist).
+- Changed: `/brand` waitlist brand page — Editor Pick logo only, name + mark story, removed forest green palette, pillars, compliance block, and product system brand link.
+- Files: `WaitlistLanding.jsx`, `WaitlistBrand.jsx`, `waitlistLanding.css`, `brandPage.css`
+
 ## 2026-07-06 (backend audit — migrations + approve fix)
 
 - Applied on Supabase: `034_waitlist_referrals.sql` (referral_code, referred_by, referral_count) and `033_tester_allowlist_role_guard.sql`.

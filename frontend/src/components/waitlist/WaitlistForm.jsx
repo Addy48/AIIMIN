@@ -66,13 +66,82 @@ function buildTwitterShare(code) {
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
 
+function OsIdReservePanel({ email, existingId, onReserved }) {
+  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [skipped, setSkipped] = useState(false);
+
+  if (existingId || skipped) return null;
+
+  const reserve = async () => {
+    const osIdErr = validateOsId(username);
+    if (osIdErr) {
+      setError(osIdErr);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_URL}/waitlist`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          reserved_username: username.trim().toUpperCase(),
+          source: 'post_signup_osid',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || 'Could not reserve that handle');
+        return;
+      }
+      onReserved?.(data.reserved_username || username.trim().toUpperCase());
+    } catch {
+      setError('Network error — try again');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="osid-post-signup">
+      <p className="osid-post-signup-title">Optional: lock your @handle</p>
+      <p className="osid-post-signup-hint">
+        Pick an 8-character OS-ID now, or choose one when you&apos;re invited.
+      </p>
+      <div className="osid-post-signup-row">
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '').slice(0, 8))}
+          placeholder="NEXUS42"
+          maxLength={8}
+          className="waitlist-input waitlist-input-id"
+          aria-label="Preferred OS-ID"
+        />
+        <button type="button" className="osid-post-signup-btn" onClick={reserve} disabled={loading}>
+          {loading ? 'Saving…' : 'Reserve'}
+        </button>
+      </div>
+      {error && <p className="waitlist-form-error">{error}</p>}
+      <button type="button" className="osid-post-signup-skip" onClick={() => setSkipped(true)}>
+        Skip for now
+      </button>
+    </div>
+  );
+}
+
 function ConfirmationPanel({
+  email,
   firstName,
   position,
   referralCode,
   reservedId,
   compact,
   showFeatureVote = true,
+  onReservedId,
 }) {
   const [copied, setCopied] = useState(false);
   const [voteOpen, setVoteOpen] = useState(false);
@@ -102,8 +171,16 @@ function ConfirmationPanel({
         </p>
       )}
       <p className="next-step">Check your email for a confirmation link.</p>
-      {reservedId && (
+      {reservedId ? (
         <p className="waitlist-form-success-id">Your OS-ID is locked: @{reservedId}</p>
+      ) : (
+        email && (
+          <OsIdReservePanel
+            email={email}
+            existingId={reservedId}
+            onReserved={(id) => onReservedId?.(id)}
+          />
+        )
       )}
 
       <hr className="confirmation-divider" />
@@ -173,17 +250,13 @@ export default function WaitlistForm({
   const formId = useId();
   const firstNameId = `${formId}-first-name`;
   const emailId = `${formId}-email`;
-  const osIdInputId = `${formId}-osid`;
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [username, setUsername] = useState('');
-  const [reserveNow, setReserveNow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [confirmation, setConfirmation] = useState(null);
   const [emailTouched, setEmailTouched] = useState(false);
-  const [osTouched, setOsTouched] = useState(false);
   const referredBy = useMemo(() => captureReferralFromUrl(), []);
 
   useEffect(() => {
@@ -198,21 +271,11 @@ export default function WaitlistForm({
     e.preventDefault();
     const sanitized = email.trim().toLowerCase();
     const nameVal = firstName.trim();
-    const usernameVal = username.trim().toUpperCase();
 
     if (!EMAIL_RE.test(sanitized)) {
       setErrorMsg('Enter a valid email');
       setStatus('error');
       return;
-    }
-
-    if (reserveNow && usernameVal) {
-      const osIdErr = validateOsId(usernameVal);
-      if (osIdErr) {
-        setErrorMsg(osIdErr);
-        setStatus('error');
-        return;
-      }
     }
 
     setLoading(true);
@@ -225,7 +288,6 @@ export default function WaitlistForm({
         source: 'landing_page_v2',
       };
       if (nameVal) payload.first_name = nameVal;
-      if (reserveNow && usernameVal) payload.reserved_username = usernameVal;
       if (referredBy) payload.referred_by = referredBy;
 
       const res = await fetch(`${API_URL}/waitlist`, {
@@ -242,11 +304,12 @@ export default function WaitlistForm({
       }
 
       const nextConfirmation = {
+        email: sanitized,
         name: nameVal || 'friend',
         position: data.position ?? null,
         referralCode: data.referral_code || '',
         referralCount: data.referral_count ?? 0,
-        reservedId: data.reserved_username || usernameVal || '',
+        reservedId: data.reserved_username || '',
       };
 
       if (data.already_registered) {
@@ -274,6 +337,14 @@ export default function WaitlistForm({
     }
   };
 
+  const handleReservedId = (id) => {
+    setConfirmation((prev) => {
+      const next = { ...prev, reservedId: id };
+      persistSignup(next);
+      return next;
+    });
+  };
+
   if ((status === 'success' || status === 'already' || status === 'returning') && confirmation) {
     if (status === 'already') {
       return (
@@ -284,11 +355,13 @@ export default function WaitlistForm({
           </p>
           <ConfirmationPanel
             firstName={confirmation.name}
+            email={confirmation.email}
             position={confirmation.position}
             referralCode={confirmation.referralCode}
             reservedId={confirmation.reservedId}
             compact={compact}
             showFeatureVote={showFeatureVote}
+            onReservedId={handleReservedId}
           />
         </div>
       );
@@ -296,26 +369,27 @@ export default function WaitlistForm({
     return (
       <ConfirmationPanel
         firstName={confirmation.name}
+        email={confirmation.email}
         position={confirmation.position}
         referralCode={confirmation.referralCode}
         reservedId={confirmation.reservedId}
         compact={compact}
         showFeatureVote={showFeatureVote}
+        onReservedId={handleReservedId}
       />
     );
   }
 
   const emailHasError = emailTouched && !EMAIL_RE.test(email.trim().toLowerCase());
-  const osHasError = reserveNow && osTouched && username && !!validateOsId(username);
 
   return (
     <form onSubmit={submit} className={`waitlist-form ${compact ? 'waitlist-form-compact' : ''} ${variant === 'hero' ? 'waitlist-form-hero' : ''}`}>
       {variant === 'hero' && !compact && (
         <div className="waitlist-form-hero-head">
           <span className="waitlist-form-badge">Launching Sept 2026</span>
-          <h2 className="waitlist-form-heading">Get early access</h2>
+          <h2 className="waitlist-form-heading">Join the waitlist</h2>
           <p className="waitlist-form-lead">
-            Be one of the first to join — reserve your OS-ID and unlock founding member perks at go-live.
+            Founding member perks at launch — complimentary Core, Pro at ₹49/mo, Elite at ₹79/mo.
           </p>
         </div>
       )}
@@ -356,45 +430,9 @@ export default function WaitlistForm({
         </div>
       </div>
 
-      <label className="osid-checkbox-wrapper" htmlFor={`${formId}-osid-toggle`}>
-        <input
-          id={`${formId}-osid-toggle`}
-          type="checkbox"
-          className="osid-checkbox"
-          checked={reserveNow}
-          onChange={(e) => setReserveNow(e.target.checked)}
-        />
-        <span className="osid-checkbox-label">Reserve my 8-character OS-ID now</span>
-      </label>
-      <p className="osid-checkbox-hint">
-        Your unique @handle on AIIMIN — reserve it now or claim one when you&apos;re invited.
-      </p>
-
-      {reserveNow && (
-        <div className="waitlist-field">
-          <label htmlFor={osIdInputId} className="waitlist-label">
-            Preferred OS-ID <span>(optional)</span>
-          </label>
-          <input
-            id={osIdInputId}
-            type="text"
-            value={username}
-            onBlur={() => setOsTouched(true)}
-            onChange={(e) => setUsername(e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '').slice(0, 8))}
-            placeholder="NEXUS42"
-            maxLength={8}
-            className={`waitlist-input waitlist-input-id ${osHasError ? 'waitlist-input-error' : ''}`}
-            aria-label="Reserved OS-ID username"
-          />
-          <p className="waitlist-field-hint">
-            Exactly 8 characters. Letters, numbers, and symbols allowed. Max 4 numbers.
-          </p>
-        </div>
-      )}
-
       <button type="submit" disabled={loading} className="waitlist-submit-btn">
         <Sparkles size={14} />
-        {loading ? 'Saving your spot...' : '✦ Reserve my spot'}
+        {loading ? 'Joining...' : 'Join the waitlist'}
       </button>
 
       {showUrgency && (
@@ -410,7 +448,6 @@ export default function WaitlistForm({
       )}
 
       {emailHasError && <p className="waitlist-form-error">Enter a valid email address.</p>}
-      {osHasError && <p className="waitlist-form-error">{validateOsId(username)}</p>}
       {status === 'error' && (
         <p className="waitlist-form-error">
           {errorMsg || 'Something went wrong. Try again.'}

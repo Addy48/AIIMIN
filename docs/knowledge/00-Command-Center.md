@@ -39,7 +39,7 @@ AIIMIN is a personal operating system for disciplined execution, reflection, and
 
 When `REACT_APP_WAITLIST_MODE=true`:
 
-- `/` shows waitlist landing: hero with **light CSS dashboard mock** (chart axis labels), pricing at section 4 (Core ₹29, Pro ₹49 founding, Elite ₹79 founding), **split comparison** (external bars + AIIMIN tier list)
+- `/` shows **modular waitlist landing** (`WaitlistLanding.jsx` + `components/waitlist/landing/*`): full-width brand top bar, equal-height hero split, premium pricing, **4-phase launch ladder** (access → launch → rollout → expand)
 - Wordmark in nav/footer links to `/brand` — **WaitlistBrand** for public waitlist visitors (theme synced with landing via `aiimin-waitlist-theme`); system OAuth brand at `/brand/system` or `/brand` when user has app access
 - **Pricing policy:** Pro founding ₹49/mo (~17% off ₹59) for waitlist; Elite founding ₹79/mo (~20% off ₹99); complimentary Core at launch; Core standard ₹29/mo
 - Primary CTA copy: **Reserve my spot** — nav outline button, form solid submit
