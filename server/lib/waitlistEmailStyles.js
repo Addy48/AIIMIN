@@ -1,9 +1,14 @@
 /** Shared light + dark (prefers-color-scheme) styles for waitlist emails */
 
-export const LOGO_URL = 'https://aiimin.in/AIIMIN_logo.svg';
+export const LOGO_URL_LIGHT = 'https://aiimin.in/AIIMIN_logo.svg';
+export const LOGO_URL_DARK = 'https://aiimin.in/AIIMIN_logo_dark.svg';
+/** @deprecated use LOGO_URL_LIGHT */
+export const LOGO_URL = LOGO_URL_LIGHT;
 
 export const WAITLIST_EMAIL_DARK_CSS = `
 :root { color-scheme: light dark; supported-color-schemes: light dark; }
+.wl-logo-light { display: block !important; }
+.wl-logo-dark { display: none !important; }
 @media (prefers-color-scheme: dark) {
   .wl-body, .wl-outer { background-color: #050505 !important; }
   .wl-frame { background-color: #0A0A0C !important; border-color: #2A2A2E !important; }
@@ -16,6 +21,8 @@ export const WAITLIST_EMAIL_DARK_CSS = `
   .wl-muted { color: #6B665C !important; }
   .wl-footer { color: #6B665C !important; border-top-color: #2A2A2E !important; }
   .wl-footer a { color: #4C9770 !important; }
+  .wl-logo-light { display: none !important; }
+  .wl-logo-dark { display: block !important; }
   .wl-badge-count td { color: #BFE3CC !important; background-color: rgba(76,151,112,0.14) !important; border: 1px solid rgba(76,151,112,0.35) !important; border-radius: 20px !important; }
   .wl-hero td { background-color: #151417 !important; border-color: #2A2A2E !important; }
   .wl-hero-title { color: #4C9770 !important; }

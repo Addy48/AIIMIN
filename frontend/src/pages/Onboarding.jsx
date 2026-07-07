@@ -5,6 +5,8 @@ import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiPatch, apiGet, getCurrentAccessToken } from '../utils/api';
 import { suggestOsIdFromName } from '../utils/osId';
+import ThemedMark from '../components/brand/ThemedMark';
+import Wordmark from '../components/brand/Wordmark';
 
 /* ─── helpers ──────────────────────────────────────────────── */
 const PIN_DIGITS  = 6;
@@ -541,8 +543,9 @@ export default function Onboarding() {
             <div style={{ width: '100%', maxWidth: '440px' }}>
                 {/* Logo */}
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: '26px', fontWeight: 900, letterSpacing: '-0.04em', color: 'var(--text-1)' }}>
-                        AIIMIN
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <ThemedMark size={44} />
+                        <Wordmark size={26} weight={700} color="var(--text-1)" />
                     </div>
                     <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '4px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                         Profile Setup

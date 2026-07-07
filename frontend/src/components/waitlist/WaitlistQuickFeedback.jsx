@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Lightbulb, Send, Sparkles } from 'lucide-react';
 import Wordmark from '../brand/Wordmark';
+import ThemedMark from '../brand/ThemedMark';
 import { useAuth } from '../../hooks/useAuth';
 import { API_URL } from '../../utils/api';
 import '../../styles/waitlistLanding.css';
@@ -211,7 +212,8 @@ export function WaitlistPendingScreen() {
   return (
     <div className="waitlist-pending-screen">
       <div className="waitlist-pending-logo">
-        <Wordmark />
+        <ThemedMark size={44} density="default" />
+        <Wordmark size={24} color="var(--color-text-1)" />
       </div>
       <motion.h1
         initial={{ opacity: 0, y: 12 }}
