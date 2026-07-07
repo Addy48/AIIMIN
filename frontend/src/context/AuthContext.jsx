@@ -251,7 +251,7 @@ export function AuthProvider({ children }) {
         user,
         session,
         loading,
-        isSignedIn: Boolean(session?.user),
+        isSignedIn: Boolean(session?.user) || Boolean(readAccessToken()),
         signInWithGoogle,
         signUpWithUsername,
         signInWithUsername,
