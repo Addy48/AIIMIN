@@ -1,5 +1,11 @@
 # Waitlist Changelog
 
+## 2026-07-07 (GitHub Actions deploy fix)
+
+- `.github/workflows/deploy-api.yml`: auto-clone if `~/AIIMIN` has no `.git`, preserve `.env`, `npm install` instead of `npm ci`, longer SSH timeouts, `workflow_dispatch`.
+- Added `deploy/github-ec2-deploy.sh` and `deploy/GITHUB-ACTIONS.md`.
+- Root cause of failures: rsync deploy had no git; intermittent SSH timeout from GitHub runner IPs not in EC2 security group.
+
 ## 2026-07-07 (Waitlist email redesign — Nordic brand)
 
 - Rebuilt `waitlist_confirmation`, `waitlist_owner_notify`, and `waitlist_invite` in `server/lib/emailTemplates.js`.
