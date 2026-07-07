@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
                 setSession(currentSession);
                 persistAccessToken(currentSession.access_token);
                 // Defer profile sync — never call getSession inside this handler
-                if (event === 'SIGNED_IN' || (!onCallbackPage && event === 'INITIAL_SESSION')) {
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || (!onCallbackPage && event === 'INITIAL_SESSION')) {
                     setTimeout(() => {
                         checkSession(currentSession).catch((err) => {
                             console.error('Failed to sync profile after auth event:', err);

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiPatch, apiGet } from '../utils/api';
-import { persistAccessToken, readAccessToken, ensureSupabaseSession } from '../utils/authSession';
+import { persistAccessToken, readAccessToken, ensureSupabaseSession, requireFreshAccessToken } from '../utils/authSession';
 import supabase from '../utils/supabase';
 import { suggestOsIdFromName } from '../utils/osId';
 import ThemedMark from '../components/brand/ThemedMark';
@@ -285,16 +285,12 @@ export default function Onboarding() {
             const upperUsername = username.trim().toUpperCase();
             const trimmedName = fullName.trim();
 
+            const token = await requireFreshAccessToken(supabase);
             let liveSession = await ensureSupabaseSession(supabase);
-            const token = liveSession?.access_token || readAccessToken();
-            if (!token) {
-                throw new Error('No session — please sign in again');
-            }
-            persistAccessToken(token);
             if (liveSession?.user) await checkSession(liveSession);
 
             // #region agent log
-            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'start',data:{hasToken:Boolean(token),hasSupabaseUser:Boolean(liveSession?.user),hasCtxUser:Boolean(user?.email)},hypothesisId:'H5',timestamp:Date.now(),runId:'onboarding-submit-v3'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'Onboarding.jsx:submitAll',message:'start',data:{hasToken:Boolean(token),hasSupabaseUser:Boolean(liveSession?.user),hasCtxUser:Boolean(user?.email)},hypothesisId:'H5',timestamp:Date.now(),runId:'onboarding-submit-v4'})}).catch(()=>{});
             // #endregion
 
             await apiPost('/auth/complete-google-profile', {
@@ -312,8 +308,14 @@ export default function Onboarding() {
             }
 
             for (const gId of selectedGoals) {
-                const goalName = GOAL_OPTIONS.find(g => g.id === gId)?.label;
-                await apiPost('/goals', { title: goalName, category: 'life', status: 'in_progress', progress: 0 });
+                const goal = GOAL_OPTIONS.find(g => g.id === gId);
+                await apiPost('/goals', {
+                    title: goal?.label,
+                    category: gId,
+                    frequency: 'monthly',
+                    status: 'in_progress',
+                    progress: 0,
+                });
             }
 
             // PIN last — may revoke JWT; data is already saved

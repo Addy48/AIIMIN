@@ -1,5 +1,14 @@
 # Waitlist Changelog
 
+## 2026-07-08 (Onboarding goals schema + auth token + Supabase RLS CRITICAL)
+
+- **Onboarding step 8** failed: `column "title" of relation "goals" does not exist` — production `goals` table uses `metric`, `target`, `frequency`, `meta` (not `title`).
+- Fixed `server/routes/goals.js`: API maps `title`/`status`/`progress` ↔ DB columns; soft-delete via `deleted_at`.
+- Fixed auth: `requireFreshAccessToken()` rejects expired `aiimin_session_fallback` JWT before API calls (`authSession.js`, `api.js`, `Onboarding.jsx`).
+- **Supabase CRITICAL RLS** (email 2026-07-06): enabled RLS + revoked anon/authenticated on `api_usage_log`, `api_provider_budgets`, `waitlist_feedback` — migration `035_rls_api_waitlist_feedback.sql` applied live.
+- Files: `goals.js`, `authSession.js`, `api.js`, `Onboarding.jsx`, `AuthContext.jsx`, `scripts/launch-verify.mjs`, `scripts/sync-react-env.mjs`
+- Status: **push to main** → EC2 deploy (API) + Vercel (frontend); retest LC-12
+
 ## 2026-07-08 (Codebase audit — deploy parity + Vercel API proxy)
 
 - Full audit: `docs/CODEBASE-AUDIT-2026-07-08.md` — GHA ✅, EC2 health ✅, Vercel prod at `ac0a4896`.

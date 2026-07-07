@@ -1,5 +1,11 @@
 # API Usage Changelog
 
+## 2026-07-08
+
+- **Supabase CRITICAL RLS fix:** `api_usage_log` and `api_provider_budgets` had RLS disabled — anyone with anon key could read/write via PostgREST.
+- Applied `server/migrations/035_rls_api_waitlist_feedback.sql`: ENABLE RLS + REVOKE anon/authenticated (Express pool still works).
+- Status: applied on Supabase project `yubxgftugxbwtywyhcsv`; CRITICAL linter errors cleared
+
 ## 2026-07-04
 
 - Added: `api_usage_log` + `api_provider_budgets` tables, `apiUsageService`, admin routes, AdminPanel API Usage tab

@@ -168,8 +168,9 @@ Run anytime: `node scripts/launch-verify.mjs`
 
 ## 10. Recommended next steps (priority)
 
-1. **Deploy `vercel.json` proxy fix** — push this audit commit
-2. **LC-12:** Each tester: Google login → onboarding → `/overview`
+1. ~~**Deploy `vercel.json` proxy fix**~~ — done `70f80030`
+2. **Deploy goals + auth fixes** — commit pending (goals schema, requireFreshAccessToken)
+3. **LC-12:** Each tester: Google login → onboarding → `/overview`
 3. **Set GA4 + Sentry** on Vercel + EC2
 4. **Rotate Resend key** (Phase 0.7)
 5. **Remove auth debug logs** after LC-12 confirmed

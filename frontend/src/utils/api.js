@@ -1,5 +1,5 @@
 import supabase from './supabase';
-import { isOAuthCallbackRoute, persistAccessToken, readAccessToken, ensureSupabaseSession } from './authSession';
+import { isOAuthCallbackRoute, persistAccessToken, readAccessToken, ensureSupabaseSession, requireFreshAccessToken, isAccessTokenExpired } from './authSession';
 
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -40,13 +40,14 @@ export const buildApiUrl = (path, params) => {
 export const getCurrentAccessToken = async () => {
     if (isOAuthCallbackRoute()) {
         const cached = readAccessToken();
-        if (cached) return cached;
+        if (cached && !isAccessTokenExpired(cached)) return cached;
     }
 
-    const session = await ensureSupabaseSession(supabase);
-    if (session?.access_token) return session.access_token;
-
-    return readAccessToken();
+    try {
+        return await requireFreshAccessToken(supabase);
+    } catch (_) {
+        return '';
+    }
 };
 
 const resolveHeaders = async ({ headers = {}, json = true, auth = true } = {}) => {
