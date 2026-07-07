@@ -56,7 +56,8 @@ else
 fi
 pm2 save
 
+# shellcheck source=deploy/wait-for-api.sh
+source "$(dirname "$0")/wait-for-api.sh"
 echo "==> health check"
-curl -fsS http://localhost:3001/api/health
-echo ""
+wait_for_api "http://localhost:3001/api/health" 30 2
 echo "==> deploy OK ($(git rev-parse --short HEAD))"
