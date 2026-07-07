@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useMemo, useState } from 'react';
-import { CheckCircle2, Sparkles } from 'lucide-react';
+import { CheckCircle2, Sparkles, BadgeCheck, AtSign } from 'lucide-react';
 import { API_URL } from '../../utils/api';
+import { suggestOsIdFromName } from '../../utils/osId';
 import WaitlistQuickFeedback from './WaitlistQuickFeedback';
 import '../../styles/waitlistLanding.css';
 
@@ -32,7 +33,6 @@ function persistSignup(data) {
   localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify({
     email: data.email || '',
     name: data.name || '',
-    position: data.position ?? null,
     referralCode: data.referralCode || '',
     referralCount: data.referralCount ?? 0,
     reservedId: data.reservedId || '',
@@ -72,7 +72,8 @@ function buildTwitterShare(code) {
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
 
-function OsIdReservePanel({ email, existingId, onReserved }) {
+function OsIdReservePanel({ email, firstName, existingId, onReserved }) {
+  const suggested = suggestOsIdFromName(firstName || '');
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -113,16 +114,21 @@ function OsIdReservePanel({ email, existingId, onReserved }) {
 
   return (
     <div className="osid-post-signup">
-      <p className="osid-post-signup-title">Optional: lock your @handle</p>
-      <p className="osid-post-signup-hint">
-        Pick an 8-character OS-ID now, or choose one when you&apos;re invited.
-      </p>
+      <div className="osid-post-signup-head">
+        <AtSign size={16} aria-hidden="true" />
+        <div>
+          <p className="osid-post-signup-title">Lock your OS-ID</p>
+          <p className="osid-post-signup-hint">
+            Your 8-character handle — reserved for this email at launch.
+          </p>
+        </div>
+      </div>
       <div className="osid-post-signup-row">
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '').slice(0, 8))}
-          placeholder="NEXUS42"
+          placeholder={suggested}
           maxLength={8}
           className="waitlist-input waitlist-input-id"
           aria-label="Preferred OS-ID"
@@ -131,6 +137,7 @@ function OsIdReservePanel({ email, existingId, onReserved }) {
           {loading ? 'Saving…' : 'Reserve'}
         </button>
       </div>
+      <p className="osid-post-signup-meta">e.g. {suggested} · max 4 digits</p>
       {error && <p className="waitlist-form-error">{error}</p>}
       <button type="button" className="osid-post-signup-skip" onClick={() => setSkipped(true)}>
         Skip for now
@@ -142,7 +149,6 @@ function OsIdReservePanel({ email, existingId, onReserved }) {
 function ConfirmationPanel({
   email,
   firstName,
-  position,
   referralCode,
   reservedId,
   compact,
@@ -169,30 +175,42 @@ function ConfirmationPanel({
       <div className="confirmation-icon-wrap">
         <CheckCircle2 size={40} className="confirmation-check" />
       </div>
+      <span className="confirmation-founder-pill">Founding member · perks locked</span>
       <h3>
         You&apos;re in, <span className="user-name">{firstName || 'friend'}</span>.
       </h3>
-      {position != null && (
-        <p className="waitlist-position">
-          Waitlist position: <strong>#{position}</strong>
-        </p>
-      )}
-      <p className="next-step">Check your email for a confirmation link.</p>
+      <p className="next-step">Check your inbox — we sent your founding perks and referral link.</p>
+
       {reservedId ? (
-        <p className="waitlist-form-success-id">Your OS-ID is locked: @{reservedId}</p>
+        <div className="confirmation-osid-locked">
+          <span className="confirmation-osid-label">Your OS-ID</span>
+          <span className="confirmation-osid-value">@{reservedId}</span>
+          <span className="confirmation-osid-note">Locked to this email at launch</span>
+        </div>
       ) : (
         email && (
           <OsIdReservePanel
             email={email}
+            firstName={firstName}
             existingId={reservedId}
             onReserved={(id) => onReservedId?.(id)}
           />
         )
       )}
 
+      <div className="confirmation-perks">
+        <p className="confirmation-perks-title">Locked in at launch</p>
+        <ul className="confirmation-perks-list">
+          <li><BadgeCheck size={14} /> Complimentary Core tier</li>
+          <li><BadgeCheck size={14} /> Pro at ₹49/mo founding rate</li>
+          <li><BadgeCheck size={14} /> Elite at ₹79/mo founding rate</li>
+        </ul>
+      </div>
+
       <hr className="confirmation-divider" />
 
-      <p className="share-prompt">Move up the list — share AIIMIN</p>
+      <p className="share-prompt">Share AIIMIN — unlock founding bonuses</p>
+      <p className="share-sub">Every friend who joins through your link strengthens your founding package.</p>
       <div className="share-buttons">
         <a
           href={referralCode ? buildWhatsAppShare(referralCode) : 'https://wa.me/?text=https%3A%2F%2Faiimin.in'}
@@ -319,7 +337,6 @@ export default function WaitlistForm({
       const nextConfirmation = {
         email: sanitized,
         name: nameVal || 'friend',
-        position: data.position ?? null,
         referralCode: data.referral_code || '',
         referralCount: data.referral_count ?? 0,
         reservedId: data.reserved_username || '',
@@ -329,8 +346,8 @@ export default function WaitlistForm({
         setConfirmation({
           ...nextConfirmation,
           name: nameVal || nextConfirmation.name,
-          position: data.position ?? nextConfirmation.position,
           referralCode: data.referral_code || nextConfirmation.referralCode,
+          reservedId: data.reserved_username || nextConfirmation.reservedId,
         });
         setStatus('already');
       } else {
@@ -379,7 +396,6 @@ export default function WaitlistForm({
           <ConfirmationPanel
             firstName={confirmation.name}
             email={confirmation.email}
-            position={confirmation.position}
             referralCode={confirmation.referralCode}
             reservedId={confirmation.reservedId}
             compact={compact}
@@ -394,7 +410,6 @@ export default function WaitlistForm({
       <ConfirmationPanel
         firstName={confirmation.name}
         email={confirmation.email}
-        position={confirmation.position}
         referralCode={confirmation.referralCode}
         reservedId={confirmation.reservedId}
         compact={compact}

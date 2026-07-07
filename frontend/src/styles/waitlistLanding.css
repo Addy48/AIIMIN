@@ -1111,7 +1111,7 @@ html {
 .tier-price-main {
   display: flex;
   align-items: baseline;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 2px;
 }
 
@@ -1137,6 +1137,13 @@ html {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-text-2);
+  min-height: 1rem;
+}
+
+.tier-price-list--spacer,
+.tier-price-waitlist-label--spacer {
+  visibility: hidden;
+  user-select: none;
 }
 
 .pricing-tier-eyebrow {
@@ -1574,26 +1581,40 @@ html {
 }
 
 .osid-post-signup {
-  margin: 14px 0 0;
-  padding: 14px;
+  margin: 16px 0 0;
+  padding: 16px;
   border-radius: var(--r-md);
-  border: 1px dashed color-mix(in srgb, var(--color-border) 90%, transparent);
-  background: color-mix(in srgb, var(--color-overlay) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, var(--color-border));
+  background: color-mix(in srgb, var(--color-accent) 6%, var(--color-surface));
   text-align: left;
 }
 
+.osid-post-signup-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  color: var(--color-accent);
+}
+
 .osid-post-signup-title {
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text-1);
 }
 
 .osid-post-signup-hint {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 12px;
   line-height: 1.45;
   color: var(--color-text-2);
+}
+
+.osid-post-signup-meta {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--color-text-3);
 }
 
 .osid-post-signup-row {
@@ -1664,15 +1685,96 @@ html {
   margin: 0 0 0.5rem;
 }
 
-.waitlist-position {
-  font-family: var(--font-mono);
-  font-size: 1rem;
+.confirmation-founder-pill {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--color-accent);
-  margin: 0 0 0.5rem;
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 24%, var(--color-border));
 }
 
-.waitlist-position strong {
-  font-size: 1.25rem;
+.confirmation-osid-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 16px 0 0;
+  padding: 16px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, var(--color-border));
+}
+
+.confirmation-osid-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-3);
+}
+
+.confirmation-osid-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.confirmation-osid-note {
+  font-size: 12px;
+  color: var(--color-text-2);
+}
+
+.confirmation-perks {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--color-overlay) 60%, transparent);
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.confirmation-perks-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-2);
+}
+
+.confirmation-perks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.confirmation-perks-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-1);
+}
+
+.confirmation-perks-list li svg {
+  flex-shrink: 0;
+  color: var(--color-accent);
+}
+
+.share-sub {
+  margin: -4px 0 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text-2);
 }
 
 .next-step {
@@ -3007,6 +3109,7 @@ html {
 .waitlist-pricing-tier-elite h3 { color: #b45309; }
 
 .waitlist-pricing-tier-explore .tier-price-amount { color: #334155; }
+.waitlist-pricing-tier-explore .waitlist-pricing-features li svg { color: #64748b; }
 .waitlist-pricing-tier-core .tier-price-amount { color: #0f766e; }
 .waitlist-pricing-tier-pro .tier-price-amount { color: #15803d; }
 .waitlist-pricing-tier-elite .tier-price-amount { color: #b45309; }

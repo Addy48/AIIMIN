@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { apiPost, apiGet, getCurrentAccessToken } from '../utils/api';
-import { supabase } from '../utils/supabase';
+import { apiPost, apiPatch, apiGet, getCurrentAccessToken } from '../utils/api';
+import { suggestOsIdFromName } from '../utils/osId';
 
 /* ─── helpers ──────────────────────────────────────────────── */
 const PIN_DIGITS  = 6;
+
+export { suggestOsIdFromName };
 
 const slide = (dir = 1) => ({
     initial:   { opacity: 0, x: dir * 48 },
@@ -152,10 +154,10 @@ export default function Onboarding() {
         setUsernameStatus('checking');
         const timer = setTimeout(async () => {
             try {
-                const res = await fetch(`/api/auth/resolve?identifier=${encodeURIComponent(upper)}`);
-                setUsernameStatus(res.status === 404 ? 'available' : 'taken');
-            } catch {
-                setUsernameStatus('idle');
+                await apiGet(`/auth/resolve?identifier=${encodeURIComponent(upper)}`, { auth: false });
+                setUsernameStatus('taken');
+            } catch (err) {
+                setUsernameStatus(err.status === 404 ? 'available' : 'idle');
             }
         }, 500);
         return () => clearTimeout(timer);
@@ -235,51 +237,26 @@ export default function Onboarding() {
             const token = await getCurrentAccessToken();
             if (!token) throw new Error('No session');
 
-            // 1. Complete profile
-            const res = await fetch('/api/auth/complete-google-profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    username: username.trim().toUpperCase(),
-                    pin,
-                    full_name: fullName.trim(),
-                }),
+            await apiPost('/auth/complete-google-profile', {
+                username: username.trim().toUpperCase(),
+                pin,
+                full_name: fullName.trim(),
             });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Setup failed');
-
-            // 2. We can save Wake Time to user settings
-            await fetch('/api/account/profile', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })
+            await apiPatch('/account/profile', {
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             });
 
-            // Wait, we can save habits.
             for (const hId of selectedHabits) {
                 const habitName = HABIT_OPTIONS.find(h => h.id === hId)?.label;
-                await fetch('/api/habits', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({ title: habitName, frequency: 'daily', category: 'health' })
-                });
+                await apiPost('/habits', { name: habitName, frequency: 'daily', category: 'health' });
             }
 
-            // 3. Save goals
             for (const gId of selectedGoals) {
                 const goalName = GOAL_OPTIONS.find(g => g.id === gId)?.label;
-                await fetch('/api/goals', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({ title: goalName, category: 'life', status: 'in_progress', progress: 0 })
-                });
+                await apiPost('/goals', { title: goalName, category: 'life', status: 'in_progress', progress: 0 });
             }
 
-            // Move to success (step 8 = done screen)
             setDir(1);
             setStep(8);
             await new Promise(r => setTimeout(r, 2400));
@@ -321,7 +298,7 @@ export default function Onboarding() {
                     value={username}
                     onChange={e => { setUsername(e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '')); setError(''); }}
                     onKeyDown={e => e.key === 'Enter' && submitUsername()}
-                    placeholder="e.g. HASMAT99"
+                    placeholder={`e.g. ${suggestOsIdFromName(fullName)}`}
                     maxLength={8}
                     style={{ ...s.input, textTransform: 'uppercase', paddingRight: '44px' }}
                 />

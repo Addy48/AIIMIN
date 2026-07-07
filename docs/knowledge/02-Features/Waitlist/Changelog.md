@@ -1,5 +1,30 @@
 # Waitlist Changelog
 
+## 2026-07-07 (Waitlist UX — hide position, OS-ID emails, confirmation polish)
+
+- Removed public waitlist position from UI (`WaitlistForm.jsx`) and confirmation email — replaced with "Founding member · perks locked" messaging (low signup count no longer shown).
+- Fixed: post-signup OS-ID reserve (`source: post_signup_osid`) now sends `waitlist_osid_locked` to user and `waitlist_owner_notify` with `event: osid_reserved` to owner (was silent after duplicate-email UPDATE).
+- Redesigned post-signup confirmation panel: founder pill, perks recap, OS-ID locked card, share copy without queue numbers.
+- Redesigned `waitlist_confirmation` + owner notify emails; added `waitlist_osid_locked` template.
+- Fixed Explore (₹0) pricing card alignment — same price-block structure as paid tiers (`WaitlistPricingSection.jsx`, `waitlistLanding.css`).
+- Added `frontend/src/utils/osId.js` for name-based OS-ID suggestions on waitlist + onboarding.
+- Added `scripts/clear-waitlist.mjs` to wipe `waitlist_emails` when resetting test data.
+- Why: OS-ID showed "Not claimed" in owner email despite user reserving; position #2 hurt early traction; ₹0 card misaligned.
+- Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
+- Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
+
+## 2026-07-07 (Onboarding + API URL fix)
+
+- Fixed: `frontend/src/utils/api.js` `buildApiUrl` — absolute `REACT_APP_API_URL` (e.g. `https://api.aiimin.in/api`) no longer double-prefixes `window.location.origin`.
+- Fixed: `getCurrentAccessToken` refreshes from `supabase.auth.getSession()` before localStorage fallback.
+- Fixed: `Onboarding.jsx` uses `apiPost`/`apiPatch`/`apiGet` instead of raw `fetch` for profile, habits, goals, and OS-ID resolve; habits body uses `name` not `title`.
+- Fixed: `AuthCallback.jsx` uses `apiGet('/auth/me')`; incomplete profile = `onboarding_stage === 0` or missing username (not string `'pending'`).
+- Fixed: `server/routes/auth.js` — `onboarding_stage` upserts use integer `1` (complete), not string `'complete'`.
+- Added: `suggestOsIdFromName()` dynamic OS-ID placeholder in onboarding step 2.
+- Why: Step 8 "Unauthorized: session error" — onboarding hit Vercel `/api` instead of EC2; stale tokens and wrong habit field blocked completion.
+- Files: `frontend/src/utils/api.js`, `frontend/src/pages/Onboarding.jsx`, `frontend/src/pages/AuthCallback.jsx`, `server/routes/auth.js`
+- Status: ready for Vercel (frontend) + EC2 (API) deploy
+
 ## 2026-07-07 (Task 3 — tester allowlist + login restore)
 
 - Seeded `tester_allowlist` via `scripts/seed-access-allowlist.mjs` (1 dev + 4 testers).

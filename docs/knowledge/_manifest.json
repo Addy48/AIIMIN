@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-06",
+  "lastUpdated": "2026-07-07",
   "entrypoint": "docs/knowledge/00-Command-Center.md",
   "entities": {
     "sports": {
@@ -34,9 +34,12 @@
       "routes": [
         "GET /api/waitlist/count",
         "POST /api/waitlist",
-        "POST /api/waitlist/feedback"
+        "POST /api/waitlist/feedback",
+        "POST /api/auth/complete-google-profile",
+        "GET /api/auth/me",
+        "GET /api/auth/resolve"
       ],
-      "status": "landing-modular-v9-phase-ladder"
+      "status": "onboarding-api-fix-ready"
     },
     "api_usage": {
       "moc": "docs/knowledge/02-Features/DevTools/ApiUsage.md",

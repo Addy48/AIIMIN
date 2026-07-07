@@ -1,3 +1,5 @@
+import supabase from './supabase';
+
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 export const buildAuthHeaders = (extraHeaders = {}) => ({
@@ -7,20 +9,53 @@ export const buildAuthHeaders = (extraHeaders = {}) => ({
 });
 
 /**
- * Get auth token from localStorage session (Cognito migration in progress).
+ * Build a request URL for relative or absolute API_URL values.
  */
-export const getCurrentAccessToken = async () => (
-  (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || ''
-);
+export const buildApiUrl = (path, params) => {
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    const base = API_URL || '/api';
 
+    let url;
+    if (/^https?:\/\//i.test(base)) {
+        url = new URL(`${base.replace(/\/$/, '')}${normalizedPath}`);
+    } else if (path.startsWith('http')) {
+        url = new URL(path);
+    } else {
+        const apiBase = base.startsWith('/') ? base : `/${base}`;
+        url = new URL(`${apiBase}${normalizedPath}`, window.location.origin);
+    }
 
+    if (params) {
+        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    }
 
-const resolveHeaders = async ({ headers = {}, json = true } = {}) => {
-    const token = await getCurrentAccessToken();
-    const baseHeaders = json ? buildAuthHeaders(headers) : {
-        ...headers,
-    };
-    baseHeaders.Authorization = `Bearer ${token}`;
+    return url;
+};
+
+/**
+ * Get auth token — refresh from Supabase session first, then localStorage fallback.
+ */
+export const getCurrentAccessToken = async () => {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('aiimin_session_fallback', session.access_token);
+            }
+            return session.access_token;
+        }
+    } catch (_) {
+        // fall through to localStorage
+    }
+    return (typeof localStorage !== 'undefined' ? localStorage.getItem('aiimin_session_fallback') : '') || '';
+};
+
+const resolveHeaders = async ({ headers = {}, json = true, auth = true } = {}) => {
+    const baseHeaders = json ? buildAuthHeaders(headers) : { ...headers };
+    if (auth) {
+        const token = await getCurrentAccessToken();
+        baseHeaders.Authorization = `Bearer ${token}`;
+    }
     return baseHeaders;
 };
 
@@ -39,12 +74,10 @@ export const apiRequest = async (path, options = {}) => {
     const resolvedHeaders = await resolveHeaders({
         headers: headers || {},
         json: options.json !== false,
+        auth: options.auth !== false,
     });
 
-    const url = new URL(path.startsWith('http') ? path : `${window.location.origin}${API_URL}${path}`);
-    if (params) {
-        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-    }
+    const url = buildApiUrl(path, params);
 
     const fetchOptions = {
         method,
