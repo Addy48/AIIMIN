@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { apiGet } from '../../utils/api';
 import ProfileSection from './sections/ProfileSection';
@@ -34,7 +35,7 @@ const SECTION_MAP = {
 };
 
 export default function AccountPage() {
-  const { user, isSignedIn, loading } = useAuth();
+  const { user, isSignedIn, loading, signOut } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const section = searchParams.get('section') || 'profile';
   const [profile, setProfile] = useState(null);
@@ -162,6 +163,48 @@ export default function AccountPage() {
             })}
           </nav>
         )}
+
+        <div
+          style={{
+            marginTop: isMobile ? 12 : 16,
+            paddingTop: isMobile ? 12 : 16,
+            borderTop: '1px solid var(--color-border)',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => signOut()}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              width: '100%',
+              padding: isMobile ? '10px 14px' : '12px 14px',
+              borderRadius: 12,
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface-1)',
+              color: 'var(--color-text-2)',
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'border-color var(--dur-normal) var(--ease), color var(--dur-normal) var(--ease), background var(--dur-normal) var(--ease)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'rgba(255, 107, 53, 0.45)';
+              e.currentTarget.style.color = 'var(--color-accent)';
+              e.currentTarget.style.background = 'rgba(255, 107, 53, 0.06)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--color-border)';
+              e.currentTarget.style.color = 'var(--color-text-2)';
+              e.currentTarget.style.background = 'var(--color-surface-1)';
+            }}
+          >
+            <LogOut size={15} />
+            Sign out
+          </button>
+        </div>
       </aside>
 
       <main style={{ minWidth: 0, overflowY: 'auto' }}>

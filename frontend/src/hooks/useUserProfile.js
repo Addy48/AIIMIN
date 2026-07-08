@@ -18,6 +18,8 @@ const DEFAULT_PROFILE = {
     font_scale: 'normal',
     ai_features_enabled: true,
     onboarding_complete: false,
+    tagline: '',
+    location: '',
     seen_tips: [],
     prev_tier: 'explore',
     subscription_tier: 'explore',
@@ -85,6 +87,14 @@ export function useUserProfile() {
 
     useEffect(() => {
         fetchProfile();
+    }, [fetchProfile]);
+
+    useEffect(() => {
+        const onRefresh = () => {
+            fetchProfile();
+        };
+        window.addEventListener('aiimin:profile-refresh', onRefresh);
+        return () => window.removeEventListener('aiimin:profile-refresh', onRefresh);
     }, [fetchProfile]);
 
     useEffect(() => {

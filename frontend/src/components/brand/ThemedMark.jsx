@@ -11,6 +11,7 @@ export default function ThemedMark({
   size = 36,
   withChip = true,
   density = 'default',
+  variant,
   isLight: isLightOverride,
   className,
   style,
@@ -23,7 +24,7 @@ export default function ThemedMark({
       size={size}
       withChip={withChip}
       density={density}
-      colors={pickMarkColors(isLight, { density })}
+      colors={pickMarkColors(isLight, { density, variant })}
       className={className}
       style={style}
     />

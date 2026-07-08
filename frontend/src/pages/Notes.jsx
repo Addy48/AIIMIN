@@ -124,7 +124,7 @@ const NoteEditor = ({ note, onSave, onClose }) => {
                 <div style={{ flex: 1, overflowY: 'auto', padding: '24px 32px 20px' }}>
                     <input 
                         autoFocus value={title} onChange={e => setTitle(e.target.value)}
-                        placeholder="The North Star of this thought..."
+                        placeholder="The Life Arc of this thought..."
                         style={{ display: 'block', width: '100%', background: 'none', border: 'none', outline: 'none', fontSize: '26px', fontWeight: 800, color: 'var(--text-1)', marginBottom: '16px', letterSpacing: '-0.03em', fontFamily: 'var(--font-serif, serif)' }}
                     />
 

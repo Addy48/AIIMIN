@@ -128,7 +128,14 @@ app.get('/user-profile', requireAuth, async (c) => {
         const prefs = await getUserProfile(pool, userId).catch(() => null);
         return c.json({
             user_id: user.id,
-            ...user,
+            email: user.email,
+            full_name: user.full_name,
+            username: user.username,
+            role: user.role,
+            avatar_url: user.avatar_url,
+            timezone: user.timezone,
+            onboarding_stage: user.onboarding_stage,
+            created_at: user.created_at,
             ...(prefs || {}),
             onboarding_complete: Boolean(prefs?.onboarding_complete),
         });

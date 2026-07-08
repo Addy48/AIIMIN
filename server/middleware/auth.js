@@ -1,11 +1,10 @@
 import { pool } from '../lib/db.js';
-import { getCookie } from 'hono/cookie';
 import * as dotenv from 'dotenv';
-import { auth } from '../lib/auth.js';
 import { ensureUserProfile } from '../services/userProfileService.js';
-dotenv.config();
+import { isUuid, resolvePublicUserId } from '../lib/resolvePublicUserId.js';
+import { resolveAuthSession } from '../lib/sessionResolve.js';
 
-const COOKIE_NAME = 'aiimin_session';
+dotenv.config();
 
 const profileCache = new Map();
 const CACHE_TTL_MS = 10_000;
@@ -19,25 +18,6 @@ setInterval(() => {
     }
 }, 60_000);
 
-async function resolveSession(c) {
-    let token = getCookie(c, COOKIE_NAME);
-    if (!token) {
-        const authHeader = c.req.header('authorization');
-        if (authHeader?.startsWith('Bearer ')) token = authHeader.slice(7);
-    }
-    if (!token) {
-        token = c.req.query('token');
-    }
-
-    const headers = new Headers(c.req.raw.headers);
-    if (token && !headers.get('authorization')) {
-        headers.set('authorization', `Bearer ${token}`);
-    }
-
-    const session = await auth.api.getSession({ headers });
-    return session;
-}
-
 export const requireAuth = async (c, next) => {
     if (process.env.NODE_ENV !== 'production' && c.req.header('authorization') === 'Bearer mock-test-token') {
         c.set('user', { id: '88888888-8888-4888-8888-888888888888', email: 'dev@aiimin.in', role: 'user', onboarding_stage: 1, username: 'DEVUSER' });
@@ -47,7 +27,7 @@ export const requireAuth = async (c, next) => {
 
     let sessionResult;
     try {
-        sessionResult = await resolveSession(c);
+        sessionResult = await resolveAuthSession(c);
     } catch (err) {
         console.error('[auth] session resolve error:', err.message);
         return c.json({ error: 'Unauthorized: session error' }, 401);
@@ -55,26 +35,40 @@ export const requireAuth = async (c, next) => {
 
     const user = sessionResult?.user;
     const session = sessionResult?.session;
-    if (!user?.id) {
+    const authUserId = user?.id;
+
+    if (!authUserId || !user?.email) {
+        return c.json({ error: 'Unauthorized: invalid or expired token' }, 401);
+    }
+
+    let userId;
+    try {
+        userId = await resolvePublicUserId(pool, user);
+    } catch (err) {
+        console.error('[auth] public user resolve error:', err.message);
+        return c.json({ error: 'Unauthorized: session error' }, 401);
+    }
+
+    if (!userId || !isUuid(userId)) {
         return c.json({ error: 'Unauthorized: invalid or expired token' }, 401);
     }
 
     try {
         const now = Date.now();
-        let cached = profileCache.get(user.id);
+        let cached = profileCache.get(userId);
 
         if (!cached || (now - cached.timestamp > CACHE_TTL_MS)) {
             const { rows } = await pool.query(
                 'SELECT role, onboarding_stage, username, email, full_name FROM users WHERE id = $1',
-                [user.id],
+                [userId],
             );
 
             if (rows.length > 0) {
                 cached = { ...rows[0], timestamp: now };
-                profileCache.set(user.id, cached);
+                profileCache.set(userId, cached);
             } else {
                 const profile = await ensureUserProfile(pool, {
-                    id: user.id,
+                    id: userId,
                     email: user.email,
                     user_metadata: {
                         full_name: user.name || user.fullName || '',
@@ -89,12 +83,12 @@ export const requireAuth = async (c, next) => {
                     full_name: profile.full_name,
                     timestamp: now,
                 };
-                profileCache.set(user.id, cached);
+                profileCache.set(userId, cached);
             }
         }
 
         c.set('user', {
-            id: user.id,
+            id: userId,
             email: user.email || cached?.email,
             name: user.name,
             role: cached?.role || 'user',
@@ -103,7 +97,7 @@ export const requireAuth = async (c, next) => {
             full_name: cached?.full_name || user.name || user.fullName,
             emailVerified: user.emailVerified,
         });
-        c.set('userId', user.id);
+        c.set('userId', userId);
         c.set('authSession', session);
     } catch (err) {
         console.error('[auth middleware] Error:', err.message);

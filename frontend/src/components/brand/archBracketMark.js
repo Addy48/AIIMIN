@@ -72,8 +72,12 @@ export const NAV_CHIP_LIGHT = {
   innerOpacity: 0.85,
 };
 
-/** Pick mark palette for light/dark surfaces */
-export function pickMarkColors(isLight, { density = 'default' } = {}) {
+/** Pick mark palette — theme-aware by default; pass variant: 'light' | 'dark' to force. */
+export function pickMarkColors(isLight = true, { density = 'default', variant } = {}) {
+  if (variant === 'dark') return DARK_PICK;
+  if (variant === 'light') {
+    return density === 'nav' ? NAV_CHIP_LIGHT : EDITOR_PICK;
+  }
   if (!isLight) return DARK_PICK;
   return density === 'nav' ? NAV_CHIP_LIGHT : EDITOR_PICK;
 }

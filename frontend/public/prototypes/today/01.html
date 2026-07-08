@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AIIMIN Today — 01 Yohji Grid</title>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+      .yohji { background:#f4f0ea; color:#1a1a1a; min-height:calc(100vh - 48px); }
+      .yohji .app-bar, .yohji .status-strip, .yohji .widget-bar { background:#fff; border-color:#e5e0d8; }
+      .yohji .status-strip .cell { background:#faf8f5; border-color:#e5e0d8; }
+      .yohji .hero-title { font-family:var(--serif); font-size:clamp(3.5rem,12vw,8rem); color:#c41e3a; text-align:center; padding:32px 20px 16px; line-height:0.9; letter-spacing:-0.02em; }
+      .yohji .hero-sub { text-align:center; font-size:12px; color:#666; margin-bottom:20px; text-transform:uppercase; letter-spacing:0.15em; }
+      .yohji .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; padding:0 20px 24px; max-width:1280px; margin:0 auto; }
+      .yohji .cell { min-height:200px; padding:16px; display:flex; flex-direction:column; justify-content:flex-end; position:relative; }
+      .yohji .cell:nth-child(1){ background:#1a1a1a; color:#fff; }
+      .yohji .cell:nth-child(2){ background:#e8e4de; }
+      .yohji .cell:nth-child(3){ background:#c41e3a; color:#fff; }
+      .yohji .cell:nth-child(4){ background:linear-gradient(160deg,#555,#222); color:#fff; }
+      .yohji .cell:nth-child(5){ background:#fff; border:1px solid #ddd; grid-column:span 2; min-height:140px; }
+      .yohji .cell:nth-child(6){ background:#1a1a1a; color:#fff; grid-column:span 2; }
+      .yohji .cell h3 { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:6px; }
+      .yohji .cell .big { font-size:28px; font-weight:800; line-height:1; margin-bottom:4px; }
+      .yohji .cell p { font-size:11px; opacity:0.85; line-height:1.4; }
+      .yohji .cell .tags { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+      .yohji .cell .tags i { font-size:9px; padding:3px 8px; border-radius:999px; background:rgba(255,255,255,0.15); font-style:normal; }
+      .yohji .cell:nth-child(2) .tags i, .yohji .cell:nth-child(5) .tags i { background:#eee; color:#444; }
+      .yohji .lower { max-width:1280px; margin:0 auto; padding:0 20px 40px; display:grid; grid-template-columns:1.2fr 1fr; gap:16px; }
+      .yohji .lower .cmd, .yohji .lower .traj { border-color:#e5e0d8; }
+      @media(max-width:900px){ .yohji .grid{ grid-template-columns:repeat(2,1fr);} .yohji .cell:nth-child(5),.yohji .cell:nth-child(6){ grid-column:span 2;} .yohji .lower{ grid-template-columns:1fr;} }
+    </style>
+</head>
+<body>
+<nav class="proto-nav">
+  <strong>AIIMIN PROTOTYPE</strong>
+  <div class="links"><a href="/overview">Live Today</a><a href="index.html">Gallery</a><span>Yohji Yamamoto</span></div>
+  <span class="badge">01 Yohji Grid</span>
+</nav>
+<div class="proto-shell">
+      <div class="yohji">
+        
+<header class="app-bar">
+  <div class="logo"><span class="logo-dot">A</span> AIIMIN</div>
+  <nav class="nav-pills">
+    <span class="on">Today</span><span class="">Insights</span><span class="">Calendar</span><span class="">Journal</span><span class="">Finance</span><span class="">Habits</span><span class="">Goals</span><span class="">Settings</span>
+  </nav>
+  <div class="status"><span class="online"></span> OS Online · Warrior · 2840/3200 XP</div>
+</header>
+<div class="status-strip">
+  <div class="cell"><span>Active target</span><strong>18d</strong><small>Placement sprint</small></div>
+  <div class="cell"><span>Week</span><strong>27</strong><small>Day 189 of 365</small></div>
+  <div class="cell"><span>Calendar</span><strong>1</strong><small>events today</small></div>
+  <div class="cell"><span>Execution</span><strong>63%</strong><small>Night reset</small></div>
+</div>
+<div class="widget-bar">
+  <button type="button" style="padding:6px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:11px;font-weight:700;cursor:pointer">⊞ Customize widgets</button>
+  <div class="chips"><span class="widget-chip on">● Command Center</span><span class="widget-chip on">● Trajectory</span><span class="widget-chip on">● Week grid</span><span class="widget-chip on">● Weekly Insight</span><span class="widget-chip on">● Quick Capture</span><span class="widget-chip on">● Micro Task</span><span class="widget-chip on">● Universal Logger</span><span class="widget-chip off">○ Week in Numbers</span><span class="widget-chip off">○ Execution Window</span><span class="widget-chip off">○ Recent Wins</span></div>
+</div>
+        <h1 class="hero-title">Today</h1>
+        <p class="hero-sub">Wednesday, July 8 · Aaditya</p>
+        <div class="grid">
+          <div class="cell"><div class="big">74</div><h3>Life score</h3><p>Solid behavioral baseline. Sleep logged, gym pending, mood stable.</p><div class="tags"><i>+3</i><i>Behav 78</i></div></div>
+          <div class="cell"><div class="big">18d</div><h3>Placement sprint</h3><p>Ends 26 Jul 2026 · execution 63%</p></div>
+          <div class="cell"><div class="big">1/3</div><h3>Priorities</h3><p>Finish placement outreach batch (12 DMs)</p><div class="tags"><i>2 open</i><i>1 done</i></div></div>
+          <div class="cell"><div class="big">W27</div><h3>Week rhythm</h3><p>Night reset · 2h 13m left</p><div class="tags"><i>☀ 5:42 AM</i><i>🌙 7:18 PM</i></div></div>
+          <div class="cell" style="grid-column:span 2;min-height:140px;justify-content:flex-start"><h3>Habits at risk</h3><p style="margin-top:8px;font-size:11px">🏋️ Morning gym · 🔥12 · <span style="color:#f59e0b">⚠ at risk</span></p><p style="margin-top:8px;font-size:11px">📚 DSA 1 problem · 🔥8 · <span style="color:#10b981">on track</span></p><p style="margin-top:8px;font-size:11px">💧 3L water · 🔥5 · <span style="color:#10b981">✓ done</span></p></div>
+          <div class="cell" style="grid-column:span 2"><h3>Daily signals</h3><div class="tags" style="margin-top:12px"><i>😴 6.8h</i><i>💪 —</i><i>😊 7/10</i><i>👟 6,240</i><i>💧 2/3</i><i>📖 Graphs</i><i>✍️ —</i><i>🧠 Okay</i></div><p style="margin-top:12px">₹18.4k spent · 23 tx · mood 7/10</p></div>
+        </div>
+        <div class="lower"><div style="margin-bottom:16px">
+<div class="week-grid">
+  <div class="week-cell">
+    <div class="day-head"><span class="day-label">Mon</span><span class="day-num">6</span></div>
+    <div class="ev">🕒 Team standup 10:00</div>
+    <div class="task">Outreach list</div>
+    
+  </div>
+  <div class="week-cell">
+    <div class="day-head"><span class="day-label">Tue</span><span class="day-num">7</span></div>
+    
+    <div class="task">Resume tweak</div><div class="task done">Gym ✓</div>
+    
+  </div>
+  <div class="week-cell today">
+    <div class="day-head"><span class="day-label">Wed</span><span class="day-num">8</span></div>
+    <div class="ev">🕒 Focus block 4–6pm</div>
+    <div class="task">12 DMs</div><div class="task">Mood log</div>
+    
+  </div>
+  <div class="week-cell">
+    <div class="day-head"><span class="day-label">Thu</span><span class="day-num">9</span></div>
+    <div class="ev">🕒 Mock interview 3pm</div>
+    
+    
+  </div>
+  <div class="week-cell">
+    <div class="day-head"><span class="day-label">Fri</span><span class="day-num">10</span></div>
+    
+    <div class="task">Weekly review</div>
+    
+  </div>
+  <div class="week-cell">
+    <div class="day-head"><span class="day-label">Sat</span><span class="day-num">11</span></div>
+    
+    <div class="task">DSA contest</div>
+    
+  </div>
+  <div class="week-cell">
+    <div class="day-head"><span class="day-label">Sun</span><span class="day-num">12</span></div>
+    <div class="ev">🕒 Family call</div>
+    
+    
+  </div>
+</div></div>
+<article class="cmd">
+  <div class="cmd-head"><span class="label">Command Center</span><span style="font-size:11px;color:var(--text-3)">Wed, 8 Jul 2026</span></div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>🧠 Life Score</span><span style="color:var(--success)">+3 today</span></div>
+    <div class="life-ring">
+      <div class="ring" style="--pct:74" data-score="74"></div>
+      <div class="meta">Solid behavioral baseline. Sleep logged, gym pending, mood stable.<div class="contrib"><span>Behav: 78</span><span>Mental: 69</span></div></div>
+    </div>
+  </div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>🎯 Today's Priorities</span><span>1/3</span></div>
+    <div class="priority-row"><div class="box"></div><span>Finish placement outreach batch (12 DMs)</span></div><div class="priority-row"><div class="box"></div><span>Log sleep + mood before midnight</span></div><div class="priority-row done"><div class="box"></div><span>Review weekly goals in journal</span></div>
+    <div style="margin-top:8px;padding:8px;border:1.5px dashed var(--border);border-radius:10px;text-align:center;font-size:11px;color:var(--text-3)">+ Add priority (max 3)</div>
+  </div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>🔥 Streak Monitor</span><span style="color:var(--text-3)">All habits →</span></div>
+    
+    <div class="habit-row">
+      <div class="top"><span>🏋️ Morning gym</span><span><span style="color:var(--warning);font-size:10px">⚠ at risk</span> 🔥 12</span></div>
+      <div class="bar"><i style="width:86%;background:var(--warning)"></i></div>
+    </div>
+    <div class="habit-row">
+      <div class="top"><span>📚 DSA 1 problem</span><span><span style="color:var(--success);font-size:10px">on track</span> 🔥 8</span></div>
+      <div class="bar"><i style="width:57%;background:var(--success)"></i></div>
+    </div>
+    <div class="habit-row">
+      <div class="top"><span>💧 3L water</span><span><span style="color:var(--success);font-size:10px">✓ done</span> 🔥 5</span></div>
+      <div class="bar"><i style="width:36%;background:var(--success)"></i></div>
+    </div>
+  </div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>💰 Money This Month</span><span style="color:var(--text-3)">Finance →</span></div>
+    <div class="money-row">
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase">Spent</div><div class="spent">₹18,420</div></div>
+      <div class="income">Income ₹45,000<br/>23 transactions</div>
+    </div>
+    <div style="margin-top:10px;height:4px;border-radius:99px;background:var(--border);overflow:hidden"><i style="display:block;height:100%;width:74%;background:var(--accent)"></i></div>
+    <div style="font-size:10px;color:var(--text-3);margin-top:4px">74% of ₹25k budget</div>
+  </div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>📝 Commander's Note</span></div>
+    <div class="note-box">Placement sprint — keep outreach tight. No new side quests until Friday review.</div>
+  </div>
+</article>
+<article class="traj">
+  <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:12px">Trajectory · Night reset</div>
+  <div class="arc-wrap">
+    <svg viewBox="0 0 220 118" aria-hidden="true">
+      <path d="M 24 101 A 86 86 0 0 1 196 101" fill="none" stroke="var(--border)" stroke-width="3"/>
+      <path d="M 24 101 A 86 86 0 0 1 196 101" fill="none" stroke="var(--success)" stroke-width="3" stroke-dasharray="270" stroke-dashoffset="34.01999999999997" stroke-linecap="round"/>
+      <circle cx="45.67199999999998" cy="67.83977666414394" r="6" fill="var(--warning)"/>
+    </svg>
+    <div class="sun-row"><span>☀ 5:42 AM</span><span>Night reset</span><span>7:18 PM 🌙</span></div>
+  </div>
+  
+  <div class="row">
+    <div class="top"><div><span class="lbl">Day</span><span class="sub">2h 13m left</span></div><span class="pct" style="color:#10b981">87.4%</span></div>
+    <div class="track"><i style="width:87.4%;background:linear-gradient(90deg, color-mix(in srgb, #10b981 60%, white), #10b981)"></i></div>
+  </div>
+  <div class="row">
+    <div class="top"><div><span class="lbl">Week</span><span class="sub">3d left</span></div><span class="pct" style="color:#3b82f6">54.2%</span></div>
+    <div class="track"><i style="width:54.2%;background:linear-gradient(90deg, color-mix(in srgb, #3b82f6 60%, white), #3b82f6)"></i></div>
+  </div>
+  <div class="row">
+    <div class="top"><div><span class="lbl">Month</span><span class="sub">23d left</span></div><span class="pct" style="color:#ec4899">25.8%</span></div>
+    <div class="track"><i style="width:25.8%;background:linear-gradient(90deg, color-mix(in srgb, #ec4899 60%, white), #ec4899)"></i></div>
+  </div>
+  <div class="row">
+    <div class="top"><div><span class="lbl">Year</span><span class="sub">176d left</span></div><span class="pct" style="color:#f97316">51.6%</span></div>
+    <div class="track"><i style="width:51.6%;background:linear-gradient(90deg, color-mix(in srgb, #f97316 60%, white), #f97316)"></i></div>
+  </div>
+</article></div>
+      </div></div>
+<div class="proto-footer">
+  <a href="index.html">Gallery</a>
+  
+  <a href="02.html">Next →</a>
+</div>
+</body>
+</html>

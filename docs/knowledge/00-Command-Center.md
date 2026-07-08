@@ -1,6 +1,6 @@
 # AIIMIN Command Center
 
-Last updated: 2026-07-08
+Last updated: 2026-07-09
 Canonical for agents: this file + `docs/knowledge/_manifest.json`
 
 ## Product Snapshot
@@ -60,7 +60,9 @@ Pricing (landing copy): Explore (free), Core ₹29/mo, Pro ₹59/mo (₹49 found
 - **Finance → Wealth tab:** fixed crash from asset breakdown shape mismatch and API field mapping (`asset_name` / `current_value` vs camelCase UI)
 - **Overview Trajectory:** sunrise/sunset now computed client-side via `suncalc` from profile `users.timezone` (no GPS)
 - **Journal Studio:** editorial layout polish; all modes retained (write, voice, mood strip, CBT/WWW/morning/weekly)
-- **Account → Subscription:** card layout aligned with waitlist pricing aesthetic; orange accent palette
+- **Account → Profile:** **Arc / Life Arc** — where your story is headed; steers Daily + Weekly Arc (stored as `tagline`)
+- **Account → Subscription:** card layout aligned with waitlist pricing aesthetic; orange accent palette; **4 tiers** (Explore ₹0, Core ₹29, Pro ₹59/₹49 founding, Elite ₹99/₹79 founding)
+- **Account page:** sign out in sidebar footer; profile OS-ID credential card (locked palette, monospace brackets, copy)
 - **Personalization life modes:** presets apply nav, overview widgets, and sports defaults
 
 Apply `server/migrations/034_waitlist_referrals.sql` for referral_code / referred_by columns — **applied on Supabase 2026-07-06**.
@@ -86,7 +88,9 @@ Source: `AIIMIN_PROGRESS_SUMMARY.md`
 
 ## Environment Matrix (Critical)
 
-- Auth (Supabase): `REACT_APP_SUPABASE_URL`, `REACT_APP_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- Auth (Better Auth): `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (prod: `https://api.aiimin.in`), `FRONTEND_URL`, `GOOGLE_LOGIN_CLIENT_ID`, `GOOGLE_LOGIN_CLIENT_SECRET`
+- Google OAuth redirect (login): `{BETTER_AUTH_URL}/api/auth/callback/google` — **not** `/api/google/auth/callback` (calendar integration only)
+- Frontend: `REACT_APP_API_URL` (prod: `https://api.aiimin.in/api`)
 - Data: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
 - Billing: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_CORE`, `STRIPE_PRICE_PRO`, `STRIPE_WEBHOOK_SECRET`
 - Email: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO` (Resend — SES removed)

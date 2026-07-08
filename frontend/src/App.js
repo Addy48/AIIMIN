@@ -35,6 +35,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AppQueryProvider } from './context/QueryProvider';
 import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
+import TierRouteGuard from './components/account/TierRouteGuard';
 
 // Lazy-loaded Dashboard routes
 const Overview = React.lazy(() => import('./pages/Overview'));
@@ -150,24 +151,24 @@ function AppContent({ user, session }) {
               : <Navigate to="/login" replace />)
         }>
           <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />
-          <Route path="/insights" element={<Lazy><Insights /></Lazy>} />
+          <Route path="/insights" element={<Lazy><TierRouteGuard label="Insights"><Insights /></TierRouteGuard></Lazy>} />
           <Route path="/calendar" element={<Lazy><CalendarPage /></Lazy>} />
 
-          <Route path="/sports" element={<Lazy><SportsPage /></Lazy>} />
+          <Route path="/sports" element={<Lazy><TierRouteGuard label="Sports"><SportsPage /></TierRouteGuard></Lazy>} />
           <Route path="/journal" element={<Lazy><JournalPage /></Lazy>} />
-          <Route path="/finance" element={<Lazy><Finance /></Lazy>} />
+          <Route path="/finance" element={<Lazy><TierRouteGuard label="Finance"><Finance /></TierRouteGuard></Lazy>} />
           <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
-          <Route path="/lab" element={<Lazy><LabFullPage /></Lazy>} />
-          <Route path="/placements" element={<Lazy><Placements /></Lazy>} />
-          <Route path="/habits"     element={<Lazy><HabitsPage /></Lazy>} />
-          <Route path="/goals"       element={<Lazy><GoalsPage /></Lazy>} />
+          <Route path="/lab" element={<Lazy><TierRouteGuard label="Lab"><LabFullPage /></TierRouteGuard></Lazy>} />
+          <Route path="/placements" element={<Lazy><TierRouteGuard label="Placements"><Placements /></TierRouteGuard></Lazy>} />
+          <Route path="/habits"     element={<Lazy><TierRouteGuard label="Habits"><HabitsPage /></TierRouteGuard></Lazy>} />
+          <Route path="/goals"       element={<Lazy><TierRouteGuard label="Goals"><GoalsPage /></TierRouteGuard></Lazy>} />
           <Route path="/identity"    element={<Lazy><IdentityPage /></Lazy>} />
           <Route path="/notes"       element={<Lazy><NotesPage /></Lazy>} />
-          <Route path="/discipline"  element={<Lazy><DisciplinePage /></Lazy>} />
-          <Route path="/focus"       element={<Lazy><FocusRoom /></Lazy>} />
-          <Route path="/family"      element={<Lazy><FamilyPage /></Lazy>} />
+          <Route path="/discipline"  element={<Lazy><TierRouteGuard label="Discipline"><DisciplinePage /></TierRouteGuard></Lazy>} />
+          <Route path="/focus"       element={<Lazy><TierRouteGuard label="Focus"><FocusRoom /></TierRouteGuard></Lazy>} />
+          <Route path="/family"      element={<Lazy><TierRouteGuard label="Family"><FamilyPage /></TierRouteGuard></Lazy>} />
           <Route path="/account"     element={<Lazy><AccountPage /></Lazy>} />
-          <Route path="/reports"     element={<Lazy><ReportsPage /></Lazy>} />
+          <Route path="/reports"     element={<Lazy><TierRouteGuard label="Reports"><ReportsPage /></TierRouteGuard></Lazy>} />
           <Route path="/seed-data"   element={<Lazy><SeedData /></Lazy>} />
         </Route>
 

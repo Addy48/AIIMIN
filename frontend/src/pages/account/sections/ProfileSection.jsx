@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Copy, Lock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Lock, ChevronDown } from 'lucide-react';
 import RankLadder from '../../../components/gamification/RankLadder';
+import ArcEditor from '../../../components/profile/ArcEditor';
 import useFieldSave, { FieldSaveIndicator } from '../../../hooks/useFieldSave';
 import { apiPatch } from '../../../utils/api';
-import toast from '../../../utils/toast';
+import { LIFE_ARC_LABEL, ARC_TAGLINE } from '../../../constants/arc';
+import ArcMark from '../../../components/brand/ArcMark';
 
 const fieldStyle = {
   width: '100%',
@@ -25,26 +27,22 @@ const cardStyle = {
 
 export default function ProfileSection({ user, profile, onProfileUpdate }) {
   const [name, setName] = useState(user?.full_name || '');
-  const [tagline, setTagline] = useState(profile?.tagline || '');
+  const [lifeArc, setLifeArc] = useState(profile?.tagline || '');
   const [location, setLocation] = useState(profile?.location || '');
+  const [ranksOpen, setRanksOpen] = useState(false);
   const osId = (profile?.username || user?.username || '').toUpperCase();
   const hasOsId = osId.length === 8;
+  const activeLifeArc = profile?.tagline || lifeArc;
 
-  const copyOsId = async () => {
-    if (!hasOsId) return;
-    try {
-      await navigator.clipboard.writeText(osId);
-      toast.success('OS-ID copied');
-    } catch {
-      toast.error('Could not copy OS-ID');
-    }
-  };
+  useEffect(() => {
+    setLifeArc(profile?.tagline || '');
+  }, [profile?.tagline]);
 
   const { status: nameStatus, save: saveName } = useFieldSave(async (v) => {
     await apiPatch('/account/profile', { full_name: v });
   });
 
-  const { status: tagStatus, save: saveTagline } = useFieldSave(async (v) => {
+  const { status: lifeArcStatus, save: saveLifeArc } = useFieldSave(async (v) => {
     const updated = await apiPatch('/account/user-profile', { tagline: v });
     onProfileUpdate?.(updated);
   });
@@ -52,17 +50,13 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
   const fields = [
     { label: 'OS-ID', value: osId, done: hasOsId },
     { label: 'Name', value: profile?.full_name || user?.full_name, done: !!(profile?.full_name || user?.full_name) },
-    { label: 'Tagline', value: profile?.tagline, done: !!profile?.tagline },
+    { label: 'Life Arc', value: profile?.tagline, done: !!profile?.tagline?.trim() },
     { label: 'Location', value: profile?.location, done: !!profile?.location },
     { label: 'Avatar', value: user?.avatar_url, done: !!user?.avatar_url },
   ];
   const strength = Math.round((fields.filter((f) => f.done).length / fields.length) * 100);
-  const initials = (profile?.full_name || user?.full_name || user?.email || 'A')
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
+  const displayName = profile?.full_name || user?.full_name || '';
+  const initials = (displayName.trim().split(/\s+/)[0]?.charAt(0) || user?.email?.charAt(0) || 'A').toUpperCase();
 
   return (
     <div style={{ display: 'grid', gap: 18 }}>
@@ -93,9 +87,74 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
             <h1 style={{ margin: 0, color: 'var(--color-text-1)', fontFamily: 'var(--font-display)', fontSize: 34, lineHeight: 1.05, letterSpacing: '-0.035em' }}>
               {profile?.full_name || user?.full_name || 'Guest User'}
             </h1>
-            <p style={{ margin: '8px 0 0', color: 'var(--color-text-2)', fontSize: 14, lineHeight: 1.55 }}>
-              {profile?.tagline || tagline || 'Add a short line that tells future you what this operating system is built around.'}
-            </p>
+
+            <div
+              style={{
+                marginTop: 10,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                flexWrap: 'wrap',
+                padding: '6px 10px 6px 12px',
+                borderRadius: 10,
+                border: '1px solid var(--color-border)',
+                background: 'var(--color-surface-1)',
+              }}
+            >
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-3)' }}>
+                OS-ID
+              </span>
+              <span
+                className="profile-os-id"
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 17,
+                  fontWeight: 600,
+                  letterSpacing: '0.14em',
+                  fontVariantNumeric: 'tabular-nums',
+                  color: hasOsId ? 'var(--color-text-1)' : 'var(--color-text-3)',
+                }}
+              >
+                {hasOsId ? osId : '— — — — — — — —'}
+              </span>
+              {hasOsId && (
+                <span
+                  title="Permanent — cannot be changed"
+                  style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--color-text-3)' }}
+                >
+                  <Lock size={12} />
+                </span>
+              )}
+            </div>
+
+            <div
+              style={{
+                marginTop: 12,
+                padding: '10px 12px',
+                borderRadius: 12,
+                border: `1px solid ${activeLifeArc?.trim() ? 'color-mix(in srgb, var(--color-accent) 28%, var(--color-border))' : 'var(--color-border)'}`,
+                background: activeLifeArc?.trim() ? 'var(--color-accent-dim)' : 'var(--color-surface-1)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <ArcMark size={16} />
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-3)' }}>
+                  {LIFE_ARC_LABEL}
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: 0,
+                  color: activeLifeArc?.trim() ? 'var(--color-text-1)' : 'var(--color-text-3)',
+                  fontSize: 14,
+                  lineHeight: 1.55,
+                  fontStyle: activeLifeArc?.trim() ? 'normal' : 'italic',
+                  fontWeight: activeLifeArc?.trim() ? 600 : 400,
+                }}
+              >
+                {activeLifeArc?.trim() || ARC_TAGLINE}
+              </p>
+            </div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-1)', fontSize: 28, fontWeight: 800, letterSpacing: '-0.04em' }}>
@@ -133,114 +192,6 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
         </div>
       </section>
 
-      <section
-        style={{
-          ...cardStyle,
-          padding: '22px 24px',
-          background: 'linear-gradient(135deg, var(--color-surface-2) 0%, var(--color-surface-1) 55%, rgba(255, 107, 53, 0.08) 100%)',
-          border: '1px solid var(--color-border)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            top: -40,
-            right: -20,
-            width: 160,
-            height: 160,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,107,53,0.18) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ margin: '0 0 6px', color: 'var(--color-accent)', fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-              OS-ID · Permanent handle
-            </p>
-            <p style={{ margin: '0 0 14px', color: 'var(--color-text-2)', fontSize: 13, lineHeight: 1.55, maxWidth: 420 }}>
-              Your unique 8-character identity on AIIMIN. Chosen once at signup — cannot be changed.
-            </p>
-          </div>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '6px 10px',
-              borderRadius: 999,
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-surface-1)',
-              color: 'var(--color-text-3)',
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-            }}
-          >
-            <Lock size={12} />
-            Locked
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 14,
-            flexWrap: 'wrap',
-            padding: '16px 18px',
-            borderRadius: 14,
-            border: '1px solid rgba(255, 107, 53, 0.35)',
-            background: 'var(--color-surface-1)',
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-mono, ui-monospace, monospace)',
-                fontSize: hasOsId ? 32 : 22,
-                fontWeight: 800,
-                letterSpacing: hasOsId ? '0.22em' : '0.04em',
-                color: hasOsId ? 'var(--color-text-1)' : 'var(--color-text-3)',
-                lineHeight: 1.1,
-              }}
-            >
-              {hasOsId ? osId : 'NOT SET'}
-            </div>
-            <p style={{ margin: '8px 0 0', color: 'var(--color-text-3)', fontSize: 12 }}>
-              {hasOsId ? 'Use OS-ID + 6-digit PIN to sign in anywhere.' : 'Complete onboarding to claim your OS-ID.'}
-            </p>
-          </div>
-          {hasOsId && (
-            <button
-              type="button"
-              onClick={copyOsId}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '10px 14px',
-                borderRadius: 10,
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-surface-2)',
-                color: 'var(--color-text-1)',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              <Copy size={15} />
-              Copy
-            </button>
-          )}
-        </div>
-      </section>
-
       <section style={{ ...cardStyle, padding: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 18, alignItems: 'flex-start', marginBottom: 22 }}>
           <div>
@@ -248,7 +199,7 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
               Profile details
             </h2>
             <p style={{ margin: '6px 0 0', color: 'var(--color-text-3)', fontSize: 13, lineHeight: 1.5 }}>
-              Small identity details make insights, exports, and account recovery clearer.
+              Identity fields that shape your Arc — Daily, Weekly, and Life.
             </p>
           </div>
         </div>
@@ -256,14 +207,14 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
           <label style={{ display: 'grid', gap: 8 }}>
             <span className="text-label">Display name</span>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={() => saveName(name)}
-            className={nameStatus === 'saved' ? 'field-saved' : ''}
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={() => saveName(name)}
+              className={nameStatus === 'saved' ? 'field-saved' : ''}
               style={fieldStyle}
-          />
-          <FieldSaveIndicator status={nameStatus} />
+            />
+            <FieldSaveIndicator status={nameStatus} />
           </label>
 
           <label style={{ display: 'grid', gap: 8 }}>
@@ -281,22 +232,14 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
           </label>
         </div>
 
-        <label style={{ display: 'grid', gap: 8, marginTop: 18 }}>
-          <span className="text-label">Tagline (max 80)</span>
-          <input
-            value={tagline}
-            maxLength={80}
-            onChange={(e) => setTagline(e.target.value)}
-            onBlur={() => saveTagline(tagline)}
-            className={tagStatus === 'saved' ? 'field-saved' : ''}
-            placeholder="One line about you"
-            style={fieldStyle}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-            <FieldSaveIndicator status={tagStatus} />
-            <span className="text-caption">{tagline.length}/80</span>
-          </div>
-        </label>
+        <div style={{ marginTop: 20 }}>
+        <ArcEditor
+          value={lifeArc}
+          onChange={setLifeArc}
+          onSave={saveLifeArc}
+          saveStatus={lifeArcStatus}
+        />
+        </div>
 
         <label style={{ display: 'grid', gap: 8, marginTop: 18 }}>
           <span className="text-label">Email</span>
@@ -309,10 +252,36 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
         </label>
       </section>
 
-      <section style={{ ...cardStyle, padding: '22px 24px', marginTop: 20 }}>
-        <h2 className="text-h3" style={{ marginBottom: 4 }}>Life ranks</h2>
-        <p className="text-caption" style={{ marginBottom: 16 }}>XP auto-collects when you save your day, finish focus, or log money.</p>
-        <RankLadder />
+      <section style={{ ...cardStyle, padding: '16px 24px 20px' }}>
+        <button
+          type="button"
+          onClick={() => setRanksOpen((v) => !v)}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <h2 className="text-h3" style={{ marginBottom: 4 }}>Life ranks</h2>
+            <p className="text-caption" style={{ margin: 0 }}>
+              Earn XP from daily logs, focus sessions, and money tracking.
+            </p>
+          </div>
+          <ChevronDown
+            size={18}
+            color="var(--color-text-3)"
+            style={{ transform: ranksOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}
+          />
+        </button>
+        <RankLadder compact={!ranksOpen} />
       </section>
     </div>
   );

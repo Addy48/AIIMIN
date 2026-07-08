@@ -1,5 +1,13 @@
 # Waitlist Changelog
 
+## 2026-07-08 — Better Auth Google OAuth session fix
+
+- **What:** Google sign-in no longer bounces to `/login` after account pick. Bearer token captured from `set-auth-token` on all auth client calls; `AuthCallback` retries `get-session`, refetches React session, validates before profile redirect. API Node handler forwards multiple `Set-Cookie` headers (OAuth sets session + cache cookies). Login/root routes honor `readAccessToken()` not only `useSession().session`.
+- **Why:** SPA on `aiimin.in` / `localhost:3000` cannot rely on API-domain cookies alone; bearer plugin header was never persisted after OAuth redirect. `AuthCallback` read nonexistent `session.token` field. Onboarding fallback on `/auth/me` 401 sent users to login loop.
+- **Files:** `frontend/src/lib/auth-client.js`, `frontend/src/pages/AuthCallback.jsx`, `frontend/src/context/AuthContext.jsx`, `frontend/src/App.js`, `api/index.js`
+- **Status:** shipped (local verify: `/api/auth/sign-in/social` + `/api/auth/get-session` OK)
+- **Notes:** Google Console redirect URIs must include `https://api.aiimin.in/api/auth/callback/google` (prod) and `http://localhost:3001/api/auth/callback/google` (local). Calendar OAuth stays at `/api/google/auth/callback` — separate flow.
+
 ## 2026-07-08 (Recovery branch stabilization — auth + env + routing)
 
 - Merged pre-waitlist dashboard recovery (`recovery/pre-waitlist-full`) with waitlist-compatible auth routing in `App.js`
