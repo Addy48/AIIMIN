@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { authClient, changePassword, changeEmail } from '../../lib/auth-client';
-import { apiPost } from '../../utils/api';
-import { redirectToGoogle, fetchGoogleIntegrationStatus } from '../../utils/authRedirect';
+import { useAuth } from '../../../hooks/useAuth';
+import { authClient, changePassword, changeEmail } from '../../../lib/auth-client';
+import { apiPost } from '../../../utils/api';
+import { redirectToGoogle, fetchGoogleIntegrationStatus } from '../../../utils/authRedirect';
+import toast from '../../../utils/toast';
 
 const cardStyle = {
     background: 'var(--color-surface)',
