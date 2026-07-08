@@ -9,6 +9,34 @@ const app = new Hono();
 
 const COOKIE_NAME = 'aiimin_session';
 
+const frontendUrl = () => process.env.FRONTEND_URL || 'http://localhost:3000';
+
+/**
+ * GET /auth/oauth-handoff
+ * Better Auth OAuth lands here (API host) so the session cookie is readable,
+ * then we redirect to the SPA with a one-time token for bearer storage.
+ */
+app.get('/oauth-handoff', async (c) => {
+    const frontend = frontendUrl();
+    try {
+        const session = await auth.api.getSession({ headers: c.req.raw.headers });
+        if (!session?.session) {
+            console.warn('[oauth-handoff] no session after OAuth');
+            return c.redirect(`${frontend}/auth/callback?status=error&reason=no_session`);
+        }
+
+        const { token } = await auth.api.generateOneTimeToken({ headers: c.req.raw.headers });
+        if (!token) {
+            return c.redirect(`${frontend}/auth/callback?status=error&reason=ott_generate_failed`);
+        }
+
+        return c.redirect(`${frontend}/auth/callback?ott=${encodeURIComponent(token)}`);
+    } catch (err) {
+        console.error('[oauth-handoff] error:', err.message);
+        return c.redirect(`${frontend}/auth/callback?status=error&reason=${encodeURIComponent(err.message || 'handoff_failed')}`);
+    }
+});
+
 /**
  * GET /auth/resolve?identifier=...
  * Resolves OS-ID to email for legacy clients / display.

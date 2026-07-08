@@ -129,7 +129,7 @@ function AppContent({ user, session }) {
         <Route path="/login/*" element={
           isWaitlistMode && !canAccessApp
             ? <Login />
-            : (session ? <Navigate to="/overview" replace /> : <Login />)
+            : (session || readAccessToken() ? <Navigate to="/overview" replace /> : <Login />)
         } />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/onboarding" element={
@@ -138,7 +138,7 @@ function AppContent({ user, session }) {
             : (session || readAccessToken() ? <Onboarding /> : <Navigate to="/login" replace />)
         } />
         {!showWaitlistAtRoot && (
-          <Route path="/" element={<Navigate to={canAccessApp && session ? '/overview' : '/login'} replace />} />
+          <Route path="/" element={<Navigate to={canAccessApp && (session || readAccessToken()) ? '/overview' : '/login'} replace />} />
         )}
 
         {/* Authenticated shell */}

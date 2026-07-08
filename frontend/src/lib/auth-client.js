@@ -1,6 +1,7 @@
 import { createAuthClient } from 'better-auth/react';
 import { usernameClient } from 'better-auth/client/plugins';
 import { twoFactorClient } from 'better-auth/client/plugins';
+import { captureAuthTokenFromResponse, readAccessToken } from '../utils/authSession';
 
 const apiRoot = (process.env.REACT_APP_API_URL || '/api').replace(/\/api\/?$/, '');
 const authBaseURL = `${apiRoot || ''}/api/auth`.replace(/([^:]\/)\/+/g, '$1');
@@ -9,6 +10,13 @@ export const authClient = createAuthClient({
     baseURL: authBaseURL.startsWith('http') ? authBaseURL : `${window.location.origin}${authBaseURL}`,
     fetchOptions: {
         credentials: 'include',
+        auth: {
+            type: 'Bearer',
+            token: () => readAccessToken() || '',
+        },
+        onSuccess: (ctx) => {
+            captureAuthTokenFromResponse(ctx?.response);
+        },
     },
     plugins: [
         usernameClient(),
