@@ -34,17 +34,25 @@ const SECTION_MAP = {
 };
 
 export default function AccountPage() {
-  const { user, session } = useAuth();
+  const { user, isSignedIn, loading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const section = searchParams.get('section') || 'profile';
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    if (!session) return;
+    if (!isSignedIn) return;
     apiGet('/account/user-profile').then(setProfile).catch(() => {});
-  }, [session]);
+  }, [isSignedIn]);
 
-  if (!session) {
+  if (loading) {
+    return (
+      <div className="page-container" style={{ textAlign: 'center', paddingTop: 80 }}>
+        <p className="text-body" style={{ color: 'var(--color-text-2)' }}>Loading account…</p>
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
     return (
       <div className="page-container" style={{ textAlign: 'center', paddingTop: 80 }}>
         <h1 className="text-h1">Account</h1>

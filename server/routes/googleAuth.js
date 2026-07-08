@@ -149,22 +149,27 @@ app.get('/auth/callback', async (c) => {
 
 app.get('/auth/status', requireAuth, async (c) => {
     const userId = c.get('userId');
-    const { rows } = await pool.query(
-        `SELECT linked_email, scope, refresh_error, last_refresh_at, updated_at, expiry_date
-         FROM public.user_oauth_tokens WHERE user_id = $1 AND provider = 'google'`,
-        [userId],
-    );
-    const data = rows[0];
-    return c.json({
-        connected: !!data && !data.refresh_error,
-        linkedEmail: data?.linked_email || null,
-        loginEmail: c.get('user')?.email || null,
-        emailsDiffer: !!(data?.linked_email && c.get('user')?.email
-            && data.linked_email.toLowerCase() !== c.get('user').email.toLowerCase()),
-        scopes: data?.scope?.split(' ').filter(Boolean) || [],
-        lastSync: data?.last_refresh_at || data?.updated_at || null,
-        error: data?.refresh_error || null,
-    });
+    try {
+        const { rows } = await pool.query(
+            `SELECT linked_email, scope, refresh_error, last_refresh_at, updated_at, expiry_date
+             FROM public.user_oauth_tokens WHERE user_id = $1 AND provider = 'google'`,
+            [userId],
+        );
+        const data = rows[0];
+        return c.json({
+            connected: !!data && !data.refresh_error,
+            linkedEmail: data?.linked_email || null,
+            loginEmail: c.get('user')?.email || null,
+            emailsDiffer: !!(data?.linked_email && c.get('user')?.email
+                && data.linked_email.toLowerCase() !== c.get('user').email.toLowerCase()),
+            scopes: data?.scope?.split(' ').filter(Boolean) || [],
+            lastSync: data?.last_refresh_at || data?.updated_at || null,
+            error: data?.refresh_error || null,
+        });
+    } catch (err) {
+        console.warn('[googleAuth/status] error:', err.message);
+        return c.json({ connected: false, error: err.message });
+    }
 });
 
 app.post('/auth/disconnect', requireAuth, async (c) => {
