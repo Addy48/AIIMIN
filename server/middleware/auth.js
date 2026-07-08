@@ -1,13 +1,12 @@
 import { pool } from '../lib/db.js';
 import { getCookie } from 'hono/cookie';
 import * as dotenv from 'dotenv';
-import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
+import { auth } from '../lib/auth.js';
 import { ensureUserProfile } from '../services/userProfileService.js';
 dotenv.config();
 
 const COOKIE_NAME = 'aiimin_session';
 
-// Profile cache
 const profileCache = new Map();
 const CACHE_TTL_MS = 10_000;
 
@@ -20,7 +19,7 @@ setInterval(() => {
     }
 }, 60_000);
 
-export const requireAuth = async (c, next) => {
+async function resolveSession(c) {
     let token = getCookie(c, COOKIE_NAME);
     if (!token) {
         const authHeader = c.req.header('authorization');
@@ -30,70 +29,82 @@ export const requireAuth = async (c, next) => {
         token = c.req.query('token');
     }
 
-    if (!token) {
-        return c.json({ error: 'Unauthorized: missing token' }, 401);
+    const headers = new Headers(c.req.raw.headers);
+    if (token && !headers.get('authorization')) {
+        headers.set('authorization', `Bearer ${token}`);
     }
 
-    if (process.env.NODE_ENV !== 'production' && token === 'mock-test-token') {
+    const session = await auth.api.getSession({ headers });
+    return session;
+}
+
+export const requireAuth = async (c, next) => {
+    if (process.env.NODE_ENV !== 'production' && c.req.header('authorization') === 'Bearer mock-test-token') {
         c.set('user', { id: '88888888-8888-4888-8888-888888888888', email: 'dev@aiimin.in', role: 'user', onboarding_stage: 1, username: 'DEVUSER' });
         c.set('userId', '88888888-8888-4888-8888-888888888888');
         return await next();
     }
 
-    let decoded = null;
-    let authUser = null;
-
+    let sessionResult;
     try {
-        const supabase = getSupabaseAdmin();
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (user && !error) {
-            authUser = user;
-            decoded = { id: user.id, email: user.email };
-        }
-    } catch (supaErr) {
-        console.error('[auth] Supabase token verify error:', supaErr.message);
+        sessionResult = await resolveSession(c);
+    } catch (err) {
+        console.error('[auth] session resolve error:', err.message);
+        return c.json({ error: 'Unauthorized: session error' }, 401);
     }
 
-    if (!decoded) {
+    const user = sessionResult?.user;
+    const session = sessionResult?.session;
+    if (!user?.id) {
         return c.json({ error: 'Unauthorized: invalid or expired token' }, 401);
     }
 
     try {
         const now = Date.now();
-        let cached = profileCache.get(decoded.id);
+        let cached = profileCache.get(user.id);
 
         if (!cached || (now - cached.timestamp > CACHE_TTL_MS)) {
             const { rows } = await pool.query(
-                'SELECT role, onboarding_stage, username FROM users WHERE id = $1',
-                [decoded.id]
+                'SELECT role, onboarding_stage, username, email, full_name FROM users WHERE id = $1',
+                [user.id],
             );
 
             if (rows.length > 0) {
                 cached = { ...rows[0], timestamp: now };
-                profileCache.set(decoded.id, cached);
-            } else if (authUser) {
-                const profile = await ensureUserProfile(pool, authUser);
+                profileCache.set(user.id, cached);
+            } else {
+                const profile = await ensureUserProfile(pool, {
+                    id: user.id,
+                    email: user.email,
+                    user_metadata: {
+                        full_name: user.name || user.fullName || '',
+                        username: user.username || user.displayUsername || '',
+                    },
+                });
                 cached = {
                     role: profile.role,
                     onboarding_stage: profile.onboarding_stage,
                     username: profile.username,
+                    email: profile.email,
+                    full_name: profile.full_name,
                     timestamp: now,
                 };
-                profileCache.set(decoded.id, cached);
-            } else {
-                return c.json({ error: 'User not found' }, 401);
+                profileCache.set(user.id, cached);
             }
         }
 
         c.set('user', {
-            ...(authUser || {}),
-            id: decoded.id,
-            email: decoded.email,
+            id: user.id,
+            email: user.email || cached?.email,
+            name: user.name,
             role: cached?.role || 'user',
-            onboarding_stage: cached?.onboarding_stage ?? 0,
-            username: cached?.username,
+            onboarding_stage: cached?.onboarding_stage ?? user.onboardingStage ?? user.onboarding_stage ?? 0,
+            username: cached?.username || user.username || user.displayUsername,
+            full_name: cached?.full_name || user.name || user.fullName,
+            emailVerified: user.emailVerified,
         });
-        c.set('userId', decoded.id);
+        c.set('userId', user.id);
+        c.set('authSession', session);
     } catch (err) {
         console.error('[auth middleware] Error:', err.message);
         return c.json({ error: 'Unauthorized: session error', details: err.message }, 401);
@@ -101,4 +112,3 @@ export const requireAuth = async (c, next) => {
 
     await next();
 };
-

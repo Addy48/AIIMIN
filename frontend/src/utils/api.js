@@ -1,5 +1,4 @@
-import supabase from './supabase';
-import { isOAuthCallbackRoute, persistAccessToken, readAccessToken, ensureSupabaseSession, requireFreshAccessToken, isAccessTokenExpired } from './authSession';
+import { readAccessToken } from './authSession';
 
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -9,9 +8,6 @@ export const buildAuthHeaders = (extraHeaders = {}) => ({
     ...extraHeaders,
 });
 
-/**
- * Build a request URL for relative or absolute API_URL values.
- */
 export const buildApiUrl = (path, params) => {
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     const base = API_URL || '/api';
@@ -27,34 +23,19 @@ export const buildApiUrl = (path, params) => {
     }
 
     if (params) {
-        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+        Object.keys(params).forEach((key) => url.searchParams.append(key, params[key]));
     }
 
     return url;
 };
 
-/**
- * Get a valid access token — refresh from Supabase when possible.
- * On OAuth callback route only, prefer cached token to avoid deadlock.
- */
-export const getCurrentAccessToken = async () => {
-    if (isOAuthCallbackRoute()) {
-        const cached = readAccessToken();
-        if (cached && !isAccessTokenExpired(cached)) return cached;
-    }
-
-    try {
-        return await requireFreshAccessToken(supabase);
-    } catch (_) {
-        return '';
-    }
-};
+export const getCurrentAccessToken = async () => readAccessToken() || '';
 
 const resolveHeaders = async ({ headers = {}, json = true, auth = true } = {}) => {
     const baseHeaders = json ? buildAuthHeaders(headers) : { ...headers };
     if (auth) {
         const token = await getCurrentAccessToken();
-        baseHeaders.Authorization = `Bearer ${token}`;
+        if (token) baseHeaders.Authorization = `Bearer ${token}`;
     }
     return baseHeaders;
 };
@@ -82,6 +63,7 @@ export const apiRequest = async (path, options = {}, retried = false) => {
     const fetchOptions = {
         method,
         headers: resolvedHeaders,
+        credentials: 'include',
         ...(signal ? { signal } : {}),
     };
 
@@ -92,13 +74,14 @@ export const apiRequest = async (path, options = {}, retried = false) => {
     const response = await fetch(url, fetchOptions);
 
     if (response.status === 401 && !retried && options.auth !== false) {
-        try {
-            const { data: { session } } = await supabase.auth.refreshSession();
-            if (session?.access_token) {
-                persistAccessToken(session.access_token);
-                return apiRequest(path, options, true);
-            }
-        } catch (_) { /* retry below */ }
+        const { authClient } = await import('../lib/auth-client');
+        const refreshed = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
+        const token = refreshed?.data?.session?.token;
+        if (token) {
+            const { persistAccessToken } = await import('./authSession');
+            persistAccessToken(token);
+            return apiRequest(path, options, true);
+        }
     }
 
     if (!response.ok) {
@@ -107,7 +90,7 @@ export const apiRequest = async (path, options = {}, retried = false) => {
             const errBody = await response.json();
             errMsg = errBody.error || errBody.message || errMsg;
         } catch (_) {
-            try { errMsg = await response.text() || errMsg; } catch (_2) {}
+            try { errMsg = await response.text() || errMsg; } catch (_2) { /* ignore */ }
         }
         const err = new Error(errMsg);
         err.status = response.status;
@@ -116,13 +99,10 @@ export const apiRequest = async (path, options = {}, retried = false) => {
 
     if (responseType === 'json') {
         return await response.json();
-    } else if (responseType === 'text') {
-        return await response.text();
-    } else if (responseType === 'blob') {
-        return await response.blob();
-    } else if (responseType === 'arraybuffer') {
-        return await response.arrayBuffer();
     }
+    if (responseType === 'text') return await response.text();
+    if (responseType === 'blob') return await response.blob();
+    if (responseType === 'arraybuffer') return await response.arrayBuffer();
 
     return response;
 };

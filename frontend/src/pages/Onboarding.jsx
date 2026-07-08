@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiPatch, apiGet } from '../utils/api';
-import { persistAccessToken, readAccessToken, ensureSupabaseSession, requireFreshAccessToken } from '../utils/authSession';
-import supabase from '../utils/supabase';
+import { readAccessToken } from '../utils/authSession';
 import { suggestOsIdFromName } from '../utils/osId';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
@@ -285,9 +284,9 @@ export default function Onboarding() {
             const upperUsername = username.trim().toUpperCase();
             const trimmedName = fullName.trim();
 
-            const token = await requireFreshAccessToken(supabase);
-            let liveSession = await ensureSupabaseSession(supabase);
-            if (liveSession?.user) await checkSession(liveSession);
+            if (!readAccessToken()) {
+                throw new Error('Session expired. Please sign in again.');
+            }
 
             await apiPost('/auth/complete-google-profile', {
                 username: upperUsername,
@@ -314,34 +313,9 @@ export default function Onboarding() {
                 });
             }
 
-            // PIN last — may revoke JWT; data is already saved
-            const email = user?.email;
-            liveSession = await ensureSupabaseSession(supabase);
-            if (liveSession?.user) {
-                const { error: pinErr } = await supabase.auth.updateUser({
-                    password: pin,
-                    data: { username: upperUsername, full_name: trimmedName },
-                });
-                if (!pinErr) {
-                    const refreshed = await ensureSupabaseSession(supabase);
-                    if (refreshed?.access_token) persistAccessToken(refreshed.access_token);
-                } else {
-                    await apiPost('/auth/set-pin', { pin });
-                }
-            } else {
-                await apiPost('/auth/set-pin', { pin });
-            }
-
-            if (email) {
-                const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-                    email,
-                    password: pin,
-                });
-                if (!signInErr && signInData?.session) {
-                    persistAccessToken(signInData.session.access_token);
-                    await checkSession(signInData.session);
-                }
-            }
+            // PIN last — Better Auth setPassword keeps session alive
+            await apiPost('/auth/set-pin', { pin });
+            await checkSession();
 
             setDir(1);
             setStep(8);

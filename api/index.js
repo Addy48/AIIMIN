@@ -19,6 +19,7 @@ app.use('*', cors({
     origin: (origin) => origin,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposeHeaders: ['set-auth-token', 'Set-Auth-Token'],
     credentials: true,
 }));
 
@@ -42,9 +43,13 @@ app.get('/keepalive', async (c) => {
     }
 });
 
-// ── Auth routes — loaded eagerly (small, needed first) ──
+// ── Auth routes — custom AIIMIN endpoints + Better Auth catch-all ──
 import authRoutes from '../server/routes/auth.js';
+import { auth as betterAuth } from '../server/lib/auth.js';
+
 app.route('/auth', authRoutes);
+
+app.on(['GET', 'POST'], '/auth/*', async (c) => betterAuth.handler(c.req.raw));
 
 // ── Lazy route cache ──
 const cache = {};

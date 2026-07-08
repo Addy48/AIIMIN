@@ -1,18 +1,14 @@
 /**
- * utils/authRedirect.js
- *
- * Single authoritative function for all Google OAuth redirects.
- *
- * Usage:
- *   redirectToGoogle('login')    → /google/auth/login  (account sign-in)
- *   redirectToGoogle('calendar') → /auth/google?scope=calendar  (calendar connect)
+ * Calendar/YouTube integration OAuth — separate from app login (Better Auth).
  */
 import { apiGet } from './api';
 
-// Used only for Calendar/YouTube integration (not login — login uses Supabase native OAuth)
-export const redirectToGoogle = async () => {
+export const redirectToGoogle = async ({ loginHint } = {}) => {
     try {
-        const { authUrl } = await apiGet('/google/auth/init');
+        const path = loginHint
+            ? `/google/auth/init?login_hint=${encodeURIComponent(loginHint)}`
+            : '/google/auth/init';
+        const { authUrl } = await apiGet(path);
         if (authUrl) {
             window.location.href = authUrl;
         } else {
@@ -20,5 +16,8 @@ export const redirectToGoogle = async () => {
         }
     } catch (err) {
         console.error('Error initiating Google OAuth:', err);
+        throw err;
     }
 };
+
+export const fetchGoogleIntegrationStatus = () => apiGet('/google/auth/status');
