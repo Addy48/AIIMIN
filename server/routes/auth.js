@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { deleteCookie } from 'hono/cookie';
 import { getSupabaseAdmin } from '../lib/supabaseAdmin.js';
 import { requireAuth } from '../middleware/auth.js';
+import { resolveAccess } from '../services/accessService.js';
 
 const app = new Hono();
 

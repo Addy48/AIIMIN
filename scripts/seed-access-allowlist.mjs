@@ -5,17 +5,27 @@
  * Usage:
  *   node scripts/seed-access-allowlist.mjs
  *   DEV_EMAILS=a@x.com TESTER_EMAILS=t1@x.com node scripts/seed-access-allowlist.mjs
- *
- * Defaults (when env empty) match deploy/.env.production.example.
- * Future tester slots — add to TESTER_EMAILS or uncomment below:
- *   tester5@example.com, tester6@example.com, tester7@example.com
  */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import pg from 'pg';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import dotenv from 'dotenv';
+import { resolveDatabaseUrl } from '../server/lib/db.js';
+
+const envPath = process.env.DOTENV_CONFIG_PATH || resolve(process.cwd(), '.env');
+const parsed = dotenv.parse(readFileSync(envPath));
+const connectionString = resolveDatabaseUrl(parsed.DATABASE_URL)
+  ?.replace(/([?&])sslmode=[^&]*/g, '$1')
+  .replace(/[?&]$/, '')
+  .replace(/\?&/, '?');
+
+if (!connectionString) {
+  console.error('❌ DATABASE_URL missing');
+  process.exit(1);
+}
 
 const { Pool } = pg;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
 const DEFAULT_DEVS = ['aadityaupadhyay10@gmail.com'];
 const DEFAULT_TESTERS = [
@@ -23,19 +33,11 @@ const DEFAULT_TESTERS = [
   'sanchitbhatia2006@gmail.com',
   'adityamehta298@gmail.com',
   'shishangthakur@icloud.com',
-  // Reserved slots for future testers:
-  // 'tester5@example.com',
-  // 'tester6@example.com',
-  // 'tester7@example.com',
 ];
 
 function parseList(envVar) {
   return (process.env[envVar] || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 }
-
-async function main() {
-  const devs = parseList('DEV_EMAILS').length ? parseList('DEV_EMAILS') : DEFAULT_DEVS;
-  const testers = parseList('TESTER_EMAILS').length ? parseList('TESTER_EMAILS') : DEFAULT_TESTERS;
 
 async function upsertAllowlist(email, role, tier = 'elite') {
   const updated = await pool.query(
@@ -50,6 +52,10 @@ async function upsertAllowlist(email, role, tier = 'elite') {
   }
 }
 
+async function main() {
+  const devs = parseList('DEV_EMAILS').length ? parseList('DEV_EMAILS') : DEFAULT_DEVS;
+  const testers = parseList('TESTER_EMAILS').length ? parseList('TESTER_EMAILS') : DEFAULT_TESTERS;
+
   for (const email of devs) {
     await upsertAllowlist(email, 'dev');
     console.log('dev:', email);
@@ -60,6 +66,10 @@ async function upsertAllowlist(email, role, tier = 'elite') {
     console.log('tester:', email);
   }
 
+  const { rows } = await pool.query(
+    'SELECT email, role, tier FROM tester_allowlist ORDER BY role, email',
+  );
+  console.log('\nAllowlist rows:', rows.length);
   await pool.end();
   console.log('Done.');
 }

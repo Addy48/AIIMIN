@@ -30,6 +30,7 @@ function readStoredSignup() {
 function persistSignup(data) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify({
+    email: data.email || '',
     name: data.name || '',
     position: data.position ?? null,
     referralCode: data.referralCode || '',
@@ -37,6 +38,11 @@ function persistSignup(data) {
     reservedId: data.reservedId || '',
     signedUpAt: new Date().toISOString(),
   }));
+}
+
+function clearStoredSignup() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(WAITLIST_STORAGE_KEY);
 }
 
 function captureReferralFromUrl() {
@@ -142,6 +148,7 @@ function ConfirmationPanel({
   compact,
   showFeatureVote = true,
   onReservedId,
+  onReset,
 }) {
   const [copied, setCopied] = useState(false);
   const [voteOpen, setVoteOpen] = useState(false);
@@ -235,6 +242,12 @@ function ConfirmationPanel({
         <div className="confirmation-vote-panel">
           <WaitlistQuickFeedback compact />
         </div>
+      )}
+
+      {onReset && (
+        <button type="button" className="confirmation-reset-link" onClick={onReset}>
+          Use a different email
+        </button>
       )}
     </div>
   );
@@ -345,6 +358,16 @@ export default function WaitlistForm({
     });
   };
 
+  const resetSignup = () => {
+    clearStoredSignup();
+    setConfirmation(null);
+    setStatus(null);
+    setEmail('');
+    setFirstName('');
+    setErrorMsg('');
+    setEmailTouched(false);
+  };
+
   if ((status === 'success' || status === 'already' || status === 'returning') && confirmation) {
     if (status === 'already') {
       return (
@@ -362,6 +385,7 @@ export default function WaitlistForm({
             compact={compact}
             showFeatureVote={showFeatureVote}
             onReservedId={handleReservedId}
+            onReset={resetSignup}
           />
         </div>
       );
@@ -376,6 +400,7 @@ export default function WaitlistForm({
         compact={compact}
         showFeatureVote={showFeatureVote}
         onReservedId={handleReservedId}
+        onReset={resetSignup}
       />
     );
   }

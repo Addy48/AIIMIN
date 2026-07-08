@@ -1,5 +1,38 @@
 # Waitlist Changelog
 
+## 2026-07-07 (Task 3 — tester allowlist + login restore)
+
+- Seeded `tester_allowlist` via `scripts/seed-access-allowlist.mjs` (1 dev + 4 testers).
+- Restored Supabase auth: `AuthContext.jsx`, `Login.jsx`, `/auth/callback` route.
+- Fixed missing `resolveAccess` import in `server/routes/auth.js`.
+- Cognito Phase 2 guide: `deploy/COGNITO-SETUP.md`.
+
+## 2026-07-07 (GHA health-check retry)
+
+- Deploy workflow waits up to 60s for `localhost:3001/api/health` after PM2 reload (`deploy/wait-for-api.sh`).
+- Fixes false failures: `curl: (7) Failed to connect to localhost port 3001` on t4g.nano cold start.
+
+## 2026-07-07 (GitHub Actions deploy fix)
+
+- `.github/workflows/deploy-api.yml`: auto-clone if `~/AIIMIN` has no `.git`, preserve `.env`, `npm install` instead of `npm ci`, longer SSH timeouts, `workflow_dispatch`.
+- Added `deploy/github-ec2-deploy.sh` and `deploy/GITHUB-ACTIONS.md`.
+- Root cause of failures: rsync deploy had no git; intermittent SSH timeout from GitHub runner IPs not in EC2 security group.
+
+## 2026-07-07 (Waitlist email redesign — Nordic brand)
+
+- Rebuilt `waitlist_confirmation`, `waitlist_owner_notify`, and `waitlist_invite` in `server/lib/emailTemplates.js`.
+- Nordic palette (#F0EDE8 parchment, #1E5C3A forest accent), Familjen Grotesk + Figtree, hosted logo from `aiimin.in/AIIMIN_logo.svg`.
+- Confirmation: position badge, OS-ID block, founding perks list, referral link, founder note.
+- Owner notify: structured signup table + total count; feedback uses same branded layout.
+- Files: `server/lib/emailTemplates.js`, `server/routes/waitlist.js`
+
+## 2026-07-07 (EC2 DB fix — Supavisor aws-1 pooler)
+
+- Fixed waitlist DB on EC2: use `aws-1-ap-south-1.pooler.supabase.com:5432` (session pooler), user `postgres.yubxgftugxbwtywyhcsv`, not `db.*.supabase.co` (IPv6-only) or `aws-0` shard.
+- `server/lib/db.js`: explicit `.env` load, strip `sslmode=require`, `resolveDatabaseUrl()` for legacy direct URLs.
+- Added `scripts/verify-db-connection.mjs` and `scripts/probe-supabase-pooler.mjs`.
+- Production waitlist signup verified: position + count increment on `api.aiimin.in`.
+
 ## 2026-07-06 (cleanup + ship modular waitlist v9)
 
 - Removed dead CSS: old roadmap timeline/bar, pre-signup OS-ID checkbox, founder-signal.

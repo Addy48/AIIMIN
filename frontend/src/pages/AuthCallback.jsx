@@ -11,15 +11,20 @@ const AuthCallback = () => {
     const [status, setStatus] = useState('Establishing secure connection…');
 
     useEffect(() => {
-        const supabaseError = searchParams.get('error');
-        const supabaseDesc  = searchParams.get('error_description');
-        const queryStatus   = searchParams.get('status');
-        const reason        = searchParams.get('reason');
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const supabaseError = searchParams.get('error') || hashParams.get('error');
+        const supabaseDesc = searchParams.get('error_description') || hashParams.get('error_description');
+        const errorCode = searchParams.get('error_code') || hashParams.get('error_code');
+        const queryStatus = searchParams.get('status');
+        const reason = searchParams.get('reason');
 
         if (supabaseError) {
-            const msg = supabaseDesc ? decodeURIComponent(supabaseDesc) : supabaseError;
+            let msg = supabaseDesc ? decodeURIComponent(supabaseDesc.replace(/\+/g, ' ')) : supabaseError;
+            if (errorCode === 'signup_disabled') {
+                msg = 'New signups are disabled in Supabase. Your tester email must be pre-invited — contact the team or use OS-ID + PIN login.';
+            }
             setError(msg);
-            setTimeout(() => navigate('/login'), 4000);
+            setTimeout(() => navigate('/login'), 5000);
             return;
         }
 
