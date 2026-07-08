@@ -10,6 +10,7 @@ module.exports = {
       cwd: '/home/ubuntu/AIIMIN',
       instances: 1,
       exec_mode: 'fork',
+      node_args: '--dns-result-order=ipv4first',
       autorestart: true,
       watch: false,
       max_memory_restart: '400M',

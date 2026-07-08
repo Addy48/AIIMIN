@@ -1751,6 +1751,26 @@ html {
   font-family: inherit;
 }
 
+.confirmation-reset-link {
+  display: block;
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-3);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.confirmation-reset-link:hover {
+  color: var(--color-text-2);
+}
+
 .confirmation-vote-panel {
   margin-top: 1rem;
   text-align: left;
