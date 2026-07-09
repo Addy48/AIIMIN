@@ -144,12 +144,23 @@ async function notifyOwnerWaitlistSignup({
 }
 
 async function sendWaitlistConfirmation({ email, firstName, reservedUsername, referralCode }) {
+  let memberNumber = null;
+  let totalCount = null;
+  try {
+    memberNumber = await getWaitlistPosition(email);
+    const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM waitlist_emails');
+    totalCount = rows[0]?.count ?? null;
+  } catch {
+    // non-fatal
+  }
   try {
     await sendEmail(email, 'waitlist_confirmation', {
       email,
       name: firstName,
       reserved_username: reservedUsername,
       referral_code: referralCode,
+      member_number: memberNumber,
+      total_count: totalCount,
     });
     return true;
   } catch (err) {
