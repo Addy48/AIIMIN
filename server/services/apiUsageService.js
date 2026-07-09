@@ -15,7 +15,7 @@ const ENV_LIMITS = {
 const DEFAULT_LIMITS = {
   cricapi: 100,
   rapidapi_cricket: 100,
-  gemini: 1500,
+  gemini: 200,
   groq: 14400,
   moonshot: 500,
   sports_cron: 48,

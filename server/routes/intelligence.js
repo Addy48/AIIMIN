@@ -17,6 +17,8 @@ import { enrichSystemPrompt } from '../lib/arcContext.js';
 import { sharpenLifeArcLocally } from '../lib/arcSharpen.js';
 import { aiLimiter } from '../middleware/rateLimiter.js';
 import { trackExternalCall } from '../services/apiUsageService.js';
+import { geminiLiteGenerate, isGeminiLiteTask, GEMINI_LITE_TASKS } from '../lib/geminiLite.js';
+import { groqChat, getGeminiKey } from '../lib/aiChat.js';
 
 const app = new Hono();
 
@@ -126,16 +128,83 @@ app.get('/report', requireAuth, async (c) => {
 });
 
 // ==========================================
+// GEMINI LITE — 5 low-token tasks (free-tier key)
+// ==========================================
+const LITE_PROMPTS = {
+    journal_prompt: (ctx) => ({
+        userText: `Generate exactly 3 short reflection questions${ctx ? ` for: "${String(ctx).slice(0, 400)}"` : ''}. Return ONLY a JSON array of 3 strings.`,
+        maxOutputTokens: 200,
+        temperature: 0.8,
+    }),
+    habit_coach: (ctx) => ({
+        userText: `2-sentence habit coaching insight: ${ctx}`,
+        maxOutputTokens: 120,
+        temperature: 0.7,
+    }),
+    emotion_tag: (ctx) => ({
+        userText: `Tag emotion + 1 sentence feedback. Return JSON {"tone":"...","feedback":"..."}. Text: ${String(ctx).slice(0, 800)}`,
+        maxOutputTokens: 100,
+        temperature: 0.3,
+    }),
+    short_summary: (ctx) => ({
+        userText: `Summarize in 2 sentences: ${String(ctx).slice(0, 1200)}`,
+        maxOutputTokens: 100,
+        temperature: 0.4,
+    }),
+};
+
+app.post('/lite', requireAuth, aiLimiter, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const { task, text = '', context = '' } = await c.req.json();
+        if (!isGeminiLiteTask(task)) {
+            return c.json({ error: 'Invalid lite task', allowed: [...GEMINI_LITE_TASKS] }, 400);
+        }
+
+        const promptFn = LITE_PROMPTS[task];
+        const { userText, maxOutputTokens, temperature } = promptFn(context || text);
+
+        await trackExternalCall({
+            userId,
+            provider: 'gemini',
+            endpoint: `/intelligence/lite:${task}`,
+            units: 1,
+        });
+
+        const result = await geminiLiteGenerate({
+            task,
+            userText,
+            maxOutputTokens,
+            temperature,
+        });
+
+        if (!result.ok) {
+            return c.json({ error: result.error, stub: true }, 503);
+        }
+
+        return c.json({ text: result.text, provider: 'gemini-lite', model: result.model });
+    } catch (err) {
+        console.error('[intelligence/lite]', err.message);
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+app.get('/lite/status', requireAuth, async (c) => {
+    const { getGeminiLiteApiKey } = await import('../lib/geminiLite.js');
+    return c.json({
+        configured: Boolean(getGeminiLiteApiKey()),
+        tasks: [...GEMINI_LITE_TASKS],
+        model: process.env.GEMINI_LITE_MODEL || 'gemini-2.5-flash-lite',
+    });
+});
+
+// ==========================================
 // SERVER-SIDE AI PROXIES (no client API keys)
+// Heavy generate → Groq (working). Gemini reserved for /lite + arc sharpen.
 // ==========================================
 app.post('/generate', requireAuth, aiLimiter, async (c) => {
     const userId = c.get('userId');
     try {
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            return c.json({ error: 'GEMINI_API_KEY not configured on server' }, 503);
-        }
-
         const { messages = [], systemPrompt = null, maxTokens = 1024, temperature = 0.7 } = await c.req.json();
         if (!messages.length) {
             return c.json({ error: 'messages required' }, 400);
@@ -143,29 +212,21 @@ app.post('/generate', requireAuth, aiLimiter, async (c) => {
 
         await trackExternalCall({
             userId,
-            provider: 'gemini',
+            provider: 'groq',
             endpoint: '/intelligence/generate',
             units: 1,
         });
 
-        const { GoogleGenAI } = await import('@google/genai');
-        const genai = new GoogleGenAI({ apiKey });
-
-        const prompt = messages.map((m) => `${m.role}: ${m.content}`).join('\n');
         const systemInstructionRaw = await enrichSystemPrompt(userId, systemPrompt);
-        const result = await genai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            config: {
-                systemInstruction: systemInstructionRaw
-                    ? withVoiceRules(systemInstructionRaw)
-                    : undefined,
-                maxOutputTokens: maxTokens,
-                temperature,
-            },
-        });
+        const fullMessages = systemInstructionRaw
+            ? [{ role: 'system', content: withVoiceRules(systemInstructionRaw) }, ...messages]
+            : messages;
 
-        return c.json({ text: result.text || '' });
+        const result = await groqChat({ messages: fullMessages, maxTokens, temperature });
+        if (!result.ok) {
+            return c.json({ error: result.error || 'Generate failed' }, 503);
+        }
+        return c.json({ text: result.text || '', provider: result.provider });
     } catch (err) {
         console.error('[intelligence/generate]', err.message);
         return c.json({ error: err.message }, 500);
@@ -175,12 +236,13 @@ app.post('/generate', requireAuth, aiLimiter, async (c) => {
 app.post('/gemini-proxy', requireAuth, aiLimiter, async (c) => {
     const userId = c.get('userId');
     try {
-        const apiKey = process.env.GEMINI_API_KEY;
+        // Prefer lite key; fall back to legacy GEMINI_API_KEY if set
+        const apiKey = getGeminiKey();
         if (!apiKey) {
-            return c.json({ error: 'GEMINI_API_KEY not configured on server' }, 503);
+            return c.json({ error: 'No Gemini key configured — use /intelligence/chat with groq' }, 503);
         }
 
-        const { model = 'gemini-2.0-flash', ...payload } = await c.req.json();
+        const { model = process.env.GEMINI_LITE_MODEL || 'gemini-2.5-flash-lite', ...payload } = await c.req.json();
 
         await trackExternalCall({
             userId,
@@ -342,8 +404,12 @@ app.post('/universal-log', requireAuth, async (c) => {
             return c.json({ error: 'No text provided' }, 400);
         }
 
-        const { GoogleGenAI } = await import('@google/genai');
-        const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        await trackExternalCall({
+            userId,
+            provider: 'groq',
+            endpoint: '/intelligence/universal-log',
+            units: 1,
+        });
 
         const systemPrompt = await enrichSystemPrompt(userId, `You are an AI that parses a user's natural language daily log entry and extracts structured actions.
 Return ONLY valid JSON (no markdown, no explanation).
@@ -363,13 +429,19 @@ Respond with JSON like:
   ]
 }`);
 
-        const result = await genai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: [{ role: 'user', parts: [{ text: `Parse this log entry: "${text.trim()}"` }] }],
-            config: { systemInstruction: withVoiceRules(systemPrompt) }
+        const chat = await groqChat({
+            messages: [
+                { role: 'system', content: withVoiceRules(systemPrompt) },
+                { role: 'user', content: `Parse this log entry: "${text.trim()}"` },
+            ],
+            maxTokens: 600,
+            temperature: 0.2,
         });
+        if (!chat.ok) {
+            return c.json({ error: chat.error || 'Parse failed' }, 503);
+        }
 
-        const rawText = result.text.trim().replace(/```json\n?|```/g, '');
+        const rawText = (chat.text || '').trim().replace(/```json\n?|```/g, '');
         let parsed;
         try { parsed = JSON.parse(rawText); } catch (e) {
             return c.json({ error: 'AI could not parse your entry', raw: rawText }, 422);
@@ -446,11 +518,6 @@ async function handleArcSharpen(c) {
     }
 
     try {
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            return c.json({ text: sharpenLifeArcLocally(seed, goalIds), stub: true });
-        }
-
         const userId = c.get('userId');
         await trackExternalCall({
             userId,
@@ -460,22 +527,22 @@ async function handleArcSharpen(c) {
         });
 
         const goalHint = goalIds.length ? `Goals: ${goalIds.join(', ')}.` : '';
-        const { GoogleGenAI } = await import('@google/genai');
-        const genai = new GoogleGenAI({ apiKey });
-        const result = await genai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: [{
-                role: 'user',
-                parts: [{ text: `${goalHint} Sharpen this Life Arc into one clear sentence (max 25 words): ${seed}` }],
-            }],
-            config: {
-                maxOutputTokens: 64,
-                temperature: 0.2,
-            },
+        const result = await geminiLiteGenerate({
+            task: 'arc_sharpen',
+            userText: `${goalHint} Sharpen this Life Arc into one clear sentence (max 25 words): ${seed}`,
+            maxOutputTokens: 64,
+            temperature: 0.2,
         });
 
-        const text = (result.text || '').trim().replace(/^["']|["']$/g, '') || sharpenLifeArcLocally(seed, goalIds);
-        return c.json({ text });
+        if (result.ok) {
+            let text = result.text.replace(/^["']|["']$/g, '').split('\n')[0].trim();
+            const words = text.split(/\s+/);
+            if (words.length > 25) text = `${words.slice(0, 25).join(' ')}.`;
+            if (!text) text = sharpenLifeArcLocally(seed, goalIds);
+            return c.json({ text, provider: 'gemini-lite' });
+        }
+
+        return c.json({ text: sharpenLifeArcLocally(seed, goalIds), stub: true, fallback: true });
     } catch (err) {
         console.error('[intelligence/arc/sharpen]', err.message);
         return c.json({

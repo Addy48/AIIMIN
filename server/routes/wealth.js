@@ -2,6 +2,8 @@ import { Hono } from 'hono';
 import * as XLSX from 'xlsx';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { nvidiaOrGroqChat, groqChat } from '../lib/aiChat.js';
+import { trackExternalCall } from '../services/apiUsageService.js';
 
 const wealthRoutes = new Hono();
 
@@ -1075,14 +1077,12 @@ wealthRoutes.get('/ai-summary', requireAuth, async (c) => {
 
         const netFlow = totalIncome - totalExpense;
 
-        // Try NVIDIA API for natural language summary
-        const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
+        // Prefer NVIDIA if models work; otherwise Groq (working free tier)
         let aiSummary = null;
         let aiStatus = 'success';
 
-        if (NVIDIA_API_KEY) {
-            try {
-                const prompt = `You are a personal finance advisor. Analyze this user's last 30 days of financial data and provide a helpful, conversational summary.
+        try {
+            const prompt = `You are a personal finance advisor. Analyze this user's last 30 days of financial data and provide a helpful, conversational summary.
 
 Financial Data:
 - Total Income: ₹${totalIncome.toFixed(2)}
@@ -1102,47 +1102,28 @@ Provide a response as JSON with these exact keys:
 
 Do not include markdown formatting like \`\`\`json.`;
 
-                const nvidiaRes = await fetch(
-                    `https://integrate.api.nvidia.com/v1/chat/completions`,
-                    {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${NVIDIA_API_KEY}`,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: "moonshotai/kimi-k2.6",
-                            messages: [{ role: "user", content: prompt }],
-                            max_tokens: 1000,
-                            temperature: 0.7,
-                            top_p: 1.0,
-                            stream: false,
-                            chat_template_kwargs: { thinking: true }
-                        }),
-                        signal: AbortSignal.timeout(30000)
-                    }
-                );
+            await trackExternalCall({
+                userId,
+                provider: 'groq',
+                endpoint: '/wealth/ai-summary',
+                units: 1,
+                enforceBudget: false,
+            }).catch(() => {});
 
-                if (nvidiaRes.ok) {
-                    const nvidiaData = await nvidiaRes.json();
-                    let rawText = nvidiaData.choices?.[0]?.message?.content;
-                    if (rawText) {
-                        rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-                        aiSummary = JSON.parse(rawText);
-                    }
-                } else if (nvidiaRes.status === 401 || nvidiaRes.status === 403) {
-                    aiStatus = 'expired';
-                    console.warn('[wealth/ai-summary] NVIDIA key expired or unauthorized');
-                } else if (nvidiaRes.status === 429) {
-                    aiStatus = 'limit_reached';
-                    console.warn('[wealth/ai-summary] NVIDIA API rate limit reached');
-                } else {
-                    console.warn('[wealth/ai-summary] NVIDIA API error:', nvidiaRes.status, await nvidiaRes.text());
-                }
-            } catch (aiErr) {
-                console.warn('[wealth/ai-summary] NVIDIA call failed:', aiErr.message);
+            const chat = await nvidiaOrGroqChat({
+                messages: [{ role: 'user', content: prompt }],
+                maxTokens: 1000,
+                temperature: 0.7,
+            });
+
+            if (chat.ok && chat.text) {
+                const rawText = chat.text.replace(/```json/g, '').replace(/```/g, '').trim();
+                aiSummary = JSON.parse(rawText.match(/\{[\s\S]*\}/)?.[0] || rawText);
+            } else {
+                aiStatus = 'limit_reached';
             }
+        } catch (aiErr) {
+            console.warn('[wealth/ai-summary] AI call failed:', aiErr.message);
         }
 
         // Fallback summary if no NVIDIA key, API call failed, or limit reached
@@ -1193,8 +1174,9 @@ wealthRoutes.post('/import/ai', requireAuth, async (c) => {
             return c.json({ error: 'No text provided' }, 400);
         }
 
-        const { GoogleGenAI } = await import('@google/genai');
-        const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        if (!process.env.GROQ_API_KEY) {
+            return c.json({ error: 'GROQ_API_KEY not configured' }, 503);
+        }
 
         const today = new Date().toISOString().split('T')[0];
         const systemPrompt = `You are a financial transaction parser for an Indian personal finance app.
@@ -1222,13 +1204,27 @@ Rules:
 - Skip non-financial text
 - Return [] if no transactions found`;
 
-        const result = await genai.models.generateContent({
-            model: 'gemini-2.0-flash',
-            contents: [{ role: 'user', parts: [{ text: `Parse these transactions:\n\n${text.trim()}` }] }],
-            config: { systemInstruction: systemPrompt }
-        });
+        await trackExternalCall({
+            userId,
+            provider: 'groq',
+            endpoint: '/wealth/import/ai',
+            units: 1,
+            enforceBudget: false,
+        }).catch(() => {});
 
-        const rawText = result.text.trim().replace(/```json\n?|```/g, '');
+        const chat = await groqChat({
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: `Parse these transactions:\n\n${text.trim()}` },
+            ],
+            maxTokens: 1200,
+            temperature: 0.2,
+        });
+        if (!chat.ok) {
+            return c.json({ error: chat.error || 'AI parse failed' }, 503);
+        }
+
+        const rawText = (chat.text || '').trim().replace(/```json\n?|```/g, '');
         let transactions;
         try {
             transactions = JSON.parse(rawText);
