@@ -1,6 +1,6 @@
 # AIIMIN Command Center
 
-Last updated: 2026-07-06
+Last updated: 2026-07-07
 Canonical for agents: this file + `docs/knowledge/_manifest.json`
 
 ## Product Snapshot
@@ -70,7 +70,7 @@ Source: `AIIMIN_PROGRESS_SUMMARY.md`
 - LC-09: Configure Sentry
 - LC-10: Verify GA4 custom events
 - LC-11: Bring up status page
-- LC-12: Complete onboarding test
+- LC-12: Complete onboarding test — API URL + session token fixes deployed 2026-07-07 (see Waitlist changelog)
 - LC-13: Legal/data-deletion E2E test
 - LC-14: Launch-day monitoring protocol
 

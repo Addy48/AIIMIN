@@ -5,7 +5,7 @@ import WaitlistSocialProof from './WaitlistSocialProof';
 const PERKS = [
   { icon: Gift, text: 'Complimentary Core subscription at go-live' },
   { icon: BadgeCheck, text: 'Pro ₹49/mo · Elite ₹79/mo founding rates for 12 months' },
-  { icon: KeyRound, text: 'Lock your 8-character OS-ID right after you join' },
+  { icon: KeyRound, text: 'Optional 8-character OS-ID on signup — locked to your email' },
 ];
 
 export default function WaitlistHeroAside({ count }) {

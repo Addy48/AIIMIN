@@ -54,3 +54,5 @@ Delete: `REACT_APP_CLERK_PUBLISHABLE_KEY` (if present). Redeploy.
 
 Until production access is approved, SES only sends to **verified** recipient emails.
 Request: SES → Account dashboard → **Request production access**.
+
+**Faster unblock:** see `deploy/EMAIL-SETUP.md` — verify test inboxes in SES sandbox, or add **Resend** (`RESEND_API_KEY` on EC2).

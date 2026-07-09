@@ -217,45 +217,45 @@ export const EMAIL_TEMPLATES = {
 
   waitlist_confirmation: (v) => {
     const name = v.name ? escapeHtml(v.name) : 'there';
-    const position = v.position ? escapeHtml(String(v.position)) : null;
     const referralCode = v.referral_code ? escapeHtml(v.referral_code) : null;
     const referralUrl = referralCode ? `https://www.aiimin.in/?ref=${referralCode}` : null;
     const osId = v.reserved_username ? escapeHtml(v.reserved_username) : null;
 
-    const positionBadge = position
-      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+    const foundingBadge = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
           <tr>
             <td style="background:${BRAND.accentSoft};border:1px solid #C5D9CC;border-radius:999px;padding:8px 16px;font-family:${FONT_BODY};font-size:13px;font-weight:600;color:${BRAND.accent};">
-              Founding queue · spot #${position}
+              Founding member · perks locked in
             </td>
           </tr>
-        </table>`
-      : '';
+        </table>`;
 
     const osIdBlock = osId
-      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;background:${BRAND.elevated};border:1px solid ${BRAND.border};border-radius:12px;">
-          <tr><td style="padding:16px 18px;">
-            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.text3};margin-bottom:6px;">Your OS-ID is locked</div>
-            <div style="font-family:${FONT_DISPLAY};font-size:22px;font-weight:600;color:${BRAND.accent};">@${osId}</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.5;color:${BRAND.text2};margin-top:6px;">Reserved for this email at launch. No one else can claim it.</div>
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;background:linear-gradient(135deg, ${BRAND.accentSoft} 0%, ${BRAND.elevated} 100%);border:1px solid #C5D9CC;border-radius:14px;">
+          <tr><td style="padding:18px 20px;">
+            <div style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND.text3};margin-bottom:6px;">Your OS-ID</div>
+            <div style="font-family:${FONT_DISPLAY};font-size:26px;font-weight:700;color:${BRAND.accent};letter-spacing:0.02em;">@${osId}</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-top:8px;">Reserved for this email at launch. No one else can claim it.</div>
           </td></tr>
         </table>`
-      : `<p style="font-family:${FONT_BODY};font-size:14px;line-height:1.6;color:${BRAND.text2};margin:0 0 24px;padding:14px 16px;background:${BRAND.elevated};border-radius:12px;border:1px dashed ${BRAND.border};">
-          <strong style="color:${BRAND.text1};">Tip:</strong> Return to the waitlist page after signup to reserve your personal OS-ID — an 8-character handle that ships with your account.
-        </p>`;
+      : `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;background:${BRAND.elevated};border-radius:14px;border:1px dashed ${BRAND.border};">
+          <tr><td style="padding:16px 18px;">
+            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Claim your OS-ID</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};">Return to the waitlist page to lock an 8-character handle — it ships with your account on day one.</div>
+          </td></tr>
+        </table>`;
 
     const referralBlock = referralUrl
-      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;background:${BRAND.accentSoft};border:1px solid #C5D9CC;border-radius:12px;">
-          <tr><td style="padding:18px;">
-            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Move up the queue</div>
-            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-bottom:12px;">Share your link — every friend who joins bumps you up <strong>5 spots</strong>.</div>
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 0;background:${BRAND.accentSoft};border:1px solid #C5D9CC;border-radius:14px;">
+          <tr><td style="padding:18px 20px;">
+            <div style="font-family:${FONT_BODY};font-size:14px;font-weight:600;color:${BRAND.text1};margin-bottom:6px;">Share AIIMIN, unlock founding bonuses</div>
+            <div style="font-family:${FONT_BODY};font-size:13px;line-height:1.55;color:${BRAND.text2};margin-bottom:12px;">Every friend who joins through your link strengthens your founding package — share once, we track the rest.</div>
             <a href="${referralUrl}" style="font-family:${FONT_BODY};font-size:13px;font-weight:500;color:${BRAND.accent};word-break:break-all;">${referralUrl}</a>
           </td></tr>
         </table>`
       : '';
 
     const bodyHtml = `
-      ${positionBadge}
+      ${foundingBadge}
       <p style="font-family:${FONT_BODY};font-size:16px;line-height:1.65;color:${BRAND.text2};margin:0 0 20px;">
         Hey ${name} — you're officially on the AIIMIN founding waitlist. We're building a personal operating system for habits, money, focus, and recovery — one screen, every day.
       </p>
@@ -280,19 +280,43 @@ export const EMAIL_TEMPLATES = {
       </table>`;
 
     return {
-      subject: position
-        ? `You're on the AIIMIN waitlist — spot #${v.position}`
-        : `You're on the AIIMIN waitlist${v.name ? `, ${v.name}` : ''}`,
+      subject: `You're in — AIIMIN founding waitlist${v.name ? `, ${v.name}` : ''}`,
       html: waitlistLayout({
-        preheader: position
-          ? `Spot #${v.position} secured. Founding perks locked in — complimentary Core, ₹49 Pro, ₹79 Elite.`
-          : 'Founding perks locked in. Complimentary Core at launch + founding pricing.',
+        preheader: 'Founding perks locked in — complimentary Core at launch + founding pricing.',
         eyebrow: 'Founding access',
-        title: "You're in the queue.",
+        title: "You're on the list.",
         bodyHtml,
         ctaHref: BRAND.siteUrl,
         ctaLabel: 'Back to the waitlist',
         footerNote: 'Invited testers: register by <strong>31 July</strong> for Elite free for one year.',
+      }),
+    };
+  },
+
+  waitlist_osid_locked: (v) => {
+    const name = v.name ? escapeHtml(v.name) : 'there';
+    const osId = escapeHtml(v.reserved_username || '');
+
+    return {
+      subject: `Your OS-ID is locked — @${v.reserved_username}`,
+      html: waitlistLayout({
+        preheader: `@${v.reserved_username} is reserved for your email at launch.`,
+        eyebrow: 'OS-ID locked',
+        title: 'Handle secured.',
+        bodyHtml: `
+          <p style="font-family:${FONT_BODY};font-size:16px;line-height:1.65;color:${BRAND.text2};margin:0 0 20px;">
+            Hey ${name} — your personal OS-ID is now locked to this email.
+          </p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;background:linear-gradient(135deg, ${BRAND.accentSoft} 0%, ${BRAND.elevated} 100%);border:1px solid #C5D9CC;border-radius:14px;">
+            <tr><td style="padding:20px;text-align:center;">
+              <div style="font-family:${FONT_DISPLAY};font-size:32px;font-weight:700;color:${BRAND.accent};">@${osId}</div>
+            </td></tr>
+          </table>
+          <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.6;color:${BRAND.text2};margin:0;">
+            This handle ships with your account when AIIMIN launches. No one else can claim it.
+          </p>`,
+        ctaHref: BRAND.siteUrl,
+        ctaLabel: 'Back to the waitlist',
       }),
     };
   },
@@ -355,28 +379,32 @@ export const EMAIL_TEMPLATES = {
     const safeEmail = escapeHtml(v.email || '—');
     const safeName = escapeHtml(v.name || '—');
     const safeUsername = v.reserved_username ? escapeHtml(v.reserved_username) : null;
-    const totalCount = v.total_count != null ? escapeHtml(String(v.total_count)) : null;
+    const isOsIdEvent = v.event === 'osid_reserved';
 
     return {
-      subject: v.subject || (safeUsername
-        ? `[AIIMIN] New signup · ${v.email} (@${v.reserved_username})`
-        : `[AIIMIN] New signup · ${v.email}`),
+      subject: v.subject || (isOsIdEvent
+        ? `[AIIMIN] OS-ID locked · ${v.email} (@${v.reserved_username})`
+        : safeUsername
+          ? `[AIIMIN] New signup · ${v.email} (@${v.reserved_username})`
+          : `[AIIMIN] New signup · ${v.email}`),
       html: waitlistLayout({
-        preheader: totalCount
-          ? `New waitlist signup. Total signups: ${totalCount}.`
-          : 'New person joined the AIIMIN waitlist.',
-        eyebrow: 'Waitlist',
-        title: 'New founding signup',
+        preheader: isOsIdEvent
+          ? `${v.email} locked OS-ID @${v.reserved_username}.`
+          : 'New person joined the AIIMIN founding waitlist.',
+        eyebrow: isOsIdEvent ? 'OS-ID' : 'Waitlist',
+        title: isOsIdEvent ? 'OS-ID reserved' : 'New founding signup',
         bodyHtml: `
           <p style="font-family:${FONT_BODY};font-size:15px;line-height:1.6;color:${BRAND.text2};margin:0 0 20px;">
-            Someone just reserved a spot on the waitlist${totalCount ? ` — you're now at <strong style="color:${BRAND.accent};">${totalCount}</strong> total signups` : ''}.
+            ${isOsIdEvent
+              ? 'A waitlist member just locked their personal handle after signup.'
+              : 'Someone just joined the founding waitlist.'}
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid ${BRAND.border};border-radius:12px;overflow:hidden;">
             ${detailRow('Email', `<a href="mailto:${safeEmail}" style="color:${BRAND.accent};text-decoration:none;">${safeEmail}</a>`)}
             ${detailRow('First name', safeName)}
-            ${detailRow('OS-ID', safeUsername ? `<span style="font-family:${FONT_DISPLAY};color:${BRAND.accent};">@${safeUsername}</span>` : `<span style="color:${BRAND.text3};">Not claimed yet</span>`)}
+            ${detailRow('OS-ID', safeUsername ? `<span style="font-family:${FONT_DISPLAY};color:${BRAND.accent};font-weight:600;">@${safeUsername}</span>` : `<span style="color:${BRAND.text3};">Not claimed yet</span>`)}
             ${detailRow('Source', escapeHtml(v.source || 'landing_page'))}
-            ${detailRow('Signed up', formatSignedUpAt(v.signed_up_at))}
+            ${detailRow(isOsIdEvent ? 'Reserved at' : 'Signed up', formatSignedUpAt(v.signed_up_at))}
           </table>`,
         ctaHref: BRAND.siteUrl,
         ctaLabel: 'View landing page',

@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function HeroPreviewMock() {
   return (
-    <div className="waitlist-hero-preview waitlist-hero-preview--stretch">
+    <div className="waitlist-hero-preview">
       <div className="hero-mock-dashboard" aria-label="Dashboard preview mockup">
         <div className="hero-mock-chrome">
           <span className="hero-mock-dot" />
