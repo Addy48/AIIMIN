@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiGet } from '../utils/api';
-import { readAccessToken } from '../utils/authSession';
 
 const IS_WAITLIST_MODE = process.env.REACT_APP_WAITLIST_MODE === 'true';
 
@@ -31,22 +30,11 @@ function envFallbackAccess(email) {
   return { canAccessApp: false, role: 'public', tier: 'explore' };
 }
 
-function emailFromJwt(token) {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return String(payload.email || '').trim().toLowerCase() || null;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Server-backed waitlist gate — email allowlist + dev/tester env.
  */
 export function useAccessGate() {
   const { isSignedIn, user, loading: authLoading } = useAuth();
-  const hasToken = Boolean(readAccessToken());
-  const effectivelySignedIn = isSignedIn || hasToken;
 
   const [state, setState] = useState({
     loading: true,
@@ -58,7 +46,7 @@ export function useAccessGate() {
   useEffect(() => {
     if (authLoading) return;
 
-    if (!effectivelySignedIn) {
+    if (!isSignedIn) {
       setState({
         loading: false,
         canAccessApp: !IS_WAITLIST_MODE,
@@ -68,8 +56,7 @@ export function useAccessGate() {
       return;
     }
 
-    // Token exists but profile not hydrated yet — keep gate loading to avoid false waitlist redirect
-    const email = user?.email || emailFromJwt(readAccessToken());
+    const email = user?.email;
     if (!email) {
       setState((prev) => ({ ...prev, loading: true }));
       return;
@@ -95,7 +82,7 @@ export function useAccessGate() {
     })();
 
     return () => { cancelled = true; };
-  }, [effectivelySignedIn, authLoading, user?.email]);
+  }, [isSignedIn, authLoading, user?.email]);
 
   return { ...state, isWaitlistMode: IS_WAITLIST_MODE };
 }

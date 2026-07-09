@@ -1,10 +1,7 @@
-import { readAccessToken } from './authSession';
-
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
 export const buildAuthHeaders = (extraHeaders = {}) => ({
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${readAccessToken()}`,
     ...extraHeaders,
 });
 
@@ -29,16 +26,9 @@ export const buildApiUrl = (path, params) => {
     return url;
 };
 
-export const getCurrentAccessToken = async () => readAccessToken() || '';
-
-const resolveHeaders = async ({ headers = {}, json = true, auth = true } = {}) => {
-    const baseHeaders = json ? buildAuthHeaders(headers) : { ...headers };
-    if (auth) {
-        const token = await getCurrentAccessToken();
-        if (token) baseHeaders.Authorization = `Bearer ${token}`;
-    }
-    return baseHeaders;
-};
+const resolveHeaders = async ({ headers = {}, json = true } = {}) => (
+    json ? buildAuthHeaders(headers) : { ...headers }
+);
 
 export const getAuthHeaders = (extraHeaders = {}) => buildAuthHeaders(extraHeaders);
 
@@ -55,7 +45,6 @@ export const apiRequest = async (path, options = {}, retried = false) => {
     const resolvedHeaders = await resolveHeaders({
         headers: headers || {},
         json: options.json !== false,
-        auth: options.auth !== false,
     });
 
     const url = buildApiUrl(path, params);
@@ -75,34 +64,25 @@ export const apiRequest = async (path, options = {}, retried = false) => {
 
     if (response.status === 401 && !retried && options.auth !== false) {
         const { authClient } = await import('../lib/auth-client');
-        const { captureAuthTokenFromResponse } = await import('./authSession');
-        const refreshed = await authClient.getSession({
-            fetchOptions: {
-                credentials: 'include',
-                onSuccess: (ctx) => captureAuthTokenFromResponse(ctx?.response),
-            },
-        });
-        const headerToken = refreshed?.data?.session?.token;
-        if (headerToken) {
-            const { persistAccessToken } = await import('./authSession');
-            persistAccessToken(headerToken);
-            return apiRequest(path, options, true);
-        }
-        if (readAccessToken()) {
+        const refreshed = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
+        if (refreshed?.data?.session) {
             return apiRequest(path, options, true);
         }
     }
 
     if (!response.ok) {
         let errMsg = `Request failed (${response.status})`;
+        let errCode;
         try {
             const errBody = await response.json();
             errMsg = errBody.error || errBody.message || errMsg;
+            errCode = errBody.code;
         } catch (_) {
             try { errMsg = await response.text() || errMsg; } catch (_2) { /* ignore */ }
         }
         const err = new Error(errMsg);
         err.status = response.status;
+        err.code = errCode;
         throw err;
     }
 

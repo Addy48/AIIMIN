@@ -102,10 +102,16 @@ app.get('/me', requireAuth, async (c) => {
                     username: authUser.username || '',
                     role: authUser.role || 'user',
                     onboarding_stage: authUser.onboarding_stage ?? 0,
+                    emailVerified: Boolean(authUser?.emailVerified),
                 },
             });
         }
-        return c.json({ user: rows[0] });
+        return c.json({
+            user: {
+                ...rows[0],
+                emailVerified: Boolean(authUser?.emailVerified),
+            },
+        });
     } catch (err) {
         console.error('[auth/me] error:', err.message);
         return c.json({ user: null }, 401);

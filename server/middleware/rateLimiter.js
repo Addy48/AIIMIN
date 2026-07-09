@@ -35,8 +35,18 @@ export const generalLimiter = createLimiter({
 
 export const authLimiter = createLimiter({
   windowMs: 15 * 60_000,
-  max: 10,
+  max: 5,
   keyFn: (c) => `auth:${ip(c)}`,
+});
+
+/** Login/signup/reset — tighter per IP */
+export const authCredentialLimiter = createLimiter({
+  windowMs: 15 * 60_000,
+  max: 5,
+  keyFn: (c) => {
+    const path = c.req.path || '';
+    return `auth-cred:${ip(c)}:${path.includes('sign-in') || path.includes('sign-up') ? 'auth' : 'other'}`;
+  },
 });
 
 export const aiLimiter = createLimiter({

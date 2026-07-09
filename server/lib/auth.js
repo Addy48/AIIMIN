@@ -72,6 +72,7 @@ export const auth = betterAuth({
         minPasswordLength: 6,
         maxPasswordLength: 6,
         requireEmailVerification: true,
+        disableSignUp: false,
         sendResetPassword: async ({ user, url }) => {
             await sendAuthEmail(
                 user.email,
@@ -129,6 +130,12 @@ export const auth = betterAuth({
             enabled: true,
             maxAge: 5 * 60,
         },
+    },
+
+    rateLimit: {
+        enabled: true,
+        window: 15 * 60,
+        max: 5,
     },
 
     advanced: {

@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
 import Onboarding from './pages/Onboarding';
+import VerifyEmail from './pages/VerifyEmail';
 import WaitlistLanding from './pages/WaitlistLanding';
 import { WaitlistPendingScreen } from './components/waitlist/WaitlistQuickFeedback';
 import WaitlistThemeSync from './components/waitlist/WaitlistThemeSync';
@@ -29,13 +30,13 @@ import GuestTour from './components/onboarding/GuestTour';
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
 import { useAccessGate } from './hooks/useAccessGate';
-import { readAccessToken } from './utils/authSession';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AppQueryProvider } from './context/QueryProvider';
 import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
 import TierRouteGuard from './components/account/TierRouteGuard';
+import EmailVerifiedGuard from './components/system/EmailVerifiedGuard';
 
 // Lazy-loaded Dashboard routes
 const Overview = React.lazy(() => import('./pages/Overview'));
@@ -130,24 +131,25 @@ function AppContent({ user, session }) {
         <Route path="/login/*" element={
           isWaitlistMode && !canAccessApp
             ? <Login />
-            : (session || readAccessToken() ? <Navigate to="/overview" replace /> : <Login />)
+            : (session ? <Navigate to="/overview" replace /> : <Login />)
         } />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/verify-email" element={session ? <VerifyEmail /> : <Navigate to="/login" replace />} />
         <Route path="/onboarding" element={
           isWaitlistMode && !canAccessApp && !accessLoading
             ? <Navigate to="/" replace />
-            : (session || readAccessToken() ? <Onboarding /> : <Navigate to="/login" replace />)
+            : (session ? <Onboarding /> : <Navigate to="/login" replace />)
         } />
         {!showWaitlistAtRoot && (
-          <Route path="/" element={<Navigate to={canAccessApp && (session || readAccessToken()) ? '/overview' : '/login'} replace />} />
+          <Route path="/" element={<Navigate to={canAccessApp && session ? '/overview' : '/login'} replace />} />
         )}
 
         {/* Authenticated shell */}
         <Route element={
           isWaitlistMode && !canAccessApp && !accessLoading
             ? <Navigate to="/" replace />
-            : (session || readAccessToken()
-              ? <DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} />
+            : (session
+              ? <EmailVerifiedGuard><DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} /></EmailVerifiedGuard>
               : <Navigate to="/login" replace />)
         }>
           <Route path="/overview" element={<Lazy><Overview user={user || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }} /></Lazy>} />

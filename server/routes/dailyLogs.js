@@ -92,6 +92,10 @@ app.post('/', requireAuth, async (c) => {
 app.get('/:userId/:date', requireAuth, async (c) => {
     try {
         const { userId, date } = c.req.param();
+        const sessionUserId = c.get('userId');
+        if (userId !== sessionUserId) {
+            return c.json({ error: 'Forbidden' }, 403);
+        }
         const { rows } = await pool.query(
             'SELECT * FROM daily_logs WHERE user_id = $1 AND date = $2',
             [userId, date]
