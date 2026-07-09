@@ -105,6 +105,8 @@ app.get('/:userId/:date', requireAuth, async (c) => {
         console.error('[daily-logs GET]', error);
         return c.json({ error: error.message || 'Internal server error' }, 500);
     }
+});
+
 /**
  * POST /api/daily-logs/journal/ai-analyze
  * Performs a sentiment/cognitive analysis on the journal entry using Moonshot (via NVIDIA API).
