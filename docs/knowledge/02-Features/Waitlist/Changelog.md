@@ -13,6 +13,38 @@
 - Files: `server/routes/waitlist.js`, `server/lib/emailTemplates.js`, `WaitlistForm.jsx`, `WaitlistPricingSection.jsx`, `waitlistLanding.css`, `waitlistLandingData.js`, `frontend/src/utils/osId.js`, `scripts/clear-waitlist.mjs`
 - Status: ready for deploy — run `node scripts/clear-waitlist.mjs` to reset waitlist DB before go-live test
 
+## 2026-07-07 (8 waitlist email variants + design critique fixes)
+
+- Added `server/lib/waitlistEmailVariants.js` with **8 A/B variants** (v1–v8).
+- Critique fixes: ink/ivory contrast, JetBrains Mono OS-ID on `#0A0A0C`, green accent **only on CTA**, live `member_number` from Supabase, concrete perk copy.
+- Default production variant: **v8 Hybrid Recommended** (`WAITLIST_EMAIL_VARIANT`).
+- Preview gallery: `node scripts/preview-waitlist-emails.mjs` → `deploy/email-preview/index.html`
+- Test send: `node scripts/test-email.mjs email --variant v3` or `--all`
+
+## 2026-07-07 (Premium waitlist email redesign)
+
+- Rewrote `waitlist_confirmation` with hero band, Life Score teaser, "What happens next" timeline, founder note, referral CTA (Superhuman/Linear-style exclusivity).
+- Upgraded `waitlist_invite` to VIP early-access tone.
+- Waitlist cleared for fresh signups.
+- Files: `server/lib/emailTemplates.js`, `deploy/email-preview/waitlist-confirmation.html`
+
+## 2026-07-07 (Resend from address — admin.aiimin.in)
+
+- Fixed production send failure: verified domain is `admin.aiimin.in`, not root `aiimin.in`.
+- Default + env examples now use `noreply@admin.aiimin.in`.
+- EC2 + local test sends confirmed. SES IAM user + group deleted via AWS MCP.
+- Files: `server/lib/email.js`, env examples, `scripts/test-email.mjs`, `deploy/RESEND-SETUP.md`
+
+## 2026-07-07 (Resend-only migration — SES removed)
+
+- Replaced AWS SES/nodemailer with official `resend` SDK in `server/lib/email.js`.
+- Removed all SES env vars from examples; added `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_REPLY_TO`.
+- Redesigned `waitlist_confirmation` email: Life Score teaser, founding perks, punchier subject line.
+- Added `deploy/RESEND-SETUP.md`, `deploy/LAUNCH-PLAN.md`; updated `POST-SES-STEPS.md`.
+- **Action:** verify `aiimin.in` in Resend DNS; rotate API key; set EC2 env; decommission SES SMTP IAM user.
+- Files: `server/lib/email.js`, `server/lib/emailTemplates.js`, `package.json`, deploy docs
+- Status: code ready — domain verification + EC2 env required
+
 ## 2026-07-07 (Email — Resend provider + setup guide)
 
 - Added Resend HTTP API alongside SES SMTP in `server/lib/email.js` (`EMAIL_PROVIDER=auto|resend|ses`).

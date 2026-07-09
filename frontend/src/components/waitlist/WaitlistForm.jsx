@@ -107,7 +107,7 @@ function ConfirmationPanel({
       </h3>
       <p className="next-step">
         {confirmationEmailSent === false
-          ? 'You\'re on the list — save your referral link below. (Confirmation email could not be sent — check spam or try again later.)'
+          ? 'You\'re on the list — save your referral link below. (Confirmation email could not be sent — check spam or try again in a few minutes.)'
           : 'Check your inbox — we sent your founding perks and referral link.'}
       </p>
 
