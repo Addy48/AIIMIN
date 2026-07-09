@@ -828,7 +828,9 @@ const Login = () => {
                       <ErrorMsg msg={error} />
                       <PrimaryBtn>Continue →</PrimaryBtn>
                       <Divider />
-                      <GoogleBtn onClick={signInWithGoogle} />
+                      <GoogleBtn onClick={async () => {
+                        try { await signInWithGoogle(); } catch (_) { /* surfaced via toast */ }
+                      }} />
                       <div style={{ textAlign: 'center', marginTop: '4px' }}>
                         <span style={{ fontSize: '14px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
                           Don't have an account?{' '}
@@ -911,7 +913,9 @@ const Login = () => {
                       <ErrorMsg msg={error} />
                       <PrimaryBtn>Continue →</PrimaryBtn>
                       <Divider />
-                      <GoogleBtn onClick={signInWithGoogle} />
+                      <GoogleBtn onClick={async () => {
+                        try { await signInWithGoogle(); } catch (_) { /* surfaced via toast */ }
+                      }} />
                       <div style={{ textAlign: 'center', marginTop: '4px' }}>
                         <span style={{ fontSize: '14px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
                           Already have an account?{' '}

@@ -27,6 +27,34 @@ const ip = (c) => c.req.header('x-forwarded-for')?.split(',')[0]?.trim()
   || c.req.header('x-real-ip')
   || 'unknown';
 
+/** Only brute-forceable credential endpoints — not OAuth callbacks or session reads */
+export function isCredentialAuthPath(path = '') {
+  const p = path.toLowerCase();
+  return (
+    p.includes('/sign-in/email')
+    || p.includes('/sign-in/username')
+    || p.includes('/sign-in/social')
+    || p.includes('/sign-up/')
+    || p.includes('/forget-password')
+    || p.includes('/reset-password')
+    || p.includes('/request-password-reset')
+  );
+}
+
+/** Login/signup/reset — tighter per IP (credential endpoints only) */
+export const authCredentialLimiter = createLimiter({
+  windowMs: 15 * 60_000,
+  max: 5,
+  keyFn: (c) => `auth-cred:${ip(c)}`,
+});
+
+/** Apply credential limiter only on sign-in/sign-up/reset — skip OAuth callback + get-session */
+export const authCredentialLimiterIfSensitive = async (c, next) => {
+  const path = c.req.path || '';
+  if (!isCredentialAuthPath(path)) return next();
+  return authCredentialLimiter(c, next);
+};
+
 export const generalLimiter = createLimiter({
   windowMs: 60_000,
   max: 100,
@@ -37,16 +65,6 @@ export const authLimiter = createLimiter({
   windowMs: 15 * 60_000,
   max: 5,
   keyFn: (c) => `auth:${ip(c)}`,
-});
-
-/** Login/signup/reset — tighter per IP */
-export const authCredentialLimiter = createLimiter({
-  windowMs: 15 * 60_000,
-  max: 5,
-  keyFn: (c) => {
-    const path = c.req.path || '';
-    return `auth-cred:${ip(c)}:${path.includes('sign-in') || path.includes('sign-up') ? 'auth' : 'other'}`;
-  },
 });
 
 export const aiLimiter = createLimiter({
