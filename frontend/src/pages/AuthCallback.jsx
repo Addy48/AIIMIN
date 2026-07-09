@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import { supabase } from '../utils/supabase';
+import { apiGet } from '../utils/api';
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
@@ -50,20 +51,18 @@ const AuthCallback = () => {
                     return;
                 }
 
+                localStorage.setItem('aiimin_session_fallback', session.access_token);
+
                 setStatus('Checking profile…');
 
-                // Fetch full profile from our API
-                const res = await fetch('/api/auth/me', {
-                    headers: { Authorization: `Bearer ${session.access_token}` },
-                });
-                const data = res.ok ? await res.json() : null;
+                const data = await apiGet('/auth/me');
                 const userProfile = data?.user;
 
-                // Detect incomplete profile (Google user who hasn't set username yet)
                 const isIncomplete =
                     !userProfile?.username ||
                     userProfile.username === '' ||
-                    userProfile.onboarding_stage === 'pending';
+                    userProfile.onboarding_stage === 0 ||
+                    userProfile.onboarding_stage == null;
 
                 if (isIncomplete) {
                     setStatus('Setting up your profile…');

@@ -126,7 +126,7 @@ app.post('/signup', async (c) => {
                 full_name: fullName || '',
                 username: normalizedUsername || '',
                 role: 'user',
-                onboarding_stage: 'complete',
+                onboarding_stage: 1,
             }, { onConflict: 'id' })
             .select()
             .single();
@@ -276,7 +276,7 @@ app.post('/complete-google-profile', requireAuth, async (c) => {
                 email: authUser.email,
                 username: normalizedUsername,
                 full_name: full_name || '',
-                onboarding_stage: 'complete',
+                onboarding_stage: 1,
             }, { onConflict: 'id' })
             .select()
             .single();

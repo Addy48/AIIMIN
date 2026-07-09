@@ -101,16 +101,25 @@ export default function WaitlistPricingSection() {
                   </div>
                   <span className="tier-price-waitlist-label">Waitlist founding rate</span>
                 </div>
+              ) : item.startHere ? (
+                <div className="tier-price-block">
+                  <span className="tier-price-list tier-price-list--spacer" aria-hidden="true">&nbsp;</span>
+                  <div className="tier-price-main">
+                    <span className="tier-price-amount">{item.price}</span>
+                    <span className="tier-price-unit">/mo</span>
+                  </div>
+                  <span className="tier-price-waitlist-label">Free forever</span>
+                </div>
               ) : (
                 <div className="tier-price-block">
                   <div className="tier-price-main">
                     <span className="tier-price-amount">{item.price}</span>
-                    {item.price !== '₹0' && <span className="tier-price-unit">/mo</span>}
+                    <span className="tier-price-unit">/mo</span>
                   </div>
+                  <span className="tier-price-waitlist-label tier-price-waitlist-label--spacer" aria-hidden="true">&nbsp;</span>
                 </div>
               )}
 
-              {item.freeNote && <p className="tier-free-note">{item.freeNote}</p>}
               <p className="waitlist-pricing-note">{item.note}</p>
 
               <ul className="waitlist-pricing-features">
