@@ -253,53 +253,37 @@ const Divider = () => (
 
 /* ─────────────────────────────────────────────
    INPUT with focus highlight
+   Native <input> + label/aria-label required for a11y tree.
+   Fake placeholder overlays + placeholder=" " made Selfloop/AT
+   drop the field (no textbox role with a usable name).
 ───────────────────────────────────────────── */
-const Field = ({ label, placeholder, id: idProp, name, 'aria-label': ariaLabelProp, ...props }) => {
+const Field = ({ label, placeholder, id: idProp, name, 'aria-label': ariaLabelProp, type = 'text', ...props }) => {
   const reactId = useId();
-  const id = idProp || reactId;
+  // Prefer stable name-based ids — React useId ":" tokens break some AT/label maps.
+  const id = idProp || (name ? `login-field-${name}` : reactId);
   const [focused, setFocused] = useState(false);
-  // Prefer explicit aria-label, then visible label, then placeholder — never leave unnamed.
   const accessibleName = ariaLabelProp || label || placeholder || 'Input';
-  // Bypass Safari placeholder override by using a custom overlay; keep native a11y via aria-label + htmlFor.
   return (
     <div>
       {label && (
         <label htmlFor={id} style={labelBase}>{label}</label>
       )}
-      <div style={{ position: 'relative' }}>
-        <input
-          {...props}
-          id={id}
-          name={name || id}
-          placeholder=" "
-          aria-label={accessibleName}
-          style={{
-            ...inputBase,
-            borderColor: focused ? 'var(--color-accent)' : 'var(--color-border)',
-            boxShadow: focused ? '0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent)' : 'none',
-            ...(props.style || {}),
-          }}
-          onFocus={e => { setFocused(true); props.onFocus && props.onFocus(e); }}
-          onBlur={e => { setFocused(false); props.onBlur && props.onBlur(e); }}
-        />
-        {!props.value && placeholder && (
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              top: 0, left: 0, right: 0, bottom: 0,
-              display: 'flex', alignItems: 'center',
-              padding: '14px 16px',
-              color: '#8A8A8E', /* Placeholder color */
-              pointerEvents: 'none',
-              fontFamily: 'var(--font-sans)',
-              fontSize: '16px',
-            }}
-          >
-            {placeholder}
-          </div>
-        )}
-      </div>
+      <input
+        {...props}
+        id={id}
+        name={name || id}
+        type={type}
+        placeholder={placeholder}
+        aria-label={accessibleName}
+        style={{
+          ...inputBase,
+          borderColor: focused ? 'var(--color-accent)' : 'var(--color-border)',
+          boxShadow: focused ? '0 0 0 3px color-mix(in srgb, var(--color-accent) 15%, transparent)' : 'none',
+          ...(props.style || {}),
+        }}
+        onFocus={e => { setFocused(true); props.onFocus && props.onFocus(e); }}
+        onBlur={e => { setFocused(false); props.onBlur && props.onBlur(e); }}
+      />
     </div>
   );
 };
@@ -341,16 +325,16 @@ const BackBtn = ({ onClick }) => (
 /* ─────────────────────────────────────────────
    STEP ANIMATION VARIANTS
 ───────────────────────────────────────────── */
-/* Slide only — opacity:0 removes inputs from the a11y tree during enter. */
+/* Slide only — never animate opacity (opacity:0 removes inputs from a11y tree). */
 const stepVariants = {
-  enter: { x: 40 },
-  center: { x: 0, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
-  exit: { x: -40, transition: { duration: 0.2 } },
+  enter: { x: 40, opacity: 1 },
+  center: { x: 0, opacity: 1, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
+  exit: { x: -40, opacity: 1, transition: { duration: 0.2 } },
 };
 const stepVariantsBack = {
-  enter: { x: -40 },
-  center: { x: 0, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
-  exit: { x: 40, transition: { duration: 0.2 } },
+  enter: { x: -40, opacity: 1 },
+  center: { x: 0, opacity: 1, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
+  exit: { x: 40, opacity: 1, transition: { duration: 0.2 } },
 };
 
 /* ─────────────────────────────────────────────

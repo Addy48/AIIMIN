@@ -1,0 +1,42 @@
+---
+description: Always check and use Cursor/agent skills when relevant
+alwaysApply: true
+---
+
+# Skills — Mandatory Usage
+
+Before acting on any task, check whether a skill applies. If there is even a 1% chance a skill fits, read and follow it.
+
+## Rule
+
+1. **Scan** available skills (`.agents/skills/`, `.cursor/skills-cursor/`, `~/.claude/skills/`, plugin skills).
+2. **Read** the matching `SKILL.md` before planning or implementing.
+3. **Follow** the skill workflow — do not improvise a parallel process when a skill exists.
+4. **Announce** briefly which skill is in use (e.g. "Using create-rule skill").
+
+## Priority order
+
+1. User explicit skill request (`/caveman`, `/graphify`, etc.)
+2. Process skills — debugging, brainstorming, TDD, verification-before-completion
+3. Domain skills — auth, design, deploy, Supabase, Vercel, frontend-design
+4. Task-specific skills — create-rule, create-hook, split-to-prs, review-security
+
+## Common triggers
+
+| Task | Skill to check |
+|------|----------------|
+| Bug / failure | `systematic-debugging` |
+| New feature / design | `brainstorming`, `frontend-design` |
+| Cursor rules | `create-rule` |
+| Commits | `caveman-commit` |
+| Code review | `caveman-review`, `review-security` |
+| Deploy / Vercel | `deployments-cicd`, `deployment-expert` |
+| Auth changes | `better-auth-best-practices`, `create-auth-skill` |
+| Knowledge graph | `graphify` |
+| Canvas / rich output | `canvas` |
+
+## Do not
+
+- Skip skill check because the task "looks simple"
+- Rely on memory of a skill — always read the current `SKILL.md`
+- Ignore project-local skills in `.agents/skills/` — they override generic defaults for AIIMIN

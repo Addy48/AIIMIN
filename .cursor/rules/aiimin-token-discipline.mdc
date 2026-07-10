@@ -1,0 +1,28 @@
+---
+description: Token discipline — minimal context, vault-first, no repo dumps
+alwaysApply: true
+---
+
+# Token Discipline (Always)
+
+Goal: stop ~1M-token chats. Curated vault beats raw repo.
+
+## Do
+
+1. Read `docs/knowledge/00_HOME.md` then `15_MEMORY/Current-Context.md` first
+2. Open only the feature / arch / DB / API notes for this task
+3. Open only source files you will change or must verify
+4. Prefer vault update over “read everything to be safe”
+5. Keep replies short (caveman). No long restating of the task
+
+## Do not
+
+- Scan the entire repository unless user explicitly requests
+- Glob/grep the whole tree “for context” when Home/Feature note already points to files
+- Dump large file trees, full logs, or multi-file pastes into the reply
+- Load fat archived AGENTS or `99_ARCHIVE/` unless migrating history
+- Expand always-on rules with essays — keep rules short
+
+## If stuck
+
+Missing fact → create/update the right vault note, then continue. Do not compensate with bigger context windows.

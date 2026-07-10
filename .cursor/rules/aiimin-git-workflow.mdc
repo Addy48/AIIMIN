@@ -1,0 +1,29 @@
+---
+description: Git, commits, PRs, and delivery workflow locks
+alwaysApply: true
+---
+
+# Git & Delivery (Always)
+
+## Commits
+
+- Create commits **only** when the user explicitly asks
+- Never update git config
+- Never `--no-verify` / skip hooks unless user explicitly asks
+- No force push to main/master; warn if requested
+- Amend only under the user’s amend rules (explicit ask or hook-auto-modify of *your* unpushed commit)
+- If commit fails hooks: fix + **new** commit (never amend a failed commit)
+- Commit message via HEREDOC; use caveman-commit skill when committing
+- Never commit `.env`, secrets, credential files
+
+## Pull requests
+
+- Only when user asks; use `gh`; follow user PR checklist (status, diff, log, then push + `gh pr create`)
+
+## Push
+
+- Never push unless user explicitly asks
+
+## Done means
+
+Code change + vault update (MOC/changelog/manifest/Current Context as needed) in the same unit of work — not “docs later”.
