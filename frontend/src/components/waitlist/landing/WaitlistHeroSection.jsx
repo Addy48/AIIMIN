@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Laptop } from 'lucide-react';
 import WaitlistForm from '../WaitlistForm';
 import WaitlistHeroAside from '../WaitlistHeroAside';
+import WaitlistFoundingPerks from '../WaitlistFoundingPerks';
 import WaitlistSocialProof from '../WaitlistSocialProof';
 import HeroBrandLockup from './HeroBrandLockup';
 import HeroPreviewMock from './HeroPreviewMock';
@@ -91,8 +92,9 @@ export default function WaitlistHeroSection({
           >
             <div className="waitlist-hero-form-wrap" id="waitlist-join">
               <div className="waitlist-hero-form">
+                <WaitlistFoundingPerks className="waitlist-founding-perks-block--above-form" />
                 <p className="waitlist-mobile-form-title waitlist-mobile-only">
-                  Join the waitlist — founding perks at launch
+                  Join free — perks lock in at signup
                 </p>
                 <WaitlistForm variant="hero" onSuccess={onSignupSuccess} showUrgency />
                 <div className="waitlist-desktop-only waitlist-hero-form-aside">

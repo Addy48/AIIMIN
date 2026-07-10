@@ -26,6 +26,18 @@
 
 ## Changelog
 
+### 2026-07-11 — Journal frictionless capture
+- **What:** Default journal path is `JournalCapture` — single input row, hold-to-speak mic, mood-only one-tap save, draft suggestions from daily log, structured templates collapsed behind optional link. Auto-tag best-effort via `/daily-logs/journal/ai-analyze`.
+- **Why:** Blank textarea + template picker = note-app friction; capture should be one tap.
+- **Files:** `frontend/src/components/journal/JournalCapture.jsx`, `frontend/src/pages/Journal.jsx`, `journalStudio.css`
+- **Status:** shipped
+- **Notes:** Share-sheet / hotkey / Twilio call-in deferred.
+
+### 2026-07-11 — Goals & Vision editorial ampersand
+- **What:** Page title uses Playfair italic `&` between Goals and Vision (`GoalsVisionTitle`).
+- **Files:** `frontend/src/components/ui/GoalsVisionTitle.jsx`, `Goals.jsx`, `index.css`
+- **Status:** shipped
+
 ### 2026-07-11 — Profile OS-ID + plan meta row
 - **What:** OS-ID and plan chip share one matched meta row (same height 44px, radius 12px). Plan chip inline: `Pro · till 10 aug 2026`. Stacks full-width under ~520px.
 - **Why:** Side-by-side badges looked mismatched (different height/weight).

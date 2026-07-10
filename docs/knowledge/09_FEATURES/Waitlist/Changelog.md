@@ -1,3 +1,9 @@
+### 2026-07-11 — Founding perks above waitlist form
+- **What:** `WaitlistFoundingPerks` block sits directly above hero form on mobile and desktop (free Core, Pro/Elite founding rates, OS-ID). Headline CTA reframed as value + perks, not bare “join waitlist”.
+- **Why:** Join CTA alone is weak; perks were below fold / desktop aside only.
+- **Files:** `frontend/src/components/waitlist/WaitlistFoundingPerks.jsx`, `WaitlistHeroSection.jsx`, `WaitlistHeroAside.jsx`, `waitlistLanding.css`
+- **Status:** shipped
+
 ### 2026-07-11 — Mobile waitlist: form was hidden, CTA dead
 - **What:** Join form is visible and tappable on mobile again. Sticky “Reserve my spot” scrolls to a real `#waitlist-join`. Removed duplicate fixed theme toggle (topbar already has one). Mobile CSS: single-column hero, no sticky form column, touch-friendly controls, bottom padding so sticky CTA does not cover content.
 - **Why:** Form lived inside `waitlist-desktop-only`, so under 720px the whole join UI (and `#waitlist-join`) was `display: none`. Sticky CTA pointed at a missing target; scroll/tap felt broken.

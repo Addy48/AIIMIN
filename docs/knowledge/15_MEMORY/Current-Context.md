@@ -6,22 +6,21 @@
 
 ## Today
 
-- Account UX polish: wider desktop, plan chip only on My Profile (icons not C/P/E, `till …` copy)
-- Removed Stripe/testing billing copy from celebration + banners
-- Prior: billing 500 fixed (lazy Stripe); click-upgrade + period_end shipped
+- Vercel build root fix: empty `REACT_APP_*` placeholders + verify script backfill + `deploy/sync-vercel-frontend-env.sh`
+- Journal frictionless capture UI (input row, mood-only, drafts, collapsed templates)
+- Waitlist founding perks above form; Goals italic Playfair ampersand
 
 ## Working on
 
-- Profile OS-ID + plan meta row polish (matched height/inline chip)
+- Commit + push + prebuilt Vercel deploy
 
 ## Recent decisions
 
-- Plan status: profile only, not sidebar
-- Click-upgrade default on; `REACT_APP_SUBSCRIPTION_MODE !== 'false'`
-- Commit+push always includes EC2 API deploy when server touched
+- Journal default = capture not textarea; structured modes optional
+- Waitlist perks visible beside form (not below fold only)
+- Prebuilt CLI deploy when git builds hit STS
 
 ## Next step
 
-1. Prod live via CLI prebuilt `dpl_UyAMCRvLU4fyN6qFrvuejULs6wCu` → www.aiimin.in
-2. Push verify-env fix so git deploys survive empty Vercel placeholders
-3. Hard-refresh Account → My Profile meta row
+1. Verify prod after deploy
+2. Hard-refresh Goals, Journal, waitlist hero

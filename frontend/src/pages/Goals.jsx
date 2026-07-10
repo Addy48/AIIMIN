@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, BookOpen, Briefcase, Heart, Brain, Trash2, Clock } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
+import GoalsVisionTitle from '../components/ui/GoalsVisionTitle';
 import Modal from '../components/ui/Modal';
 import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
 import toast from '../utils/toast';
@@ -332,7 +333,7 @@ const Goals = () => {
     <div className="page-container">
       
       <PageHeader 
-        title="Goals & Vision"
+        title={<GoalsVisionTitle />}
         subtitle={
           <span style={{ color: 'var(--color-text-3)', fontSize: '12px', margin: 0, fontWeight: 500 }}>
             <span style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{onTrackCount} active commitments</span> shaping your reality.
