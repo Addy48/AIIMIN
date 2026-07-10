@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Check, X } from 'lucide-react';
@@ -254,16 +254,25 @@ const Divider = () => (
 /* ─────────────────────────────────────────────
    INPUT with focus highlight
 ───────────────────────────────────────────── */
-const Field = ({ label, placeholder, ...props }) => {
+const Field = ({ label, placeholder, id: idProp, name, 'aria-label': ariaLabelProp, ...props }) => {
+  const reactId = useId();
+  const id = idProp || reactId;
   const [focused, setFocused] = useState(false);
-  // Bypass Safari placeholder override by using a custom overlay
+  // Prefer explicit aria-label, then visible label, then placeholder — never leave unnamed.
+  const accessibleName = ariaLabelProp || label || placeholder || 'Input';
+  // Bypass Safari placeholder override by using a custom overlay; keep native a11y via aria-label + htmlFor.
   return (
     <div>
-      {label && <label style={labelBase}>{label}</label>}
+      {label && (
+        <label htmlFor={id} style={labelBase}>{label}</label>
+      )}
       <div style={{ position: 'relative' }}>
         <input
           {...props}
+          id={id}
+          name={name || id}
           placeholder=" "
+          aria-label={accessibleName}
           style={{
             ...inputBase,
             borderColor: focused ? 'var(--color-accent)' : 'var(--color-border)',
@@ -275,6 +284,7 @@ const Field = ({ label, placeholder, ...props }) => {
         />
         {!props.value && placeholder && (
           <div
+            aria-hidden="true"
             style={{
               position: 'absolute',
               top: 0, left: 0, right: 0, bottom: 0,
@@ -331,15 +341,16 @@ const BackBtn = ({ onClick }) => (
 /* ─────────────────────────────────────────────
    STEP ANIMATION VARIANTS
 ───────────────────────────────────────────── */
+/* Slide only — opacity:0 removes inputs from the a11y tree during enter. */
 const stepVariants = {
-  enter: { x: 40, opacity: 0 },
-  center: { x: 0, opacity: 1, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
-  exit: { x: -40, opacity: 0, transition: { duration: 0.2 } },
+  enter: { x: 40 },
+  center: { x: 0, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
+  exit: { x: -40, transition: { duration: 0.2 } },
 };
 const stepVariantsBack = {
-  enter: { x: -40, opacity: 0 },
-  center: { x: 0, opacity: 1, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
-  exit: { x: 40, opacity: 0, transition: { duration: 0.2 } },
+  enter: { x: -40 },
+  center: { x: 0, transition: { duration: 0.3, ease: [0.25, 1, 0.5, 1] } },
+  exit: { x: 40, transition: { duration: 0.2 } },
 };
 
 /* ─────────────────────────────────────────────
@@ -789,9 +800,12 @@ const Login = () => {
                           type="text"
                           required
                           autoFocus
+                          name="forgot-identifier"
                           value={forgotIdentifier}
                           onChange={e => setForgotIdentifier(e.target.value)}
                           placeholder="Enter OS-ID or email"
+                          aria-label="OS-ID / EMAIL"
+                          autoComplete="username"
                         />
                         <ErrorMsg msg={error} />
                         <PrimaryBtn>Send Recovery Link →</PrimaryBtn>
@@ -809,20 +823,22 @@ const Login = () => {
                   >
                     <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       <Field
-                        label="Identifier"
+                        label="OS-ID / Email"
                         type="text"
                         required
                         autoFocus
+                        name="identifier"
                         value={identifier}
                         onChange={e => {
                           const val = e.target.value.trim();
                           setIdentifier(val.includes('@') ? val.toLowerCase() : val.toUpperCase());
                         }}
                         autoCapitalize="none"
-                        autoComplete="off"
+                        autoComplete="username"
                         autoCorrect="off"
                         spellCheck="false"
                         placeholder="OS-ID / EMAIL"
+                        aria-label="OS-ID / EMAIL"
                         style={{ textTransform: identifier.includes('@') ? 'none' : 'uppercase' }}
                       />
                       <ErrorMsg msg={error} />
@@ -896,16 +912,21 @@ const Login = () => {
                         type="text"
                         required
                         autoFocus
+                        name="fullName"
                         value={fullName}
                         onChange={e => setFullName(e.target.value)}
                         placeholder="e.g. Hashmatullah Kumar"
+                        aria-label="Full Name"
+                        autoComplete="name"
                       />
                       <Field
                         label="Recovery Email (Optional)"
                         type="email"
+                        name="email"
                         value={email}
                         onChange={e => setEmail(e.target.value.trim().toLowerCase())}
                         placeholder="you@example.com"
+                        aria-label="Recovery Email"
                         autoCapitalize="none"
                         autoComplete="email"
                         spellCheck="false"
@@ -941,9 +962,12 @@ const Login = () => {
                         type="text"
                         required
                         autoFocus
+                        name="username"
                         value={usernameVal}
                         onChange={handleUsernameChange}
                         placeholder="e.g. HASMAT99"
+                        aria-label="OS-ID"
+                        autoComplete="username"
                         style={{ textTransform: 'uppercase', letterSpacing: '0.04em' }}
                       />
                       {/* Validation hints */}
