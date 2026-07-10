@@ -23,7 +23,9 @@ alwaysApply: true
 ## Push
 
 - Never push unless user explicitly asks
+- **After every commit+push that touches API/server (or when user says ship):** also deploy EC2 API — do not leave “redeploy later.” Prefer GitHub Action `deploy-api.yml` (auto on `server/**` / `deploy/**` push to `main`); if Action fails or user asks now, SSH and run `bash ~/AIIMIN/deploy/github-ec2-deploy.sh` (host `13.207.146.15`, key `~/Desktop/aiimin.pem` or repo `aiimin.pem`). Verify `https://api.aiimin.in/api/health` and SHA matches push.
+- Frontend: Vercel auto-deploys from `main`; confirm READY when shipping.
 
 ## Done means
 
-Code change + vault update (MOC/changelog/manifest/Current Context as needed) in the same unit of work — not “docs later”.
+Code change + vault update (MOC/changelog/manifest/Current Context as needed) in the same unit of work — not “docs later”. When user asked to push, EC2 (API) is part of done too.

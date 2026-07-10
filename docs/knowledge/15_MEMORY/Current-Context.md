@@ -6,36 +6,31 @@
 
 ## Today
 
-- Waitlist mobile join form fixed (was hidden in desktop-only)
-- Click-upgrade for all users (no Stripe) + B identity celebration + per-tier card souls
+- Waitlist mobile join form fixed
+- Click-upgrade for all + B celebration + per-tier souls
+- EC2 API at `15242be6` healthy
+- **Rule locked:** every commit+push → also deploy EC2 API
 
 ## Working on
 
-- Ship/verify: Account → Subscription click upgrade + celebration
-- Phone-verify waitlist landing after deploy
+- Phone-verify waitlist + Account subscription upgrade on prod
 
 ## Recent decisions
 
-- Click-upgrade auto-on until Stripe prices configured (or `SUBSCRIPTION_MODE=true`)
-- Testing: up + down allowed; later `UPGRADE_ONLY=true` for upgrade-only
-- Celebration: B identity-shift, per-tier colors (gray/teal/orange/amber)
-- Access service honors profile tier while click-upgrade on (no force-elite)
+- Click-upgrade auto-on until Stripe ready
+- Testing: up+down; later `UPGRADE_ONLY=true`
+- **Ship loop:** push `main` → Vercel (FE) + EC2 API (Action or SSH `github-ec2-deploy.sh`) — never leave API stale
 
 ## Files modified (this effort)
 
-- Waitlist: `WaitlistHeroSection.jsx`, `WaitlistLanding.jsx`, `waitlistLanding.css`
-- Billing: `billingService.js`, `billing.js`, `accessService.js`
-- UI: `SubscriptionSection.jsx`, `TierUpgradeCelebration.jsx`, celebration + subscription CSS
-- Spec: `docs/superpowers/specs/2026-07-11-click-upgrade-celebration-design.md`
-- Vault: Account + Waitlist changelogs, Current Context
+- Billing/UI/waitlist as in `15242be6`
+- Memory: `.cursor/rules/aiimin-git-workflow.mdc`, `docs/knowledge/07_DEPLOYMENT/Deploy.md`
 
 ## Known issues
 
-- EC2 must redeploy API for click-upgrade; Vercel for frontend
 - Left untracked: `.cursor/debug-40de69.log` (do not commit)
 
 ## Next step
 
-1. Commit + push
-2. Redeploy frontend + API
-3. Test Account → Subscription upgrade on phone + desktop
+1. Verify Account → Subscription click-upgrade on prod
+2. Verify waitlist join on phone
