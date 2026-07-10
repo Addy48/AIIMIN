@@ -40,6 +40,7 @@ export function formatPlanTill(iso) {
 
 /**
  * Compact plan chip for profile — icon + name + till date. Click opens subscription.
+ * Use `plan-status-chip--inline` in the profile meta row (single-line next to OS-ID).
  */
 export default function PlanStatusChip({
   tier = 'explore',
@@ -54,6 +55,7 @@ export default function PlanStatusChip({
     tier === 'explore'
       ? 'Free plan'
       : till || 'Manage plan';
+  const inline = className.includes('plan-status-chip--inline');
 
   return (
     <button
@@ -64,12 +66,20 @@ export default function PlanStatusChip({
       aria-label={`${meta.label} plan${till ? `, ${till}` : ''}. Open subscription.`}
     >
       <span className="plan-status-chip-icon" aria-hidden="true">
-        <Icon size={17} strokeWidth={2.4} />
+        <Icon size={inline ? 15 : 17} strokeWidth={2.4} />
       </span>
-      <span className="plan-status-chip-copy">
-        <strong>{meta.label}</strong>
-        <span>{sub}</span>
-      </span>
+      {inline ? (
+        <span className="plan-status-chip-inline">
+          <strong>{meta.label}</strong>
+          <span className="plan-status-chip-sep" aria-hidden="true" />
+          <span>{sub}</span>
+        </span>
+      ) : (
+        <span className="plan-status-chip-copy">
+          <strong>{meta.label}</strong>
+          <span>{sub}</span>
+        </span>
+      )}
     </button>
   );
 }

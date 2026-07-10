@@ -12,7 +12,7 @@
 
 ## Working on
 
-- FE polish ready for hard-refresh verify; commit/push when user asks (Vercel FE; no API change this round)
+- Profile OS-ID + plan meta row polish (matched height/inline chip)
 
 ## Recent decisions
 
