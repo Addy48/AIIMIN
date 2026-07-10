@@ -22,5 +22,6 @@
 
 ## Next step
 
-1. Wait Vercel READY for `93c889ea`
-2. Hard-refresh Account → My Profile meta row
+1. Prod live via CLI prebuilt `dpl_UyAMCRvLU4fyN6qFrvuejULs6wCu` → www.aiimin.in
+2. Push verify-env fix so git deploys survive empty Vercel placeholders
+3. Hard-refresh Account → My Profile meta row

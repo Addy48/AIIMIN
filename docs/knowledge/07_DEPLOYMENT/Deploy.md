@@ -38,7 +38,12 @@ See [[01_PRODUCT/Product]] environment matrix. Values live in host secret stores
 ## Local vs prod waitlist
 
 - Local full dashboard: `REACT_APP_WAITLIST_MODE=false` in `.env.local`
-- Production waitlist: `true` via committed production env pattern
+- Production waitlist: `true` via committed `frontend/.env.production`
+
+## Vercel build failures
+
+- **Empty dashboard placeholders:** Vercel may set `REACT_APP_API_URL=""` etc. `verify-production-env.mjs` backfills from committed `frontend/.env.production` when unset/empty.
+- **`sts_credentials_fetch_failed`:** transient Vercel infra at `build-container-init` — not app code. Bypass: `vercel pull --yes --environment=production` → `vercel build --prod --yes` → `vercel deploy --prebuilt --prod --yes` from repo root after local `npm run build` passes.
 
 ## Related
 
