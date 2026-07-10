@@ -25,7 +25,14 @@ const cardStyle = {
   background: 'var(--color-surface-2)',
 };
 
-export default function ProfileSection({ user, profile, onProfileUpdate }) {
+export default function ProfileSection({
+  user,
+  profile,
+  onProfileUpdate,
+  planTier = 'explore',
+  periodEnd = null,
+  onOpenSubscription,
+}) {
   const [name, setName] = useState(user?.full_name || '');
   const [lifeArc, setLifeArc] = useState(profile?.tagline || '');
   const [location, setLocation] = useState(profile?.location || '');
@@ -33,6 +40,17 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
   const osId = (profile?.username || user?.username || '').toUpperCase();
   const hasOsId = osId.length === 8;
   const activeLifeArc = profile?.tagline || lifeArc;
+
+  const tierMeta = {
+    explore: { label: 'Explore', mark: 'E', color: '#6b7280' },
+    core: { label: 'Core', mark: 'C', color: '#2dd4bf' },
+    pro: { label: 'Pro', mark: 'P', color: '#ff6b35' },
+    elite: { label: 'Elite', mark: 'É', color: '#fbbf24' },
+  }[planTier] || { label: 'Explore', mark: 'E', color: '#6b7280' };
+
+  const periodLabel = periodEnd
+    ? new Date(periodEnd).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
 
   useEffect(() => {
     setLifeArc(profile?.tagline || '');
@@ -126,6 +144,24 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
                 </span>
               )}
             </div>
+
+            <button
+              type="button"
+              className="profile-plan-chip"
+              style={{ '--tier-soul': tierMeta.color, marginTop: 12 }}
+              onClick={() => onOpenSubscription?.()}
+              aria-label={`Current plan ${tierMeta.label}. Open subscription.`}
+            >
+              <span className="profile-plan-chip-mark">{tierMeta.mark}</span>
+              <strong>{tierMeta.label}</strong>
+              <span>
+                {planTier === 'explore'
+                  ? 'Free plan'
+                  : periodLabel
+                    ? `Active until ${periodLabel}`
+                    : 'Manage plan'}
+              </span>
+            </button>
 
             <div
               style={{

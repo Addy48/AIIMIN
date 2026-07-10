@@ -6,31 +6,21 @@
 
 ## Today
 
-- Waitlist mobile join form fixed
-- Click-upgrade for all + B celebration + per-tier souls
-- EC2 API at `15242be6` healthy
-- **Rule locked:** every commit+push → also deploy EC2 API
+- Root cause live upgrade 500: `billing.js` imported missing `stripe` package (lazy route load)
+- Fix: dynamic Stripe import only in webhook; select-tier always
+- Plan badge (sidebar + profile) → subscription; Active until +1 month; CTA prices
 
 ## Working on
 
-- Phone-verify waitlist + Account subscription upgrade on prod
+- Ship fix + EC2 redeploy; verify upgrade on prod
 
 ## Recent decisions
 
-- Click-upgrade auto-on until Stripe ready
-- Testing: up+down; later `UPGRADE_ONLY=true`
-- **Ship loop:** push `main` → Vercel (FE) + EC2 API (Action or SSH `github-ec2-deploy.sh`) — never leave API stale
-
-## Files modified (this effort)
-
-- Billing/UI/waitlist as in `15242be6`
-- Memory: `.cursor/rules/aiimin-git-workflow.mdc`, `docs/knowledge/07_DEPLOYMENT/Deploy.md`
-
-## Known issues
-
-- Left untracked: `.cursor/debug-40de69.log` (do not commit)
+- Click-upgrade default on; `REACT_APP_SUBSCRIPTION_MODE !== 'false'`
+- `subscription_period_end` column for 30-day active window
+- Commit+push always includes EC2 API deploy
 
 ## Next step
 
-1. Verify Account → Subscription click-upgrade on prod
-2. Verify waitlist join on phone
+1. Commit + push + EC2 deploy
+2. Hard-refresh Account → Subscription; upgrade Core/Pro

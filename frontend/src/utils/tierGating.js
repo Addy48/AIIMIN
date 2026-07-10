@@ -63,4 +63,4 @@ export function canAccess(userTier, featureKey) {
   return hasTier(userTier, required);
 }
 
-export const IS_SUBSCRIPTION_MODE = process.env.REACT_APP_SUBSCRIPTION_MODE === 'true';
+export const IS_SUBSCRIPTION_MODE = process.env.REACT_APP_SUBSCRIPTION_MODE !== 'false';

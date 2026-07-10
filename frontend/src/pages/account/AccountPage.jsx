@@ -11,6 +11,14 @@ import SubscriptionSection from './sections/SubscriptionSection';
 import DataSection from './sections/DataSection';
 import LegalSection from './sections/LegalSection';
 import DesignSection from './sections/DesignSection';
+import '../../styles/subscriptionSection.css';
+
+const TIER_META = {
+  explore: { label: 'Explore', mark: 'E', color: '#6b7280' },
+  core: { label: 'Core', mark: 'C', color: '#2dd4bf' },
+  pro: { label: 'Pro', mark: 'P', color: '#ff6b35' },
+  elite: { label: 'Elite', mark: 'É', color: '#fbbf24' },
+};
 
 const SECTIONS = [
   { id: 'profile', label: 'My Profile', helper: 'Identity, location, and completion' },
@@ -39,11 +47,39 @@ export default function AccountPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const section = searchParams.get('section') || 'profile';
   const [profile, setProfile] = useState(null);
+  const [planTier, setPlanTier] = useState('explore');
+  const [periodEnd, setPeriodEnd] = useState(null);
 
   useEffect(() => {
-    if (!isSignedIn) return;
-    apiGet('/account/user-profile').then(setProfile).catch(() => {});
+    if (!isSignedIn) return undefined;
+    apiGet('/account/user-profile').then((p) => {
+      setProfile(p);
+      if (p?.subscription_tier) setPlanTier(p.subscription_tier);
+      if (p?.subscription_period_end) setPeriodEnd(p.subscription_period_end);
+    }).catch(() => {});
+    apiGet('/billing/status').then((st) => {
+      if (st?.tier) setPlanTier(st.tier);
+      if (st?.current_period_end) setPeriodEnd(st.current_period_end);
+    }).catch(() => {});
+    return undefined;
   }, [isSignedIn]);
+
+  useEffect(() => {
+    const onTier = () => {
+      apiGet('/billing/status').then((st) => {
+        if (st?.tier) setPlanTier(st.tier);
+        if (st?.current_period_end) setPeriodEnd(st.current_period_end);
+        else setPeriodEnd(null);
+      }).catch(() => {});
+      apiGet('/account/user-profile').then(setProfile).catch(() => {});
+    };
+    window.addEventListener('aiimin:tier-changed', onTier);
+    window.addEventListener('aiimin:profile-refresh', onTier);
+    return () => {
+      window.removeEventListener('aiimin:tier-changed', onTier);
+      window.removeEventListener('aiimin:profile-refresh', onTier);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -67,6 +103,10 @@ export default function AccountPage() {
   const ActiveSection = SECTION_MAP[section] || ProfileSection;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const activeMeta = SECTIONS.find((s) => s.id === section) || SECTIONS[0];
+  const tierMeta = TIER_META[planTier] || TIER_META.explore;
+  const periodLabel = periodEnd
+    ? new Date(periodEnd).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
 
   return (
     <div
@@ -104,6 +144,27 @@ export default function AccountPage() {
             </p>
           </div>
         )}
+
+        <button
+          type="button"
+          className="account-plan-badge"
+          style={{ '--tier-soul': tierMeta.color }}
+          onClick={() => setSearchParams({ section: 'subscription' })}
+          aria-label={`Current plan ${tierMeta.label}. Open subscription.`}
+        >
+          <span className="account-plan-badge-mark">{tierMeta.mark}</span>
+          <span className="account-plan-badge-text">
+            <strong>{tierMeta.label} plan</strong>
+            <span>
+              {planTier === 'explore'
+                ? 'Free · tap to manage'
+                : periodLabel
+                  ? `Active until ${periodLabel}`
+                  : 'Tap to manage plan'}
+            </span>
+          </span>
+        </button>
+
         {isMobile ? (
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 8px' }}>
             {SECTIONS.map((s) => (
@@ -188,17 +249,6 @@ export default function AccountPage() {
               fontSize: 13,
               fontWeight: 700,
               cursor: 'pointer',
-              transition: 'border-color var(--dur-normal) var(--ease), color var(--dur-normal) var(--ease), background var(--dur-normal) var(--ease)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(255, 107, 53, 0.45)';
-              e.currentTarget.style.color = 'var(--color-accent)';
-              e.currentTarget.style.background = 'rgba(255, 107, 53, 0.06)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--color-border)';
-              e.currentTarget.style.color = 'var(--color-text-2)';
-              e.currentTarget.style.background = 'var(--color-surface-1)';
             }}
           >
             <LogOut size={15} />
@@ -216,7 +266,14 @@ export default function AccountPage() {
             {activeMeta.helper}
           </p>
         </div>
-        <ActiveSection user={user} profile={profile} onProfileUpdate={setProfile} />
+        <ActiveSection
+          user={user}
+          profile={profile}
+          onProfileUpdate={setProfile}
+          planTier={planTier}
+          periodEnd={periodEnd}
+          onOpenSubscription={() => setSearchParams({ section: 'subscription' })}
+        />
       </main>
     </div>
   );

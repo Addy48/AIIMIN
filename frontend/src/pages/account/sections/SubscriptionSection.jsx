@@ -13,6 +13,7 @@ const STATIC_TIERS = [
     name: 'Explore',
     price_inr: 0,
     priceLabel: '₹0',
+    ctaPrice: 'Free',
     icon: <Compass size={18} />,
     description: 'Log daily. Learn the loop.',
     features: [
@@ -27,6 +28,7 @@ const STATIC_TIERS = [
     name: 'Core',
     price_inr: 29,
     priceLabel: '₹29',
+    ctaPrice: '₹29/mo',
     icon: <Layers size={18} />,
     description: 'Run your essentials.',
     features: [
@@ -43,6 +45,7 @@ const STATIC_TIERS = [
     price_inr: 59,
     priceLabel: '₹59',
     foundingPriceLabel: '₹49',
+    ctaPrice: '₹49/mo',
     icon: <Zap size={18} />,
     description: 'See the patterns.',
     popular: true,
@@ -60,6 +63,7 @@ const STATIC_TIERS = [
     price_inr: 99,
     priceLabel: '₹99',
     foundingPriceLabel: '₹79',
+    ctaPrice: '₹79/mo',
     icon: <Crown size={18} />,
     description: 'No ceiling.',
     features: [
@@ -74,6 +78,13 @@ const STATIC_TIERS = [
 
 const TIER_ORDER = ['explore', 'core', 'pro', 'elite'];
 
+function formatPeriodEnd(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 function notifyTierChanged(tierId) {
   window.dispatchEvent(new CustomEvent('aiimin:profile-refresh'));
   window.dispatchEvent(new CustomEvent('aiimin:tier-changed', { detail: { tier: tierId } }));
@@ -81,9 +92,9 @@ function notifyTierChanged(tierId) {
 
 export default function SubscriptionSection() {
   const [currentTier, setCurrentTier] = useState('explore');
-  const [clickUpgrade, setClickUpgrade] = useState(IS_SUBSCRIPTION_MODE);
+  const [clickUpgrade, setClickUpgrade] = useState(true);
   const [upgradeOnly, setUpgradeOnly] = useState(false);
-  const [renewalDate, setRenewalDate] = useState(null);
+  const [periodEnd, setPeriodEnd] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [celebration, setCelebration] = useState(null);
@@ -92,20 +103,25 @@ export default function SubscriptionSection() {
     return apiGet('/billing/status')
       .then((st) => {
         if (st?.tier) setCurrentTier(st.tier);
-        if (st?.current_period_end) setRenewalDate(st.current_period_end);
-        const enabled = Boolean(st?.click_upgrade ?? st?.subscription_mode ?? IS_SUBSCRIPTION_MODE);
-        setClickUpgrade(enabled);
+        if (st?.current_period_end) setPeriodEnd(st.current_period_end);
+        else setPeriodEnd(null);
+        const enabled = st?.click_upgrade ?? st?.subscription_mode ?? IS_SUBSCRIPTION_MODE;
+        setClickUpgrade(enabled !== false);
         setUpgradeOnly(Boolean(st?.upgrade_only));
       })
-      .catch(() => {});
+      .catch(() => {
+        // Keep click-upgrade on so buttons still try select-tier
+        setClickUpgrade(true);
+      });
   }, []);
 
   useEffect(() => {
     refreshStatus().finally(() => setLoading(false));
   }, [refreshStatus]);
 
-  const applyTierLocally = (fromTier, nextTier) => {
+  const applyTierLocally = (fromTier, nextTier, nextPeriodEnd) => {
     setCurrentTier(nextTier);
+    if (nextPeriodEnd !== undefined) setPeriodEnd(nextPeriodEnd);
     notifyTierChanged(nextTier);
     setCelebration({ fromTier, toTier: nextTier });
     const name = STATIC_TIERS.find((t) => t.id === nextTier)?.name || nextTier;
@@ -120,7 +136,7 @@ export default function SubscriptionSection() {
     try {
       const res = await apiPost('/billing/select-tier', { tier: tierId });
       const nextTier = res.tier || tierId;
-      applyTierLocally(fromTier, nextTier);
+      applyTierLocally(fromTier, nextTier, res.subscription_period_end ?? null);
     } catch (e) {
       toast.error(e.message || 'Could not change plan. Try again.');
     } finally {
@@ -128,37 +144,11 @@ export default function SubscriptionSection() {
     }
   };
 
-  const startCheckout = async (tierId) => {
-    trackEvent('upgrade_clicked', { tier: tierId });
-    setActionLoading(tierId);
-    const fromTier = currentTier;
-    try {
-      const res = await apiPost('/billing/checkout', { tier: tierId });
-      if (res.subscriptionMode || res.clickUpgrade || clickUpgrade) {
-        const nextTier = res.tier || tierId;
-        applyTierLocally(fromTier, nextTier);
-        return;
-      }
-      if (res.url) {
-        window.location.href = res.url;
-      } else {
-        toast.error(res.message || 'Checkout unavailable. Please contact support.');
-      }
-    } catch (e) {
-      toast.error(e.message || 'Checkout failed. Try again or contact support@aiimin.in');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleTierAction = (tierId) => {
-    if (clickUpgrade || IS_SUBSCRIPTION_MODE) {
-      return selectTier(tierId);
-    }
-    return startCheckout(tierId);
-  };
+  const handleTierAction = (tierId) => selectTier(tierId);
 
   const currentTierIndex = TIER_ORDER.indexOf(currentTier);
+  const periodLabel = formatPeriodEnd(periodEnd);
+  const currentName = STATIC_TIERS.find((t) => t.id === currentTier)?.name || 'Explore';
 
   return (
     <div className="subscription-section">
@@ -185,17 +175,19 @@ export default function SubscriptionSection() {
       )}
 
       {!loading && (
-        <div className="subscription-current-banner">
-          <span className="subscription-current-dot" />
+        <div className={`subscription-current-banner tier-soul-${currentTier}`}>
+          <span className="subscription-current-dot" style={{ background: 'var(--tier-soul, var(--color-success))' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)' }}>
-            You&apos;re on the <strong style={{ color: 'var(--color-accent)' }}>
-              {STATIC_TIERS.find((t) => t.id === currentTier)?.name || 'Explore'}
-            </strong> plan
-            {renewalDate && (
+            You&apos;re on <strong style={{ color: 'var(--tier-soul, var(--color-accent))' }}>{currentName}</strong>
+            {currentTier !== 'explore' && periodLabel ? (
               <span style={{ color: 'var(--color-text-3)', fontWeight: 400, marginLeft: 8 }}>
-                · Renews {new Date(renewalDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                · Active until {periodLabel}
               </span>
-            )}
+            ) : currentTier === 'explore' ? (
+              <span style={{ color: 'var(--color-text-3)', fontWeight: 400, marginLeft: 8 }}>
+                · Free plan
+              </span>
+            ) : null}
           </span>
         </div>
       )}
@@ -264,7 +256,12 @@ export default function SubscriptionSection() {
               </ul>
 
               {isCurrent ? (
-                <div className="subscription-tier-cta subscription-tier-cta--active">✓ Active</div>
+                <div className="subscription-tier-cta subscription-tier-cta--active">
+                  ✓ Active
+                  {periodLabel && currentTier !== 'explore' ? (
+                    <span className="subscription-tier-cta-sub">until {periodLabel}</span>
+                  ) : null}
+                </div>
               ) : blockedDowngrade ? (
                 <div className="subscription-tier-cta subscription-tier-cta--ghost">
                   Downgrade locked
@@ -283,10 +280,10 @@ export default function SubscriptionSection() {
                   {busy
                     ? 'Applying…'
                     : isUpgrade
-                      ? `Upgrade to ${tier.name}`
+                      ? `Upgrade to ${tier.name} · ${tier.ctaPrice}`
                       : isDowngrade
-                        ? `Switch to ${tier.name}`
-                        : `Choose ${tier.name}`}
+                        ? `Switch to ${tier.name} · ${tier.ctaPrice}`
+                        : `Choose ${tier.name} · ${tier.ctaPrice}`}
                 </button>
               )}
             </div>

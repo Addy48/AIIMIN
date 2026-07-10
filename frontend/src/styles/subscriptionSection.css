@@ -250,7 +250,110 @@
   border: 1px solid var(--color-border-lit);
   color: var(--color-text-2);
   cursor: default;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
+
+.subscription-tier-cta-sub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-3);
+}
+
+.subscription-current-banner.tier-soul-explore { --tier-soul: #6b7280; }
+.subscription-current-banner.tier-soul-core { --tier-soul: #2dd4bf; }
+.subscription-current-banner.tier-soul-pro { --tier-soul: #ff6b35; }
+.subscription-current-banner.tier-soul-elite { --tier-soul: #fbbf24; }
+
+.account-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--tier-soul, var(--color-accent)) 35%, var(--color-border));
+  background: color-mix(in srgb, var(--tier-soul, var(--color-accent)) 10%, var(--color-surface-1));
+  color: var(--color-text-1);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.account-plan-badge:hover {
+  filter: brightness(1.05);
+}
+
+.account-plan-badge-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--tier-soul) 22%, #1a1a1a);
+  border: 1px solid color-mix(in srgb, var(--tier-soul) 45%, #333);
+  color: var(--tier-soul);
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.account-plan-badge-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.account-plan-badge-text strong {
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--color-text-1);
+}
+
+.account-plan-badge-text span {
+  font-size: 11px;
+  color: var(--color-text-3);
+}
+
+.profile-plan-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--tier-soul) 40%, var(--color-border));
+  background: color-mix(in srgb, var(--tier-soul) 12%, var(--color-surface-1));
+  color: var(--color-text-1);
+  cursor: pointer;
+  font: inherit;
+}
+
+.profile-plan-chip-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--tier-soul) 25%, #1a1a1a);
+  color: var(--tier-soul);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.profile-plan-chip strong {
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.profile-plan-chip span {
+  font-size: 11px;
+  color: var(--color-text-3);
+}
+
 
 .subscription-footnote {
   margin-top: 4px;
