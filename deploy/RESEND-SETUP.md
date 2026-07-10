@@ -41,7 +41,18 @@ Same vars. Remove all `AWS_SES_*` and `SES_*` keys.
 pm2 reload deploy/ecosystem.config.cjs --update-env
 ```
 
-## 4. Test send
+## 4. Resend template (waitlist confirmation)
+
+Production sends via published Resend template when `RESEND_WAITLIST_TEMPLATE_ID` is set.
+
+```bash
+# Push HTML + variables to Resend and publish
+node scripts/sync-resend-waitlist-template.mjs
+```
+
+Template alias: `aiimin-waitlist-confirmation` · cap **300** · member offset **122** (first signup = #123).
+
+## 5. Test send
 
 ```bash
 node scripts/test-email.mjs your-email@gmail.com
