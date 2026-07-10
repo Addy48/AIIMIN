@@ -48,12 +48,67 @@
 .subscription-pricing-card.is-current {
   border-color: var(--color-border-lit);
   background: var(--color-elevated);
-  box-shadow: var(--glass-shadow-sm);
 }
 
 .subscription-pricing-card.is-popular:not(.is-current) {
   border-color: var(--color-border-lit);
 }
+
+/* Per-tier souls — color personality without new brand tokens on chrome */
+.subscription-pricing-card.tier-soul-explore {
+  --tier-soul: #6b7280;
+}
+.subscription-pricing-card.tier-soul-core {
+  --tier-soul: #2dd4bf;
+}
+.subscription-pricing-card.tier-soul-pro {
+  --tier-soul: #ff6b35;
+}
+.subscription-pricing-card.tier-soul-elite {
+  --tier-soul: #fbbf24;
+}
+
+.subscription-pricing-card[class*='tier-soul-'] {
+  border-top: 3px solid color-mix(in srgb, var(--tier-soul) 70%, var(--color-border));
+}
+
+.subscription-pricing-card.tier-soul-explore .subscription-tier-icon,
+.subscription-pricing-card.tier-soul-core .subscription-tier-icon,
+.subscription-pricing-card.tier-soul-pro .subscription-tier-icon,
+.subscription-pricing-card.tier-soul-elite .subscription-tier-icon {
+  color: var(--tier-soul);
+  background: color-mix(in srgb, var(--tier-soul) 12%, var(--color-elevated));
+  border: 1px solid color-mix(in srgb, var(--tier-soul) 28%, var(--color-border));
+}
+
+.subscription-pricing-card.is-current {
+  border-color: color-mix(in srgb, var(--tier-soul, var(--color-border-lit)) 55%, var(--color-border));
+  box-shadow:
+    var(--glass-shadow-sm),
+    0 0 0 1px color-mix(in srgb, var(--tier-soul, transparent) 18%, transparent);
+}
+
+.subscription-tier-cta--switch {
+  background: color-mix(in srgb, var(--tier-soul, var(--color-accent)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tier-soul, var(--color-accent)) 40%, var(--color-border));
+  color: var(--tier-soul, var(--color-accent));
+  cursor: pointer;
+}
+
+.subscription-tier-cta--switch:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.subscription-tier-cta--primary {
+  background: var(--tier-soul, var(--color-accent));
+  border: none;
+  color: #1a1a1a;
+}
+
+.subscription-pricing-card.tier-soul-pro .subscription-tier-cta--primary {
+  color: #fff;
+}
+
 
 .subscription-tier-badge {
   position: absolute;
@@ -177,12 +232,6 @@
   cursor: pointer;
   font-family: var(--font-sans);
   transition: all 0.15s ease;
-}
-
-.subscription-tier-cta--primary {
-  background: var(--color-accent);
-  border: none;
-  color: #fff;
 }
 
 .subscription-tier-cta--primary:hover:not(:disabled) {

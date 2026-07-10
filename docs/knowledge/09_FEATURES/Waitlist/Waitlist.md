@@ -9,6 +9,7 @@ Landing (modular v9 — July 2026):
 - **Orchestrator:** `frontend/src/pages/WaitlistLanding.jsx` (~160 lines)
 - **Modules:** `frontend/src/components/waitlist/landing/*` + shared `waitlistLandingData.js`
 - **Hero:** full-width top bar (brand lockup + exclusive badge + theme toggle); equal-height split panels — copy + preview left, form + `WaitlistHeroAside` right
+- **Mobile (<720px):** mobile headline/preview context + **join form always visible** (`#waitlist-join` not wrapped in desktop-only). Sticky “Reserve my spot” CTA. Theme toggle in mobile topbar only (no second fixed button).
 - **Headline:** **One screen. Every day.** → habits, money, focus, mood. Life OS positioning (web + native app)
 - **Pricing:** premium tier cards with icons, checkmarks, elevated Pro; compact stack-vs-AIIMIN comparison
 - **Launch journey:** 4-phase vertical ladder (Reserve access → Founding launch → Module rollout → Full OS expansion) with access/approval notes

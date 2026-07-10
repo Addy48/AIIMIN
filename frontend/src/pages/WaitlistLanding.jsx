@@ -3,7 +3,6 @@ import { Helmet } from 'react-helmet-async';
 import { Sparkles } from 'lucide-react';
 import useWaitlistSurfaceTheme from '../hooks/useWaitlistSurfaceTheme';
 import { API_URL } from '../utils/api';
-import WaitlistThemeToggle from '../components/waitlist/landing/WaitlistThemeToggle';
 import WaitlistErrorBoundary from '../components/waitlist/landing/WaitlistErrorBoundary';
 import WaitlistHeroSection from '../components/waitlist/landing/WaitlistHeroSection';
 import WaitlistPersonasSection from '../components/waitlist/landing/WaitlistPersonasSection';
@@ -80,12 +79,6 @@ function WaitlistLandingContent() {
 
   return (
     <div className="waitlist-page" id="top">
-      <WaitlistThemeToggle
-        isLight={isLight}
-        onToggle={toggleWaitlistTheme}
-        className="waitlist-theme-icon-btn--mobile-fixed waitlist-mobile-only"
-      />
-
       <Helmet>
         <title>AIIMIN — Personal Life OS | Join the Waitlist</title>
         <meta

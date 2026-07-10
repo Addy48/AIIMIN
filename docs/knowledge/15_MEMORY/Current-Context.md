@@ -6,29 +6,36 @@
 
 ## Today
 
-Shipped: **Login a11y + Brain OS vault** — commit `b4fe7963`, Vercel READY, EC2 API at same SHA.
+- Waitlist mobile join form fixed (was hidden in desktop-only)
+- Click-upgrade for all users (no Stripe) + B identity celebration + per-tier card souls
 
 ## Working on
 
-- Done this session: native Login `Field`, vault cutover commit/push/redeploy
-- Next: Selfloop re-run on `/login` + signup step 1
+- Ship/verify: Account → Subscription click upgrade + celebration
+- Phone-verify waitlist landing after deploy
 
 ## Recent decisions
 
-- Fake placeholder overlay = Selfloop cannot find textbox. Native input only.
-- Step motion must never use `opacity: 0`
+- Click-upgrade auto-on until Stripe prices configured (or `SUBSCRIPTION_MODE=true`)
+- Testing: up + down allowed; later `UPGRADE_ONLY=true` for upgrade-only
+- Celebration: B identity-shift, per-tier colors (gray/teal/orange/amber)
+- Access service honors profile tier while click-upgrade on (no force-elite)
 
 ## Files modified (this effort)
 
-- `frontend/src/pages/Login.jsx` (+ Brain OS vault/rules/skills in same commit)
-- Deploy: Vercel `dpl_DAMdNAHvhsQ4AmRdnwmR3BFm8oWA` READY; EC2 `b4fe7963` health ok
+- Waitlist: `WaitlistHeroSection.jsx`, `WaitlistLanding.jsx`, `waitlistLanding.css`
+- Billing: `billingService.js`, `billing.js`, `accessService.js`
+- UI: `SubscriptionSection.jsx`, `TierUpgradeCelebration.jsx`, celebration + subscription CSS
+- Spec: `docs/superpowers/specs/2026-07-11-click-upgrade-celebration-design.md`
+- Vault: Account + Waitlist changelogs, Current Context
 
 ## Known issues
 
+- EC2 must redeploy API for click-upgrade; Vercel for frontend
 - Left untracked: `.cursor/debug-40de69.log` (do not commit)
-- `deploy/EC2.env.paste` gitignored (secrets)
 
 ## Next step
 
-1. Re-run Selfloop on https://www.aiimin.in/login — expect `textbox` for OS-ID / EMAIL
-2. Confirm signup Full Name + Recovery Email textboxes
+1. Commit + push
+2. Redeploy frontend + API
+3. Test Account → Subscription upgrade on phone + desktop

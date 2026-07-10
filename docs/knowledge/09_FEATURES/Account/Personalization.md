@@ -10,6 +10,8 @@
 ## Key files
 
 - `frontend/src/pages/account/sections/PersonalizationSection.jsx`
+- `frontend/src/pages/account/sections/SubscriptionSection.jsx`
+- `frontend/src/components/account/TierUpgradeCelebration.jsx`
 - `frontend/src/components/settings/NavPinEditor.jsx`
 - `frontend/src/constants/navItems.js`
 - `frontend/src/hooks/useNavPreferences.js`
@@ -17,11 +19,20 @@
 - `frontend/src/index.js`
 - `frontend/src/hooks/useUserProfile.js`
 - `server/services/userProfileService.js`
+- `server/services/billingService.js`
+- `server/routes/billing.js`
 - `server/routes/account.js`
 
 ## Changelog
 
-### 2026-07-09 — Arc onboarding UX + profile patch fix
+### 2026-07-11 — Click-upgrade for all + identity celebration
+- **What:** Plan changes work for every signed-in user without Stripe. `POST /api/billing/select-tier` enabled when Stripe is not configured (or `SUBSCRIPTION_MODE=true`). Access service honors profile tier in click-upgrade mode (no force-elite overwrite). Subscription UI: per-tier card colors + identity-shift celebration overlay (hold → land → unlocks → receipt). `UPGRADE_ONLY=true` later blocks downgrades.
+- **Why:** Upgrade buttons returned errors in prod; no payment provider yet; testing needs instant up/down for all accounts.
+- **Files:** `server/services/billingService.js`, `server/routes/billing.js`, `server/services/accessService.js`, `frontend/src/pages/account/sections/SubscriptionSection.jsx`, `frontend/src/components/account/TierUpgradeCelebration.jsx`, `frontend/src/styles/tierUpgradeCelebration.css`, `frontend/src/styles/subscriptionSection.css`, `deploy/.env.production.example`
+- **Status:** shipped
+- **Notes:** Set `UPGRADE_ONLY=true` when ready to lock downgrades. Stripe checkout resumes automatically once price env vars are set and `SUBSCRIPTION_MODE=false`.
+
+
 - **What:** Fixed `column "nav_preferences" does not exist` on Life Arc save; inline Arc mark + wordmark alignment; quieter onboarding copy (no orange stub message); `?northStar=1` redirects to `?arc=1`; quote stripping on sharpen/save
 - **Why:** Continue failed on onboarding; stacked logo and dev-facing orange text hurt usability
 - **Files:** `server/services/userProfileService.js`, `frontend/src/components/brand/ArcLockup.jsx`, `frontend/src/components/profile/ArcEditor.jsx`, `frontend/src/pages/Onboarding.jsx`, `frontend/src/index.css`

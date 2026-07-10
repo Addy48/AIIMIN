@@ -9,7 +9,8 @@ import {
   createCheckoutSession,
   handleSubscriptionUpgrade,
   selectSubscriptionTier,
-  isSubscriptionMode,
+  isClickUpgradeEnabled,
+  isUpgradeOnlyMode,
   TIERS,
 } from '../services/billingService.js';
 import { getUserProfile } from '../services/userProfileService.js';
@@ -26,17 +27,20 @@ app.get('/status', requireAuth, async (c) => {
   const userId = c.get('userId');
   const tier = await getUserTier(userId);
   const profile = await getUserProfile(pool, userId);
+  const clickUpgrade = isClickUpgradeEnabled();
   return c.json({
     tier,
     prev_tier: profile?.prev_tier || 'explore',
     renewal: profile?.stripe_subscription_id ? 'active' : null,
-    subscription_mode: isSubscriptionMode(),
+    subscription_mode: clickUpgrade,
+    click_upgrade: clickUpgrade,
+    upgrade_only: isUpgradeOnlyMode(),
   });
 });
 
 app.post('/select-tier', requireAuth, async (c) => {
   try {
-    if (!isSubscriptionMode() && process.env.NODE_ENV === 'production') {
+    if (!isClickUpgradeEnabled()) {
       return c.json({ error: 'Billing checkout required' }, 403);
     }
     const userId = c.get('userId');
@@ -45,9 +49,15 @@ app.post('/select-tier', requireAuth, async (c) => {
       return c.json({ error: 'Invalid tier' }, 400);
     }
     const result = await selectSubscriptionTier(userId, tier);
-    return c.json({ ...result, tier });
+    return c.json({
+      ...result,
+      tier,
+      click_upgrade: true,
+      upgrade_only: isUpgradeOnlyMode(),
+    });
   } catch (err) {
-    return c.json({ error: err.message }, 400);
+    const status = err.code === 'UPGRADE_ONLY' ? 403 : 400;
+    return c.json({ error: err.message, code: err.code }, status);
   }
 });
 
@@ -118,7 +128,7 @@ app.post('/webhook', async (c) => {
  * Dev-only: simulate upgrade without Stripe.
  */
 app.post('/simulate-upgrade', requireAuth, async (c) => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && !isClickUpgradeEnabled()) {
     return c.json({ error: 'Not available in production' }, 403);
   }
   const userId = c.get('userId');

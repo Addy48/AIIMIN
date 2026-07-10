@@ -4,12 +4,9 @@
  */
 import { pool } from '../lib/db.js';
 import { patchUserProfile } from './userProfileService.js';
+import { isClickUpgradeEnabled } from './billingService.js';
 
 const TIER_RANK = { explore: 0, core: 1, pro: 2, elite: 3 };
-
-function isSubscriptionMode() {
-  return process.env.SUBSCRIPTION_MODE === 'true';
-}
 
 async function getProfileTier(userId) {
   if (!userId) return 'explore';
@@ -25,7 +22,8 @@ async function getProfileTier(userId) {
 }
 
 async function resolveTierForUser(userId, privilegedDefault = 'elite') {
-  if (isSubscriptionMode() && userId) {
+  // Click-upgrade / subscription testing: always honor the profile tier.
+  if (isClickUpgradeEnabled() && userId) {
     return getProfileTier(userId);
   }
   return privilegedDefault;
@@ -62,21 +60,22 @@ export async function resolveAccess({ email, cognitoSub, userId }) {
 
   const isOwnerById = cognitoSub && ownerIds.includes(cognitoSub);
   const isOwnerByEmail = normalizedEmail && ownerEmails.includes(normalizedEmail);
+  const clickUpgrade = isClickUpgradeEnabled();
 
   if (isOwnerById || isOwnerByEmail) {
-    if (userId && !isSubscriptionMode()) await ensureEliteTier(userId);
+    if (userId && !clickUpgrade) await ensureEliteTier(userId);
     const tier = await resolveTierForUser(userId, 'elite');
     return { role: 'owner', canAccess: true, tier };
   }
 
   if (normalizedEmail && devEmails.includes(normalizedEmail)) {
-    if (userId && !isSubscriptionMode()) await ensureEliteTier(userId);
+    if (userId && !clickUpgrade) await ensureEliteTier(userId);
     const tier = await resolveTierForUser(userId, 'elite');
     return { role: 'dev', canAccess: true, tier };
   }
 
   if (normalizedEmail && testerEmails.includes(normalizedEmail)) {
-    if (userId && !isSubscriptionMode()) await ensureEliteTier(userId);
+    if (userId && !clickUpgrade) await ensureEliteTier(userId);
     const tier = await resolveTierForUser(userId, 'elite');
     return { role: 'tester', canAccess: true, tier };
   }
@@ -89,7 +88,7 @@ export async function resolveAccess({ email, cognitoSub, userId }) {
       );
       if (rows.length > 0) {
         const role = rows[0].role === 'dev' ? 'dev' : 'tester';
-        if (userId && !isSubscriptionMode()) await ensureEliteTier(userId);
+        if (userId && !clickUpgrade) await ensureEliteTier(userId);
         const tier = await resolveTierForUser(userId, 'elite');
         if (cognitoSub) {
           await pool.query(

@@ -1,6 +1,11 @@
-# Waitlist Changelog
+### 2026-07-11 — Mobile waitlist: form was hidden, CTA dead
+- **What:** Join form is visible and tappable on mobile again. Sticky “Reserve my spot” scrolls to a real `#waitlist-join`. Removed duplicate fixed theme toggle (topbar already has one). Mobile CSS: single-column hero, no sticky form column, touch-friendly controls, bottom padding so sticky CTA does not cover content.
+- **Why:** Form lived inside `waitlist-desktop-only`, so under 720px the whole join UI (and `#waitlist-join`) was `display: none`. Sticky CTA pointed at a missing target; scroll/tap felt broken.
+- **Files:** `frontend/src/components/waitlist/landing/WaitlistHeroSection.jsx`, `frontend/src/pages/WaitlistLanding.jsx`, `frontend/src/styles/waitlistLanding.css`
+- **Status:** shipped
+- **Notes:** Desktop layout unchanged — copy column stays desktop-only; form column shared.
 
-### 2026-07-10 — Vault Brain OS path migrate
+
 - **What:** Waitlist docs live under `docs/knowledge/09_FEATURES/Waitlist/`. Entrypoint is `00_HOME.md` (Command Center archived).
 - **Why:** Project Brain OS cutover for token-light agent context
 - **Files:** `docs/knowledge/09_FEATURES/Waitlist/*`, `docs/knowledge/00_HOME.md`, `docs/knowledge/_manifest.json`, `docs/knowledge/99_ARCHIVE/pre-brain-os-2026-07-10/`
