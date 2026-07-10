@@ -6,6 +6,8 @@ import useFieldSave, { FieldSaveIndicator } from '../../../hooks/useFieldSave';
 import { apiPatch } from '../../../utils/api';
 import { LIFE_ARC_LABEL, ARC_TAGLINE } from '../../../constants/arc';
 import ArcMark from '../../../components/brand/ArcMark';
+import PlanStatusChip from '../../../components/account/PlanStatusChip';
+import '../../../styles/subscriptionSection.css';
 
 const fieldStyle = {
   width: '100%',
@@ -40,17 +42,6 @@ export default function ProfileSection({
   const osId = (profile?.username || user?.username || '').toUpperCase();
   const hasOsId = osId.length === 8;
   const activeLifeArc = profile?.tagline || lifeArc;
-
-  const tierMeta = {
-    explore: { label: 'Explore', mark: 'E', color: '#6b7280' },
-    core: { label: 'Core', mark: 'C', color: '#2dd4bf' },
-    pro: { label: 'Pro', mark: 'P', color: '#ff6b35' },
-    elite: { label: 'Elite', mark: 'É', color: '#fbbf24' },
-  }[planTier] || { label: 'Explore', mark: 'E', color: '#6b7280' };
-
-  const periodLabel = periodEnd
-    ? new Date(periodEnd).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-    : null;
 
   useEffect(() => {
     setLifeArc(profile?.tagline || '');
@@ -145,23 +136,11 @@ export default function ProfileSection({
               )}
             </div>
 
-            <button
-              type="button"
-              className="profile-plan-chip"
-              style={{ '--tier-soul': tierMeta.color, marginTop: 12 }}
+            <PlanStatusChip
+              tier={planTier}
+              periodEnd={periodEnd}
               onClick={() => onOpenSubscription?.()}
-              aria-label={`Current plan ${tierMeta.label}. Open subscription.`}
-            >
-              <span className="profile-plan-chip-mark">{tierMeta.mark}</span>
-              <strong>{tierMeta.label}</strong>
-              <span>
-                {planTier === 'explore'
-                  ? 'Free plan'
-                  : periodLabel
-                    ? `Active until ${periodLabel}`
-                    : 'Manage plan'}
-              </span>
-            </button>
+            />
 
             <div
               style={{

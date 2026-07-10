@@ -13,13 +13,6 @@ import LegalSection from './sections/LegalSection';
 import DesignSection from './sections/DesignSection';
 import '../../styles/subscriptionSection.css';
 
-const TIER_META = {
-  explore: { label: 'Explore', mark: 'E', color: '#6b7280' },
-  core: { label: 'Core', mark: 'C', color: '#2dd4bf' },
-  pro: { label: 'Pro', mark: 'P', color: '#ff6b35' },
-  elite: { label: 'Elite', mark: 'É', color: '#fbbf24' },
-};
-
 const SECTIONS = [
   { id: 'profile', label: 'My Profile', helper: 'Identity, location, and completion' },
   { id: 'personalization', label: 'Personalization', helper: 'Themes, nav pins, life modes' },
@@ -103,20 +96,17 @@ export default function AccountPage() {
   const ActiveSection = SECTION_MAP[section] || ProfileSection;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const activeMeta = SECTIONS.find((s) => s.id === section) || SECTIONS[0];
-  const tierMeta = TIER_META[planTier] || TIER_META.explore;
-  const periodLabel = periodEnd
-    ? new Date(periodEnd).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-    : null;
 
   return (
     <div
-      className="page-container"
+      className="page-container account-page"
       style={{
         display: 'grid',
-        gridTemplateColumns: isMobile ? '1fr' : '292px minmax(0, 860px)',
-        gap: isMobile ? 18 : 36,
+        gridTemplateColumns: isMobile ? '1fr' : 'minmax(240px, 280px) minmax(0, 1fr)',
+        gap: isMobile ? 18 : clampGap(),
         minHeight: 'calc(100vh - var(--nav-height))',
         alignItems: 'flex-start',
+        width: '100%',
       }}
     >
       <aside
@@ -144,26 +134,6 @@ export default function AccountPage() {
             </p>
           </div>
         )}
-
-        <button
-          type="button"
-          className="account-plan-badge"
-          style={{ '--tier-soul': tierMeta.color }}
-          onClick={() => setSearchParams({ section: 'subscription' })}
-          aria-label={`Current plan ${tierMeta.label}. Open subscription.`}
-        >
-          <span className="account-plan-badge-mark">{tierMeta.mark}</span>
-          <span className="account-plan-badge-text">
-            <strong>{tierMeta.label} plan</strong>
-            <span>
-              {planTier === 'explore'
-                ? 'Free · tap to manage'
-                : periodLabel
-                  ? `Active until ${periodLabel}`
-                  : 'Tap to manage plan'}
-            </span>
-          </span>
-        </button>
 
         {isMobile ? (
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 8px' }}>
@@ -212,7 +182,7 @@ export default function AccountPage() {
                     fontSize: 14,
                     fontWeight: active ? 750 : 600,
                     cursor: 'pointer',
-                    transition: 'background var(--dur-normal) var(--ease), border-color var(--dur-normal) var(--ease), transform var(--dur-fast) var(--ease)',
+                    transition: 'background var(--dur-normal) var(--ease), border-color var(--dur-normal) var(--ease)',
                   }}
                 >
                   <span style={{ letterSpacing: '-0.01em' }}>{s.label}</span>
@@ -257,7 +227,7 @@ export default function AccountPage() {
         </div>
       </aside>
 
-      <main style={{ minWidth: 0, overflowY: 'auto' }}>
+      <main style={{ minWidth: 0, width: '100%' }}>
         <div style={{ marginBottom: 20 }}>
           <p className="text-label" style={{ marginBottom: 8, color: 'var(--color-text-3)' }}>
             {activeMeta.label}
@@ -277,4 +247,8 @@ export default function AccountPage() {
       </main>
     </div>
   );
+}
+
+function clampGap() {
+  return 'clamp(24px, 3vw, 40px)';
 }

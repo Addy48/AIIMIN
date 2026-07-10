@@ -26,8 +26,15 @@
 
 .subscription-pricing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
+}
+
+@media (min-width: 1100px) {
+  .subscription-pricing-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+  }
 }
 
 .subscription-pricing-card {
@@ -267,90 +274,80 @@
 .subscription-current-banner.tier-soul-pro { --tier-soul: #ff6b35; }
 .subscription-current-banner.tier-soul-elite { --tier-soul: #fbbf24; }
 
-.account-plan-badge {
+/* Account page — stretch on laptop/desktop; mobile stays tight via page pad */
+.account-page.page-container {
+  max-width: min(1680px, 100%);
+}
+
+@media (min-width: 1100px) {
+  .account-page.page-container {
+    padding-left: clamp(28px, 3.5vw, 48px);
+    padding-right: clamp(28px, 3.5vw, 48px);
+  }
+
+  .account-page .subscription-section,
+  .account-page main > * {
+    max-width: none;
+  }
+}
+
+.plan-status-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--tier-soul, var(--color-accent)) 35%, var(--color-border));
-  background: color-mix(in srgb, var(--tier-soul, var(--color-accent)) 10%, var(--color-surface-1));
+  gap: 12px;
+  margin-top: 14px;
+  padding: 10px 16px 10px 10px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--tier-soul) 48%, var(--color-border));
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--tier-soul) 16%, var(--color-surface-1)),
+      color-mix(in srgb, var(--tier-soul) 6%, var(--color-surface-2))
+    );
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tier-soul) 12%, transparent);
   color: var(--color-text-1);
   cursor: pointer;
-  text-align: left;
   font: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.account-plan-badge:hover {
-  filter: brightness(1.05);
+.plan-status-chip:hover {
+  border-color: color-mix(in srgb, var(--tier-soul) 72%, var(--color-border));
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--tier-soul) 18%, transparent);
+  transform: translateY(-1px);
 }
 
-.account-plan-badge-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+.plan-status-chip-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
   display: grid;
   place-items: center;
   background: color-mix(in srgb, var(--tier-soul) 22%, #1a1a1a);
-  border: 1px solid color-mix(in srgb, var(--tier-soul) 45%, #333);
+  border: 1px solid color-mix(in srgb, var(--tier-soul) 50%, #333);
   color: var(--tier-soul);
-  font-size: 12px;
-  font-weight: 800;
   flex-shrink: 0;
 }
 
-.account-plan-badge-text {
+.plan-status-chip-copy {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  align-items: flex-start;
+  gap: 2px;
   min-width: 0;
 }
 
-.account-plan-badge-text strong {
-  font-size: 13px;
+.plan-status-chip-copy strong {
+  font-size: 14px;
   font-weight: 750;
-  color: var(--color-text-1);
-}
-
-.account-plan-badge-text span {
-  font-size: 11px;
-  color: var(--color-text-3);
-}
-
-.profile-plan-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--tier-soul) 40%, var(--color-border));
-  background: color-mix(in srgb, var(--tier-soul) 12%, var(--color-surface-1));
-  color: var(--color-text-1);
-  cursor: pointer;
-  font: inherit;
-}
-
-.profile-plan-chip-mark {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  display: grid;
-  place-items: center;
-  background: color-mix(in srgb, var(--tier-soul) 25%, #1a1a1a);
+  letter-spacing: -0.01em;
   color: var(--tier-soul);
-  font-size: 11px;
-  font-weight: 800;
 }
 
-.profile-plan-chip strong {
+.plan-status-chip-copy span {
   font-size: 12px;
-  font-weight: 750;
-}
-
-.profile-plan-chip span {
-  font-size: 11px;
+  font-weight: 600;
   color: var(--color-text-3);
 }
 

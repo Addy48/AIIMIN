@@ -3,8 +3,8 @@ import { Check, Zap, Crown, Compass, Layers } from 'lucide-react';
 import { apiGet, apiPost } from '../../../utils/api';
 import toast from '../../../utils/toast';
 import { trackEvent } from '../../../hooks/usePageAnalytics';
-import { IS_SUBSCRIPTION_MODE } from '../../../utils/tierGating';
 import TierUpgradeCelebration from '../../../components/account/TierUpgradeCelebration';
+import { formatPlanTill } from '../../../components/account/PlanStatusChip';
 import '../../../styles/subscriptionSection.css';
 
 const STATIC_TIERS = [
@@ -78,13 +78,6 @@ const STATIC_TIERS = [
 
 const TIER_ORDER = ['explore', 'core', 'pro', 'elite'];
 
-function formatPeriodEnd(iso) {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
 function notifyTierChanged(tierId) {
   window.dispatchEvent(new CustomEvent('aiimin:profile-refresh'));
   window.dispatchEvent(new CustomEvent('aiimin:tier-changed', { detail: { tier: tierId } }));
@@ -92,7 +85,6 @@ function notifyTierChanged(tierId) {
 
 export default function SubscriptionSection() {
   const [currentTier, setCurrentTier] = useState('explore');
-  const [clickUpgrade, setClickUpgrade] = useState(true);
   const [upgradeOnly, setUpgradeOnly] = useState(false);
   const [periodEnd, setPeriodEnd] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -105,14 +97,9 @@ export default function SubscriptionSection() {
         if (st?.tier) setCurrentTier(st.tier);
         if (st?.current_period_end) setPeriodEnd(st.current_period_end);
         else setPeriodEnd(null);
-        const enabled = st?.click_upgrade ?? st?.subscription_mode ?? IS_SUBSCRIPTION_MODE;
-        setClickUpgrade(enabled !== false);
         setUpgradeOnly(Boolean(st?.upgrade_only));
       })
-      .catch(() => {
-        // Keep click-upgrade on so buttons still try select-tier
-        setClickUpgrade(true);
-      });
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -147,7 +134,7 @@ export default function SubscriptionSection() {
   const handleTierAction = (tierId) => selectTier(tierId);
 
   const currentTierIndex = TIER_ORDER.indexOf(currentTier);
-  const periodLabel = formatPeriodEnd(periodEnd);
+  const periodLabel = formatPlanTill(periodEnd);
   const currentName = STATIC_TIERS.find((t) => t.id === currentTier)?.name || 'Explore';
 
   return (
@@ -156,23 +143,9 @@ export default function SubscriptionSection() {
         <p className="text-label" style={{ color: 'var(--color-text-3)', marginBottom: 6 }}>Account</p>
         <h1 className="text-h1" style={{ marginBottom: 8 }}>Subscription</h1>
         <p className="text-sm" style={{ color: 'var(--color-text-2)' }}>
-          AIIMIN grows with you. Upgrade or switch any time
-          {clickUpgrade ? ' — testing mode, no charge.' : '.'}
+          AIIMIN grows with you. Upgrade or switch any time.
         </p>
       </div>
-
-      {clickUpgrade && (
-        <div
-          className="subscription-current-banner"
-          style={{ borderColor: 'color-mix(in srgb, var(--color-accent) 40%, var(--color-border))' }}
-        >
-          <span className="subscription-current-dot" />
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)' }}>
-            Click to change plan instantly. Stripe billing comes later
-            {upgradeOnly ? ' · downgrades locked' : ''}.
-          </span>
-        </div>
-      )}
 
       {!loading && (
         <div className={`subscription-current-banner tier-soul-${currentTier}`}>
@@ -181,7 +154,7 @@ export default function SubscriptionSection() {
             You&apos;re on <strong style={{ color: 'var(--tier-soul, var(--color-accent))' }}>{currentName}</strong>
             {currentTier !== 'explore' && periodLabel ? (
               <span style={{ color: 'var(--color-text-3)', fontWeight: 400, marginLeft: 8 }}>
-                · Active until {periodLabel}
+                · {periodLabel}
               </span>
             ) : currentTier === 'explore' ? (
               <span style={{ color: 'var(--color-text-3)', fontWeight: 400, marginLeft: 8 }}>
@@ -259,7 +232,7 @@ export default function SubscriptionSection() {
                 <div className="subscription-tier-cta subscription-tier-cta--active">
                   ✓ Active
                   {periodLabel && currentTier !== 'explore' ? (
-                    <span className="subscription-tier-cta-sub">until {periodLabel}</span>
+                    <span className="subscription-tier-cta-sub">{periodLabel}</span>
                   ) : null}
                 </div>
               ) : blockedDowngrade ? (
@@ -292,13 +265,14 @@ export default function SubscriptionSection() {
       </div>
 
       <p className="subscription-footnote text-caption">
-        All prices in INR · Cancel any time · Billed monthly · Support: support@aiimin.in
+        All prices in INR · Cancel any time · Support: support@aiimin.in
       </p>
 
       <TierUpgradeCelebration
         open={Boolean(celebration)}
         fromTier={celebration?.fromTier || 'explore'}
         toTier={celebration?.toTier || 'core'}
+        periodEnd={periodEnd}
         onClose={() => setCelebration(null)}
       />
     </div>

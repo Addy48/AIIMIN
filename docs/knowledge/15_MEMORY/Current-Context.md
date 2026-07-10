@@ -6,21 +6,22 @@
 
 ## Today
 
-- Root cause live upgrade 500: `billing.js` imported missing `stripe` package (lazy route load)
-- Fix: dynamic Stripe import only in webhook; select-tier always
-- Plan badge (sidebar + profile) → subscription; Active until +1 month; CTA prices
+- Account UX polish: wider desktop, plan chip only on My Profile (icons not C/P/E, `till …` copy)
+- Removed Stripe/testing billing copy from celebration + banners
+- Prior: billing 500 fixed (lazy Stripe); click-upgrade + period_end shipped
 
 ## Working on
 
-- Ship fix + EC2 redeploy; verify upgrade on prod
+- FE polish ready for hard-refresh verify; commit/push when user asks (Vercel FE; no API change this round)
 
 ## Recent decisions
 
+- Plan status: profile only, not sidebar
 - Click-upgrade default on; `REACT_APP_SUBSCRIPTION_MODE !== 'false'`
-- `subscription_period_end` column for 30-day active window
-- Commit+push always includes EC2 API deploy
+- Commit+push always includes EC2 API deploy when server touched
 
 ## Next step
 
-1. Commit + push + EC2 deploy
-2. Hard-refresh Account → Subscription; upgrade Core/Pro
+1. Hard-refresh Account → My Profile + Subscription
+2. Confirm chip shows icon + `till …`; celebration has Valid till, no Stripe line
+3. Commit + push when asked

@@ -12,6 +12,7 @@
 - `frontend/src/pages/account/sections/PersonalizationSection.jsx`
 - `frontend/src/pages/account/sections/SubscriptionSection.jsx`
 - `frontend/src/components/account/TierUpgradeCelebration.jsx`
+- `frontend/src/components/account/PlanStatusChip.jsx`
 - `frontend/src/components/settings/NavPinEditor.jsx`
 - `frontend/src/constants/navItems.js`
 - `frontend/src/hooks/useNavPreferences.js`
@@ -24,6 +25,12 @@
 - `server/routes/account.js`
 
 ## Changelog
+
+### 2026-07-11 — Account plan UX polish (desktop width + profile chip)
+- **What:** Account page uses wider desktop layout (~1680px). Plan status lives only on My Profile via `PlanStatusChip` (tier icon + color, copy like `till 10 aug 2026`) — removed from sidebar. Stripe/testing billing banner and celebration “Testing · no charge” removed; celebration receipt shows Valid till date. Celebration modal wider on laptop/desktop.
+- **Why:** Desktop felt cramped; plan letter badges (C/P/E) and duplicate sidebar chip; Stripe copy premature.
+- **Files:** `frontend/src/pages/account/AccountPage.jsx`, `frontend/src/pages/account/sections/ProfileSection.jsx`, `frontend/src/pages/account/sections/SubscriptionSection.jsx`, `frontend/src/components/account/PlanStatusChip.jsx`, `frontend/src/components/account/TierUpgradeCelebration.jsx`, `frontend/src/styles/subscriptionSection.css`, `frontend/src/styles/tierUpgradeCelebration.css`
+- **Status:** shipped
 
 ### 2026-07-11 — Fix live upgrade 500 + plan badge + active-until
 - **What:** Removed top-level `stripe` import that crashed the whole billing router on EC2 (`ERR_MODULE_NOT_FOUND`). Upgrades always use `POST /billing/select-tier`. Added `subscription_period_end` (1 month from plan change). Account sidebar + profile show colored plan mark; click opens Subscription. CTAs show price (`Upgrade to Core · ₹29/mo`). Banner shows Active until date.

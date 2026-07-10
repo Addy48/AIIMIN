@@ -14,7 +14,7 @@
 
 .tier-celeb-stage {
   --tier: #2dd4bf;
-  width: min(420px, 100%);
+  width: min(560px, 100%);
   display: grid;
   grid-template-rows: 48px minmax(140px, 1fr) auto auto;
   gap: 12px;
@@ -28,6 +28,20 @@
   min-height: min(520px, 86vh);
   max-height: 90vh;
   overflow: auto;
+}
+
+@media (min-width: 900px) {
+  .tier-celeb-stage {
+    width: min(720px, 88vw);
+    padding: 32px 36px 24px;
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .tier-celeb-stage {
+    width: min(800px, 70vw);
+  }
 }
 
 .tier-celeb-zone {
@@ -115,10 +129,10 @@
 
 .tier-celeb-tagline {
   margin: 12px 0 0;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   line-height: 1.45;
   color: #a3a3a3;
-  max-width: 32ch;
+  max-width: 42ch;
 }
 
 .tier-celeb-zone--unlocks {
