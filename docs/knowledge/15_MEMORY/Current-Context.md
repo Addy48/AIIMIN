@@ -22,6 +22,5 @@
 
 ## Next step
 
-1. Wait Vercel READY for `45a57054`
-2. Hard-refresh Account → My Profile + Subscription
-3. Confirm chip + celebration till-date
+1. Wait Vercel READY for `93c889ea`
+2. Hard-refresh Account → My Profile meta row
