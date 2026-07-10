@@ -22,6 +22,6 @@
 
 ## Next step
 
-1. Hard-refresh Account → My Profile + Subscription
-2. Confirm chip shows icon + `till …`; celebration has Valid till, no Stripe line
-3. Commit + push when asked
+1. Wait Vercel READY for `45a57054`
+2. Hard-refresh Account → My Profile + Subscription
+3. Confirm chip + celebration till-date
