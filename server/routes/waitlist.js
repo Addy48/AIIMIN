@@ -10,6 +10,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { waitlistLimiter, feedbackLimiter } from '../middleware/rateLimiter.js';
 import { sendEmail } from '../lib/email.js';
 import { getOwnerNotifyEmail } from '../services/accessService.js';
+import { toDisplayMemberNumber, DISPLAY_CAP } from '../lib/waitlistEmailVariants.js';
 
 const app = new Hono();
 
@@ -145,11 +146,9 @@ async function notifyOwnerWaitlistSignup({
 
 async function sendWaitlistConfirmation({ email, firstName, reservedUsername, referralCode }) {
   let memberNumber = null;
-  let totalCount = null;
   try {
-    memberNumber = await getWaitlistPosition(email);
-    const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM waitlist_emails');
-    totalCount = rows[0]?.count ?? null;
+    const position = await getWaitlistPosition(email);
+    memberNumber = toDisplayMemberNumber(position);
   } catch {
     // non-fatal
   }
@@ -160,7 +159,7 @@ async function sendWaitlistConfirmation({ email, firstName, reservedUsername, re
       reserved_username: reservedUsername,
       referral_code: referralCode,
       member_number: memberNumber,
-      total_count: totalCount,
+      total_count: DISPLAY_CAP,
     });
     return true;
   } catch (err) {
