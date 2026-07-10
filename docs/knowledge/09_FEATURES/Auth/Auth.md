@@ -36,8 +36,8 @@
 - **What:** Removed Safari fake-placeholder overlay (`placeholder=" "` + absolute `div`). `Field` now uses a native `<input>` with real `placeholder`, stable `login-field-${name}` ids, `htmlFor`/`aria-label`, and step motion locked to `opacity: 1` (never 0).
 - **Why:** Selfloop QA (9 high a11y flaws) found zero `textbox` roles on `/login` while waitlist native inputs appeared fine. Overlay + space placeholder left fields unnamed/undiscoverable; prior opacity animation also hid inputs from the tree.
 - **Files:** `frontend/src/pages/Login.jsx`, `docs/knowledge/09_FEATURES/Auth/Auth.md`, `docs/knowledge/15_MEMORY/Current-Context.md`, `docs/knowledge/_manifest.json`
-- **Status:** partial
-- **Notes:** Needs Vercel deploy + Selfloop re-run on login + signup step 1. Do not restore placeholder overlay.
+- **Status:** shipped
+- **Notes:** Shipped `b4fe7963` — Vercel prod READY + EC2 API reload healthy. Re-run Selfloop on login + signup step 1. Do not restore placeholder overlay.
 
 ### 2026-07-10 — Vault Brain OS registration
 - **What:** Auth feature MOC created under brain OS tree

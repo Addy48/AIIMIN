@@ -6,33 +6,29 @@
 
 ## Today
 
-Working on: **Login/signup a11y** — Selfloop QA: OS-ID/EMAIL + signup fields missing from a11y tree.
+Shipped: **Login a11y + Brain OS vault** — commit `b4fe7963`, Vercel READY, EC2 API at same SHA.
 
 ## Working on
 
-- `Login.jsx` `Field`: native input + real placeholder; drop overlay; opacity locked at 1 on step motion
-- Auth vault changelog + manifest status
+- Done this session: native Login `Field`, vault cutover commit/push/redeploy
+- Next: Selfloop re-run on `/login` + signup step 1
 
 ## Recent decisions
 
-- Fake placeholder overlay (`placeholder=" "` + absolute div) = Selfloop cannot find textbox. Match WaitlistForm pattern.
-- Step motion must never use `opacity: 0` (Chrome drops those nodes from a11y tree)
-- Vault = OS for Cursor/Claude/GPT, not note dump
+- Fake placeholder overlay = Selfloop cannot find textbox. Native input only.
+- Step motion must never use `opacity: 0`
 
 ## Files modified (this effort)
 
-- `frontend/src/pages/Login.jsx`
-- `docs/knowledge/09_FEATURES/Auth/Auth.md`
-- `docs/knowledge/_manifest.json`
-- `docs/knowledge/09_FEATURES/Waitlist/Changelog.md` (cross-note)
+- `frontend/src/pages/Login.jsx` (+ Brain OS vault/rules/skills in same commit)
+- Deploy: Vercel `dpl_DAMdNAHvhsQ4AmRdnwmR3BFm8oWA` READY; EC2 `b4fe7963` health ok
 
 ## Known issues
 
-- Fix local until Vercel deploy; re-run Selfloop after ship
-- Not every table/endpoint has own page yet — create when touched
+- Left untracked: `.cursor/debug-40de69.log` (do not commit)
+- `deploy/EC2.env.paste` gitignored (secrets)
 
 ## Next step
 
-1. Deploy frontend (Vercel) with Login.jsx a11y fix
-2. Re-run Selfloop on `/login` + signup step 1 — expect `textbox` roles for OS-ID / EMAIL, Full Name, Recovery Email
-3. Commit when user asks
+1. Re-run Selfloop on https://www.aiimin.in/login — expect `textbox` for OS-ID / EMAIL
+2. Confirm signup Full Name + Recovery Email textboxes
