@@ -6,19 +6,35 @@
 
 ## Today
 
-- Vercel ERROR root cause: `EntryForm.jsx` broken ternary (sibling JSX without fragment)
-- Fix: wrap account picker + hint in `<>...</>`
-- Local `npm run build` PASS
-- QA SHA was `e3212bc9` / docs `e8a39332` — both ERROR on Vercel until this fix ships
+- Vercel fixed + **READY**: `dpl_8eTzBgrhKmc192bix9v9VAissfP4` / SHA `d420cef9`
+- Cause: `EntryForm.jsx` ternary siblings without fragment → SyntaxError
+- QA code on `main` (`e3212bc9` + build fix)
+- **EC2 still blocked from agent** (SSH denied). User/Action must deploy API.
 
-## Ship now
+## Ship checklist
 
-1. Commit EntryForm fix + context
-2. Push `main`
-3. Confirm Vercel READY
-4. EC2 API deploy (SSH or Action)
+| Step | Status |
+|------|--------|
+| Commit+push QA | done `e3212bc9` |
+| Fix Vercel build | done `d420cef9` |
+| Vercel production | **READY** |
+| EC2 API | **not from agent** — run SSH script |
+
+## EC2 (you)
+
+```bash
+ssh -i ~/Desktop/aiimin.pem ubuntu@13.207.146.15 \
+  'bash ~/AIIMIN/deploy/github-ec2-deploy.sh'
+curl -sS https://api.aiimin.in/api/health
+# POST /api/user/pulse-check must be 401 not 404
+```
+
+## Next
+
+1. EC2 deploy verify
+2. Selfloop re-run
 
 ## Links
 
-- Failed dpl: `dpl_7obBuprXNPaNJQ4ZAiw3ubvng8A1` (EntryForm SyntaxError L181)
-- QA tracker: `11_BUGS/QA-Run-2026-07-12.md`
+- QA: `11_BUGS/QA-Run-2026-07-12.md`
+- Vercel: https://vercel.com/fwvevs-projects/aiimin/8eTzBgrhKmc192bix9v9VAissfP4
