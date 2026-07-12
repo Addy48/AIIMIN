@@ -168,9 +168,9 @@ const CalendarPage = () => {
                             <p style={{ margin: '0 0 8px', color: 'var(--color-text-1)', fontWeight: 600, fontSize: '15px' }}>
                                 No events in this range
                             </p>
-                            <p style={{ margin: '0 0 16px', color: 'var(--color-text-2)', fontSize: '13px', lineHeight: 1.5 }}>
+                            <p style={{ margin: '0 0 16px', color: 'var(--color-text-2)', fontSize: '13px', lineHeight: 1.55, overflowWrap: 'anywhere', maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
                                 Google is connected{syncStatus.linkedEmail ? ` as ${syncStatus.linkedEmail}` : ''}.
-                                Calendar events and due Google Tasks sync on pull — phone reminders without a due date won&apos;t appear.
+                                {' '}Calendar events and due Google Tasks sync on pull. Phone reminders without a due date will not appear.
                             </p>
                             <button
                                 type="button"

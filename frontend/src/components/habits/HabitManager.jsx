@@ -230,7 +230,7 @@ export default function HabitManager({ user }) {
 
                                     {/* Habit name — visually dominant */}
                                     <div>
-                                        <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '6px' }}>
+                                        <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '6px' }}>
                                             Habit Name
                                         </label>
                                         <input
@@ -251,7 +251,7 @@ export default function HabitManager({ user }) {
 
                                     {/* Category */}
                                     <div>
-                                        <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '8px' }}>
+                                        <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '8px' }}>
                                             Category
                                         </label>
                                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -265,7 +265,7 @@ export default function HabitManager({ user }) {
                                                         fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                                                         border: `1px solid ${category === c.key ? 'var(--accent)' : 'var(--border)'}`,
                                                         background: category === c.key ? 'rgba(255,107,53,0.1)' : 'var(--bg-elevated)',
-                                                        color: category === c.key ? 'var(--accent)' : 'var(--text-3)',
+                                                        color: category === c.key ? 'var(--accent)' : 'var(--text-1)',
                                                         transition: 'all 0.15s',
                                                         display: 'flex', alignItems: 'center', gap: '4px',
                                                     }}
@@ -278,7 +278,7 @@ export default function HabitManager({ user }) {
 
                                     {/* Frequency chips */}
                                     <div>
-                                        <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '8px' }}>
+                                        <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '8px' }}>
                                             Frequency
                                         </label>
                                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -292,7 +292,7 @@ export default function HabitManager({ user }) {
                                                         fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                                                         border: `1px solid ${frequency === f.key ? 'var(--accent)' : 'var(--border)'}`,
                                                         background: frequency === f.key ? 'rgba(255,107,53,0.1)' : 'var(--bg-elevated)',
-                                                        color: frequency === f.key ? 'var(--accent)' : 'var(--text-3)',
+                                                        color: frequency === f.key ? 'var(--accent)' : 'var(--text-1)',
                                                         transition: 'all 0.15s',
                                                     }}
                                                 >
@@ -335,7 +335,7 @@ export default function HabitManager({ user }) {
 
                                 {/* RIGHT: compact emoji picker */}
                                 <div>
-                                    <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '8px' }}>
+                                    <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-1)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '8px' }}>
                                         Icon
                                     </label>
                                     {/* Selected preview / hover label */}

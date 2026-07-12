@@ -210,14 +210,14 @@ export default function CommandCenter({ user }) {
                 <button onClick={addPriority} style={{ background: 'var(--color-accent)', border: 'none', borderRadius: '10px', padding: '8px 12px', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Add</button>
               </div>
             ) : (
-              <button onClick={() => setAddingPriority(true)} style={{ background: 'none', border: '1.5px dashed var(--color-border)', borderRadius: '10px', padding: '8px', fontSize: '11px', color: 'var(--color-text-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontFamily: 'inherit', fontWeight: 700 }}>
-                <Plus size={11} /> Add priority
+              <button onClick={() => setAddingPriority(true)} style={{ background: 'none', border: '1.5px dashed var(--color-border)', borderRadius: '10px', padding: '8px', fontSize: '11px', color: 'var(--color-text-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontFamily: 'inherit', fontWeight: 700 }}>
+                <Plus size={11} /> Add priorities
               </button>
             )
           )}
 
           {priorities.length === 0 && !addingPriority && (
-            <p style={{ fontSize: '11px', color: 'var(--color-text-3)', fontStyle: 'italic', margin: '4px 0 0', lineHeight: 1.5 }}>
+            <p style={{ margin: '0 0 10px', fontSize: 12, lineHeight: 1.45, color: 'var(--color-text-1)' }}>
               Set up to 3 things that must happen today.
             </p>
           )}
@@ -227,8 +227,8 @@ export default function CommandCenter({ user }) {
       {/* ── Section 2: Streak Monitor ── */}
       <Section icon="🔥" label="Streak Monitor" right={<Link to="/habits" style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--color-text-3)', textDecoration: 'none', fontSize: '11px' }}>All <ChevronRight size={11} /></Link>}>
         {topHabits.length === 0 ? (
-          <p style={{ fontSize: '11px', color: 'var(--color-text-3)', fontStyle: 'italic' }}>
-            No habits yet. <Link to="/habits" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>Add one →</Link>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-1)', margin: 0, lineHeight: 1.5 }}>
+            No habits yet. <Link to="/habits" style={{ color: 'var(--color-accent)', textDecoration: 'underline', fontWeight: 700 }}>Add one</Link>
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

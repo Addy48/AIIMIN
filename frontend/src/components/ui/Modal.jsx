@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
-const Modal = ({ isOpen, onClose, title, children, maxWidth = '500px', hideCloseButton = false }) => {
+const Modal = ({ isOpen, onClose, title, children, footer, maxWidth = '500px', hideCloseButton = false }) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -91,13 +91,17 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = '500px', hideClose
                 </h2>
                 {!hideCloseButton && (
                   <button 
+                    type="button"
                     onClick={onClose}
+                    aria-label="Close"
                     style={{
                       background: 'var(--color-elevated, #f3f4f6)',
                       border: 'none',
                       borderRadius: '50%',
-                      width: '32px',
-                      height: '32px',
+                      width: '44px',
+                      height: '44px',
+                      minWidth: '44px',
+                      minHeight: '44px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -123,9 +127,19 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = '500px', hideClose
             )}
 
             {/* Body */}
-            <div style={{ padding: '32px', overflowY: 'auto', flex: 1 }}>
+            <div style={{ padding: '32px', overflowY: 'auto', flex: 1, minHeight: 0 }}>
               {children}
             </div>
+            {footer && (
+              <div style={{
+                padding: '16px 32px 24px',
+                borderTop: '1px solid var(--color-border, #e5e7eb)',
+                flexShrink: 0,
+                background: 'var(--color-surface, #ffffff)',
+              }}>
+                {footer}
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}

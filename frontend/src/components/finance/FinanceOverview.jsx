@@ -14,6 +14,21 @@ const FinanceOverview = ({
   savingsRate, fiYears, totalBalance, totalReturns,
   financeChecks, velocityData
 }) => {
+  const fiTrendLabel = fiYears == null
+    ? 'Need savings data'
+    : fiYears === 0
+      ? 'FI achieved'
+      : `${fiYears} yr to FI`;
+  const fiTargetYear = fiYears == null || fiYears < 0 ? null : new Date().getFullYear() + Math.max(0, fiYears);
+  const fiHeadline = fiYears == null ? '—' : fiYears === 0 ? 'Now' : `${fiYears} years`;
+  const capitalSurplus = monthlyIncome - monthlyExpenses;
+  const surplusLabel = `${capitalSurplus >= 0 ? '+' : '−'}${formatCurrency(Math.abs(capitalSurplus))}`;
+  const isEmptyVault = !totalNetWorth && !monthlyIncome && !monthlyExpenses;
+  const sanitizeAiText = (s) => {
+    if (!s || typeof s !== 'string') return s;
+    return s.replace(/\s*AI-\s*$/i, '').replace(/[\s-]+$/g, '').trim();
+  };
+
   return (
     <motion.div 
       key="overview"
@@ -21,6 +36,17 @@ const FinanceOverview = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
     >
+      {isEmptyVault && (
+        <div style={{
+          marginBottom: '20px', padding: '14px 18px', borderRadius: '14px',
+          background: 'color-mix(in srgb, var(--color-accent) 10%, var(--color-surface))',
+          border: '1px solid color-mix(in srgb, var(--color-accent) 28%, var(--color-border))',
+          color: 'var(--color-text-1)', fontSize: '13px', lineHeight: 1.5, fontWeight: 600,
+        }}>
+          No money data yet. Add an account, then record income or expenses to unlock projections and AI insights.
+        </div>
+      )}
+
       {/* Hero Banner */}
       <div style={{
           background: 'var(--color-card-dark-green)',
@@ -36,9 +62,9 @@ const FinanceOverview = ({
           boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
       }}>
           <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.25em', opacity: 0.6, marginBottom: '20px', fontWeight: 700 }}>Consolidated Net Worth</div>
-              <div style={{ fontSize: '84px', fontWeight: 500, fontFamily: 'var(--font-serif)', lineHeight: 0.8, letterSpacing: '-0.04em' }}>
-                  {formatCurrency(totalNetWorth).replace('₹', '₹ ')}
+              <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.25em', opacity: 0.6, marginBottom: '20px', fontWeight: 700 }}>Consolidated Net Worth (INR)</div>
+              <div style={{ fontSize: 'clamp(42px, 8vw, 72px)', fontWeight: 500, fontFamily: 'var(--font-serif)', lineHeight: 0.9, letterSpacing: '-0.04em' }} aria-label={`Net worth ${formatCurrency(totalNetWorth)}`}>
+                  {formatCurrency(totalNetWorth)}
               </div>
 
               <div style={{ fontSize: '14px', marginTop: '24px', display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -103,16 +129,16 @@ const FinanceOverview = ({
                 </div>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: aiSummary?.sentiment === 'positive' ? '#10B981' : aiSummary?.sentiment === 'warning' ? '#F59E0B' : 'var(--color-text-3)', background: aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.12)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.12)' : 'var(--bg-elevated)', border: '1px solid var(--color-border)', padding: '4px 10px', borderRadius: '99px' }}>
-                  {aiSummary?.sentiment === 'positive' ? '✦ AI Insight' : aiSummary?.sentiment === 'warning' ? '⚠ AI Alert' : '◆ AI Summary'}
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: aiSummary?.sentiment === 'positive' ? '#10B981' : aiSummary?.sentiment === 'warning' ? '#F59E0B' : 'var(--color-text-2)', background: aiSummary?.sentiment === 'positive' ? 'rgba(16,185,129,0.12)' : aiSummary?.sentiment === 'warning' ? 'rgba(245,158,11,0.12)' : 'var(--color-elevated)', border: '1px solid var(--color-border)', padding: '4px 10px', borderRadius: '99px' }}>
+                  {aiSummary?.sentiment === 'positive' ? 'AI Insight' : aiSummary?.sentiment === 'warning' ? 'AI Alert' : 'AI Summary'}
                 </div>
-                <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontFamily: 'var(--font-mono)' }}>30-day analysis · just now</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontFamily: 'var(--font-mono)' }}>30-day analysis</div>
               </div>
-              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '10px', fontFamily: 'var(--font-serif)', lineHeight: 1.4 }}>
-                {aiSummary?.headline}
+              <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '10px', fontFamily: 'var(--font-serif)', lineHeight: 1.4, overflowWrap: 'anywhere' }}>
+                {sanitizeAiText(aiSummary?.headline)}
               </div>
-              <p style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px', lineHeight: 1.65 }}>
-                {aiSummary?.summary}
+              <p style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px', lineHeight: 1.65, overflowWrap: 'anywhere', whiteSpace: 'normal' }}>
+                {sanitizeAiText(aiSummary?.summary)}
               </p>
               {aiSummary?.recommendations?.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -130,14 +156,14 @@ const FinanceOverview = ({
 
       {/* 6-Stat Hero Strip - BREAKTHROUGH UPGRADE */}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px', marginBottom: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px', marginBottom: '32px' }}>
         {[
-          { label: 'Freedom Velocity', val: `${savingsRate}%`, trend: `FI in ${fiYears}y`, icon: <Zap size={14} />, color: '#10B981', detail: 'Efficiency' },
-          { label: 'Monthly Burn', val: formatCurrency(monthlyExpenses), trend: 'Fixed + Var', icon: <Flame size={14} />, color: 'var(--color-rust)', detail: 'Maintenance' },
-          { label: 'Capital Surplus', val: formatCurrency(monthlyIncome - monthlyExpenses), trend: 'Net Inflow', icon: <Activity size={14} />, color: '#3B82F6', detail: 'Momentum' },
-          { label: 'Liquid Runway', val: `${Math.round(totalBalance / (monthlyExpenses || 1))} mo`, trend: 'Emergency', icon: <Timer size={14} />, color: '#F59E0B', detail: 'Survival' },
-          { label: 'Wealth Delta', val: formatCurrency(totalReturns), trend: 'Portfolio Gain', icon: <TrendingUp size={14} />, color: '#8B5CF6', detail: 'Alpha' },
-          { label: 'Yield Pct', val: `${returnPct}%`, trend: 'ROI (Total)', icon: <PieChart size={14} />, color: '#EC4899', detail: 'Allocation' }
+          { label: 'Freedom Velocity', val: `${savingsRate}%`, trend: fiTrendLabel, icon: <Zap size={14} />, color: '#10B981', detail: 'Efficiency' },
+          { label: 'Monthly Burn', val: formatCurrency(monthlyExpenses), trend: 'Fixed + variable', icon: <Flame size={14} />, color: 'var(--color-rust)', detail: 'Maintenance' },
+          { label: 'Capital Surplus', val: surplusLabel, trend: 'Net inflow', icon: <Activity size={14} />, color: '#3B82F6', detail: 'Momentum' },
+          { label: 'Liquid Runway', val: monthlyExpenses > 0 ? `${Math.round(totalBalance / monthlyExpenses)} mo` : '—', trend: 'Emergency', icon: <Timer size={14} />, color: '#F59E0B', detail: 'Survival' },
+          { label: 'Wealth Delta', val: formatCurrency(totalReturns), trend: 'Portfolio gain', icon: <TrendingUp size={14} />, color: '#8B5CF6', detail: 'Alpha' },
+          { label: 'Yield Pct', val: `${returnPct}%`, trend: 'ROI (total)', icon: <PieChart size={14} />, color: '#EC4899', detail: 'Allocation' }
         ].map((stat, i) => (
           <motion.div 
             key={i} 
@@ -146,25 +172,25 @@ const FinanceOverview = ({
             transition={{ delay: i * 0.05 }}
             className="nordic-card" 
             style={{ 
-              padding: '24px', 
+              padding: '20px', 
               position: 'relative', 
               overflow: 'hidden',
-              background: 'var(--bg-elevated)',
+              background: 'var(--color-elevated)',
               border: '1px solid var(--color-border)',
               backdropFilter: 'blur(10px)',
               borderRadius: '20px'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
               <div style={{ color: stat.color, background: `${stat.color}15`, padding: '6px', borderRadius: '8px', display: 'flex' }}>{stat.icon}</div>
-              <div style={{ fontSize: '9px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.15em' }}>{stat.label}</div>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{stat.label}</div>
             </div>
-            <div style={{ fontSize: '24px', fontWeight: 800, fontFamily: 'var(--font-mono)', marginBottom: '4px', letterSpacing: '-0.02em', color: 'var(--text-1)' }}>
+            <div style={{ fontSize: '22px', fontWeight: 800, fontFamily: 'var(--font-mono)', marginBottom: '4px', letterSpacing: '-0.02em', color: 'var(--color-text-1)' }}>
               {stat.val}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-3)', fontWeight: 600 }}>{stat.trend}</div>
-              <div style={{ fontSize: '8px', color: stat.color, fontWeight: 800, textTransform: 'uppercase' }}>{stat.detail}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-2)', fontWeight: 600 }}>{stat.trend}</div>
+              <div style={{ fontSize: '10px', color: stat.color, fontWeight: 800, textTransform: 'uppercase' }}>{stat.detail}</div>
             </div>
             {/* Progress Indicator */}
             <div style={{ height: '2px', background: 'rgba(255,255,255,0.05)', marginTop: '12px', borderRadius: '2px', overflow: 'hidden' }}>
@@ -194,7 +220,7 @@ const FinanceOverview = ({
             <div>
               <div style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em' }}>{check.label}</div>
               <div style={{ fontSize: '18px', color: 'var(--color-text-1)', fontWeight: 800, marginTop: '6px' }}>{check.value}</div>
-              {!check.ok && <div style={{ fontSize: '11px', color: 'var(--color-rust)', marginTop: '6px', lineHeight: 1.4 }}>{check.fix}</div>}
+              {!check.ok && <div style={{ fontSize: '11px', color: 'var(--color-rust)', marginTop: '6px', lineHeight: 1.4, overflowWrap: 'anywhere' }}>{check.fix}</div>}
             </div>
             <div style={{
               width: '34px',
@@ -233,9 +259,9 @@ const FinanceOverview = ({
             </div>
           </div>
           
-          <div style={{ height: '320px' }}>
+          <div style={{ height: '320px', paddingBottom: '8px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={velocityData}>
+              <AreaChart data={velocityData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
                 <defs>
                   <linearGradient id="velocityGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.2}/>
@@ -243,10 +269,10 @@ const FinanceOverview = ({
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="name" stroke="var(--text-3)" fontSize={11} tickLine={false} axisLine={false} />
+                <XAxis dataKey="name" stroke="var(--color-text-2)" fontSize={12} tickLine={false} axisLine={false} dy={6} />
                 <YAxis hide />
                 <Tooltip 
-                  contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px' }}
+                  contentStyle={{ background: 'var(--color-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px' }}
                   formatter={(val) => [formatCurrency(val), 'Projected NW']}
                 />
                 <Area 
@@ -277,9 +303,13 @@ const FinanceOverview = ({
         }}>
           <div style={{ position: 'relative', zIndex: 2 }}>
             <div style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.7, marginBottom: '24px' }}>Freedom Projection</div>
-            <h2 style={{ fontSize: '42px', fontWeight: 700, margin: '0 0 16px 0', fontFamily: 'var(--font-serif)' }}>{fiYears} Years</h2>
-            <p style={{ fontSize: '14px', lineHeight: 1.6, opacity: 0.8, maxWidth: '240px' }}>
-              At your current velocity, you will achieve total financial freedom by <b>20{(new Date().getFullYear() + fiYears).toString().substring(2)}</b>.
+            <h2 style={{ fontSize: '42px', fontWeight: 700, margin: '0 0 16px 0', fontFamily: 'var(--font-serif)' }}>{fiHeadline}</h2>
+            <p style={{ fontSize: '14px', lineHeight: 1.6, opacity: 0.8, maxWidth: '280px' }}>
+              {fiYears == null
+                ? 'Log income and expenses to project your path to financial freedom.'
+                : fiYears === 0
+                  ? 'Your current net worth meets the 25× annual expense target.'
+                  : <>At your current velocity, you will achieve total financial freedom by <b>{fiTargetYear}</b>.</>}
             </p>
           </div>
 

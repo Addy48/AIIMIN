@@ -58,9 +58,9 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
     boxShadow: 'var(--glass-shadow-sm)',
   };
   const label = { 
-    fontSize: '10px', 
+    fontSize: '11px', 
     fontWeight: 700, 
-    color: text2, 
+    color: text1, 
     textTransform: 'uppercase', 
     letterSpacing: '0.08em', 
     fontFamily: 'var(--font-sans)', 
@@ -77,7 +77,7 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center' }}>
           {MINI_DAYS.map((w, i) => (
-            <div key={i} style={{ fontSize: '9px', fontWeight: 700, color: text2, padding: '4px 0', fontFamily: 'var(--font-sans)' }}>{w}</div>
+            <div key={i} style={{ fontSize: '10px', fontWeight: 700, color: text1, padding: '4px 0', fontFamily: 'var(--font-sans)' }}>{w}</div>
           ))}
           {Array.from({ length: firstDayOffset }, (_, i) => <div key={`p-${i}`} />)}
           {Array.from({ length: daysInMonth }, (_, i) => {
@@ -87,13 +87,17 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
             return (
               <div
                 key={day}
+                role="button"
+                tabIndex={0}
                 onClick={() => onDateChange(new Date(year, month, day).toISOString())}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDateChange(new Date(year, month, day).toISOString()); } }}
                 style={{
-                  padding: '4px 0', borderRadius: '6px', cursor: 'pointer', fontSize: '10px',
+                  minHeight: '36px', minWidth: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: '8px', cursor: 'pointer', fontSize: '12px',
                   fontFamily: 'var(--font-sans)', textAlign: 'center',
                   fontWeight: isToday || isSelected ? 700 : 500,
                   color: isSelected ? (isDark ? '#000' : '#fff') : isToday ? 'var(--color-accent)' : text1,
-                  background: isSelected ? 'var(--color-accent)' : 'transparent',
+                  background: isSelected ? 'var(--color-accent)' : isToday ? 'color-mix(in srgb, var(--color-accent) 18%, transparent)' : 'transparent',
                   transition: 'all 200ms var(--ease)',
                 }}
               >{day}</div>
@@ -121,7 +125,7 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
               display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: '8px',
               border: 'none', cursor: 'pointer', fontSize: '11px', fontFamily: 'var(--font-sans)',
               background: systemFilter === key ? (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)') : 'transparent',
-              color: systemFilter === key ? color : text2, fontWeight: systemFilter === key ? 600 : 500, width: '100%', textAlign: 'left',
+            color: systemFilter === key ? color : text1, fontWeight: systemFilter === key ? 600 : 500, width: '100%', textAlign: 'left',
               transition: 'all 200ms var(--ease)',
             }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -161,17 +165,17 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
       )}
 
       {/* Quick stats */}
-      <div style={panel}>
+      <div style={{ ...panel, paddingBottom: '18px' }}>
         <div style={label}>Month Status</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: text2, fontFamily: 'var(--font-sans)' }}>Activities</span>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>{(events || []).length}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: text2, fontFamily: 'var(--font-sans)' }}>Activities</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>{(events || []).length}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: text2, fontFamily: 'var(--font-sans)' }}>Remaining</span>
-            <span style={{ fontSize: '11px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>
-              {new Date(year, month + 1, 0).getDate() - now.getDate()}d
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '12px', color: text2, fontFamily: 'var(--font-sans)' }}>Days remaining</span>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)' }}>
+              {Math.max(0, new Date(year, month + 1, 0).getDate() - (isCurrentMonth ? now.getDate() : 0))}d
             </span>
           </div>
         </div>

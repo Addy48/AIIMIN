@@ -81,16 +81,18 @@ const StepIndicator = ({ currentStep, totalSteps = 4 }) => (
 ───────────────────────────────────────────── */
 const PinDots = ({ length, value = '', shake }) => (
   <motion.div
+    role="group"
+    aria-label={`PIN entry, ${length} digits`}
     animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : { x: 0 }}
     transition={{ duration: 0.45 }}
     style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
   >
     {Array.from({ length }, (_, i) => {
-      const char = value[i];
-      const filled = !!char;
+      const filled = !!value[i];
       return (
         <motion.div
           key={i}
+          aria-hidden="true"
           animate={{
             scale: filled ? 1.1 : 1,
             borderColor: filled ? (shake ? '#ef4444' : 'var(--color-accent)') : 'var(--color-border)',
@@ -103,9 +105,11 @@ const PinDots = ({ length, value = '', shake }) => (
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '24px', fontWeight: 600,
             fontFamily: 'var(--font-sans)',
+            pointerEvents: 'none',
           }}
         >
-          {char || ''}
+          {filled ? '•' : ''}
+          {/* slot {i+1} */}
         </motion.div>
       );
     })}
@@ -122,26 +126,32 @@ const PinNumpad = ({ onEntry, onDelete }) => {
       {keys.map((key, idx) => {
         if (key === '') return <div key={idx} />;
         const isBack = key === '⌫';
+        const isZero = key === '0';
         return (
           <button
             key={idx}
             type="button"
             className="pin-numpad-btn"
+            aria-label={isBack ? 'Delete last digit' : `Digit ${key}`}
+            title={isBack ? 'Delete' : undefined}
             onClick={() => isBack ? onDelete() : onEntry(key)}
             style={{
               height: '64px', borderRadius: '14px',
               border: '1.5px solid var(--color-border)',
               background: 'var(--color-surface)',
-              fontSize: isBack ? '20px' : '22px',
+              fontSize: isBack ? '14px' : '22px',
               fontWeight: 600,
-              color: isBack ? 'var(--color-text-2)' : 'var(--color-text-1)',
+              color: 'var(--color-text-1)',
+              minWidth: isBack ? '44px' : undefined,
+              minHeight: '44px',
               cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
               fontFamily: 'var(--font-sans)',
               transition: 'background 0.15s, transform 0.1s',
+              gridColumn: isZero ? '2 / 3' : undefined,
             }}
           >
-            {key}
+            {isBack ? '⌫ Del' : key}
           </button>
         );
       })}
@@ -169,8 +179,8 @@ const inputBase = {
 const labelBase = {
   display: 'block',
   fontSize: '12px',
-  fontWeight: 600,
-  color: 'var(--color-text-3)',
+  fontWeight: 700,
+  color: 'var(--color-text-1)',
   marginBottom: '8px',
   fontFamily: 'var(--font-sans)',
   textTransform: 'uppercase',
@@ -246,7 +256,7 @@ const GoogleBtn = ({ onClick }) => (
 const Divider = () => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
     <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
-    <span style={{ fontSize: '12px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)', fontWeight: 500 }}>or</span>
+    <span style={{ fontSize: '12px', color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>or</span>
     <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
   </div>
 );
@@ -311,14 +321,18 @@ const BackBtn = ({ onClick }) => (
     onClick={onClick}
     style={{
       display: 'inline-flex', alignItems: 'center', gap: '6px',
+      alignSelf: 'flex-start',
       background: 'var(--color-elevated)', border: '1px solid var(--color-border)',
-      borderRadius: '99px', padding: '6px 14px',
-      fontSize: '12px', fontWeight: 600, color: 'var(--color-text-2)',
+      borderRadius: '99px', padding: '8px 14px',
+      fontSize: '13px', fontWeight: 700, color: 'var(--color-text-1)',
+      lineHeight: 1,
+      minHeight: '44px',
       cursor: 'pointer', fontFamily: 'var(--font-sans)',
       marginBottom: '24px', transition: 'background 0.15s',
     }}
+    aria-label="Back"
   >
-    <ArrowLeft size={13} /> Back
+    <ArrowLeft size={14} /> Back
   </button>
 );
 
@@ -735,7 +749,7 @@ const Login = () => {
                       step === 3 ? 'Set a PIN' : 'Confirm your PIN'
                     )}
                   </h1>
-                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
+                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', lineHeight: 1.5, opacity: 0.85 }}>
                     {mode === 'login' ? (
                       step === 1 ? 'Access your intelligent workspace' : `Verifying identity for ${identifier}`
                     ) : mode === 'forgot' ? (
@@ -778,7 +792,7 @@ const Login = () => {
                       variants={stepVariants} initial="enter" animate="center" exit="exit"
                     >
                       <BackBtn onClick={handleBack} />
-                      <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <Field
                           label="OS-ID / Email"
                           type="text"
@@ -805,7 +819,7 @@ const Login = () => {
                     variants={direction > 0 ? stepVariants : stepVariantsBack}
                     initial="enter" animate="center" exit="exit"
                   >
-                    <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                       <Field
                         label="OS-ID / Email"
                         type="text"
@@ -832,9 +846,9 @@ const Login = () => {
                         try { await signInWithGoogle(); } catch (_) { /* surfaced via toast */ }
                       }} />
                       <div style={{ textAlign: 'center', marginTop: '4px' }}>
-                        <span style={{ fontSize: '14px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
+                        <span style={{ fontSize: '14px', color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)' }}>
                           Don't have an account?{' '}
-                          <button type="button" onClick={toggleMode} style={{ background: 'none', border: 'none', color: 'var(--color-accent)', fontWeight: 600, cursor: 'pointer', fontSize: '14px', fontFamily: 'var(--font-sans)' }}>
+                          <button type="button" onClick={toggleMode} style={{ background: 'none', border: 'none', color: 'var(--color-accent)', fontWeight: 700, cursor: 'pointer', fontSize: '14px', fontFamily: 'var(--font-sans)', textDecoration: 'underline' }}>
                             Sign up
                           </button>
                         </span>
@@ -873,7 +887,7 @@ const Login = () => {
                         <button
                           type="button"
                           onClick={() => { setMode('forgot'); setStep(1); setError(null); }}
-                          style={{ background: 'none', border: 'none', color: 'var(--color-text-3)', fontSize: '13px', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'var(--font-sans)' }}
+                          style={{ background: 'none', border: 'none', color: 'var(--color-text-1)', fontSize: '13px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'var(--font-sans)' }}
                         >
                           Forgot PIN?
                         </button>
@@ -890,7 +904,7 @@ const Login = () => {
                     variants={direction > 0 ? stepVariants : stepVariantsBack}
                     initial="enter" animate="center" exit="exit"
                   >
-                    <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                       <Field
                         label="Full Name"
                         type="text"
@@ -1036,7 +1050,7 @@ const Login = () => {
           position: relative;
           display: flex;
           flex-direction: column;
-          padding: 48px 48px 48px 56px;
+          padding: 48px 48px 64px 56px;
           box-sizing: border-box;
           overflow: hidden;
           background: color-mix(in srgb, var(--color-accent) 90%, #000 10%);
@@ -1149,6 +1163,11 @@ const Login = () => {
         .login-form-wrap {
           width: 100%;
           max-width: 420px;
+        }
+
+        .login-form-wrap input::placeholder {
+          color: var(--color-text-1);
+          opacity: 0.55;
         }
 
         .login-wordmark-brand {

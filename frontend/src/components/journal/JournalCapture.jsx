@@ -91,7 +91,7 @@ export default function JournalCapture({
 
   const displayHint = useMemo(() => {
     if (todaySaved) return 'Logged today — add more or tap mood to update.';
-    return 'One word counts. Type, speak, or tap mood only.';
+    return 'Short entries count. Type, speak, or pick a mood.';
   }, [todaySaved]);
 
   return (
