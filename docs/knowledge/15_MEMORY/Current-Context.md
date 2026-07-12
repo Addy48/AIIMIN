@@ -6,21 +6,33 @@
 
 ## Today
 
-- Deep re-audit QA tracker (no overclaim)
-- Split: **176 fixed / 80 partial / 28 wontfix**
-- **Prod: 0** — uncommitted, `main` not ahead of origin
+- QA fixes **committed + pushed**: `e3212bc9` on `main` / `origin/main`
+- Tracker: 176 fixed / 80 partial / 28 wontfix
+- **EC2 deploy blocked from this agent** (SSH port 22 + API curl proxy 403). User must deploy or wait for GitHub Action.
 
-## Truth
+## Ship checklist
 
-- Functional fixes exist in local working tree (PIN, Journal API, pulse route file, FI, Event footer, Focus scroll, Goals Showing)
-- Contrast/tap = token changes; **not** Selfloop/WCAG re-proven
-- Earlier “197 fixed” was still soft — downgraded spacing/taste to partial
+| Step | Status |
+|------|--------|
+| Commit | done `e3212bc9` |
+| Push `main` | done |
+| Vercel frontend | auto from `main` — confirm READY in dashboard |
+| EC2 API | **NOT verified from agent** — run SSH deploy or check Action |
+
+## Deploy if Action fails
+
+```bash
+ssh -i ~/Desktop/aiimin.pem ubuntu@13.207.146.15 \
+  'bash ~/AIIMIN/deploy/github-ec2-deploy.sh'
+curl -sS https://api.aiimin.in/api/health
+# expect SHA e3212bc9; POST /api/user/pulse-check → 401 not 404
+```
 
 ## Next
 
-1. Commit+push+EC2 when user asks
-2. Selfloop re-run
-3. Only then trust contrast `fixed`
+1. Confirm EC2 health SHA = `e3212bc9`
+2. Confirm Vercel READY
+3. Re-run Selfloop
 
 ## Links
 
