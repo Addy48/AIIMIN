@@ -131,7 +131,7 @@ export default function SmoothDrawer({
                 <motion.div variants={itemVariants}>
                   <div
                     className="rounded-xl bg-gradient-to-br from-zinc-100 to-zinc-200 p-1.5 shadow-inner dark:from-zinc-800 dark:to-zinc-900">
-                    <Image alt="Logo" height={32} src="/logo.svg" width={32} />
+                    <Image alt="AIIMIN" height={32} src="/AIIMIN_logo.svg" width={32} />
                   </div>
                 </motion.div>
                 <motion.span variants={itemVariants}>

@@ -2,25 +2,11 @@ import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useThemeContext } from '../../context/ThemeContext';
 import { isLightTheme } from '../../constants/themes';
-import { ArchBracketMark, EDITOR_PICK } from './archBracketMark';
+import { ArchBracketMark, pickMarkColors } from './archBracketMark';
 import Wordmark from './Wordmark';
 
 const NAV_ICON_SIZE = 34;
 const NAV_WORDMARK_SIZE = 26;
-
-/** Soft paper chip on light nav - no sticker effect */
-const NAV_CHIP_LIGHT = {
-  chipFill: '#FAFAF8',
-  chipStroke: '#D1D5DB',
-  arch: '#D1D5DB',
-  outer: '#14171A',
-  inner: '#6B7280',
-  dot: '#E85A24',
-  archOpacity: 0.9,
-  innerOpacity: 0.85,
-};
-
-const NAV_CHIP_DARK = { ...EDITOR_PICK };
 
 /**
  * Navbar brand lockup — unified click to /overview
@@ -31,9 +17,10 @@ export default function BrandLockup({
   wordmarkSize = NAV_WORDMARK_SIZE,
   style = {},
   staticPreview = false,
+  isLight: isLightOverride,
 }) {
   const { theme } = useThemeContext();
-  const isLight = useMemo(() => isLightTheme(theme), [theme]);
+  const isLight = isLightOverride ?? isLightTheme(theme);
 
   const shellClass = [
     'brand-lockup',
@@ -41,13 +28,15 @@ export default function BrandLockup({
     staticPreview ? 'brand-lockup--static' : '',
   ].filter(Boolean).join(' ');
 
+  const markColors = useMemo(() => pickMarkColors(isLight, { density: 'nav' }), [isLight]);
+
   const content = (
     <>
       <ArchBracketMark
         size={iconSize}
         withChip
         density="nav"
-        colors={isLight ? NAV_CHIP_LIGHT : NAV_CHIP_DARK}
+        colors={markColors}
         className="brand-lockup__mark"
       />
       <Wordmark
@@ -59,11 +48,11 @@ export default function BrandLockup({
   );
 
   return (
-    <div className={shellClass} style={style} data-theme={theme}>
+    <div className={shellClass} style={{ display: 'flex', alignItems: 'center', ...style }} data-theme={theme}>
       {staticPreview ? (
-        <span className="brand-lockup__unified">{content}</span>
+        <span className="brand-lockup__unified" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>{content}</span>
       ) : (
-        <Link to={to} className="brand-lockup__unified" aria-label="AIIMIN home">
+        <Link to={to} className="brand-lockup__unified" aria-label="AIIMIN home" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
           {content}
         </Link>
       )}

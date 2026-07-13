@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from './notifications/NotificationBell';
-import Logo from './Logo';
+import BrandLockup from './brand/BrandLockup';
 
 const SystemStatusIndicator = () => {
   const { isSignedIn } = useAuth();
@@ -114,23 +114,7 @@ const Navbar = ({ user }) => {
 
         {/* LEFT: Brand */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link to="/identity" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <Logo size={36} />
-            </Link>
-            <Link to="/overview" aria-label="AIIMIN today" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <span style={{
-                fontSize: '28px',
-                fontWeight: 600,
-                letterSpacing: '-0.065em',
-                color: 'var(--color-text-1)',
-                fontFamily: 'var(--font-serif)',
-                lineHeight: 1,
-              }}>
-                AIIMIN
-              </span>
-            </Link>
-          </div>
+          <BrandLockup to="/overview" />
         </div>
 
         {/* CENTER: Nav links (Desktop) */}
