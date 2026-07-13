@@ -45,10 +45,38 @@ export const ARCH_BRACKET_STROKES = {
   arch: 24,
   outer: 24,
   inner: 18,
+  emberRing: true,
 };
 
-/** Navbar always uses light Editor Pick */
-export const NAV_CHIP = { ...EDITOR_PICK };
+/** Dark theme — app / waitlist / email (Route Y) */
+export const DARK_PICK = {
+  chipFill: '#14171A',
+  chipStroke: '#2A2A2E',
+  arch: '#6B7280',
+  outer: '#EDE4D3',
+  inner: '#B9AF9E',
+  dot: '#FF6B35',
+  archOpacity: 0.65,
+  innerOpacity: 0.75,
+};
+
+/** Navbar light — soft paper chip */
+export const NAV_CHIP_LIGHT = {
+  chipFill: '#FAFAF8',
+  chipStroke: '#D1D5DB',
+  arch: '#D1D5DB',
+  outer: '#14171A',
+  inner: '#6B7280',
+  dot: '#E85A24',
+  archOpacity: 0.9,
+  innerOpacity: 0.85,
+};
+
+/** Pick mark palette for light/dark surfaces */
+export function pickMarkColors(isLight, { density = 'default' } = {}) {
+  if (!isLight) return DARK_PICK;
+  return density === 'nav' ? NAV_CHIP_LIGHT : EDITOR_PICK;
+}
 
 const NAV_VIEWBOX = '48 48 416 416';
 const NAV_STROKE_SCALE = 1.18;

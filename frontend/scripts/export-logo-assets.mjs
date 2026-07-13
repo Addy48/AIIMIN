@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Export AIIMIN brand assets.
- * Light Editor Pick → website favicons / PWA.
- * Dark OAuth mark → google-oauth-logo.png only.
+ * Light Editor Pick → favicon-light, logo-symbol, AIIMIN_logo.svg
+ * Dark Route Y → favicon-dark, AIIMIN_logo_dark.svg
+ * OAuth mark → google-oauth-logo only
  */
 import { writeFileSync, mkdirSync } from 'fs';
 import { dirname, join } from 'path';
@@ -11,6 +12,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const publicDir = join(root, 'public');
+const assetsDir = join(root, 'src', 'assets');
 const buildDir = join(root, 'build');
 
 const LIGHT = {
@@ -22,6 +24,17 @@ const LIGHT = {
   dot: '#FF6B35',
   archOpacity: 0.9,
   innerOpacity: 0.85,
+};
+
+const DARK = {
+  chipFill: '#14171A',
+  chipStroke: '#2A2A2E',
+  arch: '#6B7280',
+  outer: '#EDE4D3',
+  inner: '#B9AF9E',
+  dot: '#FF6B35',
+  archOpacity: 0.65,
+  innerOpacity: 0.75,
 };
 
 const OAUTH = {
@@ -41,8 +54,8 @@ const PATHS = {
   inner: 'M192 368 L256 272 L320 368',
 };
 
-function buildLightSvg() {
-  const c = LIGHT;
+function buildMarkSvg(colors) {
+  const c = colors;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="512" height="512" rx="112" fill="${c.chipFill}" stroke="${c.chipStroke}" stroke-width="4"/>
@@ -69,28 +82,33 @@ function buildOauthSvg() {
 </svg>`;
 }
 
-const lightSvg = buildLightSvg();
+const lightSvg = buildMarkSvg(LIGHT);
+const darkSvg = buildMarkSvg(DARK);
 const oauthSvg = buildOauthSvg();
 
-for (const target of [
-  join(publicDir, 'logo-symbol.svg'),
-  join(publicDir, 'favicon-light.svg'),
-  join(publicDir, 'favicon-dark.svg'),
-  join(publicDir, 'AIIMIN_logo.svg'),
-]) {
-  writeFileSync(target, lightSvg);
+mkdirSync(assetsDir, { recursive: true });
+
+const writes = [
+  [join(publicDir, 'logo-symbol.svg'), lightSvg],
+  [join(publicDir, 'favicon-light.svg'), lightSvg],
+  [join(publicDir, 'favicon-dark.svg'), darkSvg],
+  [join(publicDir, 'AIIMIN_logo.svg'), lightSvg],
+  [join(publicDir, 'AIIMIN_logo_dark.svg'), darkSvg],
+  [join(assetsDir, 'logo-symbol.svg'), lightSvg],
+  [join(publicDir, 'google-oauth-logo.svg'), oauthSvg],
+];
+
+for (const [target, svg] of writes) {
+  writeFileSync(target, svg);
   console.log('wrote', target);
 }
-
-writeFileSync(join(publicDir, 'google-oauth-logo.svg'), oauthSvg);
-console.log('wrote', join(publicDir, 'google-oauth-logo.svg'));
 
 async function exportPngs() {
   let sharp;
   try {
     sharp = (await import('sharp')).default;
   } catch {
-    console.warn('sharp missing');
+    console.warn('sharp missing — SVG only');
     return;
   }
 

@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
+import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
 import { apiGet } from '../utils/api';
 
 const IS_WAITLIST_MODE = process.env.REACT_APP_WAITLIST_MODE === 'true';
@@ -645,6 +646,7 @@ const Login = () => {
 
         {/* Logo */}
         <div className="login-left-logo">
+          <ArchBracketMark size={40} withChip colors={DARK_PICK} />
           <span className="login-wordmark-white">AIIMIN</span>
         </div>
 
@@ -1026,6 +1028,10 @@ const Login = () => {
         .login-left-logo {
           position: relative;
           z-index: 2;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
         }
 
         .login-wordmark-white {

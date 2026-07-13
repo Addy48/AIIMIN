@@ -24,6 +24,7 @@ const BRAND = {
   accentSoft: '#E8F0EB',
   white: '#FFFFFF',
   logoUrl: 'https://aiimin.in/AIIMIN_logo.svg',
+  logoUrlDark: 'https://aiimin.in/AIIMIN_logo_dark.svg',
   siteUrl: 'https://www.aiimin.in',
 };
 

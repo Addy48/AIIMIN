@@ -4064,6 +4064,10 @@ html {
 }
 
 .waitlist-pending-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 24px;
 }
 

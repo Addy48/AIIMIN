@@ -29,6 +29,7 @@ import GuestTour from './components/onboarding/GuestTour';
 // Providers & utilities
 import { useAuth } from './hooks/useAuth';
 import { useAccessGate } from './hooks/useAccessGate';
+import { readAccessToken } from './utils/authSession';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AudioProvider } from './context/AudioContext';
@@ -128,9 +129,9 @@ function AppContent({ user, session }) {
         } />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/onboarding" element={
-          isWaitlistMode && !canAccessApp
+          isWaitlistMode && !canAccessApp && !accessLoading
             ? <Navigate to="/" replace />
-            : (session ? <Onboarding /> : <Navigate to="/login" replace />)
+            : (session || readAccessToken() ? <Onboarding /> : <Navigate to="/login" replace />)
         } />
         {!showWaitlistAtRoot && (
           <Route path="/" element={<Navigate to={canAccessApp && session ? '/overview' : '/login'} replace />} />
@@ -138,9 +139,9 @@ function AppContent({ user, session }) {
 
         {/* Authenticated shell */}
         <Route element={
-          isWaitlistMode && !canAccessApp
+          isWaitlistMode && !canAccessApp && !accessLoading
             ? <Navigate to="/" replace />
-            : (session
+            : (session || readAccessToken()
               ? <DashboardLayout user={user || { id: 'loading', full_name: 'Loading...', username: 'loading', isGuest: false }} />
               : <Navigate to="/login" replace />)
         }>
