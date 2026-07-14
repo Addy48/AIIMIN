@@ -6,20 +6,20 @@
 
 ## Today
 
-Honest ship gap closed.
+Trust fix + ship verified.
 
-- Report 500: `pomodoro_sessions` columns fixed in `analyticsData.js` (+ digest/review harden)
-- Tour + Insights→Reports merge on main (`c7e876b6`)
-- Empty retrigger `ba4e7dc1` for Vercel (build in flight)
-- EC2 health ok after API deploy
-- Co-authored-by Cursor still in **history** until force-rewrite OK’d/done; this chat strips trailers + untracks `.qwen`
+- Report 500: pomodoro columns — `analyticsData.js` (shipped)
+- Tour + Insights→Reports live on prod (bundle has Patterns / tour stops)
+- Vercel READY was `ba4e7dc1` (pre-rewrite SHA); tip now `476c7a75` after history scrub
+- GitHub: all `Co-authored-by: Cursor` trailers stripped (force-push main); `.qwen` untracked; remote `claude/*` branch deleted
+- EC2 health ok
 
 ## Next
 
-1. Confirm Vercel READY on `ba4e7dc1` / `c7e876b6` — hard-refresh `/reports` (tabs, no red error)
-2. Tour invite: Not now = permanent; retake Account → Personalization
-3. History rewrite: strip all `Co-authored-by: Cursor` + force-with-lease (solo main)
+1. Hard-refresh `/reports` — confirm report body (login) not just tabs
+2. Optional: untrack or rewrite `.agents/**` README text that still names Claude (skills, not product)
+3. Cursor UI may re-append Co-authored-by on next commit — strip before push
 
 ## Touch
 
-- `server/services/analyticsData.js`, Reports UI, ProductTour, `.gitignore`
+- tip `476c7a75` · reports+tour already in tree
