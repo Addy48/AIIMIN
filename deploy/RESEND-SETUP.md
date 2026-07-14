@@ -77,9 +77,9 @@ RESEND_FROM="AIIMIN <onboarding@resend.dev>" node scripts/test-email.mjs your@gm
 
 **Keep on AWS:** EC2 (API), Route53 (if used), billing alerts — only SES email goes away.
 
-## 6. Resend MCP (optional — for you in Cursor)
+## 6. Resend MCP (optional — local editor)
 
-Add to Cursor MCP settings for AI-assisted template work:
+Add to your local MCP settings for template work:
 
 ```json
 {

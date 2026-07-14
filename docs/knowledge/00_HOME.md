@@ -40,7 +40,7 @@ Deep: [[02_ARCHITECTURE/Overview]]
 
 ## Important rules
 
-Always-on Cursor rules (see `.cursor/rules/aiimin-always-index.mdc`):
+Always-on project rules (see `.cursor/rules/aiimin-always-index.mdc`, local):
 
 1. Vault = source of truth. Update vault before task done.
 2. Load order: Home → Current Context → feature/arch/DB/API → only needed source files.
@@ -49,7 +49,7 @@ Always-on Cursor rules (see `.cursor/rules/aiimin-always-index.mdc`):
 5. Mobile = data collection only. No analytics/tools on `/m`.
 6. No secrets in vault. No schema/auth changes without explicit user ask.
 7. Commit / push / PR only when user explicitly asks.
-8. Caveman chat; vault human docs = clear prose; AI packs in `15_MEMORY` = compressed.
+8. Caveman chat; vault human docs = clear prose; memory packs in `15_MEMORY` = compressed.
 9. Skills before acting. Sparring > blind agreement.
 10. Long/confused/topic-change → **SWITCH CHAT**; use [[15_MEMORY/Handoff-Latest]] pack.
 
