@@ -6,15 +6,18 @@
 
 ## Today
 
-- Pushed craft A–J + Notes FK fix to `main` for live QA (`f367cfca`)
-- Migrations 043/044 already applied on Supabase
+- Shipping Login Selfloop QA fixes (PIN UI/a11y + rate limit 30/15m + Retry-After)
+- Register: `docs/knowledge/11_BUGS/QA-Run-2026-07-14-Login.md`
 
 ## Next
 
-1. Wait Vercel READY + deploy-api.yml (or SSH deploy)
-2. Adi smoke: `/notes` create, Discipline urge, Reports ranges, nav pins
-3. Google reconnect for Drive notes if needed
+1. Confirm Vercel READY + EC2 health/SHA
+2. Selfloop re-run `/login`
+3. Regrade from new screenshots
 
 ## Touch
 
-- Shipped on main — see commit `f367cfca`
+- `frontend/src/pages/Login.jsx`
+- `frontend/src/context/AuthContext.jsx`
+- `server/middleware/rateLimiter.js`
+- `server/lib/auth.js`

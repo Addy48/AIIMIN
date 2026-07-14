@@ -16,8 +16,13 @@ function createLimiter({ windowMs, max, keyFn }) {
     }
     bucket.count += 1;
     if (bucket.count > max) {
+      const retryAfterSec = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
       console.warn(`[RATE LIMIT] ${key} exceeded ${max}/${windowMs}ms`);
-      return c.json({ error: 'Too many requests. Try again later.' }, 429);
+      c.header('Retry-After', String(retryAfterSec));
+      return c.json({
+        error: 'Too many requests. Try again later.',
+        retryAfterSec,
+      }, 429);
     }
     await next();
   };
@@ -41,10 +46,10 @@ export function isCredentialAuthPath(path = '') {
   );
 }
 
-/** Login/signup/reset — tighter per IP (credential endpoints only) */
+/** Login/signup/reset — per IP; allow QA retries without opening brute-force window */
 export const authCredentialLimiter = createLimiter({
   windowMs: 15 * 60_000,
-  max: 5,
+  max: 30,
   keyFn: (c) => `auth-cred:${ip(c)}`,
 });
 
@@ -63,7 +68,7 @@ export const generalLimiter = createLimiter({
 
 export const authLimiter = createLimiter({
   windowMs: 15 * 60_000,
-  max: 5,
+  max: 30,
   keyFn: (c) => `auth:${ip(c)}`,
 });
 

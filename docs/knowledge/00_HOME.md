@@ -14,6 +14,7 @@ Personal Life OS — daily metrics, money, calendar, focus, discipline, sports c
 - Go-live target: end Sep 2026; tester close 31 Jul
 - Code progress: high; launch blockers: GA4/Sentry, LC checklist, tester E2E
 - Selfloop QA 2026-07-12 remediated — see [[11_BUGS/QA-Run-2026-07-12]] (255 fixed / 29 wontfix); re-run before tester E2E
+- Selfloop Login QA 2026-07-14 (47) fixed locally — [[11_BUGS/QA-Run-2026-07-14-Login]]; ship + re-proof pending
 - Active craft program: [[12_SPRINTS/Craft-Master-Plan-AJ]] · status [[12_SPRINTS/Craft-Status-Report-2026-07-15]]
 
 ## Current sprint

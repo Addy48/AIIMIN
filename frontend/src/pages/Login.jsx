@@ -103,85 +103,103 @@ const StepIndicator = ({ currentStep, totalSteps = 4 }) => (
   </div>
 );
 
-/* ─────────────────────────────────────────────
-   PIN DOTS
-───────────────────────────────────────────── */
-const PinDots = ({ length, value = '', shake }) => (
-  <motion.div
-    role="group"
-    aria-label={`PIN entry, ${length} digits`}
-    animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : { x: 0 }}
-    transition={{ duration: 0.45 }}
-    style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}
-  >
-    {Array.from({ length }, (_, i) => {
-      const filled = !!value[i];
-      return (
-        <motion.div
-          key={i}
-          aria-hidden="true"
-          animate={{
-            scale: filled ? 1.1 : 1,
-            borderColor: filled ? (shake ? '#ef4444' : 'var(--color-accent)') : 'var(--color-border)',
-            backgroundColor: filled ? 'var(--color-surface)' : 'transparent',
-            color: shake ? '#ef4444' : 'var(--color-text-1)',
-          }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-          style={{ 
-            width: '42px', height: '52px', borderRadius: '12px', border: '2px solid',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '24px', fontWeight: 600,
-            fontFamily: 'var(--font-sans)',
-            pointerEvents: 'none',
-          }}
-        >
-          {filled ? '•' : ''}
-          {/* slot {i+1} */}
-        </motion.div>
-      );
-    })}
-  </motion.div>
-);
+/* Mask OS-ID / email for PIN step — privacy + friendlier copy */
+function maskIdentity(raw) {
+  const v = String(raw || '').trim();
+  if (!v) return 'your account';
+  if (isEmailIdentifier(v)) {
+    const [user, domain] = v.split('@');
+    if (!domain) return 'your account';
+    const u = user.length <= 2 ? `${user[0] || '*'}*` : `${user.slice(0, 2)}***`;
+    return `${u}@${domain}`;
+  }
+  if (v.length >= 6) return `${v.slice(0, 2)}****${v.slice(-2)}`;
+  if (v.length >= 3) return `${v.slice(0, 1)}****${v.slice(-1)}`;
+  return 'your account';
+}
 
 /* ─────────────────────────────────────────────
-   PIN NUMPAD
+   PIN DOTS — filled CSS circles (never text bullets),
+   active slot ring, equal gap, high-contrast empty
 ───────────────────────────────────────────── */
-const PinNumpad = ({ onEntry, onDelete }) => {
-  const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+const PinDots = ({ length, value = '', shake }) => {
+  const filledCount = value.length;
+  const activeIndex = Math.min(filledCount, length - 1);
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', width: '100%', maxWidth: '280px', margin: '0 auto' }}>
-      {keys.map((key, idx) => {
-        if (key === '') return <div key={idx} />;
-        const isBack = key === '⌫';
-        const isZero = key === '0';
+    <motion.div
+      role="group"
+      aria-label={`PIN entry, ${filledCount} of ${length} digits entered`}
+      aria-live="polite"
+      animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : { x: 0 }}
+      transition={{ duration: 0.45 }}
+      className="pin-dots"
+    >
+      {Array.from({ length }, (_, i) => {
+        const filled = i < filledCount;
+        const active = !filled && i === filledCount && filledCount < length;
+        const err = shake && filled;
         return (
-          <button
-            key={idx}
-            type="button"
-            className="pin-numpad-btn"
-            aria-label={isBack ? 'Delete last digit' : `Digit ${key}`}
-            title={isBack ? 'Delete' : undefined}
-            onClick={() => isBack ? onDelete() : onEntry(key)}
-            style={{
-              height: '64px', borderRadius: '14px',
-              border: '1.5px solid var(--color-border)',
-              background: 'var(--color-surface)',
-              fontSize: isBack ? '14px' : '22px',
-              fontWeight: 600,
-              color: 'var(--color-text-1)',
-              minWidth: isBack ? '44px' : undefined,
-              minHeight: '44px',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px',
-              fontFamily: 'var(--font-sans)',
-              transition: 'background 0.15s, transform 0.1s',
-              gridColumn: isZero ? '2 / 3' : undefined,
-            }}
+          <motion.div
+            key={i}
+            aria-hidden="true"
+            className={[
+              'pin-dot-slot',
+              filled ? 'is-filled' : '',
+              active ? 'is-active' : '',
+              err ? 'is-error' : '',
+            ].filter(Boolean).join(' ')}
+            animate={{ scale: filled ? 1.04 : active ? 1.02 : 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 22 }}
           >
-            {isBack ? '⌫ Del' : key}
-          </button>
+            {filled ? <span className="pin-dot-mask" /> : null}
+          </motion.div>
         );
       })}
+      {/* activeIndex kept for future caret; slot styles drive focus */}
+      <span className="sr-only">{filledCount} of {length}, next slot {activeIndex + 1}</span>
+    </motion.div>
+  );
+};
+
+/* ─────────────────────────────────────────────
+   PIN NUMPAD — full 3×4 grid; bottom: Clear | 0 | Del
+───────────────────────────────────────────── */
+const PinNumpad = ({ onEntry, onDelete, onClear }) => {
+  const keys = [
+    { k: '1', type: 'digit' },
+    { k: '2', type: 'digit' },
+    { k: '3', type: 'digit' },
+    { k: '4', type: 'digit' },
+    { k: '5', type: 'digit' },
+    { k: '6', type: 'digit' },
+    { k: '7', type: 'digit' },
+    { k: '8', type: 'digit' },
+    { k: '9', type: 'digit' },
+    { k: 'Clear', type: 'clear' },
+    { k: '0', type: 'digit' },
+    { k: 'Del', type: 'del' },
+  ];
+  return (
+    <div className="pin-numpad" role="group" aria-label="PIN keypad">
+      {keys.map(({ k, type }) => (
+        <button
+          key={k}
+          type="button"
+          className={`pin-numpad-btn${type !== 'digit' ? ` is-${type}` : ''}`}
+          aria-label={
+            type === 'del' ? 'Delete last digit'
+              : type === 'clear' ? 'Clear PIN'
+                : `Digit ${k}`
+          }
+          onClick={() => {
+            if (type === 'del') onDelete();
+            else if (type === 'clear') onClear();
+            else onEntry(k);
+          }}
+        >
+          {k}
+        </button>
+      ))}
     </div>
   );
 };
@@ -331,35 +349,26 @@ const Field = ({ label, placeholder, id: idProp, name, 'aria-label': ariaLabelPr
 const ErrorMsg = ({ msg }) =>
   msg ? (
     <motion.p
+      role="alert"
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
-      style={{ margin: 0, fontSize: '13px', color: '#ef4444', fontWeight: 500, fontFamily: 'var(--font-sans)' }}
+      className="login-error-msg"
     >
       {msg}
     </motion.p>
   ) : null;
 
 /* ─────────────────────────────────────────────
-   BACK BUTTON (pill)
+   BACK BUTTON — matches numpad surface weight
 ───────────────────────────────────────────── */
 const BackBtn = ({ onClick }) => (
   <button
     type="button"
     onClick={onClick}
-    style={{
-      display: 'inline-flex', alignItems: 'center', gap: '6px',
-      alignSelf: 'flex-start',
-      background: 'var(--color-elevated)', border: '1px solid var(--color-border)',
-      borderRadius: '99px', padding: '8px 14px',
-      fontSize: '13px', fontWeight: 700, color: 'var(--color-text-1)',
-      lineHeight: 1,
-      minHeight: '44px',
-      cursor: 'pointer', fontFamily: 'var(--font-sans)',
-      marginBottom: '24px', transition: 'background 0.15s',
-    }}
+    className="login-back-btn"
     aria-label="Back"
   >
-    <ArrowLeft size={14} /> Back
+    <ArrowLeft size={16} strokeWidth={2.5} /> Back
   </button>
 );
 
@@ -556,7 +565,15 @@ const Login = () => {
       await signInWithUsername(identifier.trim(), finalPin);
       navigate('/overview');
     } catch (err) {
-      setError(err.message || 'Verification failure. Try again.');
+      const status = err?.status || err?.response?.status;
+      const raw = String(err?.message || '');
+      let msg = raw || 'Verification failure. Try again.';
+      if (status === 429 || /too many|rate limit|429/i.test(raw)) {
+        msg = 'Too many attempts. Wait a few minutes, then try again.';
+      } else if (/invalid|credential|unauthorized|incorrect|wrong/i.test(raw)) {
+        msg = 'Incorrect PIN. Check and try again.';
+      }
+      setError(msg);
       setPin(''); triggerShake(); setLoading(false);
     }
   }, [identifier, navigate, signInWithUsername, triggerShake]);
@@ -630,6 +647,13 @@ const Login = () => {
     }
   }, [loading, mode, step]);
 
+  const handlePinClear = useCallback(() => {
+    if (loading) return;
+    if (mode === 'login') setPin('');
+    else if (step === 3) setPin('');
+    else if (step === 4) setConfirmPin('');
+  }, [loading, mode, step]);
+
   useEffect(() => {
     handlePinEntryRef.current = handlePinEntry;
     handlePinDeleteRef.current = handlePinDelete;
@@ -637,26 +661,28 @@ const Login = () => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      const isPinScreen = 
-        (mode === 'login' && step === 2) || 
+      const isPinScreen =
+        (mode === 'login' && step === 2) ||
         (mode === 'signup' && (step === 3 || step === 4));
-      
+
       if (!isPinScreen) return;
-      if (!/^[0-9]$/.test(e.key) && e.key !== 'Backspace') return;
-      if (e.repeat) return; // Prevent double inputs on key hold
-      
+      if (!/^[0-9]$/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Escape') return;
+      if (e.repeat) return;
+
       e.preventDefault();
-      
+
       if (e.key === 'Backspace') {
         if (handlePinDeleteRef.current) handlePinDeleteRef.current();
+      } else if (e.key === 'Escape') {
+        handlePinClear();
       } else {
         if (handlePinEntryRef.current) handlePinEntryRef.current(e.key);
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mode, step]);
+  }, [mode, step, handlePinClear]);
 
   // ── Username step ──
   // (isEmailIdentifier / isCompleteOsId / normalizeLoginIdentifier / validateUsername are module-scope)
@@ -732,7 +758,7 @@ const Login = () => {
           </Link>
         </div>
 
-        {/* Center tagline */}
+        {/* Center tagline — sentence case; spaces stay in DOM (no br-merge OCR) */}
         <div className="login-left-center">
           <motion.h2
             initial={{ opacity: 0, y: 24 }}
@@ -740,18 +766,19 @@ const Login = () => {
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="login-left-tagline"
           >
-            The Personal<br />Operating System<br />for the Ambitious.
+            <span className="login-tagline-line">The personal operating</span>
+            <span className="login-tagline-line">system for the ambitious.</span>
           </motion.h2>
         </div>
 
-        {/* Feature pills */}
+        {/* Feature pills — no decorative ✦; full descriptors; padded off edge */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="login-left-pills"
         >
-          {['✦ Finance & Goals', '✦ Habits & Lab', '✦ Journal & Focus'].map(p => (
+          {['Finance & Goals', 'Habits & Discipline', 'Journal & Focus'].map(p => (
             <span key={p} className="login-pill">{p}</span>
           ))}
         </motion.div>
@@ -760,8 +787,8 @@ const Login = () => {
       {/* RIGHT: Form Panel */}
       <div className="login-right" style={{ position: 'relative' }}>
         <div className="login-form-wrap">
-          {/* AIIMIN wordmark */}
-          <div style={{ marginBottom: '32px' }}>
+          {/* Wordmark only when left panel hidden (mobile) — avoid duplicate brand */}
+          <div className="login-form-brand">
             <Link to="/" className="login-brand-link" aria-label="AIIMIN home">
               <span className="login-wordmark-brand">AIIMIN</span>
             </Link>
@@ -804,9 +831,9 @@ const Login = () => {
                       step === 3 ? 'Set a PIN' : 'Confirm your PIN'
                     )}
                   </h1>
-                  <p style={{ margin: 0, fontSize: '14px', color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', lineHeight: 1.5, opacity: 0.85 }}>
+                  <p className="login-form-sub">
                     {mode === 'login' ? (
-                      step === 1 ? 'Access your intelligent workspace' : `Verifying identity for ${identifier}`
+                      step === 1 ? 'Access your intelligent workspace' : `Enter your 6-digit PIN for ${maskIdentity(identifier)}`
                     ) : mode === 'forgot' ? (
                       forgotSent ? 'A recovery link has been sent.' : 'We\'ll send a recovery link to your email.'
                     ) : (
@@ -909,22 +936,20 @@ const Login = () => {
                       <GoogleBtn onClick={async () => {
                         try { await signInWithGoogle(); } catch (_) { /* surfaced via toast */ }
                       }} />
-                      <div style={{ textAlign: 'center', marginTop: '4px' }}>
-                        <span style={{ fontSize: '14px', color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)' }}>
-                          Don't have an account?{' '}
-                          <button type="button" onClick={toggleMode} style={{ background: 'none', border: 'none', color: 'var(--color-accent)', fontWeight: 700, cursor: 'pointer', fontSize: '14px', fontFamily: 'var(--font-sans)', textDecoration: 'underline' }}>
-                            Sign up
-                          </button>
-                        </span>
-                        {IS_WAITLIST_MODE && (
-                          <p style={{ margin: '12px 0 0', fontSize: '13px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
-                            Not on the tester list?{' '}
-                            <Link to="/" style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
-                              Join the waitlist
-                            </Link>
-                          </p>
-                        )}
+                      <div className="login-account-row">
+                        <span className="login-account-prompt">Don't have an account?</span>
+                        <button type="button" onClick={toggleMode} className="login-text-cta">
+                          Sign up
+                        </button>
                       </div>
+                      {IS_WAITLIST_MODE && (
+                        <p style={{ margin: '12px 0 0', fontSize: '13px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)', textAlign: 'center' }}>
+                          Not on the tester list?{' '}
+                          <Link to="/" style={{ color: 'var(--color-accent)', fontWeight: 600, textDecoration: 'none' }}>
+                            Join the waitlist
+                          </Link>
+                        </p>
+                      )}
                     </form>
                   </motion.div>
                 )}
@@ -934,29 +959,31 @@ const Login = () => {
                     key="login-s2"
                     variants={direction > 0 ? stepVariants : stepVariantsBack}
                     initial="enter" animate="center" exit="exit"
-                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
+                    className="login-pin-step"
                   >
                     <BackBtn onClick={handleBack} />
                     <PinDots length={6} value={pin} shake={shake} />
                     {loading ? (
                       <div style={{ padding: '24px', textAlign: 'center' }}>
                         <span className="login-spinner-lg" />
-                        <p style={{ color: 'var(--color-text-3)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '14px', fontFamily: 'var(--font-sans)' }}>
+                        <p style={{ color: 'var(--color-text-1)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '14px', fontFamily: 'var(--font-sans)' }}>
                           {loadingText}
                         </p>
                       </div>
                     ) : (
-                      <>
-                        <PinNumpad onEntry={handlePinEntry} onDelete={handlePinDelete} />
-                        <button
-                          type="button"
-                          onClick={() => { setMode('forgot'); setStep(1); setError(null); }}
-                          style={{ background: 'none', border: 'none', color: 'var(--color-text-1)', fontSize: '13px', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', fontFamily: 'var(--font-sans)' }}
-                        >
-                          Forgot PIN?
-                        </button>
-                      </>
+                      <PinNumpad
+                        onEntry={handlePinEntry}
+                        onDelete={handlePinDelete}
+                        onClear={handlePinClear}
+                      />
                     )}
+                    <button
+                      type="button"
+                      onClick={() => { setMode('forgot'); setStep(1); setError(null); }}
+                      className="login-forgot-link"
+                    >
+                      Forgot PIN?
+                    </button>
                     <ErrorMsg msg={error} />
                   </motion.div>
                 )}
@@ -999,13 +1026,11 @@ const Login = () => {
                       <GoogleBtn onClick={async () => {
                         try { await signInWithGoogle(); } catch (_) { /* surfaced via toast */ }
                       }} />
-                      <div style={{ textAlign: 'center', marginTop: '4px' }}>
-                        <span style={{ fontSize: '14px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>
-                          Already have an account?{' '}
-                          <button type="button" onClick={toggleMode} style={{ background: 'none', border: 'none', color: 'var(--color-accent)', fontWeight: 600, cursor: 'pointer', fontSize: '14px', fontFamily: 'var(--font-sans)' }}>
-                            Sign in
-                          </button>
-                        </span>
+                      <div className="login-account-row">
+                        <span className="login-account-prompt">Already have an account?</span>
+                        <button type="button" onClick={toggleMode} className="login-text-cta">
+                          Sign in
+                        </button>
                       </div>
                     </form>
                   </motion.div>
@@ -1065,7 +1090,7 @@ const Login = () => {
                   >
                     <BackBtn onClick={handleBack} />
                     <PinDots length={6} value={pin} shake={shake} />
-                    <PinNumpad onEntry={handlePinEntry} onDelete={handlePinDelete} />
+                    <PinNumpad onEntry={handlePinEntry} onDelete={handlePinDelete} onClear={handlePinClear} />
                     <ErrorMsg msg={error} />
                   </motion.div>
                 )}
@@ -1082,12 +1107,12 @@ const Login = () => {
                     {loading ? (
                       <div style={{ padding: '24px', textAlign: 'center' }}>
                         <span className="login-spinner-lg" />
-                        <p style={{ color: 'var(--color-text-3)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '14px', fontFamily: 'var(--font-sans)' }}>
+                        <p style={{ color: 'var(--color-text-1)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '14px', fontFamily: 'var(--font-sans)' }}>
                           Creating account…
                         </p>
                       </div>
                     ) : (
-                      <PinNumpad onEntry={handlePinEntry} onDelete={handlePinDelete} />
+                      <PinNumpad onEntry={handlePinEntry} onDelete={handlePinDelete} onClear={handlePinClear} />
                     )}
                     <ErrorMsg msg={error} />
                   </motion.div>
@@ -1100,6 +1125,18 @@ const Login = () => {
 
       {/* ─── STYLES ─── */}
       <style>{`
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+
         .login-root {
           display: flex;
           min-height: 100vh;
@@ -1114,7 +1151,7 @@ const Login = () => {
           position: relative;
           display: flex;
           flex-direction: column;
-          padding: 48px 48px 64px 56px;
+          padding: 48px 48px 112px 56px;
           box-sizing: border-box;
           overflow: hidden;
           background: color-mix(in srgb, var(--color-accent) 90%, #000 10%);
@@ -1175,6 +1212,7 @@ const Login = () => {
           align-items: center;
           position: relative;
           z-index: 2;
+          padding-bottom: 24px;
         }
 
         .login-left-tagline {
@@ -1182,10 +1220,14 @@ const Login = () => {
           font-size: clamp(28px, 3.5vw, 44px);
           font-weight: 800;
           color: #fff;
-          line-height: 1.15;
+          line-height: 1.2;
           letter-spacing: -0.03em;
           margin: 0;
           opacity: 0.97;
+        }
+
+        .login-tagline-line {
+          display: block;
         }
 
         .login-left-pills {
@@ -1194,21 +1236,22 @@ const Login = () => {
           gap: 10px;
           position: relative;
           z-index: 2;
+          padding-bottom: 8px;
         }
 
         .login-pill {
           display: inline-flex;
           align-items: center;
-          padding: 7px 14px;
+          padding: 10px 16px;
           border-radius: 99px;
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.18);
-          color: rgba(255,255,255,0.9);
-          font-size: 12px;
-          font-weight: 600;
+          background: rgba(0, 0, 0, 0.42);
+          border: 1px solid rgba(255, 255, 255, 0.45);
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 700;
           font-family: var(--font-sans);
           letter-spacing: 0.01em;
-          backdrop-filter: blur(8px);
+          backdrop-filter: blur(10px);
         }
 
         /* RIGHT */
@@ -1234,12 +1277,248 @@ const Login = () => {
           opacity: 0.55;
         }
 
+        .login-form-brand {
+          display: none;
+          margin-bottom: 32px;
+        }
+
+        .login-form-sub {
+          margin: 0;
+          font-size: 14px;
+          color: #1a1a1a;
+          font-family: var(--font-sans);
+          line-height: 1.5;
+          font-weight: 600;
+        }
+
         .login-wordmark-brand {
           font-family: var(--font-serif);
           font-size: 24px;
           font-weight: 900;
           color: var(--color-text-1);
           letter-spacing: -0.04em;
+        }
+
+        .login-account-row {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 8px;
+        }
+
+        .login-account-prompt {
+          font-size: 14px;
+          color: var(--color-text-1);
+          font-family: var(--font-sans);
+          font-weight: 500;
+        }
+
+        /* Real 44×44+ chip — no negative-margin fake hit area */
+        .login-text-cta {
+          background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+          border: 1.5px solid var(--color-accent);
+          border-radius: 12px;
+          color: var(--color-accent);
+          font-weight: 700;
+          cursor: pointer;
+          font-size: 14px;
+          font-family: var(--font-sans);
+          text-decoration: none;
+          min-height: 44px;
+          min-width: 88px;
+          padding: 10px 18px;
+          margin: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
+        }
+        .login-text-cta:hover {
+          background: color-mix(in srgb, var(--color-accent) 20%, var(--color-surface));
+        }
+        .login-text-cta:focus-visible {
+          outline: 2px solid var(--color-accent);
+          outline-offset: 2px;
+        }
+
+        .login-back-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          align-self: flex-start;
+          background: var(--color-surface);
+          border: 1.5px solid var(--color-border);
+          border-radius: 14px;
+          padding: 12px 16px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #1a1a1a;
+          line-height: 1;
+          min-height: 48px;
+          cursor: pointer;
+          font-family: var(--font-sans);
+          margin-bottom: 4px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .login-back-btn:hover {
+          background: var(--color-elevated);
+          border-color: var(--color-accent);
+        }
+
+        .login-pin-step {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 22px;
+          width: 100%;
+        }
+
+        .login-forgot-link {
+          background: var(--color-surface);
+          border: 1.5px solid var(--color-border);
+          border-radius: 14px;
+          color: #1a1a1a;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          text-decoration: none;
+          font-family: var(--font-sans);
+          min-height: 48px;
+          min-width: 160px;
+          padding: 12px 20px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 4px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .login-forgot-link:hover {
+          border-color: var(--color-accent);
+          color: var(--color-accent);
+        }
+
+        .login-error-msg {
+          margin: 4px 0 0;
+          font-size: 14px;
+          color: #991b1b;
+          font-weight: 700;
+          font-family: var(--font-sans);
+          text-align: center;
+          line-height: 1.45;
+          padding: 12px 14px;
+          background: #fef2f2;
+          border: 1.5px solid #fecaca;
+          border-radius: 12px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        /* PIN dots */
+        .pin-dots {
+          display: flex;
+          gap: 14px;
+          justify-content: center;
+          width: 100%;
+        }
+
+        .pin-dot-slot {
+          width: 46px;
+          height: 56px;
+          border-radius: 12px;
+          border: 2.5px solid #4b5563;
+          background: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+          box-sizing: border-box;
+          transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+
+        .pin-dot-slot.is-filled {
+          border-color: var(--color-accent);
+          background: #ffffff;
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 28%, transparent);
+        }
+
+        .pin-dot-slot.is-active {
+          border-color: var(--color-accent);
+          box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 28%, transparent);
+          animation: pin-slot-pulse 1.2s ease-in-out infinite;
+        }
+
+        .pin-dot-slot.is-error {
+          border-color: #991b1b;
+          box-shadow: 0 0 0 2px color-mix(in srgb, #991b1b 25%, transparent);
+        }
+
+        .pin-dot-mask {
+          display: block;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #1a1a1a;
+        }
+
+        .pin-dot-slot.is-error .pin-dot-mask {
+          background: #991b1b;
+        }
+
+        @keyframes pin-slot-pulse {
+          0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 22%, transparent); }
+          50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-accent) 35%, transparent); }
+        }
+
+        /* Numpad — full 3×4 including Clear | 0 | Del */
+        .pin-numpad {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+          width: 100%;
+          max-width: 300px;
+          margin: 0 auto;
+        }
+
+        .pin-numpad-btn {
+          height: 64px;
+          width: 100%;
+          border-radius: 14px;
+          border: 1.5px solid var(--color-border);
+          background: #ffffff;
+          font-size: 22px;
+          font-weight: 600;
+          color: #1a1a1a;
+          min-width: 44px;
+          min-height: 64px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: var(--font-sans);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+          transition: background 0.15s, transform 0.1s;
+          box-sizing: border-box;
+        }
+
+        .pin-numpad-btn.is-del,
+        .pin-numpad-btn.is-clear {
+          font-size: 15px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+        }
+
+        .pin-numpad-btn:hover {
+          background: var(--color-elevated) !important;
+        }
+        .pin-numpad-btn:active {
+          transform: scale(0.93);
+        }
+        .pin-numpad-btn:focus-visible {
+          outline: 2px solid var(--color-accent);
+          outline-offset: 2px;
         }
 
         /* Google button hover */
@@ -1283,14 +1562,7 @@ const Login = () => {
           to { transform: rotate(360deg); }
         }
 
-        .pin-numpad-btn:hover {
-          background: var(--color-elevated) !important;
-        }
-        .pin-numpad-btn:active {
-          transform: scale(0.93);
-        }
-
-        /* Mobile: hide left panel */
+        /* Mobile: hide left panel; show form brand */
         @media (max-width: 900px) {
           .login-left {
             display: none;
@@ -1298,12 +1570,15 @@ const Login = () => {
           .login-right {
             min-height: 100vh;
           }
+          .login-form-brand {
+            display: block;
+          }
         }
 
         /* Tablets: tighten */
         @media (max-width: 1100px) and (min-width: 901px) {
           .login-left {
-            padding: 40px 36px;
+            padding: 40px 36px 80px;
           }
         }
       `}</style>
