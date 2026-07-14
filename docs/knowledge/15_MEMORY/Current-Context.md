@@ -6,18 +6,16 @@
 
 ## Today
 
-- Shipping Login Selfloop QA fixes (PIN UI/a11y + rate limit 30/15m + Retry-After)
-- Register: `docs/knowledge/11_BUGS/QA-Run-2026-07-14-Login.md`
+- Shipped Login QA: `2c4e2691` — EC2 healthy + SHA match
+- Vercel: retrigger after Git integration lag
 
 ## Next
 
-1. Confirm Vercel READY + EC2 health/SHA
+1. Confirm Vercel READY on `2c4e2691` (or this follow-up)
 2. Selfloop re-run `/login`
 3. Regrade from new screenshots
 
 ## Touch
 
-- `frontend/src/pages/Login.jsx`
-- `frontend/src/context/AuthContext.jsx`
-- `server/middleware/rateLimiter.js`
-- `server/lib/auth.js`
+- Live API: `2c4e2691`
+- Frontend: pending Vercel READY
