@@ -8,7 +8,7 @@
     "dev": "npm run dev:api & npm run dev:frontend",
     "dev:api": "node dev_server.js",
     "dev:frontend": "cd frontend && npm start",
-    "build": "cd frontend && npm run build",
+    "build": "cd frontend && node scripts/verify-production-env.mjs && npm run build",
     "start": "node dev_server.js",
     "test": "node --test server/services/*.test.js"
   },

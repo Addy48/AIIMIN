@@ -81,9 +81,6 @@ export function useAccessGate() {
       try {
         const data = await apiGet('/auth/access');
         if (cancelled) return;
-        // #region agent log
-        fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'useAccessGate.js:api',message:'access resolved',data:{canAccess:Boolean(data.canAccessApp??data.canAccess),role:data.role,emailDomain:email?.split('@')[1]},hypothesisId:'H2',timestamp:Date.now(),runId:'access-gate'})}).catch(()=>{});
-        // #endregion
         setState({
           loading: false,
           canAccessApp: Boolean(data.canAccessApp ?? data.canAccess),
@@ -93,9 +90,6 @@ export function useAccessGate() {
       } catch (err) {
         if (cancelled) return;
         const fallback = envFallbackAccess(email);
-        // #region agent log
-        fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'useAccessGate.js:fallback',message:'access api failed',data:{canAccess:fallback.canAccessApp,err:err?.message,emailDomain:email?.split('@')[1]},hypothesisId:'H2',timestamp:Date.now(),runId:'access-gate'})}).catch(()=>{});
-        // #endregion
         setState({ loading: false, ...fallback });
       }
     })();

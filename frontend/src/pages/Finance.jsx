@@ -18,8 +18,35 @@ import FinanceAccounts from '../components/finance/FinanceAccounts';
 import FinanceTransactions from '../components/finance/FinanceTransactions';
 import FinanceBudgets from '../components/finance/FinanceBudgets';
 import FinanceWealth from '../components/finance/FinanceWealth';
+import ShippedSubNav from '../components/design/ShippedSubNav';
 
 
+
+const ASSET_TYPE_LABELS = {
+  gold: 'Gold',
+  stock: 'Stocks',
+  mutual_fund: 'Mutual Funds',
+  crypto: 'Crypto',
+  cash: 'Cash',
+  bank: 'Bank & Cash',
+};
+
+const normalizeAsset = (row) => ({
+  id: row.id,
+  name: row.asset_name || row.name || 'Unnamed',
+  type: row.asset_type || row.type || 'Other',
+  currentValue: Number(row.current_value ?? row.currentValue ?? 0),
+  investedAmount: Number(row.invested_value ?? row.investedAmount ?? 0),
+  units: Number(row.units ?? 0),
+});
+
+const toAssetPayload = (asset) => ({
+  asset_name: asset.name,
+  asset_type: asset.type,
+  current_value: Number(asset.currentValue) || 0,
+  invested_value: Number(asset.investedAmount) || 0,
+  units: Number(asset.units) || 0,
+});
 
 const Finance = () => {
   const { user } = useAuth();
@@ -77,10 +104,11 @@ const Finance = () => {
   const handleAddAsset = async (e) => {
     e.preventDefault();
     try {
+      const payload = toAssetPayload(newAsset);
       if (newAsset.id) {
-        await apiPut('/wealth/assets/' + newAsset.id, newAsset);
+        await apiPut('/wealth/assets/' + newAsset.id, payload);
       } else {
-        await apiPost('/wealth/assets', newAsset);
+        await apiPost('/wealth/assets', payload);
       }
       setAssetModalOpen(false);
       setNewAsset({ name: '', type: 'Stock', investedAmount: 0, currentValue: 0 });
@@ -227,7 +255,7 @@ const Finance = () => {
       const [transData, assetsData, accountsData, budgetsData] = await Promise.race([fetchPromise, timeoutPromise]);
 
       setTransactions(transData || []);
-      setAssets(assetsData || []);
+      setAssets((assetsData || []).map(normalizeAsset));
       setAccounts(accountsData || []);
       setBudgets(budgetsData || []);
     } catch (error) {
@@ -241,11 +269,11 @@ const Finance = () => {
   const totalBalance = useMemo(() => accounts.reduce((sum, a) => sum + Number(a.balance), 0), [accounts]);
 
   const totalNetWorth = useMemo(() => {
-    const assetTotal = assets.reduce((sum, a) => sum + Number(a.current_value), 0);
+    const assetTotal = assets.reduce((sum, a) => sum + Number(a.currentValue), 0);
     return assetTotal + totalBalance;
   }, [assets, totalBalance]);
   
-  const totalInvested = useMemo(() => assets.reduce((sum, a) => sum + Number(a.invested_value), 0), [assets]);
+  const totalInvested = useMemo(() => assets.reduce((sum, a) => sum + Number(a.investedAmount), 0), [assets]);
   const totalReturns = totalNetWorth - totalInvested;
   const returnPct = totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(2) : 0;
 
@@ -276,12 +304,14 @@ const Finance = () => {
       cash: 0,
       bank: accounts.reduce((sum, a) => sum + Number(a.balance), 0)
     };
-    assets.forEach(a => {
-      const type = a.asset_type.toLowerCase().replace(' ', '_');
-      if (breakdown.hasOwnProperty(type)) breakdown[type] += Number(a.current_value);
-      else breakdown.stock += Number(a.current_value); // Default to stock if unknown
+    assets.forEach((a) => {
+      const type = String(a.type || 'stock').toLowerCase().replace(/\s+/g, '_');
+      if (Object.prototype.hasOwnProperty.call(breakdown, type)) breakdown[type] += Number(a.currentValue);
+      else breakdown.stock += Number(a.currentValue);
     });
-    return breakdown;
+    return Object.entries(breakdown)
+      .filter(([, value]) => value > 0)
+      .map(([key, value]) => ({ name: ASSET_TYPE_LABELS[key] || key, value }));
   }, [assets, accounts]);
 
   // Analytics & Insights
@@ -487,38 +517,18 @@ savingsRate: (sRate * 100).toFixed(1),
       />
 
 
-      {/* Navigation Tabs */}
-      <div style={{
-        display: 'flex',
-        gap: '0',
-        borderBottom: '1px solid var(--color-border)',
-        marginBottom: '32px',
-        overflowX: 'auto',
-        scrollbarWidth: 'none',
-      }}>
-        {['OVERVIEW', 'ANALYTICS', 'ACCOUNTS', 'TRANSACTIONS', 'BUDGETS', 'WEALTH'].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{
-              padding: '12px 20px',
-              fontSize: '13px',
-              fontWeight: activeTab === tab ? 600 : 400,
-              color: activeTab === tab ? 'var(--color-text-1)' : 'var(--color-text-3)',
-              border: 'none',
-              background: 'none',
-              borderBottom: activeTab === tab ? '2px solid var(--color-text-1)' : '2px solid transparent',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-sans)',
-              transition: 'all 0.15s ease',
-              whiteSpace: 'nowrap',
-              marginBottom: '-1px',
-            }}
-          >
-            {tab.charAt(0) + tab.slice(1).toLowerCase()}
-          </button>
-        ))}
-      </div>
+      <ShippedSubNav
+        tabs={[
+          { id: 'OVERVIEW', label: 'Overview' },
+          { id: 'ANALYTICS', label: 'Analytics' },
+          { id: 'ACCOUNTS', label: 'Accounts' },
+          { id: 'TRANSACTIONS', label: 'Transactions' },
+          { id: 'BUDGETS', label: 'Budgets' },
+          { id: 'WEALTH', label: 'Wealth' },
+        ]}
+        active={activeTab}
+        onChange={setActiveTab}
+      />
 
       {loading ? (
         <div style={{ padding: '24px', opacity: 0.7, pointerEvents: 'none' }}>
