@@ -43,6 +43,7 @@
     "react-scripts": "5.0.1",
     "recharts": "^3.7.0",
     "resolve": "^1.22.11",
+    "suncalc": "^2.0.0",
     "tailwind-merge": "^3.6.0",
     "vaul": "^1.1.2",
     "web-vitals": "^2.1.4"

@@ -21,6 +21,19 @@ export const NAV_REGISTRY = [
 export const DEFAULT_PINNED_IDS = ['overview', 'habits', 'goals', 'journal'];
 export const DEFAULT_ACTIVE_IDS = NAV_REGISTRY.map((item) => item.id);
 
+const BASE_WIDGETS = {
+  monday_insight: true,
+  week_numbers: false,
+  quick_capture: true,
+  countdown: false,
+  wins: false,
+  micro_task: true,
+  timeline: true,
+  logger: true,
+  command_center: true,
+  trajectory: true,
+};
+
 export const NAV_PERSONA_PRESETS = [
   {
     id: 'custom',
@@ -28,6 +41,10 @@ export const NAV_PERSONA_PRESETS = [
     desc: 'Start from the full product and tune every section yourself.',
     activeIds: DEFAULT_ACTIVE_IDS,
     pinnedIds: DEFAULT_PINNED_IDS,
+    overviewWidgets: { ...BASE_WIDGETS },
+    sportsDefaults: [],
+    teamDefaults: {},
+    personaTags: [],
   },
   {
     id: 'student',
@@ -35,6 +52,10 @@ export const NAV_PERSONA_PRESETS = [
     desc: 'Study rhythm, placements, habits, money, and focus.',
     activeIds: ['overview', 'habits', 'goals', 'journal', 'finance', 'calendar', 'placements', 'focus', 'discipline', 'sports', 'lab'],
     pinnedIds: ['overview', 'habits', 'goals', 'journal', 'calendar', 'placements', 'focus', 'finance'],
+    overviewWidgets: { ...BASE_WIDGETS, monday_insight: true, week_numbers: true, logger: true },
+    sportsDefaults: ['Cricket'],
+    teamDefaults: { Cricket: ['India'] },
+    personaTags: ['student'],
   },
   {
     id: 'professional',
@@ -42,6 +63,10 @@ export const NAV_PERSONA_PRESETS = [
     desc: 'Calendar, money, health, family, goals, and career growth.',
     activeIds: ['overview', 'goals', 'journal', 'finance', 'family', 'calendar', 'placements', 'habits', 'focus', 'discipline'],
     pinnedIds: ['overview', 'calendar', 'goals', 'finance', 'journal', 'family', 'focus'],
+    overviewWidgets: { ...BASE_WIDGETS, command_center: true, timeline: true, wins: true },
+    sportsDefaults: ['Cricket', 'Football'],
+    teamDefaults: { Cricket: ['India'], Football: ['Arsenal'] },
+    personaTags: ['professional'],
   },
   {
     id: 'founder',
@@ -49,6 +74,10 @@ export const NAV_PERSONA_PRESETS = [
     desc: 'Execution, experiments, finance, discipline, and shipping momentum.',
     activeIds: ['overview', 'goals', 'journal', 'finance', 'calendar', 'discipline', 'focus', 'lab', 'habits', 'placements'],
     pinnedIds: ['overview', 'goals', 'finance', 'calendar', 'lab', 'journal', 'focus', 'discipline'],
+    overviewWidgets: { ...BASE_WIDGETS, trajectory: true, command_center: true, micro_task: true, week_numbers: false, wins: false },
+    sportsDefaults: [],
+    teamDefaults: {},
+    personaTags: ['founder'],
   },
   {
     id: 'family',
@@ -56,6 +85,10 @@ export const NAV_PERSONA_PRESETS = [
     desc: 'Shared routines, family, finances, calendar, and reflection.',
     activeIds: ['overview', 'habits', 'goals', 'journal', 'finance', 'family', 'calendar', 'focus'],
     pinnedIds: ['overview', 'family', 'finance', 'calendar', 'journal', 'goals', 'habits'],
+    overviewWidgets: { ...BASE_WIDGETS, wins: true, countdown: true, logger: false },
+    sportsDefaults: ['Cricket'],
+    teamDefaults: { Cricket: ['India'] },
+    personaTags: ['family'],
   },
   {
     id: 'athlete',
@@ -63,6 +96,10 @@ export const NAV_PERSONA_PRESETS = [
     desc: 'Training consistency, discipline, sports, recovery, and goals.',
     activeIds: ['overview', 'habits', 'goals', 'journal', 'calendar', 'sports', 'discipline', 'focus', 'finance'],
     pinnedIds: ['overview', 'habits', 'sports', 'discipline', 'focus', 'journal', 'goals'],
+    overviewWidgets: { ...BASE_WIDGETS, micro_task: true, trajectory: true, week_numbers: true, command_center: false },
+    sportsDefaults: ['Cricket', 'Football', 'Basketball'],
+    teamDefaults: { Cricket: ['India'], Football: ['Arsenal'], Basketball: ['Lakers'] },
+    personaTags: ['athlete'],
   },
 ];
 

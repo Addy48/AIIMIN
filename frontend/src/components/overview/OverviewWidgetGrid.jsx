@@ -4,6 +4,7 @@ import { LayoutGrid, Eye, EyeOff } from 'lucide-react';
 const WIDGETS_KEY = 'aiimin_overview_widgets';
 const WIDGETS_VERSION_KEY = 'aiimin_overview_widgets_version';
 const WIDGETS_VERSION = '2026-07-04-simplified-today';
+const WIDGETS_CHANGE_EVENT = 'aiimin-overview-widgets-changed';
 const REDUNDANT_DEFAULT_OFF = new Set(['week_numbers', 'countdown', 'wins']);
 
 const DEFAULT_WIDGETS = [
@@ -38,6 +39,15 @@ function loadWidgetPrefs() {
   return defaults;
 }
 
+export function applyOverviewWidgetPreset(widgetPrefs) {
+  if (!widgetPrefs || typeof widgetPrefs !== 'object') return;
+  const defaults = Object.fromEntries(DEFAULT_WIDGETS.map((w) => [w.id, w.default]));
+  const next = { ...defaults, ...widgetPrefs };
+  localStorage.setItem(WIDGETS_KEY, JSON.stringify(next));
+  localStorage.setItem(WIDGETS_VERSION_KEY, WIDGETS_VERSION);
+  window.dispatchEvent(new CustomEvent(WIDGETS_CHANGE_EVENT, { detail: next }));
+}
+
 export function useOverviewWidgets() {
   const [prefs, setPrefs] = useState(loadWidgetPrefs);
   const [showPicker, setShowPicker] = useState(false);
@@ -45,6 +55,19 @@ export function useOverviewWidgets() {
   useEffect(() => {
     localStorage.setItem(WIDGETS_KEY, JSON.stringify(prefs));
   }, [prefs]);
+
+  useEffect(() => {
+    const sync = (event) => {
+      if (event?.detail) setPrefs(event.detail);
+      else setPrefs(loadWidgetPrefs());
+    };
+    window.addEventListener(WIDGETS_CHANGE_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(WIDGETS_CHANGE_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
 
   const isVisible = (id) => prefs[id] !== false;
   const toggle = (id) => setPrefs((p) => ({ ...p, [id]: !isVisible(id) }));

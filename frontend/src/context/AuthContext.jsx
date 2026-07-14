@@ -71,9 +71,6 @@ export function AuthProvider({ children }) {
         }, 2500);
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
-            // #region agent log
-            if (onCallbackPage) fetch('http://127.0.0.1:7876/ingest/b474fe90-afd9-4287-984e-04e80c19b46c',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'40de69'},body:JSON.stringify({sessionId:'40de69',location:'AuthContext.jsx:onAuthStateChange',message:'auth event on callback',data:{event,hasSession:Boolean(currentSession?.access_token)},hypothesisId:'H3',timestamp:Date.now(),runId:'pkce-debug'})}).catch(()=>{});
-            // #endregion
             if (currentSession?.access_token) {
                 setSession(currentSession);
                 persistAccessToken(currentSession.access_token);

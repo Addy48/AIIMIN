@@ -16,7 +16,7 @@ Full-stack audit: deploy parity, dead code, conflicting paths, CI/AWS/Vercel hea
 | **Dual API path** | 🔧 Fixed this audit | Vercel `/api/*` proxied to EC2 (was broken serverless) |
 | **Auth E2E** | ⚠️ Unverified | 6 commits fixed OAuth/onboarding; needs LC-12 retest |
 | **Secrets in workspace** | 🔴 Risk | `Secrets, Keys /` folder untracked — added to `.gitignore` |
-| **Debug instrumentation** | ⚠️ In prod bundle | `127.0.0.1:7876` fetch logs in auth files (harmless, remove after LC-12) |
+| **Debug instrumentation** | ✅ Removed | Auth debug `127.0.0.1:7876` logs stripped before recovery push |
 
 ---
 
@@ -147,7 +147,7 @@ Safe to remove from Google Cloud Console when convenient.
 1. ✅ `Secrets, Keys /` added to `.gitignore` — never commit
 2. ⚠️ Rotate Resend API key if exposed in chat
 3. ⚠️ Google `client_secret` in untracked JSON — rotate if ever committed
-4. ⚠️ Remove debug `fetch('http://127.0.0.1:7876/...')` from auth files after LC-12 pass
+4. ✅ Remove debug `fetch('http://127.0.0.1:7876/...')` from auth files — done on `recovery/pre-waitlist-full`
 
 ---
 
@@ -173,7 +173,7 @@ Run anytime: `node scripts/launch-verify.mjs`
 3. **LC-12:** Each tester: Google login → onboarding → `/overview`
 3. **Set GA4 + Sentry** on Vercel + EC2
 4. **Rotate Resend key** (Phase 0.7)
-5. **Remove auth debug logs** after LC-12 confirmed
+5. **Remove auth debug logs** after LC-12 confirmed — ✅ removed 2026-07-08
 6. **Migrate feedback route** from Gmail nodemailer → Resend
 7. **AWS Phase 0–1** — defer until September launch window
 

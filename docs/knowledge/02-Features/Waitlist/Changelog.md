@@ -1,5 +1,14 @@
 # Waitlist Changelog
 
+## 2026-07-08 (Recovery branch stabilization — auth + env + routing)
+
+- Merged pre-waitlist dashboard recovery (`recovery/pre-waitlist-full`) with waitlist-compatible auth routing in `App.js`
+- Removed auth debug instrumentation (`127.0.0.1:7876` fetch logs) from `authSession.js`, `AuthContext.jsx`, `AuthCallback.jsx`, `Onboarding.jsx`, `useAccessGate.js`
+- Committed `frontend/.env.production` (public keys, `REACT_APP_WAITLIST_MODE=true`) + `verify-production-env.mjs` in root build
+- Local dev: `frontend/.env.example` defaults `REACT_APP_WAITLIST_MODE=false` for full dashboard testing
+- Files: `App.js`, auth files, `.gitignore`, `package.json`, `docs/RECOVERY-2026-07-08.md`, `docs/CHAT-HANDOFF.md`
+- Status: **build passes** — push to main; LC-12 E2E still pending
+
 ## 2026-07-08 (Onboarding goals schema + auth token + Supabase RLS CRITICAL)
 
 - **Onboarding step 8** failed: `column "title" of relation "goals" does not exist` — production `goals` table uses `metric`, `target`, `frequency`, `meta` (not `title`).

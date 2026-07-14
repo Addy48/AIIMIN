@@ -4,13 +4,16 @@ import { Plus, Settings, X, TrendingUp } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const FinanceWealth = ({ 
-  assets, formatCurrency, totalInvested, totalReturns, returnPct,
-  assetBreakdown, ASSET_COLORS, 
+  assets = [], formatCurrency, totalInvested = 0, totalReturns = 0, returnPct = 0,
+  assetBreakdown = [], ASSET_COLORS = [], 
   setAssetModalOpen, setNewAsset, handleDeleteAsset 
 }) => {
+  const breakdown = Array.isArray(assetBreakdown) ? assetBreakdown : [];
+  const safeAssets = Array.isArray(assets) ? assets : [];
+
   return (
     <motion.div key="wealth" initial={{ opacity: 0, scale: 0.99 }} animate={{ opacity: 1, scale: 1 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', marginBottom: '32px' }}>
+      <div className="finance-wealth-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', marginBottom: '32px' }}>
         {/* Total Wealth Summary Card */}
         <div className="nordic-card" style={{ padding: '48px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--text-3)', marginBottom: '8px' }}>Total Capital Deployed</div>
@@ -36,24 +39,30 @@ const FinanceWealth = ({
         <div className="nordic-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '16px', alignSelf: 'flex-start' }}>Asset Allocation</div>
           <div style={{ width: '100%', height: '200px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={assetBreakdown} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
-                  {assetBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={ASSET_COLORS[index % ASSET_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(val) => formatCurrency(val)}
-                  contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '12px' }}
-                  itemStyle={{ fontSize: '13px', fontWeight: 600 }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {breakdown.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={breakdown} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
+                    {breakdown.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={ASSET_COLORS[index % ASSET_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(val) => formatCurrency(val)}
+                    contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '12px' }}
+                    itemStyle={{ fontSize: '13px', fontWeight: 600 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: 13, textAlign: 'center', padding: '0 16px' }}>
+                Add positions to see allocation
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
-            {assetBreakdown.map((a, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600 }}>
+            {breakdown.map((a, i) => (
+              <div key={a.name || i} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600 }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: ASSET_COLORS[i % ASSET_COLORS.length] }} />
                 {a.name}
               </div>
@@ -70,9 +79,16 @@ const FinanceWealth = ({
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-        {assets.map(asset => {
-          const ret = asset.currentValue - asset.investedAmount;
-          const pct = ((ret / asset.investedAmount) * 100).toFixed(1);
+        {safeAssets.length === 0 && (
+          <div className="nordic-card" style={{ padding: '32px', gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-3)', fontSize: 14 }}>
+            No portfolio positions yet. Add your first investment to track wealth here.
+          </div>
+        )}
+        {safeAssets.map(asset => {
+          const invested = Number(asset.investedAmount) || 0;
+          const current = Number(asset.currentValue) || 0;
+          const ret = current - invested;
+          const pct = invested > 0 ? ((ret / invested) * 100).toFixed(1) : '0.0';
           return (
             <div key={asset.id} className="nordic-card" style={{ padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -82,7 +98,7 @@ const FinanceWealth = ({
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button 
-                    onClick={() => { setNewAsset(asset); setAssetModalOpen(true); }}
+                    onClick={() => { setNewAsset({ id: asset.id, name: asset.name, type: asset.type, investedAmount: asset.investedAmount, currentValue: asset.currentValue }); setAssetModalOpen(true); }}
                     style={{ background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', padding: '4px' }}
                   >
                     <Settings size={14} />
@@ -98,7 +114,7 @@ const FinanceWealth = ({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
                   <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '4px' }}>Current Value</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{formatCurrency(asset.currentValue)}</div>
+                  <div style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>{formatCurrency(current)}</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: '4px' }}>Yield</div>

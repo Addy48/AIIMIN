@@ -12,9 +12,11 @@ import {
   resolveNavItems,
   availableForMore,
 } from '../constants/navItems';
+import { applyOverviewWidgetPreset } from '../components/overview/OverviewWidgetGrid';
 
 const STORAGE_KEY = 'aiimin-nav-prefs';
 const CHANGE_EVENT = 'aiimin-nav-prefs-changed';
+const PERSONA_PROFILE_EVENT = 'aiimin-persona-profile-sync';
 
 const DEFAULT_PREFS = {
   pinnedIds: DEFAULT_PINNED_IDS,
@@ -131,6 +133,19 @@ export default function useNavPreferences() {
       pinnedIds: preset.pinnedIds,
       personaPresetId: preset.id,
     }));
+    if (preset.overviewWidgets) {
+      applyOverviewWidgetPreset(preset.overviewWidgets);
+    }
+    if (preset.id !== 'custom' && (preset.sportsDefaults?.length || preset.personaTags?.length)) {
+      window.dispatchEvent(new CustomEvent(PERSONA_PROFILE_EVENT, {
+        detail: {
+          favorite_sports: preset.sportsDefaults || [],
+          favorite_teams: preset.teamDefaults || {},
+          persona_tags: preset.personaTags || [],
+        },
+      }));
+    }
+    return preset;
   }, []);
 
   const setBottomNavEnabled = useCallback((enabled) => {

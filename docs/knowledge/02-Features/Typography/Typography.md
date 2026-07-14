@@ -55,6 +55,12 @@
 - Status: prototype decision page shipped
 
 ### 2026-07-08
+- Changed: recovery branch stabilization — honest Design Lab archive labels (Partial/Prototype vs false Shipped), auth debug logs removed, production env committed
+- Why: ship stable build without contradictions between waitlist mode and recovered dashboard surfaces
+- Files: `ShippedDesignArchivePanel.jsx`, `authSession.js`, `frontend/.env.production`, `docs/RECOVERY-2026-07-08.md`
+- Status: stabilization commit on recovery branch — merge to main when build verified
+
+### 2026-07-08
 - Changed: recovered Jul 4 masthead navbar (BrandLockup, Sun/Moon icons, More overflow, nav pins via `useNavPreferences`), trajectory sun-arc with sunrise/sunset labels, overview sticky rail grid, mobile BottomNav wiring, and Lab reading module in sidebar
 - Why: restore pre-waitlist localhost build state from chat transcripts after waitlist pivot reverted live surfaces
 - Files: `frontend/src/components/Navbar.jsx`, `frontend/src/index.css`, `frontend/src/styles/tokens.css`, `frontend/src/pages/Overview.jsx`, `frontend/src/components/layout/DashboardLayout.jsx`, `frontend/src/pages/LabFullPage.jsx`
