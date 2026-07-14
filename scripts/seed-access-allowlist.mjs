@@ -33,6 +33,7 @@ const DEFAULT_TESTERS = [
   'sanchitbhatia2006@gmail.com',
   'adityamehta298@gmail.com',
   'shishangthakur@icloud.com',
+  'kuldeepyadav2911@gmail.com',
 ];
 
 function parseList(envVar) {

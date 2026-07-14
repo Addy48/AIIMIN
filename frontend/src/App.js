@@ -32,6 +32,7 @@ import { useAccessGate } from './hooks/useAccessGate';
 import { readAccessToken } from './utils/authSession';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AppQueryProvider } from './context/QueryProvider';
 import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
 
@@ -69,6 +70,7 @@ function App() {
   return (
     <ErrorBoundary label="Application">
       <ThemeProvider>
+        <AppQueryProvider>
         <AuthProvider>
           <AudioProvider>
             <BrowserRouter>
@@ -76,6 +78,7 @@ function App() {
             </BrowserRouter>
           </AudioProvider>
         </AuthProvider>
+        </AppQueryProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
@@ -93,6 +96,7 @@ function AppContent({ user, session }) {
   const { canAccessApp, loading: accessLoading, isWaitlistMode } = useAccessGate();
 
   const showWaitlistAtRoot = isWaitlistMode && !canAccessApp && !accessLoading;
+
   const showPendingScreen = isWaitlistMode && isSignedIn && !canAccessApp && !accessLoading
     && !['/login', '/'].includes(location.pathname)
     && !location.pathname.startsWith('/privacy')
@@ -176,6 +180,7 @@ function AppContent({ user, session }) {
         <Route path="/contact" element={<Contact />} />
         <Route path="/brand/system" element={<SystemBrand />} />
         <Route path="/brand" element={<Brand />} />
+        <Route path="/design-lab" element={<Navigate to="/account?section=design" replace />} />
 
         {/* ── 404 ── */}
         <Route path="*" element={<Navigate to={showWaitlistAtRoot && !session ? '/' : (user ? '/overview' : '/login')} replace />} />
