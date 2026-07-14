@@ -6,18 +6,15 @@
 
 ## Today
 
-- Notes create was broken: legacy FK `auth.users` + `content` NOT NULL
-- Fixed: migration **044** applied; API dual-write; API restarted local :3001
+- Pushed craft A–J + Notes FK fix to `main` for live QA (`f367cfca`)
+- Migrations 043/044 already applied on Supabase
 
 ## Next
 
-1. Hard-refresh `/notes` → New → Save text note (smoke)
-2. PDF upload + Drive sync after Google reconnect
-3. Commit/push when asked (API needs EC2 after push)
+1. Wait Vercel READY + deploy-api.yml (or SSH deploy)
+2. Adi smoke: `/notes` create, Discipline urge, Reports ranges, nav pins
+3. Google reconnect for Drive notes if needed
 
 ## Touch
 
-- `server/migrations/044_fix_notes_user_fk.sql`
-- `server/routes/notes.js`, `server/lib/notesDrive.js`
-- `frontend/src/pages/Notes.jsx`
-- vault Notes MOC/Changelog
+- Shipped on main — see commit `f367cfca`
