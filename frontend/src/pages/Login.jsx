@@ -9,12 +9,39 @@ import { apiGet, apiPost } from '../utils/api';
 
 const IS_WAITLIST_MODE = process.env.REACT_APP_WAITLIST_MODE === 'true';
 
-const THEMES = [
-  { id: 'normal', label: 'Normal', colors: ['#FAFAF9', '#1A1A1A', '#1E5C3A'] },
-  { id: 'dark', label: 'Dark', colors: ['#0A0A0A', '#EDEDED', '#22C55E'] },
-  { id: 'notion', label: 'Notion', colors: ['#FFFFFF', '#37352F', '#EBEBEA'] },
-  { id: 'internet', label: 'Internet', colors: ['#0A0D10', '#00F0FF', '#161B22'] },
-];
+/* Email vs OS-ID share one field — classify carefully (OS-ID charset includes @). */
+function isEmailIdentifier(val) {
+  const v = String(val || '').trim();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;
+  if (/@[a-z0-9][a-z0-9.-]*\./i.test(v)) return true;
+  if (/@[a-z0-9.-]{3,}$/i.test(v)) return true;
+  return false;
+}
+
+function isCompleteOsId(val) {
+  const v = String(val || '').trim().toUpperCase();
+  if (!v || isEmailIdentifier(v)) return false;
+  if (v.length !== 8) return false;
+  if (!/^[A-Z0-9@,._\-=+*^$#!]+$/.test(v)) return false;
+  if ((v.match(/[0-9]/g) || []).length > 4) return false;
+  return true;
+}
+
+function normalizeLoginIdentifier(raw) {
+  const v = String(raw || '');
+  if (isEmailIdentifier(v) || (v.includes('@') && v.length > 8)) {
+    return v.trim().toLowerCase();
+  }
+  return v.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '').slice(0, 8);
+}
+
+function validateUsername(val) {
+  if (!val) return 'OS-ID cannot be empty.';
+  if (val.length !== 8) return 'OS-ID must be exactly 8 characters long.';
+  if (!/^[A-Z0-9@,._\-=+*^$#!]+$/.test(val)) return 'Only letters, numbers, and @,._-=+*^$#! are allowed.';
+  if ((val.match(/[0-9]/g) || []).length > 4) return 'Maximum 4 digits allowed.';
+  return null;
+}
 
 /* ─────────────────────────────────────────────
    GOOGLE LOGO SVG
@@ -423,6 +450,7 @@ const Login = () => {
   const [usernameVal, setUsernameVal] = useState('');
   const [pin, setPin]                 = useState('');
   const [confirmPin, setConfirmPin]   = useState('');
+  const osIdAutoKeyRef = React.useRef('');
   const [forgotIdentifier, setForgotIdentifier] = useState('');
   const [error, setError]             = useState(null);
   const [loading, setLoading]         = useState(false);
@@ -471,6 +499,14 @@ const Login = () => {
     setError(null);
     if (mode === 'login') {
       if (!identifier.trim()) { setError('Identifier required.'); return; }
+      // Email must look complete; OS-ID must be exactly 8 valid chars
+      if (isEmailIdentifier(identifier)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) {
+          setError('Enter a valid email.'); return;
+        }
+      } else if (!isCompleteOsId(identifier)) {
+        setError('Enter a full 8-character OS-ID, or a complete email.'); return;
+      }
       setDirection(1); setStep(2);
     } else if (mode === 'forgot') {
       if (!forgotIdentifier.trim()) { setError('Username or Email required.'); return; }
@@ -623,13 +659,7 @@ const Login = () => {
   }, [mode, step]);
 
   // ── Username step ──
-  const validateUsername = (val) => {
-    if (!val) return 'OS-ID cannot be empty.';
-    if (val.length !== 8) return 'OS-ID must be exactly 8 characters long.';
-    if (!/^[A-Z0-9@,._\-=+*^$#!]+$/.test(val)) return 'Only letters, numbers, and @,._-=+*^$#! are allowed.';
-    if ((val.match(/[0-9]/g) || []).length > 4) return 'Maximum 4 digits allowed.';
-    return null;
-  };
+  // (isEmailIdentifier / isCompleteOsId / normalizeLoginIdentifier / validateUsername are module-scope)
 
   const handleUsernameNext = async (e) => {
     if (e) e.preventDefault();
@@ -656,6 +686,31 @@ const Login = () => {
     const val = e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '');
     if (val.length <= 8) setUsernameVal(val);
   };
+
+  // Auto-advance login when OS-ID hits 8 valid chars (PIN-like). Never for email.
+  useEffect(() => {
+    if (mode !== 'login' || step !== 1 || loading) return undefined;
+    if (!isCompleteOsId(identifier)) return undefined;
+    const t = setTimeout(() => {
+      setError(null);
+      setDirection(1);
+      setStep(2);
+    }, 80);
+    return () => clearTimeout(t);
+  }, [identifier, mode, step, loading]);
+
+  // Auto-check signup OS-ID when 8 valid chars entered
+  useEffect(() => {
+    if (mode !== 'signup' || step !== 2 || loading) return undefined;
+    if (!isCompleteOsId(usernameVal)) return undefined;
+    if (osIdAutoKeyRef.current === usernameVal) return undefined;
+    osIdAutoKeyRef.current = usernameVal;
+    const t = setTimeout(() => {
+      handleUsernameNext();
+    }, 120);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire once per unique 8-char OS-ID
+  }, [usernameVal, mode, step, loading]);
 
   // ── Signup step indicator step number ──
   // step 1=info, 2=username, 3=pin, 4=confirm
@@ -827,18 +882,27 @@ const Login = () => {
                         autoFocus
                         name="identifier"
                         value={identifier}
-                        onChange={e => {
-                          const val = e.target.value.trim();
-                          setIdentifier(val.includes('@') ? val.toLowerCase() : val.toUpperCase());
-                        }}
+                        onChange={(e) => setIdentifier(normalizeLoginIdentifier(e.target.value))}
                         autoCapitalize="none"
                         autoComplete="username"
                         autoCorrect="off"
                         spellCheck="false"
-                        placeholder="OS-ID / EMAIL"
+                        placeholder="8-char OS-ID or email"
                         aria-label="OS-ID / EMAIL"
-                        style={{ textTransform: identifier.includes('@') ? 'none' : 'uppercase' }}
+                        maxLength={isEmailIdentifier(identifier) || identifier.includes('@') ? 254 : 8}
+                        style={{
+                          textTransform: isEmailIdentifier(identifier) || identifier.includes('@') ? 'none' : 'uppercase',
+                          letterSpacing: isCompleteOsId(identifier) ? '0.12em' : undefined,
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
                       />
+                      <p style={{ margin: '-8px 0 0', fontSize: '12px', color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.4 }}>
+                        {isEmailIdentifier(identifier)
+                          ? 'Email detected — press Continue when ready.'
+                          : identifier.length > 0
+                            ? `OS-ID ${identifier.length}/8 — auto-continues at 8 characters.`
+                            : 'OS-ID auto-continues at 8 chars. Email needs @ and domain.'}
+                      </p>
                       <ErrorMsg msg={error} />
                       <PrimaryBtn>Continue →</PrimaryBtn>
                       <Divider />

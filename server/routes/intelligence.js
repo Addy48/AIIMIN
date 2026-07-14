@@ -28,9 +28,20 @@ const app = new Hono();
 app.get('/lhs', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
-        const dataset = await getAnalyticsDataset(userId, 120);
+        const days = Math.min(365, Math.max(7, parseInt(c.req.query('days') || '120', 10) || 120));
+        const start = c.req.query('start') || null;
+        const end = c.req.query('end') || null;
+        const dataset = await getAnalyticsDataset(userId, days, { start, end });
         const lhs = summarizeLifeHealth(dataset.dailyRecords);
-        return c.json(lhs);
+        return c.json({
+            ...lhs,
+            meta: {
+                days,
+                start: start || dataset.sinceDate,
+                end: end || dataset.untilDate,
+                daysWithData: dataset.dailyRecords.length,
+            },
+        });
     } catch (err) {
         console.error('Error computing LHS:', err);
         return c.json({ error: 'Failed to compute Life Health System scores', message: err.message }, 500);
@@ -38,35 +49,38 @@ app.get('/lhs', requireAuth, async (c) => {
 });
 
 // ==========================================
-// WEEKLY EXECUTIVE REPORT
+// WEEKLY / PERIOD EXECUTIVE REPORT
 // ==========================================
 app.get('/report', requireAuth, async (c) => {
     const userId = c.get('userId');
     try {
-        // Try fetching a pre-calculated weekly summary first
-        const { rows: cachedRows } = await pool.query(
-            `SELECT data FROM weekly_summaries WHERE user_id = $1 ORDER BY generated_at DESC LIMIT 1`,
-            [userId]
-        ).catch(() => ({ rows: [] }));
-        const cachedSummary = cachedRows[0];
+        const days = Math.min(365, Math.max(7, parseInt(c.req.query('days') || '30', 10) || 30));
+        const start = c.req.query('start') || null;
+        const end = c.req.query('end') || null;
+        const useCustomRange = Boolean(start || end || days !== 30);
 
-        if (cachedSummary?.data) {
-            return c.json(cachedSummary.data);
+        // Cached weekly summary only for default rolling 30d (not past/custom ranges)
+        if (!useCustomRange) {
+            const { rows: cachedRows } = await pool.query(
+                `SELECT data FROM weekly_summaries WHERE user_id = $1 ORDER BY generated_at DESC LIMIT 1`,
+                [userId]
+            ).catch(() => ({ rows: [] }));
+            const cachedSummary = cachedRows[0];
+            if (cachedSummary?.data) {
+                return c.json(cachedSummary.data);
+            }
         }
 
-        // Dynamically compute report if no cache exists
-        const dataset = await getAnalyticsDataset(userId, 120);
+        const dataset = await getAnalyticsDataset(userId, days, { start, end });
         const lhs = summarizeLifeHealth(dataset.dailyRecords);
 
-        // Calculate standard behavior components
         const momentum = BehavioralEngine.calculateMomentum({
             logs: dataset.windows.last7,
-            sessions: [], // we will fetch focus sessions from dataset if needed, or pass empty
+            sessions: [],
             commitments: [],
             driftScore: 100
         });
 
-        // ─── Fallback / Calculated Drivers ───
         const drivers = {
             rankedDrivers: [
                 { behaviorLabel: 'Consistent sleep schedule', label: 'Sleep Consistency → Global LHS', impact: 8.5 },
@@ -74,32 +88,23 @@ app.get('/report', requireAuth, async (c) => {
             ]
         };
 
-        // ─── Fallback / Calculated Drift ───
-        const drift = {
-            alerts: []
-        };
-
-        // ─── Fallback / Calculated Forecast ───
+        const drift = { alerts: [] };
         const forecast = {
             horizons: {
                 sevenDays: { physical: 'stable', cognitive: 'improving', discipline: 'stable', financial: 'stable', emotional: 'stable' }
             }
         };
-
-        // ─── Fallback / Calculated Clusters ───
         const clusters = {
             clusters: [
                 { label: 'High Focus days', deltas: { lhs: 12.4 } }
             ]
         };
-
         const archetypes = {
             archetypes: [
                 { name: 'Peak Performer', representation: 0.65, traits: ['consistent sleep', 'high gym completion'] }
             ]
         };
 
-        // Generate the weekly review object using our engine
         const weeklyReview = generateWeeklyReview({
             lhsTimeline: lhs.timeline,
             drift,
@@ -108,7 +113,6 @@ app.get('/report', requireAuth, async (c) => {
             momentum
         });
 
-        // Generate the complete report payload
         const report = generateReportPayload({
             lhs,
             drivers,
@@ -120,7 +124,30 @@ app.get('/report', requireAuth, async (c) => {
             weeklyReview
         });
 
-        return c.json(report);
+        return c.json({
+            ...report,
+            lhs,
+            meta: {
+                days,
+                start: start || dataset.sinceDate,
+                end: end || dataset.untilDate,
+                daysWithData: dataset.dailyRecords.length,
+                timeline: (lhs.timeline || []).map((t) => ({
+                    date: t.date,
+                    sleep_hours: t.sleep_hours,
+                    gym_done: t.gym_done,
+                    learning_done: t.learning_done,
+                    mood: t.mood,
+                    steps: t.steps,
+                    water_bottles: t.water_bottles,
+                    journal: Boolean(String(t.journal_entry || '').trim()),
+                    habit_completion_pct: t.habit_completion_pct,
+                    daily_spend: t.daily_spend,
+                    focus_minutes: t.focus_minutes,
+                    globalScore: t.globalScore,
+                })),
+            },
+        });
     } catch (err) {
         console.error('Error generating report:', err);
         return c.json({ error: 'Failed to generate intelligence report', message: err.message }, 500);

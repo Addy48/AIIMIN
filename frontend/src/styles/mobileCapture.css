@@ -1,0 +1,108 @@
+/* Phone capture shell — locked AIIMIN palette */
+
+.mobile-capture {
+  min-height: 100vh;
+  background: #1a1a1a;
+  color: #f4f4f4;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 32px;
+}
+
+.mobile-capture__header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: color-mix(in srgb, #1a1a1a 92%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #2d2d2d;
+}
+
+.mobile-capture__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ff6b35;
+}
+
+.mobile-capture__main {
+  flex: 1;
+  padding: 20px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.mobile-capture__hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-capture__title {
+  margin: 0;
+  font-size: clamp(28px, 7vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.mobile-capture__sub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #a3a3a3;
+}
+
+.mobile-capture__sub a {
+  color: #ff6b35;
+  font-weight: 700;
+}
+
+.mobile-capture__card {
+  background: #2d2d2d;
+  border: 1px solid #3a3a3a;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.mobile-capture__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mobile-capture__link {
+  color: #ff6b35;
+  font-weight: 700;
+  text-decoration: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mobile-capture__muted {
+  color: #6b7280;
+}
+
+/* Touch targets inside daily log on phone */
+.mobile-capture button,
+.mobile-capture input,
+.mobile-capture select,
+.mobile-capture textarea {
+  min-height: 44px;
+}

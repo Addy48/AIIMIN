@@ -1,40 +1,23 @@
 # Current Context
 
-> Agents read after Home. Keep ≤400 lines. Update every work session.
+> Agents read after Home. Keep ≤400 lines.
 
-**Date:** 2026-07-12
+**Date:** 2026-07-15
 
 ## Today
 
-- Vercel fixed + **READY**: `dpl_8eTzBgrhKmc192bix9v9VAissfP4` / SHA `d420cef9`
-- Cause: `EntryForm.jsx` ternary siblings without fragment → SyntaxError
-- QA code on `main` (`e3212bc9` + build fix)
-- **EC2 still blocked from agent** (SSH denied). User/Action must deploy API.
-
-## Ship checklist
-
-| Step | Status |
-|------|--------|
-| Commit+push QA | done `e3212bc9` |
-| Fix Vercel build | done `d420cef9` |
-| Vercel production | **READY** |
-| EC2 API | **not from agent** — run SSH script |
-
-## EC2 (you)
-
-```bash
-ssh -i ~/Desktop/aiimin.pem ubuntu@13.207.146.15 \
-  'bash ~/AIIMIN/deploy/github-ec2-deploy.sh'
-curl -sS https://api.aiimin.in/api/health
-# POST /api/user/pulse-check must be 401 not 404
-```
+- Notes create was broken: legacy FK `auth.users` + `content` NOT NULL
+- Fixed: migration **044** applied; API dual-write; API restarted local :3001
 
 ## Next
 
-1. EC2 deploy verify
-2. Selfloop re-run
+1. Hard-refresh `/notes` → New → Save text note (smoke)
+2. PDF upload + Drive sync after Google reconnect
+3. Commit/push when asked (API needs EC2 after push)
 
-## Links
+## Touch
 
-- QA: `11_BUGS/QA-Run-2026-07-12.md`
-- Vercel: https://vercel.com/fwvevs-projects/aiimin/8eTzBgrhKmc192bix9v9VAissfP4
+- `server/migrations/044_fix_notes_user_fk.sql`
+- `server/routes/notes.js`, `server/lib/notesDrive.js`
+- `frontend/src/pages/Notes.jsx`
+- vault Notes MOC/Changelog

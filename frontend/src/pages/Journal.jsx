@@ -5,13 +5,11 @@ import {
   Flame, History, Download, PenLine, Feather, Brain, Sun, Coffee, BarChart2, X,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { useUserProfile } from '../hooks/useUserProfile';
 import useThemeColors from '../hooks/useThemeColors';
 import { apiPost, apiGet, apiPatch } from '../utils/api';
 import { trackEvent } from '../hooks/usePageAnalytics';
 import toast from '../utils/toast';
 import useMediaQuery from '../hooks/useMediaQuery';
-import FeatureTip from '../components/ui/FeatureTip';
 import FeatureGate from '../components/account/FeatureGate';
 import JournalSidebar from '../components/journal/JournalSidebar';
 import FreeWriteMode from '../components/journal/FreeWriteMode';
@@ -51,9 +49,9 @@ function mapMoodToEntryColumn(mood) {
 
 export default function JournalPage() {
   const { user } = useAuth();
-  const { profile } = useUserProfile();
   const c = useThemeColors();
   const isMobile = useMediaQuery('(max-width: 767px)');
+  const isTabletTier = useMediaQuery('(max-width: 1099px)');
   const [searchParams, setSearchParams] = useSearchParams();
   const modeParam = searchParams.get('mode') || 'write';
   const activeMode = MODE_BY_PARAM[modeParam] || 'write';
@@ -68,6 +66,9 @@ export default function JournalPage() {
   const [analysisMap, setAnalysisMap] = useState({});
   const [draftSuggestions, setDraftSuggestions] = useState([]);
   const [showStructuredModes, setShowStructuredModes] = useState(false);
+  // Drawer for phone widths that slip through + tablet / Split View; desktop keeps side rail
+  const historyAsDrawer = isMobile || isTabletTier;
+  const today = new Date().toISOString().split('T')[0];
 
   const setMode = (param) => {
     setSearchParams({ mode: param });
@@ -257,7 +258,6 @@ export default function JournalPage() {
     URL.revokeObjectURL(url);
   };
 
-  const today = new Date().toISOString().split('T')[0];
   const todayModeEntry = useMemo(() => findEntryForDate(entries, today, activeMode), [entries, today, activeMode]);
   const todayMorning = useMemo(() => findEntryForDate(entries, today, 'morning'), [entries, today]);
   const todayWrite = useMemo(() => findEntryForDate(entries, today, 'write'), [entries, today]);
@@ -280,7 +280,7 @@ export default function JournalPage() {
       selectedId={selectedEntry?.id}
       onSelect={(entry) => {
         setSelectedEntry(entry);
-        if (isMobile) setSidebarOpen(false);
+        if (historyAsDrawer) setSidebarOpen(false);
       }}
       onExport={handleExport}
       analysisMap={analysisMap}
@@ -302,43 +302,37 @@ export default function JournalPage() {
       <div className="journal-studio__header">
         <div className="journal-studio__title-row">
           <div className="journal-studio__title-block">
-            <h1 className="text-h2" style={{ color: c.text1 }}>Journal.</h1>
-            <p className="journal-studio__date">
+            <h1 className="text-h2 journal-studio__title" style={{ color: c.text1 }}>Journal</h1>
+            <time className="journal-studio__date" dateTime={today}>
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
+            </time>
           </div>
           <div className="journal-studio__header-actions">
             {streak > 0 && (
-              <span className="journal-studio__chip journal-studio__chip--accent">
-                <Flame size={14} /> {streak}d
+              <span className="journal-studio__chip journal-studio__chip--accent" title="Quiet write days in a row">
+                <Flame size={14} aria-hidden="true" /> {streak}d
               </span>
             )}
-            {isMobile && (
+            {historyAsDrawer && (
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}
                 aria-label="Open history"
-                className="journal-studio__chip"
+                className="journal-studio__chip journal-studio__chip--touch"
               >
-                <History size={14} /> History
+                <History size={14} aria-hidden="true" /> History
               </button>
             )}
             <button
               type="button"
               onClick={handleExport}
               aria-label="Export journal"
-              className="journal-studio__chip"
+              className="journal-studio__chip journal-studio__chip--export journal-studio__chip--touch"
             >
-              <Download size={14} /> Export
+              <Download size={14} aria-hidden="true" /> Export
             </button>
           </div>
         </div>
-
-        <FeatureTip
-          tipId="journal_tip"
-          message="Type, hold mic, or tap mood. Templates stay optional."
-          seenTips={profile?.seen_tips || []}
-        />
 
         {showStructuredModes ? (
           <div className="journal-studio__templates">
@@ -381,8 +375,8 @@ export default function JournalPage() {
         )}
       </div>
 
-      <div className={`journal-studio__layout${isMobile ? ' is-mobile' : ''}`}>
-        {!isMobile && sidebar}
+      <div className={`journal-studio__layout${historyAsDrawer ? ' is-drawer-tier' : ''}`}>
+        {!historyAsDrawer && sidebar}
 
         <main
           className="journal-studio__main custom-scrollbar"
@@ -392,10 +386,10 @@ export default function JournalPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={selectedEntry?.id || activeMode}
-              initial={{ opacity: 0, x: 8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.18 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
               style={{ minHeight: '100%' }}
             >
               {selectedEntry ? (
@@ -443,7 +437,7 @@ export default function JournalPage() {
       </div>
 
       <AnimatePresence>
-        {isMobile && sidebarOpen && (
+        {historyAsDrawer && sidebarOpen && (
           <>
             <motion.button
               type="button"
@@ -451,36 +445,23 @@ export default function JournalPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
               onClick={() => setSidebarOpen(false)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0,0,0,0.45)',
-                border: 'none',
-                zIndex: 40,
-              }}
+              className="journal-studio__drawer-scrim"
             />
             <motion.aside
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-              style={{
-                position: 'fixed',
-                top: 'var(--nav-height)',
-                left: 0,
-                bottom: 0,
-                width: 'min(320px, 88vw)',
-                zIndex: 41,
-                boxShadow: 'var(--shadow-lg)',
-              }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="journal-studio__drawer"
             >
-              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: 10, background: c.surface2, borderBottom: `1px solid ${c.border}` }}>
+              <div className="journal-studio__drawer-bar">
                 <button
                   type="button"
                   onClick={() => setSidebarOpen(false)}
                   aria-label="Close sidebar"
-                  style={{ background: 'none', border: 'none', color: c.text3, cursor: 'pointer', padding: 6 }}
+                  className="journal-studio__drawer-close"
                 >
                   <X size={18} />
                 </button>

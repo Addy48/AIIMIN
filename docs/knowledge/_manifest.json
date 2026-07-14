@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-11",
+  "lastUpdated": "2026-07-14",
   "entrypoint": "docs/knowledge/00_HOME.md",
   "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
   "brainOs": true,
@@ -73,6 +73,83 @@
     "intelligence": {
       "moc": "docs/knowledge/09_FEATURES/Intelligence/AI-Provider-Map.md",
       "status": "provider-map-live"
+    },
+    "journal": {
+      "moc": "docs/knowledge/09_FEATURES/Journal/Journal.md",
+      "changelog": "docs/knowledge/09_FEATURES/Journal/Changelog.md",
+      "files": [
+        "frontend/src/pages/Journal.jsx",
+        "frontend/src/components/journal",
+        "frontend/src/styles/journalStudio.css"
+      ],
+      "status": "craft-b1-in-progress"
+    },
+    "discipline": {
+      "moc": "docs/knowledge/09_FEATURES/Discipline/Discipline.md",
+      "changelog": "docs/knowledge/09_FEATURES/Discipline/Changelog.md",
+      "decision": "docs/knowledge/10_DECISIONS/ADR-Discipline-UrgeEvent.md",
+      "files": [
+        "frontend/src/pages/Discipline.jsx",
+        "frontend/src/api/discipline.js",
+        "server/routes/discipline.js"
+      ],
+      "status": "urge-redesign-planned"
+    },
+    "notes": {
+      "moc": "docs/knowledge/09_FEATURES/Notes/Notes.md",
+      "changelog": "docs/knowledge/09_FEATURES/Notes/Changelog.md",
+      "decision": "docs/knowledge/10_DECISIONS/ADR-Notes-SourceGrounded.md",
+      "files": [
+        "frontend/src/pages/Notes.jsx",
+        "server/routes/notes.js",
+        "server/lib/notesOcr.js",
+        "server/lib/notesDrive.js",
+        "server/migrations/043_note_drive_watches.sql",
+        "server/migrations/044_fix_notes_user_fk.sql"
+      ],
+      "status": "crud-fixed-044-local"
+    },
+    "device_tiers": {
+      "moc": "docs/knowledge/02_ARCHITECTURE/Device-Tiers.md",
+      "files": [
+        "frontend/src/hooks/useDeviceTier.js",
+        "frontend/src/components/system/DeviceGate.jsx",
+        "frontend/src/components/mobile/MobileCaptureApp.jsx"
+      ],
+      "status": "phone-m-ipad-full"
+    },
+    "overview": {
+      "moc": "docs/knowledge/09_FEATURES/Overview/Overview.md",
+      "files": [
+        "frontend/src/pages/Overview.jsx",
+        "frontend/src/components/dashboard/UniversalLogger.jsx"
+      ],
+      "status": "j0a-single-logger-local"
+    },
+    "navigation": {
+      "moc": "docs/knowledge/09_FEATURES/Navigation/Navigation.md",
+      "files": [
+        "frontend/src/constants/navItems.js",
+        "frontend/src/components/Navbar.jsx",
+        "frontend/src/hooks/useNavPreferences.js",
+        "frontend/src/components/system/CommandPalette.jsx"
+      ],
+      "status": "priority-plus-local"
+    },
+    "onboarding": {
+      "moc": "docs/knowledge/09_FEATURES/Onboarding/Onboarding.md",
+      "files": [
+        "frontend/src/pages/Onboarding.jsx"
+      ],
+      "status": "life-mode-gate-local"
+    },
+    "goals": {
+      "moc": "docs/knowledge/09_FEATURES/Goals/Goals.md",
+      "changelog": "docs/knowledge/09_FEATURES/Goals/Changelog.md",
+      "files": [
+        "frontend/src/pages/Goals.jsx"
+      ],
+      "status": "pipeline-achieved-fix"
     },
     "vault_brain_os": {
       "moc": "docs/knowledge/00_HOME.md",

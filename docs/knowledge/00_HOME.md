@@ -2,7 +2,7 @@
 
 > **Agents: read this first.** Then `15_MEMORY/Current-Context.md`. Then only docs for the task. Never whole-repo scan unless user says so.
 
-**Last updated:** 2026-07-12
+**Last updated:** 2026-07-14
 
 ## Project goal
 
@@ -14,10 +14,11 @@ Personal Life OS — daily metrics, money, calendar, focus, discipline, sports c
 - Go-live target: end Sep 2026; tester close 31 Jul
 - Code progress: high; launch blockers: GA4/Sentry, LC checklist, tester E2E
 - Selfloop QA 2026-07-12 remediated — see [[11_BUGS/QA-Run-2026-07-12]] (255 fixed / 29 wontfix); re-run before tester E2E
+- Active craft program: [[12_SPRINTS/Craft-Master-Plan-AJ]] · status [[12_SPRINTS/Craft-Status-Report-2026-07-15]]
 
 ## Current sprint
 
-See [[12_SPRINTS/Sprint-Current]]
+See [[12_SPRINTS/Sprint-Current]] · craft: [[12_SPRINTS/Craft-Master-Plan-AJ]]
 
 ## Current blockers
 
@@ -32,7 +33,7 @@ See [[12_SPRINTS/Sprint-Current]]
 - DB: Supabase PostgreSQL
 - Auth: Better Auth + Google OAuth
 - Host: Vercel (frontend) + EC2/API (`api.aiimin.in`)
-- Desktop `/` = full OS; Mobile `/m` = data capture only
+- Desktop `/` = full OS; Mobile `/m` = data capture only (phones); iPad/tablet = full OS ([[02_ARCHITECTURE/Device-Tiers]])
 
 Deep: [[02_ARCHITECTURE/Overview]]
 

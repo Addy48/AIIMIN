@@ -155,6 +155,7 @@ export default function MondayInsight({ user }) {
         }
 
         let disciplineStreak = 0;
+        let disciplineLine = null;
         try {
           const disc = await apiGet('/discipline/streak');
           disciplineStreak = disc?.streak_days || 0;
@@ -162,6 +163,10 @@ export default function MondayInsight({ user }) {
           const disc = JSON.parse(localStorage.getItem('aiimin_discipline_v3') || 'null');
           if (disc?.streak != null) disciplineStreak = disc.streak;
         }
+        try {
+          const patterns = await apiGet('/discipline/patterns');
+          if (patterns?.headline) disciplineLine = patterns.headline;
+        } catch { /* optional */ }
 
         const res = await generateWeeklyInsight({
           habits: habitsData,
@@ -178,7 +183,7 @@ export default function MondayInsight({ user }) {
           finance: `${formatINR(expenseTotal)} spent`,
           financeMeta: `${financeData.count} tx · ${formatINR(incomeTotal)} income`,
           lab: `${labSessions} sessions`,
-          discipline: `${disciplineStreak} day streak`,
+          discipline: disciplineLine || `${disciplineStreak} day streak`,
         };
 
         if (res) {

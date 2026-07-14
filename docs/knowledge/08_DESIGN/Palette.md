@@ -14,11 +14,19 @@ Do not introduce new brand colors without explicit approval.
 
 ## Light mode
 
-| Token | Hex |
-|-------|-----|
-| Background | `#f9f9f9` |
-| Cards | `#ffffff` |
-| Accents | Same as dark (`#ff6b35`, `#10b981`, `#6b7280`) |
+| Token | Hex | Use |
+|-------|-----|-----|
+| Background (canvas) | `#EDE4D3` | Warm ivory app background (`aiimin-light` `--color-base`) |
+| Elevated / soft surface | `#F7F1E6` | Secondary panels |
+| Cards | `#ffffff` | Surfaces (`--color-surface`) |
+| Body text | `#14171A` | Charcoal primary (`--color-text-1`) |
+| Accent | `#ff6b35` | Burnt orange — product lock (CSS light accent may use `#E85A24` for calm) |
+| Completion | `#10b981` | Done / success |
+| Incomplete | `#6b7280` | Incomplete / muted |
+
+**Contrast (Track I):** `#14171A` on `#EDE4D3` must stay ≥ 4.5:1 for body text.
+
+**Do not** change dark-mode canvas tokens as part of light-mode work.
 
 ## Typography notes
 

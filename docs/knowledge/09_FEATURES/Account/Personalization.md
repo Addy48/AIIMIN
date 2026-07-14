@@ -26,6 +26,12 @@
 
 ## Changelog
 
+### 2026-07-13 — Celebration device-tier layouts
+- **What:** Upgrade celebration is full-viewport on desktop (≥1100): 2-col identity + receipt, edge-to-edge, no card chrome. Tablet (768–1099): larger framed card. Mobile: compact centered card.
+- **Why:** Small modal felt cheap on desktop; need premium identity-shift by device
+- **Files:** `frontend/src/components/account/TierUpgradeCelebration.jsx`, `frontend/src/styles/tierUpgradeCelebration.css`
+- **Status:** shipped (local)
+
 ### 2026-07-11 — Journal frictionless capture
 - **What:** Default journal path is `JournalCapture` — single input row, hold-to-speak mic, mood-only one-tap save, draft suggestions from daily log, structured templates collapsed behind optional link. Auto-tag best-effort via `/daily-logs/journal/ai-analyze`.
 - **Why:** Blank textarea + template picker = note-app friction; capture should be one tap.

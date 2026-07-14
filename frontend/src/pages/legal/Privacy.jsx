@@ -59,6 +59,9 @@ const Privacy = () => {
                     <strong>https://www.googleapis.com/auth/youtube.readonly</strong> — Required to read (not modify) your YouTube activity for display in your personal AIIMIN dashboard.
                 </Para>
                 <Para>
+                    <strong>https://www.googleapis.com/auth/drive.readonly</strong> — Optional for Notes Drive folder watch: read PDFs/Docs from a folder you choose. AIIMIN does not write to Drive.
+                </Para>
+                <Para>
                     You can revoke any or all of these permissions at any time via your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>Google Account Permissions</a> page. Revoking access immediately disables the corresponding features in your dashboard.
                 </Para>
             </Section>

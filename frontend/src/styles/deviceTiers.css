@@ -1,0 +1,61 @@
+/* Life OS device tiers — phone / tablet / desktop */
+
+html[data-device-tier='tablet'] {
+  --content-pad: 24px;
+  --nav-height: 64px;
+}
+
+html[data-device-tier='tablet'] .nav-masthead__link {
+  min-height: 44px;
+  padding-inline: 12px;
+  font-size: 13px;
+}
+
+html[data-device-tier='tablet'] .nav-masthead__icon-btn,
+html[data-device-tier='tablet'] .nav-masthead__avatar {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Keep primary nav visible on iPad — do not collapse to hamburger until phone */
+html[data-device-tier='tablet'] .desktop-nav-links {
+  display: flex !important;
+}
+
+html[data-device-tier='tablet'] .mobile-menu-btn {
+  display: none !important;
+}
+
+html[data-device-tier='tablet'] .nav-masthead__links-scroll {
+  max-width: min(58vw, 720px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+html[data-device-tier='tablet'] .nav-masthead__links-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+html[data-device-tier='tablet'] .page-container {
+  padding-bottom: 48px;
+}
+
+html[data-device-tier='phone'] .desktop-nav-links {
+  display: none !important;
+}
+
+html[data-device-tier='desktop'] .mobile-menu-btn {
+  display: none !important;
+}
+
+/* Touch-friendly control floor on tablet */
+html[data-device-tier='tablet'] button:not(.nav-masthead__link),
+html[data-device-tier='tablet'] [role='button'] {
+  min-height: 44px;
+}
+
+html[data-device-tier='tablet'] .notes-studio__layout.is-drawer-tier,
+html[data-device-tier='tablet'] .journal-studio {
+  /* journal/notes already drawer at ≤900 — keep roomy */
+}

@@ -327,9 +327,13 @@ const Goals = () => {
     }
   };
 
-  const baseGoals = viewMode === 'archive'
-    ? goals.filter((g) => normalizeGoalStatus(g.status) === 'Achieved')
-    : goals.filter((g) => normalizeGoalStatus(g.status) !== 'Achieved');
+  // Pipeline needs Achieved in its column; Grid = active only; Archive = won only.
+  const baseGoals =
+    viewMode === 'archive'
+      ? goals.filter((g) => normalizeGoalStatus(g.status) === 'Achieved')
+      : viewMode === 'pipeline'
+        ? goals
+        : goals.filter((g) => normalizeGoalStatus(g.status) !== 'Achieved');
   const filtered = filter === 'all' ? baseGoals : baseGoals.filter((g) => g.pillar === filter);
   const onTrackCount = goals.filter((g) => normalizeGoalStatus(g.status) === 'On Track').length;
   const activeCount = goals.filter((g) => normalizeGoalStatus(g.status) !== 'Achieved').length;

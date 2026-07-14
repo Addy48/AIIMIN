@@ -1,22 +1,24 @@
-/* Identity-shift upgrade celebration — fixed zones, no overlap */
+/* Identity-shift upgrade celebration — device-tier layouts */
 
 .tier-celeb-backdrop {
   position: fixed;
   inset: 0;
   z-index: 80;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: color-mix(in srgb, #0a0a0a 72%, transparent);
-  backdrop-filter: blur(8px);
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  background: #0a0a0a;
 }
 
+/* ── Mobile / small: intimate card (default) ── */
 .tier-celeb-stage {
   --tier: #2dd4bf;
-  width: min(560px, 100%);
+  margin: auto;
+  width: min(520px, calc(100% - 32px));
+  max-height: min(640px, 90vh);
   display: grid;
-  grid-template-rows: 48px minmax(140px, 1fr) auto auto;
+  grid-template-rows: 48px minmax(120px, 1fr) auto auto;
   gap: 12px;
   padding: 22px 20px 18px;
   border-radius: 18px;
@@ -25,23 +27,15 @@
     #1a1a1a;
   border: 1px solid color-mix(in srgb, var(--tier) 28%, #333);
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
-  min-height: min(520px, 86vh);
-  max-height: 90vh;
   overflow: auto;
 }
 
-@media (min-width: 900px) {
-  .tier-celeb-stage {
-    width: min(720px, 88vw);
-    padding: 32px 36px 24px;
-    gap: 16px;
-  }
-}
-
-@media (min-width: 1280px) {
-  .tier-celeb-stage {
-    width: min(800px, 70vw);
-  }
+.tier-celeb-backdrop {
+  background: color-mix(in srgb, #0a0a0a 72%, transparent);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 
 .tier-celeb-zone {
@@ -119,7 +113,7 @@
   font-family: var(--font-display, 'Familjen Grotesk', var(--font-sans), system-ui, sans-serif);
   font-weight: 700;
   font-size: clamp(2.4rem, 8vw, 3.6rem);
-  letter-spacing: -0.045em;
+  letter-spacing: -0.04em;
   line-height: 1;
   background: linear-gradient(180deg, #fff 22%, var(--tier));
   -webkit-background-clip: text;
@@ -213,6 +207,7 @@
 .tier-celeb-cta {
   margin-top: 12px;
   width: 100%;
+  min-height: 44px;
   border: 0;
   border-radius: 9px;
   padding: 11px;
@@ -226,6 +221,188 @@
 
 .tier-celeb-cta:hover {
   filter: brightness(1.05);
+}
+
+.tier-celeb-cta:active {
+  transform: scale(0.98);
+}
+
+/* ── Tablet / Split View (~768–1099): larger card, still framed ── */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .tier-celeb-backdrop {
+    padding: 28px;
+  }
+
+  .tier-celeb-stage {
+    width: min(680px, 92vw);
+    max-height: 88vh;
+    min-height: min(560px, 80vh);
+    padding: 36px 40px 28px;
+    gap: 18px;
+    border-radius: 22px;
+  }
+
+  .tier-celeb-name {
+    font-size: clamp(3rem, 7vw, 4.2rem);
+  }
+
+  .tier-celeb-tagline {
+    font-size: 1.05rem;
+    max-width: 46ch;
+  }
+
+  .tier-celeb-chip {
+    font-size: 13px;
+    padding: 9px 14px;
+  }
+
+  .tier-celeb-receipt {
+    padding: 18px 20px;
+  }
+
+  .tier-celeb-cta {
+    min-height: 48px;
+    font-size: 14px;
+    border-radius: 12px;
+  }
+}
+
+/* ── Desktop (≥1100): true full-screen premium stage ── */
+@media (min-width: 1100px) {
+  .tier-celeb-backdrop {
+    padding: 0;
+    background: #0a0a0a;
+    backdrop-filter: none;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .tier-celeb-stage {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    min-height: 100%;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    padding: clamp(48px, 8vh, 96px) clamp(48px, 8vw, 120px);
+    gap: 28px;
+    grid-template-columns: 1.15fr 0.85fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "status status"
+      "identity receipt"
+      "unlocks receipt";
+    align-content: center;
+    background:
+      radial-gradient(ellipse 55% 60% at 18% 40%, color-mix(in srgb, var(--tier) 18%, transparent), transparent 70%),
+      radial-gradient(ellipse 40% 50% at 88% 70%, color-mix(in srgb, var(--tier) 8%, transparent), transparent 65%),
+      #111111;
+  }
+
+  .tier-celeb-zone--status {
+    grid-area: status;
+    justify-content: flex-start;
+    min-height: 40px;
+  }
+
+  .tier-celeb-zone--identity {
+    grid-area: identity;
+    align-items: flex-start;
+    text-align: left;
+    padding: 12px 24px 12px 0;
+    justify-content: center;
+  }
+
+  .tier-celeb-to {
+    align-items: flex-start;
+  }
+
+  .tier-celeb-name {
+    font-size: clamp(4.5rem, 9vw, 7.5rem);
+    letter-spacing: -0.04em;
+  }
+
+  .tier-celeb-eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.32em;
+    margin-bottom: 16px;
+  }
+
+  .tier-celeb-tagline {
+    margin-top: 20px;
+    font-size: 1.2rem;
+    max-width: 36ch;
+    line-height: 1.5;
+    color: #c4c4c4;
+  }
+
+  .tier-celeb-from {
+    font-size: 1.6rem;
+    align-self: flex-start;
+  }
+
+  .tier-celeb-zone--unlocks {
+    grid-area: unlocks;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-right: 24px;
+    align-self: end;
+  }
+
+  .tier-celeb-chip {
+    font-size: 14px;
+    padding: 10px 16px;
+    background: color-mix(in srgb, #1a1a1a 80%, var(--tier) 4%);
+    border-color: color-mix(in srgb, var(--tier) 22%, #333);
+  }
+
+  .tier-celeb-zone--receipt {
+    grid-area: receipt;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .tier-celeb-receipt {
+    width: min(420px, 100%);
+    padding: 28px 28px 24px;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--tier) 25%, #333);
+    background:
+      linear-gradient(160deg, color-mix(in srgb, var(--tier) 6%, #1c1c1c), #161616);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  }
+
+  .tier-celeb-receipt-head {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+
+  .tier-celeb-brand {
+    font-size: 15px;
+  }
+
+  .tier-celeb-receipt-row {
+    font-size: 13px;
+    padding: 8px 0;
+  }
+
+  .tier-celeb-cta {
+    margin-top: 22px;
+    min-height: 52px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+}
+
+/* Ultra-wide: keep content from stretching forever */
+@media (min-width: 1600px) {
+  .tier-celeb-stage {
+    padding-left: max(120px, calc((100vw - 1400px) / 2));
+    padding-right: max(120px, calc((100vw - 1400px) / 2));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -19,6 +19,8 @@ const SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/tasks.readonly',
     'https://www.googleapis.com/auth/youtube.readonly',
+    // Notes Drive folder watch (user reconnects Google to grant)
+    'https://www.googleapis.com/auth/drive.readonly',
 ];
 
 const getCalendarOAuthConfig = () => ({

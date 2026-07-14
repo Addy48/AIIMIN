@@ -128,6 +128,59 @@ async function processUser(supabase, userId) {
     return insightCount;
 }
 
+/**
+ * Goal × linked-habit consistency pass (AnchorEdge habit→goal).
+ * Plain-language headlines only — no rho shown by default to clients.
+ */
+async function processGoalHabitLinks(supabase, userId) {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+
+    const { data: edges } = await supabase
+        .from('anchor_edges')
+        .select('source_id, target_id, relationship, confirmed')
+        .eq('user_id', userId)
+        .eq('source_type', 'habit')
+        .eq('target_type', 'goal')
+        .eq('confirmed', true);
+
+    if (!edges?.length) return 0;
+
+    let made = 0;
+    for (const edge of edges) {
+        const habitId = edge.source_id;
+        const goalId = edge.target_id;
+
+        const { data: logs } = await supabase
+            .from('habit_logs')
+            .select('completed_at')
+            .eq('user_id', userId)
+            .eq('habit_id', habitId)
+            .gte('completed_at', thirtyDaysAgo);
+
+        const daysWithLog = new Set(
+            (logs || []).map((l) => String(l.completed_at).slice(0, 10))
+        ).size;
+        const consistency = daysWithLog / 30;
+
+        if (consistency >= 0.3) continue;
+
+        const headline = `A linked habit for one of your goals dropped below 30% consistency in the last 30 days — check the habit before pushing the goal harder.`;
+        try {
+            await supabase.from('lab_insights').insert({
+                user_id: userId,
+                headline,
+                effect_pct: Math.round((1 - consistency) * 100),
+                n_samples: daysWithLog,
+                severity: 'surface',
+            });
+            made++;
+        } catch {
+            /* schema variance — skip */
+        }
+    }
+    return made;
+}
+
 export async function runCorrelationEngine(supabase) {
     console.log('[CorrelationEngine] Starting...');
     const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
@@ -151,7 +204,8 @@ export async function runCorrelationEngine(supabase) {
     for (const userId of targetUsers) {
         try {
             const count = await processUser(supabase, userId);
-            totalInsights += count;
+            const linkCount = await processGoalHabitLinks(supabase, userId);
+            totalInsights += count + linkCount;
         } catch (err) {
             console.error(`[CorrelationEngine] Error for user ${userId}:`, err);
         }

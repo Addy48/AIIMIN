@@ -37,9 +37,12 @@ import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
 import TierRouteGuard from './components/account/TierRouteGuard';
 import EmailVerifiedGuard from './components/system/EmailVerifiedGuard';
+import DeviceGate from './components/system/DeviceGate';
+import './styles/deviceTiers.css';
 
 // Lazy-loaded Dashboard routes
 const Overview = React.lazy(() => import('./pages/Overview'));
+const MobileCaptureApp = React.lazy(() => import('./components/mobile/MobileCaptureApp'));
 const Insights = React.lazy(() => import('./pages/Insights'));
 const CalendarPage = React.lazy(() => import('./pages/CalendarPage'));
 
@@ -118,6 +121,7 @@ function AppContent({ user, session }) {
   }
 
   return (
+    <DeviceGate authed={!!session && canAccessApp}>
     <div style={{ minHeight: '100vh', background: 'var(--color-base)' }}>
       <WaitlistThemeSync />
       <Routes>
@@ -144,7 +148,14 @@ function AppContent({ user, session }) {
           <Route path="/" element={<Navigate to={canAccessApp && session ? '/overview' : '/login'} replace />} />
         )}
 
-        {/* Authenticated shell */}
+        {/* Phone web: capture-only shell (native app coming) */}
+        <Route path="/m" element={
+          session && canAccessApp
+            ? <EmailVerifiedGuard><Lazy><MobileCaptureApp /></Lazy></EmailVerifiedGuard>
+            : <Navigate to="/login" replace />
+        } />
+
+        {/* Authenticated shell — full Life OS (iPad + desktop) */}
         <Route element={
           isWaitlistMode && !canAccessApp && !accessLoading
             ? <Navigate to="/" replace />
@@ -196,6 +207,7 @@ function AppContent({ user, session }) {
       {isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
       {!isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
+    </DeviceGate>
   );
 }
 

@@ -1,7 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Search, Download, BookOpen } from 'lucide-react';
-import useThemeColors from '../../hooks/useThemeColors';
 import { entryMatchesSearch, getEntryPreview, MODE_LABELS, parseEntry } from './journalUtils';
 import { SkeletonRow } from '../ui/Skeleton';
 
@@ -17,8 +15,6 @@ export default function JournalSidebar({
   onExport,
   analysisMap = {},
 }) {
-  const c = useThemeColors();
-
   const filtered = entries
     .filter((e) => {
       if (modeFilter === 'all') return true;
@@ -28,34 +24,33 @@ export default function JournalSidebar({
     .slice(0, 30);
 
   return (
-    <aside style={{
-      borderRight: `1px solid ${c.border}`,
-      background: c.surface2,
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: 0,
-    }}>
-      <div style={{ padding: '18px 16px', borderBottom: `1px solid ${c.border}` }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+    <aside className="journal-sidebar">
+      <div className="journal-sidebar__head">
+        <div className="journal-sidebar__head-row">
           <div>
-            <span className="text-label">History</span>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: c.text1, fontWeight: 500 }}>Search and revisit past entries.</p>
+            <span className="text-label journal-sidebar__history-label">History</span>
+            <p className="journal-sidebar__sub">Search and revisit past entries.</p>
           </div>
-          <button type="button" onClick={onExport} aria-label="Export journal" style={{ background: c.surface3, border: `1px solid ${c.border}`, borderRadius: 8, color: c.text2, cursor: 'pointer', padding: '8px 10px', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700 }}>
-            <Download size={14} /> Export
+          <button
+            type="button"
+            onClick={onExport}
+            aria-label="Export journal"
+            className="journal-sidebar__export"
+          >
+            <Download size={14} aria-hidden="true" /> Export
           </button>
         </div>
-        <div style={{ position: 'relative', marginBottom: 12 }}>
-          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: c.text2 }} />
+        <div className="journal-sidebar__search">
+          <Search size={14} className="journal-sidebar__search-icon" aria-hidden="true" />
           <input
             type="text"
             placeholder="Search entries…"
             value={search}
             onChange={(e) => onSearch(e.target.value)}
-            style={{ width: '100%', padding: '11px 12px 11px 36px', borderRadius: 10, border: `1px solid ${c.border}`, background: c.inputBg, color: c.text1, fontSize: 13 }}
+            className="journal-sidebar__search-input"
           />
         </div>
-        <div className="journal-sidebar__pills" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        <div className="journal-sidebar__pills" role="group" aria-label="Filter by mode">
           <button
             type="button"
             className={`journal-sidebar__pill ${modeFilter === 'all' ? 'journal-sidebar__pill--active' : ''}`}
@@ -76,7 +71,7 @@ export default function JournalSidebar({
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 12px 24px' }}>
+      <div className="journal-sidebar__list custom-scrollbar">
         {loading && (
           <>
             <SkeletonRow />
@@ -85,10 +80,10 @@ export default function JournalSidebar({
           </>
         )}
         {!loading && filtered.length === 0 && (
-          <div style={{ margin: '18px 4px', padding: 18, border: `1px dashed ${c.borderLit}`, borderRadius: 14, background: c.surface1, textAlign: 'center' }}>
-            <BookOpen size={22} style={{ color: c.accent, marginBottom: 10 }} />
-            <p style={{ margin: 0, color: c.text1, fontSize: 13, fontWeight: 750 }}>No entries match this view.</p>
-            <p style={{ margin: '6px 0 0', color: c.text1, fontSize: 12, lineHeight: 1.45 }}>
+          <div className="journal-sidebar__empty">
+            <BookOpen size={22} className="journal-sidebar__empty-icon" aria-hidden="true" />
+            <p className="journal-sidebar__empty-title">No entries match this view.</p>
+            <p className="journal-sidebar__empty-copy">
               Write a note for today, or clear filters to see older entries.
             </p>
           </div>
@@ -98,38 +93,25 @@ export default function JournalSidebar({
           const active = selectedId === entry.id;
           const analysis = analysisMap[entry.id];
           return (
-            <motion.button
+            <button
               key={entry.id}
               type="button"
               onClick={() => onSelect(entry)}
-              style={{
-                display: 'block',
-                width: '100%',
-                textAlign: 'left',
-                padding: 12,
-                marginBottom: 8,
-                borderRadius: 12,
-                border: active ? `1px solid ${c.borderLit}` : `1px solid ${c.border}`,
-                background: active ? c.surface1 : c.surface3,
-                cursor: 'pointer',
-                transition: 'background var(--dur-normal) var(--ease), border-color var(--dur-normal) var(--ease), transform var(--dur-fast) var(--ease)',
-              }}
+              className={`journal-sidebar__item${active ? ' is-active' : ''}`}
             >
-              <div style={{ fontSize: 12, color: c.text3, marginBottom: 4 }}>{entry.date}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: c.text1, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div className="journal-sidebar__item-date">{entry.date}</div>
+              <div className="journal-sidebar__item-preview">
                 {getEntryPreview(entry.encrypted_content)}
               </div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: c.surface4, color: c.text2 }}>
+              <div className="journal-sidebar__item-tags">
+                <span className="journal-sidebar__tag">
                   {MODE_LABELS[parsed.mode] || 'Journal'}
                 </span>
                 {analysis?.emotionalTone && (
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 4, background: c.surface4, color: c.text2 }}>
-                    {analysis.emotionalTone}
-                  </span>
+                  <span className="journal-sidebar__tag">{analysis.emotionalTone}</span>
                 )}
               </div>
-            </motion.button>
+            </button>
           );
         })}
       </div>

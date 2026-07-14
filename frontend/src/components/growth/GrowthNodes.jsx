@@ -14,7 +14,7 @@ const NODES = [
   { id: 'decision', label: '2. Strategize', icon: HelpCircle, desc: 'Mental Models (Lab)', color: '#2563EB', route: '?module=decision', statKey: 'lab' },
   { id: 'habits', label: '3. Build Habit', icon: Activity, desc: 'Daily execution', color: '#10B981', route: '/habits', statKey: 'habits' },
   { id: 'focus', label: '4. Deep Work', icon: Zap, desc: 'Enter Flow State', color: '#F59E0B', route: '/focus', statKey: 'focus' },
-  { id: 'discipline', label: '5. Maintain', icon: Shield, desc: 'Discipline Engine', color: '#EF4444', route: '/discipline', statKey: 'discipline' },
+  { id: 'discipline', label: '5. Maintain', icon: Shield, desc: 'Urge surfing', color: 'var(--color-accent)', route: '/discipline', statKey: 'discipline' },
 ];
 
 export default function GrowthNodes() {
@@ -29,7 +29,7 @@ export default function GrowthNodes() {
       apiGet('/goals'),
       apiGet('/habits'),
       apiGet('/focus/week-stats?days=7'),
-      apiGet('/discipline/streak'),
+      apiGet('/discipline/patterns'),
     ]).then(([goalsRes, habitsRes, focusRes, discRes]) => {
       const goals = goalsRes.status === 'fulfilled' ? (goalsRes.value || []) : [];
       const habits = habitsRes.status === 'fulfilled' ? (habitsRes.value || []) : [];
@@ -44,7 +44,9 @@ export default function GrowthNodes() {
         lab: 'Open Lab →',
         habits: habits.length ? `${doneToday}/${habits.length} today` : 'Add habits',
         focus: focusSessions ? `${focusSessions} sessions` : 'Start focus',
-        discipline: disc?.streak_days != null ? `${disc.streak_days}d streak` : 'Start streak',
+        discipline: disc?.headline
+          ? disc.headline.replace(/^Surfed /, '')
+          : 'Surf urge',
       });
     });
   }, []);
