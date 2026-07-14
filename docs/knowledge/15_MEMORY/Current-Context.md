@@ -6,16 +6,15 @@
 
 ## Today
 
-- Login QA **LIVE**
-  - Code: `2c4e2691` (+ docs `25cd5d03`)
-  - EC2: `2c4e2691` · health ok
-  - Vercel: **READY** · `25cd5d03` · `aiimin.in`
+Honest gap: tour + Insights→Reports stayed **local** (never pushed) — prod still old UI.
+Report 500 root: `analyticsData` queried `pomodoro_sessions.started_at` / `duration` — live table is daily rollup `date`, `cycles_completed`, `total_focus_minutes`. Fixed.
 
 ## Next
 
-1. Selfloop re-run `/login`
-2. Regrade from new screenshots only
+1. Push fix + UI ship; verify Vercel READY + EC2 + `/reports` loads
+2. Hard-refresh prod; old tour pill gone
 
 ## Touch
 
-- Shipped — see `docs/knowledge/11_BUGS/QA-Run-2026-07-14-Login.md`
+- `server/services/analyticsData.js`, `reportGenerator.js`, `weeklyReviewEngine.js`, `weeklyDigestService.js`
+- Tour/Reports merge frontend files (unpushed → shipping)

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useThemeContext } from '../../../context/ThemeContext';
 import { apiPatch } from '../../../utils/api';
-import { Sun, Moon, Check } from 'lucide-react';
+import { Sun, Moon, Check, Compass } from 'lucide-react';
 import { THEME_META, isLightTheme } from '../../../constants/themes';
 import NavPinEditor from '../../../components/settings/NavPinEditor';
 import { useFontScale } from '../../../hooks/useFontScale';
+import toast from '../../../utils/toast';
 
 const AI_TONES = [
   {
@@ -109,6 +110,56 @@ export default function PersonalizationSection({ profile, onProfileUpdate }) {
           Tune AIIMIN to match how you think and work.
         </p>
       </div>
+
+      <section style={{
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--r-xl)',
+        padding: 20,
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 14,
+      }}
+      >
+        <div style={{ minWidth: 0, flex: '1 1 200px' }}>
+          <h2 className="text-h3" style={{ margin: '0 0 4px', color: 'var(--color-text-1)' }}>Product tour</h2>
+          <p className="text-sm" style={{ margin: 0, color: 'var(--color-text-2)', maxWidth: 420 }}>
+            Optional eight-stop walkthrough. If you tapped Not now, we never ask again — start it here whenever you want.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window.startProductTour === 'function') {
+              window.startProductTour();
+              toast.success('Tour started');
+            } else {
+              window.dispatchEvent(new CustomEvent('aiimin:start-tour'));
+              toast.success('Starting tour…');
+            }
+          }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            minHeight: 44,
+            padding: '10px 16px',
+            borderRadius: 10,
+            border: '1px solid var(--color-accent)',
+            background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)',
+            color: 'var(--color-accent)',
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: 'pointer',
+            flexShrink: 0,
+          }}
+        >
+          <Compass size={16} aria-hidden />
+          Start product tour
+        </button>
+      </section>
 
       <NavPinEditor />
 

@@ -109,6 +109,25 @@
       ],
       "status": "crud-fixed-044-local"
     },
+    "reports": {
+      "moc": "docs/knowledge/09_FEATURES/Reports/Reports.md",
+      "files": [
+        "frontend/src/pages/Reports.jsx",
+        "frontend/src/pages/Insights.jsx",
+        "frontend/src/components/reports/PatternsPanel.jsx",
+        "frontend/src/components/reports/SkillTreePanel.jsx"
+      ],
+      "status": "insights-merged-tabs"
+    },
+    "product_tour": {
+      "moc": "docs/knowledge/09_FEATURES/Onboarding/Onboarding.md",
+      "files": [
+        "frontend/src/components/onboarding/ProductTour.jsx",
+        "frontend/src/styles/productTour.css",
+        "frontend/src/pages/Settings.jsx"
+      ],
+      "status": "v2-eight-stop"
+    },
     "device_tiers": {
       "moc": "docs/knowledge/02_ARCHITECTURE/Device-Tiers.md",
       "files": [

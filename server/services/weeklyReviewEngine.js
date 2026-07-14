@@ -19,14 +19,26 @@ export function generateWeeklyReview({ lhsTimeline = [], drift = { alerts: [] },
         summary: `${key} ${value.current >= value.previous ? 'improved' : 'declined'} by ${Math.abs(value.current - value.previous).toFixed(2)}${value.suffix}.`,
     }));
 
+    const ranked = Array.isArray(drivers?.rankedDrivers) ? drivers.rankedDrivers : [];
+    const clusterList = Array.isArray(clusters?.clusters) ? clusters.clusters : [];
+    const alerts = Array.isArray(drift?.alerts) ? drift.alerts : [];
+
     const behavioralInsights = [
-        ...drivers.rankedDrivers.slice(0, 2).map((driver) => `${driver.behaviorLabel} changes ${driver.label.split('→')[1].trim()} by ${driver.impact.toFixed(2)}.`),
-        ...(clusters.clusters[0] ? [`Best cluster: ${clusters.clusters[0].label} raises LHS by ${clusters.clusters[0].deltas.lhs.toFixed(2)}.`] : []),
-        ...(momentum.topBehavior ? [momentum.explanation] : []),
+        ...ranked.slice(0, 2).map((driver) => {
+            const label = String(driver.label || '');
+            const arrowPart = label.includes('→') ? label.split('→')[1].trim() : label || 'outcome';
+            const impact = Number(driver.impact);
+            const impactText = Number.isFinite(impact) ? impact.toFixed(2) : '—';
+            return `${driver.behaviorLabel || 'Behavior'} changes ${arrowPart} by ${impactText}.`;
+        }),
+        ...(clusterList[0]
+            ? [`Best cluster: ${clusterList[0].label} raises LHS by ${Number(clusterList[0].deltas?.lhs || 0).toFixed(2)}.`]
+            : []),
+        ...(momentum?.topBehavior && momentum?.explanation ? [momentum.explanation] : []),
     ];
 
-    const warnings = drift.alerts.filter((alert) => alert.severity === 'warning').map((alert) => (
-        `${alert.label} drifted by ${alert.drift.toFixed(2)} from baseline.`
+    const warnings = alerts.filter((alert) => alert.severity === 'warning').map((alert) => (
+        `${alert.label} drifted by ${Number(alert.drift || 0).toFixed(2)} from baseline.`
     ));
 
     const lowestSystem = currentWeek.reduce((acc, day) => {

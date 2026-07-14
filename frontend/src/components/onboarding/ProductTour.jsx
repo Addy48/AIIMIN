@@ -1,301 +1,284 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Check, ArrowLeft } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ArrowLeft, Check, ChevronRight, Compass, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useThemeContext } from '../../context/ThemeContext';
+import '../../styles/productTour.css';
 
+/**
+ * Invite / completion flag. Any non-null value = never auto-ask again.
+ * Values: `true` (finished), `dismissed` (Not now / X / close).
+ * Manual retake from Account / Settings must NOT clear this.
+ */
+export const TOUR_STORAGE_KEY = 'aiimin_tour_v2_completed';
+
+function readTourFlag() {
+  try {
+    return localStorage.getItem(TOUR_STORAGE_KEY)
+      || localStorage.getItem('aiimin_tour_completed');
+  } catch {
+    return null;
+  }
+}
+
+/** Permanently suppress auto-invite. Retake only via Account / Settings. */
+function suppressAutoInvite(reason = 'dismissed') {
+  try {
+    localStorage.setItem(TOUR_STORAGE_KEY, reason);
+    // Legacy key: any truthy string blocks old invite paths too.
+    localStorage.setItem('aiimin_tour_completed', 'true');
+  } catch { /* ignore */ }
+}
+
+/**
+ * Short Life OS tour — real modules only.
+ * Design Read: product coach card · calm · V3 M3 D5 · locked palette
+ */
 const TOUR_STEPS = [
-    {
-        target: '/overview',
-        title: 'Welcome to AIIMIN Dashboard',
-        content: 'This is your central command center. Here you get a birds-eye view of your day\'s schedules, habits completion rate, ongoing focus statistics, and visual mood/productivity patterns.',
-        position: 'center'
-    },
-    {
-        target: '/habits',
-        title: 'Habits Tracking System',
-        content: 'Consistency breeds excellence. Create personal habits, track your daily routines, and earn progressive streak milestones to reinforce positive behavioral habits.',
-        position: 'center'
-    },
-    {
-        target: '/goals',
-        title: 'Core Goals & Milestones',
-        content: 'Turn abstract dreams into absolute results. Set long-term life objectives, define key metrics, and break them down into granular, actionable todo checklist items.',
-        position: 'center'
-    },
-    {
-        target: '/journal',
-        title: 'Structured Daily Journaling',
-        content: 'Forge deep self-awareness. Log morning reflections and evening gratitude, rating your daily productivity, focus, and mindfulness scores in your permanent log.',
-        position: 'center'
-    },
-    {
-        target: '/focus',
-        title: 'Deep Focus & Pomodoro Room',
-        content: 'Lock in and tune out distractions. Start custom Pomodoro sessions, play soothing background noise generators (Lofi, Rain, White Noise), and track every block of deep work.',
-        position: 'center'
-    },
-    {
-        target: '/placements',
-        title: 'Placement & Job Tracker',
-        content: 'Supercharge your career prep. A full Kanban board to track job applications, maintain interview steps, log key contacts, and organize resume variants all in one workspace.',
-        position: 'center'
-    },
-    {
-        target: '/finance',
-        title: 'Wealth & Asset Ledger',
-        content: 'Take absolute control of your finances. Record dynamic transactions, build monthly budgets, and track live market prices for Gold, Silver, Mutual Funds, and global equities.',
-        position: 'center'
-    },
-    {
-        target: '/sports',
-        title: 'Live Sports scores & Alerts',
-        content: 'Track your favorite sports without leaving your personal OS. Live updates, match results, and custom ESPN-powered schedules for Cricket, Football, Formula 1, and Basketball.',
-        position: 'center'
-    },
-    {
-        target: '/lab',
-        title: 'Self-Improvement Lab',
-        content: 'Train your attributes like an RPG character. Take real-time typing speed speedruns, track verbal practice logs, and structure core identity affirmations.',
-        position: 'center'
-    },
-    {
-        target: '/calendar',
-        title: 'Unified Calendar & Deadlines',
-        content: 'Synchronize your life seamlessly. Full Google Calendar integration combining your tasks, deadlines, schedules, and custom sessions into one responsive calendar view.',
-        position: 'center'
-    },
-    {
-        target: '/insights',
-        title: 'AI Behavioral Insights',
-        content: 'Discover hidden patterns in your life. Our analysis engine correlates your financial habits, productivity sessions, sleep logs, and focus levels into actionable graphs.',
-        position: 'center'
-    },
-    {
-        target: '/settings',
-        title: 'Custom Themes & Preferences',
-        content: 'Make AIIMIN fully yours. Toggle responsive dark/light modes, update credentials, configure active API integrations, and choose from 9 custom-tailored visual themes.',
-        position: 'center'
-    }
+  {
+    target: '/overview',
+    chapter: 'Home base',
+    title: 'Today is the hub',
+    content:
+      'Log the day, scan commitments, and jump into tools from one canvas. Everything else exists to feed this view — not distract from it.',
+  },
+  {
+    target: '/habits',
+    chapter: 'Consistency',
+    title: 'Habits compound',
+    content:
+      'Track routines you actually keep. Completions feed Later analytics — skip shame chrome; mark what happened.',
+  },
+  {
+    target: '/journal',
+    chapter: 'Reflection',
+    title: 'Journal stays yours',
+    content:
+      'Capture mood, voice, and long-form without a second productivity cult. Private by default — use it when the day needs a write.',
+  },
+  {
+    target: '/notes',
+    chapter: 'Sources',
+    title: 'Notes = references',
+    content:
+      'PDFs, voice transcripts, lecture paste. Not a second journal — link sources to habits when you confirm it.',
+  },
+  {
+    target: '/discipline',
+    chapter: 'Friction',
+    title: 'Urge surf, not streak shame',
+    content:
+      'When the urge hits, ride the timer and log outcome. Patterns beat punishment. Non-clinical coaching language only.',
+  },
+  {
+    target: '/focus',
+    chapter: 'Deep work',
+    title: 'Focus room',
+    content:
+      'Pomodoro blocks + ambience when you need locked-in time. Sessions flow into Reports.',
+  },
+  {
+    target: '/reports?tab=patterns',
+    chapter: 'Intelligence',
+    title: 'Reports + Patterns',
+    content:
+      'One place for period telemetry, behavioral patterns, and skill tracking. Former Insights live here — Report · Patterns · Skills.',
+  },
+  {
+    target: '/account',
+    chapter: 'You',
+    title: 'Account & restarts',
+    content:
+      'Plan and personalization live here. Want this tour again later? Account → Personalization → Start product tour. We will not nag after Not now.',
+  },
 ];
 
+const reduceMotion =
+  typeof window !== 'undefined'
+  && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
 export default function ProductTour() {
-    const { theme } = useThemeContext();
-    const navigate = useNavigate();
-    const isDark = theme === 'dark';
+  const navigate = useNavigate();
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
-    const [isOpen, setIsOpen] = useState(false);
-    const [currentStep, setCurrentStep] = useState(0);
+  const endTour = useCallback((finished = true) => {
+    setIsOpen(false);
+    setInviteOpen(false);
+    // Always suppress auto-invite — Esc / scrim / Skip / Finish all count as "don't ask again".
+    suppressAutoInvite(finished ? 'true' : 'dismissed');
+  }, []);
 
-    const [showPill, setShowPill] = useState(false);
+  const dismissInvite = useCallback(() => {
+    setInviteOpen(false);
+    suppressAutoInvite('dismissed');
+  }, []);
 
-    const startTour = useCallback(() => {
-        setShowPill(false);
-        setIsOpen(true);
-        setCurrentStep(0);
-        navigate(TOUR_STEPS[0].target);
-    }, [navigate]);
+  const startTour = useCallback(() => {
+    setInviteOpen(false);
+    // From first second of engagement, never auto-invite again (refresh mid-tour included).
+    suppressAutoInvite('dismissed');
+    setIsOpen(true);
+    setCurrentStep(0);
+    navigate(TOUR_STEPS[0].target);
+  }, [navigate]);
 
-    const endTour = () => {
-        setIsOpen(false);
-        setShowPill(false);
-        localStorage.setItem('aiimin_tour_completed', 'true');
+  const goToStep = useCallback((index) => {
+    const i = Math.max(0, Math.min(TOUR_STEPS.length - 1, index));
+    setCurrentStep(i);
+    navigate(TOUR_STEPS[i].target);
+  }, [navigate]);
+
+  const nextStep = () => {
+    if (currentStep < TOUR_STEPS.length - 1) goToStep(currentStep + 1);
+    else endTour(true);
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) goToStep(currentStep - 1);
+  };
+
+  useEffect(() => {
+    // Any prior choice (finish OR Not now) → never auto-invite again.
+    if (readTourFlag()) return undefined;
+    const t = setTimeout(() => setInviteOpen(true), 1800);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    // Manual retake: do NOT clear opt-out — otherwise Esc would bring invite back next load.
+    window.startProductTour = () => {
+      startTour();
+    };
+    const onForce = () => window.startProductTour?.();
+    window.addEventListener('aiimin:start-tour', onForce);
+    return () => {
+      delete window.startProductTour;
+      window.removeEventListener('aiimin:start-tour', onForce);
+    };
+  }, [startTour]);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') endTour(false);
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        e.preventDefault();
+        nextStep();
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevStep();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- step handlers close over currentStep
+  }, [isOpen, currentStep, endTour]);
+
+  const step = TOUR_STEPS[currentStep];
+  const progress = ((currentStep + 1) / TOUR_STEPS.length) * 100;
+  const motionProps = reduceMotion
+    ? { initial: false, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : {
+      initial: { opacity: 0, y: 16, scale: 0.98 },
+      animate: { opacity: 1, y: 0, scale: 1 },
+      exit: { opacity: 0, y: 12, scale: 0.98 },
+      transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
     };
 
-    const nextStep = () => {
-        if (currentStep < TOUR_STEPS.length - 1) {
-            const next = currentStep + 1;
-            setCurrentStep(next);
-            navigate(TOUR_STEPS[next].target);
-        } else {
-            endTour();
-        }
-    };
+  return (
+    <AnimatePresence>
+      {inviteOpen && !isOpen && (
+        <motion.div
+          key="invite"
+          role="dialog"
+          aria-label="Product tour invitation"
+          className="ptour-invite"
+          {...motionProps}
+        >
+          <div className="ptour-invite__accent" aria-hidden />
+          <div className="ptour-invite__body">
+            <p className="ptour-invite__kicker">New here?</p>
+            <p className="ptour-invite__title">Eight stops. Real modules only.</p>
+            <p className="ptour-invite__sub">
+              Today → capture → discipline → focus → Reports (patterns included). Skip anytime.
+            </p>
+            <div className="ptour-invite__actions">
+              <button type="button" className="ptour-btn ptour-btn--primary" onClick={startTour}>
+                <Compass size={14} aria-hidden />
+                Start tour
+              </button>
+              <button type="button" className="ptour-btn ptour-btn--ghost" onClick={dismissInvite}>
+                Not now
+              </button>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="ptour-invite__dismiss"
+            aria-label="Dismiss tour invite"
+            onClick={dismissInvite}
+          >
+            <X size={16} />
+          </button>
+        </motion.div>
+      )}
 
-    const prevStep = () => {
-        if (currentStep > 0) {
-            const prev = currentStep - 1;
-            setCurrentStep(prev);
-            navigate(TOUR_STEPS[prev].target);
-        }
-    };
-
-    // Auto-show guided tour pill if not seen yet
-    useEffect(() => {
-        const completed = localStorage.getItem('aiimin_tour_completed');
-        if (!completed) {
-            const timer = setTimeout(() => {
-                setShowPill(true);
-            }, 2000); // 2-second buffer to allow UI to mount fully
-            return () => clearTimeout(timer);
-        }
-    }, []);
-
-    // Expose global trigger for manual settings retakes
-    useEffect(() => {
-        window.startProductTour = startTour;
-        return () => { delete window.startProductTour; };
-    }, [startTour]);
-
-    const bg = isDark ? '#1a1a1a' : '#fcfbf9';
-    const border = isDark ? '#2e2e2e' : '#e4e2db';
-    const text1 = isDark ? '#f5f5f5' : '#1e201d';
-    const text2 = isDark ? '#a0a0a0' : '#5a5c59';
-    const accent = 'var(--color-accent)';
-
-    return (
-        <>
-            <AnimatePresence>
-                {showPill && !isOpen && (
-                    <motion.button
-                        key="pill"
-                        initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 30, scale: 0.9 }}
-                        onClick={startTour}
-                        style={{
-                            position: 'fixed',
-                            bottom: '32px',
-                            right: '32px',
-                            zIndex: 9999,
-                            background: accent,
-                            color: '#fff',
-                            border: 'none',
-                            padding: '12px 20px',
-                            borderRadius: '99px',
-                            fontSize: '13px',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            boxShadow: '0 10px 25px rgba(30,92,58,0.25)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            fontFamily: 'var(--font-sans)'
-                        }}
-                    >
-                        <span style={{ 
-                            width: '8px', height: '8px', borderRadius: '50%', background: '#fff', 
-                            boxShadow: '0 0 8px #fff', animation: 'pulse 2s infinite' 
-                        }} />
-                        Take a Quick Tour
-                        <div 
-                            onClick={(e) => { e.stopPropagation(); endTour(); }}
-                            style={{ marginLeft: '6px', opacity: 0.7, padding: '2px', display: 'flex' }}
-                        >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </div>
-                    </motion.button>
+      {isOpen && (
+        <div className="ptour-layer" role="dialog" aria-modal="true" aria-labelledby="ptour-title">
+          <button
+            type="button"
+            className="ptour-scrim"
+            aria-label="Close tour"
+            onClick={() => endTour(false)}
+          />
+          <motion.div key={currentStep} className="ptour-card" {...motionProps}>
+            <div className="ptour-card__meta">
+              <span className="ptour-card__chapter">{step.chapter}</span>
+              <span className="ptour-card__count">
+                {currentStep + 1} / {TOUR_STEPS.length}
+              </span>
+            </div>
+            <div className="ptour-progress" aria-hidden>
+              <div className="ptour-progress__fill" style={{ width: `${progress}%` }} />
+            </div>
+            <div className="ptour-dots" aria-hidden>
+              {TOUR_STEPS.map((_, i) => (
+                <button
+                  key={TOUR_STEPS[i].target}
+                  type="button"
+                  className={`ptour-dots__dot${i === currentStep ? ' is-active' : ''}${i < currentStep ? ' is-done' : ''}`}
+                  onClick={() => goToStep(i)}
+                  tabIndex={-1}
+                />
+              ))}
+            </div>
+            <h2 id="ptour-title" className="ptour-card__title">{step.title}</h2>
+            <p className="ptour-card__body">{step.content}</p>
+            <div className="ptour-card__nav">
+              <button type="button" className="ptour-btn ptour-btn--ghost" onClick={() => endTour(true)}>
+                Skip
+              </button>
+              <div className="ptour-card__nav-right">
+                {currentStep > 0 && (
+                  <button type="button" className="ptour-btn ptour-btn--ghost" onClick={prevStep}>
+                    <ArrowLeft size={14} aria-hidden />
+                    Back
+                  </button>
                 )}
-
-                {isOpen && (
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 10000, pointerEvents: 'none' }}>
-
-                        {/* Dialog */}
-                        <motion.div
-                            key={currentStep}
-                            initial={{ opacity: 0, y: 30, scale: 0.96 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -30, scale: 0.96 }}
-                            transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-                            style={{
-                                position: 'absolute',
-                                bottom: '32px',
-                                right: '32px',
-                                width: '100%',
-                                maxWidth: '340px',
-                                background: bg,
-                                border: `1px solid ${border}`,
-                                borderRadius: '24px',
-                                padding: '24px',
-                                boxShadow: isDark ? '0 30px 80px rgba(0,0,0,0.6)' : '0 30px 80px rgba(30,32,29,0.12)',
-                                pointerEvents: 'auto'
-                            }}
-                        >
-                            {/* Step Count indicator */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                <span style={{ fontSize: '10px', fontWeight: 800, color: accent, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                                    Walkthrough
-                                </span>
-                                <span style={{ fontSize: '10px', fontWeight: 700, color: text2, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                                    Step {currentStep + 1} of {TOUR_STEPS.length}
-                                </span>
-                            </div>
-
-                            {/* Step Title */}
-                            <h2 style={{ fontSize: '18px', fontWeight: 800, color: text1, marginBottom: '12px', letterSpacing: '-0.02em', fontFamily: 'var(--font-sans)', lineHeight: 1.2 }}>
-                                {TOUR_STEPS[currentStep].title}
-                            </h2>
-
-                            {/* Step Content */}
-                            <p style={{ fontSize: '13px', color: text2, lineHeight: 1.5, marginBottom: '24px', fontFamily: 'var(--font-sans)' }}>
-                                {TOUR_STEPS[currentStep].content}
-                            </p>
-
-                            {/* Controls */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <button 
-                                    onClick={endTour} 
-                                    style={{ 
-                                        background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '13px', fontWeight: 700,
-                                        fontFamily: 'var(--font-sans)' 
-                                    }}
-                                >
-                                    Skip Intro
-                                </button>
-
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    {currentStep > 0 && (
-                                        <button
-                                            onClick={prevStep}
-                                            style={{
-                                                background: 'none',
-                                                border: `1px solid ${border}`,
-                                                color: text1,
-                                                padding: '12px 18px',
-                                                borderRadius: '12px',
-                                                fontSize: '13px',
-                                                fontWeight: 700,
-                                                cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                fontFamily: 'var(--font-sans)'
-                                            }}
-                                        >
-                                            <ArrowLeft size={14} /> Back
-                                        </button>
-                                    )}
-
-                                    <button 
-                                        onClick={nextStep}
-                                        style={{
-                                            background: accent,
-                                            color: '#fff',
-                                            border: 'none',
-                                            padding: '12px 24px',
-                                            borderRadius: '12px',
-                                            fontSize: '13px',
-                                            fontWeight: 700,
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px',
-                                            fontFamily: 'var(--font-sans)',
-                                            boxShadow: '0 4px 12px rgba(30,92,58,0.15)'
-                                        }}
-                                    >
-                                        {currentStep === TOUR_STEPS.length - 1 ? (
-                                            <>Finish <Check size={14} /></>
-                                        ) : (
-                                            <>Next <ChevronRight size={14} /></>
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </>
-    );
+                <button type="button" className="ptour-btn ptour-btn--primary" onClick={nextStep}>
+                  {currentStep === TOUR_STEPS.length - 1 ? (
+                    <>Finish <Check size={14} aria-hidden /></>
+                  ) : (
+                    <>Next <ChevronRight size={14} aria-hidden /></>
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
 }
