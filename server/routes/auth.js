@@ -225,14 +225,10 @@ app.post('/complete-google-profile', requireAuth, async (c) => {
 
     try {
         const body = await c.req.json();
-        const { username, pin, full_name } = body;
+        const { username, full_name } = body;
 
-        if (!username || !pin) {
-            return c.json({ error: 'Username and PIN are required' }, 400);
-        }
-
-        if (!PIN_PATTERN.test(pin)) {
-            return c.json({ error: 'PIN must be exactly 6 digits' }, 400);
+        if (!username) {
+            return c.json({ error: 'Username is required' }, 400);
         }
 
         const normalizedUsername = username.trim().toUpperCase();
@@ -253,9 +249,8 @@ app.post('/complete-google-profile', requireAuth, async (c) => {
             return c.json({ error: 'Username already taken' }, 409);
         }
 
-        // Update Supabase auth user password (PIN) + metadata
+        // Metadata only — PIN is set client-side via supabase.auth.updateUser() to avoid revoking the JWT
         const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
-            password: pin,
             user_metadata: {
                 ...authUser.user_metadata,
                 username: normalizedUsername,
@@ -284,6 +279,37 @@ app.post('/complete-google-profile', requireAuth, async (c) => {
         return c.json({ success: true, user: userRow || null });
     } catch (err) {
         console.error('[complete-google-profile] error:', err);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+});
+
+/**
+ * POST /auth/set-pin — set 6-digit PIN after onboarding data is saved (call last).
+ */
+app.post('/set-pin', requireAuth, async (c) => {
+    const userId = c.get('userId');
+
+    try {
+        const body = await c.req.json();
+        const { pin } = body;
+
+        if (!pin || !PIN_PATTERN.test(pin)) {
+            return c.json({ error: 'PIN must be exactly 6 digits' }, 400);
+        }
+
+        const supabase = getSupabaseAdmin();
+        const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+            password: pin,
+        });
+
+        if (updateError) {
+            console.error('[auth/set-pin] error:', updateError.message);
+            return c.json({ error: 'Failed to set PIN' }, 500);
+        }
+
+        return c.json({ success: true });
+    } catch (err) {
+        console.error('[auth/set-pin] error:', err);
         return c.json({ error: 'Internal server error' }, 500);
     }
 });

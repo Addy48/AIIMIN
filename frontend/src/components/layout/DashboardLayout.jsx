@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
+import BottomNav from './BottomNav';
 import CommandPalette from '../system/CommandPalette';
 
 /**
@@ -104,6 +105,8 @@ const DashboardLayout = ({ user }) => {
       }}>
         <Outlet />
       </main>
+
+      <BottomNav />
 
     </div>
   );

@@ -1,6 +1,13 @@
 node_modules/
 .DS_Store
 
+# Local secrets folder (screenshots, keys — never commit)
+Secrets, Keys /
+Secrets, Keys/**
+
+# Vercel CLI pull (may contain stale workers.dev URLs + tokens)
+.env.vercel
+
 # Environment files (never commit secrets)
 .env
 .env.local
@@ -30,9 +37,7 @@ aiimin.pem
 # MCP local config (may contain secrets — use .mcp.json.example)
 .mcp.json
 
-# Account Design Lab — local prototypes only (not for production)
-frontend/src/pages/account/sections/DesignSection.jsx
-frontend/src/pages/account/sections/design/
+# Account Design Lab — tracked in repo (was local-only prototypes)
 
 # Tools & editors
 .claude/

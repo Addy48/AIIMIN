@@ -13,7 +13,7 @@ Status: Waitlist live · Tester window closes **31 July** · Go-live target **Se
 | 0.2 | Verify `admin.aiimin.in` in Resend + DNS | ✅ Done |
 | 0.3 | Set `RESEND_API_KEY` on EC2, remove SES vars | ✅ Done |
 | 0.4 | `node scripts/test-email.mjs` → inbox | ✅ Done |
-| 0.5 | Waitlist signup E2E → user + owner mail | **TODO** |
+| 0.5 | Waitlist signup E2E → user + owner mail | **Script ready** — `node scripts/test-waitlist-e2e.mjs <email>` |
 | 0.6 | Decommission SES SMTP IAM user + group | ✅ Done |
 | 0.7 | **Rotate Resend API key** (was pasted in chat) | **URGENT** |
 
@@ -26,9 +26,9 @@ See `deploy/RESEND-SETUP.md`.
 | # | Task | Notes |
 |---|------|-------|
 | 1.1 | Run `node scripts/invite-tester-auth.mjs` | Pre-create Supabase auth users |
-| 1.2 | Run `node scripts/seed-access-allowlist.mjs` | 6 tester emails |
+| 1.2 | Run `node scripts/seed-access-allowlist.mjs` | ✅ 6 emails (incl. kuldeep) |
 | 1.3 | Google OAuth redirect URLs in Supabase | `www.aiimin.in/auth/callback` |
-| 1.4 | Each tester: Google login → onboarding → `/overview` | LC-12 |
+| 1.4 | Each tester: Google login → onboarding → `/overview` | LC-12 — **manual** |
 | 1.5 | EC2 env: `TESTER_EMAILS`, `DEV_EMAILS`, `WAITLIST_MODE=true` | |
 
 Testers: au10 (dev), au85, sanchit, aditya mehta, shishang, kuldeep.
@@ -58,7 +58,7 @@ Testers: au10 (dev), au85, sanchit, aditya mehta, shishang, kuldeep.
 | SES | **Drop** | Replaced by Resend |
 | Route53 / DNS | **Keep** | `aiimin.in` + Resend DKIM records |
 | S3 + CloudFront | **Defer** | Assets on Vercel for now |
-| EventBridge crons | **Optional** | `/api/keepalive` on Vercel cron works |
+| EventBridge crons | **Optional** | `/api/keepalive` — Vercel cron proxies to EC2 (`vercel.json` rewrite) |
 | CloudWatch alarms | **Keep** | Billing alerts in `deploy/setup-billing-alerts.sh` |
 | Cognito | **Defer** | Supabase Auth works for testers |
 

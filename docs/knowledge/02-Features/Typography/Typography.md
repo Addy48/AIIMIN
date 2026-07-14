@@ -53,3 +53,9 @@
 - Why: compare SaaS-ready first-page directions before changing the production Today dashboard
 - Files: `frontend/src/pages/account/sections/design/TodayPagePrototypesPanel.jsx`, `frontend/src/pages/account/sections/DesignSection.jsx`, `frontend/src/pages/account/sections/design/designPrototypes.css`
 - Status: prototype decision page shipped
+
+### 2026-07-08
+- Changed: recovered Jul 4 masthead navbar (BrandLockup, Sun/Moon icons, More overflow, nav pins via `useNavPreferences`), trajectory sun-arc with sunrise/sunset labels, overview sticky rail grid, mobile BottomNav wiring, and Lab reading module in sidebar
+- Why: restore pre-waitlist localhost build state from chat transcripts after waitlist pivot reverted live surfaces
+- Files: `frontend/src/components/Navbar.jsx`, `frontend/src/index.css`, `frontend/src/styles/tokens.css`, `frontend/src/pages/Overview.jsx`, `frontend/src/components/layout/DashboardLayout.jsx`, `frontend/src/pages/LabFullPage.jsx`
+- Status: partial recovery shipped — masthead + trajectory + decentralization wiring live again

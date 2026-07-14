@@ -1,79 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotifications';
 import { useThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon, ChevronDown, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from './notifications/NotificationBell';
 import BrandLockup from './brand/BrandLockup';
+import { isDarkTheme } from '../constants/themes';
+import useNavPreferences from '../hooks/useNavPreferences';
 
-const SystemStatusIndicator = () => {
-  const { isSignedIn } = useAuth();
-  const [status, setStatus] = useState('checking');
-
-  React.useEffect(() => {
-    let mounted = true;
-    const checkHealth = async () => {
-      try {
-        const res = await fetch(`${process.env.REACT_APP_API_URL || '/api'}/health`, { method: 'GET' });
-        if (mounted) setStatus(res.ok ? 'online' : 'error');
-      } catch {
-        // backend down — if signed in, still show online for the app shell
-        if (mounted) setStatus(isSignedIn ? 'online' : 'error');
-      }
-    };
-    checkHealth();
-    const int = setInterval(checkHealth, 30000);
-    return () => { mounted = false; clearInterval(int); };
-  }, [isSignedIn]);
-
-  const color = status === 'online' ? '#10B981' : status === 'error' ? '#EF4444' : '#F59E0B';
-  const text = status === 'online' ? 'OS Online' : status === 'error' ? 'System Error' : 'Checking...';
-
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: '6px',
-      padding: '6px 12px', background: 'rgba(255,255,255,0.03)',
-      border: '1px solid var(--color-border)', borderRadius: '20px',
-      cursor: 'default'
-    }} title={text}>
-      <div style={{
-        width: '6px', height: '6px', borderRadius: '50%',
-        background: color, boxShadow: `0 0 8px ${color}`,
-        animation: status === 'online' ? 'pulse 2s infinite' : 'none'
-      }} />
-      <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-2)', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-        {text}
-      </span>
-      <style>{`
-        @keyframes pulse {
-          0% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.2); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
-    </div>
-  );
-};
-
-
-
-/* ── Slim nav — 6 primary links ───────────────────────────── */
-const NAV_LINKS = [
-  { to: '/overview',    label: 'Today' },
-  { to: '/habits',      label: 'Habits' },
-  { to: '/goals',       label: 'Goals' },
-  { to: '/journal',     label: 'Journal' },
-  { to: '/finance',     label: 'Finance' },
-  { to: '/family',      label: 'Family' },
-  { to: '/calendar',    label: 'Calendar' },
-  { to: '/placements',  label: 'Placement' },
-  { to: '/sports',      label: 'Sports', hideFromGuest: true },
-  { to: '/discipline',  label: 'Discipline', hideFromGuest: true },
-  { to: '/focus',       label: 'Focus' },
-  { to: '/lab',         label: 'Lab' },
-];
+const mastheadLinkClass = ({ isActive }) =>
+  `nav-masthead__link${isActive ? ' nav-masthead__link--active' : ''}`;
 
 const Navbar = ({ user }) => {
   const { notifications, unreadCount, loading, fetchAll, markRead, markAllRead, dismiss } = useNotifications();
@@ -81,86 +19,152 @@ const Navbar = ({ user }) => {
   const { signOut } = useAuth();
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const bellRef = useRef(null);
+  const drawerRef = useRef(null);
+  const menuToggleRef = useRef(null);
+  const moreRef = useRef(null);
   const location = useLocation();
+  const isDark = isDarkTheme(theme);
+  const { resolveForUser } = useNavPreferences();
+  const { pinned: visiblePrimary, more: visibleMore } = resolveForUser(!!user?.isGuest);
+  const visibleAll = [...visiblePrimary, ...visibleMore];
+  const moreIsActive = visibleMore.some((link) => location.pathname.startsWith(link.to));
 
-  // Close mobile menu on route change
-  React.useEffect(() => {
+  useEffect(() => {
     setMobileMenuOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
 
-  const userInitial = (user?.full_name?.charAt(0) || user?.username?.charAt(0) || user?.email?.charAt(0) || 'U').toUpperCase();
-  const isDark = theme === 'vercel' || theme === 'midnight';
-  const borderColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+  useEffect(() => {
+    if (!moreOpen) return undefined;
+    const handle = (e) => {
+      if (moreRef.current && !moreRef.current.contains(e.target)) {
+        setMoreOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [moreOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    const getFocusable = () => {
+      if (!drawerRef.current) return [];
+      return Array.from(
+        drawerRef.current.querySelectorAll('a[href], button:not([disabled])'),
+      ).filter((el) => el.offsetParent !== null);
+    };
+
+    const focusable = getFocusable();
+    focusable[0]?.focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setMobileMenuOpen(false);
+        menuToggleRef.current?.focus();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const items = getFocusable();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    const toggleEl = menuToggleRef.current;
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      toggleEl?.focus();
+    };
+  }, [mobileMenuOpen]);
 
   const handleOpenNotif = () => {
     if (!notifOpen) fetchAll();
-    setNotifOpen(o => !o);
+    setNotifOpen((o) => !o);
   };
 
   return (
     <>
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0,
-        height: 'var(--nav-height)',
-        background: 'color-mix(in srgb, var(--color-base) 85%, transparent)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid var(--color-border)',
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 24px',
-        zIndex: 1000,
-      }}>
-
-        {/* LEFT: Brand */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-          <BrandLockup to="/overview" />
+      <nav className="nav-masthead" aria-label="Main">
+        <div className="nav-masthead__brand">
+          <BrandLockup />
         </div>
 
-        {/* CENTER: Nav links (Desktop) */}
-        <div className="desktop-nav-links" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {NAV_LINKS.filter(link => !(user?.isGuest && link.hideFromGuest)).map(({ to, label }) => (
-            <NavLink
-              key={`${to}-${label}`}
-              to={to}
-              style={({ isActive }) => ({
-                fontSize: '16px',
-                fontWeight: isActive ? 700 : 500,
-                fontFamily: 'var(--font-sans)',
-                color: isActive ? 'var(--color-text-1)' : 'var(--color-text-2)',
-                textDecoration: 'none',
-                padding: '10px 16px',
-                borderRadius: '10px',
-                background: isActive ? 'var(--color-elevated)' : 'transparent',
-                transition: 'all 180ms',
-                whiteSpace: 'nowrap',
-              })}
-            >
-              {label}
-            </NavLink>
-          ))}
+        <div className="nav-masthead__center">
+          <div className="desktop-nav-links nav-masthead__links">
+            <div className="nav-masthead__links-scroll">
+              {visiblePrimary.map(({ to, label }) => (
+                <NavLink key={to} to={to} className={mastheadLinkClass}>
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+            {visibleMore.length > 0 && (
+              <div className="nav-masthead__more-wrap" ref={moreRef}>
+                <button
+                  type="button"
+                  className={`nav-masthead__link nav-masthead__more-btn${moreOpen || moreIsActive ? ' nav-masthead__link--active' : ''}`}
+                  aria-expanded={moreOpen}
+                  aria-haspopup="true"
+                  onClick={() => setMoreOpen((o) => !o)}
+                >
+                  More
+                  <ChevronDown
+                    size={14}
+                    className={`nav-masthead__more-chevron${moreOpen ? ' is-open' : ''}`}
+                    aria-hidden
+                  />
+                </button>
+                <AnimatePresence>
+                  {moreOpen && (
+                    <motion.div
+                      className="nav-masthead__more-panel"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                      role="menu"
+                    >
+                      {visibleMore.map(({ to, label }) => (
+                        <NavLink
+                          key={to}
+                          to={to}
+                          className={mastheadLinkClass}
+                          role="menuitem"
+                          onClick={() => setMoreOpen(false)}
+                        >
+                          {label}
+                        </NavLink>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* RIGHT: Actions */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
-
-          <SystemStatusIndicator />
-
-          {/* Theme toggle */}
+        <div className="nav-masthead__actions">
           <button
+            type="button"
             onClick={toggleTheme}
-            title={isDark ? 'Light mode' : 'Dark mode'}
-            style={{
-              width: '36px', height: '36px', borderRadius: '8px', background: 'transparent',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-2)', fontSize: '16px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="nav-masthead__icon-btn"
           >
-            {isDark ? '☀' : '◑'}
+            {isDark ? <Sun size={17} /> : <Moon size={17} />}
           </button>
 
-          {/* Notifications */}
           <div ref={bellRef} style={{ position: 'relative' }}>
             <NotificationBell count={unreadCount} onOpen={handleOpenNotif} isOpen={notifOpen} />
             {notifOpen && (
@@ -171,34 +175,25 @@ const Navbar = ({ user }) => {
                 onMarkAllRead={markAllRead}
                 onDismiss={dismiss}
                 onClose={() => setNotifOpen(false)}
-                isDark={isDark}
               />
             )}
           </div>
 
-          {/* Avatar */}
           <Link
             to="/account"
-            style={{
-              width: '36px', height: '36px', borderRadius: '50%', background: '#23503B',
-              border: 'none', color: '#fff', font: '700 14px var(--font-sans)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none'
-            }}
+            className="nav-masthead__avatar"
             aria-label="Account"
           >
             {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
           </Link>
 
-          {/* Mobile Menu Toggle */}
           <button
-            className="mobile-menu-btn"
+            ref={menuToggleRef}
+            type="button"
+            className="mobile-menu-btn nav-masthead__icon-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{
-              width: '36px', height: '36px', borderRadius: '8px', background: 'transparent',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-1)', cursor: 'pointer',
-              display: 'none', alignItems: 'center', justifyContent: 'center',
-            }}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav-drawer"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -206,83 +201,51 @@ const Navbar = ({ user }) => {
         </div>
       </nav>
 
-      {/* Mobile Menu Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            id="mobile-nav-drawer"
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation"
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'fixed',
-              top: 'var(--nav-height)',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'var(--color-base)',
-              zIndex: 999,
-              overflowY: 'auto',
-              padding: '24px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px'
-            }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="nav-mobile-drawer"
           >
-            {NAV_LINKS.filter(link => !(user?.isGuest && link.hideFromGuest)).map(({ to, label }) => (
+            {visibleAll.map(({ to, label }) => (
               <NavLink
-                key={`${to}-${label}-mobile`}
+                key={`${to}-mobile`}
                 to={to}
-                style={({ isActive }) => ({
-                  fontSize: '18px',
-                  fontWeight: isActive ? 700 : 500,
-                  fontFamily: 'var(--font-sans)',
-                  color: isActive ? 'var(--color-text-1)' : 'var(--color-text-2)',
-                  textDecoration: 'none',
-                  padding: '16px',
-                  borderRadius: '12px',
-                  background: isActive ? 'var(--color-elevated)' : 'transparent',
-                  border: isActive ? '1px solid var(--color-border-lit)' : '1px solid transparent',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                })}
+                className={({ isActive }) =>
+                  `nav-mobile-drawer__link${isActive ? ' nav-mobile-drawer__link--active' : ''}`
+                }
               >
                 {label}
               </NavLink>
             ))}
-            
-            <div style={{ marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid var(--color-border)' }}>
-               <button
-                 onClick={async () => {
-                   setMobileMenuOpen(false);
-                   await signOut();
-                 }}
-                 style={{
-                   width: '100%',
-                   padding: '16px',
-                   borderRadius: '12px',
-                   background: 'rgba(239, 68, 68, 0.1)',
-                   color: 'var(--color-danger, #ef4444)',
-                   border: '1px solid rgba(239, 68, 68, 0.2)',
-                   fontWeight: '600',
-                   fontSize: '16px',
-                   cursor: 'pointer'
-                 }}
-               >
-                 Sign Out
-               </button>
+
+            <div className="nav-mobile-drawer__footer">
+              <button
+                type="button"
+                onClick={async () => {
+                  setMobileMenuOpen(false);
+                  await signOut();
+                }}
+                className="nav-mobile-drawer__signout"
+              >
+                Sign Out
+              </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
     </>
   );
 };
 
-/* ── Notification dropdown ─────────────────────────────────── */
 const typeIcon = (type) => ({
   drift_alert: '📉', commitment_miss: '🎯', weekly_summary: '📊',
   integration_error: '⚠️', streak_milestone: '🔥', xp_level_up: '⚡',
@@ -300,80 +263,76 @@ const timeAgo = (iso) => {
   return `${Math.floor(h / 24)}d`;
 };
 
-const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDismiss, onClose, isDark }) => {
+const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDismiss, onClose }) => {
   const ref = useRef(null);
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handle = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
   }, [onClose]);
 
-  const bg = isDark ? '#161616' : '#fff';
-  const border = isDark ? '#2a2a2a' : '#e5e7eb';
-  const text1 = isDark ? '#ededed' : '#111';
-  const text2 = isDark ? '#a1a1aa' : '#6b7280';
-  const text3 = isDark ? '#52525b' : '#9ca3af';
-
   return (
-    <div ref={ref} style={{
-      position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-      width: '300px', maxHeight: '400px',
-      background: 'var(--color-surface)', border: '1px solid var(--color-border)',
-      borderRadius: '10px',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-      zIndex: 9999, overflow: 'hidden', display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        borderBottom: '1px solid var(--color-border)', flexShrink: 0,
-      }}>
-        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)' }}>Notifications</span>
-        {notifications.some(n => !n.read_at) && (
-          <button onClick={onMarkAllRead} style={{
-            background: 'none', border: 'none', fontSize: '11px', color: '#22C55E',
-            cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 500,
-          }}>Mark all read</button>
+    <div ref={ref} className="nav-notif-dropdown">
+      <div className="nav-notif-dropdown__head">
+        <span className="nav-notif-dropdown__title">Notifications</span>
+        {notifications.some((n) => !n.read_at) && (
+          <button type="button" onClick={onMarkAllRead} className="nav-notif-dropdown__mark-all">
+            Mark all read
+          </button>
         )}
       </div>
-
-      {/* List */}
-      <div style={{ overflowY: 'auto', flex: 1 }}>
+      <div className="nav-notif-dropdown__list">
         {loading && (
-          <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: 'var(--color-text-3)', fontFamily: 'var(--font-sans)' }}>Loading…</div>
+          <div className="nav-notif-dropdown__empty">Loading…</div>
         )}
         {!loading && notifications.length === 0 && (
-          <div style={{ padding: '28px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: '22px', marginBottom: '8px' }}>🔔</div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)' }}>All clear</div>
+          <div className="nav-notif-dropdown__empty">
+            <Bell size={20} style={{ marginBottom: 8, opacity: 0.5 }} />
+            <div>All clear</div>
           </div>
         )}
-        {!loading && notifications.map(n => (
-          <div key={n.id} style={{
-            padding: '10px 14px', borderBottom: '1px solid var(--color-border)',
-            display: 'flex', gap: '10px', alignItems: 'flex-start',
-            background: !n.read_at ? 'var(--color-accent-dim)' : 'transparent',
-            cursor: n.action_url ? 'pointer' : 'default',
-          }} onClick={(e) => {
+        {!loading && notifications.map((n) => (
+          <div
+            key={n.id}
+            className={`nav-notif-dropdown__item${!n.read_at ? ' is-unread' : ''}`}
+            onClick={(e) => {
               if (n.action_url && !e.defaultPrevented) {
                 if (!n.read_at) onMarkRead(n.id);
                 navigate(n.action_url);
                 onClose();
               }
-          }}>
-            <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>{typeIcon(n.type)}</span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: '12px', fontWeight: n.read_at ? 400 : 600, color: 'var(--color-text-1)', fontFamily: 'var(--font-sans)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {n.title}
-              </div>
-              {n.body && <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.4 }}>{n.body}</div>}
-              <div style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: '3px', fontFamily: 'var(--font-sans)' }}>{timeAgo(n.created_at)}</div>
+            }}
+            onKeyDown={() => {}}
+            role={n.action_url ? 'button' : undefined}
+            tabIndex={n.action_url ? 0 : undefined}
+          >
+            <span className="nav-notif-dropdown__icon">{typeIcon(n.type)}</span>
+            <div className="nav-notif-dropdown__body">
+              <div className="nav-notif-dropdown__item-title">{n.title}</div>
+              {n.body && <div className="nav-notif-dropdown__item-body">{n.body}</div>}
+              <div className="nav-notif-dropdown__time">{timeAgo(n.created_at)}</div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
-              {!n.read_at && <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMarkRead(n.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22C55E', fontSize: '11px' }}>✓</button>}
-              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDismiss(n.id); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', fontSize: '11px' }}>✕</button>
+            <div className="nav-notif-dropdown__actions">
+              {!n.read_at && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMarkRead(n.id); }}
+                  className="nav-notif-dropdown__read"
+                  aria-label="Mark notification as read"
+                >
+                  ✓
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDismiss(n.id); }}
+                className="nav-notif-dropdown__dismiss"
+                aria-label="Dismiss notification"
+              >
+                ✕
+              </button>
             </div>
           </div>
         ))}

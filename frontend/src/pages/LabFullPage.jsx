@@ -103,6 +103,9 @@ export default function LabFullPage() {
       { key: "addiction", emoji: "🔒", label: "Addiction Tracker", desc: "Private craving & trigger logging", color: "#EF4444" },
       { key: "personality", emoji: "🧬", label: "Personality AI", desc: "Behavioral swiping insights", color: "#F43F5E" }
     ],
+    "Reflection & Growth": [
+      { key: "reading", emoji: "📚", label: "Reading Log", desc: "Books, articles, and takeaways", color: "#F59E0B" },
+    ],
     "Cognitive Training": [
       { key: "typing",     emoji: "⌨️",  label: "Typing Speed",   desc: "WPM & accuracy benchmark",       color: "#3B82F6" },
       { key: "aptitude", emoji: "🧠", label: "Aptitude Tests", desc: "Logical reasoning & pattern recognition", color: "#F59E0B" },

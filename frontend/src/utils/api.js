@@ -1,5 +1,5 @@
 import supabase from './supabase';
-import { isOAuthCallbackRoute, persistAccessToken, readAccessToken } from './authSession';
+import { isOAuthCallbackRoute, persistAccessToken, readAccessToken, ensureSupabaseSession, requireFreshAccessToken, isAccessTokenExpired } from './authSession';
 
 export const API_URL = process.env.REACT_APP_API_URL || '/api';
 
@@ -40,25 +40,14 @@ export const buildApiUrl = (path, params) => {
 export const getCurrentAccessToken = async () => {
     if (isOAuthCallbackRoute()) {
         const cached = readAccessToken();
-        if (cached) return cached;
+        if (cached && !isAccessTokenExpired(cached)) return cached;
     }
 
     try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-            persistAccessToken(session.access_token);
-            return session.access_token;
-        }
-        const { data: { session: refreshed } } = await supabase.auth.refreshSession();
-        if (refreshed?.access_token) {
-            persistAccessToken(refreshed.access_token);
-            return refreshed.access_token;
-        }
+        return await requireFreshAccessToken(supabase);
     } catch (_) {
-        // fall through
+        return '';
     }
-
-    return readAccessToken();
 };
 
 const resolveHeaders = async ({ headers = {}, json = true, auth = true } = {}) => {
@@ -72,7 +61,7 @@ const resolveHeaders = async ({ headers = {}, json = true, auth = true } = {}) =
 
 export const getAuthHeaders = (extraHeaders = {}) => buildAuthHeaders(extraHeaders);
 
-export const apiRequest = async (path, options = {}) => {
+export const apiRequest = async (path, options = {}, retried = false) => {
     const {
         method = 'GET',
         data,
@@ -102,6 +91,15 @@ export const apiRequest = async (path, options = {}) => {
 
     const response = await fetch(url, fetchOptions);
 
+    if (response.status === 401 && !retried && options.auth !== false) {
+        try {
+            const { data: { session } } = await supabase.auth.refreshSession();
+            if (session?.access_token) {
+                persistAccessToken(session.access_token);
+                return apiRequest(path, options, true);
+            }
+        } catch (_) { /* retry below */ }
+    }
 
     if (!response.ok) {
         let errMsg = `Request failed (${response.status})`;

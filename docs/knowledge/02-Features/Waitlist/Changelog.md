@@ -1,5 +1,24 @@
 # Waitlist Changelog
 
+## 2026-07-08 (Onboarding goals schema + auth token + Supabase RLS CRITICAL)
+
+- **Onboarding step 8** failed: `column "title" of relation "goals" does not exist` — production `goals` table uses `metric`, `target`, `frequency`, `meta` (not `title`).
+- Fixed `server/routes/goals.js`: API maps `title`/`status`/`progress` ↔ DB columns; soft-delete via `deleted_at`.
+- Fixed auth: `requireFreshAccessToken()` rejects expired `aiimin_session_fallback` JWT before API calls (`authSession.js`, `api.js`, `Onboarding.jsx`).
+- **Supabase CRITICAL RLS** (email 2026-07-06): enabled RLS + revoked anon/authenticated on `api_usage_log`, `api_provider_budgets`, `waitlist_feedback` — migration `035_rls_api_waitlist_feedback.sql` applied live.
+- Files: `goals.js`, `authSession.js`, `api.js`, `Onboarding.jsx`, `AuthContext.jsx`, `scripts/launch-verify.mjs`, `scripts/sync-react-env.mjs`
+- Status: **push to main** → EC2 deploy (API) + Vercel (frontend); retest LC-12
+
+## 2026-07-08 (Codebase audit — deploy parity + Vercel API proxy)
+
+- Full audit: `docs/CODEBASE-AUDIT-2026-07-08.md` — GHA ✅, EC2 health ✅, Vercel prod at `ac0a4896`.
+- Fixed dual API conflict: `vercel.json` proxies `/api/*` → `https://api.aiimin.in/api/*` (removed broken Vercel serverless DB).
+- Security: `Secrets, Keys /` and `.env.vercel` added to `.gitignore`.
+- Stale UI copy: Settings/Account no longer reference deferred Cognito for profile/password.
+- Command Center env matrix updated: Supabase Auth replaces Clerk keys.
+- Files: `vercel.json`, `.gitignore`, `Settings.jsx`, `AccountPage.jsx`, `AccountModal.jsx`, `00-Command-Center.md`, `deploy/LAUNCH-PLAN.md`
+- Status: **push + Vercel redeploy**; LC-12 onboarding E2E still pending
+
 ## 2026-07-08 (Auth callback — cross-browser OAuth fix)
 
 - Fixed Google login hang on `/auth/callback` for all browsers (Safari, Chrome, Firefox, Edge, mobile).

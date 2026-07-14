@@ -142,9 +142,24 @@ const Settings = () => {
     }
   }, [session, isUsingMock, mockData]);
 
-    const handleNameSave = () => {
-        toast.error('Profile updates will return with Cognito sign-in.');
-    };
+    const handleNameSave = useCallback(async () => {
+        const trimmed = nameVal.trim();
+        if (!trimmed) {
+            toast.error('Name cannot be empty.');
+            return;
+        }
+        const tid = toast.loading('Saving…');
+        try {
+            const { error } = await supabase.auth.updateUser({
+                data: { username: trimmed },
+            });
+            if (error) throw error;
+            toast.update(tid, 'Display name updated', 'success');
+            setEditingName(false);
+        } catch (err) {
+            toast.update(tid, err?.message || 'Could not update name', 'error');
+        }
+    }, [nameVal]);
   const handleDeleteAllData = useCallback(async () => {
     if (!window.confirm('This will wipe all your tracked data but KEEP your account. Proceed?')) return;
     const input = window.prompt('Type "wipe data" to confirm:');
