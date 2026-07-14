@@ -6,16 +6,16 @@
 
 ## Today
 
-- Shipped Login QA: `2c4e2691` — EC2 healthy + SHA match
-- Vercel: retrigger after Git integration lag
+- Login QA **LIVE**
+  - Code: `2c4e2691` (+ docs `25cd5d03`)
+  - EC2: `2c4e2691` · health ok
+  - Vercel: **READY** · `25cd5d03` · `aiimin.in`
 
 ## Next
 
-1. Confirm Vercel READY on `2c4e2691` (or this follow-up)
-2. Selfloop re-run `/login`
-3. Regrade from new screenshots
+1. Selfloop re-run `/login`
+2. Regrade from new screenshots only
 
 ## Touch
 
-- Live API: `2c4e2691`
-- Frontend: pending Vercel READY
+- Shipped — see `docs/knowledge/11_BUGS/QA-Run-2026-07-14-Login.md`
