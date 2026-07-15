@@ -47,10 +47,14 @@ export const getOAuthClient = async (userId, provider = 'google') => {
         throw Object.assign(new Error('Token decryption failed — please reconnect your Google account'), { code: 'TOKEN_DECRYPT_ERROR' });
     }
 
+    const redirectUri = process.env.GOOGLE_CALENDAR_REDIRECT_URI
+        || process.env.GOOGLE_REDIRECT_URI
+        || process.env.GOOGLE_CALLBACK_URL
+        || 'https://api.aiimin.in/api/google/auth/callback';
     const client = new google.auth.OAuth2(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || 'https://aiimin.in/api/google/auth/callback'
+        process.env.GOOGLE_CALENDAR_CLIENT_ID || process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CALENDAR_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET,
+        redirectUri
     );
 
     client.setCredentials({

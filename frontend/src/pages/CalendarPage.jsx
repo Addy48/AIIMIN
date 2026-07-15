@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useCalendarEvents } from '../hooks/useCalendarEvents';
+import toast from '../utils/toast';
 import CalendarToolbar from '../components/calendar/CalendarToolbar';
 import CalendarSidebar from '../components/calendar/CalendarSidebar';
 import MonthView from '../components/calendar/MonthView';
@@ -13,7 +15,8 @@ import EventModal from '../components/calendar/EventModal';
  * CalendarPage — Unified Life OS Calendar with 4 views + system tagging.
  */
 const CalendarPage = () => {
-    const { session } = useAuth();
+    const { session, isSignedIn } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [view, setView] = useState('month');
     const [currentDate, setCurrentDate] = useState(new Date().toISOString());
     const [modalOpen, setModalOpen] = useState(false);
@@ -50,11 +53,25 @@ const CalendarPage = () => {
         events,
         loading,
         syncStatus,
+        fetchSyncStatus,
         pullGoogleEvents,
         pushTasksToGoogle,
         createEvent,
         updateEvent
-    } = useCalendarEvents(session, rangeStart, rangeEnd);
+    } = useCalendarEvents(isSignedIn, rangeStart, rangeEnd);
+
+    useEffect(() => {
+        if (searchParams.get('integration') !== 'google') return;
+        const status = searchParams.get('status');
+        const linkedEmail = searchParams.get('linked_email');
+        if (status === 'success') {
+            toast.success(linkedEmail ? `Calendar connected: ${linkedEmail}` : 'Google Calendar connected');
+            fetchSyncStatus?.();
+        } else if (status === 'error') {
+            toast.error(searchParams.get('reason') || 'Calendar connection failed');
+        }
+        setSearchParams({}, { replace: true });
+    }, [searchParams, setSearchParams, fetchSyncStatus]);
 
     // Apply system filter
     const filteredEvents = useMemo(() => {
@@ -119,7 +136,7 @@ const CalendarPage = () => {
                 currentDate={currentDate}
                 onDateChange={setCurrentDate}
                 onNewEvent={handleNewEvent}
-                session={session}
+                session={isSignedIn}
                 syncStatus={syncStatus}
                 onPullGoogle={pullGoogleEvents}
                 onPushGoogle={pushTasksToGoogle}

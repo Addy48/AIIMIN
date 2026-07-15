@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
-import { supabase } from '../utils/supabase';
 import { apiGet } from '../utils/api';
-import { resolveOAuthSession } from '../utils/authSession';
+import { authClient } from '../lib/auth-client';
+import { captureAuthTokenFromResponse, persistAccessToken } from '../utils/authSession';
 import { useAuth } from '../hooks/useAuth';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
@@ -20,26 +20,13 @@ const AuthCallback = () => {
     const finishedRef = useRef(false);
 
     useEffect(() => {
-        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-        const supabaseError = searchParams.get('error') || hashParams.get('error');
-        const supabaseDesc = searchParams.get('error_description') || hashParams.get('error_description');
-        const errorCode = searchParams.get('error_code') || hashParams.get('error_code');
         const queryStatus = searchParams.get('status');
         const reason = searchParams.get('reason');
+        const authError = searchParams.get('error');
 
-        if (supabaseError) {
-            let msg = supabaseDesc ? decodeURIComponent(supabaseDesc.replace(/\+/g, ' ')) : supabaseError;
-            if (errorCode === 'signup_disabled') {
-                msg = 'New signups are disabled in Supabase. Your tester email must be pre-invited — contact the team or use OS-ID + PIN login.';
-            }
-            setError(msg);
-            setTimeout(() => navigate('/login'), 5000);
-            return undefined;
-        }
-
-        if (queryStatus === 'error') {
-            setError(reason || 'Authentication failed');
-            setTimeout(() => navigate('/login'), 3000);
+        if (authError || queryStatus === 'error') {
+            setError(reason || authError || 'Authentication failed');
+            setTimeout(() => navigate('/login'), 4000);
             return undefined;
         }
 
@@ -52,37 +39,24 @@ const AuthCallback = () => {
             setTimeout(() => navigate('/login'), 3000);
         };
 
-        const finishWithSession = async (session) => {
+        const finishWithProfile = async () => {
             if (cancelled || finishedRef.current) return;
-            const token = session?.access_token;
-            if (!token) {
-                fail('Could not establish session. Please try again.');
-                return;
-            }
-
             finishedRef.current = true;
             setStatus('Checking profile…');
 
             try {
+                await checkSession();
                 const data = await apiGet('/auth/me');
                 const userProfile = data?.user;
-
                 const isIncomplete =
                     !userProfile?.username ||
                     userProfile.username === '' ||
                     userProfile.onboarding_stage === 0 ||
                     userProfile.onboarding_stage == null;
 
-                if (isIncomplete) {
-                    setStatus('Setting up your profile…');
-                    navigate('/onboarding', { replace: true });
-                } else {
-                    setStatus('Welcome back!');
-                    navigate('/overview', { replace: true });
-                }
+                navigate(isIncomplete ? '/onboarding' : '/overview', { replace: true });
             } catch (err) {
                 console.error('[AuthCallback] profile check failed:', err);
-                // Valid JWT but profile fetch failed — still let them onboard
                 navigate('/onboarding', { replace: true });
             }
         };
@@ -94,25 +68,16 @@ const AuthCallback = () => {
         const handleCallback = async () => {
             try {
                 setStatus('Verifying identity…');
-                const session = await resolveOAuthSession(supabase, {
-                    searchParams,
-                    timeoutMs: SESSION_TIMEOUT_MS - 1000,
-                });
+                const result = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
+                if (result?.error) throw result.error;
 
-                // Hydrate AuthContext before routing — prevents waitlist gate race
-                let hydrated = session;
-                if (!session?.user?.email) {
-                    const { data: { session: full } } = await supabase.auth.getSession();
-                    hydrated = full || session;
-                }
-                await checkSession(hydrated);
+                const token = result?.data?.session?.token;
+                if (token) persistAccessToken(token);
 
-                await finishWithSession(hydrated);
+                await finishWithProfile();
             } catch (err) {
                 console.error('[AuthCallback] error:', err);
-                fail(err?.message?.includes('timed out')
-                    ? 'Sign-in took too long. Please try again.'
-                    : 'Something went wrong. Redirecting…');
+                fail('Something went wrong during sign-in. Please try again.');
             }
         };
 
@@ -122,7 +87,7 @@ const AuthCallback = () => {
             cancelled = true;
             clearTimeout(timeoutId);
         };
-    }, [searchParams, navigate]);
+    }, [searchParams, navigate, checkSession]);
 
     if (error) {
         return (
@@ -137,7 +102,6 @@ const AuthCallback = () => {
                         padding: '40px 36px', background: 'var(--bg-card)',
                         border: '1px solid var(--border)', borderRadius: '24px',
                         textAlign: 'center', maxWidth: '420px', width: '90%',
-                        boxShadow: '0 24px 64px rgba(0,0,0,0.08)',
                     }}
                 >
                     <div style={{
@@ -151,7 +115,7 @@ const AuthCallback = () => {
                         Authentication Failed
                     </h2>
                     <p style={{ color: 'var(--text-2)', fontSize: '14px', margin: '0 0 20px', lineHeight: 1.6, wordBreak: 'break-word' }}>
-                        {error?.includes('exchange') ? 'Google OAuth misconfiguration — verify provider setup in Supabase.' : error}
+                        {error}
                     </p>
                     <p style={{ color: 'var(--text-3)', fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
                         Redirecting to login…
@@ -174,10 +138,9 @@ const AuthCallback = () => {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px' }}
             >
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                  <ThemedMark size={48} />
-                  <Wordmark size={28} weight={700} color="var(--text-1)" />
+                    <ThemedMark size={48} />
+                    <Wordmark size={28} weight={700} color="var(--text-1)" />
                 </div>
-
                 <div style={{ position: 'relative', width: '56px', height: '56px' }}>
                     <div style={{
                         position: 'absolute', inset: 0, borderRadius: '50%',
@@ -186,17 +149,11 @@ const AuthCallback = () => {
                         animation: 'cb-spin 0.75s linear infinite',
                     }} />
                 </div>
-
-                <motion.p
-                    key={status}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    style={{ color: 'var(--text-2)', fontSize: '14px', margin: 0 }}
-                >
+                <motion.p key={status} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+                    style={{ color: 'var(--text-2)', fontSize: '14px', margin: 0 }}>
                     {status}
                 </motion.p>
             </motion.div>
-
             <style>{`@keyframes cb-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );

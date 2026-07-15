@@ -10,13 +10,18 @@
     "dev:frontend": "cd frontend && npm start",
     "build": "cd frontend && node scripts/verify-production-env.mjs && npm run build",
     "start": "node dev_server.js",
-    "test": "node --test server/services/*.test.js"
+    "test": "node --test server/services/*.test.js",
+    "auth:migrate": "npx @better-auth/cli@latest migrate --config server/lib/auth.js --yes",
+    "auth:import-users": "node scripts/migrate-supabase-users-to-better-auth.mjs",
+    "auth:backfill-accounts": "node scripts/backfill-better-auth-accounts.mjs",
+    "auth:reset-fresh": "node scripts/reset-fresh-start.mjs --confirm"
   },
   "dependencies": {
     "@google/genai": "^2.9.0",
     "@hono/node-server": "^2.0.3",
     "@supabase/supabase-js": "^2.106.1",
     "@vercel/blob": "^2.4.0",
+    "better-auth": "^1.6.23",
     "cookie": "^1.1.1",
     "dotenv": "^17.4.2",
     "googleapis": "^172.0.0",

@@ -34,6 +34,10 @@ aiimin.pem
 
 # MCP local config (may contain secrets — use .mcp.json.example)
 .mcp.json
+mcp.json
+
+# EC2 paste file with production secrets — never commit
+deploy/EC2.env.paste
 
 # Account Design Lab — tracked in repo (was local-only prototypes)
 

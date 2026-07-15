@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../../hooks/useAuth';
 import { apiPatch } from '../../../utils/api';
+import SecuritySection from './SecuritySection';
 
 export default function PrivacySection({ profile, onProfileUpdate }) {
+  const { user } = useAuth();
   const [journalOptIn, setJournalOptIn] = useState(profile?.ai_journal_opt_in !== false);
   const [sportsAi, setSportsAi] = useState(profile?.ai_sports_opt_in !== false);
 
@@ -12,19 +15,9 @@ export default function PrivacySection({ profile, onProfileUpdate }) {
 
   return (
     <div>
-      <h1 className="text-h1" style={{ marginBottom: 24 }}>Privacy & Security</h1>
+      <SecuritySection user={user} />
 
-      <section className="card" style={{ padding: 24, marginBottom: 16 }}>
-        <h2 className="text-h3" style={{ marginBottom: 12 }}>Security</h2>
-        <p className="text-sm" style={{ color: 'var(--color-text-2)', marginBottom: 8 }}>
-          Authentication is managed through your sign-in provider. Use your profile menu for password and 2FA settings.
-        </p>
-        <p className="text-sm" style={{ color: 'var(--color-text-3)' }}>
-          Google: connected · Sessions: managed by auth provider
-        </p>
-      </section>
-
-      <section className="card" style={{ padding: 24 }}>
+      <section className="card" style={{ padding: 24, marginTop: 8 }}>
         <h2 className="text-h3" style={{ marginBottom: 16 }}>AI & data privacy</h2>
         <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <span className="text-body">Allow AI to analyze journal entries</span>

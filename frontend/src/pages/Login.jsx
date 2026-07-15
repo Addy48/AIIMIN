@@ -5,7 +5,7 @@ import { ArrowLeft, Check, X } from 'lucide-react';
 import useAuth from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
-import { apiGet } from '../utils/api';
+import { apiGet, apiPost } from '../utils/api';
 
 const IS_WAITLIST_MODE = process.env.REACT_APP_WAITLIST_MODE === 'true';
 
@@ -457,7 +457,7 @@ const Login = () => {
   };
 
   // ── Nav handlers ──
-  const handleNext = (e) => {
+  const handleNext = async (e) => {
     if (e) e.preventDefault();
     setError(null);
     if (mode === 'login') {
@@ -465,7 +465,23 @@ const Login = () => {
       setDirection(1); setStep(2);
     } else if (mode === 'forgot') {
       if (!forgotIdentifier.trim()) { setError('Username or Email required.'); return; }
-      setForgotSent(true);
+      setLoading(true);
+      try {
+        let email = forgotIdentifier.trim().toLowerCase();
+        if (!email.includes('@')) {
+          const resolved = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(forgotIdentifier.trim())}`, { auth: false });
+          email = resolved?.email || email;
+        }
+        await apiPost('/auth/request-password-reset', {
+          email,
+          redirectTo: `${window.location.origin}/login?reset=1`,
+        }, { auth: false });
+        setForgotSent(true);
+      } catch (err) {
+        setForgotSent(true);
+      } finally {
+        setLoading(false);
+      }
     } else {
       if (!fullName.trim()) { setError('Full name required.'); return; }
       if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {

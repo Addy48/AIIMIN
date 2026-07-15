@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
-import { apiDelete } from '../utils/api';
+import { apiDelete, apiPatch } from '../utils/api';
 import toast from '../utils/toast';
 import { useMockData } from '../providers/MockDataProvider';
 import { exportUserData } from '../utils/exportUserData';
@@ -150,10 +150,7 @@ const Settings = () => {
         }
         const tid = toast.loading('Saving…');
         try {
-            const { error } = await supabase.auth.updateUser({
-                data: { username: trimmed },
-            });
-            if (error) throw error;
+            await apiPatch('/account/profile', { full_name: trimmed });
             toast.update(tid, 'Display name updated', 'success');
             setEditingName(false);
         } catch (err) {
