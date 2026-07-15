@@ -77,15 +77,18 @@ app.get('/sync/status', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const tokenRes = await pool.query(
-            `SELECT scope, refresh_error, updated_at, last_refresh_at 
-             FROM public.user_oauth_tokens 
+            `SELECT linked_email, scope, refresh_error, updated_at, last_refresh_at, expiry_date
+             FROM public.user_oauth_tokens
              WHERE user_id = $1 AND provider = $2`,
             [userId, 'google']
         );
         const data = tokenRes.rows[0];
+        const hasRefreshError = !!data?.refresh_error;
+        const isExpired = data?.expiry_date && Date.now() > Number(data.expiry_date);
         return c.json({
-            connected: !!data && !data.refresh_error,
-            scopes: data?.scope?.split(' ') || [],
+            connected: !!data && !hasRefreshError && !isExpired,
+            linkedEmail: data?.linked_email || null,
+            scopes: data?.scope?.split(' ').filter(Boolean) || [],
             lastSync: data?.last_refresh_at || data?.updated_at || null,
             error: data?.refresh_error || null,
         });

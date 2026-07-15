@@ -6,7 +6,7 @@ import { useMockData } from '../providers/MockDataProvider';
  * useCalendarEvents — centralized hook for Life OS calendar data.
  * Fetches events for a given date range and provides CRUD operations.
  */
-export function useCalendarEvents(session, rangeStart, rangeEnd) {
+export function useCalendarEvents(isSignedIn, rangeStart, rangeEnd) {
     const { isUsingMock, mockData } = useMockData() || {};
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,32 +32,32 @@ export function useCalendarEvents(session, rangeStart, rangeEnd) {
             return;
         }
 
-        if (!session || !rangeStart || !rangeEnd) return;
+        if (!isSignedIn || !rangeStart || !rangeEnd) return;
         setLoading(true);
         try {
-            const data = await apiGet(`/calendar/events?start=${rangeStart}&end=${rangeEnd}`, { session });
+            const data = await apiGet(`/calendar/events?start=${rangeStart}&end=${rangeEnd}`);
             setEvents(data || []);
         } catch (err) {
             console.error('[useCalendarEvents] fetch failed:', err.message);
         } finally {
             setLoading(false);
         }
-    }, [session, rangeStart, rangeEnd, isUsingMock, mockData]);
+    }, [isSignedIn, rangeStart, rangeEnd, isUsingMock, mockData]);
 
     useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
     const fetchSyncStatus = useCallback(async () => {
-        if (isUsingMock || !session) {
+        if (isUsingMock || !isSignedIn) {
             setSyncStatus({ connected: false, loading: false, lastSync: null, error: null });
             return;
         }
         try {
-            const data = await apiGet('/calendar/sync/status', { session });
+            const data = await apiGet('/calendar/sync/status');
             setSyncStatus({ ...data, loading: false });
         } catch (err) {
             setSyncStatus({ connected: false, loading: false, lastSync: null, error: err.message });
         }
-    }, [session, isUsingMock]);
+    }, [isSignedIn, isUsingMock]);
 
     useEffect(() => { fetchSyncStatus(); }, [fetchSyncStatus]);
 
@@ -70,7 +70,7 @@ export function useCalendarEvents(session, rangeStart, rangeEnd) {
             await fetchEvents();
             return newEvent;
         }
-        const created = await apiPost('/calendar/events', eventData, { session });
+        const created = await apiPost('/calendar/events', eventData);
         await fetchEvents();
         return created;
     };
@@ -86,7 +86,7 @@ export function useCalendarEvents(session, rangeStart, rangeEnd) {
             await fetchEvents();
             return eventData;
         }
-        const updated = await apiPatch(`/calendar/events/${id}`, eventData, { session });
+        const updated = await apiPatch(`/calendar/events/${id}`, eventData);
         await fetchEvents();
         return updated;
     };
@@ -102,19 +102,19 @@ export function useCalendarEvents(session, rangeStart, rangeEnd) {
             await fetchEvents();
             return;
         }
-        await apiDelete(`/calendar/events/${id}`, { session });
+        await apiDelete(`/calendar/events/${id}`);
         await fetchEvents();
     };
 
     const pullGoogleEvents = async () => {
-        const result = await apiPost('/calendar/sync/pull', { start: rangeStart, end: rangeEnd }, { session });
+        const result = await apiPost('/calendar/sync/pull', { start: rangeStart, end: rangeEnd });
         await fetchEvents();
         await fetchSyncStatus();
         return result;
     };
 
     const pushTasksToGoogle = async () => {
-        const result = await apiPost('/calendar/sync/push', { start: rangeStart, end: rangeEnd }, { session });
+        const result = await apiPost('/calendar/sync/push', { start: rangeStart, end: rangeEnd });
         await fetchEvents();
         await fetchSyncStatus();
         return result;

@@ -1,10 +1,16 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { apiGet, apiPost } from '../utils/api';
 import toast from '../utils/toast';
-import supabase from '../utils/supabase';
 import {
+    authClient,
+    signIn,
+    signUp,
+    signOut as betterSignOut,
+} from '../lib/auth-client';
+import {
+    authFetchOptions,
+    captureAuthTokenFromResponse,
     clearAccessToken,
-    isOAuthCallbackRoute,
     persistAccessToken,
     readAccessToken,
 } from '../utils/authSession';
@@ -16,245 +22,136 @@ const normalizeEmail = (value = '') => value.trim().toLowerCase();
 const isEmailIdentifier = (value = '') => value.includes('@');
 
 export function AuthProvider({ children }) {
+    const { data: sessionData, isPending, refetch } = authClient.useSession();
     const [user, setUser] = useState(null);
-    const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const checkSession = useCallback(async (providedSession = null) => {
-        let activeSession = providedSession;
-        if (!activeSession) {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                activeSession = session;
-            } catch (e) {}
-        }
+    const session = sessionData?.session || null;
+    const sessionUser = sessionData?.user || null;
 
-        // If no session exists, the user is logged out. Do not hit the backend.
-        if (!activeSession?.user) {
+    const checkSession = useCallback(async () => {
+        const token = readAccessToken();
+        if (!token && !sessionUser) {
             setUser(null);
             setLoading(false);
             return null;
         }
 
-        // Optimistic UI Unblock: if we have a valid JWT session, render the shell instantly
-        const fallbackUser = {
-            id: activeSession.user.id,
-            email: activeSession.user.email,
-            full_name: activeSession.user.user_metadata?.full_name || activeSession.user.email?.split('@')[0],
-            username: activeSession.user.user_metadata?.username || activeSession.user.email?.split('@')[0],
+        const fallbackUser = sessionUser ? {
+            id: sessionUser.id,
+            email: sessionUser.email,
+            full_name: sessionUser.name || sessionUser.fullName || '',
+            username: sessionUser.username || sessionUser.displayUsername || '',
             role: 'user',
-            isGuest: false
-        };
-        setUser(prev => prev || fallbackUser);
-        setLoading(false); // Unblock the UI instantly instead of waiting for backend
+            isGuest: false,
+        } : null;
+
+        if (fallbackUser) setUser((prev) => prev || fallbackUser);
+        setLoading(false);
 
         try {
-            // Background fetch to sync detailed profile data
             const data = await apiGet('/auth/me');
-            if (data && data.user) {
+            if (data?.user) {
                 setUser(data.user);
                 return data.user;
             }
-            // Return our fallback if DB fails but JWT is valid
             return fallbackUser;
         } catch (error) {
-            console.warn('[checkSession] profile fetch failed, using Supabase session fallback:', error.message);
+            console.warn('[checkSession] profile fetch failed:', error.message);
             return fallbackUser;
         }
-    }, []);
+    }, [sessionUser]);
 
     useEffect(() => {
-        const onCallbackPage = isOAuthCallbackRoute();
-
-        const failsafe = setTimeout(() => {
+        if (isPending) return;
+        if (sessionUser || readAccessToken()) {
+            checkSession();
+        } else {
+            setUser(null);
             setLoading(false);
-        }, 2500);
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
-            if (currentSession?.access_token) {
-                setSession(currentSession);
-                persistAccessToken(currentSession.access_token);
-                // Defer profile sync — never call getSession inside this handler
-                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || (!onCallbackPage && event === 'INITIAL_SESSION')) {
-                    setTimeout(() => {
-                        checkSession(currentSession).catch((err) => {
-                            console.error('Failed to sync profile after auth event:', err);
-                        });
-                    }, 0);
-                }
-            } else if (event === 'SIGNED_OUT') {
-                setSession(null);
-                setUser(null);
-                clearAccessToken();
-            }
-            clearTimeout(failsafe);
-            setLoading(false);
-        });
-
-        // On /auth/callback, AuthCallback owns session setup — skip getSession here (deadlock on all browsers)
-        if (onCallbackPage) {
-            const cached = readAccessToken();
-            if (cached) setLoading(false);
-            return () => {
-                clearTimeout(failsafe);
-                subscription.unsubscribe();
-            };
         }
-
-        supabase.auth.getSession().then(({ data: { session: activeSession } }) => {
-            if (activeSession) {
-                setSession(activeSession);
-                persistAccessToken(activeSession.access_token);
-                checkSession(activeSession);
-            } else {
-                clearAccessToken();
-                clearTimeout(failsafe);
-                setLoading(false);
-            }
-        }).catch((err) => {
-            console.error('Initial getSession failed:', err);
-            clearTimeout(failsafe);
-            setLoading(false);
-        });
-
-        return () => {
-            clearTimeout(failsafe);
-            subscription.unsubscribe();
-        };
-    }, [checkSession]);
+    }, [isPending, sessionUser, checkSession]);
 
     const signInWithGoogle = async () => {
-        try {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
-                    queryParams: {
-                        access_type: 'offline',
-                        prompt: 'select_account',
-                    },
-                }
-            });
-            if (error) throw error;
-        } catch (err) {
-            console.warn('Google sign-in error:', err);
-            toast.error('Google Auth unavailable locally. Please verify Supabase settings.');
-        }
+        await signIn.social({
+            provider: 'google',
+            callbackURL: `${window.location.origin}/auth/callback`,
+            fetchOptions: authFetchOptions,
+        });
     };
 
     const signUpWithUsername = async (username, pin, fullName = '', email = '') => {
-        try {
-            const normalizedUsername = normalizeUsername(username);
-            const authEmail = normalizeEmail(email) || `${normalizedUsername.toLowerCase()}@aiimin.com`;
-            await apiPost('/auth/signup', {
-                email: authEmail,
-                password: pin,
-                fullName,
-                username: normalizedUsername
-            });
+        const normalizedUsername = normalizeUsername(username);
+        const authEmail = normalizeEmail(email) || `${normalizedUsername.toLowerCase()}@aiimin.com`;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: authEmail,
-                password: pin,
-            });
-            if (error) throw error;
+        const result = await signUp.email({
+            email: authEmail,
+            password: pin,
+            name: fullName || normalizedUsername,
+            username: normalizedUsername,
+            fetchOptions: authFetchOptions,
+        });
 
-            persistAccessToken(data.session.access_token);
-            setSession(data.session);
-            
-            // Fire checkSession in background, do NOT await it
-            checkSession(data.session);
-            
-            toast.success('Registration successful!');
-            
-            // Return basic user data instantly
-            const basicUser = {
-                id: data.session.user.id,
-                email: data.session.user.email,
-                username: normalizedUsername,
-                full_name: fullName,
-                role: 'user',
-                isGuest: false
-            };
-            return { user: basicUser, session: data.session };
-        } catch (error) {
-            console.error('Error signing up:', error);
-            throw new Error(error.message || 'Signup failed');
-        }
+        if (result.error) throw new Error(result.error.message || 'Signup failed');
+        captureAuthTokenFromResponse(result.response);
+
+        await refetch?.();
+        await checkSession();
+        toast.success('Registration successful! Check your email to verify your account.');
+        return { user: result.data?.user, session: result.data?.session };
     };
 
     const signInWithUsername = async (username, pin) => {
-        try {
-            const identifier = username.trim();
-            let authEmail = isEmailIdentifier(identifier)
-                ? normalizeEmail(identifier)
-                : `${normalizeUsername(identifier).toLowerCase()}@aiimin.com`;
-            
-            // Resolve username to real email if exists (only if not already an email)
-            if (!isEmailIdentifier(identifier)) {
-                try {
-                    const resolveData = await apiGet(`/auth/resolve?identifier=${encodeURIComponent(identifier)}`, { auth: false });
-                    if (resolveData && resolveData.email) {
-                        authEmail = resolveData.email;
-                    }
-                } catch (e) {
-                    // Not found or error, default email will be used
-                }
-            }
+        const identifier = username.trim();
+        let result;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: authEmail,
+        if (isEmailIdentifier(identifier)) {
+            result = await signIn.email({
+                email: normalizeEmail(identifier),
                 password: pin,
+                fetchOptions: authFetchOptions,
             });
-            if (error) throw error;
-
-            persistAccessToken(data.session.access_token);
-            setSession(data.session);
-            
-            // Fire checkSession in background, do NOT await it so we don't block login on /auth/me
-            checkSession(data.session);
-            
-            toast.success('Welcome back!');
-            
-            // Return basic user data instantly
-            const basicUser = {
-                id: data.session.user.id,
-                email: data.session.user.email,
-                username: identifier,
-                role: 'user',
-                isGuest: false
-            };
-            return { user: basicUser, session: data.session };
-        } catch (error) {
-            console.error('Error signing in:', error);
-            throw new Error(error.message || 'Invalid credentials');
+        } else {
+            result = await signIn.username({
+                username: normalizeUsername(identifier),
+                password: pin,
+                fetchOptions: authFetchOptions,
+            });
         }
+
+        if (result.error) throw new Error(result.error.message || 'Invalid credentials');
+        captureAuthTokenFromResponse(result.response);
+        const token = result.response?.headers?.get?.('set-auth-token');
+        if (token) persistAccessToken(token);
+
+        await refetch?.();
+        const profile = await checkSession();
+        toast.success('Welcome back!');
+        return { user: profile, session: result.data?.session };
     };
 
     const signOut = async () => {
         try {
-            try { await apiPost('/auth/logout'); } catch(e) {}
-            await supabase.auth.signOut();
-            clearAccessToken();
-            setUser(null);
-            setSession(null);
-            toast.success('Logged out successfully');
-        } catch (error) {
-            console.error('Error logging out:', error);
-        }
+            try { await apiPost('/auth/logout'); } catch (_) { /* ignore */ }
+            await betterSignOut({ fetchOptions: authFetchOptions });
+        } catch (_) { /* ignore */ }
+        clearAccessToken();
+        setUser(null);
+        toast.success('Logged out successfully');
     };
 
     const value = {
         user,
-        session,
-        loading,
-        isSignedIn: Boolean(session?.user) || Boolean(readAccessToken()),
+        session: sessionUser,
+        loading: loading || isPending,
+        isSignedIn: Boolean(sessionUser) || Boolean(readAccessToken()),
         signInWithGoogle,
         signUpWithUsername,
         signInWithUsername,
         logout: signOut,
         signOut,
         checkSession,
+        refetchSession: refetch,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

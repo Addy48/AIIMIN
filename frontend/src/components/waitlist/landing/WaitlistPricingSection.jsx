@@ -9,17 +9,14 @@ function TierPriceBlock({ item }) {
 
   return (
     <div className="tier-price-block">
-      <span className={`tier-price-list ${hasDiscount ? '' : 'tier-price-row-placeholder'}`}>
+      <span className={`tier-price-list ${hasDiscount ? '' : 'tier-price-row-placeholder'}`} aria-hidden={!hasDiscount}>
         {hasDiscount ? (
           <>
             {item.price}
             <span className="tier-price-list-unit">/mo</span>
           </>
         ) : (
-          <>
-            ₹00
-            <span className="tier-price-list-unit">/mo</span>
-          </>
+          '\u00a0'
         )}
       </span>
       <div className="tier-price-main">
@@ -31,7 +28,7 @@ function TierPriceBlock({ item }) {
           isFree || hasDiscount ? '' : 'tier-price-row-placeholder'
         }`}
       >
-        {isFree ? 'Always free' : 'Waitlist founding rate'}
+        {isFree ? 'Always free' : hasDiscount ? 'Waitlist founding rate' : '\u00a0'}
       </span>
     </div>
   );
@@ -114,17 +111,19 @@ export default function WaitlistPricingSection() {
             >
               <span className="pricing-tier-accent-bar" aria-hidden="true" />
               {item.recommended && <span className="pricing-tier-glow" aria-hidden="true" />}
+              {item.startHere && (
+                <span className="pricing-tier-eyebrow pricing-tier-eyebrow--floating">Free forever</span>
+              )}
+              {item.recommended && (
+                <span className="pricing-tier-eyebrow pricing-tier-eyebrow--recommended pricing-tier-eyebrow--floating">
+                  Recommended
+                </span>
+              )}
               <div className="pricing-tier-header">
                 <span className="pricing-tier-icon-wrap" aria-hidden="true">
                   <TierIcon size={18} strokeWidth={2} />
                 </span>
                 <div className="pricing-tier-title-block">
-                  <div className="pricing-tier-eyebrow-slot" aria-hidden={!item.startHere && !item.recommended}>
-                    {item.startHere && <span className="pricing-tier-eyebrow">Free forever</span>}
-                    {item.recommended && (
-                      <span className="pricing-tier-eyebrow pricing-tier-eyebrow--recommended">Recommended</span>
-                    )}
-                  </div>
                   <h3>{item.tier}</h3>
                   <p className="pricing-tier-tagline">{item.tierTagline}</p>
                 </div>
