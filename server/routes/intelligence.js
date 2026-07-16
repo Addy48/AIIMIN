@@ -18,7 +18,7 @@ import { sharpenLifeArcLocally } from '../lib/arcSharpen.js';
 import { aiLimiter } from '../middleware/rateLimiter.js';
 import { trackExternalCall } from '../services/apiUsageService.js';
 import { geminiLiteGenerate, isGeminiLiteTask, GEMINI_LITE_TASKS } from '../lib/geminiLite.js';
-import { groqChat, getGeminiKey } from '../lib/aiChat.js';
+import { groqChat, heavyChat, openRouterChat, getGeminiKey } from '../lib/aiChat.js';
 
 const app = new Hono();
 
@@ -237,22 +237,23 @@ app.post('/generate', requireAuth, aiLimiter, async (c) => {
             return c.json({ error: 'messages required' }, 400);
         }
 
-        await trackExternalCall({
-            userId,
-            provider: 'groq',
-            endpoint: '/intelligence/generate',
-            units: 1,
-        });
-
         const systemInstructionRaw = await enrichSystemPrompt(userId, systemPrompt);
         const fullMessages = systemInstructionRaw
             ? [{ role: 'system', content: withVoiceRules(systemInstructionRaw) }, ...messages]
             : messages;
 
-        const result = await groqChat({ messages: fullMessages, maxTokens, temperature });
+        const result = await heavyChat({ messages: fullMessages, maxTokens, temperature });
         if (!result.ok) {
             return c.json({ error: result.error || 'Generate failed' }, 503);
         }
+
+        await trackExternalCall({
+            userId,
+            provider: result.provider === 'openrouter' ? 'openrouter' : 'groq',
+            endpoint: '/intelligence/generate',
+            units: 1,
+        });
+
         return c.json({ text: result.text || '', provider: result.provider });
     } catch (err) {
         console.error('[intelligence/generate]', err.message);
@@ -320,50 +321,26 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
             ? [{ role: 'system', content: withVoiceRules(enrichedPrompt) }, ...messages]
             : messages;
 
-        if (provider === 'groq') {
-            const apiKey = process.env.GROQ_API_KEY;
-            if (!apiKey) {
-                return c.json({ error: 'GROQ_API_KEY not configured on server' }, 503);
+        if (provider === 'groq' || provider === 'openrouter' || provider === 'heavy') {
+            const chat = provider === 'openrouter'
+                ? await openRouterChat({ messages: fullMessages, maxTokens, temperature })
+                : await heavyChat({ messages: fullMessages, maxTokens, temperature });
+            if (!chat.ok) {
+                return c.json({ error: chat.error || 'Heavy AI request failed' }, 503);
             }
 
             await trackExternalCall({
                 userId,
-                provider: 'groq',
+                provider: chat.provider === 'openrouter' ? 'openrouter' : 'groq',
                 endpoint: '/intelligence/chat',
                 units: 1,
             });
 
-            const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'llama-3.3-70b-versatile',
-                    messages: fullMessages,
-                    max_tokens: maxTokens,
-                    temperature,
-                }),
-            });
-
-            const data = await res.json();
-            if (!res.ok) {
-                return c.json({ error: data.error?.message || 'Groq request failed' }, res.status);
-            }
-
-            return c.json({ text: data.choices?.[0]?.message?.content || '' });
+            return c.json({ text: chat.text || '', provider: chat.provider, model: chat.model });
         }
 
         if (provider === 'moonshot' || provider === 'kimi' || provider === 'nvidia') {
             const { nvidiaOrGroqChat } = await import('../lib/aiChat.js');
-            await trackExternalCall({
-                userId,
-                provider: 'moonshot',
-                endpoint: '/intelligence/chat',
-                units: 1,
-            });
-
             const chat = await nvidiaOrGroqChat({
                 messages: fullMessages,
                 maxTokens,
@@ -372,6 +349,19 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
             if (!chat.ok) {
                 return c.json({ error: chat.error || 'NVIDIA/Groq request failed' }, 503);
             }
+
+            const budgetProvider = chat.provider === 'openrouter'
+                ? 'openrouter'
+                : chat.provider === 'nvidia'
+                    ? 'moonshot'
+                    : 'groq';
+            await trackExternalCall({
+                userId,
+                provider: budgetProvider,
+                endpoint: '/intelligence/chat',
+                units: 1,
+            });
+
             return c.json({ text: chat.text || '', provider: chat.provider, model: chat.model });
         }
 
@@ -386,7 +376,7 @@ app.post('/usage-report', requireAuth, aiLimiter, async (c) => {
     const userId = c.get('userId');
     try {
         const { provider, endpoint, units = 1 } = await c.req.json();
-        const allowed = new Set(['groq', 'gemini', 'moonshot']);
+        const allowed = new Set(['groq', 'gemini', 'moonshot', 'openrouter']);
         if (!allowed.has(provider)) {
             return c.json({ error: 'Invalid provider' }, 400);
         }
@@ -416,13 +406,6 @@ app.post('/universal-log', requireAuth, async (c) => {
             return c.json({ error: 'No text provided' }, 400);
         }
 
-        await trackExternalCall({
-            userId,
-            provider: 'groq',
-            endpoint: '/intelligence/universal-log',
-            units: 1,
-        });
-
         const systemPrompt = await enrichSystemPrompt(userId, `You are an AI that parses a user's natural language daily log entry and extracts structured actions.
 Return ONLY valid JSON (no markdown, no explanation).
 
@@ -441,7 +424,7 @@ Respond with JSON like:
   ]
 }`);
 
-        const chat = await groqChat({
+        const chat = await heavyChat({
             messages: [
                 { role: 'system', content: withVoiceRules(systemPrompt) },
                 { role: 'user', content: `Parse this log entry: "${text.trim()}"` },
@@ -452,6 +435,13 @@ Respond with JSON like:
         if (!chat.ok) {
             return c.json({ error: chat.error || 'Parse failed' }, 503);
         }
+
+        await trackExternalCall({
+            userId,
+            provider: chat.provider === 'openrouter' ? 'openrouter' : 'groq',
+            endpoint: '/intelligence/universal-log',
+            units: 1,
+        });
 
         const rawText = (chat.text || '').trim().replace(/```json\n?|```/g, '');
         let parsed;
