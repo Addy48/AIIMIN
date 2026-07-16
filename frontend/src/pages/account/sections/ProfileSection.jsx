@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { Copy, Lock } from 'lucide-react';
 import RankLadder from '../../../components/gamification/RankLadder';
 import useFieldSave, { FieldSaveIndicator } from '../../../hooks/useFieldSave';
 import { apiPatch } from '../../../utils/api';
+import toast from '../../../utils/toast';
 
 const fieldStyle = {
   width: '100%',
@@ -25,6 +27,18 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
   const [name, setName] = useState(user?.full_name || '');
   const [tagline, setTagline] = useState(profile?.tagline || '');
   const [location, setLocation] = useState(profile?.location || '');
+  const osId = (profile?.username || user?.username || '').toUpperCase();
+  const hasOsId = osId.length === 8;
+
+  const copyOsId = async () => {
+    if (!hasOsId) return;
+    try {
+      await navigator.clipboard.writeText(osId);
+      toast.success('OS-ID copied');
+    } catch {
+      toast.error('Could not copy OS-ID');
+    }
+  };
 
   const { status: nameStatus, save: saveName } = useFieldSave(async (v) => {
     await apiPatch('/account/profile', { full_name: v });
@@ -36,6 +50,7 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
   });
 
   const fields = [
+    { label: 'OS-ID', value: osId, done: hasOsId },
     { label: 'Name', value: profile?.full_name || user?.full_name, done: !!(profile?.full_name || user?.full_name) },
     { label: 'Tagline', value: profile?.tagline, done: !!profile?.tagline },
     { label: 'Location', value: profile?.location, done: !!profile?.location },
@@ -115,6 +130,114 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section
+        style={{
+          ...cardStyle,
+          padding: '22px 24px',
+          background: 'linear-gradient(135deg, var(--color-surface-2) 0%, var(--color-surface-1) 55%, rgba(255, 107, 53, 0.08) 100%)',
+          border: '1px solid var(--color-border)',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            top: -40,
+            right: -20,
+            width: 160,
+            height: 160,
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,107,53,0.18) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <p style={{ margin: '0 0 6px', color: 'var(--color-accent)', fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+              OS-ID · Permanent handle
+            </p>
+            <p style={{ margin: '0 0 14px', color: 'var(--color-text-2)', fontSize: 13, lineHeight: 1.55, maxWidth: 420 }}>
+              Your unique 8-character identity on AIIMIN. Chosen once at signup — cannot be changed.
+            </p>
+          </div>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 10px',
+              borderRadius: 999,
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface-1)',
+              color: 'var(--color-text-3)',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+            }}
+          >
+            <Lock size={12} />
+            Locked
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 14,
+            flexWrap: 'wrap',
+            padding: '16px 18px',
+            borderRadius: 14,
+            border: '1px solid rgba(255, 107, 53, 0.35)',
+            background: 'var(--color-surface-1)',
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+                fontSize: hasOsId ? 32 : 22,
+                fontWeight: 800,
+                letterSpacing: hasOsId ? '0.22em' : '0.04em',
+                color: hasOsId ? 'var(--color-text-1)' : 'var(--color-text-3)',
+                lineHeight: 1.1,
+              }}
+            >
+              {hasOsId ? osId : 'NOT SET'}
+            </div>
+            <p style={{ margin: '8px 0 0', color: 'var(--color-text-3)', fontSize: 12 }}>
+              {hasOsId ? 'Use OS-ID + 6-digit PIN to sign in anywhere.' : 'Complete onboarding to claim your OS-ID.'}
+            </p>
+          </div>
+          {hasOsId && (
+            <button
+              type="button"
+              onClick={copyOsId}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 14px',
+                borderRadius: 10,
+                border: '1px solid var(--color-border)',
+                background: 'var(--color-surface-2)',
+                color: 'var(--color-text-1)',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              <Copy size={15} />
+              Copy
+            </button>
+          )}
         </div>
       </section>
 
