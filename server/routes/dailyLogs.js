@@ -153,8 +153,7 @@ Do not include markdown tags like \`\`\`json.`;
             provider: 'groq',
             endpoint: '/daily-logs/journal/ai-analyze',
             units: 1,
-            enforceBudget: false,
-        }).catch(() => {});
+        });
 
         const chat = await nvidiaOrGroqChat({
             messages: [{ role: 'user', content: prompt }],
@@ -168,6 +167,13 @@ Do not include markdown tags like \`\`\`json.`;
         const aiAnalysis = JSON.parse(rawText.match(/\{[\s\S]*\}/)?.[0] || rawText);
         return c.json(aiAnalysis);
     } catch (err) {
+        if (err.code === 'USER_AI_BUDGET_EXCEEDED' || err.code === 'BUDGET_EXCEEDED') {
+            return c.json({
+                error: err.message,
+                code: err.code,
+                ...(err.meta || {}),
+            }, 429);
+        }
         console.error('[journal/ai-analyze] error:', err);
         return c.json({
             sentiment: 'reflective',

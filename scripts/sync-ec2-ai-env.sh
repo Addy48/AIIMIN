@@ -31,7 +31,7 @@ fi
 
 TMP="$(mktemp)"
 # Extract only AI-related lines to merge into remote .env
-grep -E '^(GEMINI_|GROQ_|NVIDIA_|KIMI_|XAI_|MOONSHOT_|GEMINI_LITE|OPENROUTER_)' "$SRC" > "$TMP" || true
+grep -E '^(GEMINI_|GROQ_|NVIDIA_|KIMI_|XAI_|MOONSHOT_|GEMINI_LITE|OPENROUTER_|AI_DAILY_LIMIT_)' "$SRC" > "$TMP" || true
 
 if [[ ! -s "$TMP" ]]; then
   echo "No AI key lines found in $SRC"

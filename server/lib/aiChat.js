@@ -1,5 +1,7 @@
 /**
- * Shared chat helpers — Groq first for heavy work, OpenRouter free as fallback.
+ * Shared chat helpers.
+ * - Lite (low tokens): Gemini → OpenRouter free (available models) → Groq last resort
+ * - Heavy: Groq primary; OpenRouter only as weak last-ditch (free models are limited)
  */
 
 export function getGeminiKey() {
@@ -24,6 +26,38 @@ export function getNvidiaKey() {
     || process.env.KIMI_API_KEY
     || ''
   ).replace(/^"|"$/g, '').trim() || null;
+}
+
+/** Prefer available free models; llama:free often 429. Override via env CSV. */
+export function getOpenRouterLiteModels() {
+  const raw = process.env.OPENROUTER_LITE_MODELS
+    || process.env.OPENROUTER_LITE_MODEL
+    || process.env.OPENROUTER_MODEL
+    || 'openai/gpt-oss-20b:free,nvidia/nemotron-nano-9b-v2:free';
+  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+/** Heavy OpenRouter tries (usually rate-limited). Keep off critical path. */
+export function getOpenRouterHeavyModels() {
+  const raw = process.env.OPENROUTER_HEAVY_MODELS
+    || process.env.OPENROUTER_HEAVY_MODEL
+    || 'meta-llama/llama-3.3-70b-instruct:free,openai/gpt-oss-20b:free';
+  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+function extractChatText(data) {
+  const msg = data?.choices?.[0]?.message || {};
+  const content = (msg.content || '').trim();
+  if (content) return content;
+  // Some free models dump answer into reasoning when max_tokens too low
+  const reasoning = (msg.reasoning || '').trim();
+  if (!reasoning) return '';
+  const lines = reasoning.split('\n').map((l) => l.trim()).filter(Boolean);
+  const last = lines[lines.length - 1] || '';
+  if (last.length > 8 && last.length < 400 && !/^okay[,.]?\s/i.test(last)) {
+    return last.replace(/^["']|["']$/g, '');
+  }
+  return '';
 }
 
 /**
@@ -71,56 +105,125 @@ export async function groqChat({
 }
 
 /**
- * OpenRouter (prefer :free models for zero spend).
+ * OpenRouter chat with model failover list.
+ * Free reasoning models need enough max_tokens + low reasoning effort or content is empty.
  */
 export async function openRouterChat({
   messages,
   maxTokens = 512,
   temperature = 0.7,
-  model = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free',
+  models = null,
+  model = null,
+  reasoningEffort = 'minimal',
+  purpose = 'general',
 }) {
   const apiKey = getOpenRouterKey();
   if (!apiKey) return { ok: false, error: 'OPENROUTER_API_KEY missing', provider: 'openrouter' };
 
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.OPENROUTER_HTTP_REFERER || 'https://aiimin.in',
-      'X-Title': process.env.OPENROUTER_APP_TITLE || 'AIIMIN',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: maxTokens,
-      temperature,
-    }),
-  });
+  const list = models
+    || (model ? [model] : null)
+    || (purpose === 'lite' ? getOpenRouterLiteModels() : getOpenRouterHeavyModels());
 
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    return {
-      ok: false,
-      error: data.error?.message || `OpenRouter HTTP ${res.status}`,
-      provider: 'openrouter',
-    };
+  // Reasoning models burn budget on CoT — floor so content can appear
+  const floor = purpose === 'lite' ? 192 : 256;
+  const capped = Math.max(floor, Math.min(maxTokens || floor, purpose === 'lite' ? 384 : maxTokens || 1024));
+
+  let lastError = 'OpenRouter failed';
+  for (const m of list) {
+    try {
+      const body = {
+        model: m,
+        messages,
+        max_tokens: capped,
+        temperature,
+      };
+      if (reasoningEffort) {
+        body.reasoning = { effort: reasoningEffort };
+      }
+
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.OPENROUTER_HTTP_REFERER || 'https://aiimin.in',
+          'X-Title': process.env.OPENROUTER_APP_TITLE || 'AIIMIN',
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        lastError = data.error?.message || `OpenRouter HTTP ${res.status} (${m})`;
+        console.warn('[openRouterChat]', m, res.status, lastError.slice(0, 120));
+        continue;
+      }
+
+      const text = extractChatText(data);
+      if (!text) {
+        lastError = `OpenRouter empty content (${m})`;
+        console.warn('[openRouterChat]', lastError);
+        continue;
+      }
+
+      return {
+        ok: true,
+        text,
+        provider: 'openrouter',
+        model: m,
+      };
+    } catch (err) {
+      lastError = err.message || String(err);
+      console.warn('[openRouterChat]', m, lastError);
+    }
   }
 
+  return { ok: false, error: lastError, provider: 'openrouter' };
+}
+
+/**
+ * Low-token tasks: OpenRouter free (available) primary when Gemini already failed upstream.
+ * Caps tokens. Groq last resort with same small budget so free-key pool stays for heavy.
+ */
+export async function liteChat(opts) {
+  const maxTokens = Math.min(opts.maxTokens ?? 256, 384);
+  const messages = opts.messages || [];
+
+  const or = await openRouterChat({
+    ...opts,
+    messages,
+    maxTokens,
+    purpose: 'lite',
+    reasoningEffort: 'minimal',
+  });
+  if (or.ok && or.text) return or;
+
+  // Tiny Groq rescue — do not steal large heavy budget
+  const groq = await groqChat({
+    ...opts,
+    messages,
+    maxTokens: Math.min(maxTokens, 256),
+  });
+  if (groq.ok && groq.text) return { ...groq, via: 'lite-rescue' };
+
   return {
-    ok: true,
-    text: data.choices?.[0]?.message?.content || '',
-    provider: 'openrouter',
-    model,
+    ok: false,
+    error: or.error || groq.error || 'Lite providers failed',
+    provider: 'lite',
   };
 }
 
-/** Groq first, then OpenRouter free fallback. */
+/** Groq first for real work. OpenRouter only last-ditch (weak free models). */
 export async function heavyChat(opts) {
   const groq = await groqChat(opts);
   if (groq.ok && groq.text) return groq;
 
-  const or = await openRouterChat(opts);
+  const or = await openRouterChat({
+    ...opts,
+    purpose: 'heavy',
+    reasoningEffort: 'minimal',
+    maxTokens: Math.max(opts.maxTokens || 512, 384),
+  });
   if (or.ok && or.text) return or;
 
   return {
