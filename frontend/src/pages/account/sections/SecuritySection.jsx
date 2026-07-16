@@ -70,10 +70,14 @@ export default function SecuritySection({ user }) {
     };
 
     const handleForgotPin = async () => {
+        if (!user?.email) {
+            toast.error('No email on file for PIN reset');
+            return;
+        }
         setBusy(true);
         try {
             await apiPost('/auth/request-password-reset', {
-                email: user?.email,
+                email: user.email,
                 redirectTo: `${window.location.origin}/login?reset=1`,
             }, { auth: false });
             toast.success('PIN reset email sent');

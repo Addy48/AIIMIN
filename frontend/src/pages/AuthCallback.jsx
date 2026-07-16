@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import { apiGet } from '../utils/api';
 import { authClient } from '../lib/auth-client';
-import { readAccessToken, captureAuthTokenFromResponse, getApiOrigin } from '../utils/authSession';
+import { readAccessToken, persistSessionFromAuthResponse, getApiOrigin } from '../utils/authSession';
 import { useAuth } from '../hooks/useAuth';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
@@ -18,6 +18,7 @@ const AuthCallback = () => {
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('Establishing secure connection…');
     const finishedRef = useRef(false);
+    const ottAttemptRef = useRef(false);
 
     useEffect(() => {
         const queryStatus = searchParams.get('status');
@@ -83,6 +84,21 @@ const AuthCallback = () => {
 
                 const ott = searchParams.get('ott');
                 if (ott) {
+                    if (readAccessToken()) {
+                        await finishWithProfile();
+                        return;
+                    }
+                    if (ottAttemptRef.current) {
+                        for (let i = 0; i < 15; i += 1) {
+                            await new Promise((r) => setTimeout(r, 120));
+                            if (readAccessToken()) {
+                                await finishWithProfile();
+                                return;
+                            }
+                        }
+                    }
+                    ottAttemptRef.current = true;
+
                     const apiOrigin = getApiOrigin();
                     const verifyRes = await fetch(`${apiOrigin}/api/auth/one-time-token/verify`, {
                         method: 'POST',
@@ -90,11 +106,16 @@ const AuthCallback = () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token: ott }),
                     });
-                    captureAuthTokenFromResponse(verifyRes);
-                    if (!verifyRes.ok) {
+
+                    if (verifyRes.ok) {
+                        await persistSessionFromAuthResponse(verifyRes);
+                    }
+
+                    if (!verifyRes.ok && !readAccessToken()) {
                         const errBody = await verifyRes.json().catch(() => ({}));
                         throw new Error(errBody?.message || 'One-time token verification failed');
                     }
+
                     await refetchSession?.();
                     await finishWithProfile();
                     return;

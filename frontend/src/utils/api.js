@@ -75,11 +75,20 @@ export const apiRequest = async (path, options = {}, retried = false) => {
 
     if (response.status === 401 && !retried && options.auth !== false) {
         const { authClient } = await import('../lib/auth-client');
-        const refreshed = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
-        const token = refreshed?.data?.session?.token;
-        if (token) {
+        const { captureAuthTokenFromResponse } = await import('./authSession');
+        const refreshed = await authClient.getSession({
+            fetchOptions: {
+                credentials: 'include',
+                onSuccess: (ctx) => captureAuthTokenFromResponse(ctx?.response),
+            },
+        });
+        const headerToken = refreshed?.data?.session?.token;
+        if (headerToken) {
             const { persistAccessToken } = await import('./authSession');
-            persistAccessToken(token);
+            persistAccessToken(headerToken);
+            return apiRequest(path, options, true);
+        }
+        if (readAccessToken()) {
             return apiRequest(path, options, true);
         }
     }

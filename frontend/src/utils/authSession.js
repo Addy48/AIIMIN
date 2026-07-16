@@ -27,9 +27,25 @@ export const clearAccessToken = () => {
 };
 
 export const captureAuthTokenFromResponse = (response) => {
-    const token = response?.headers?.get?.('set-auth-token');
+    const token = response?.headers?.get?.('set-auth-token')
+        || response?.headers?.get?.('Set-Auth-Token');
     if (token) persistAccessToken(token);
     return token;
+};
+
+/** Persist bearer from Better Auth JSON body when header is unavailable. */
+export const persistSessionFromAuthResponse = async (response) => {
+    captureAuthTokenFromResponse(response);
+    if (readAccessToken()) return readAccessToken();
+    try {
+        const json = await response.clone().json();
+        const token = json?.session?.token || json?.token;
+        if (token) {
+            persistAccessToken(token);
+            return token;
+        }
+    } catch (_) { /* ignore */ }
+    return readAccessToken();
 };
 
 export const authFetchOptions = {

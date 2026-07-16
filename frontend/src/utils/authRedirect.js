@@ -20,4 +20,10 @@ export const redirectToGoogle = async ({ loginHint } = {}) => {
     }
 };
 
-export const fetchGoogleIntegrationStatus = () => apiGet('/google/auth/status');
+export const fetchGoogleIntegrationStatus = async () => {
+    try {
+        return await apiGet('/google/auth/status');
+    } catch {
+        return { connected: false };
+    }
+};
