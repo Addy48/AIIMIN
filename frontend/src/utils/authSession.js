@@ -42,6 +42,20 @@ export const isOAuthCallbackRoute = () => (
     typeof window !== 'undefined' && window.location.pathname === '/auth/callback'
 );
 
+/** API origin without /api suffix (OAuth handoff must hit API host). */
+export const getApiOrigin = () => {
+    const apiUrl = process.env.REACT_APP_API_URL || '/api';
+    if (/^https?:\/\//i.test(apiUrl)) {
+        return apiUrl.replace(/\/api\/?$/, '');
+    }
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        return 'http://localhost:3001';
+    }
+    return typeof window !== 'undefined' ? window.location.origin : '';
+};
+
+export const getOAuthHandoffUrl = () => `${getApiOrigin()}/api/auth/oauth-handoff`;
+
 export const isCalendarIntegrationCallback = () => {
     if (typeof window === 'undefined') return false;
     const params = new URLSearchParams(window.location.search);

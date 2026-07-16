@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle } from 'lucide-react';
 import { apiGet } from '../utils/api';
 import { authClient } from '../lib/auth-client';
-import { captureAuthTokenFromResponse, persistAccessToken } from '../utils/authSession';
+import { readAccessToken, captureAuthTokenFromResponse, getApiOrigin } from '../utils/authSession';
 import { useAuth } from '../hooks/useAuth';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
@@ -14,7 +14,7 @@ const SESSION_TIMEOUT_MS = 15_000;
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const { checkSession } = useAuth();
+    const { checkSession, refetchSession } = useAuth();
     const [error, setError] = useState(null);
     const [status, setStatus] = useState('Establishing secure connection…');
     const finishedRef = useRef(false);
@@ -57,7 +57,11 @@ const AuthCallback = () => {
                 navigate(isIncomplete ? '/onboarding' : '/overview', { replace: true });
             } catch (err) {
                 console.error('[AuthCallback] profile check failed:', err);
-                navigate('/onboarding', { replace: true });
+                if (readAccessToken()) {
+                    navigate('/onboarding', { replace: true });
+                } else {
+                    fail('Could not verify your profile. Please try signing in again.');
+                }
             }
         };
 
@@ -65,14 +69,50 @@ const AuthCallback = () => {
             fail('Session setup timed out. Please try signing in again.');
         }, SESSION_TIMEOUT_MS);
 
+        const resolveSession = async () => {
+            const result = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
+            if (result?.error) throw result.error;
+            const hasSession = Boolean(result?.data?.session && result?.data?.user);
+            const hasBearer = Boolean(readAccessToken());
+            return { hasSession, hasBearer, data: result?.data };
+        };
+
         const handleCallback = async () => {
             try {
                 setStatus('Verifying identity…');
-                const result = await authClient.getSession({ fetchOptions: { credentials: 'include' } });
-                if (result?.error) throw result.error;
 
-                const token = result?.data?.session?.token;
-                if (token) persistAccessToken(token);
+                const ott = searchParams.get('ott');
+                if (ott) {
+                    const apiOrigin = getApiOrigin();
+                    const verifyRes = await fetch(`${apiOrigin}/api/auth/one-time-token/verify`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: ott }),
+                    });
+                    captureAuthTokenFromResponse(verifyRes);
+                    if (!verifyRes.ok) {
+                        const errBody = await verifyRes.json().catch(() => ({}));
+                        throw new Error(errBody?.message || 'One-time token verification failed');
+                    }
+                    await refetchSession?.();
+                    await finishWithProfile();
+                    return;
+                }
+
+                let { hasSession, hasBearer, data } = await resolveSession();
+
+                if (!hasSession && !hasBearer) {
+                    await new Promise((r) => setTimeout(r, 400));
+                    ({ hasSession, hasBearer, data } = await resolveSession());
+                }
+
+                if (!hasSession && !hasBearer) {
+                    throw new Error('No session established after Google sign-in');
+                }
+
+                await refetchSession?.();
+                if (!data?.user) await refetchSession?.();
 
                 await finishWithProfile();
             } catch (err) {
@@ -87,7 +127,7 @@ const AuthCallback = () => {
             cancelled = true;
             clearTimeout(timeoutId);
         };
-    }, [searchParams, navigate, checkSession]);
+    }, [searchParams, navigate, checkSession, refetchSession]);
 
     if (error) {
         return (

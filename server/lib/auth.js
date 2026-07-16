@@ -5,6 +5,7 @@ import { betterAuth } from 'better-auth';
 import { bearer } from 'better-auth/plugins/bearer';
 import { username } from 'better-auth/plugins/username';
 import { twoFactor } from 'better-auth/plugins/two-factor';
+import { oneTimeToken } from 'better-auth/plugins/one-time-token';
 import { getPool } from './db.js';
 import { sendEmail } from './email.js';
 import { ensureUserProfile } from '../services/userProfileService.js';
@@ -186,6 +187,7 @@ export const auth = betterAuth({
 
     plugins: [
         bearer(),
+        oneTimeToken({ expiresIn: 5 }),
         username({
             minUsernameLength: 8,
             maxUsernameLength: 8,
