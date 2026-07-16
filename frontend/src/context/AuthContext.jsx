@@ -11,6 +11,7 @@ import {
     authFetchOptions,
     captureAuthTokenFromResponse,
     clearAccessToken,
+    getOAuthHandoffUrl,
     persistAccessToken,
     readAccessToken,
 } from '../utils/authSession';
@@ -73,9 +74,11 @@ export function AuthProvider({ children }) {
     }, [isPending, sessionUser, checkSession]);
 
     const signInWithGoogle = async () => {
+        const origin = window.location.origin;
         await signIn.social({
             provider: 'google',
-            callbackURL: `${window.location.origin}/auth/callback`,
+            callbackURL: getOAuthHandoffUrl(),
+            errorCallbackURL: `${origin}/auth/callback?status=error`,
             fetchOptions: authFetchOptions,
         });
     };

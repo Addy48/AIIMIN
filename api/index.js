@@ -148,9 +148,16 @@ export default async function handler(req, res) {
 
         // Write status + headers back to Node.js response
         res.statusCode = webRes.status;
+        const setCookies = typeof webRes.headers.getSetCookie === 'function'
+            ? webRes.headers.getSetCookie()
+            : [];
         webRes.headers.forEach((value, key) => {
+            if (key.toLowerCase() === 'set-cookie') return;
             res.setHeader(key, value);
         });
+        if (setCookies.length > 0) {
+            res.setHeader('Set-Cookie', setCookies);
+        }
 
         // Write body
         const arrayBuffer = await webRes.arrayBuffer();
