@@ -9,8 +9,9 @@ Never commit real keys. Sync to EC2 with `bash scripts/sync-ec2-ai-env.sh` (SSH;
 |---------|--------|-------|------|
 | `GEMINI_LITE_API_KEY` | ✅ | `gemini-2.5-flash-lite` | **Light only** — 5 tasks |
 | `GEMINI_API_KEY` | ❌ invalid | — | Cleared; do not use |
-| `GROQ_API_KEY` | ✅ | `llama-3.3-70b-versatile` | **Heavy** — default for most AI |
-| `NVIDIA_API_KEY` / `KIMI_API_KEY` | ⚠️ key ok, models 404 | — | Tried first; **falls back to Groq** |
+| `GROQ_API_KEY` | ✅ | `llama-3.3-70b-versatile` | **Heavy** — primary |
+| `OPENROUTER_API_KEY` | ✅ | `meta-llama/llama-3.3-70b-instruct:free` | **Heavy fallback** when Groq fails |
+| `NVIDIA_API_KEY` / `KIMI_API_KEY` | ⚠️ key ok, models 404 | — | Tried first; **falls back to Groq → OpenRouter** |
 | `XAI_API_KEY` | ❌ 403 | — | Not routed |
 
 ## What each key powers
@@ -43,15 +44,23 @@ Google free tier (Flash-Lite class): typically **~1,000–1,500 RPD** and RPM ca
 | Wealth SMS/AI import | `/wealth/import/ai` | ~500–1,500 |
 | CBT / weekly insight / sports / finance what-if | via `aiService` → chat | ~300–1,000 |
 
-App budget: `GROQ_DAILY_LIMIT=14400` **calls/day**.
+App budget: `GROQ_DAILY_LIMIT=1000` **calls/day** (align with Groq free RPD for 70B).
 
-Groq free tier (typical): **~14,400 requests/day** on Llama 3.3 70B (also TPM/RPM limits — often ~6k–30k TPM depending on plan).
+Groq free tier (official, model-dependent): for `llama-3.3-70b-versatile` typically **~1,000 RPD**, **30 RPM**, **12K TPM**.
 
-**Rough runtime:** average heavy call ~600–1,000 tokens → **~8–14M tokens/day** theoretical at full call budget; real TPM usually hits first. For solo + few testers: **weeks of normal use** before hitting 14.4k calls.
+### OpenRouter (`OPENROUTER_API_KEY`) — free fallback
+
+| Task | Route / UI | Notes |
+|------|------------|--------|
+| Same heavy paths | via `heavyChat` / `nvidiaOrGroqChat` | Used when Groq fails or `provider=openrouter` |
+
+Env: `OPENROUTER_MODEL=meta-llama/llama-3.3-70b-instruct:free`, `OPENROUTER_DAILY_LIMIT=50` (OpenRouter free ~50 req/day without credits).
+
+Keys live in root `.env` + `deploy/EC2.env.paste`; sync: `bash scripts/sync-ec2-ai-env.sh`.
 
 ### NVIDIA / Kimi — standby
 
-Key stored; models not enabled on account. Code path: try NVIDIA → **fallback Groq**. Enable models at [build.nvidia.com](https://build.nvidia.com/) later.
+Key stored; models not enabled on account. Code path: try NVIDIA → **Groq → OpenRouter**. Enable models at [build.nvidia.com](https://build.nvidia.com/) later.
 
 ### xAI — unused
 

@@ -2,24 +2,21 @@
 
 > Agents read after Home. Keep ≤400 lines.
 
-**Date:** 2026-07-15
+**Date:** 2026-07-16
 
 ## Today
 
-Trust fix + ship verified.
-
-- Report 500: pomodoro columns — `analyticsData.js` (shipped)
-- Tour + Insights→Reports live on prod (bundle has Patterns / tour stops)
-- Vercel READY was `ba4e7dc1` (pre-rewrite SHA); tip now `476c7a75` after history scrub
-- GitHub: all `Co-authored-by: Cursor` trailers stripped (force-push main); `.qwen` untracked; remote `claude/*` branch deleted
-- EC2 health ok
+- OpenRouter wired: env + `heavyChat` fallback (Groq → OpenRouter)
+- Syncing `OPENROUTER_*` to EC2 via `sync-ec2-ai-env.sh`
 
 ## Next
 
-1. Hard-refresh `/reports` — confirm report body (login) not just tabs
-2. Optional: untrack or rewrite `.agents/**` README text that still names Claude (skills, not product)
-3. Cursor UI may re-append Co-authored-by on next commit — strip before push
+1. Confirm EC2 has OPENROUTER_* + pm2 reload
+2. Smoke Journal AI / Universal Logger on prod
+3. Rotate OpenRouter key (was in chat)
 
 ## Touch
 
-- tip `476c7a75` · reports+tour already in tree
+- `server/lib/aiChat.js`, `intelligence.js`, `apiUsageService.js`
+- `deploy/EC2.env.paste`, `.env` (gitignored)
+- `scripts/sync-ec2-ai-env.sh`

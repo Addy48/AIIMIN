@@ -120,7 +120,7 @@ app.post('/journal/ai-analyze', requireAuth, async (c) => {
             return c.json({ error: 'Text is required for AI analysis' }, 400);
         }
 
-        if (!process.env.GROQ_API_KEY && !process.env.NVIDIA_API_KEY && !process.env.KIMI_API_KEY) {
+        if (!process.env.GROQ_API_KEY && !process.env.OPENROUTER_API_KEY && !process.env.NVIDIA_API_KEY && !process.env.KIMI_API_KEY) {
             return c.json({
                 sentiment: 'reflective',
                 feedback: 'AI reflection unavailable — no provider keys configured.',

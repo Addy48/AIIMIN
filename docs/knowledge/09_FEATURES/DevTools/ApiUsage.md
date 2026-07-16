@@ -25,8 +25,9 @@ Migration: `server/migrations/032_api_usage_tracking.sql`
 |--------------|--------|---------------------|
 | `cricapi` | CricketData.org CricAPI | 100 |
 | `rapidapi_cricket` | RapidAPI cricket free data | 100 |
-| `gemini` | Google Gemini server proxy | 1500 |
-| `groq` | Client Groq + usage-report | 14400 |
+| `gemini` | Google Gemini server proxy | 200 |
+| `groq` | Groq heavy (server) | 1000 |
+| `openrouter` | OpenRouter free fallback | 50 |
 | `moonshot` | NVIDIA Kimi (journal analyze) | 500 |
 | `sports_cron` | Sports cache refresh | 48 |
 

@@ -8,6 +8,7 @@ const ENV_LIMITS = {
   rapidapi_cricket: 'RAPIDAPI_CRICKET_DAILY_LIMIT',
   gemini: 'GEMINI_DAILY_LIMIT',
   groq: 'GROQ_DAILY_LIMIT',
+  openrouter: 'OPENROUTER_DAILY_LIMIT',
   moonshot: 'MOONSHOT_DAILY_LIMIT',
   sports_cron: 'SPORTS_CRON_DAILY_LIMIT',
 };
@@ -16,7 +17,8 @@ const DEFAULT_LIMITS = {
   cricapi: 100,
   rapidapi_cricket: 100,
   gemini: 200,
-  groq: 14400,
+  groq: 1000,
+  openrouter: 50,
   moonshot: 500,
   sports_cron: 48,
 };
