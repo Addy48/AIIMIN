@@ -1,0 +1,195 @@
+/* Elite multipage PDF skins — extends standard-all page system */
+.elite-pdf .page { min-height: 1123px; }
+.elite-pdf .data-table.dense td,
+.elite-pdf .data-table.dense th { padding: 3px 5px; font-size: 8px; }
+
+/* Atlas */
+.arch-atlas {
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif;
+  --font-body: "Figtree", system-ui, sans-serif;
+  --page-bg: #f7f7f5;
+  --header-bg: #ecece8;
+}
+.arch-atlas .sec { font-style: normal; font-weight: 700; }
+.atlas-map-large {
+  margin: 12px 0 16px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e4e4e0;
+  border-radius: 12px;
+}
+.atlas-svg { width: 100%; height: auto; display: block; }
+.atlas-svg .alink { stroke: #d0d0c8; stroke-width: 2; }
+.atlas-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.atlas-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.domain-band {
+  height: 6px;
+  width: 72px;
+  border-bottom: 6px solid var(--accent);
+  margin-bottom: 12px;
+}
+
+/* Monograph */
+.arch-monograph {
+  --page-bg: #f7f1e6;
+  --header-bg: #efe6d6;
+  --font-display: "Source Serif 4", Georgia, serif;
+  --font-body: "Source Serif 4", Georgia, serif;
+}
+
+/* Longitudinal */
+.arch-longitudinal {
+  --page-bg: #f4f6f8;
+  --header-bg: #e8ecf0;
+  --font-display: "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+.arch-longitudinal .sec { font-style: normal; }
+.wave-card {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #d5dde6;
+}
+.wave-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12pt;
+}
+
+/* Causal */
+.arch-causal {
+  --page-bg: #f7f8fa;
+  --font-display: "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+}
+.arch-causal .sec { font-style: normal; }
+.dag-svg { background: #fff; border: 1px solid #d5dde6; }
+.iv-card {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid #d5dde6;
+  background: #fff;
+}
+.iv-card h3 { margin: 0 0 6px; font-size: 12pt; }
+
+/* Psycho */
+.arch-psycho {
+  --page-bg: #f7f1e6;
+  --font-display: "Source Serif 4", Georgia, serif;
+}
+
+/* Runbook */
+.arch-runbook {
+  --page-bg: #f3f4f6;
+  --header-bg: #e5e7eb;
+  --font-display: "IBM Plex Sans", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+.arch-runbook .sec { font-style: normal; text-transform: uppercase; letter-spacing: 0.04em; font-size: 14pt; }
+.os-status {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.os-status span { display: block; margin-bottom: 2px; }
+.os-status strong { font-size: 1.05rem; }
+.kpi-block, .sop-card {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+}
+.kpi-block h3, .sop-card h3 { margin: 0 0 8px; }
+.sop-card ol { margin: 0; padding-left: 18px; }
+.sop-card li { margin-bottom: 4px; }
+.mod-row {
+  display: grid;
+  grid-template-columns: 14px 120px 120px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 10pt;
+}
+.swatch { width: 12px; height: 12px; border-radius: 2px; margin-top: 4px; }
+
+/* Evidence */
+.arch-evidence {
+  --page-bg: #fffef9;
+  --font-display: "Newsreader", Georgia, serif;
+  --font-body: "Inter Tight", system-ui, sans-serif;
+}
+.arch-evidence .sec { font-style: normal; }
+.ev-grade {
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid #e5e0d6;
+  border-left-width: 4px;
+  background: #fff;
+}
+.ev-grade.grade-Bp, .ev-grade.grade-B { border-left-color: #10b981; }
+.ev-grade.grade-Bm, .ev-grade.grade-B- { border-left-color: #ff6b35; }
+.ev-grade.grade-D { border-left-color: #6b7280; }
+.ev-grade-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.ev-grade .grade { color: var(--accent); font-size: 1.1rem; }
+.ev-grade h3 { margin: 0 0 6px; font-size: 12pt; }
+.forest { margin-top: 16px; display: grid; gap: 10px; }
+.forest-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 48px;
+  gap: 10px;
+  align-items: center;
+  font-size: 10pt;
+}
+.forest-bar {
+  height: 10px;
+  background: #efe9df;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.forest-bar i { display: block; height: 100%; background: var(--accent); }
+
+/* Board */
+.arch-board {
+  --page-bg: #ffffff;
+  --ink: #0b1f33;
+  --header-bg: #0b1f33;
+  --font-display: "Libre Baskerville", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+}
+.arch-board .page-header { color: #e8eef4; }
+.arch-board .ph-title, .arch-board .ph-meta { color: #c5d0db; }
+.arch-board .sec { font-style: normal; color: #0b1f33; }
+.goal-card { margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #d5dde6; }
+.goal-card h3 { margin: 0 0 8px; font-family: var(--font-display); }
+.habit-bar {
+  height: 8px;
+  background: #e8eef4;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.habit-bar i { display: block; height: 100%; background: var(--accent); }
+
+@media (max-width: 720px) {
+  .os-status, .mod-row, .forest-row { grid-template-columns: 1fr; }
+}

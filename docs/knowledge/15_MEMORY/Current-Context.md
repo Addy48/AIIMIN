@@ -2,21 +2,26 @@
 
 > Agents read after Home. Keep ≤400 lines.
 
-**Date:** 2026-07-16
+**Date:** 2026-07-17
 
 ## Today
 
-- OpenRouter wired: env + `heavyChat` fallback (Groq → OpenRouter)
-- Syncing `OPENROUTER_*` to EC2 via `sync-ec2-ai-env.sh`
+- **Reports SHIPPED:** Core = Ivory Snapshot · Pro = Folio Life OS PDF (+ Patterns/Skills)
+- **Elite Deep PAUSED** — no Deep product
+- Prototypes gallery still at `prototypes/reports/` (locked directions)
+- OpenRouter lite/heavy + tier AI quotas still **local unpushed** (separate)
 
 ## Next
 
-1. Confirm EC2 has OPENROUTER_* + pm2 reload
-2. Smoke Journal AI / Universal Logger on prod
-3. Rotate OpenRouter key (was in chat)
+1. Verify prod Core/Pro on `/reports` after Vercel deploy
+2. Elite Deep: pause until clearer JTBD
+3. AI quotas/OpenRouter: commit+EC2 only when asked
 
 ## Touch
 
-- `server/lib/aiChat.js`, `intelligence.js`, `apiUsageService.js`
-- `deploy/EC2.env.paste`, `.env` (gitignored)
-- `scripts/sync-ec2-ai-env.sh`
+- `frontend/src/pages/Reports.jsx`
+- `frontend/src/components/reports/IvorySnapshot.*`
+- `frontend/src/components/PDFReportGenerator.jsx`
+- `frontend/src/utils/tierGating.js`
+- `prototypes/reports/**`
+- `docs/knowledge/09_FEATURES/Reports/*`

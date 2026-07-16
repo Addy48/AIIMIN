@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AIIMIN Report Prototypes · Locked</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/gallery.css" />
+</head>
+<body>
+  <main class="g-wrap">
+    <header class="g-hero">
+      <h1>Reports · locked Core + Pro</h1>
+      <p>
+        <strong>Core locked:</strong> Ivory Light + Ivory Dark (toggle Phone / iPad / Laptop in preview).
+        <strong>Pro locked:</strong> Folio Life OS.
+        <strong>Elite:</strong> paused — not found yet. No raw Appendix A for users.
+      </p>
+      <div class="g-meta">
+        <span>Core <strong>LOCKED</strong></span>
+        <span>Pro <strong>LOCKED</strong></span>
+        <span>Elite <strong>PAUSED</strong></span>
+      </div>
+    </header>
+
+    <div class="g-tabs" role="tablist" aria-label="Report type">
+      <button class="g-tab" role="tab" aria-selected="true" data-type="snapshot">Core · Ivory</button>
+      <button class="g-tab" role="tab" aria-selected="false" data-type="standard">Pro · Life OS</button>
+      <button class="g-tab" role="tab" aria-selected="false" data-type="deep">Elite · paused</button>
+    </div>
+
+    <p class="g-section-label" id="section-label">Core</p>
+    <div class="g-grid" id="grid"></div>
+
+    <aside class="g-note">
+      Device tiers match vault: phone &lt;768 · tablet 768–1099 · laptop ≥1100.
+      Open a Core card → use <strong>Phone / iPad / Laptop</strong> buttons in preview chrome.
+      <code>http://localhost:8765</code>
+    </aside>
+  </main>
+
+  <script src="js/themes.js"></script>
+  <script>
+    (function () {
+      const grid = document.getElementById("grid");
+      const label = document.getElementById("section-label");
+      const tabs = document.querySelectorAll(".g-tab");
+      const labels = {
+        snapshot: "Core LOCKED · Ivory Light / Dark · check Phone · iPad · Laptop",
+        standard: "Pro LOCKED · Folio Life OS",
+        deep: "Elite PAUSED · resume later",
+      };
+
+      function paint(type) {
+        label.textContent = labels[type];
+        const list = window.AIIMIN_THEMES[type] || [];
+        grid.innerHTML = list
+          .map(function (t, i) {
+            var href =
+              "preview.html?type=" +
+              encodeURIComponent(type) +
+              "&v=" +
+              encodeURIComponent(t.id) +
+              (type === "snapshot" ? "&device=phone" : "");
+            return (
+              '<a class="g-card" href="' +
+              href +
+              '">' +
+              '<div class="g-card-top"><h2>' +
+              t.name +
+              '</h2><span class="g-badge">' +
+              (t.locked ? "LOCK" : t.paused ? "PAUSE" : "0" + (i + 1)) +
+              "</span></div>" +
+              "<p>" +
+              t.tagline +
+              "</p>" +
+              '<div class="g-fonts">' +
+              t.fonts +
+              " · " +
+              t.vibe +
+              "</div></a>"
+            );
+          })
+          .join("");
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          tabs.forEach(function (t) {
+            t.setAttribute("aria-selected", t === tab ? "true" : "false");
+          });
+          paint(tab.dataset.type);
+        });
+      });
+
+      paint("snapshot");
+    })();
+  </script>
+</body>
+</html>

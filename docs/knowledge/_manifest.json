@@ -114,10 +114,14 @@
       "files": [
         "frontend/src/pages/Reports.jsx",
         "frontend/src/pages/Insights.jsx",
+        "frontend/src/components/reports/IvorySnapshot.jsx",
         "frontend/src/components/reports/PatternsPanel.jsx",
-        "frontend/src/components/reports/SkillTreePanel.jsx"
+        "frontend/src/components/reports/SkillTreePanel.jsx",
+        "frontend/src/components/PDFReportGenerator.jsx",
+        "frontend/src/utils/tierGating.js",
+        "prototypes/reports/"
       ],
-      "status": "insights-merged-tabs"
+      "status": "core-ivory-pro-folio-shipped"
     },
     "product_tour": {
       "moc": "docs/knowledge/09_FEATURES/Onboarding/Onboarding.md",
