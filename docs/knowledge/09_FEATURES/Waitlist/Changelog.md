@@ -1,3 +1,58 @@
+### 2026-07-17 — Brand colour blend polish
+- **What:** Softened ivory/peach atmosphere (ember mixed into parchment, multiply blooms, quieter grid/grain). Cursor spotlight warmer + slower ease. Roadmap spine removed (clean 2-up cards). Warm-tinted surfaces; softer close panel.
+- **Why:** User — blend colours; keep locked content looking fine
+- **Files:** `brandPage.css`, `Brand.jsx` (spot precision only)
+- **Status:** local
+
+### 2026-07-17 — Brand accountability block
+- **What:** Replaced thin Trust checklist with full **Accountability** section: hard commitments, user rights, 4-step claim/escalate paths, Google scopes ledger, processors, disclaimers/governing law, binding document grid. Hero CTA → `#accountability`.
+- **Why:** User — add everything users can claim / sue / hold us accountable for
+- **Files:** `Brand.jsx`, `brandPage.css`
+- **Status:** local
+- **Notes:** Summary only; Privacy/Terms remain source of truth. Contact shown as `founders@aiimin.in` (legal pages still have placeholder email in places).
+
+### 2026-07-17 — Brand page always light + stance panel
+- **What:** `/brand` forced warm-ivory light only (ignores app dark theme). Removed colour-system swatches. Kept cursor ember spotlight (stronger on light). Hero side panel = We are / We refuse + promise quote. White paper surfaces for sections.
+- **Why:** User — drop colour system, show light theme, keep cursor background, more polish
+- **Files:** `Brand.jsx`, `brandPage.css`
+- **Status:** local
+
+### 2026-07-17 — Brand manifesto v2 (lighter canvas + craft)
+- **What:** `/brand` canvas lifted to softer charcoal (`#2b303a` gradient, not flat `#1a1a1a`). Added progress bar, sticky glass nav, desktop section rail, cursor ember veil, identity swatch panel, dual mark rings, richer surfaces/shadows. Light mode uses warm ivory wash. Locked accents unchanged.
+- **Why:** User — background too dark; asked for much better craft
+- **Files:** `Brand.jsx`, `brandPage.css`
+- **Status:** local
+
+### 2026-07-17 — Brand manifesto craft pass
+- **What:** `/brand` rebuilt as full Human Momentum manifesto: ember atmosphere + grain, brand-first hero (mark + Bodoni wordmark), asymmetric problem, numbered pillars (no emoji cards), storage ledger, trust + legal stack, timeline roadmap, architecture stack, scroll reveals, reduced-motion. Locked palette. Familjen + Figtree + JetBrains.
+- **Why:** User — close but not quite; asked for top-effort best page
+- **Files:** `Brand.jsx`, `brandPage.css`
+- **Status:** local
+
+### 2026-07-17 — `/brand` = Human Momentum + trust (A/C deleted)
+- **What:** `/brand` is Human Momentum manifesto (problem/pillars/roadmap/architecture) plus Storage + Google compliance + Privacy/Terms/Deletion/Security/About/Contact. Deleted WaitlistBrand guidelines, OAuth `legal/Brand.jsx`, picker routes, `brandPage.css`.
+- **Why:** User — B was close; A and C wrong; needed improved Momentum with scrollable privacy/terms/storage
+- **Files:** `Brand.jsx`, `App.js`; deleted `WaitlistBrand.jsx`, `BrandMomentum.jsx`, `legal/Brand.jsx`, `brandPage.css`
+- **Status:** local
+
+### 2026-07-17 — Full scrollable brand book restored
+- **What:** `/brand` is Human Momentum hero + logo/palette/pillars + **storage** + Google compliance + Privacy/Terms/Deletion/Security/About/Contact links (full scroll). Palette uses locked AIIMIN colors.
+- **Why:** User — close to Human Momentum but needed the complete guidelines page with legal/storage
+- **Files:** `Brand.jsx`, `brandPage.css`
+- **Status:** local
+
+### 2026-07-17 — Restore Human Momentum as `/brand`
+- **What:** `/brand` restored to Human Momentum manifesto (from `f443558e`), with current ArchBracketMark + Wordmark. WaitlistBrand mini-story no longer the route.
+- **Why:** User — WaitlistBrand was not the real brand page
+- **Files:** `Brand.jsx`, product locks, vault
+- **Status:** local
+
+### 2026-07-17 — Navbar brand split + real `/brand` only
+- **What:** Logo mark → `/brand` (WaitlistBrand). AIIMIN wordmark → `/overview`. Deleted OAuth/system `legal/Brand.jsx` and `/brand/system`. `/brand` always WaitlistBrand.
+- **Why:** User: text = Today, logo = brand story; wrong system page was showing for logged-in users
+- **Files:** `BrandLockup.jsx`, `Brand.jsx`, `WaitlistBrand.jsx`, `App.js`, deleted `legal/Brand.jsx`
+- **Status:** local
+
 ### 2026-07-11 — Founding perks above waitlist form
 - **What:** `WaitlistFoundingPerks` block sits directly above hero form on mobile and desktop (free Core, Pro/Elite founding rates, OS-ID). Headline CTA reframed as value + perks, not bare “join waitlist”.
 - **Why:** Join CTA alone is weak; perks were below fold / desktop aside only.

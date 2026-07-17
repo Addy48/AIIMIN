@@ -115,13 +115,17 @@
         "frontend/src/pages/Reports.jsx",
         "frontend/src/pages/Insights.jsx",
         "frontend/src/components/reports/IvorySnapshot.jsx",
+        "frontend/src/components/overview/YourReportCard.jsx",
         "frontend/src/components/reports/PatternsPanel.jsx",
         "frontend/src/components/reports/SkillTreePanel.jsx",
         "frontend/src/components/PDFReportGenerator.jsx",
+        "frontend/src/pages/account/sections/design/EliteReportsPrototypesPanel.jsx",
         "frontend/src/utils/tierGating.js",
+        "server/services/apiUsageService.js",
+        "server/routes/intelligence.js",
         "prototypes/reports/"
       ],
-      "status": "core-ivory-pro-folio-shipped"
+      "status": "core-pro-live-elite-web-craft"
     },
     "product_tour": {
       "moc": "docs/knowledge/09_FEATURES/Onboarding/Onboarding.md",

@@ -26,6 +26,7 @@ Full: `docs/knowledge/08_DESIGN/Palette.md`
 
 ## Hard product rules
 
+- Navbar: logo mark → `/brand`; AIIMIN text → `/overview` (LOCKED — split, not unified)
 - Mobile `/m` = data collection only
 - No secrets in vault/git
 - No auth/schema changes without explicit user instruction

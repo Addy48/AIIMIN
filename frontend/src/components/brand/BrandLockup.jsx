@@ -9,10 +9,13 @@ const NAV_ICON_SIZE = 34;
 const NAV_WORDMARK_SIZE = 26;
 
 /**
- * Navbar brand lockup — unified click to /overview
+ * Navbar brand lockup — LOCKED split targets (do not unify again without explicit user ask):
+ * - Logo mark  → `/brand`  (Human Momentum brand page)
+ * - AIIMIN text → `/overview` (Today)
  */
 export default function BrandLockup({
-  to = '/overview',
+  markTo = '/brand',
+  wordmarkTo = '/overview',
   iconSize = NAV_ICON_SIZE,
   wordmarkSize = NAV_WORDMARK_SIZE,
   style = {},
@@ -34,41 +37,60 @@ export default function BrandLockup({
     [isLight],
   );
 
-  const content = (
-    <>
-      <ArchBracketMark
-        size={iconSize}
-        withChip
-        density="nav"
-        colors={markColors}
-        className="brand-lockup__mark"
-      />
-      <Wordmark
-        size={wordmarkSize}
-        weight={700}
-        className="brand-lockup__wordmark"
-      />
-    </>
-  );
+  const go = (e, path) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    navigate(path);
+  };
 
   return (
-    <div className={shellClass} style={{ display: 'flex', alignItems: 'center', ...style }} data-theme={theme}>
+    <div className={shellClass} style={{ display: 'flex', alignItems: 'center', gap: 12, ...style }} data-theme={theme}>
       {staticPreview ? (
-        <span className="brand-lockup__unified" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>{content}</span>
+        <>
+          <ArchBracketMark
+            size={iconSize}
+            withChip
+            density="nav"
+            colors={markColors}
+            className="brand-lockup__mark"
+          />
+          <Wordmark
+            size={wordmarkSize}
+            weight={700}
+            className="brand-lockup__wordmark"
+          />
+        </>
       ) : (
-        <Link
-          to={to}
-          className="brand-lockup__unified"
-          aria-label="AIIMIN home"
-          onClick={(e) => {
-            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-            e.preventDefault();
-            navigate(to);
-          }}
-          style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}
-        >
-          {content}
-        </Link>
+        <>
+          <Link
+            to={markTo}
+            className="brand-lockup__mark-link"
+            aria-label="AIIMIN brand"
+            onClick={(e) => go(e, markTo)}
+            style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          >
+            <ArchBracketMark
+              size={iconSize}
+              withChip
+              density="nav"
+              colors={markColors}
+              className="brand-lockup__mark"
+            />
+          </Link>
+          <Link
+            to={wordmarkTo}
+            className="brand-lockup__wordmark-link"
+            aria-label="AIIMIN Today"
+            onClick={(e) => go(e, wordmarkTo)}
+            style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          >
+            <Wordmark
+              size={wordmarkSize}
+              weight={700}
+              className="brand-lockup__wordmark"
+            />
+          </Link>
+        </>
       )}
     </div>
   );

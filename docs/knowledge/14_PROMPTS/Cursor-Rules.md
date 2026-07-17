@@ -15,7 +15,7 @@ All `alwaysApply: true`:
 | `aiimin-communication.mdc` | Concise, sparring, design/EEG |
 | `caveman-always.mdc` | Terse chat |
 | `use-skills-always.mdc` | Skills before acting |
-| `aiimin-chat-handoff.mdc` | When to new-chat + handoff message |
+| `aiimin-chat-handoff.mdc` | Loud 🚨 SWITCH CHAT; **Current-Context.md** = handoff (no paste pack unless asked) |
 
 ## Default load
 

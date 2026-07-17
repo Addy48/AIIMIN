@@ -45,6 +45,20 @@ See [[01_PRODUCT/Product]] environment matrix. Values live in host secret stores
 - **Empty dashboard placeholders:** Vercel may set `REACT_APP_API_URL=""` etc. `verify-production-env.mjs` backfills from committed `frontend/.env.production` when unset/empty. Run `deploy/sync-vercel-frontend-env.sh` to fix dashboard vars.
 - **`sts_credentials_fetch_failed`:** transient Vercel infra at `build-container-init`. Bypass: `vercel pull` → `vercel build --prod --yes` → `vercel deploy --prebuilt --prod --yes`.
 
+## AWS status (live check 2026-07-17)
+
+| Item | Status |
+|------|--------|
+| Budget `aiimin-monthly-10` ($10) | HEALTHY — actual $0 · forecast ~$3.18 |
+| Budget `aiimin-credits-buffer` ($8) | HEALTHY — same forecast |
+| EC2 `aiimin-api` t4g.nano | Running · EIP `13.207.146.15` · health ok |
+| NAT / ALB / RDS / Cognito | None (Option A RDS+Cognito not completed; auth = Better Auth, DB = Supabase) |
+| S3 `aiimin-uploads-*` / `aiimin-family-vault-*` | Exist, empty |
+| CloudWatch alarms / SNS subs | Missing / empty — budgets email only |
+| Ops risk | Root disk **97%** used; SSH port 22 open to `0.0.0.0/0` |
+
+Plan docs: `docs/AWS_MIGRATION_MASTER_PLAN.md`, `docs/AWS_SETUP.md`. Not over budget.
+
 ## Related
 
 - [[02_ARCHITECTURE/Backend]]

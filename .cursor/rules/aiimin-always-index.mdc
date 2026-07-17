@@ -17,9 +17,9 @@ All of these are `alwaysApply: true`. Follow them every turn.
 | `aiimin-communication.mdc` | Concise, sparring, design/EEG exceptions |
 | `caveman-always.mdc` | Terse chat; vault human docs stay clear prose |
 | `use-skills-always.mdc` | Read matching SKILL.md before acting |
-| `aiimin-chat-handoff.mdc` | When to new-chat + generate handoff pack |
+| `aiimin-chat-handoff.mdc` | Loud 🚨 SWITCH CHAT; Current-Context = handoff |
 
 Entrypoint: `docs/knowledge/00_HOME.md`  
 Memory: `docs/knowledge/15_MEMORY/Current-Context.md`  
-Handoff: `docs/knowledge/15_MEMORY/Handoff-Latest.md`  
+Handoff: `docs/knowledge/15_MEMORY/Current-Context.md` (Handoff-Latest only if user asks)  
 Prompts: `docs/knowledge/14_PROMPTS/Cursor-Rules.md`

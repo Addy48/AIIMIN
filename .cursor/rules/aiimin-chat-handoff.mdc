@@ -1,60 +1,47 @@
 ---
-description: When to start a new chat + generate handoff context for next chat
+description: When to start a new chat — loud banner; Current-Context is the handoff
 alwaysApply: true
 ---
 
 # Chat Handoff (Always)
 
-## When to tell user: switch to new chat
+## Source of truth for next chat
 
-Proactively say **SWITCH CHAT** (one clear line) when any of these hit:
+**`docs/knowledge/15_MEMORY/Current-Context.md`** — agents already load this after Home every chat. That is the handoff. Do **not** paste a long handoff pack in chat unless the user explicitly asks for `handoff` / `new chat context`.
+
+Optional archive note: `docs/knowledge/15_MEMORY/Handoff-Latest.md` — only if user asks for a copy-paste pack. Not required for switch.
+
+## When to tell user: switch to a new chat
+
+Proactively fire the **visible SWITCH CHAT banner** when any of these hit:
 
 1. **Topic change** — new feature/bug unrelated to current thread
 2. **Milestone done** — feature/fix/docs unit finished; next work is different
 3. **Context bloat** — long thread (~15+ back-and-forth) or replies get repetitive/confused
 4. **Agent drift** — wrong architecture, forgotten vault rules, or re-asking solved facts
 5. **After big vault/rule change** — Brain OS / always-on rules updated; fresh chat loads rules clean
-6. **User asks** — “handoff”, “new chat”, “context for next chat”
+6. **User asks** — “switch chat” / “new chat”
 
 Do **not** nag every turn. Once per trigger. Prefer switch over stuffing more into a dying thread.
 
-## Before SWITCH CHAT
+## Visible banner (mandatory format)
 
-1. Update `docs/knowledge/15_MEMORY/Current-Context.md` (Today / Working on / Next step / files)
-2. Write `docs/knowledge/15_MEMORY/Handoff-Latest.md` with the handoff pack below
-3. Paste the same pack in chat inside a single copy-ready fenced block
-
-## Handoff message format (generate exactly)
+When telling the user to switch, print **exactly this shape** — do not bury it in a paragraph:
 
 ```text
-AIIMIN handoff — paste as first message in new chat
-
-Read first:
-1. docs/knowledge/00_HOME.md
-2. docs/knowledge/15_MEMORY/Current-Context.md
-3. docs/knowledge/15_MEMORY/Handoff-Latest.md
-
-Done this chat:
-- <bullet outcomes>
-
-Still open:
-- <bullet next tasks>
-
-Touch only if needed:
-- <paths>
-
-Constraints:
-- Vault-first. No whole-repo scan.
-- Palette lock. Mobile /m = capture only.
-- No auth/schema change unless I ask.
-- Commit only if I ask.
-
-Next action:
-- <one concrete first step>
+🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+🔴 SWITCH CHAT NOW 🔴
+🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 ```
 
-Keep handoff ≤40 lines. No secrets. No code dumps — paths + vault pointers only.
+Then **one short reason line** (why). Example: `Milestone shipped · thread fat · Context.md updated.`
 
-## User triggers
+## Before SWITCH CHAT
 
-On `handoff` / `new chat context` / `switch chat`: run the before-SWITCH steps even if no other trigger fired.
+1. Update `docs/knowledge/15_MEMORY/Current-Context.md` (Today / Next / Touch) — **required**
+2. Do **not** dump a handoff fenced block unless user asked for handoff text
+3. Point user: new chat reads Home → Current-Context automatically
+
+## If user asks for handoff text
+
+Only then write `Handoff-Latest.md` + paste a short copy-ready block (≤40 lines, no secrets, paths only). Same constraints as always (vault-first, palette, `/m` capture-only, no auth/schema/commit unless asked).

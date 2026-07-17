@@ -22,6 +22,8 @@ import {
     consumeProviderBudget,
     logApiUsage,
     checkUserAiBudget,
+    consumeReportGenBudget,
+    checkUserReportGenBudget,
 } from '../services/apiUsageService.js';
 import { geminiLiteGenerate, isGeminiLiteTask, GEMINI_LITE_TASKS } from '../lib/geminiLite.js';
 import { heavyChat, openRouterChat, getGeminiKey } from '../lib/aiChat.js';
@@ -470,11 +472,45 @@ app.post('/usage-report', requireAuth, aiLimiter, async (c) => {
     }
 });
 
-/** GET /intelligence/ai-budget — caller's remaining AI quota today */
+/** GET /intelligence/ai-budget — caller's remaining AI quota today + report-gen pools */
 app.get('/ai-budget', requireAuth, async (c) => {
     try {
         const status = await getUserAiBudgetStatus(c.get('userId'));
         return c.json(status);
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+/**
+ * POST /intelligence/report-gen/consume
+ * Body: { kind: 'standard_pdf' | 'deep_report' }
+ * Burns monthly generation pool only — never daily AI quota.
+ */
+app.post('/report-gen/consume', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const body = await c.req.json().catch(() => ({}));
+        const kind = body?.kind === 'deep_report' ? 'deep_report' : 'standard_pdf';
+        const next = await consumeReportGenBudget(userId, kind, 1);
+        return c.json({ success: true, pool: next });
+    } catch (err) {
+        if (err.code === 'REPORT_GEN_BUDGET_EXCEEDED') {
+            return c.json({ error: err.message, code: err.code, meta: err.meta }, 429);
+        }
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+/** GET /intelligence/report-gen/status — monthly pools only */
+app.get('/report-gen/status', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const [standard_pdf, deep_report] = await Promise.all([
+            checkUserReportGenBudget(userId, 'standard_pdf', 0),
+            checkUserReportGenBudget(userId, 'deep_report', 0),
+        ]);
+        return c.json({ standard_pdf, deep_report });
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }
