@@ -16,6 +16,7 @@ import { useCalendarEvents } from '../hooks/useCalendarEvents';
 import { getSolarTimes } from '../utils/solarTimes';
 import UniversalLogger from '../components/dashboard/UniversalLogger';
 import ArcBanner from '../components/profile/ArcBanner';
+import YourReportCard from '../components/overview/YourReportCard';
 import { useUserProfile } from '../hooks/useUserProfile';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -608,6 +609,8 @@ const Overview = () => {
           )}
 
           {isVisible('monday_insight') && <MondayInsight user={user} />}
+
+          <YourReportCard user={user} tier={profile?.subscription_tier || 'explore'} />
 
           {isVisible('week_numbers') && <WeekInNumbers user={user} />}
 

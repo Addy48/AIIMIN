@@ -51,7 +51,7 @@ Always-on project rules (see `.cursor/rules/aiimin-always-index.mdc`, local):
 7. Commit / push / PR only when user explicitly asks.
 8. Caveman chat; vault human docs = clear prose; memory packs in `15_MEMORY` = compressed.
 9. Skills before acting. Sparring > blind agreement.
-10. Long/confused/topic-change → **SWITCH CHAT**; use [[15_MEMORY/Handoff-Latest]] pack.
+10. Long/confused/topic-change → **SWITCH CHAT** (loud 🚨 banner); keep [[15_MEMORY/Current-Context]] fresh — that is the handoff. No paste pack unless asked.
 
 ## Next tasks
 

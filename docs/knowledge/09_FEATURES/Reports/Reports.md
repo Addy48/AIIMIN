@@ -2,83 +2,49 @@
 
 ## Contract
 
-- Route: `/reports` — **Core+** (`TierRouteGuard` / `ROUTE_MIN_TIER`)
+- Route: `/reports` — **Explore** sees locked paywall; **Core+** Snapshot; **Pro+** Folio + Patterns/Skills; **Elite** Intelligence web (craft)
+- Nav: **Reports under More** (not Account). Badge `INTEL` in More menu. Personas keep Reports active but unpinned by default.
+- Today: **Your Report** card on Overview — Snapshot for Core+, CTA Standard/Intelligence for Pro/Elite, locked for Explore.
 - Products by plan:
-  - **Core+ — Ivory Snapshot:** 7-day pulse UI (Light/Dark follows app theme). No Patterns/Skills tabs. Upgrade CTA → Pro Folio PDF.
-  - **Pro+ — Folio Life OS Standard:** full Report / Patterns / Skills + downloadable Folio PDF. Elite Deep **paused** (no Deep product).
+  - **Explore:** No report content. Blurred Elite preview + Pro badge paywall.
+  - **Core (₹29):** Ivory Snapshot only (7d). Weekly AI insight uses 1 daily call when triggered. No PDF.
+  - **Pro (₹49 founding):** Snapshot + **Correlation Intelligence (top 3)** + Standard Folio PDF (14-day). PDF pool: **6/month** (separate from daily AI). Daily AI: 25.
+  - **Elite (₹79 founding):** Everything Pro + Interactive Intelligence Report (30/60/90). Deep pool: **3/month**. Unlimited Standard PDFs. Daily AI: 40 (never burned by Deep gen).
+- Two-pool AI: daily feature calls vs monthly `report-gen` (`POST /intelligence/report-gen/consume`). Deep/Folio never touch daily quota.
 - Legacy: `/insights` → `Navigate` to `/reports?tab=patterns` (or `skills` if `?tab=skills`) — Patterns/Skills require Pro+
 - Data: `GET /api/intelligence/report?days=&start=&end=`
-  - Rolling `days` (7–365) **or** inclusive `start`/`end` (`YYYY-MM-DD`) for past windows
-  - Core Snapshot always requests `days=7`
-  - Skips `weekly_summaries` cache when range is custom / not default 30d
-  - Payload includes LHS domains, drivers, best/worst, action plan, plus `meta.timeline`
-- Analytics source: `getAnalyticsDataset(userId, days, { start, end })`
-- PDF export: `PDFReportGenerator` — Folio Life OS skin (Pro+ only on Reports page)
+- PDF export: `PDFReportGenerator` — Folio Life OS (white + ivory band + 14-day fingerprint + numbered findings). Pro+ only.
 
 ## UI
 
 - Core: Ivory Snapshot only
-- Pro+: period chips (7 / 15 / 30 / 90 / YTD / custom) + tabs Report / Patterns / Skills; Snapshot also shown above KPIs on Report tab
-- Tab sync via `?tab=report|patterns|skills` (`insights` alias → patterns)
+- Pro+: period chips + tabs Report / Patterns / Skills; Snapshot (+ correlations) on Report tab
+- Design Lab: Account → Design → **Elite reports** (6 interaction paradigms)
 
 ## Files
 
 - `frontend/src/pages/Reports.jsx`
-- `frontend/src/pages/Insights.jsx` (redirect only)
-- `frontend/src/components/reports/IvorySnapshot.jsx` (+ `.css`)
-- `frontend/src/components/reports/PatternsPanel.jsx`
-- `frontend/src/components/reports/SkillTreePanel.jsx`
+- `frontend/src/components/reports/IvorySnapshot.jsx`
+- `frontend/src/components/overview/YourReportCard.jsx`
 - `frontend/src/components/PDFReportGenerator.jsx`
-- `frontend/src/utils/tierGating.js` (`/reports` → `core`, `REPORT_PRODUCT`)
+- `frontend/src/pages/account/sections/design/EliteReportsPrototypesPanel.jsx`
+- `frontend/src/utils/tierGating.js`
 - `server/routes/intelligence.js`
-- `server/services/analyticsData.js`
+- `server/services/apiUsageService.js`
 
 ## Related
 
-- Selection gallery: [[09_FEATURES/Reports/Prototypes]] (`prototypes/reports/`)
-- Architecture brief (Snapshot / Standard / Deep tier split): see Prototypes + Current Context
+- [[09_FEATURES/Reports/Prototypes]]
 
 ## Changelog
 
+### 2026-07-17 — Elite web direction + Pro polish + two-pool AI + nav/Today
+- **What:** Reports under More; Today Your Report card; Explore paywall; Pro Snapshot correlations; Folio PDF polish; monthly report-gen pool; six Elite interaction prototypes in Design Lab. Brand manifesto + lockup split + auth OS-ID resolve.
+- **Why:** User critique 2026-07-17 — Elite ≠ longer PDF; two pools required for Deep gen.
+- **Files:** `Navbar.jsx`, `YourReportCard.jsx`, `IvorySnapshot.*`, `PDFReportGenerator.jsx`, `Reports.jsx`, `apiUsageService.js`, `intelligence.js`, `billingService.js`, `EliteReportsPrototypesPanel.jsx`, `Brand.*`, `BrandLockup.jsx`, `Login.jsx`, vault
+- **Status:** shipping
+- **Notes:** Elite production `/reports/[id]` shell not shipped — pick Design Lab direction first
+
 ### 2026-07-17 — Ship Core Ivory + Pro Folio to production
-- **What:** `/reports` open to Core+. Core sees Ivory Snapshot (7d). Pro+ keeps Patterns/Skills + Folio Life OS PDF. Elite Deep unchanged (paused).
-- **Why:** User asked production for Core + Pro; Elite nothing now
-- **Files:** `Reports.jsx`, `IvorySnapshot.*`, `PDFReportGenerator.jsx`, `tierGating.js`, `prototypes/reports/**`, vault
+- **What:** `/reports` open to Core+. Core sees Ivory Snapshot (7d). Pro+ keeps Patterns/Skills + Folio Life OS PDF.
 - **Status:** shipping
-- **Notes:** Subscription marketing bullets for Snapshot/Folio may follow in a later commit (local AI-quota copy still unpushed)
-
-### 2026-07-17 — Lock Core Ivory + Pro Life OS; Elite paused; Core device tiers
-- **What:** Locked Snapshot Ivory Light/Dark and Standard Folio Life OS. Elite paused. Core preview shells for phone / iPad / laptop. Rule: no raw Appendix A dumps to users.
-- **Why:** User locked Core/Pro; Elite craft not there yet; Core needed non-phone layouts
-- **Files:** `prototypes/reports/**`, `docs/knowledge/09_FEATURES/Reports/Prototypes.md`
-- **Status:** Core/Pro locked · Elite paused
-
-### 2026-07-17 — Report prototypes round 3
-- **What:** Core×3 Ivory; Pro×3 Folio; Elite×8 multipage scientific
-- **Status:** superseded (locks above)
-
-### 2026-07-16 — Report prototype gallery (18 directions)
-- **What:** Initial Snapshot / Standard / Deep direction gallery
-- **Why:** First visual selection pass
-- **Files:** `prototypes/reports/**`
-- **Status:** superseded
-- **Notes:** Not wired to `/reports/generate`
-
-### 2026-07-15 — Report 500: pomodoro schema mismatch
-- **What:** `getAnalyticsDataset` used `started_at`/`duration` on `pomodoro_sessions`; live columns are `date`, `cycles_completed`, `total_focus_minutes`. Hardened report generators for empty timeline.
-- **Why:** Prod `/reports` showed `Failed to generate intelligence report`
-- **Files:** `server/services/analyticsData.js`, `reportGenerator.js`, `weeklyReviewEngine.js`, `weeklyDigestService.js`
-- **Status:** shipping
-
-### 2026-07-15 — Merge Insights into Reports
-- **What:** Reports hosts Report / Patterns / Skills. `/insights` redirects. Fake “Top 4% practitioner” Insights chrome dropped from patterns path; live drivers + InsightEngine kept.
-- **Why:** User found orphan Insights page; wanted full merge into Reports
-- **Files:** `Reports.jsx`, `Insights.jsx`, `PatternsPanel.jsx`, `SkillTreePanel.jsx`, `CommandPalette.jsx`, `tierGating.js`, `Identity.jsx`
-- **Status:** local
-- **Schema migrations:** none
-
-### 2026-07-15 — Real period wiring
-- **What:** Reports page + PDF pull live intelligence report for selected range; past/custom ranges use past data
-- **Why:** User asked Reports wired to real timeline data
-- **Status:** shipped (with craft push)
-- **Schema migrations:** none

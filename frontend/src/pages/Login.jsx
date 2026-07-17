@@ -502,21 +502,62 @@ const Login = () => {
     setForgotIdentifier(''); setForgotSent(false); setError(null);
   };
 
+  const loginResolveKeyRef = React.useRef('');
+
+  /** Login step 1 → PIN only after OS-ID resolves (or email validates). Never ask PIN for ghost OS-IDs. */
+  const advanceLoginToPin = useCallback(async (rawId) => {
+    const id = String(rawId || '').trim();
+    if (!id) {
+      setError('Identifier required.');
+      return false;
+    }
+    if (isEmailIdentifier(id)) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)) {
+        setError('Enter a valid email.');
+        return false;
+      }
+      setError(null);
+      setDirection(1);
+      setStep(2);
+      return true;
+    }
+    if (!isCompleteOsId(id)) {
+      setError('Enter a full 8-character OS-ID, or a complete email.');
+      return false;
+    }
+
+    const key = id.toUpperCase();
+    setError(null);
+    setLoading(true);
+    try {
+      await apiGet(`/auth/resolve?identifier=${encodeURIComponent(key)}`, { auth: false });
+      loginResolveKeyRef.current = key;
+      setDirection(1);
+      setStep(2);
+      return true;
+    } catch (err) {
+      const status = err?.status || err?.response?.status;
+      // Mark checked so auto-advance doesn't spam resolve on the same ghost OS-ID
+      loginResolveKeyRef.current = key;
+      if (status === 404) {
+        setError('OS-ID not found. Check spelling, or sign up to claim it.');
+        triggerShake();
+        return false;
+      }
+      setError('Could not verify OS-ID. Try again.');
+      triggerShake();
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [triggerShake]);
+
   // ── Nav handlers ──
   const handleNext = async (e) => {
     if (e) e.preventDefault();
     setError(null);
     if (mode === 'login') {
-      if (!identifier.trim()) { setError('Identifier required.'); return; }
-      // Email must look complete; OS-ID must be exactly 8 valid chars
-      if (isEmailIdentifier(identifier)) {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier.trim())) {
-          setError('Enter a valid email.'); return;
-        }
-      } else if (!isCompleteOsId(identifier)) {
-        setError('Enter a full 8-character OS-ID, or a complete email.'); return;
-      }
-      setDirection(1); setStep(2);
+      await advanceLoginToPin(identifier);
     } else if (mode === 'forgot') {
       if (!forgotIdentifier.trim()) { setError('Username or Email required.'); return; }
       setLoading(true);
@@ -548,6 +589,7 @@ const Login = () => {
   const handleBack = () => {
     setError(null);
     if (mode === 'login') {
+      loginResolveKeyRef.current = '';
       setDirection(-1); setStep(1); setPin('');
     } else if (mode === 'forgot') {
       setMode('login'); setStep(1); setForgotIdentifier(''); setForgotSent(false);
@@ -713,17 +755,20 @@ const Login = () => {
     if (val.length <= 8) setUsernameVal(val);
   };
 
-  // Auto-advance login when OS-ID hits 8 valid chars (PIN-like). Never for email.
+  // Auto-advance login when OS-ID hits 8 valid chars — only after resolve succeeds.
   useEffect(() => {
     if (mode !== 'login' || step !== 1 || loading) return undefined;
-    if (!isCompleteOsId(identifier)) return undefined;
+    if (!isCompleteOsId(identifier)) {
+      loginResolveKeyRef.current = '';
+      return undefined;
+    }
+    const key = identifier.trim().toUpperCase();
+    if (loginResolveKeyRef.current === key) return undefined;
     const t = setTimeout(() => {
-      setError(null);
-      setDirection(1);
-      setStep(2);
+      advanceLoginToPin(identifier);
     }, 80);
     return () => clearTimeout(t);
-  }, [identifier, mode, step, loading]);
+  }, [identifier, mode, step, loading, advanceLoginToPin]);
 
   // Auto-check signup OS-ID when 8 valid chars entered
   useEffect(() => {

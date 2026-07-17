@@ -33,6 +33,9 @@ export const AI_PROVIDERS = new Set(['gemini', 'groq', 'openrouter', 'moonshot']
  * Per-user daily AI call limits by subscription_tier.
  * Matches plan marketing: Explore = 1 insight/day; higher tiers more, not infinite.
  * Override: AI_DAILY_LIMIT_EXPLORE / _CORE / _PRO / _ELITE
+ *
+ * Report generation uses a SEPARATE monthly pool (see REPORT_GEN_*).
+ * Deep / Folio generation must not burn daily AI budget.
  */
 const DEFAULT_TIER_AI_LIMITS = {
   explore: 1,
@@ -40,6 +43,18 @@ const DEFAULT_TIER_AI_LIMITS = {
   pro: 25,
   elite: 40,
 };
+
+/** Monthly generation pools — separate from daily AI. */
+const DEFAULT_REPORT_GEN_LIMITS = {
+  explore: { standard_pdf: 0, deep_report: 0 },
+  core: { standard_pdf: 0, deep_report: 0 },
+  pro: { standard_pdf: 6, deep_report: 0 },
+  /** Elite: unlimited Standard PDFs; 3 Deep Intelligence Reports / month */
+  elite: { standard_pdf: -1, deep_report: 3 },
+};
+
+/** Endpoints tagged as report generation — excluded from daily AI pool. */
+export const REPORT_GEN_ENDPOINT_PREFIX = '/intelligence/report-gen';
 
 function nextUtcMidnight() {
   const now = new Date();
@@ -77,6 +92,32 @@ export function listTierAiLimits() {
   return Object.fromEntries(
     Object.keys(DEFAULT_TIER_AI_LIMITS).map((tier) => [tier, resolveTierAiLimit(tier)]),
   );
+}
+
+export function resolveReportGenLimit(tier, kind = 'standard_pdf') {
+  const t = String(tier || 'explore').toLowerCase();
+  const k = kind === 'deep_report' ? 'deep_report' : 'standard_pdf';
+  const envKey = `AI_REPORT_GEN_${t.toUpperCase()}_${k.toUpperCase()}`;
+  const fromEnv = parseInt(process.env[envKey] || '', 10);
+  if (Number.isFinite(fromEnv)) return fromEnv;
+  return DEFAULT_REPORT_GEN_LIMITS[t]?.[k] ?? 0;
+}
+
+export function listReportGenLimits() {
+  return Object.fromEntries(
+    Object.keys(DEFAULT_REPORT_GEN_LIMITS).map((tier) => [
+      tier,
+      {
+        standard_pdf: resolveReportGenLimit(tier, 'standard_pdf'),
+        deep_report: resolveReportGenLimit(tier, 'deep_report'),
+      },
+    ]),
+  );
+}
+
+function utcMonthStart() {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1, 0, 0, 0, 0)).toISOString();
 }
 
 async function ensureBudgetRow(provider) {
@@ -164,14 +205,94 @@ async function getUserAiUsedToday(userId) {
      FROM api_usage_log
      WHERE user_id = $1
        AND created_at >= $2::timestamptz
-       AND provider = ANY($3::text[])`,
-    [userId, utcTodayStart(), [...AI_PROVIDERS]],
+       AND provider = ANY($3::text[])
+       AND endpoint NOT LIKE $4`,
+    [userId, utcTodayStart(), [...AI_PROVIDERS], `${REPORT_GEN_ENDPOINT_PREFIX}%`],
+  );
+  return rows[0]?.units || 0;
+}
+
+async function getUserReportGenUsedMonth(userId, kind = 'standard_pdf') {
+  const endpoint = `${REPORT_GEN_ENDPOINT_PREFIX}/${kind === 'deep_report' ? 'deep_report' : 'standard_pdf'}`;
+  const { rows } = await pool.query(
+    `SELECT COALESCE(SUM(tokens_or_hits), 0)::int AS units
+     FROM api_usage_log
+     WHERE user_id = $1
+       AND created_at >= $2::timestamptz
+       AND endpoint = $3`,
+    [userId, utcMonthStart(), endpoint],
   );
   return rows[0]?.units || 0;
 }
 
 /**
+ * Monthly report-generation pool. Does not touch daily AI quota.
+ * kind: 'standard_pdf' | 'deep_report'
+ * limit -1 = unlimited
+ */
+export async function checkUserReportGenBudget(userId, kind = 'standard_pdf', units = 1) {
+  if (!userId) {
+    return { allowed: true, remaining: null, monthlyLimit: null, tier: null, usedThisMonth: 0, kind };
+  }
+  const tier = await getUserTier(userId);
+  const monthlyLimit = resolveReportGenLimit(tier, kind);
+  if (monthlyLimit === 0) {
+    return {
+      allowed: false,
+      remaining: 0,
+      monthlyLimit: 0,
+      tier,
+      usedThisMonth: 0,
+      kind,
+    };
+  }
+  if (monthlyLimit < 0) {
+    return {
+      allowed: true,
+      remaining: null,
+      monthlyLimit: -1,
+      tier,
+      usedThisMonth: await getUserReportGenUsedMonth(userId, kind).catch(() => 0),
+      kind,
+    };
+  }
+  const usedThisMonth = await getUserReportGenUsedMonth(userId, kind).catch(() => 0);
+  const need = Math.max(1, units || 1);
+  const remaining = Math.max(0, monthlyLimit - usedThisMonth);
+  return {
+    allowed: usedThisMonth + need <= monthlyLimit,
+    remaining,
+    monthlyLimit,
+    tier,
+    usedThisMonth,
+    kind,
+  };
+}
+
+export async function consumeReportGenBudget(userId, kind = 'standard_pdf', units = 1) {
+  const status = await checkUserReportGenBudget(userId, kind, units);
+  if (!status.allowed) {
+    const err = new Error(
+      status.monthlyLimit === 0
+        ? `Report generation not included on ${status.tier} plan.`
+        : `Monthly ${kind} generation pool exhausted (${status.monthlyLimit}/month).`,
+    );
+    err.code = 'REPORT_GEN_BUDGET_EXCEEDED';
+    err.meta = status;
+    throw err;
+  }
+  await logApiUsage({
+    userId,
+    provider: 'report_gen',
+    endpoint: `${REPORT_GEN_ENDPOINT_PREFIX}/${kind === 'deep_report' ? 'deep_report' : 'standard_pdf'}`,
+    tokensOrHits: Math.max(1, units || 1),
+  });
+  return checkUserReportGenBudget(userId, kind, 0);
+}
+
+/**
  * Per-user AI quota for the day (tier-based). Does not increment — caller logs after.
+ * Report-gen endpoints are excluded from this pool (see getUserAiUsedToday).
  */
 export async function checkUserAiBudget(userId, units = 1) {
   if (!userId) {
@@ -193,11 +314,20 @@ export async function checkUserAiBudget(userId, units = 1) {
 
 export async function getUserAiBudgetStatus(userId) {
   const status = await checkUserAiBudget(userId, 0);
+  const [std, deep] = await Promise.all([
+    checkUserReportGenBudget(userId, 'standard_pdf', 0),
+    checkUserReportGenBudget(userId, 'deep_report', 0),
+  ]);
   return {
     ...status,
     remaining: Math.max(0, (status.dailyLimit ?? 0) - (status.usedToday ?? 0)),
     resetAt: nextUtcMidnight(),
     limitsByTier: listTierAiLimits(),
+    reportGen: {
+      standard_pdf: std,
+      deep_report: deep,
+      limitsByTier: listReportGenLimits(),
+    },
   };
 }
 
