@@ -25,8 +25,10 @@ Env: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. Optional `SEED_DAYS=180`, `SEE
 
 | Action | Affects | Does not touch |
 |--------|---------|----------------|
-| `--confirm` seed | Only `SEED_USERNAME` user | Other accounts, auth tables |
-| `--wipe-only --confirm` | That user's life-data domains (habits, money, lab, family, focus sessions, journals, etc.) | User row, sessions/auth, other users |
+| `--confirm` seed | Only allowlisted OS-ID (`SEED_USERNAME`, default **AADI0837**) | Other accounts, auth tables |
+| `--wipe-only --confirm` | That user's life-data domains only (every `DELETE` is `.eq('user_id', …)`) | User row, sessions/auth, **all other users** |
+
+**Hard allowlist:** script refuses any username not in `SEED_ALLOWLIST` (default `AADI0837`). You cannot accidentally wipe another account by setting `SEED_USERNAME` alone.
 
 `--wipe-only` uses **full** wipe (all rows for that user in seeded domains). Re-seed before wipe uses marker/date filters then inserts again.
 

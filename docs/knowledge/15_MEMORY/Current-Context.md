@@ -6,18 +6,17 @@
 
 ## Today
 
-- **Seed:** `scripts/seed-realistic-life.mjs` — one account (`SEED_USERNAME` / AADI0837). Removable: `node scripts/seed-realistic-life.mjs --wipe-only --confirm`. Docs [[16_DOCUMENTATION/Seed-Demo-History]].
-- **Reports:** Folio → **Life OS Review**; PDF download via `pdf().toBlob()`.
-- Finance / Lab / Focus / Discipline / calendar / habits UI + auth DB P0 in this commit batch.
+- **Seed:** one allowlisted account only (`AADI0837`). Wipe: `--wipe-only --confirm`. Hard `SEED_ALLOWLIST` — other users never touched.
+- Shipped to GitHub + API redeploy this turn.
+- **Reports:** Life OS Review PDF; Lab/Focus/Discipline API; Finance polish; auth DB P0.
 
 ## Next
 
-1. Use wipe-only when site needs fresh for AADI0837; re-seed with `--confirm` when testing again
-2. Keep local API on `:3001` for OS-ID / habits
-3. Do not push unless asked
+1. Confirm Vercel READY + `api.aiimin.in` health SHA
+2. Login AADI0837 on aiimin.in — verify seed; wipe anytime with script
+3. Do not expand `SEED_ALLOWLIST` unless intentional
 
 ## Touch
 
-- `scripts/seed-realistic-life.mjs` · `docs/knowledge/16_DOCUMENTATION/Seed-Demo-History.md`
-- `frontend/src/components/PDFReportGenerator.jsx` · Finance / Lab / Focus / Discipline
-- `server/migrations/045_*` … `047_*` · `server/routes/{db,lab,focus,habits}.js`
+- `scripts/seed-realistic-life.mjs` · Seed-Demo-History.md
+- server routes + migrations 045–047 · frontend polish
