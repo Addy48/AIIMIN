@@ -20,7 +20,38 @@ app.get('/', requireAuth, async (c) => {
         q += ' ORDER BY created_at ASC';
 
         const { rows } = await pool.query(q, params);
-        return c.json(rows);
+        if (!rows.length) return c.json([]);
+
+        // Merge habit_logs into meta.completedDates (UI + yearly heatmap read this)
+        const habitIds = rows.map((r) => r.id);
+        const { rows: logs } = await pool.query(
+            `SELECT habit_id,
+                    to_char((completed_at AT TIME ZONE 'Asia/Kolkata')::date, 'YYYY-MM-DD') AS day
+             FROM habit_logs
+             WHERE user_id = $1
+               AND habit_id = ANY($2::uuid[])
+               AND completed_at >= NOW() - INTERVAL '400 days'
+               AND COALESCE(status, 'done') IN ('done', 'completed')
+             GROUP BY habit_id, day
+             ORDER BY day ASC`,
+            [userId, habitIds],
+        );
+
+        const byHabit = new Map();
+        for (const log of logs) {
+            if (!byHabit.has(log.habit_id)) byHabit.set(log.habit_id, []);
+            byHabit.get(log.habit_id).push(log.day);
+        }
+
+        const merged = rows.map((h) => {
+            const meta = h.meta && typeof h.meta === 'object' ? { ...h.meta } : {};
+            const fromLogs = byHabit.get(h.id) || [];
+            const fromMeta = Array.isArray(meta.completedDates) ? meta.completedDates : [];
+            const completedDates = [...new Set([...fromMeta, ...fromLogs])].sort();
+            return { ...h, meta: { ...meta, completedDates } };
+        });
+
+        return c.json(merged);
     } catch (err) {
         return c.json({ error: err.message }, 500);
     }

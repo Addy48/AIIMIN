@@ -1,15 +1,8 @@
 import React, { useMemo } from 'react';
 import { useThemeContext } from '../../context/ThemeContext';
+import { SYSTEM_COLORS } from './EventCard';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-const EVENT_COLORS = {
-  work:    'var(--color-accent)',
-  health:  'var(--color-rust)',
-  finance: 'var(--color-warning)',
-  social:  'var(--color-info)',
-  general: 'var(--color-text-3)',
-};
 
 const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
   const { theme } = useThemeContext();
@@ -19,6 +12,7 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
   const year = d.getFullYear();
   const month = d.getMonth();
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
   const today = now.getDate();
   const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
 
@@ -28,15 +22,17 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
 
   const eventsByDay = useMemo(() => {
     const grouped = {};
-    (events || []).forEach(ev => {
-      const day = new Date(ev.start_time).getDate();
+    (events || []).forEach((ev) => {
+      const start = new Date(ev.start_time);
+      if (start.getMonth() !== month || start.getFullYear() !== year) return;
+      const day = start.getDate();
       if (!grouped[day]) grouped[day] = [];
       grouped[day].push(ev);
     });
     return grouped;
-  }, [events]);
+  }, [events, month, year]);
 
-  const bg = 'var(--color-base)';
+  const bg = 'var(--color-surface)';
   const border = 'var(--color-border)';
   const text1 = 'var(--color-text-1)';
   const text2 = 'var(--color-text-2)';
@@ -46,8 +42,7 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
 
   return (
     <div style={{ background: bg, border: `1px solid ${border}`, borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--glass-shadow-sm)' }}>
-      {/* Weekday header row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: `1px solid ${border}`, background: 'var(--color-surface)' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', borderBottom: `1px solid ${border}`, background: 'var(--color-elevated)' }}>
         {WEEKDAYS.map((w, i) => (
           <div key={w} style={{
             textAlign: 'center', fontSize: '10px', fontWeight: 700,
@@ -60,83 +55,80 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
         ))}
       </div>
 
-      {/* Day cells grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
-        {/* Leading empty cells */}
         {Array.from({ length: firstDayOffset }, (_, i) => (
           <div key={`pad-${i}`} style={{
-            minHeight: '120px', background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)',
+            minHeight: '112px', background: isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.015)',
             borderRight: `1px solid ${border}`, borderBottom: `1px solid ${border}`,
           }} />
         ))}
 
-        {/* Day cells */}
         {Array.from({ length: daysInMonth }, (_, i) => {
           const day = i + 1;
+          const cellDate = new Date(year, month, day);
           const isToday = isCurrentMonth && day === today;
+          const isFuture = cellDate > now;
           const dayEvents = eventsByDay[day] || [];
           const col = (firstDayOffset + i) % 7;
-          const isWeekend = col === 5 || col === 6;
 
           return (
             <div
               key={day}
               onClick={() => onDayClick(new Date(year, month, day))}
               style={{
-                minHeight: '120px', padding: '10px', cursor: 'pointer',
-                background: isToday 
-                  ? 'var(--color-accent-dim)' 
-                  : isWeekend ? 'var(--color-surface)' : bg,
+                minHeight: '112px', padding: '10px', cursor: 'pointer',
+                background: isToday
+                  ? 'color-mix(in srgb, var(--color-accent) 14%, var(--color-surface))'
+                  : bg,
+                opacity: isFuture ? 0.72 : 1,
                 borderRight: col < 6 ? `1px solid ${border}` : 'none',
                 borderBottom: `1px solid ${border}`,
-                transition: 'all 200ms var(--ease)',
+                transition: 'background 150ms ease',
                 position: 'relative',
               }}
-              onMouseEnter={e => { if (!isToday) e.currentTarget.style.background = 'var(--color-elevated)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = isToday ? 'var(--color-accent-dim)' : (isWeekend ? 'var(--color-surface)' : bg); }}
+              onMouseEnter={(e) => { if (!isToday) e.currentTarget.style.background = 'var(--color-elevated)'; }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = isToday
+                  ? 'color-mix(in srgb, var(--color-accent) 14%, var(--color-surface))'
+                  : bg;
+              }}
             >
-              {/* Day number */}
               <div style={{
                 width: '28px', height: '28px', borderRadius: '8px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '13px', fontWeight: isToday ? 700 : 600,
                 fontFamily: 'var(--font-sans)',
                 background: isToday ? 'var(--color-accent)' : 'transparent',
-                color: isToday ? (isDark ? '#000' : '#fff') : text1,
+                color: isToday ? '#fff' : text1,
                 marginBottom: '8px',
-                transition: 'all 200ms var(--ease)',
               }}>
                 {day}
               </div>
 
-              {/* Events */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {dayEvents.slice(0, 4).map(ev => {
-                  const color = EVENT_COLORS[ev.system_type] || EVENT_COLORS.general;
+                {dayEvents.slice(0, 3).map((ev) => {
+                  const sys = SYSTEM_COLORS[ev.system_type] || SYSTEM_COLORS.general;
                   return (
                     <div
                       key={ev.id}
-                      onClick={e => { e.stopPropagation(); onEventClick(ev); }}
+                      onClick={(e) => { e.stopPropagation(); onEventClick(ev); }}
                       style={{
                         fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-sans)',
                         padding: '3px 8px', borderRadius: '6px',
-                        background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                        color: color,
+                        background: sys.bg,
+                        color: sys.color,
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        cursor: 'pointer', borderLeft: `2px solid ${color}`,
+                        cursor: 'pointer', borderLeft: `3px solid ${sys.color}`,
                         lineHeight: 1.4, maxWidth: '100%',
-                        transition: 'transform 150ms var(--ease)',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.transform = 'translateX(2px)'}
-                      onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
                     >
                       {ev.title}
                     </div>
                   );
                 })}
-                {dayEvents.length > 4 && (
-                  <div style={{ fontSize: '9px', fontWeight: 600, color: text2, fontFamily: 'var(--font-sans)', paddingLeft: '4px', marginTop: '2px' }}>
-                    + {dayEvents.length - 4} more
+                {dayEvents.length > 3 && (
+                  <div style={{ fontSize: '9px', fontWeight: 600, color: text2, fontFamily: 'var(--font-sans)', paddingLeft: '4px' }}>
+                    + {dayEvents.length - 3} more
                   </div>
                 )}
               </div>
@@ -144,11 +136,10 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
           );
         })}
 
-        {/* Trailing empty cells */}
         {Array.from({ length: trailingCells }, (_, i) => (
-          <div key={`pad-end-${i}`} style={{
-            minHeight: '120px', background: isDark ? 'rgba(255,255,255,0.01)' : 'rgba(0,0,0,0.01)',
-            borderRight: (firstDayOffset + daysInMonth + i) % 7 < 6 ? `1px solid ${border}` : 'none',
+          <div key={`trail-${i}`} style={{
+            minHeight: '112px', background: isDark ? 'rgba(255,255,255,0.015)' : 'rgba(0,0,0,0.015)',
+            borderRight: ((firstDayOffset + daysInMonth + i) % 7) < 6 ? `1px solid ${border}` : 'none',
             borderBottom: `1px solid ${border}`,
           }} />
         ))}

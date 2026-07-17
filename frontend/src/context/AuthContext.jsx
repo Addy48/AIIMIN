@@ -121,11 +121,31 @@ export function AuthProvider({ children }) {
                 fetchOptions: authFetchOptions,
             });
         } else {
-            result = await signIn.username({
-                username: normalizeUsername(identifier),
-                password: pin,
-                fetchOptions: authFetchOptions,
-            });
+            // Prefer email sign-in after resolve — Better Auth username casing can drift
+            let emailForLogin = null;
+            try {
+                const resolved = await apiGet(
+                    `/auth/resolve?identifier=${encodeURIComponent(normalizeUsername(identifier))}`,
+                    { auth: false },
+                );
+                emailForLogin = resolved?.email || null;
+            } catch (_) {
+                /* fall through to username sign-in */
+            }
+
+            if (emailForLogin) {
+                result = await signIn.email({
+                    email: normalizeEmail(emailForLogin),
+                    password: pin,
+                    fetchOptions: authFetchOptions,
+                });
+            } else {
+                result = await signIn.username({
+                    username: normalizeUsername(identifier),
+                    password: pin,
+                    fetchOptions: authFetchOptions,
+                });
+            }
         }
 
         if (result.error) {

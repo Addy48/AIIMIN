@@ -46,17 +46,34 @@ app.get('/resolve', async (c) => {
     const identifier = c.req.query('identifier');
     if (!identifier) return c.json({ error: 'Identifier is required' }, 400);
 
-    if (identifier.includes('@')) {
-        return c.json({ email: identifier.toLowerCase() });
+    const raw = identifier.trim();
+    if (raw.includes('@') && raw.indexOf('@') > 0 && raw.includes('.')) {
+        // Only treat as email when it looks like a real email (OS-ID charset can include @)
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw)) {
+            return c.json({ email: raw.toLowerCase() });
+        }
     }
 
     try {
+        const key = raw.toUpperCase();
         const { rows } = await pool.query(
-            'SELECT email FROM users WHERE username ILIKE $1 LIMIT 1',
-            [identifier.trim()],
+            `SELECT email FROM public.users
+             WHERE UPPER(TRIM(username)) = $1
+             LIMIT 1`,
+            [key],
         );
-        if (!rows[0]) return c.json({ error: 'User not found' }, 404);
-        return c.json({ email: rows[0].email });
+        if (rows[0]?.email) return c.json({ email: rows[0].email });
+
+        // Fallback: Better Auth user table (username plugin may store different casing)
+        const { rows: ba } = await pool.query(
+            `SELECT email FROM public."user"
+             WHERE UPPER(TRIM(username)) = $1
+             LIMIT 1`,
+            [key],
+        );
+        if (ba[0]?.email) return c.json({ email: ba[0].email });
+
+        return c.json({ error: 'User not found' }, 404);
     } catch (err) {
         console.error('[auth/resolve] error:', err.message);
         return c.json({ error: 'Internal server error' }, 500);
