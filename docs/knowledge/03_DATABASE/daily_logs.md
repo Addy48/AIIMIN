@@ -19,7 +19,12 @@ Note: `protein_grams` may exist historically; UI uses `water_bottles`. Do not re
 
 - Evolved across early schema + gamification alters; see server migrations and archived AGENTS notes
 
+## Demo seed
+
+Bulk history can be inserted via [[16_DOCUMENTATION/Seed-Demo-History]] (`source_type = 'seed'`). Unique on `(user_id, date)`.
+
 ## Related
 
 - [[09_FEATURES/DailyLog/DailyLog]]
 - [[02_ARCHITECTURE/Database]]
+- [[16_DOCUMENTATION/Seed-Demo-History]]

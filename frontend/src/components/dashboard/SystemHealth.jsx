@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../../utils/supabase';
+import { apiGet } from '../../utils/api';
 
 const SystemHealth = () => {
   const [dbStatus, setDbStatus] = useState({ label: 'Database Sync', status: 'Checking...', color: '#F59E0B' });
@@ -24,12 +24,11 @@ const SystemHealth = () => {
         if (mounted) setNetworkStatus({ label: 'Network Uplink', status: 'Offline', color: '#EF4444' });
       }
 
-      // DB Check
+      // DB Check via authenticated API (Better Auth — not Supabase RLS)
       try {
         const start = performance.now();
-        const { error } = await supabase.from('profiles').select('id').limit(1);
+        await apiGet('/health');
         const latency = Math.round(performance.now() - start);
-        if (error) throw error;
         if (mounted) setDbStatus({ label: 'Database Latency', status: `${latency}ms`, color: latency < 300 ? '#10B981' : '#F59E0B' });
       } catch (e) {
         if (mounted) setDbStatus({ label: 'Database Sync', status: 'Broken', color: '#EF4444' });

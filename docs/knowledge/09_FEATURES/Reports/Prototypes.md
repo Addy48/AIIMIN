@@ -5,12 +5,12 @@
 | Tier | Locked direction | Notes |
 |------|------------------|-------|
 | **Core · Snapshot** | **Ivory Light** + **Ivory Dark** | Follows app theme. Device layouts: Phone / iPad / Laptop |
-| **Pro · Standard** | **Folio Life OS** | White body + ivory header band + 14-day fingerprint + numbered findings |
+| **Pro · Standard** | **Life OS Review** | White body + ivory header band + 14-day fingerprint + numbered findings |
 | **Elite · Intelligence** | **Craft in progress** | Web experience (not longer PDF). Design Lab: 6 interaction prototypes |
 
 ## Elite product rule (2026-07-17)
 
-- **Pro = document** (downloadable Folio PDF)
+- **Pro = document** (downloadable Life OS Review PDF)
 - **Elite = experience** (persistent URL `/reports/[id]`, interactive scroll, fingerprint hover, expandable correlations)
 - PDF download on Elite = archive snapshot of the web report, not the product
 - Signature element: **90-day Life Fingerprint** strip (Core/Pro do not get this)
@@ -60,7 +60,7 @@ cd prototypes/reports && python3 -m http.server 8765
 |------|----------------|
 | Explore | Reports nav in More · locked Pro paywall (blurred Elite preview) |
 | Core+ | Ivory Snapshot on `/reports` + Today “Your Report” card |
-| Pro+ | Snapshot + Correlation Intelligence (top 3) + Folio PDF (monthly pool 6) |
+| Pro+ | Snapshot + Correlation Intelligence (top 3) + Life OS Review PDF (monthly pool 6) |
 | Elite | Same as Pro until Intelligence web ships · prototypes in Design Lab |
 
 ## Changelog

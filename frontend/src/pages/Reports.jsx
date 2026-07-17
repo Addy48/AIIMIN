@@ -86,7 +86,7 @@ export default function Reports() {
     setSearchParams(next, { replace: true });
   };
 
-  /* Core Snapshot = fixed 7d; Pro+ chooses range for Folio Standard */
+  /* Core Snapshot = fixed 7d; Pro+ chooses range for Life OS Review */
   const [preset, setPreset] = useState('7');
 
   useEffect(() => {
@@ -335,8 +335,8 @@ export default function Reports() {
           {isElite
             ? 'Snapshot + Standard PDF + Interactive Intelligence Report (web). Deep gen uses a separate monthly pool.'
             : isProPlus
-              ? 'Snapshot + Correlation Intelligence + Folio Standard PDF (monthly generation pool).'
-              : 'Ivory Snapshot · 7-day pulse. Upgrade to Pro for Correlation Intelligence + Folio PDF.'}
+              ? 'Snapshot + Correlation Intelligence + Life OS Review PDF (monthly generation pool).'
+              : 'Ivory Snapshot · 7-day pulse. Upgrade to Pro for Correlation Intelligence + Life OS Review PDF.'}
         </p>
       </div>
 
@@ -591,7 +591,7 @@ export default function Reports() {
               </div>
 
               <div style={{ marginBottom: 12 }}>
-                <h3 style={{ margin: '0 0 12px', fontSize: 16, color: 'var(--color-text-1)' }}>Folio Life OS · Standard PDF</h3>
+                <h3 style={{ margin: '0 0 12px', fontSize: 16, color: 'var(--color-text-1)' }}>Life OS Review · Standard PDF</h3>
                 <PDFReportGenerator
                   user={user}
                   rangeLabel={query.label}

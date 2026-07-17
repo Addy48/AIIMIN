@@ -50,9 +50,10 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
       borderRadius: 'var(--r-lg)', marginBottom: '16px',
       backdropFilter: 'var(--glass-blur)', WebkitBackdropFilter: 'var(--glass-blur)',
       boxShadow: 'var(--glass-shadow-sm)',
+      flexWrap: 'wrap', gap: '12px',
     }}>
       {/* Left: navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', minWidth: 0 }}>
         <div style={{ display: 'flex', gap: '2px', background: border, borderRadius: '8px', overflow: 'hidden', border: `1px solid ${border}` }}>
           <button type="button" aria-label="Previous period" onClick={() => navigate(-1)} style={{ ...btnBase, width: '36px', height: '36px', border: 'none' }}>‹</button>
           <button type="button" onClick={() => onDateChange(new Date().toISOString())} style={{
@@ -60,17 +61,17 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
           }}>Today</button>
           <button type="button" aria-label="Next period" onClick={() => navigate(1)} style={{ ...btnBase, width: '36px', height: '36px', border: 'none' }}>›</button>
         </div>
-        <span style={{ fontSize: '15px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', marginLeft: '12px', letterSpacing: '-0.01em' }}>
+        <span style={{ fontSize: '15px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', letterSpacing: '-0.01em' }}>
           {title}
         </span>
       </div>
 
-      {/* Right: view switcher + add */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      {/* Right: view switcher + sync + add */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         <div style={{ display: 'flex', gap: '2px', padding: '3px', background: 'var(--color-elevated)', borderRadius: '10px', border: `1px solid ${border}` }}>
           {VIEWS.map(v => (
             <button key={v.key} onClick={() => onViewChange(v.key)} style={{
-              padding: '6px 14px', borderRadius: '7px', border: 'none', cursor: 'pointer',
+              padding: '6px 12px', borderRadius: '7px', border: 'none', cursor: 'pointer',
               fontSize: '11px', fontWeight: 600, fontFamily: 'var(--font-sans)',
               background: view === v.key ? (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent',
               color: view === v.key ? text1 : text2,
@@ -86,7 +87,7 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
           }
           await redirectToGoogle();
         }} style={{
-          padding: '8px 16px', borderRadius: '10px', border: `1px solid ${border}`, cursor: 'pointer',
+          padding: '8px 14px', borderRadius: '10px', border: `1px solid ${border}`, cursor: 'pointer',
           background: 'var(--color-surface)', color: text1, fontSize: '12px', fontWeight: 600,
           fontFamily: 'var(--font-sans)', transition: 'all 200ms var(--ease)',
           display: syncStatus?.connected ? 'none' : 'flex', alignItems: 'center', gap: '6px'
@@ -100,37 +101,35 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
           Connect Google
         </button>
         {syncStatus?.connected && (
-          <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             {syncStatus.linkedEmail && (
-              <span title={syncStatus.linkedEmail} style={{ fontSize: '12px', color: text1, maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
+              <span title={syncStatus.linkedEmail} style={{ fontSize: '12px', color: text2, maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>
                 {syncStatus.linkedEmail}
               </span>
             )}
             <button type="button" onClick={onPullGoogle} style={{
-              padding: '8px 14px', borderRadius: '10px', border: `1px solid ${border}`, cursor: 'pointer',
+              padding: '8px 12px', borderRadius: '10px', border: `1px solid ${border}`, cursor: 'pointer',
               background: 'var(--color-surface)', color: text1, fontSize: '12px', fontWeight: 600,
               fontFamily: 'var(--font-sans)'
             }}>
               Pull Google
             </button>
             <button type="button" onClick={onPushGoogle} style={{
-              padding: '8px 14px', borderRadius: '10px', border: `1px solid ${border}`, cursor: 'pointer',
+              padding: '8px 12px', borderRadius: '10px', border: `1px solid ${border}`, cursor: 'pointer',
               background: 'var(--color-surface)', color: text1, fontSize: '12px', fontWeight: 600,
-              fontFamily: 'var(--font-sans)', marginLeft: '8px'
+              fontFamily: 'var(--font-sans)'
             }}>
               Push Tasks
             </button>
-          </>
+          </div>
         )}
         <button onClick={onNewEvent} style={{
           padding: '8px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer',
-          background: accent, color: isDark ? '#000' : '#fff', fontSize: '12px', fontWeight: 700,
+          background: accent, color: '#fff', fontSize: '12px', fontWeight: 700,
           fontFamily: 'var(--font-sans)', transition: 'all 200ms var(--ease)',
-          boxShadow: `0 4px 12px ${isDark ? 'rgba(34,197,94,0.2)' : 'rgba(30,92,58,0.15)'}`,
-        }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >+ New Event</button>
+        }}>
+          + New Event
+        </button>
       </div>
     </div>
   );

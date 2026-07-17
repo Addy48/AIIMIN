@@ -1,19 +1,16 @@
 import React, { useMemo } from 'react';
 import { useThemeContext } from '../../context/ThemeContext';
+import { SYSTEM_COLORS } from './EventCard';
 
 const MINI_DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
-const EVENT_COLORS = {
-  work: 'var(--color-accent)', 
-  health: 'var(--color-rust)', 
-  finance: 'var(--color-warning)',
-  social: 'var(--color-info)', 
-  general: 'var(--color-text-3)',
-};
+const EVENT_COLORS = Object.fromEntries(
+  Object.entries(SYSTEM_COLORS).map(([k, v]) => [k, v.color])
+);
 
-const SYS_LABELS = {
-  work: 'Work', health: 'Health', finance: 'Finance', social: 'Social', general: 'General',
-};
+const SYS_LABELS = Object.fromEntries(
+  Object.entries(SYSTEM_COLORS).map(([k, v]) => [k, v.label])
+);
 
 const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSystemFilterChange }) => {
   const { theme } = useThemeContext();

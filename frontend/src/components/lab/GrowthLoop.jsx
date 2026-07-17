@@ -1,14 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Target, HelpCircle, Activity, Zap, Shield, ArrowRight } from 'lucide-react';
+import { Target, Brain, Activity, Zap, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Growth Engine — product loop (not marketing waterfall).
+ * Design read: Life OS product UI, calm/precise, AIIMIN palette, VARIANCE 5 / MOTION 3 / DENSITY 4.
+ */
 const nodes = [
-  { id: 'goals', label: '1. Set Goal', icon: Target, desc: 'Define your Life Arc', color: '#8B5CF6', route: '/goals' },
-  { id: 'decision', label: '2. Strategize', icon: HelpCircle, desc: 'Mental Models (Lab)', color: '#3B82F6', route: '?module=decision' },
-  { id: 'habits', label: '3. Build Habit', icon: Activity, desc: 'Daily execution', color: '#10B981', route: '/habits' },
-  { id: 'focus', label: '4. Deep Work', icon: Zap, desc: 'Enter Flow State', color: '#F59E0B', route: '/focus' },
-  { id: 'discipline', label: '5. Maintain', icon: Shield, desc: 'Addiction Tracker', color: '#EF4444', route: '?module=addiction' }
+  { id: 'goals', step: '01', label: 'Set Goal', desc: 'Name the arc', icon: Target, route: '/goals', accent: '#ff6b35' },
+  { id: 'decision', step: '02', label: 'Strategize', desc: 'Mental models', icon: Brain, route: '?module=decision', accent: '#6b7280' },
+  { id: 'habits', step: '03', label: 'Build Habit', desc: 'Daily reps', icon: Activity, route: '/habits', accent: '#10b981' },
+  { id: 'focus', step: '04', label: 'Deep Work', desc: 'Protect blocks', icon: Zap, route: '/focus', accent: '#ff6b35' },
+  { id: 'discipline', step: '05', label: 'Maintain', desc: 'Surf the urge', icon: Shield, route: '/discipline', accent: '#14171A' },
 ];
 
 export default function GrowthLoop() {
@@ -16,90 +20,152 @@ export default function GrowthLoop() {
 
   const handleNavigate = (route) => {
     if (route.startsWith('?')) {
-      const newUrl = new URL(window.location);
+      const newUrl = new URL(window.location.href);
       const params = new URLSearchParams(route);
       newUrl.searchParams.set('module', params.get('module'));
       window.history.pushState({}, '', newUrl);
-      window.dispatchEvent(new Event('popstate')); // force update
+      window.dispatchEvent(new Event('popstate'));
     } else {
       navigate(route);
     }
   };
 
   return (
-    <div style={{
-      background: 'rgba(255, 255, 255, 0.02)',
-      backdropFilter: 'blur(30px)',
-      borderRadius: '32px',
-      border: '1px solid rgba(255, 255, 255, 0.05)',
-      padding: '48px',
-      marginBottom: '48px',
-      position: 'relative',
-      overflow: 'hidden',
-      boxShadow: '0 30px 60px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.1)'
-    }}>
-      <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%), radial-gradient(circle at 70% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%)', pointerEvents: 'none' }} />
-      
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-         <div style={{ padding: '12px', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '12px', color: '#8B5CF6', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
-            <Activity size={24} />
-         </div>
-         <h2 style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.02em', fontFamily: 'var(--font-serif)' }}>The Growth Engine</h2>
-      </div>
-      <p style={{ color: 'var(--color-text-2)', fontSize: '15px', lineHeight: 1.6, marginBottom: '64px', maxWidth: '700px' }}>
-        Success is not an event, it's a compounding loop. Follow this interconnected system to turn raw ambition into unstoppable momentum. Click on any node to jump directly into the flow.
-      </p>
+    <section
+      aria-label="Growth Engine"
+      style={{
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 28,
+        padding: '36px 36px 40px',
+        marginBottom: 40,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Soft atmosphere — locked palette only */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(ellipse 60% 50% at 0% 0%, rgba(255,107,53,0.08), transparent 55%), radial-gradient(ellipse 50% 40% at 100% 100%, rgba(16,185,129,0.06), transparent 50%)',
+          pointerEvents: 'none',
+        }}
+      />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', padding: '0 20px' }}>
-         {/* Animated Connecting Line */}
-         <div style={{ position: 'absolute', top: '38px', left: '60px', right: '60px', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', zIndex: 0, overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, #8B5CF6, #3B82F6, #10B981, #F59E0B, #EF4444)', opacity: 0.3 }} />
-            <motion.div
-              animate={{ x: ['-100%', '200%'] }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-text-3)', marginBottom: 10 }}>
+          Compounding loop
+        </div>
+        <h2 style={{
+          fontSize: 'clamp(22px, 3vw, 30px)',
+          fontWeight: 800,
+          color: 'var(--color-text-1)',
+          margin: '0 0 10px',
+          letterSpacing: '-0.03em',
+          fontFamily: 'var(--font-serif)',
+          textWrap: 'balance',
+        }}>
+          The Growth Engine
+        </h2>
+        <p style={{
+          color: 'var(--color-text-2)',
+          fontSize: 14,
+          lineHeight: 1.55,
+          margin: '0 0 32px',
+          maxWidth: 560,
+        }}>
+          Five linked moves. Click any stage to jump in — goals, models, habits, focus, discipline.
+        </p>
+
+        {/* Desktop: horizontal stages with connectors */}
+        <div
+          className="growth-engine-track"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+            gap: 12,
+            alignItems: 'stretch',
+          }}
+        >
+          {nodes.map((node, i) => (
+            <motion.button
+              key={node.id}
+              type="button"
+              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => handleNavigate(node.route)}
               style={{
-                width: '30%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent)',
-                filter: 'blur(2px)'
+                position: 'relative',
+                textAlign: 'left',
+                padding: '20px 18px',
+                borderRadius: 18,
+                border: '1px solid var(--color-border)',
+                background: 'var(--color-elevated)',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                minHeight: 148,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
               }}
-            />
-         </div>
-
-         {nodes.map((node, i) => (
-           <motion.div 
-             key={node.id}
-             whileHover={{ y: -8, scale: 1.05 }}
-             onClick={() => handleNavigate(node.route)}
-             style={{
-               position: 'relative', zIndex: 1,
-               display: 'flex', flexDirection: 'column', alignItems: 'center',
-               cursor: 'pointer', width: '130px'
-             }}
-           >
-             <motion.div
-               whileHover={{ boxShadow: `0 0 40px ${node.color}50`, borderColor: node.color }}
-               style={{
-                 width: '76px', height: '76px', borderRadius: '24px',
-                 background: 'rgba(255,255,255,0.03)', border: `1px solid rgba(255,255,255,0.1)`,
-                 backdropFilter: 'blur(20px)',
-                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                 color: node.color, marginBottom: '24px',
-                 boxShadow: `0 10px 30px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.1)`,
-                 transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-               }}
-             >
-                <node.icon size={32} />
-             </motion.div>
-             <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textAlign: 'center', letterSpacing: '-0.01em' }}>
-                {node.label}
-             </div>
-             <div style={{ fontSize: '12px', color: 'var(--color-text-3)', textAlign: 'center', lineHeight: 1.4, fontWeight: 500 }}>
-                {node.desc}
-             </div>
-           </motion.div>
-         ))}
+            >
+              {i < nodes.length - 1 && (
+                <div
+                  aria-hidden
+                  style={{
+                    position: 'absolute',
+                    top: 34,
+                    right: -10,
+                    width: 16,
+                    height: 2,
+                    background: 'linear-gradient(90deg, var(--color-border), transparent)',
+                    zIndex: 2,
+                    pointerEvents: 'none',
+                  }}
+                  className="growth-engine-connector"
+                />
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: `color-mix(in srgb, ${node.accent} 14%, transparent)`,
+                  color: node.accent === '#14171A' ? 'var(--color-text-1)' : node.accent,
+                }}>
+                  <node.icon size={20} strokeWidth={2.2} />
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-text-3)', letterSpacing: '0.08em' }}>{node.step}</span>
+              </div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-1)', letterSpacing: '-0.02em', marginBottom: 4 }}>{node.label}</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-3)', fontWeight: 500, lineHeight: 1.4 }}>{node.desc}</div>
+              </div>
+            </motion.button>
+          ))}
+        </div>
       </div>
-    </div>
+
+      <style>{`
+        @media (max-width: 900px) {
+          .growth-engine-track {
+            grid-template-columns: 1fr !important;
+          }
+          .growth-engine-connector {
+            display: none !important;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .growth-engine-track button {
+            transition: none !important;
+          }
+        }
+      `}</style>
+    </section>
   );
 }

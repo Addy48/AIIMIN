@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Upload, Search,
@@ -275,22 +275,38 @@ const Finance = () => {
   const totalReturns = totalNetWorth - totalInvested;
   const returnPct = totalInvested > 0 ? ((totalReturns / totalInvested) * 100).toFixed(2) : 0;
 
+  // Amounts: expenses often stored as negative; always use magnitude for math
+  const txAmt = useCallback((t) => Math.abs(Number(t?.amount) || 0), []);
+  const isExpense = useCallback((t) => t?.type === 'expense' || Number(t?.amount) < 0, []);
+  const isIncome = useCallback((t) => t?.type === 'income' || (t?.type !== 'expense' && Number(t?.amount) > 0), []);
+
   // Monthly breakdown
   const monthlyExpenses = useMemo(() => transactions
-    .filter(t => t.type === 'expense' && new Date(t.date).getMonth() === new Date().getMonth())
-    .reduce((sum, t) => sum + Number(t.amount), 0), [transactions]);
+    .filter(t => isExpense(t) && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear())
+    .reduce((sum, t) => sum + txAmt(t), 0), [transactions, isExpense, txAmt]);
 
   const monthlyIncome = useMemo(() => transactions
-    .filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth())
-    .reduce((sum, t) => sum + Number(t.amount), 0), [transactions]);
+    .filter(t => isIncome(t) && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear())
+    .reduce((sum, t) => sum + txAmt(t), 0), [transactions, isIncome, txAmt]);
 
-  // Budget calculations
-  const budgetProgress = useMemo(() => budgets.map(b => {
+  // Budget calculations — normalize fields Budgets tab expects
+  const budgetProgress = useMemo(() => (budgets || []).map(b => {
+    const limit = Number(b.amount ?? b.limit ?? b.target ?? 0) || 0;
+    const catId = b.category_id;
+    const catName = b.category_name || b.category || b.name || 'Budget';
     const spent = transactions
-      .filter(t => t.category_id === b.category_id && t.type === 'expense' && new Date(t.date).getMonth() === new Date().getMonth())
-      .reduce((sum, t) => sum + Number(t.amount), 0);
-    return { ...b, spent, pct: (spent / b.amount) * 100 };
-  }), [budgets, transactions]);
+      .filter(t => isExpense(t) && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()
+        && (catId ? t.category_id === catId : (t.category === catName)))
+      .reduce((sum, t) => sum + txAmt(t), 0);
+    const percentage = limit > 0 ? (spent / limit) * 100 : 0;
+    return {
+      ...b,
+      category: catName,
+      limit,
+      spent,
+      percentage: Number.isFinite(percentage) ? percentage : 0,
+    };
+  }), [budgets, transactions, isExpense, txAmt]);
 
   // Asset Breakdown for Wealth Tab
   const assetBreakdown = useMemo(() => {
@@ -303,9 +319,9 @@ const Finance = () => {
       bank: accounts.reduce((sum, a) => sum + Number(a.balance), 0)
     };
     assets.forEach((a) => {
-      const type = String(a.type || 'stock').toLowerCase().replace(/\s+/g, '_');
-      if (Object.prototype.hasOwnProperty.call(breakdown, type)) breakdown[type] += Number(a.currentValue);
-      else breakdown.stock += Number(a.currentValue);
+      const type = String(a.type || a.asset_type || 'stock').toLowerCase().replace(/\s+/g, '_');
+      if (Object.prototype.hasOwnProperty.call(breakdown, type)) breakdown[type] += Number(a.currentValue ?? a.current_value ?? 0);
+      else breakdown.stock += Number(a.currentValue ?? a.current_value ?? 0);
     });
     return Object.entries(breakdown)
       .filter(([, value]) => value > 0)
@@ -313,70 +329,95 @@ const Finance = () => {
   }, [assets, accounts]);
 
   // Analytics & Insights
-  const { topExpenses, dailySpend, savingsRate, velocityData, fiYears } = useMemo(() => {
-    const currentMonth = new Date().getMonth();
+  const { topExpenses, dailySpend, savingsRate, velocityData, fiYears, fiProgressPct } = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
     const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
     
     let mExp = 0, mInc = 0, pmExp = 0;
     const catMap = {};
     const dailyMap = {};
-    const cashflowMap = {}; 
+    const monthlyNet = {}; // YYYY-MM -> { net, label }
 
     transactions.forEach(t => {
       const d = new Date(t.date);
+      if (Number.isNaN(d.getTime())) return;
       const m = d.getMonth();
-      const mStr = d.toLocaleString('default', { month: 'short' });
-      
-      if (!cashflowMap[mStr]) cashflowMap[mStr] = { month: mStr, inc: 0, exp: 0 };
-      if (t.type === 'income') cashflowMap[mStr].inc += Number(t.amount);
-      if (t.type === 'expense') cashflowMap[mStr].exp += Number(t.amount);
+      const y = d.getFullYear();
+      const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+      const mStr = d.toLocaleString('default', { month: 'short', year: y !== currentYear ? '2-digit' : undefined });
+      if (!monthlyNet[key]) monthlyNet[key] = { label: mStr, net: 0, inc: 0, exp: 0, order: y * 12 + m };
 
-      if (m === currentMonth) {
-        if (t.type === 'expense') {
-          mExp += Number(t.amount);
-          catMap[t.category] = (catMap[t.category] || 0) + Number(t.amount);
-          const dayStr = d.toISOString().split('T')[0];
-          dailyMap[dayStr] = (dailyMap[dayStr] || 0) + Number(t.amount);
+      const amt = txAmt(t);
+      if (isExpense(t)) {
+        monthlyNet[key].exp += amt;
+        monthlyNet[key].net -= amt;
+        if (m === currentMonth && y === currentYear) {
+          mExp += amt;
+          const cat = t.category || 'Other';
+          catMap[cat] = (catMap[cat] || 0) + amt;
+          const dayStr = d.toLocaleDateString('en-CA'); // local YYYY-MM-DD
+          dailyMap[dayStr] = (dailyMap[dayStr] || 0) + amt;
+        } else if (m === prevMonth && y === prevYear) {
+          pmExp += amt;
         }
-        if (t.type === 'income') mInc += Number(t.amount);
-      } else if (m === prevMonth && t.type === 'expense') {
-        pmExp += Number(t.amount);
+      } else if (isIncome(t)) {
+        monthlyNet[key].inc += amt;
+        monthlyNet[key].net += amt;
+        if (m === currentMonth && y === currentYear) mInc += amt;
       }
     });
 
     const cData = Object.entries(catMap).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
-    const sRate = mInc > 0 ? ((mInc - mExp) / mInc) : 0;
+    const rawRate = mInc > 0 ? ((mInc - mExp) / mInc) * 100 : 0;
+    const sRate = Math.max(-100, Math.min(100, rawRate)); // clamp display; true >100 still shown as 100% + note via status
     
-    // FIRE Calculation (Rough)
-    // Goal = 25 * Annual Expenses
-    // FIRE: 25× annual expenses. Only project when expenses + positive savings exist.
     const annualExpenses = mExp * 12;
     const goal = annualExpenses * 25;
     const monthlySavings = mInc - mExp;
     let yearsToFI = null;
-    if (mExp > 0 && monthlySavings > 0) {
-      const remaining = goal - totalNetWorth;
-      yearsToFI = remaining <= 0 ? 0 : Math.max(0, Math.min(99, Math.round(remaining / (monthlySavings * 12))));
+    let progressPct = 0;
+    if (mExp > 0 && goal > 0) {
+      progressPct = Math.max(0, Math.min(100, (totalNetWorth / goal) * 100));
+      if (monthlySavings > 0) {
+        const remaining = goal - totalNetWorth;
+        yearsToFI = remaining <= 0 ? 0 : Math.max(0, Math.min(99, Math.round(remaining / (monthlySavings * 12))));
+      }
     }
 
-    // Velocity Data (Last 6 months)
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    const vData = months.map((m, i) => ({
-      name: m,
-      value: totalNetWorth * (0.9 + (i * 0.02)) // Trend based on current NW
-    }));
+    // Velocity: last 6 calendar months of cumulative net worth trajectory from cashflow
+    const sortedMonths = Object.values(monthlyNet).sort((a, b) => a.order - b.order).slice(-6);
+    let running = Math.max(0, totalNetWorth - sortedMonths.reduce((s, m) => s + m.net, 0));
+    const vData = sortedMonths.map((m) => {
+      running += m.net;
+      return { name: m.label, value: Math.max(0, Math.round(running)), income: m.inc, expense: m.exp };
+    });
+    if (vData.length === 0) {
+      vData.push({ name: now.toLocaleString('default', { month: 'short' }), value: Math.round(totalNetWorth), income: mInc, expense: mExp });
+    }
+
+    // Fill daily spend for full MTD calendar (so heatmap isn't sparse chips)
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const dailyFilled = [];
+    for (let day = 1; day <= Math.min(daysInMonth, now.getDate()); day++) {
+      const ds = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      dailyFilled.push({ date: ds, amount: dailyMap[ds] || 0 });
+    }
 
     return {
       categoryData: cData,
       topExpenses: cData.slice(0, 5),
-      dailySpend: Object.entries(dailyMap).map(([date, amount]) => ({ date, amount })).sort((a,b) => new Date(a.date) - new Date(b.date)),
-      cashflowData: Object.values(cashflowMap).reverse(),
-savingsRate: (sRate * 100).toFixed(1),
+      dailySpend: dailyFilled,
+      cashflowData: sortedMonths,
+      savingsRate: sRate.toFixed(1),
       prevMonthExpenses: pmExp,
       velocityData: vData,
-      fiYears: yearsToFI
+      fiYears: yearsToFI,
+      fiProgressPct: progressPct,
     };
-  }, [transactions, totalNetWorth]);
+  }, [transactions, totalNetWorth, isExpense, isIncome, txAmt]);
 
   const handleAddAccount = async (e) => {
     e.preventDefault();
@@ -552,9 +593,10 @@ savingsRate: (sRate * 100).toFixed(1),
               totalNetWorth={totalNetWorth} returnPct={returnPct} 
               monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} 
               formatCurrency={formatCurrency} aiSummaryLoading={aiSummaryLoading} 
-              aiSummary={aiSummary} savingsRate={savingsRate} fiYears={fiYears} 
+              aiSummary={aiSummary} savingsRate={savingsRate} fiYears={fiYears} fiProgressPct={fiProgressPct} 
               totalBalance={totalBalance} totalReturns={totalReturns} 
-              financeChecks={financeChecks} velocityData={velocityData} 
+              financeChecks={financeChecks} velocityData={velocityData}
+              onReviewAnalytics={() => setActiveTab('ANALYTICS')}
             />
           )}
 

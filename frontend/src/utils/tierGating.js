@@ -54,11 +54,11 @@ export const ROUTE_MIN_TIER = {
   '/discipline': 'core',
   '/placements': 'core',
   '/family': 'pro',
-  '/reports': 'explore', /* Explore = locked paywall; Core+ Snapshot; Pro+ Folio; Elite Intelligence */
+  '/reports': 'explore', /* Explore = locked paywall; Core+ Snapshot; Pro+ Life OS Review; Elite Intelligence */
   /* /insights redirects → /reports?tab=patterns (tier applied on /reports) */
 };
 
-/** Report product by plan: Snapshot (Core+), Standard Folio PDF (Pro+), Intelligence web (Elite). */
+/** Report product by plan: Snapshot (Core+), Life OS Review PDF (Pro+), Intelligence web (Elite). */
 export const REPORT_PRODUCT = {
   snapshot: 'core',
   standardPdf: 'pro',

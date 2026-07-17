@@ -34,7 +34,7 @@ app.get('/week-stats', requireAuth, async (c) => {
     }
 });
 
-// POST /api/focus/sessions — log completed work block
+// POST /api/focus/sessions — log completed work block into sessions (pomodoro_sessions is a view)
 app.post('/sessions', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
@@ -45,44 +45,33 @@ app.post('/sessions', requireAuth, async (c) => {
             session_reflection,
             energy_after,
             goal_id,
+            mood_before,
+            mood_after,
         } = await c.req.json();
 
-        const today = new Date().toISOString().split('T')[0];
-        const mins = Math.max(0, Number(duration_minutes) || 0);
+        const mins = Math.max(1, Number(duration_minutes) || 25);
+        const ended = new Date();
+        const started = new Date(ended.getTime() - mins * 60_000);
+        const noteParts = [
+            session_intent ? `Intent: ${session_intent}` : null,
+            session_reflection || (intent_why ? `Why: ${intent_why}` : null),
+        ].filter(Boolean);
 
-        if (mins === 0 && (session_reflection || energy_after)) {
-            const { rows } = await pool.query(
-                `UPDATE pomodoro_sessions SET
-                    session_reflection = COALESCE($3, session_reflection),
-                    energy_after = COALESCE($4, energy_after),
-                    session_intent = COALESCE($5, session_intent)
-                 WHERE user_id = $1 AND date = $2::date
-                 RETURNING *`,
-                [userId, today, session_reflection || null, energy_after || null, session_intent || null]
-            );
-            if (rows.length) return c.json(rows[0]);
-        }
-
-        const addMins = mins > 0 ? mins : 25;
         const { rows } = await pool.query(
-            `INSERT INTO pomodoro_sessions (
-                user_id, date, cycles_completed, total_focus_minutes,
-                session_intent, session_reflection, energy_after
-             ) VALUES ($1, $2, 1, $3, $4, $5, $6)
-             ON CONFLICT (user_id, date) DO UPDATE SET
-                cycles_completed = COALESCE(pomodoro_sessions.cycles_completed, 0) + 1,
-                total_focus_minutes = COALESCE(pomodoro_sessions.total_focus_minutes, 0) + EXCLUDED.total_focus_minutes,
-                session_intent = COALESCE(EXCLUDED.session_intent, pomodoro_sessions.session_intent),
-                session_reflection = COALESCE(EXCLUDED.session_reflection, pomodoro_sessions.session_reflection),
-                energy_after = COALESCE(EXCLUDED.energy_after, pomodoro_sessions.energy_after)
-             RETURNING *`,
+            `INSERT INTO sessions (
+                user_id, started_at, ended_at, duration_minutes, session_type,
+                mood_before, mood_after, energy_level, notes, source_type, created_at
+             ) VALUES ($1,$2,$3,$4,'focus',$5,$6,$7,$8,'user',$2)
+             RETURNING id, started_at, ended_at, duration_minutes, notes`,
             [
                 userId,
-                today,
-                addMins,
-                session_intent || null,
-                session_reflection || (intent_why ? `Why: ${intent_why}` : null),
+                started.toISOString(),
+                ended.toISOString(),
+                mins,
+                mood_before || null,
+                mood_after || null,
                 energy_after || null,
+                noteParts.length ? noteParts.join('\n') : null,
             ]
         );
 

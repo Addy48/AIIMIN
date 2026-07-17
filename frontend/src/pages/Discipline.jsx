@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, RefreshCw, ChevronDown, ChevronUp, Trophy, Brain, Zap, Lock, Wind, Activity, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../utils/supabase';
 import Modal from '../components/ui/Modal';
-import { startUrge, resolveUrge, fetchUrgePatterns } from '../api/discipline';
+import { startUrge, resolveUrge, fetchUrgePatterns, fetchStreakData, createOrUpdateStreak, resetStreak, fetchUrges, fetchDisciplineLogs } from '../api/discipline';
 import { apiPost } from '../utils/api';
 import toast from '../utils/toast';
 import '../styles/disciplinePage.css';
 
-/* ── Storage ── */
+/* ── Storage (fallback cache; API is source of truth) ── */
 const SK_DATA = 'aiimin_discipline_v3';
 const SK_LOG  = 'aiimin_discipline_log_v3';
 
@@ -24,10 +23,25 @@ const loadLog = () => {
 const saveData = (d) => localStorage.setItem(SK_DATA, JSON.stringify(d));
 const saveLog  = (l) => localStorage.setItem(SK_LOG,  JSON.stringify(l));
 
+const mapStreakToData = (row) => {
+  if (!row) return null;
+  const clockStart = row.last_reset_at || row.started_at || null;
+  return {
+    streak: Number(row.streak_days) || 0,
+    longestStreak: Number(row.longest_streak) || 0,
+    lastUpdated: clockStart,
+    totalResets: Number(row.total_resets) || 0,
+    startedAt: row.started_at || clockStart,
+    addictionType: row.addiction_type || '',
+    replacementHabit: row.replacement_habit || '',
+    streakId: row.id,
+  };
+};
+
 const initData = () => {
   const existing = loadData();
-  if (existing) return existing;
-  const d = {
+  if (existing?.lastUpdated) return existing;
+  return {
     streak: 0,
     longestStreak: 0,
     lastUpdated: null,
@@ -36,8 +50,6 @@ const initData = () => {
     addictionType: '',
     replacementHabit: '',
   };
-  saveData(d);
-  return d;
 };
 
 /* ── Milestones ── */
@@ -321,6 +333,60 @@ const Discipline = () => {
   const currentDaysRef = useRef(0);
 
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [streak, urges, logs] = await Promise.all([
+          fetchStreakData(),
+          fetchUrges({ limit: 40, days: 90 }).catch(() => []),
+          fetchDisciplineLogs({ limit: 40, days: 90 }).catch(() => []),
+        ]);
+        if (cancelled) return;
+        const mapped = mapStreakToData(streak);
+        if (mapped?.lastUpdated && mapped.addictionType) {
+          setData(mapped);
+          saveData(mapped);
+        } else if (mapped?.addictionType) {
+          // Has commitment but no clock — use started_at
+          const fixed = { ...mapped, lastUpdated: mapped.startedAt || new Date().toISOString() };
+          setData(fixed);
+          saveData(fixed);
+        }
+        const urgeLog = (Array.isArray(urges) ? urges : []).map((u) => ({
+          id: u.id,
+          date: u.resolved_at || u.started_at,
+          trigger: u.category || 'urge',
+          note: u.note || `Outcome: ${u.outcome || 'open'}`,
+          streakAtReset: '—',
+          kind: 'urge',
+        }));
+        const resetLog = (Array.isArray(logs) ? logs : [])
+          .filter((l) => l.event_type === 'reset')
+          .map((l) => ({
+            id: l.id,
+            date: l.created_at,
+            trigger: l.trigger_type || 'reset',
+            note: l.notes || '',
+            streakAtReset: '—',
+            kind: 'reset',
+          }));
+        const merged = [...resetLog, ...urgeLog]
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .slice(0, 40);
+        if (merged.length) {
+          setLog(merged);
+          saveLog(merged);
+        }
+        const p = await fetchUrgePatterns().catch(() => null);
+        if (!cancelled && p?.headline) setPatternHeadline(p.headline);
+      } catch {
+        /* keep local cache */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
     fetchUrgePatterns()
       .then((p) => { if (p?.headline) setPatternHeadline(p.headline); })
       .catch(() => {});
@@ -370,18 +436,32 @@ const Discipline = () => {
     return () => cancelAnimationFrame(rafId);
   }, [data.lastUpdated]);
 
-  const handleStart = ({ addiction, replacement }) => {
+  const handleStart = async ({ addiction, replacement }) => {
     const now = new Date().toISOString();
-    const updated = { 
-      ...data, 
-      streak: 0, 
-      lastUpdated: now, 
+    const updated = {
+      ...data,
+      streak: 0,
+      lastUpdated: now,
       startedAt: now,
       addictionType: addiction,
-      replacementHabit: replacement
+      replacementHabit: replacement,
     };
     setData(updated);
     saveData(updated);
+    try {
+      const row = await createOrUpdateStreak({
+        addiction_type: addiction,
+        replacement_habit: replacement,
+      });
+      const mapped = mapStreakToData(row);
+      if (mapped) {
+        const withClock = { ...mapped, lastUpdated: mapped.lastUpdated || now, startedAt: mapped.startedAt || now };
+        setData(withClock);
+        saveData(withClock);
+      }
+    } catch {
+      /* local still works */
+    }
   };
 
   const handleDailyPledge = () => {
@@ -403,18 +483,7 @@ const Discipline = () => {
         sleep_hours: 7,
       });
     } catch (e) {
-      try {
-        await supabase.from('journal_entries').insert({
-          user_id: user.id,
-          date: today,
-          encrypted_content: content,
-          mood,
-          energy_level: 3,
-          sleep_hours: 7,
-        });
-      } catch (err) {
-        console.error('Failed to log to journal:', err || e);
-      }
+      console.error('Failed to log to journal:', e);
     }
   };
 
@@ -447,7 +516,7 @@ const Discipline = () => {
 
   const handleReset = async ({ trigger, note }) => {
     const now = new Date().toISOString();
-    const entry = { id: Date.now().toString(), date: now, trigger, note, streakAtReset: currentDays };
+    const entry = { id: Date.now().toString(), date: now, trigger, note, streakAtReset: currentDays, kind: 'reset' };
     const newLog = [entry, ...log];
     const updated = { ...data, streak: 0, totalResets: data.totalResets + 1, lastUpdated: now, longestStreak: Math.max(data.longestStreak, currentDays) };
     setData(updated);
@@ -456,6 +525,9 @@ const Discipline = () => {
     saveLog(newLog);
     setShowReset(false);
     setPledgedToday(false);
+    try {
+      await resetStreak({ trigger_type: trigger, notes: note });
+    } catch { /* local ok */ }
     const content = `#slip-reflection\n\nStreak was ${currentDays} days. Logging a slip.\n\n**Trigger:** ${trigger}\n\n**Note:**\n${note}`;
     await logToJournal(content, 1);
   };
@@ -638,7 +710,9 @@ const Discipline = () => {
                         {log.map(entry => (
                           <div key={entry.id} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '20px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-2)' }}>After {entry.streakAtReset} days</span>
+                              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-2)' }}>
+                                {entry.kind === 'urge' ? `Urge · ${entry.trigger}` : `After ${entry.streakAtReset} days`}
+                              </span>
                               <span style={{ fontSize: '12px', color: 'var(--color-text-3)', fontWeight: 600 }}>{new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '12px' }}>Trigger: {entry.trigger}</div>

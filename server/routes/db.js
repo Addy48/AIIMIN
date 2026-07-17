@@ -16,7 +16,7 @@ const USER_SCOPED_TABLES = new Set([
     'family_members', 'family_documents', 'family_insurance', 'family_health',
     'family_vehicles', 'family_finance', 'family_relationships',
     'family_reminders', 'family_emergency_contacts',
-    'journal_entries', 'wins', 'savings_goals', 'budgets', 'routines',
+    'journal_entries', 'wins', 'savings_goals', 'budgets', 'routines', 'routine_runs',
     'discipline_streaks', 'discipline_logs', 'replacement_habits', 'addiction_tracking',
     'urge_events', 'anchor_edges', 'voice_recall_queue',
     'lab_typing_tests', 'lab_mindset_logs', 'lab_reading_log', 'lab_speaking_logs',
@@ -24,13 +24,20 @@ const USER_SCOPED_TABLES = new Set([
     'lab_system_design_logs', 'lab_streaks', 'lab_correlations', 'lab_insights',
     'sports_preferences', 'sports_favorites', 'job_applications', 'resumes',
     'wealth_assets', 'financial_health_scores', 'cognitive_benchmarks',
-    'cbt_records', 'www_entries', 'user_feedback',
+    'cbt_records', 'www_entries', 'user_feedback', 'money_categories',
 ]);
+
+/** Self-profile reads (id = auth user). Not general user directory. */
+const SELF_ID_TABLES = new Set(['users', 'profiles', 'user_profiles']);
 
 const NO_USER_SCOPE = new Set(['routine_habits']);
 
 function assertTable(table) {
-    if (!USER_SCOPED_TABLES.has(table) && !NO_USER_SCOPE.has(table)) {
+    if (
+        !USER_SCOPED_TABLES.has(table)
+        && !NO_USER_SCOPE.has(table)
+        && !SELF_ID_TABLES.has(table)
+    ) {
         throw new Error(`Table not allowed: ${table}`);
     }
 }
@@ -76,6 +83,9 @@ app.get('/:table', requireAuth, async (c) => {
         if (USER_SCOPED_TABLES.has(table)) {
             params.push(userId);
             where.push(`user_id = $${params.length}`);
+        } else if (SELF_ID_TABLES.has(table)) {
+            params.push(userId);
+            where.push(`id = $${params.length}`);
         }
 
         const parseJson = (raw) => {
@@ -86,15 +96,41 @@ app.get('/:table', requireAuth, async (c) => {
         for (const [filter, op] of [
             [parseJson(c.req.query('eq')), '='],
             [parseJson(c.req.query('gte')), '>='],
+            [parseJson(c.req.query('gt')), '>'],
             [parseJson(c.req.query('lte')), '<='],
+            [parseJson(c.req.query('lt')), '<'],
             [parseJson(c.req.query('neq')), '!='],
         ]) {
             if (!filter) continue;
             Object.entries(filter).forEach(([col, val]) => {
                 if (!/^[a-z_][a-z0-9_]*$/i.test(col)) return;
                 if (col === 'user_id' && USER_SCOPED_TABLES.has(table)) return;
+                if (col === 'id' && SELF_ID_TABLES.has(table)) return;
                 params.push(val);
                 where.push(`${col} ${op} $${params.length}`);
+            });
+        }
+
+        const inFilter = parseJson(c.req.query('in'));
+        if (inFilter) {
+            Object.entries(inFilter).forEach(([col, vals]) => {
+                if (!/^[a-z_][a-z0-9_]*$/i.test(col)) return;
+                if (!Array.isArray(vals) || !vals.length) return;
+                const placeholders = vals.map((v) => {
+                    params.push(v);
+                    return `$${params.length}`;
+                });
+                where.push(`${col} IN (${placeholders.join(', ')})`);
+            });
+        }
+
+        const isFilter = parseJson(c.req.query('is'));
+        if (isFilter) {
+            Object.entries(isFilter).forEach(([col, val]) => {
+                if (!/^[a-z_][a-z0-9_]*$/i.test(col)) return;
+                if (val === null) where.push(`${col} IS NULL`);
+                else if (val === true) where.push(`${col} IS TRUE`);
+                else if (val === false) where.push(`${col} IS FALSE`);
             });
         }
 
@@ -119,6 +155,9 @@ app.post('/:table', requireAuth, async (c) => {
     try {
         const table = c.req.param('table');
         assertTable(table);
+        if (SELF_ID_TABLES.has(table)) {
+            return c.json({ error: 'Writes to profile tables use /api/account' }, 400);
+        }
         const userId = c.get('userId');
         const body = await c.req.json();
         const rows = Array.isArray(body) ? body : [body];
@@ -158,6 +197,9 @@ app.post('/:table/upsert', requireAuth, async (c) => {
     try {
         const table = c.req.param('table');
         assertTable(table);
+        if (SELF_ID_TABLES.has(table)) {
+            return c.json({ error: 'Writes to profile tables use /api/account' }, 400);
+        }
         const userId = c.get('userId');
         const { payload, onConflict } = await c.req.json();
         const rows = Array.isArray(payload) ? payload : [payload];
@@ -213,9 +255,13 @@ app.patch('/:table', requireAuth, async (c) => {
         if (USER_SCOPED_TABLES.has(table)) {
             params.push(userId);
             filters.push(`user_id = $${params.length}`);
+        } else if (SELF_ID_TABLES.has(table)) {
+            params.push(userId);
+            filters.push(`id = $${params.length}`);
         }
         Object.entries(where).forEach(([col, val]) => {
             if (col === 'user_id' && USER_SCOPED_TABLES.has(table)) return;
+            if (col === 'id' && SELF_ID_TABLES.has(table)) return;
             params.push(val);
             filters.push(`${col} = $${params.length}`);
         });
@@ -237,6 +283,9 @@ app.delete('/:table', requireAuth, async (c) => {
     try {
         const table = c.req.param('table');
         assertTable(table);
+        if (SELF_ID_TABLES.has(table)) {
+            return c.json({ error: 'Deletes of profile tables use /api/account' }, 400);
+        }
         const userId = c.get('userId');
         const { where = {}, all = false } = await c.req.json();
         if (!all && !Object.keys(where).length) return c.json({ error: 'where required' }, 400);

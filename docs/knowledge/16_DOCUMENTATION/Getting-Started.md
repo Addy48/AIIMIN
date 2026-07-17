@@ -8,4 +8,6 @@
 
 Environment setup: see [[07_DEPLOYMENT/Deploy]] and host `.env` files (not in vault).
 
+Demo history for feature trials on a live account: [[16_DOCUMENTATION/Seed-Demo-History]].
+
 Coding standards: locked palette [[08_DESIGN/Palette]]; skills under `.agents/skills/`; Cursor rules under `.cursor/rules/`.
