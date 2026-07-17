@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Plus, Check, ChevronRight, Flame } from 'lucide-react';
 import { apiGet } from '../../utils/api';
 import { calculateLifeScore } from '../../utils/lifeScoreEngine';
+import { useUserProfile } from '../../hooks/useUserProfile';
+import { LIFE_ARC_LABEL } from '../../constants/arc';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const PRIORITIES_KEY = 'aiimin_cmd_priorities';
@@ -55,6 +57,8 @@ function getStreakStatus(habitId, logs, streak) {
    COMMAND CENTER
 ════════════════════════════════════════════════════════════════════ */
 export default function CommandCenter({ user }) {
+  const { profile } = useUserProfile();
+  const lifeArc = profile?.tagline?.trim();
   const [priorities, setPriorities] = useState(() => loadJSON(`${PRIORITIES_KEY}_${TODAY}`, []));
   const [newPriority, setNewPriority] = useState('');
   const [addingPriority, setAddingPriority] = useState(false);
@@ -174,6 +178,12 @@ export default function CommandCenter({ user }) {
 
       {/* ── Section 1: Top 3 Priorities ── */}
       <Section icon="🎯" label="Today's Priorities" right={priorities.length > 0 ? `${doneCount}/${priorities.length}` : null} rightColor="var(--color-accent)">
+        {lifeArc && (
+          <p style={{ margin: '0 0 10px', fontSize: 11, lineHeight: 1.45, color: 'var(--color-text-3)' }}>
+            <span style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{LIFE_ARC_LABEL}: </span>
+            <span style={{ color: 'var(--color-text-2)', fontWeight: 600 }}>{lifeArc}</span>
+          </p>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {priorities.map(p => (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: p.done ? 'rgba(34,197,94,0.05)' : 'var(--color-elevated)', borderRadius: '10px', border: `1px solid ${p.done ? 'rgba(34,197,94,0.2)' : 'var(--color-border)'}`, transition: 'all 0.2s' }}>

@@ -2,12 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Lock } from 'lucide-react';
 import { useUserProfile } from '../../hooks/useUserProfile';
-import { canAccess, hasTier } from '../../utils/tierGating';
-
-const TIER_LABELS = { core: 'Core', pro: 'Pro' };
+import { canAccess, hasTier, TIER_LABELS } from '../../utils/tierGating';
 
 /**
- * Blurred preview below content — never blocks current content (research 3.6).
+ * Blocks gated features when the user's plan is too low.
  */
 export default function FeatureGate({
   feature,
@@ -15,49 +13,46 @@ export default function FeatureGate({
   children,
   label = 'This feature',
 }) {
-  const { profile } = useUserProfile();
+  const { profile, loading } = useUserProfile();
   const tier = profile?.subscription_tier || 'explore';
   const required = requiredTier || 'core';
+  const allowed = canAccess(tier, feature) || hasTier(tier, required);
 
-  if (canAccess(tier, feature) || hasTier(tier, required)) {
+  if (loading) return children;
+
+  if (allowed) {
     return children;
   }
 
   return (
-    <>
-      {children}
-      <div
+    <div
+      style={{
+        padding: '24px 22px',
+        borderRadius: 14,
+        border: '1px solid var(--color-border)',
+        background: 'var(--color-surface-1)',
+        textAlign: 'center',
+      }}
+    >
+      <Lock size={20} style={{ color: 'var(--color-accent)', marginBottom: 12 }} />
+      <p style={{ margin: '0 0 6px', fontWeight: 700, color: 'var(--color-text-1)', fontSize: 15 }}>
+        {label}
+      </p>
+      <p className="text-sm" style={{ color: 'var(--color-text-2)', marginBottom: 16, lineHeight: 1.5 }}>
+        Unlocks on <strong>{TIER_LABELS[required] || required}</strong>. You&apos;re on{' '}
+        <strong>{TIER_LABELS[tier] || 'Explore'}</strong>.
+      </p>
+      <Link
+        to="/account?section=subscription"
         style={{
-          marginTop: 16,
-          padding: '16px 20px',
-          borderRadius: 12,
-          border: '1px dashed var(--color-border)',
-          background: 'color-mix(in srgb, var(--color-surface-3) 80%, transparent)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          flexWrap: 'wrap',
+          fontSize: 13,
+          fontWeight: 700,
+          color: 'var(--color-accent)',
+          textDecoration: 'none',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Lock size={16} style={{ color: '#2563EB' }} />
-          <span className="text-sm" style={{ color: 'var(--color-text-2)' }}>
-            {label} unlocks on {TIER_LABELS[required] || required}.
-          </span>
-        </div>
-        <Link
-          to="/account?section=subscription"
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: '#2563EB',
-            textDecoration: 'none',
-          }}
-        >
-          View plans →
-        </Link>
-      </div>
-    </>
+        Choose a plan →
+      </Link>
+    </div>
   );
 }

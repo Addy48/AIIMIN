@@ -4,6 +4,7 @@ import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { resolveAccess } from '../services/accessService.js';
 import { auth, validateOsId, PIN_PATTERN } from '../lib/auth.js';
+import { resolveAuthSession } from '../lib/sessionResolve.js';
 
 const app = new Hono();
 
@@ -19,7 +20,7 @@ const frontendUrl = () => process.env.FRONTEND_URL || 'http://localhost:3000';
 app.get('/oauth-handoff', async (c) => {
     const frontend = frontendUrl();
     try {
-        const session = await auth.api.getSession({ headers: c.req.raw.headers });
+        const session = await resolveAuthSession(c);
         if (!session?.session) {
             console.warn('[oauth-handoff] no session after OAuth');
             return c.redirect(`${frontend}/auth/callback?status=error&reason=no_session`);

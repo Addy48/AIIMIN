@@ -137,9 +137,8 @@ export const getIntegrationStatus = async (userId, provider = 'google') => {
     if (result.rows.length === 0) return { connected: false, error: null };
     const row = result.rows[0];
     const hasRefreshError = !!row.refresh_error;
-    const isExpired = row.expiry_date && Date.now() > Number(row.expiry_date);
     return {
-        connected: !hasRefreshError && !isExpired,
+        connected: !hasRefreshError,
         error: row.refresh_error || null,
         scopes: row.scope ? row.scope.split(' ') : [],
         lastRefresh: row.last_refresh_at,

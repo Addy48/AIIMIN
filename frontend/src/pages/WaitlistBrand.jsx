@@ -33,7 +33,7 @@ export default function WaitlistBrand() {
       <main className="brand-main brand-main--story">
         <section className="brand-hero brand-hero--minimal">
           <div className="brand-logo-showcase">
-            <ArchBracketMark size={88} withChip colors={pickMarkColors(isLight)} />
+            <ArchBracketMark size={88} withChip colors={pickMarkColors(isLight, { variant: 'light' })} />
             <Wordmark size={42} color="var(--color-text-1)" className="brand-hero-wordmark" />
           </div>
           <p className="brand-kicker">Personal Life OS</p>
@@ -58,7 +58,7 @@ export default function WaitlistBrand() {
           <h2>What the logo represents</h2>
           <div className="brand-mark-explainer">
             <div className="brand-mark-visual">
-              <ArchBracketMark size={120} withChip colors={pickMarkColors(isLight)} />
+              <ArchBracketMark size={120} withChip colors={pickMarkColors(isLight, { variant: 'light' })} />
             </div>
             <div className="brand-mark-copy">
               <p>

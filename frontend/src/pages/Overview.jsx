@@ -15,6 +15,8 @@ import { StaggerWrap } from '../components/design/ShippedMotion';
 import { useCalendarEvents } from '../hooks/useCalendarEvents';
 import { getSolarTimes } from '../utils/solarTimes';
 import UniversalLogger from '../components/dashboard/UniversalLogger';
+import ArcBanner from '../components/profile/ArcBanner';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -47,8 +49,9 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
   };
 
   return (
+    <div style={{ height: '100%', paddingTop: 8, paddingBottom: 6, boxSizing: 'border-box' }}>
     <motion.div 
-      whileHover={{ scale: 1.02, y: -2 }}
+      whileHover={{ y: -4, scale: 1.01 }}
       transition={{ duration: 0.2 }}
       style={{
       background: isToday ? 'var(--color-success-dim, rgba(16, 185, 129, 0.08))' : 'var(--color-surface)',
@@ -108,6 +111,7 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
         )}
       </div>
     </motion.div>
+    </div>
   );
 });
 
@@ -447,6 +451,7 @@ const TodayMicroTask = () => {
 /* ── Main Overview ── */
 const Overview = () => {
   const { user: authUser, session } = useAuth();
+  const { profile } = useUserProfile();
   const user = useMemo(() => authUser || { id: 'guest', full_name: 'Guest', username: 'GUEST', role: 'guest', isGuest: true }, [authUser]);
   const navigate = useNavigate();
   const { isVisible, allHidden, Picker } = useOverviewWidgets();
@@ -564,6 +569,8 @@ const Overview = () => {
           </div>
         }
       />
+
+      <ArcBanner lifeArc={profile?.tagline} />
 
       <PulseCheckModal user={user} />
 
@@ -702,8 +709,8 @@ const Overview = () => {
                 </button>
               </div>
             </div>
-            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '8px', margin: '0 -16px', padding: '0 16px 8px 16px' }}>
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', height: '260px', minWidth: '700px' }}>
+            <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', margin: '0 -16px', padding: '4px 16px 12px 16px' }}>
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(7, minmax(0, 1fr))', gap:'12px', height: '272px', minWidth: '700px' }}>
                 {currentWeekDates.map(d => {
                 const dayEvents = allCalendarEvents?.filter(e => {
                   const t = new Date(e.start_time || e.start);

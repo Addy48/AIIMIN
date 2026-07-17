@@ -10,7 +10,7 @@ import { apiGet } from '../../utils/api';
 import { scrollReveal, reducedMotionVariants } from '../../constants/animations';
 
 const NODES = [
-  { id: 'goals', label: '1. Set Goal', icon: Target, desc: 'Define your North Star', color: 'var(--color-accent)', route: '/goals', statKey: 'goals' },
+  { id: 'goals', label: '1. Set Goal', icon: Target, desc: 'Define your Life Arc', color: 'var(--color-accent)', route: '/goals', statKey: 'goals' },
   { id: 'decision', label: '2. Strategize', icon: HelpCircle, desc: 'Mental Models (Lab)', color: '#2563EB', route: '?module=decision', statKey: 'lab' },
   { id: 'habits', label: '3. Build Habit', icon: Activity, desc: 'Daily execution', color: '#10B981', route: '/habits', statKey: 'habits' },
   { id: 'focus', label: '4. Deep Work', icon: Zap, desc: 'Enter Flow State', color: '#F59E0B', route: '/focus', statKey: 'focus' },

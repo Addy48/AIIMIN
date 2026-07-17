@@ -176,16 +176,13 @@ export default function SecuritySection({ user }) {
                         )}
                         {calendarStatus.error && <div style={{ color: '#ef4444', marginTop: '6px' }}>{calendarStatus.error}</div>}
                         <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
-                            <button type="button" disabled={busy} onClick={() => redirectToGoogle()} style={{ padding: '8px 14px', borderRadius: '10px', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
-                                Reconnect
-                            </button>
                             <button type="button" disabled={busy} onClick={handleDisconnectCalendar} style={{ padding: '8px 14px', borderRadius: '10px', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
                                 Disconnect
                             </button>
                         </div>
                     </div>
                 ) : (
-                    <button type="button" disabled={busy} onClick={() => redirectToGoogle()} style={{ marginTop: '12px', padding: '10px 16px', borderRadius: '10px', border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
+                    <button type="button" disabled={busy} onClick={() => redirectToGoogle().catch(() => {})} style={{ marginTop: '12px', padding: '10px 16px', borderRadius: '10px', border: 'none', background: 'var(--color-accent)', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>
                         Connect Google Calendar
                     </button>
                 )}

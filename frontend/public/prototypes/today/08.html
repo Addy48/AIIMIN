@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AIIMIN Today — 08 Aesop Ritual</title>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+      .aesop { background:#0a0a0a; color:#e8e4de; min-height:calc(100vh - 48px); }
+      .aesop .app-bar { background:rgba(0,0,0,0.6); border-color:#222; }
+      .aesop .trees { position:fixed; inset:0; opacity:0.25; pointer-events:none; background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><path fill="%23333" d="M0 300 L50 100 L80 300 M60 300 L120 60 L150 300 M140 300 L200 80 L240 300 M220 300 L280 40 L320 300"/></svg>') bottom/cover no-repeat; }
+      .aesop .layout { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:40px 24px; }
+      .aesop .hero { text-align:center; padding:40px 0 32px; }
+      .aesop h1 { font-family:var(--serif); font-size:clamp(1.8rem,4vw,2.8rem); font-weight:400; letter-spacing:0.02em; max-width:640px; margin:0 auto 20px; line-height:1.35; }
+      .aesop .jar { width:72px; height:90px; margin:0 auto 24px; background:linear-gradient(180deg,#3a3a3a,#1a1a1a); border-radius:8px 8px 20px 20px; border:1px solid #555; position:relative; }
+      .aesop .jar::after { content:'74'; position:absolute; inset:0; display:grid; place-items:center; font-size:24px; font-weight:800; }
+      .aesop .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:32px; }
+      .aesop .ritual-card { padding:20px; border:1px solid #333; border-radius:12px; background:rgba(255,255,255,0.03); }
+      .aesop .ritual-card h4 { font-size:11px; text-transform:uppercase; letter-spacing:0.12em; color:#888; margin-bottom:10px; }
+      .aesop .ritual-card p { font-size:13px; line-height:1.55; color:#ccc; }
+      .aesop .modules { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:24px; }
+      .aesop .mod { padding:8px 16px; border:1px solid #444; border-radius:999px; font-size:11px; color:#999; }
+      .aesop .mod.on { border-color:var(--success); color:var(--success); }
+      @media(max-width:768px){ .aesop .grid{ grid-template-columns:1fr;} }
+    </style>
+</head>
+<body>
+<nav class="proto-nav">
+  <strong>AIIMIN PROTOTYPE</strong>
+  <div class="links"><a href="/overview">Live Today</a><a href="index.html">Gallery</a><span>Aesop</span></div>
+  <span class="badge">08 Aesop Ritual</span>
+</nav>
+<div class="proto-shell">
+      <div class="aesop">
+        <div class="trees"></div>
+        
+<header class="app-bar">
+  <div class="logo"><span class="logo-dot">A</span> AIIMIN</div>
+  <nav class="nav-pills">
+    <span class="on">Today</span><span class="">Insights</span><span class="">Calendar</span><span class="">Journal</span><span class="">Finance</span><span class="">Habits</span><span class="">Goals</span><span class="">Settings</span>
+  </nav>
+  <div class="status"><span class="online"></span> OS Online · Warrior · 2840/3200 XP</div>
+</header>
+<div class="widget-bar">
+  <button type="button" style="padding:6px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-2);font-size:11px;font-weight:700;cursor:pointer">⊞ Customize widgets</button>
+  <div class="chips"><span class="widget-chip on">● Command Center</span><span class="widget-chip on">● Trajectory</span><span class="widget-chip on">● Week grid</span><span class="widget-chip on">● Weekly Insight</span><span class="widget-chip on">● Quick Capture</span><span class="widget-chip on">● Micro Task</span><span class="widget-chip on">● Universal Logger</span><span class="widget-chip off">○ Week in Numbers</span><span class="widget-chip off">○ Execution Window</span><span class="widget-chip off">○ Recent Wins</span></div>
+</div>
+        <div class="layout">
+          <div class="hero">
+            <div class="jar"></div>
+            <h1>Where raw signals become daily ritual</h1>
+            <p style="font-size:13px;color:#888;max-width:520px;margin:0 auto">Your mood drops when sleep < 7h. You slept 6.8h last night — consider an earlier wind-down tonight.</p>
+            <div class="modules"><span class="mod on">Command Center</span><span class="mod on">Trajectory</span><span class="mod on">Week grid</span><span class="mod on">Weekly Insight</span><span class="mod on">Quick Capture</span><span class="mod on">Micro Task</span><span class="mod on">Universal Logger</span><span class="mod">Week in Numbers</span><span class="mod">Execution Window</span><span class="mod">Recent Wins</span></div>
+          </div>
+          <div class="grid">
+            <div class="ritual-card"><h4>Morning · Rest</h4><p>Sleep 6.8h (bed 12:40). Fog: Okay. Morning gym: ⚠ at risk.</p></div>
+            <div class="ritual-card"><h4>Midday · Execute</h4><p>Finish placement outreach batch (12 DMs). Micro: Send 3 follow-up emails to recruiters. Calendar: Focus block 4–6pm.</p></div>
+            <div class="ritual-card"><h4>Evening · Reflect</h4><p>Placement sprint — keep outreach tight. No new side quests until Friday review. Mood 7/10. Journal —.</p></div>
+          </div>
+          <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<article class="cmd">
+  <div class="cmd-head"><span class="label">Command Center</span><span style="font-size:11px;color:var(--text-3)">Wed, 8 Jul 2026</span></div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>🧠 Life Score</span><span style="color:var(--success)">+3 today</span></div>
+    <div class="life-ring">
+      <div class="ring" style="--pct:74" data-score="74"></div>
+      <div class="meta">Solid behavioral baseline. Sleep logged, gym pending, mood stable.<div class="contrib"><span>Behav: 78</span><span>Mental: 69</span></div></div>
+    </div>
+  </div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>🎯 Today's Priorities</span><span>1/3</span></div>
+    <div class="priority-row"><div class="box"></div><span>Finish placement outreach batch (12 DMs)</span></div><div class="priority-row"><div class="box"></div><span>Log sleep + mood before midnight</span></div><div class="priority-row done"><div class="box"></div><span>Review weekly goals in journal</span></div>
+    <div style="margin-top:8px;padding:8px;border:1.5px dashed var(--border);border-radius:10px;text-align:center;font-size:11px;color:var(--text-3)">+ Add priority (max 3)</div>
+  </div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>🔥 Streak Monitor</span><span style="color:var(--text-3)">All habits →</span></div>
+    
+    <div class="habit-row">
+      <div class="top"><span>🏋️ Morning gym</span><span><span style="color:var(--warning);font-size:10px">⚠ at risk</span> 🔥 12</span></div>
+      <div class="bar"><i style="width:86%;background:var(--warning)"></i></div>
+    </div>
+    <div class="habit-row">
+      <div class="top"><span>📚 DSA 1 problem</span><span><span style="color:var(--success);font-size:10px">on track</span> 🔥 8</span></div>
+      <div class="bar"><i style="width:57%;background:var(--success)"></i></div>
+    </div>
+    <div class="habit-row">
+      <div class="top"><span>💧 3L water</span><span><span style="color:var(--success);font-size:10px">✓ done</span> 🔥 5</span></div>
+      <div class="bar"><i style="width:36%;background:var(--success)"></i></div>
+    </div>
+  </div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>💰 Money This Month</span><span style="color:var(--text-3)">Finance →</span></div>
+    <div class="money-row">
+      <div><div style="font-size:10px;color:var(--text-3);font-weight:700;text-transform:uppercase">Spent</div><div class="spent">₹18,420</div></div>
+      <div class="income">Income ₹45,000<br/>23 transactions</div>
+    </div>
+    <div style="margin-top:10px;height:4px;border-radius:99px;background:var(--border);overflow:hidden"><i style="display:block;height:100%;width:74%;background:var(--accent)"></i></div>
+    <div style="font-size:10px;color:var(--text-3);margin-top:4px">74% of ₹25k budget</div>
+  </div>
+  <div class="cmd-section">
+    <div class="sec-head"><span>📝 Commander's Note</span></div>
+    <div class="note-box">Placement sprint — keep outreach tight. No new side quests until Friday review.</div>
+  </div>
+</article>
+<article class="traj">
+  <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:12px">Trajectory · Night reset</div>
+  <div class="arc-wrap">
+    <svg viewBox="0 0 220 118" aria-hidden="true">
+      <path d="M 24 101 A 86 86 0 0 1 196 101" fill="none" stroke="var(--border)" stroke-width="3"/>
+      <path d="M 24 101 A 86 86 0 0 1 196 101" fill="none" stroke="var(--success)" stroke-width="3" stroke-dasharray="270" stroke-dashoffset="34.01999999999997" stroke-linecap="round"/>
+      <circle cx="45.67199999999998" cy="67.83977666414394" r="6" fill="var(--warning)"/>
+    </svg>
+    <div class="sun-row"><span>☀ 5:42 AM</span><span>Night reset</span><span>7:18 PM 🌙</span></div>
+  </div>
+  
+  <div class="row">
+    <div class="top"><div><span class="lbl">Day</span><span class="sub">2h 13m left</span></div><span class="pct" style="color:#10b981">87.4%</span></div>
+    <div class="track"><i style="width:87.4%;background:linear-gradient(90deg, color-mix(in srgb, #10b981 60%, white), #10b981)"></i></div>
+  </div>
+  <div class="row">
+    <div class="top"><div><span class="lbl">Week</span><span class="sub">3d left</span></div><span class="pct" style="color:#3b82f6">54.2%</span></div>
+    <div class="track"><i style="width:54.2%;background:linear-gradient(90deg, color-mix(in srgb, #3b82f6 60%, white), #3b82f6)"></i></div>
+  </div>
+  <div class="row">
+    <div class="top"><div><span class="lbl">Month</span><span class="sub">23d left</span></div><span class="pct" style="color:#ec4899">25.8%</span></div>
+    <div class="track"><i style="width:25.8%;background:linear-gradient(90deg, color-mix(in srgb, #ec4899 60%, white), #ec4899)"></i></div>
+  </div>
+  <div class="row">
+    <div class="top"><div><span class="lbl">Year</span><span class="sub">176d left</span></div><span class="pct" style="color:#f97316">51.6%</span></div>
+    <div class="track"><i style="width:51.6%;background:linear-gradient(90deg, color-mix(in srgb, #f97316 60%, white), #f97316)"></i></div>
+  </div>
+</article></div>
+        </div>
+      </div></div>
+<div class="proto-footer">
+  <a href="index.html">Gallery</a>
+  <a href="07.html">← Prev</a>
+  <a href="09.html">Next →</a>
+</div>
+</body>
+</html>

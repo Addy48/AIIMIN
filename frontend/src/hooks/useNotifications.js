@@ -11,32 +11,36 @@ import { apiDelete, apiGet, apiPatch, apiPost } from '../utils/api';
 import supabase from '../utils/supabase';
 
 export const useNotifications = () => {
-    const { session } = useAuth();
+    const { user, isSignedIn } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const pollRef = useRef(null);
 
     const fetchCount = useCallback(async () => {
-        if (!session) return;
+        if (!isSignedIn || !user?.id) return;
         try {
-            const { unread } = await apiGet('/notifications/count', { session });
+            const { unread } = await apiGet('/notifications/count');
             setUnreadCount(unread);
         } catch { /* silent */ }
-    }, [session]);
+    }, [isSignedIn, user?.id]);
 
     const fetchAll = useCallback(async () => {
-        if (!session) return;
+        if (!isSignedIn || !user?.id) return;
         setLoading(true);
         try {
-            const data = await apiGet('/notifications', { session, params: { limit: 30 } }).catch(() => []);
-            
-            // Generate local alerts
+            const data = await apiGet('/notifications', { params: { limit: 30 } }).catch(() => []);
+
             const localNotifs = [];
             const today = new Date().toLocaleDateString('en-CA');
-            
-            // Check daily log
-            const { data: log } = await supabase.from('daily_logs').select('id').eq('user_id', session.user.id).eq('date', today).maybeSingle();
+
+            const { data: log } = await supabase
+                .from('daily_logs')
+                .select('id')
+                .eq('user_id', user.id)
+                .eq('date', today)
+                .maybeSingle();
+
             if (!log) {
                 localNotifs.push({
                     id: 'local_daily_log',
@@ -45,11 +49,10 @@ export const useNotifications = () => {
                     body: 'Your daily system check-in is pending. Log your metrics to maintain system integrity.',
                     action_url: '/overview',
                     created_at: new Date().toISOString(),
-                    read_at: null
+                    read_at: null,
                 });
             }
 
-            // Check if it's late and sleep is missing
             const currentHour = new Date().getHours();
             if (currentHour >= 22) {
                 localNotifs.push({
@@ -59,82 +62,80 @@ export const useNotifications = () => {
                     body: 'It is past 22:00. Begin your wind-down protocol to ensure optimal recovery for tomorrow.',
                     action_url: '/journal',
                     created_at: new Date().toISOString(),
-                    read_at: null
+                    read_at: null,
                 });
             }
 
             const combined = [...localNotifs, ...(Array.isArray(data) ? data : [])];
             setNotifications(combined);
-            setUnreadCount(combined.filter(n => !n.read_at).length);
+            setUnreadCount(combined.filter((n) => !n.read_at).length);
         } catch { /* silent */ } finally {
             setLoading(false);
         }
-    }, [session]);
+    }, [isSignedIn, user?.id]);
 
     const markRead = useCallback(async (id) => {
-        if (!session) return;
+        if (!isSignedIn) return;
         if (id.startsWith('local_')) {
-             setNotifications(prev => prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
-             setUnreadCount(c => Math.max(0, c - 1));
-             return;
+            setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)));
+            setUnreadCount((c) => Math.max(0, c - 1));
+            return;
         }
         try {
-            await apiPatch(`/notifications/${id}/read`, {}, { session });
-            setNotifications(prev =>
-                prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n)
+            await apiPatch(`/notifications/${id}/read`, {});
+            setNotifications((prev) =>
+                prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)),
             );
-            setUnreadCount(c => Math.max(0, c - 1));
+            setUnreadCount((c) => Math.max(0, c - 1));
         } catch { /* silent */ }
-    }, [session]);
+    }, [isSignedIn]);
 
     const markAllRead = useCallback(async () => {
-        if (!session) return;
+        if (!isSignedIn) return;
         try {
-            await apiPost('/notifications/mark-all-read', {}, { session });
-            setNotifications(prev => prev.map(n => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
+            await apiPost('/notifications/mark-all-read', {});
+            setNotifications((prev) => prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
             setUnreadCount(0);
         } catch { /* silent */ }
-    }, [session]);
+    }, [isSignedIn]);
 
     const dismiss = useCallback(async (id) => {
-        if (!session) return;
+        if (!isSignedIn) return;
         if (id.startsWith('local_')) {
-             setNotifications(prev => prev.filter(n => n.id !== id));
-             setUnreadCount(prev => {
-                 const wasUnread = notifications.find(n => n.id === id && !n.read_at);
-                 return wasUnread ? Math.max(0, prev - 1) : prev;
-             });
-             return;
+            setNotifications((prev) => prev.filter((n) => n.id !== id));
+            setUnreadCount((prev) => {
+                const wasUnread = notifications.find((n) => n.id === id && !n.read_at);
+                return wasUnread ? Math.max(0, prev - 1) : prev;
+            });
+            return;
         }
         try {
-            await apiDelete(`/notifications/${id}`, null, { session });
-            setNotifications(prev => prev.filter(n => n.id !== id));
-            setUnreadCount(prev => {
-                const wasUnread = notifications.find(n => n.id === id && !n.read_at);
+            await apiDelete(`/notifications/${id}`, null);
+            setNotifications((prev) => prev.filter((n) => n.id !== id));
+            setUnreadCount((prev) => {
+                const wasUnread = notifications.find((n) => n.id === id && !n.read_at);
                 return wasUnread ? Math.max(0, prev - 1) : prev;
             });
         } catch { /* silent */ }
-    }, [session, notifications]);
+    }, [isSignedIn, notifications]);
 
-    // Start polling on mount, stop on unmount
     useEffect(() => {
         fetchCount();
         pollRef.current = setInterval(fetchCount, 60_000);
         return () => clearInterval(pollRef.current);
     }, [fetchCount]);
 
-    // Trigger weekly report generation
     useEffect(() => {
-        if (!session) return;
+        if (!isSignedIn || !user?.id) return undefined;
         const triggerWeeklyReport = async () => {
             const now = new Date();
             const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
-            startOfWeek.setHours(0,0,0,0);
+            startOfWeek.setHours(0, 0, 0, 0);
             const weekKey = `aiimin_weekly_report_${startOfWeek.getTime()}`;
-            
+
             if (!localStorage.getItem(weekKey)) {
                 try {
-                    const res = await apiPost('/notifications/trigger-weekly', {}, { session });
+                    const res = await apiPost('/notifications/trigger-weekly', {});
                     if (res?.created || res?.reason === 'already_exists') {
                         localStorage.setItem(weekKey, 'true');
                         fetchCount();
@@ -143,7 +144,8 @@ export const useNotifications = () => {
             }
         };
         triggerWeeklyReport();
-    }, [session, fetchCount]);
+        return undefined;
+    }, [isSignedIn, user?.id, fetchCount]);
 
     return { notifications, unreadCount, loading, fetchAll, markRead, markAllRead, dismiss };
 };

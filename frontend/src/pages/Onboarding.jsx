@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiPatch, apiGet } from '../utils/api';
 import { readAccessToken } from '../utils/authSession';
 import { suggestOsIdFromName } from '../utils/osId';
+import { hasLifeArc } from '../constants/arc';
+import ArcEditor from '../components/profile/ArcEditor';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
 
 /* ─── helpers ──────────────────────────────────────────────── */
 const PIN_DIGITS  = 6;
+
+function stripQuotes(s) {
+    return String(s || '').trim().replace(/^["']+|["']+$/g, '');
+}
 
 export { suggestOsIdFromName };
 
@@ -162,13 +168,16 @@ const HABIT_OPTIONS = [
 /* ─── Main Onboarding Component ─────────────────────────────── */
 export default function Onboarding() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const arcOnly = searchParams.get('arc') === '1' || searchParams.get('northStar') === '1';
 
-    const [step,       setStep]       = useState(0);
+    const [step,       setStep]       = useState(arcOnly ? 5 : 0);
     const [dir,        setDir]        = useState(1);
     const [fullName,   setFullName]   = useState('');
     const [username,   setUsername]   = useState('');
     const [pin,        setPin]        = useState('');
     const [confirmPin, setConfirmPin] = useState('');
+    const [lifeArc,    setLifeArc]    = useState('');
     
     // New Onboarding fields
     const [selectedGoals, setSelectedGoals] = useState([]);
@@ -179,9 +188,16 @@ export default function Onboarding() {
     const [error,      setError]      = useState('');
     const [usernameStatus, setUsernameStatus] = useState('idle'); // idle | checking | available | taken
 
-    const TOTAL_STEPS = 8; // 0 to 7. Step 8 is success
+    const TOTAL_STEPS = 9; // 0–8 active steps. Step 9 is success
 
     const { user, isSignedIn, loading: authLoading, checkSession } = useAuth();
+
+    // Legacy ?northStar=1 → ?arc=1
+    useEffect(() => {
+        if (searchParams.get('northStar') === '1' && searchParams.get('arc') !== '1') {
+            navigate('/onboarding?arc=1', { replace: true });
+        }
+    }, [searchParams, navigate]);
 
     // Pre-fill name from signed-in user
     useEffect(() => {
@@ -259,9 +275,34 @@ export default function Onboarding() {
     const submitGoals = () => {
         if (selectedGoals.length === 0) { setError('Please select at least one goal'); return; }
         next();
-    }
+    };
 
-    /* ── Step 5: Habits ── */
+    /* ── Step 5: Life Arc (mandatory) ── */
+    const submitLifeArc = async () => {
+        if (!hasLifeArc(lifeArc)) {
+            setError('Set your Life Arc — at least a short sentence.');
+            return;
+        }
+        if (arcOnly) {
+            setLoading(true);
+            setError('');
+            try {
+                await apiPatch('/account/user-profile', {
+                    tagline: stripQuotes(lifeArc),
+                    onboarding_complete: true,
+                });
+                navigate('/overview', { replace: true });
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+        next();
+    };
+
+    /* ── Step 6: Habits ── */
     const toggleHabit = (id) => {
         setSelectedHabits(prev => prev.includes(id) ? prev.filter(habitId => habitId !== id) : [...prev, id]);
     };
@@ -270,13 +311,13 @@ export default function Onboarding() {
         next();
     }
 
-    /* ── Step 6: Wake Up ── */
+    /* ── Step 7: Wake Up ── */
     const submitWakeUp = () => {
         if (!wakeTime) { setError('Please set your wake-up time'); return; }
         next();
     }
 
-    /* ── Step 7: Life Score / Final Submission ── */
+    /* ── Step 8: Life Score / Final Submission ── */
     const submitAll = async () => {
         setLoading(true);
         setError('');
@@ -288,6 +329,10 @@ export default function Onboarding() {
                 throw new Error('Session expired. Please sign in again.');
             }
 
+            if (!hasLifeArc(lifeArc)) {
+                throw new Error('Life Arc is required.');
+            }
+
             await apiPost('/auth/complete-google-profile', {
                 username: upperUsername,
                 full_name: trimmedName,
@@ -295,6 +340,11 @@ export default function Onboarding() {
 
             await apiPatch('/account/profile', {
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            });
+
+            await apiPatch('/account/user-profile', {
+                tagline: stripQuotes(lifeArc),
+                onboarding_complete: true,
             });
 
             for (const hId of selectedHabits) {
@@ -318,7 +368,7 @@ export default function Onboarding() {
             await checkSession();
 
             setDir(1);
-            setStep(8);
+            setStep(9);
             await new Promise(r => setTimeout(r, 2400));
             navigate('/overview', { replace: true });
         } catch (err) {
@@ -450,7 +500,28 @@ export default function Onboarding() {
             </div>
         </motion.div>,
 
-        /* Step 5 — Habits */
+        /* Step 5 — Life Arc */
+        <motion.div key="lifearc" {...slide(dir)}>
+            <ArcEditor
+                variant="onboarding"
+                value={lifeArc}
+                onChange={(v) => { setLifeArc(v); setError(''); }}
+                goalHints={selectedGoals}
+            />
+            {error && <p style={{ ...s.err, marginTop: 16 }}>{error}</p>}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                {!arcOnly && <button onClick={back} style={s.ghostBtn} disabled={loading}>Back</button>}
+                <button
+                    onClick={submitLifeArc}
+                    disabled={loading}
+                    style={{ ...s.primaryBtn, flex: 1 }}
+                >
+                    {loading ? <><Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} /> Saving…</> : <>Continue <ChevronRight size={16} /></>}
+                </button>
+            </div>
+        </motion.div>,
+
+        /* Step 6 — Habits */
         <motion.div key="habits" {...slide(dir)}>
             <h2 style={s.heading}>Which habits matter to you?</h2>
             <p style={s.sub}>Select a few to start your streak.</p>
@@ -484,7 +555,7 @@ export default function Onboarding() {
             </div>
         </motion.div>,
 
-        /* Step 6 — Wake-up Time */
+        /* Step 7 — Wake-up Time */
         <motion.div key="wakeup" {...slide(dir)}>
             <h2 style={s.heading}>Set your wake-up time</h2>
             <p style={s.sub}>We'll use this to prepare your morning brief and daily intelligence.</p>
@@ -516,7 +587,7 @@ export default function Onboarding() {
             </div>
         </motion.div>,
 
-        /* Step 7 — Life Score Baseline */
+        /* Step 8 — Life Score Baseline */
         <motion.div key="lifescore" {...slide(dir)} style={{ textAlign: 'center' }}>
             <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -558,7 +629,7 @@ export default function Onboarding() {
             </div>
         </motion.div>,
 
-        /* Step 8 — Success (Animated Intro) */
+        /* Step 9 — Success (Animated Intro) */
         <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', padding: '40px 0' }}>
             <motion.div
                 initial={{ scale: 0 }} animate={{ scale: 1 }}
@@ -598,8 +669,9 @@ export default function Onboarding() {
                 }
             `}</style>
 
-            <div style={{ width: '100%', maxWidth: '440px' }}>
-                {/* Logo */}
+            <div style={{ width: '100%', maxWidth: '440px', paddingTop: arcOnly ? 48 : 0 }}>
+                {/* Logo — full setup only; arc-only flow uses Arc lockup inside the card */}
+                {!arcOnly && (
                 <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                         <ThemedMark size={44} />
@@ -609,6 +681,7 @@ export default function Onboarding() {
                         Profile Setup
                     </p>
                 </div>
+                )}
 
                 {/* Card */}
                 <motion.div
@@ -621,17 +694,22 @@ export default function Onboarding() {
                     }}
                 >
                     {/* Step indicator — only for steps 0–7 */}
-                    {step < 8 && <StepIndicator current={step} total={TOTAL_STEPS} />}
+                    {step < 9 && !arcOnly && <StepIndicator current={step} total={TOTAL_STEPS} />}
 
                     <AnimatePresence mode="wait">
-                        {stepContent[step]}
+                        {arcOnly ? stepContent[5] : stepContent[step]}
                     </AnimatePresence>
                 </motion.div>
 
                 {/* Footer */}
-                {step < 8 && (
+                {step < 9 && !arcOnly && (
                     <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-3)', marginTop: '20px' }}>
                         Step {step + 1} of {TOTAL_STEPS} · Your data is always private.
+                    </p>
+                )}
+                {arcOnly && (
+                    <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-3)', marginTop: '20px' }}>
+                        Required to run your Personal OS.
                     </p>
                 )}
             </div>

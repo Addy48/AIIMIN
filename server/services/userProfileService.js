@@ -7,6 +7,37 @@ const safeUsername = (value) => {
     return username ? username.toUpperCase() : null;
 };
 
+const PATCHABLE_PROFILE_FIELDS = [
+    'persona_tags',
+    'favorite_sports',
+    'favorite_teams',
+    'dashboard_modules',
+    'domain_priorities',
+    'ai_tone',
+    'ai_features_enabled',
+    'ai_journal_opt_in',
+    'onboarding_complete',
+    'tagline',
+    'location',
+    'notification_prefs',
+    'seen_tips',
+    'prev_tier',
+    'last_celebrated_milestone',
+    'subscription_tier',
+    'stripe_customer_id',
+    'stripe_subscription_id',
+    'font_scale',
+];
+
+const PROFILE_SELECT = `
+    user_id, persona_tags, favorite_sports, favorite_teams, dashboard_modules,
+    domain_priorities, ai_tone, ai_features_enabled, ai_journal_opt_in,
+    onboarding_complete, tagline, location, notification_prefs, seen_tips,
+    prev_tier, last_celebrated_milestone, subscription_tier,
+    stripe_customer_id, stripe_subscription_id, font_scale,
+    created_at, updated_at
+`;
+
 export function profileFromAuthUser(authUser, overrides = {}) {
     const metadata = authUser?.user_metadata || {};
     const identityData = authUser?.identities?.[0]?.identity_data || {};
@@ -64,17 +95,35 @@ export async function ensureUserProfile(pool, authUser, overrides = {}) {
 }
 
 export async function getUserProfile(pool, userId) {
-    const { rows } = await pool.query(
-        `SELECT user_id, subscription_tier, prev_tier, font_scale, nav_preferences
-         FROM user_profiles WHERE user_id = $1 LIMIT 1`,
-        [userId],
-    );
-    return rows[0] || null;
+    try {
+        const { rows } = await pool.query(
+            `SELECT ${PROFILE_SELECT} FROM user_profiles WHERE user_id = $1 LIMIT 1`,
+            [userId],
+        );
+        return rows[0] || null;
+    } catch (err) {
+        if (!/does not exist|column/i.test(err.message)) throw err;
+        const { rows } = await pool.query(
+            `SELECT user_id, tagline, onboarding_complete, subscription_tier, prev_tier, font_scale, updated_at
+             FROM user_profiles WHERE user_id = $1 LIMIT 1`,
+            [userId],
+        );
+        return rows[0] || null;
+    }
 }
 
 export async function patchUserProfile(pool, userId, patch = {}) {
-    const allowed = ['subscription_tier', 'prev_tier', 'font_scale', 'nav_preferences'];
-    const entries = Object.entries(patch).filter(([k, v]) => allowed.includes(k) && v !== undefined);
+    const sanitized = { ...patch };
+    if (typeof sanitized.tagline === 'string') {
+        sanitized.tagline = sanitized.tagline.trim().slice(0, 500) || null;
+    }
+    if (typeof sanitized.location === 'string') {
+        sanitized.location = sanitized.location.trim().slice(0, 120) || null;
+    }
+
+    const entries = Object.entries(sanitized).filter(
+        ([k, v]) => PATCHABLE_PROFILE_FIELDS.includes(k) && v !== undefined,
+    );
     if (!entries.length) return getUserProfile(pool, userId);
 
     const sets = entries.map(([k], i) => `${k} = $${i + 2}`).join(', ');
@@ -84,8 +133,9 @@ export async function patchUserProfile(pool, userId, patch = {}) {
         `INSERT INTO user_profiles (user_id, ${entries.map(([k]) => k).join(', ')})
          VALUES ($1, ${entries.map((_, i) => `$${i + 2}`).join(', ')})
          ON CONFLICT (user_id) DO UPDATE SET ${sets}, updated_at = NOW()
-         RETURNING user_id, subscription_tier, prev_tier, font_scale, nav_preferences`,
+         RETURNING user_id, ${entries.map(([k]) => k).join(', ')}, updated_at`,
         [userId, ...values],
     );
-    return rows[0] || null;
+    const merged = rows[0] || null;
+    return merged;
 }

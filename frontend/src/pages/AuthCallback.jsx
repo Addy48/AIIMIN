@@ -49,13 +49,25 @@ const AuthCallback = () => {
                 await checkSession();
                 const data = await apiGet('/auth/me');
                 const userProfile = data?.user;
+                let profileRow = null;
+                try {
+                    profileRow = await apiGet('/account/user-profile');
+                } catch (_) { /* profile may not exist yet */ }
                 const isIncomplete =
                     !userProfile?.username ||
                     userProfile.username === '' ||
                     userProfile.onboarding_stage === 0 ||
                     userProfile.onboarding_stage == null;
 
-                navigate(isIncomplete ? '/onboarding' : '/overview', { replace: true });
+                const needsLifeArc = !profileRow?.tagline?.trim();
+
+                if (isIncomplete) {
+                    navigate('/onboarding', { replace: true });
+                } else if (needsLifeArc) {
+                    navigate('/onboarding?arc=1', { replace: true });
+                } else {
+                    navigate('/overview', { replace: true });
+                }
             } catch (err) {
                 console.error('[AuthCallback] profile check failed:', err);
                 if (readAccessToken()) {

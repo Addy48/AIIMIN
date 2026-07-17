@@ -4,7 +4,7 @@ import { Target, HelpCircle, Activity, Zap, Shield, ArrowRight } from 'lucide-re
 import { useNavigate } from 'react-router-dom';
 
 const nodes = [
-  { id: 'goals', label: '1. Set Goal', icon: Target, desc: 'Define your North Star', color: '#8B5CF6', route: '/goals' },
+  { id: 'goals', label: '1. Set Goal', icon: Target, desc: 'Define your Life Arc', color: '#8B5CF6', route: '/goals' },
   { id: 'decision', label: '2. Strategize', icon: HelpCircle, desc: 'Mental Models (Lab)', color: '#3B82F6', route: '?module=decision' },
   { id: 'habits', label: '3. Build Habit', icon: Activity, desc: 'Daily execution', color: '#10B981', route: '/habits' },
   { id: 'focus', label: '4. Deep Work', icon: Zap, desc: 'Enter Flow State', color: '#F59E0B', route: '/focus' },

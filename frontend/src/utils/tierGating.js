@@ -4,6 +4,13 @@
  */
 export const TIER_RANK = { explore: 0, core: 1, pro: 2, elite: 3 };
 
+export const TIER_LABELS = {
+  explore: 'Explore',
+  core: 'Core',
+  pro: 'Pro',
+  elite: 'Elite',
+};
+
 export function tierRank(tier) {
   return TIER_RANK[tier] ?? 0;
 }
@@ -23,7 +30,37 @@ export const TIER_FEATURES = {
   finance_whatif: 'pro',
 };
 
+/** Minimum tier to open a route (subscription mode enforcement). */
+export const ROUTE_MIN_TIER = {
+  '/overview': 'explore',
+  '/calendar': 'explore',
+  '/account': 'explore',
+  '/settings': 'explore',
+  '/identity': 'explore',
+  '/notes': 'explore',
+  '/journal': 'explore',
+  '/insights': 'core',
+  '/habits': 'core',
+  '/goals': 'core',
+  '/finance': 'core',
+  '/focus': 'core',
+  '/lab': 'core',
+  '/sports': 'core',
+  '/discipline': 'core',
+  '/placements': 'core',
+  '/family': 'pro',
+  '/reports': 'pro',
+};
+
+export function minTierForPath(pathname) {
+  const base = pathname.split('?')[0].replace(/\/$/, '') || '/';
+  if (ROUTE_MIN_TIER[base]) return ROUTE_MIN_TIER[base];
+  return 'explore';
+}
+
 export function canAccess(userTier, featureKey) {
   const required = TIER_FEATURES[featureKey] || 'explore';
   return hasTier(userTier, required);
 }
+
+export const IS_SUBSCRIPTION_MODE = process.env.REACT_APP_SUBSCRIPTION_MODE === 'true';

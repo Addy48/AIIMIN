@@ -2,6 +2,7 @@
  * Better Auth — AIIMIN identity provider (replaces Supabase Auth).
  */
 import { betterAuth } from 'better-auth';
+import { randomUUID } from 'crypto';
 import { bearer } from 'better-auth/plugins/bearer';
 import { username } from 'better-auth/plugins/username';
 import { twoFactor } from 'better-auth/plugins/two-factor';
@@ -59,6 +60,7 @@ export const auth = betterAuth({
         frontendUrl,
         'http://localhost:3000',
         'http://localhost:3001',
+        'http://localhost:3002',
         'https://aiimin.in',
         'https://www.aiimin.in',
         'https://api.aiimin.in',
@@ -129,6 +131,9 @@ export const auth = betterAuth({
     },
 
     advanced: {
+        database: {
+            generateId: () => randomUUID(),
+        },
         useSecureCookies: process.env.NODE_ENV === 'production',
         crossSubDomainCookies: process.env.NODE_ENV === 'production'
             ? { enabled: true, domain: 'aiimin.in' }
@@ -148,6 +153,10 @@ export const auth = betterAuth({
                     return { data: user };
                 },
                 after: async (user) => {
+                    if (!user?.id || !/^[0-9a-f-]{36}$/i.test(user.id)) {
+                        console.warn('[auth] user.create.after skipped — user id is not a UUID');
+                        return;
+                    }
                     try {
                         const pool = getPool();
                         const email = user.email?.toLowerCase() || '';
