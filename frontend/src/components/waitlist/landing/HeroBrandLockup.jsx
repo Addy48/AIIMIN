@@ -6,7 +6,7 @@ import useWaitlistSurfaceTheme from '../../../hooks/useWaitlistSurfaceTheme';
 
 export default function HeroBrandLockup({ markSize = 32, wordmarkSize = 28 }) {
   const { isLight } = useWaitlistSurfaceTheme();
-  const colors = pickMarkColors(isLight);
+  const colors = pickMarkColors(isLight, { variant: 'light' });
 
   return (
     <Link to="/brand" className="hero-brand-lockup" aria-label="Explore AIIMIN brand guidelines">

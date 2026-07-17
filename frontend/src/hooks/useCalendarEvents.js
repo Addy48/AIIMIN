@@ -107,11 +107,15 @@ export function useCalendarEvents(isSignedIn, rangeStart, rangeEnd) {
     };
 
     const pullGoogleEvents = async () => {
-        const result = await apiPost('/calendar/sync/pull', { start: rangeStart, end: rangeEnd });
+        const wideStart = new Date(Date.now() - 90 * 86400000).toISOString();
+        const wideEnd = new Date(Date.now() + 365 * 86400000).toISOString();
+        const result = await apiPost('/calendar/sync/pull', { start: wideStart, end: wideEnd });
         await fetchEvents();
         await fetchSyncStatus();
         return result;
     };
+
+    const pullGoogleEventsWide = pullGoogleEvents;
 
     const pushTasksToGoogle = async () => {
         const result = await apiPost('/calendar/sync/push', { start: rangeStart, end: rangeEnd });
@@ -120,5 +124,5 @@ export function useCalendarEvents(isSignedIn, rangeStart, rangeEnd) {
         return result;
     };
 
-    return { events, loading, syncStatus, fetchEvents, fetchSyncStatus, pullGoogleEvents, pushTasksToGoogle, createEvent, updateEvent, deleteEvent };
+    return { events, loading, syncStatus, fetchEvents, fetchSyncStatus, pullGoogleEvents, pullGoogleEventsWide, pushTasksToGoogle, createEvent, updateEvent, deleteEvent };
 }

@@ -53,8 +53,10 @@ const CalendarPage = () => {
         events,
         loading,
         syncStatus,
+        fetchEvents,
         fetchSyncStatus,
         pullGoogleEvents,
+        pullGoogleEventsWide,
         pushTasksToGoogle,
         createEvent,
         updateEvent
@@ -67,11 +69,23 @@ const CalendarPage = () => {
         if (status === 'success') {
             toast.success(linkedEmail ? `Calendar connected: ${linkedEmail}` : 'Google Calendar connected');
             fetchSyncStatus?.();
+            pullGoogleEventsWide?.()
+                .then((result) => {
+                    const count = result?.imported ?? 0;
+                    if (count > 0) {
+                        toast.success(`Synced ${count} item${count === 1 ? '' : 's'} from Google`);
+                    } else {
+                        toast.info('Connected — no events or due tasks found in the last 90 days. Try Pull Google anytime.');
+                    }
+                })
+                .catch((err) => {
+                    toast.error(err?.message || 'Auto-sync failed — use Pull Google on the toolbar');
+                });
         } else if (status === 'error') {
             toast.error(searchParams.get('reason') || 'Calendar connection failed');
         }
         setSearchParams({}, { replace: true });
-    }, [searchParams, setSearchParams, fetchSyncStatus]);
+    }, [searchParams, setSearchParams, fetchSyncStatus, pullGoogleEventsWide]);
 
     // Apply system filter
     const filteredEvents = useMemo(() => {
@@ -148,6 +162,29 @@ const CalendarPage = () => {
                         <div className="glass-panel" style={{ borderRadius: '16px', padding: '60px 20px', textAlign: 'center' }}>
                             <div className="skeleton" style={{ width: '60%', height: '14px', margin: '0 auto 12px' }} />
                             <div className="skeleton" style={{ width: '40%', height: '14px', margin: '0 auto' }} />
+                        </div>
+                    ) : filteredEvents.length === 0 && syncStatus?.connected ? (
+                        <div className="glass-panel" style={{ borderRadius: '16px', padding: '48px 24px', textAlign: 'center' }}>
+                            <p style={{ margin: '0 0 8px', color: 'var(--color-text-1)', fontWeight: 600, fontSize: '15px' }}>
+                                No events in this range
+                            </p>
+                            <p style={{ margin: '0 0 16px', color: 'var(--color-text-2)', fontSize: '13px', lineHeight: 1.5 }}>
+                                Google is connected{syncStatus.linkedEmail ? ` as ${syncStatus.linkedEmail}` : ''}.
+                                Calendar events and due Google Tasks sync on pull — phone reminders without a due date won&apos;t appear.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => pullGoogleEventsWide().then((r) => {
+                                    const n = r?.imported ?? 0;
+                                    toast.success(n ? `Imported ${n} item${n === 1 ? '' : 's'}` : 'No new items found');
+                                }).catch((err) => toast.error(err?.message || 'Pull failed'))}
+                                style={{
+                                    padding: '10px 18px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                                    background: 'var(--color-accent)', color: '#fff', fontWeight: 700, fontSize: '13px',
+                                }}
+                            >
+                                Pull Google
+                            </button>
                         </div>
                     ) : renderView()}
                 </div>

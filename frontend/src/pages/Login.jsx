@@ -662,8 +662,10 @@ const Login = () => {
 
         {/* Logo */}
         <div className="login-left-logo">
-          <ArchBracketMark size={40} withChip colors={DARK_PICK} />
-          <span className="login-wordmark-white">AIIMIN</span>
+          <Link to="/" className="login-brand-link" aria-label="AIIMIN home">
+            <ArchBracketMark size={40} withChip colors={DARK_PICK} />
+            <span className="login-wordmark-white">AIIMIN</span>
+          </Link>
         </div>
 
         {/* Center tagline */}
@@ -696,7 +698,9 @@ const Login = () => {
         <div className="login-form-wrap">
           {/* AIIMIN wordmark */}
           <div style={{ marginBottom: '32px' }}>
-            <span className="login-wordmark-brand">AIIMIN</span>
+            <Link to="/" className="login-brand-link" aria-label="AIIMIN home">
+              <span className="login-wordmark-brand">AIIMIN</span>
+            </Link>
           </div>
 
           {initializing ? (
@@ -1048,6 +1052,22 @@ const Login = () => {
           flex-direction: column;
           align-items: flex-start;
           gap: 10px;
+        }
+
+        .login-brand-link {
+          display: inline-flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 10px;
+          text-decoration: none;
+          color: inherit;
+          cursor: pointer;
+        }
+
+        .login-brand-link:focus-visible {
+          outline: 2px solid var(--color-accent);
+          outline-offset: 4px;
+          border-radius: 8px;
         }
 
         .login-wordmark-white {

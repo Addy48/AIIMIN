@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
 import BottomNav from './BottomNav';
 import CommandPalette from '../system/CommandPalette';
+import ArcGuard from '../system/ArcGuard';
 
 /**
  * DashboardLayout — Authenticated shell.
@@ -103,7 +104,9 @@ const DashboardLayout = ({ user }) => {
         flexDirection: 'column',
         minHeight: 'calc(100vh - var(--nav-height))',
       }}>
-        <Outlet />
+        <ArcGuard>
+          <Outlet />
+        </ArcGuard>
       </main>
 
       <BottomNav />

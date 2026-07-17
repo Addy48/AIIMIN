@@ -17,6 +17,7 @@ const SCOPES = [
     'email',
     'profile',
     'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/tasks.readonly',
     'https://www.googleapis.com/auth/youtube.readonly',
 ];
 

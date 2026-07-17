@@ -348,6 +348,78 @@ button:disabled, button[disabled] {
   padding-right: 16px;
   margin-right: 8px;
   border-right: 1px solid var(--color-border);
+  position: relative;
+  z-index: 2;
+}
+
+.brand-lockup__unified {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  color: inherit;
+}
+
+.brand-lockup__unified:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.arc-lockup__row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.arc-lockup__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.arc-lockup__word {
+  display: inline-block;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.rank-ladder__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.rank-ladder__item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+}
+
+.rank-ladder__emoji {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.rank-ladder__xp {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-3);
+  font-family: var(--font-mono);
+}
+
+.profile-os-id {
+  font-feature-settings: 'ss01' on, 'liga' off;
+  text-transform: uppercase;
 }
 
 .nav-masthead__center {

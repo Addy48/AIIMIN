@@ -5,6 +5,10 @@
 import { pool } from '../lib/db.js';
 import { patchUserProfile, getUserProfile } from './userProfileService.js';
 
+export function isSubscriptionMode() {
+  return process.env.SUBSCRIPTION_MODE === 'true';
+}
+
 export const TIERS = {
   explore: {
     id: 'explore',
@@ -62,10 +66,31 @@ export async function getUserTier(userId) {
   return profile?.subscription_tier || 'explore';
 }
 
+export async function selectSubscriptionTier(userId, tierId) {
+  if (!TIERS[tierId]) {
+    throw new Error('Invalid tier');
+  }
+  return handleSubscriptionUpgrade(userId, tierId);
+}
+
 export async function createCheckoutSession(userId, tierId, successUrl, cancelUrl) {
   const tier = TIERS[tierId];
-  if (!tier || tierId === 'explore') {
+  if (!tier) {
     throw new Error('Invalid tier');
+  }
+
+  if (isSubscriptionMode()) {
+    await selectSubscriptionTier(userId, tierId);
+    const sep = successUrl.includes('?') ? '&' : '?';
+    return {
+      subscriptionMode: true,
+      tier: tierId,
+      url: `${successUrl}${sep}upgraded=1&tier=${tierId}`,
+    };
+  }
+
+  if (tierId === 'explore') {
+    throw new Error('Use select-tier to switch to Explore');
   }
 
   const secret = process.env.STRIPE_SECRET_KEY;

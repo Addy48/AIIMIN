@@ -13,6 +13,8 @@ import { generateWeeklyReview } from '../services/weeklyReviewEngine.js';
 import { generateReportPayload } from '../services/reportGenerator.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
 import { withVoiceRules } from '../lib/aiVoice.js';
+import { enrichSystemPrompt } from '../lib/arcContext.js';
+import { sharpenLifeArcLocally } from '../lib/arcSharpen.js';
 import { aiLimiter } from '../middleware/rateLimiter.js';
 import { trackExternalCall } from '../services/apiUsageService.js';
 
@@ -150,11 +152,14 @@ app.post('/generate', requireAuth, aiLimiter, async (c) => {
         const genai = new GoogleGenAI({ apiKey });
 
         const prompt = messages.map((m) => `${m.role}: ${m.content}`).join('\n');
+        const systemInstructionRaw = await enrichSystemPrompt(userId, systemPrompt);
         const result = await genai.models.generateContent({
             model: 'gemini-2.0-flash',
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
-                systemInstruction: systemPrompt ? withVoiceRules(systemPrompt) : undefined,
+                systemInstruction: systemInstructionRaw
+                    ? withVoiceRules(systemInstructionRaw)
+                    : undefined,
                 maxOutputTokens: maxTokens,
                 temperature,
             },
@@ -221,8 +226,9 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
             return c.json({ error: 'messages required' }, 400);
         }
 
-        const fullMessages = systemPrompt
-            ? [{ role: 'system', content: withVoiceRules(systemPrompt) }, ...messages]
+        const enrichedPrompt = await enrichSystemPrompt(userId, systemPrompt);
+        const fullMessages = enrichedPrompt
+            ? [{ role: 'system', content: withVoiceRules(enrichedPrompt) }, ...messages]
             : messages;
 
         if (provider === 'groq') {
@@ -339,7 +345,7 @@ app.post('/universal-log', requireAuth, async (c) => {
         const { GoogleGenAI } = await import('@google/genai');
         const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-        const systemPrompt = `You are an AI that parses a user's natural language daily log entry and extracts structured actions.
+        const systemPrompt = await enrichSystemPrompt(userId, `You are an AI that parses a user's natural language daily log entry and extracts structured actions.
 Return ONLY valid JSON (no markdown, no explanation).
 
 Extract any of these action types from the user's text:
@@ -355,12 +361,12 @@ Respond with JSON like:
     { "type": "log_habit", "name": "workout", "completed": true },
     { "type": "add_journal", "content": "Failed my diet today, but worked out for an hour. Feeling a 6/10." }
   ]
-}`;
+}`);
 
         const result = await genai.models.generateContent({
             model: 'gemini-2.0-flash',
             contents: [{ role: 'user', parts: [{ text: `Parse this log entry: "${text.trim()}"` }] }],
-            config: { systemInstruction: systemPrompt }
+            config: { systemInstruction: withVoiceRules(systemPrompt) }
         });
 
         const rawText = result.text.trim().replace(/```json\n?|```/g, '');
@@ -428,5 +434,59 @@ Respond with JSON like:
         return c.json({ error: 'Failed to process log entry', message: err.message }, 500);
     }
 });
+
+/**
+ * POST /intelligence/arc/sharpen — minimal-token polish for Life Arc line.
+ */
+async function handleArcSharpen(c) {
+    const { draft = '', goalIds = [] } = await c.req.json();
+    const seed = String(draft || '').trim() || sharpenLifeArcLocally('', goalIds);
+    if (!seed) {
+        return c.json({ error: 'Write a line or pick a goal first' }, 400);
+    }
+
+    try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+            return c.json({ text: sharpenLifeArcLocally(seed, goalIds), stub: true });
+        }
+
+        const userId = c.get('userId');
+        await trackExternalCall({
+            userId,
+            provider: 'gemini',
+            endpoint: '/intelligence/arc/sharpen',
+            units: 1,
+        });
+
+        const goalHint = goalIds.length ? `Goals: ${goalIds.join(', ')}.` : '';
+        const { GoogleGenAI } = await import('@google/genai');
+        const genai = new GoogleGenAI({ apiKey });
+        const result = await genai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: [{
+                role: 'user',
+                parts: [{ text: `${goalHint} Sharpen this Life Arc into one clear sentence (max 25 words): ${seed}` }],
+            }],
+            config: {
+                maxOutputTokens: 64,
+                temperature: 0.2,
+            },
+        });
+
+        const text = (result.text || '').trim().replace(/^["']|["']$/g, '') || sharpenLifeArcLocally(seed, goalIds);
+        return c.json({ text });
+    } catch (err) {
+        console.error('[intelligence/arc/sharpen]', err.message);
+        return c.json({
+            text: sharpenLifeArcLocally(seed, goalIds),
+            stub: true,
+            fallback: true,
+        });
+    }
+}
+
+app.post('/arc/sharpen', requireAuth, aiLimiter, handleArcSharpen);
+app.post('/north-star/sharpen', requireAuth, aiLimiter, handleArcSharpen);
 
 export default app;

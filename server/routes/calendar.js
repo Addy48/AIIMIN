@@ -1,39 +1,15 @@
 import { Hono } from 'hono';
 import { google } from 'googleapis';
 import { pool } from '../lib/db.js';
-import { decrypt } from '../lib/crypto.js';
 import { requireAuth } from '../middleware/auth.js';
+import { getCalendarClient, getOAuthClient, getIntegrationStatus } from '../lib/googleClient.js';
 
 const app = new Hono();
 
 const SYSTEM_TYPES = ['physical', 'cognitive', 'behavior', 'finance', 'reflection', 'general'];
 
-const createGoogleCalendar = async (userId) => {
-    const tokenRes = await pool.query(
-        `SELECT access_token_enc, refresh_token_enc, access_token, refresh_token, expiry_date, scope, refresh_error, updated_at 
-         FROM public.user_oauth_tokens 
-         WHERE user_id = $1 AND provider = $2`,
-        [userId, 'google']
-    );
-
-    const tokenRow = tokenRes.rows[0];
-    if (!tokenRow) throw Object.assign(new Error('Google account not connected'), { code: 'NOT_CONNECTED' });
-
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_CALLBACK_URL || 'https://aiimin.in/api/google/auth/callback';
-    const client = new google.auth.OAuth2(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        redirectUri
-    );
-
-    client.setCredentials({
-        access_token: tokenRow.access_token_enc ? decrypt(tokenRow.access_token_enc) : tokenRow.access_token,
-        refresh_token: tokenRow.refresh_token_enc ? decrypt(tokenRow.refresh_token_enc) : tokenRow.refresh_token,
-        expiry_date: tokenRow.expiry_date ? Number(tokenRow.expiry_date) : undefined,
-    });
-
-    return { calendar: google.calendar({ version: 'v3', auth: client }), tokenRow };
-};
+const DEFAULT_PULL_START = () => new Date(Date.now() - 90 * 86400000).toISOString();
+const DEFAULT_PULL_END = () => new Date(Date.now() + 365 * 86400000).toISOString();
 
 const toGoogleDate = (iso, allDay = false) => (
     allDay ? { date: String(iso).slice(0, 10) } : { dateTime: iso }
@@ -52,6 +28,121 @@ const mapGoogleEvent = (userId, ev) => ({
     location: ev.location || null,
     updated_at: new Date().toISOString(),
 });
+
+const mapGoogleTask = (userId, listId, task) => {
+    const due = task.due || '';
+    const isDateOnly = due.length === 10;
+    return {
+        user_id: userId,
+        google_event_id: `gtask:${listId}:${task.id}`,
+        title: task.title || 'Untitled task',
+        description: task.notes || null,
+        start_time: isDateOnly ? `${due}T00:00:00.000Z` : due,
+        end_time: isDateOnly ? `${due}T23:59:59.000Z` : due,
+        all_day: isDateOnly,
+        event_type: 'task',
+        source_type: 'imported_calendar',
+        location: null,
+        updated_at: new Date().toISOString(),
+    };
+};
+
+const upsertCalendarRows = async (rows) => {
+    if (!rows.length) return;
+
+    const columns = ['user_id', 'google_event_id', 'title', 'description', 'start_time', 'end_time', 'all_day', 'event_type', 'source_type', 'location', 'updated_at'];
+    const valuePlaceholders = [];
+    const values = [];
+
+    rows.forEach((row) => {
+        const placeholders = [];
+        columns.forEach((col) => {
+            values.push(row[col]);
+            placeholders.push(`$${values.length}`);
+        });
+        valuePlaceholders.push(`(${placeholders.join(', ')})`);
+    });
+
+    const query = `
+        INSERT INTO public.calendar_events (${columns.join(', ')})
+        VALUES ${valuePlaceholders.join(', ')}
+        ON CONFLICT (user_id, google_event_id) DO UPDATE SET
+            title = EXCLUDED.title,
+            description = EXCLUDED.description,
+            start_time = EXCLUDED.start_time,
+            end_time = EXCLUDED.end_time,
+            all_day = EXCLUDED.all_day,
+            event_type = EXCLUDED.event_type,
+            source_type = EXCLUDED.source_type,
+            location = EXCLUDED.location,
+            updated_at = EXCLUDED.updated_at,
+            deleted_at = NULL
+    `;
+    await pool.query(query, values);
+};
+
+const pullGoogleCalendarEvents = async (userId, timeMin, timeMax) => {
+    const calendar = await getCalendarClient(userId);
+    const { data: calList } = await calendar.calendarList.list({ minAccessRole: 'reader' });
+    const calendarIds = (calList.items || []).map((c) => c.id).filter(Boolean);
+    if (!calendarIds.length) calendarIds.push('primary');
+
+    const seen = new Set();
+    const rows = [];
+
+    for (const calendarId of calendarIds) {
+        try {
+            const { data } = await calendar.events.list({
+                calendarId,
+                timeMin,
+                timeMax,
+                singleEvents: true,
+                orderBy: 'startTime',
+                maxResults: 250,
+            });
+            for (const ev of data.items || []) {
+                if (ev.status === 'cancelled' || seen.has(ev.id)) continue;
+                seen.add(ev.id);
+                rows.push(mapGoogleEvent(userId, ev));
+            }
+        } catch (err) {
+            console.warn(`[calendar/pull] skip calendar ${calendarId}:`, err.message);
+        }
+    }
+
+    return rows;
+};
+
+const pullGoogleTasks = async (userId, timeMin, timeMax) => {
+    const auth = await getOAuthClient(userId);
+    const tasksApi = google.tasks({ version: 'v1', auth });
+    const rows = [];
+
+    try {
+        const { data: listsData } = await tasksApi.tasklists.list({ maxResults: 20 });
+        for (const list of listsData.items || []) {
+            const { data: tasksData } = await tasksApi.tasks.list({
+                tasklist: list.id,
+                showCompleted: false,
+                showHidden: false,
+                dueMin: timeMin,
+                dueMax: timeMax,
+                maxResults: 100,
+            });
+            for (const task of tasksData.items || []) {
+                if (!task.due) continue;
+                rows.push(mapGoogleTask(userId, list.id, task));
+            }
+        }
+    } catch (err) {
+        // Older connections may lack tasks.readonly — calendar events still import
+        if (err.code !== 403) {
+            console.warn('[calendar/pull] tasks import skipped:', err.message);
+        }
+    }
+
+    return rows;
+};
 
 /* ── GET /api/calendar/events ─────────────────────────────── */
 app.get('/events', requireAuth, async (c) => {
@@ -83,14 +174,14 @@ app.get('/sync/status', requireAuth, async (c) => {
             [userId, 'google']
         );
         const data = tokenRes.rows[0];
-        const hasRefreshError = !!data?.refresh_error;
-        const isExpired = data?.expiry_date && Date.now() > Number(data.expiry_date);
+        const integration = await getIntegrationStatus(userId, 'google');
         return c.json({
-            connected: !!data && !hasRefreshError && !isExpired,
+            connected: integration.connected,
             linkedEmail: data?.linked_email || null,
-            scopes: data?.scope?.split(' ').filter(Boolean) || [],
-            lastSync: data?.last_refresh_at || data?.updated_at || null,
-            error: data?.refresh_error || null,
+            scopes: data?.scope?.split(' ').filter(Boolean) || integration.scopes || [],
+            lastSync: data?.last_refresh_at || data?.updated_at || integration.lastRefresh || null,
+            error: integration.error || data?.refresh_error || null,
+            hasTasksScope: (data?.scope || '').includes('tasks'),
         });
     } catch (err) {
         return c.json({ connected: false, error: err.message }, 200);
@@ -101,56 +192,27 @@ app.post('/sync/pull', requireAuth, async (c) => {
     try {
         const userId = c.get('userId');
         const body = await c.req.json().catch(() => ({}));
-        const timeMin = body.start || new Date().toISOString();
-        const timeMax = body.end || new Date(Date.now() + 30 * 86400000).toISOString();
-        const { calendar } = await createGoogleCalendar(userId);
+        const timeMin = body.start || DEFAULT_PULL_START();
+        const timeMax = body.end || DEFAULT_PULL_END();
 
-        const { data } = await calendar.events.list({
-            calendarId: 'primary',
-            timeMin,
-            timeMax,
-            singleEvents: true,
-            orderBy: 'startTime',
-            maxResults: 250,
+        const eventRows = await pullGoogleCalendarEvents(userId, timeMin, timeMax);
+        const taskRows = await pullGoogleTasks(userId, timeMin, timeMax);
+        const rows = [...eventRows, ...taskRows];
+
+        await upsertCalendarRows(rows);
+
+        await pool.query(
+            `UPDATE public.user_oauth_tokens
+             SET last_refresh_at = NOW(), updated_at = NOW()
+             WHERE user_id = $1 AND provider = 'google'`,
+            [userId],
+        );
+
+        return c.json({
+            imported: rows.length,
+            events: eventRows.length,
+            tasks: taskRows.length,
         });
-
-        const rows = (data.items || [])
-            .filter(ev => ev.status !== 'cancelled')
-            .map(ev => mapGoogleEvent(userId, ev));
-
-        if (rows.length) {
-            const columns = ['user_id', 'google_event_id', 'title', 'description', 'start_time', 'end_time', 'all_day', 'event_type', 'source_type', 'location', 'updated_at'];
-            const valuePlaceholders = [];
-            const values = [];
-
-            rows.forEach((row) => {
-                const placeholders = [];
-                columns.forEach(col => {
-                    values.push(row[col]);
-                    placeholders.push(`$${values.length}`);
-                });
-                valuePlaceholders.push(`(${placeholders.join(', ')})`);
-            });
-
-            const query = `
-                INSERT INTO public.calendar_events (${columns.join(', ')})
-                VALUES ${valuePlaceholders.join(', ')}
-                ON CONFLICT (user_id, google_event_id) DO UPDATE SET
-                    title = EXCLUDED.title,
-                    description = EXCLUDED.description,
-                    start_time = EXCLUDED.start_time,
-                    end_time = EXCLUDED.end_time,
-                    all_day = EXCLUDED.all_day,
-                    event_type = EXCLUDED.event_type,
-                    source_type = EXCLUDED.source_type,
-                    location = EXCLUDED.location,
-                    updated_at = EXCLUDED.updated_at,
-                    deleted_at = NULL
-            `;
-            await pool.query(query, values);
-        }
-
-        return c.json({ imported: rows.length });
     } catch (err) {
         return c.json({ error: err.message, code: err.code }, err.code === 'NOT_CONNECTED' ? 409 : 500);
     }

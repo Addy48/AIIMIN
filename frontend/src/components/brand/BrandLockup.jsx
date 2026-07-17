@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useThemeContext } from '../../context/ThemeContext';
 import { isLightTheme } from '../../constants/themes';
 import { ArchBracketMark, pickMarkColors } from './archBracketMark';
@@ -19,6 +19,7 @@ export default function BrandLockup({
   staticPreview = false,
   isLight: isLightOverride,
 }) {
+  const navigate = useNavigate();
   const { theme } = useThemeContext();
   const isLight = isLightOverride ?? isLightTheme(theme);
 
@@ -28,7 +29,10 @@ export default function BrandLockup({
     staticPreview ? 'brand-lockup--static' : '',
   ].filter(Boolean).join(' ');
 
-  const markColors = useMemo(() => pickMarkColors(isLight, { density: 'nav' }), [isLight]);
+  const markColors = useMemo(
+    () => pickMarkColors(isLight, { density: 'nav' }),
+    [isLight],
+  );
 
   const content = (
     <>
@@ -52,7 +56,17 @@ export default function BrandLockup({
       {staticPreview ? (
         <span className="brand-lockup__unified" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>{content}</span>
       ) : (
-        <Link to={to} className="brand-lockup__unified" aria-label="AIIMIN home" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}>
+        <Link
+          to={to}
+          className="brand-lockup__unified"
+          aria-label="AIIMIN home"
+          onClick={(e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+            e.preventDefault();
+            navigate(to);
+          }}
+          style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none' }}
+        >
           {content}
         </Link>
       )}

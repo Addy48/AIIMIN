@@ -4,19 +4,19 @@
   "description": "A calm, high-clarity personal dashboard for daily accountability and behavioral insights.",
   "icons": [
     {
-      "src": "favicon-32.png",
-      "sizes": "32x32",
-      "type": "image/png",
+      "src": "favicon-light.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "logo192.png",
-      "type": "image/png",
+      "src": "logo-symbol.svg",
+      "type": "image/svg+xml",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
-      "type": "image/png",
+      "src": "AIIMIN_logo.svg",
+      "type": "image/svg+xml",
       "sizes": "512x512"
     }
   ],

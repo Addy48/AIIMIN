@@ -7,6 +7,30 @@ import { patchUserProfile } from './userProfileService.js';
 
 const TIER_RANK = { explore: 0, core: 1, pro: 2, elite: 3 };
 
+function isSubscriptionMode() {
+  return process.env.SUBSCRIPTION_MODE === 'true';
+}
+
+async function getProfileTier(userId) {
+  if (!userId) return 'explore';
+  try {
+    const { rows } = await pool.query(
+      'SELECT subscription_tier FROM user_profiles WHERE user_id = $1 LIMIT 1',
+      [userId],
+    );
+    return rows[0]?.subscription_tier || 'explore';
+  } catch {
+    return 'explore';
+  }
+}
+
+async function resolveTierForUser(userId, privilegedDefault = 'elite') {
+  if (isSubscriptionMode() && userId) {
+    return getProfileTier(userId);
+  }
+  return privilegedDefault;
+}
+
 function parseList(envVar) {
   return (process.env[envVar] || '')
     .split(',')
@@ -40,18 +64,21 @@ export async function resolveAccess({ email, cognitoSub, userId }) {
   const isOwnerByEmail = normalizedEmail && ownerEmails.includes(normalizedEmail);
 
   if (isOwnerById || isOwnerByEmail) {
-    if (userId) await ensureEliteTier(userId);
-    return { role: 'owner', canAccess: true, tier: 'elite' };
+    if (userId && !isSubscriptionMode()) await ensureEliteTier(userId);
+    const tier = await resolveTierForUser(userId, 'elite');
+    return { role: 'owner', canAccess: true, tier };
   }
 
   if (normalizedEmail && devEmails.includes(normalizedEmail)) {
-    if (userId) await ensureEliteTier(userId);
-    return { role: 'dev', canAccess: true, tier: 'elite' };
+    if (userId && !isSubscriptionMode()) await ensureEliteTier(userId);
+    const tier = await resolveTierForUser(userId, 'elite');
+    return { role: 'dev', canAccess: true, tier };
   }
 
   if (normalizedEmail && testerEmails.includes(normalizedEmail)) {
-    if (userId) await ensureEliteTier(userId);
-    return { role: 'tester', canAccess: true, tier: 'elite' };
+    if (userId && !isSubscriptionMode()) await ensureEliteTier(userId);
+    const tier = await resolveTierForUser(userId, 'elite');
+    return { role: 'tester', canAccess: true, tier };
   }
 
   if (normalizedEmail) {
@@ -62,7 +89,8 @@ export async function resolveAccess({ email, cognitoSub, userId }) {
       );
       if (rows.length > 0) {
         const role = rows[0].role === 'dev' ? 'dev' : 'tester';
-        if (userId) await ensureEliteTier(userId);
+        if (userId && !isSubscriptionMode()) await ensureEliteTier(userId);
+        const tier = await resolveTierForUser(userId, 'elite');
         if (cognitoSub) {
           await pool.query(
             `UPDATE tester_allowlist SET cognito_sub = COALESCE(cognito_sub, $2)
@@ -70,7 +98,7 @@ export async function resolveAccess({ email, cognitoSub, userId }) {
             [normalizedEmail, cognitoSub],
           ).catch(() => {});
         }
-        return { role, canAccess: true, tier: 'elite' };
+        return { role, canAccess: true, tier };
       }
     } catch (err) {
       if (!/does not exist|relation.*tester_allowlist/i.test(err.message)) {
@@ -79,7 +107,9 @@ export async function resolveAccess({ email, cognitoSub, userId }) {
     }
   }
 
-  return { role: 'public', canAccess: false, tier: 'explore' };
+  const tier = userId ? await getProfileTier(userId) : 'explore';
+  const waitlistEnabled = process.env.WAITLIST_MODE === 'true';
+  return { role: 'public', canAccess: !waitlistEnabled, tier };
 }
 
 async function ensureEliteTier(userId) {
