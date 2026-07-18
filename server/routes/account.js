@@ -198,6 +198,67 @@ app.get('/export', requireAuth, async (c) => {
 });
 
 /**
+ * POST /api/account/wipe-life-data
+ * Clears all tracked life data for the authenticated user. Keeps login / users row / OAuth.
+ * Body: { confirm: "WIPE ALL DATA" }
+ */
+app.post('/wipe-life-data', requireAuth, async (c) => {
+    try {
+        const body = await c.req.json().catch(() => ({}));
+        if (body.confirm !== 'WIPE ALL DATA') {
+            return c.json({ error: 'Send { confirm: "WIPE ALL DATA" } to confirm' }, 400);
+        }
+        const userId = c.get('userId');
+        if (!userId) return c.json({ error: 'Unauthorized' }, 401);
+
+        // Order: children / logs before parents. Ignore missing-table errors.
+        const tables = [
+            'habit_logs', 'routine_runs', 'routines', 'habit_stacks', 'replacement_habits', 'habits',
+            'daily_logs', 'daily_commitments', 'wins', 'journal_entries',
+            'pomodoro_sessions', 'study_sessions', 'sessions',
+            'money_transactions', 'money_lent', 'budgets', 'recurring', 'savings_goals',
+            'financial_goals', 'wealth_assets', 'account_balances', 'accounts', 'money_categories',
+            'net_worth_snapshots', 'financial_health_scores',
+            'calendar_events', 'tasks', 'notes', 'xp_log', 'user_xp', 'achievements',
+            'urge_events', 'discipline_logs', 'discipline_streaks', 'addiction_tracking',
+            'goals', 'dsa_problems', 'dsa_logs', 'resumes', 'job_applications',
+            'family_health', 'family_insurance', 'family_documents', 'family_finance',
+            'family_reminders', 'family_emergency_contacts', 'family_vehicles',
+            'family_relationships', 'family_members',
+            'lab_typing_tests', 'lab_reaction_tests', 'lab_speaking_logs', 'lab_mindset_logs',
+            'lab_reading_log', 'lab_personality_logs', 'lab_aptitude_scores', 'lab_pit_logs',
+            'lab_system_design_logs', 'lab_decision_scenarios', 'lab_beliefs',
+            'lab_correlations', 'lab_insights', 'lab_streaks', 'lab_mastery_badges',
+            'sports_preferences', 'sports_favorites',
+            'cbt_records', 'www_entries', 'notifications', 'voice_recall_queue', 'anchor_edges',
+        ];
+
+        const deleted = {};
+        const errors = [];
+        for (const table of tables) {
+            try {
+                const { rowCount } = await pool.query(
+                    `DELETE FROM ${table} WHERE user_id = $1`,
+                    [userId],
+                );
+                deleted[table] = rowCount ?? 0;
+            } catch (err) {
+                errors.push({ table, message: err.message });
+            }
+        }
+
+        return c.json({
+            success: true,
+            message: 'Life data wiped. Account login kept.',
+            deleted,
+            errors: errors.length ? errors : undefined,
+        });
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+/**
  * DELETE /api/account
  */
 app.delete('/', requireAuth, async (c) => {

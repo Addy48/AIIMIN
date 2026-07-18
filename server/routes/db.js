@@ -30,7 +30,14 @@ const USER_SCOPED_TABLES = new Set([
 /** Self-profile reads (id = auth user). Not general user directory. */
 const SELF_ID_TABLES = new Set(['users', 'profiles', 'user_profiles']);
 
-const NO_USER_SCOPE = new Set(['routine_habits']);
+/** Core life entities — writes must use dedicated /api routes (validation + soft-delete). */
+const WRITE_BLOCKED_TABLES = new Set(['goals', 'habits', 'habit_logs', 'daily_logs', 'journal_entries']);
+
+function assertWritable(table) {
+    if (WRITE_BLOCKED_TABLES.has(table)) {
+        throw new Error(`Writes to ${table} use dedicated API routes (/api/${table.replace('_', '-')})`);
+    }
+}
 
 function assertTable(table) {
     if (
@@ -155,6 +162,7 @@ app.post('/:table', requireAuth, async (c) => {
     try {
         const table = c.req.param('table');
         assertTable(table);
+        assertWritable(table);
         if (SELF_ID_TABLES.has(table)) {
             return c.json({ error: 'Writes to profile tables use /api/account' }, 400);
         }
@@ -197,6 +205,7 @@ app.post('/:table/upsert', requireAuth, async (c) => {
     try {
         const table = c.req.param('table');
         assertTable(table);
+        assertWritable(table);
         if (SELF_ID_TABLES.has(table)) {
             return c.json({ error: 'Writes to profile tables use /api/account' }, 400);
         }
@@ -238,6 +247,7 @@ app.patch('/:table', requireAuth, async (c) => {
     try {
         const table = c.req.param('table');
         assertTable(table);
+        assertWritable(table);
         const userId = c.get('userId');
         const { payload, where = {} } = await c.req.json();
         if (!payload || !Object.keys(where).length) {
@@ -283,6 +293,7 @@ app.delete('/:table', requireAuth, async (c) => {
     try {
         const table = c.req.param('table');
         assertTable(table);
+        assertWritable(table);
         if (SELF_ID_TABLES.has(table)) {
             return c.json({ error: 'Deletes of profile tables use /api/account' }, 400);
         }
