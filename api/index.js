@@ -15,8 +15,26 @@ app.use('*', async (c, next) => {
 
 app.use('*', secureHeaders());
 
+const CORS_ALLOWED = new Set([
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://127.0.0.1:3000',
+    'https://aiimin.in',
+    'https://www.aiimin.in',
+    'https://api.aiimin.in',
+]);
+if (process.env.FRONTEND_URL) CORS_ALLOWED.add(process.env.FRONTEND_URL.replace(/\/$/, ''));
+
 app.use('*', cors({
-    origin: (origin) => origin,
+    origin: (origin) => {
+        if (!origin) return ''; // same-origin / curl
+        if (CORS_ALLOWED.has(origin)) return origin;
+        // Vercel preview deploys for this project only
+        if (/^https:\/\/[\w-]+-aaditya[\w.-]*\.vercel\.app$/i.test(origin)) return origin;
+        if (/^https:\/\/aiimin[\w.-]*\.vercel\.app$/i.test(origin)) return origin;
+        return null;
+    },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     exposeHeaders: ['set-auth-token', 'Set-Auth-Token'],
@@ -80,6 +98,7 @@ const routeMap = {
     'discipline':    () => import('../server/routes/discipline.js'),
     'notes':         () => import('../server/routes/notes.js'),
     'focus':         () => import('../server/routes/focus.js'),
+    'journal':       () => import('../server/routes/journal.js'),
     'db':            () => import('../server/routes/db.js'),
     'user':          () => import('../server/routes/user.js'),
 };
