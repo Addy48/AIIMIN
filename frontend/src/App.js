@@ -37,11 +37,16 @@ import ErrorBoundary from './components/system/ErrorBoundary';
 import TierRouteGuard from './components/account/TierRouteGuard';
 import EmailVerifiedGuard from './components/system/EmailVerifiedGuard';
 import DeviceGate from './components/system/DeviceGate';
+import { getPostAuthPath } from './utils/mobileEntry';
 import './styles/deviceTiers.css';
+import './styles/focusRoomTablet.css';
 
 // Lazy-loaded Dashboard routes
 const Overview = React.lazy(() => import('./pages/Overview'));
 const MobileCaptureApp = React.lazy(() => import('./components/mobile/MobileCaptureApp'));
+const MobileShell = React.lazy(() => import('./components/mobile/MobileShell'));
+const MobileScorePage = React.lazy(() => import('./components/mobile/MobileScorePage'));
+const MobileLiteAccount = React.lazy(() => import('./components/mobile/MobileLiteAccount'));
 const Insights = React.lazy(() => import('./pages/Insights'));
 const CalendarPage = React.lazy(() => import('./pages/CalendarPage'));
 
@@ -134,7 +139,7 @@ function AppContent({ user, session }) {
         <Route path="/login/*" element={
           isWaitlistMode && !canAccessApp
             ? <Login />
-            : (session ? <Navigate to="/overview" replace /> : <Login />)
+            : (session ? <Navigate to={getPostAuthPath()} replace /> : <Login />)
         } />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/verify-email" element={session ? <VerifyEmail /> : <Navigate to="/login" replace />} />
@@ -144,15 +149,19 @@ function AppContent({ user, session }) {
             : (session ? <Onboarding /> : <Navigate to="/login" replace />)
         } />
         {!showWaitlistAtRoot && (
-          <Route path="/" element={<Navigate to={canAccessApp && session ? '/overview' : '/login'} replace />} />
+          <Route path="/" element={<Navigate to={canAccessApp && session ? getPostAuthPath() : '/login'} replace />} />
         )}
 
         {/* Phone web: capture-only shell (native app coming) */}
         <Route path="/m" element={
           session && canAccessApp
-            ? <EmailVerifiedGuard><Lazy><MobileCaptureApp /></Lazy></EmailVerifiedGuard>
+            ? <EmailVerifiedGuard><Lazy><MobileShell /></Lazy></EmailVerifiedGuard>
             : <Navigate to="/login" replace />
-        } />
+        }>
+          <Route index element={<Lazy><MobileCaptureApp /></Lazy>} />
+          <Route path="score" element={<Lazy><MobileScorePage /></Lazy>} />
+          <Route path="account" element={<Lazy><MobileLiteAccount /></Lazy>} />
+        </Route>
 
         {/* Authenticated shell — full Life OS (iPad + desktop) */}
         <Route element={

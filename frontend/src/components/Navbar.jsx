@@ -9,6 +9,9 @@ import NotificationBell from './notifications/NotificationBell';
 import BrandLockup from './brand/BrandLockup';
 import { isDarkTheme } from '../constants/themes';
 import useNavPreferences from '../hooks/useNavPreferences';
+import { useDeviceTier } from '../hooks/useDeviceTier';
+
+const TABLET_NAV_CAP = 8;
 
 const mastheadLinkClass = ({ isActive }) =>
   `nav-masthead__link${isActive ? ' nav-masthead__link--active' : ''}`;
@@ -27,11 +30,16 @@ const Navbar = ({ user }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isDark = isDarkTheme(theme);
+  const { isTablet } = useDeviceTier();
   const { resolveForUser } = useNavPreferences();
   // Pinning restored: user-selected pins stay in primary strip; unpinned actives live in More (N)
   const { pinned: visiblePrimary, more: visibleMore } = resolveForUser(!!user?.isGuest);
+  const stripPrimary = isTablet ? visiblePrimary.slice(0, TABLET_NAV_CAP) : visiblePrimary;
+  const stripMore = isTablet
+    ? [...visiblePrimary.slice(TABLET_NAV_CAP), ...visibleMore]
+    : visibleMore;
   const visibleAll = [...visiblePrimary, ...visibleMore];
-  const moreIsActive = visibleMore.some((link) => location.pathname.startsWith(link.to));
+  const moreIsActive = stripMore.some((link) => location.pathname.startsWith(link.to));
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -105,13 +113,13 @@ const Navbar = ({ user }) => {
         <div className="nav-masthead__center">
           <div className="desktop-nav-links nav-masthead__links">
             <div className="nav-masthead__links-scroll">
-              {visiblePrimary.map(({ to, label }) => (
+              {stripPrimary.map(({ to, label }) => (
                 <NavLink key={to} to={to} className={mastheadLinkClass}>
                   {label}
                 </NavLink>
               ))}
             </div>
-            {(visibleMore.length > 0 || true) && (
+            {(stripMore.length > 0 || true) && (
               <div className="nav-masthead__more-wrap" ref={moreRef}>
                 <button
                   type="button"
@@ -120,7 +128,7 @@ const Navbar = ({ user }) => {
                   aria-haspopup="true"
                   onClick={() => setMoreOpen((o) => !o)}
                 >
-                  {visibleMore.length > 0 ? `More (${visibleMore.length})` : 'More'}
+                  {stripMore.length > 0 ? `More (${stripMore.length})` : 'More'}
                   <ChevronDown
                     size={14}
                     className={`nav-masthead__more-chevron${moreOpen ? ' is-open' : ''}`}
@@ -137,7 +145,7 @@ const Navbar = ({ user }) => {
                       transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
                       role="menu"
                     >
-                      {visibleMore.map(({ to, label }) => (
+                      {stripMore.map(({ to, label }) => (
                         <NavLink
                           key={to}
                           to={to}
