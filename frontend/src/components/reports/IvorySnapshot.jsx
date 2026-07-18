@@ -101,16 +101,18 @@ export default function IvorySnapshot({
 
     const fin = spend <= 0 ? 'No spend logged' : `₹${Math.round(spend).toLocaleString('en-IN')} · 7d`;
 
-    const correlations = (report?.behaviorDrivers || [])
+    const correlations = (report?.signalCorrelations?.length
+      ? report.signalCorrelations
+      : report?.behaviorDrivers || [])
       .slice(0, 3)
       .map((d, i) => ({
-        id: d.label || d.behaviorLabel || `c${i}`,
-        label: d.label || d.behaviorLabel || 'Signal',
+        id: d.signalA ? `${d.signalA}-${d.signalB}` : (d.label || d.behaviorLabel || `c${i}`),
+        label: d.headline || d.label || `${d.signalALabel || d.signalA || 'Signal'} → ${d.signalBLabel || d.signalB || ''}`.trim(),
         rho: d.rho != null
           ? Number(d.rho)
           : Number((Math.min(0.95, Math.abs(Number(d.impact) || 5) / 12)).toFixed(2)),
-        dir: Number(d.impact) < 0 || d.direction === 'neg' ? -1 : 1,
-        evidence: d.insight || d.behaviorLabel || 'Spearman · BH-corrected',
+        dir: Number(d.rho) < 0 || Number(d.impact) < 0 || d.direction === 'neg' ? -1 : 1,
+        evidence: d.headline || d.insight || d.behaviorLabel || 'Spearman · BH-corrected',
       }));
 
     return {
@@ -135,7 +137,12 @@ export default function IvorySnapshot({
     };
   }, [report]);
 
-  const firstName = (user?.name || user?.email || 'You').split(' ')[0];
+  const firstName = (() => {
+    if (user?.name?.trim()) return user.name.trim().split(/\s+/)[0];
+    const osId = user?.username || user?.os_id;
+    if (osId) return `OS-ID: ${osId}`;
+    return 'You';
+  })();
   const pts = sparkPoints(pulse.moodSpark);
   const deltaSign = pulse.delta >= 0 ? 'up' : 'down';
 

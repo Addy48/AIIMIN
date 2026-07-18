@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import supabase from '../utils/supabase';
+import React, { useState, useEffect, useMemo } from 'react';
+import { apiGet } from '../utils/api';
+import { useDailyLogsRange, pickLogByDate } from '../hooks/useDailyLogsQuery';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 
 /**
@@ -45,72 +46,42 @@ const MomentumBar = ({ user, justSaved }) => {
         return Math.min(100, Math.round(base * 0.92 + routineRatio * 8));
     };
 
+    const { logs } = useDailyLogsRange(7, { enabled: Boolean(user) });
+
     useEffect(() => {
-        if (!user) return;
-        const fetchMomentum = async () => {
+        if (!user || !logs) return;
+
+        const run = async () => {
             const today = new Date().toISOString().split('T')[0];
             const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-            const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
-
-            // Today's log
-            const { data: todayLog } = await supabase
-                .from('daily_logs')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('date', today)
-                .single();
-
-            // Yesterday's log
-            const { data: yLog } = await supabase
-                .from('daily_logs')
-                .select('*')
-                .eq('user_id', user.id)
-                .eq('date', yesterday)
-                .single();
-
-            // Last 7 days for consistency
-            const { data: weekLogs } = await supabase
-                .from('daily_logs')
-                .select('date, gym_done, learning_done, sleep_hours')
-                .eq('user_id', user.id)
-                .gte('date', sevenDaysAgo)
-                .order('date', { ascending: false });
+            const todayLog = pickLogByDate(logs, today);
+            const yLog = pickLogByDate(logs, yesterday);
 
             let routineRatio = null;
             if (habitsEnabled) {
-                // Count today's habit_logs to compute routine completion ratio
-                const { count: doneCount } = await supabase
-                    .from('habit_logs')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('user_id', user.id)
-                    .eq('status', 'done')
-                    .gte('completed_at', `${today}T00:00:00+05:30`);
-                const { count: totalCount } = await supabase
-                    .from('habit_logs')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('user_id', user.id)
-                    .gte('completed_at', `${today}T00:00:00+05:30`);
-                if (totalCount > 0) {
-                    routineRatio = (doneCount || 0) / totalCount;
-                }
+                try {
+                    const habitList = await apiGet('/habits');
+                    const ids = (habitList || []).map((h) => h.id);
+                    if (ids.length) {
+                        const logSets = await Promise.all(
+                            ids.map((id) => apiGet(`/habits/${id}/logs`, { params: { date: today, limit: '50' } }).catch(() => [])),
+                        );
+                        const total = logSets.flat().length;
+                        const done = logSets.flat().filter((l) => l.status === 'done' || l.status === 'completed').length;
+                        if (total > 0) routineRatio = done / total;
+                    }
+                } catch { /* optional */ }
             }
 
             const baseToday = calcScore(todayLog);
             const baseYesterday = calcScore(yLog);
-            const todayS = blendScore(baseToday, calcRoutineScore(routineRatio));
-            const yesterdayS = blendScore(baseYesterday, null); // no routine data for yesterday
-
-            setScore(todayS);
-            setYesterdayScore(yesterdayS);
-
-            if (weekLogs && weekLogs.length > 0) {
-                const logged = weekLogs.length;
-                setConsistency(Math.round((logged / 7) * 100));
-            }
+            setScore(blendScore(baseToday, calcRoutineScore(routineRatio)));
+            setYesterdayScore(blendScore(baseYesterday, null));
+            setConsistency(Math.round((logs.length / 7) * 100));
         };
 
-        fetchMomentum();
-    }, [user, justSaved, habitsEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
+        run();
+    }, [user, justSaved, habitsEnabled, logs]);
 
     // Show +1 animation when save happens
     useEffect(() => {

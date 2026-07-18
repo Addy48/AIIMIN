@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import '../styles/careerKanban.css';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import toast from '../utils/toast';
@@ -8,13 +9,82 @@ import ATSAnalyzer from './ATSAnalyzer';
 import ApplicationIntakeModal from '../components/placements/ApplicationIntakeModal';
 import ResumeArchiveModal from '../components/placements/ResumeArchiveModal';
 import { useReadinessScore } from '../hooks/useReadinessScore';
+import { formatDate } from '../utils/formatDate';
+import { sanitizeScore } from '../utils/enumLabels';
+
+function ResumePreview({ resume, onUpdateLink }) {
+  const [broken, setBroken] = useState(false);
+  const url = resume.view_url || resume.link_url;
+  const isDemoOrMissing = !url
+    || url.includes('/demo-')
+    || /\/file\/d\/demo/i.test(url);
+
+  if (!url || isDemoOrMissing || broken) {
+    return (
+      <div style={{
+        minHeight: 200,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+        padding: 24,
+        border: '1px dashed var(--border)',
+        borderRadius: 8,
+        background: 'var(--bg-surface, rgba(0,0,0,0.15))',
+        textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-1)' }}>Preview not available</div>
+        <div style={{ fontSize: 12, color: 'var(--text-3)', lineHeight: 1.5, maxWidth: 280 }}>
+          Resume file not found. The Drive link for this resume has moved or been deleted. Add a new link to preview your resume here.
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+          {resume.target_role || 'General'} · Updated {formatDate(resume.updated_at || resume.created_at)}
+        </div>
+        {onUpdateLink && (
+          <button
+            type="button"
+            onClick={onUpdateLink}
+            style={{
+              marginTop: 4,
+              padding: '10px 18px',
+              borderRadius: 10,
+              border: 'none',
+              background: '#ff6b35',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: 'pointer',
+            }}
+          >
+            + Update Drive Link
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  const idMatch = url.match(/\/d\/([^/]+)/);
+  const previewSrc = url.includes('drive.google.com') && idMatch
+    ? `https://drive.google.com/file/d/${idMatch[1]}/preview`
+    : url;
+
+  return (
+    <iframe
+      src={previewSrc}
+      style={{ width: '100%', height: 400, border: 'none', borderRadius: 8 }}
+      title={resume.title}
+      onError={() => setBroken(true)}
+    />
+  );
+}
 
 const STATUS_CONFIG = {
-  wishlist: { label: 'Wishlist', color: '#8C8C8C', icon: '📝' },
-  applied: { label: 'Applied', color: '#556B2F', icon: '📤' },
-  interview: { label: 'Interview', color: '#E2725B', icon: '👥' },
-  offer: { label: 'Offer', color: '#23503B', icon: '✨' },
-  rejected: { label: 'Rejected', color: '#1C1C1C', icon: '✖️' }
+  wishlist: { label: 'Wishlist', color: 'rgba(237,228,211,0.45)', icon: '📝' },
+  applied: { label: 'Applied', color: '#ff6b35', icon: '📤' },
+  interview: { label: 'In Interview', color: '#E8B84B', icon: '👥' },
+  offer: { label: 'Offer', color: '#5FA85A', icon: '✨' },
+  rejected: { label: 'Rejected', color: '#E85D5D', icon: '✖️' }
 };
 
 export default function Placements() {
@@ -27,6 +97,9 @@ export default function Placements() {
   const [selectedRole, setSelectedRole] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
   const [resumeViewMode, setResumeViewMode] = useState('vault'); // 'vault' | 'analyzer'
+  const kanbanScrollRef = useRef(null);
+  const [kanbanDot, setKanbanDot] = useState(0);
+  const statusKeys = useMemo(() => Object.keys(STATUS_CONFIG), []);
 
   // Modals
   const [showAppModal, setShowAppModal] = useState(false);
@@ -47,6 +120,19 @@ export default function Placements() {
       if (realSys.score > 0) setSystemDesignMetrics(realSys);
     }
   }, [realDsa, realComms, realSys, user.isGuest, metricsLoading]);
+
+  useEffect(() => {
+    if (activeTab !== 'kanban') return undefined;
+    const el = kanbanScrollRef.current;
+    if (!el) return undefined;
+    const onScroll = () => {
+      const colWidth = el.querySelector('.career-kanban-column')?.offsetWidth || 320;
+      const idx = Math.round(el.scrollLeft / (colWidth + 24));
+      setKanbanDot(Math.max(0, Math.min(statusKeys.length - 1, idx)));
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [activeTab, statusKeys.length]);
 
   // Momentum States
   const [momentumScore, setMomentumScore] = useState(75);
@@ -176,9 +262,9 @@ export default function Placements() {
       } else if (last7DaysCount > 0) {
         pctChange = 100;
       }
-      setMomentumGrowth((pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '% vs LW');
+      setMomentumGrowth((pctChange >= 0 ? '+' : '') + pctChange.toFixed(1) + '% vs last week');
 
-      let status = 'Stagnant';
+      let status = 'Holding steady';
       if (calcMomentumScore >= 80) status = 'Peak';
       else if (calcMomentumScore >= 65) status = 'Accelerating';
       else if (calcMomentumScore >= 45) status = 'Building';
@@ -489,22 +575,19 @@ export default function Placements() {
             </div>
           </div>
 
-          {/* Kanban Board */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '24px', 
-            overflowX: 'auto', 
-            paddingBottom: '32px', 
-            minHeight: '60vh',
-            padding: '4px',
-            scrollbarWidth: 'none'
-          }}>
-            {Object.keys(STATUS_CONFIG).map(statusKey => {
+          {/* Kanban Board — native horizontal scroll + snap (no arrow chrome) */}
+          <div className="career-kanban-wrap">
+            <div
+              ref={kanbanScrollRef}
+              className="career-kanban-scroll"
+              id="career-kanban-scroll"
+            >
+            {statusKeys.map(statusKey => {
               const columnApps = filteredApps.filter(a => a.status === statusKey);
               const config = STATUS_CONFIG[statusKey];
               
               return (
-                <div key={statusKey} style={{ flex: '0 0 380px', display: 'flex', flexDirection: 'column' }}>
+                <div key={statusKey} className="career-kanban-column">
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -530,7 +613,7 @@ export default function Placements() {
                       <div style={{ padding: '40px 20px', textAlign: 'center', border: '1px dashed var(--color-border)', borderRadius: '12px', color: 'var(--color-text-3)', fontSize: '12px' }}>
                         No tracks here
                       </div>
-                    ) : columnApps.map(app => (
+                    ) : columnApps.filter((app) => app?.company_name).map(app => (
                       <motion.div 
                         layout
                         key={app.id} 
@@ -554,7 +637,7 @@ export default function Placements() {
                             <div style={{ fontSize: '12px', color: 'var(--color-text-2)', marginTop: '4px', fontWeight: 500 }}>{app.role_title}</div>
                             {app.last_contacted && (
                               <div style={{ fontSize: '11px', color: 'var(--color-rust)', marginTop: '6px', fontWeight: 600 }}>
-                                ⏱ Last Contact: {new Date(app.last_contacted).toLocaleDateString()}
+                                ⏱ Last Contact: {formatDate(app.last_contacted)}
                               </div>
                             )}
                           </div>
@@ -574,12 +657,12 @@ export default function Placements() {
 
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
                           {app.job_post_url && (
-                             <a href={app.job_post_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '4px 8px', borderRadius: '4px', textDecoration: 'none', border: '1px solid var(--color-border)' }}>
+                             <a href={app.job_post_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '9px', fontWeight: 800, fontFamily: 'var(--font-mono, JetBrains Mono, monospace)', textTransform: 'uppercase', color: '#ff6b35', background: 'rgba(255,107,53,0.1)', padding: '4px 8px', borderRadius: '4px', textDecoration: 'none', border: '1px solid rgba(255,107,53,0.2)' }}>
                                Posting ↗
                              </a>
                           )}
                           {app.linkedin_url && (
-                             <a href={app.linkedin_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '4px 8px', borderRadius: '4px', textDecoration: 'none', border: '1px solid var(--color-border)' }}>
+                             <a href={app.linkedin_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '9px', fontWeight: 800, fontFamily: 'var(--font-mono, JetBrains Mono, monospace)', textTransform: 'uppercase', color: '#ff6b35', background: 'rgba(255,107,53,0.1)', padding: '4px 8px', borderRadius: '4px', textDecoration: 'none', border: '1px solid rgba(255,107,53,0.2)' }}>
                                LinkedIn ↗
                              </a>
                           )}
@@ -606,6 +689,22 @@ export default function Placements() {
               );
             })}
           </div>
+            <div className="career-kanban-dots" aria-hidden>
+              {statusKeys.map((key, i) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={`career-kanban-dot${kanbanDot === i ? ' career-kanban-dot--active' : ''}`}
+                  onClick={() => {
+                    const col = kanbanScrollRef.current?.querySelectorAll('.career-kanban-column')[i];
+                    col?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+                    setKanbanDot(i);
+                  }}
+                  aria-label={`Scroll to ${STATUS_CONFIG[key]?.label || key} column`}
+                />
+              ))}
+            </div>
+          </div>
         </motion.div>
       ) : activeTab === 'timeline' ? (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ padding: '20px 0' }}>
@@ -621,7 +720,7 @@ export default function Placements() {
                 <div style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', marginLeft: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--text-1)' }}>{app.company_name}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{new Date(app.applied_at).toLocaleDateString()}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-3)' }}>{formatDate(app.applied_at)}</div>
                   </div>
                   <div style={{ fontSize: '14px', color: 'var(--text-2)', marginBottom: '12px' }}>{app.role_title}</div>
                   <div style={{ display: 'inline-block', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, background: `${STATUS_CONFIG[app.status]?.color}15`, color: STATUS_CONFIG[app.status]?.color }}>
@@ -731,7 +830,7 @@ export default function Placements() {
                 {[
                   { label: 'Wishlist', count: stats.wishlist, color: '#8C8C8C', pct: 100 },
                   { label: 'Applied', count: stats.applied, color: '#556B2F', pct: (stats.applied / (stats.total || 1)) * 100 },
-                  { label: 'Interview', count: stats.interviews, color: '#E2725B', pct: (stats.interviews / (stats.total || 1)) * 100 },
+                  { label: 'In Interview', count: stats.interviews, color: '#E8B84B', pct: (stats.interviews / (stats.total || 1)) * 100 },
                   { label: 'Offer', count: stats.offers, color: '#23503B', pct: (stats.offers / (stats.total || 1)) * 100 }
                 ].map((step, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -757,20 +856,26 @@ export default function Placements() {
               <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Market Readiness</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
-                  { label: 'DSA/Algorithms', score: dsaMetrics.score, color: 'var(--color-rust)' },
-                  { label: 'Communication', score: communicationMetrics.score, color: 'var(--color-success)' },
-                  { label: 'System Design', score: systemDesignMetrics.score, color: 'var(--color-warning)' }
-                ].map((m, idx) => (
+                  { label: 'DSA/Algorithms', score: dsaMetrics.score, color: '#ff6b35' },
+                  { label: 'Communication', score: communicationMetrics.score, color: '#5FA85A' },
+                  { label: 'System Design', score: systemDesignMetrics.score, color: '#E8B84B' }
+                ].map((m, idx) => {
+                  const s = sanitizeScore(m.score);
+                  const barColor = s.warning ? '#E85D5D' : m.color;
+                  return (
                   <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '8px 10px', borderRadius: '6px' }}>
                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-2)' }}>{m.label}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ width: '50px', height: '4px', background: 'rgba(0,0,0,0.4)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <motion.div initial={{ width: 0 }} animate={{ width: `${m.score}%` }} style={{ height: '100%', background: m.color }} />
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${s.pct}%` }} style={{ height: '100%', background: barColor }} />
                       </div>
-                      <div style={{ fontSize: '11px', fontWeight: 800, color: m.color, minWidth: '24px', textAlign: 'right' }}>{m.score}</div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: barColor, minWidth: '40px', textAlign: 'right' }}>
+                        {s.value != null ? `${s.display}/100` : 'N/A'}
+                      </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
@@ -779,8 +884,8 @@ export default function Placements() {
               <h3 style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--text-3)', marginBottom: '12px' }}>Market Sentiment</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {[
-                  { label: 'AI/ML Infrastructure', trend: 'SURGING', color: '#10B981', val: '+24%' },
-                  { label: 'Fintech Backend', trend: 'STABLE', color: '#3B82F6', val: '+2%' },
+                  { label: 'AI/ML Infrastructure', trend: 'SURGING', color: '#10b981', val: '+24%' },
+                  { label: 'Fintech Backend', trend: 'STABLE', color: '#E8B84B', val: '+2%' },
                   { label: 'Crypto/Web3', trend: 'VOLATILE', color: 'var(--color-rust)', val: '-12%' }
                 ].map((s, i) => (
                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingBottom: i < 2 ? '8px' : '0' }}>
@@ -895,26 +1000,27 @@ export default function Placements() {
                   </div>
 
                   <div className="resume-preview-container">
-                    {resume.view_url ? (
-                      <iframe 
-                        src={resume.view_url.includes('drive.google.com') ? getDrivePreviewUrl(resume.view_url) : resume.view_url} 
-                        style={{ width: '100%', height: '400px', border: 'none', borderRadius: '8px' }} 
-                        title={resume.title}
-                      />
-                    ) : (
-                      <div style={{ height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-3)', fontSize: '12px', border: '1px dashed var(--border)', borderRadius: '8px' }}>
-                        No Preview Available
-                      </div>
-                    )}
+                    <ResumePreview
+                      resume={resume}
+                      onUpdateLink={() => {
+                        setResumeForm({
+                          title: resume.title || '',
+                          target_role: resume.target_role || '',
+                          link_url: '',
+                        });
+                        setUploadMode('link');
+                        setShowResumeModal(true);
+                      }}
+                    />
                     <div className="preview-overlay">
-                      {resume.view_url && (
+                      {resume.view_url && !String(resume.view_url).includes('demo') && (
                         <a href={resume.view_url} target="_blank" rel="noopener noreferrer" className="preview-btn">Open Full Document ↗</a>
                       )}
                     </div>
                   </div>
                   
                   <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Updated {new Date(resume.updated_at || resume.created_at).toLocaleDateString()}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Updated {formatDate(resume.updated_at || resume.created_at)}</span>
                   </div>
                 </div>
               </div>

@@ -788,7 +788,7 @@ button:disabled, button[disabled] {
   align-self: start;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 899px) {
   .overview-grid { grid-template-columns: 1fr !important; }
   .overview-rail { position: static; }
 }

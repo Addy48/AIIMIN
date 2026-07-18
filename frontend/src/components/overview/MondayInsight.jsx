@@ -3,6 +3,7 @@ import { Brain, CalendarClock, FlaskConical, Target, Wallet, X } from 'lucide-re
 import { motion } from 'framer-motion';
 import { apiGet } from '../../utils/api';
 import { generateWeeklyInsight } from '../../services/aiService';
+import { fetchOverviewWeekSignals } from '../../hooks/useOverviewWeekSignals';
 
 function formatINR(amount) {
   return new Intl.NumberFormat('en-IN', {
@@ -49,11 +50,16 @@ export default function MondayInsight({ user }) {
     if (dismissed || !showDay) return;
 
     const cacheKey = isWeekendReview
-      ? `aiimin_saturday_insight_inr_${latestMonday}`
-      : `aiimin_weekly_insight_inr_${latestMonday}`;
+      ? `aiimin_saturday_insight_v3_${latestMonday}`
+      : `aiimin_weekly_insight_v3_${latestMonday}`;
     const signalKey = `${cacheKey}_signals`;
+    // Drop legacy prompt-polluted caches from earlier keys
+    try {
+      localStorage.removeItem(`aiimin_saturday_insight_inr_${latestMonday}`);
+      localStorage.removeItem(`aiimin_weekly_insight_inr_${latestMonday}`);
+    } catch { /* ignore */ }
     const cached = localStorage.getItem(cacheKey);
-    if (cached) {
+    if (cached && !isPromptLeak(cached)) {
       setInsight(cached);
       try {
         setSignals(JSON.parse(localStorage.getItem(signalKey) || 'null'));
@@ -63,6 +69,7 @@ export default function MondayInsight({ user }) {
       setLoading(false);
       return;
     }
+    if (cached) localStorage.removeItem(cacheKey);
 
     const loadInsight = async () => {
       setLoading(true);
@@ -70,23 +77,38 @@ export default function MondayInsight({ user }) {
         let habitsData = {};
         let habitCompletions = 0;
         let habitTarget = 0;
-        try {
-          const apiHabits = await apiGet('/habits');
-          const habitsList = Array.isArray(apiHabits) ? apiHabits : [];
-          habitTarget = habitsList.length * 7;
-          const last7Days = [];
-          for (let i = 0; i < 7; i++) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            last7Days.push(d.toISOString().split('T')[0]);
+        let moodTrend = 'No mood logs this week';
+        let financeData = { income: formatINR(0), expenses: formatINR(0), count: 0, period: 'last 7 days' };
+        let expenseTotal = 0;
+        let incomeTotal = 0;
+        let labSessions = 0;
+        let disciplineStreak = 0;
+        let disciplineLine = null;
+
+        if (user && !user.isGuest) {
+          try {
+            const signals = await fetchOverviewWeekSignals(user);
+            habitsData = signals.habitsData;
+            habitCompletions = signals.habitCompletions;
+            habitTarget = signals.habitTarget;
+            moodTrend = signals.moodTrend;
+            expenseTotal = signals.finance.expenses;
+            incomeTotal = signals.finance.income;
+            financeData = {
+              income: formatINR(incomeTotal),
+              expenses: formatINR(expenseTotal),
+              count: signals.finance.count,
+              period: 'last 7 days',
+            };
+            labSessions = signals.labSessions;
+            disciplineStreak = signals.disciplineStreak;
+            disciplineLine = signals.disciplineLine;
+          } catch {
+            /* fall through to local below */
           }
-          habitsList.forEach((h) => {
-            const dates = h.meta?.completedDates || [];
-            const count = last7Days.filter((d) => dates.includes(d)).length;
-            habitCompletions += count;
-            habitsData[h.name] = `${count}/7 days`;
-          });
-        } catch {
+        }
+
+        if (!habitTarget) {
           const habitsList = JSON.parse(localStorage.getItem('aiimin_habits_v3') || '[]');
           const habitLogs = JSON.parse(localStorage.getItem('aiimin_habits_logs_v3') || '{}');
           habitTarget = habitsList.length * 7;
@@ -104,69 +126,12 @@ export default function MondayInsight({ user }) {
           });
         }
 
-        let moodTrend = 'No mood logs this week';
-        if (user && !user.isGuest) {
+        if (!disciplineLine && disciplineStreak === 0) {
           try {
-            const entries = await apiGet('/db/journal_entries', {
-              params: { orderCol: 'date', ascending: 'false', limit: '7' },
-            });
-            const data = Array.isArray(entries) ? entries : [];
-            if (data.length > 0) {
-              const avg = data.reduce((s, x) => s + (x.mood || 3), 0) / data.length;
-              moodTrend = `${avg.toFixed(1)}/5 average (${data.length} entries)`;
-            }
-          } catch {
-            // mood trend optional
-          }
+            const disc = JSON.parse(localStorage.getItem('aiimin_discipline_v3') || 'null');
+            if (disc?.streak != null) disciplineStreak = disc.streak;
+          } catch { /* ignore */ }
         }
-
-        let financeData = { income: formatINR(0), expenses: formatINR(0), count: 0, period: 'last 7 days' };
-        let expenseTotal = 0;
-        let incomeTotal = 0;
-        if (user && !user.isGuest) {
-          const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
-          try {
-            const txList = await apiGet(`/wealth/transactions?from=${weekAgo}&limit=200`);
-            const list = Array.isArray(txList) ? txList : (txList?.data || []);
-            incomeTotal = list.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount || 0), 0);
-            expenseTotal = list.filter((t) => t.type === 'expense').reduce((s, t) => s + Math.abs(Number(t.amount || 0)), 0);
-            financeData = {
-              income: formatINR(incomeTotal),
-              expenses: formatINR(expenseTotal),
-              count: list.length,
-              period: 'last 7 days',
-            };
-          } catch { /* silent */ }
-        }
-
-        let labSessions = 0;
-        if (user && !user.isGuest) {
-          try {
-            const labRows = await apiGet('/db/lab_mindset_logs', {
-              params: {
-                gte: JSON.stringify({ logged_at: new Date(Date.now() - 7 * 86400000).toISOString() }),
-                limit: '200',
-              },
-            });
-            labSessions = Array.isArray(labRows) ? labRows.length : 0;
-          } catch {
-            labSessions = 0;
-          }
-        }
-
-        let disciplineStreak = 0;
-        let disciplineLine = null;
-        try {
-          const disc = await apiGet('/discipline/streak');
-          disciplineStreak = disc?.streak_days || 0;
-        } catch {
-          const disc = JSON.parse(localStorage.getItem('aiimin_discipline_v3') || 'null');
-          if (disc?.streak != null) disciplineStreak = disc.streak;
-        }
-        try {
-          const patterns = await apiGet('/discipline/patterns');
-          if (patterns?.headline) disciplineLine = patterns.headline;
-        } catch { /* optional */ }
 
         const res = await generateWeeklyInsight({
           habits: habitsData,
@@ -186,12 +151,34 @@ export default function MondayInsight({ user }) {
           discipline: disciplineLine || `${disciplineStreak} day streak`,
         };
 
-        if (res) {
-          localStorage.setItem(cacheKey, res);
-          localStorage.setItem(signalKey, JSON.stringify(nextSignals));
-          setInsight(res);
-          setSignals(nextSignals);
+        let finalText = '';
+        if (res && !isPromptLeak(res)) {
+          const parsed = parseInsight(res);
+          if (parsed.bullets.length >= 2) {
+            finalText = [
+              ...parsed.bullets.map((b) => `- ${b}`),
+              `Next move: ${parsed.nextMove || 'Pick one metric to improve before tomorrow night.'}`,
+            ].join('\n');
+          }
         }
+        if (!finalText) {
+          finalText = buildLocalInsight({
+            habitCompletions,
+            habitTarget,
+            moodTrend,
+            expenseTotal,
+            incomeTotal,
+            txCount: financeData.count,
+            labSessions,
+            disciplineStreak,
+            disciplineLine,
+          });
+        }
+
+        localStorage.setItem(cacheKey, finalText);
+        localStorage.setItem(signalKey, JSON.stringify(nextSignals));
+        setInsight(finalText);
+        setSignals(nextSignals);
       } catch (err) {
         console.error('[MondayInsight]', err);
       } finally {
@@ -251,7 +238,7 @@ export default function MondayInsight({ user }) {
             <CalendarClock size={13} /> {title}
           </div>
           <div style={{ fontSize: '22px', fontWeight: 950, color: '#fff7ed', letterSpacing: '-0.04em', lineHeight: 1.08 }}>
-            {isWeekendReview ? 'Close the week with evidence.' : 'Set the week from your real signals.'}
+            {isWeekendReview ? 'Your week, in numbers.' : 'Set the week from your real signals.'}
           </div>
         </div>
         <div style={{ fontSize: '10px', fontWeight: 750, color: 'rgba(255,247,237,0.62)', textAlign: 'right', lineHeight: 1.5 }}>
@@ -466,8 +453,72 @@ export default function MondayInsight({ user }) {
   );
 }
 
+function isPromptLeak(text) {
+  if (!text?.trim()) return false;
+  const lower = text.toLowerCase();
+  const hits = [
+    /write\s+\d+\s+short/,
+    /under\s+\d+\s+words/,
+    /warm,\s*practical,\s*calm/,
+    /must\s+(be|not)/,
+    /passive voice/,
+    /no dollar|dollar signs|rupee symbol/,
+    /do not apolog|don't apolog|forbid/,
+    /categories to reference/,
+    /exactly 4 short bullet/,
+    /speak directly to ["']you["']/,
+    /never use \$/,
+    /evidence-led/,
+  ].filter((re) => re.test(lower)).length;
+  return hits >= 1;
+}
+
+function looksLikeInstructionLine(cleaned) {
+  const lower = cleaned.toLowerCase();
+  return (
+    /^(write|do not|don't|forbid|avoid|use |reference|example|tone:|word count|bullet|must\b|provide exactly)/i.test(cleaned)
+    || /under \d+ words|passive voice|dollar signs|rupee symbol|you\/your|categories to/i.test(lower)
+    || /unfortunately/.test(lower)
+    || cleaned.length > 140
+  );
+}
+
+function buildLocalInsight({
+  habitCompletions = 0,
+  habitTarget = 0,
+  moodTrend = '',
+  expenseTotal = 0,
+  incomeTotal = 0,
+  txCount = 0,
+  labSessions = 0,
+  disciplineStreak = 0,
+  disciplineLine = '',
+}) {
+  const bullets = [];
+  if (habitTarget > 0) {
+    const pct = Math.round((habitCompletions / habitTarget) * 100);
+    bullets.push(`Habits landed ${habitCompletions}/${habitTarget} checks this week (${pct}%).`);
+  } else {
+    bullets.push('No habit targets yet — add one habit you can keep tomorrow.');
+  }
+  bullets.push(moodTrend && !/^no mood/i.test(moodTrend)
+    ? `Mood read: ${moodTrend}.`
+    : 'Mood has few journal entries — one line tonight still counts.');
+  bullets.push(
+    expenseTotal > 0 || incomeTotal > 0
+      ? `Money moved ${formatINR(expenseTotal)} out and ${formatINR(incomeTotal)} in across ${txCount} transactions.`
+      : 'No finance transactions logged this week.',
+  );
+  if (disciplineLine) bullets.push(disciplineLine);
+  else if (disciplineStreak > 0) bullets.push(`Discipline streak holds at ${disciplineStreak} day${disciplineStreak === 1 ? '' : 's'}.`);
+  else if (labSessions > 0) bullets.push(`Lab logged ${labSessions} session${labSessions === 1 ? '' : 's'} this week.`);
+  else bullets.push('Discipline and Lab were quiet — one urge surf or short Lab block resets the week.');
+
+  return `${bullets.slice(0, 4).map((b) => `- ${b}`).join('\n')}\nNext move: Pick one metric to improve before tomorrow night.`;
+}
+
 function parseInsight(text) {
-  if (!text?.trim()) return { bullets: [], nextMove: '' };
+  if (!text?.trim() || isPromptLeak(text)) return { bullets: [], nextMove: '' };
   const lines = text
     .split('\n')
     .map((line) => line.trim())
@@ -479,9 +530,10 @@ function parseInsight(text) {
     const cleaned = line.replace(/^[-*•]\s*/, '').replace(/^\d+[.)]\s*/, '').trim();
     if (/^next move:/i.test(cleaned)) {
       nextMove = cleaned.replace(/^next move:\s*/i, '').trim();
-    } else if (cleaned) {
-      bullets.push(cleaned);
+      return;
     }
+    if (!cleaned || looksLikeInstructionLine(cleaned)) return;
+    bullets.push(cleaned);
   });
 
   return { bullets: bullets.slice(0, 4), nextMove };

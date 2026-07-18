@@ -430,16 +430,16 @@ export default function WaitlistForm({
         </p>
       </div>
 
+      {showUrgency && (
+        <p className="urgency-chip" role="status">
+          Tester registration closes <strong>31 July</strong>
+        </p>
+      )}
+
       <button type="submit" disabled={loading} className="waitlist-submit-btn">
         <Sparkles size={14} />
         {loading ? 'Joining...' : 'Join the waitlist'}
       </button>
-
-      {showUrgency && (
-        <p className="urgency-line">
-          ⏰ Tester registration closes <strong>31 July</strong> · Waitlist stays open until launch
-        </p>
-      )}
 
       {!compact && (
         <p className="waitlist-form-note">

@@ -5,7 +5,9 @@
  * longest streak, monthly consistency rate.
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import supabase from '../../utils/supabase';
+import { apiGet } from '../../utils/api';
+import { fetchHabits } from '../../api/habits';
+import { fetchDailyLogs } from '../../api/dailyLogs';
 
 export default function StreakAnalytics({ user }) {
     const [habits, setHabits] = useState([]);
@@ -18,21 +20,25 @@ export default function StreakAnalytics({ user }) {
         if (!user) return;
         setLoading(true);
 
-        const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+        const today = new Date().toISOString().slice(0, 10);
 
-        const [habitsRes, logsRes, moodRes] = await Promise.all([
-            supabase.from('habits').select('id, name, emoji, category, frequency')
-                .eq('user_id', user.id).eq('status', 'active'),
-            supabase.from('habit_logs').select('id, habit_id, completed_at, status')
-                .eq('user_id', user.id).gte('completed_at', thirtyDaysAgo)
-                .order('completed_at', { ascending: false }),
-            supabase.from('daily_logs').select('date, mood')
-                .eq('user_id', user.id).gte('date', thirtyDaysAgo.slice(0, 10)),
+        const [habitsList, logsList, moodList] = await Promise.all([
+            fetchHabits({ status: 'active' }),
+            apiGet('/db/habit_logs', {
+                params: {
+                    gte: JSON.stringify({ completed_at: `${thirtyDaysAgo}T00:00:00.000Z` }),
+                    orderCol: 'completed_at',
+                    ascending: 'false',
+                    limit: '500',
+                },
+            }),
+            fetchDailyLogs(thirtyDaysAgo, today),
         ]);
 
-        setHabits(habitsRes.data || []);
-        setLogs(logsRes.data || []);
-        setMoodData(moodRes.data || []);
+        setHabits(Array.isArray(habitsList) ? habitsList : []);
+        setLogs(Array.isArray(logsList) ? logsList : []);
+        setMoodData(Array.isArray(moodList) ? moodList : []);
         setLoading(false);
     }, [user]);
 

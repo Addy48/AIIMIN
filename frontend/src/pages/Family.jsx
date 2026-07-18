@@ -6,17 +6,31 @@ import PageHeader from '../components/layout/PageHeader';
 import { Plus, X, Shield, FileText, Heart, Activity, Clock, AlertTriangle, Eye, EyeOff, Car, Wallet, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { formatDate, formatINR } from '../utils/formatDate';
+import { DOC_TYPE_LABELS, labelEnum } from '../utils/enumLabels';
 
-const TABS = [
-  { id: 'members', label: 'Members', icon: Shield },
-  { id: 'documents', label: 'Documents', icon: FileText },
-  { id: 'insurance', label: 'Insurance', icon: Heart },
-  { id: 'health', label: 'Health', icon: Activity },
-  { id: 'vehicles', label: 'Vehicles', icon: Car },
-  { id: 'finance', label: 'Finance', icon: Wallet },
-  { id: 'relationships', label: 'Relationships', icon: Users },
-  { id: 'reminders', label: 'Reminders', icon: Clock },
-  { id: 'emergency', label: 'Emergency', icon: AlertTriangle }
+const TAB_CLUSTERS = [
+  {
+    id: 'people',
+    label: 'People',
+    tabs: [
+      { id: 'members', label: 'Members', icon: Shield },
+      { id: 'relationships', label: 'Relationships', icon: Users },
+      { id: 'emergency', label: 'Emergency', icon: AlertTriangle },
+    ],
+  },
+  {
+    id: 'records',
+    label: 'Records',
+    tabs: [
+      { id: 'documents', label: 'Documents', icon: FileText },
+      { id: 'insurance', label: 'Insurance', icon: Heart },
+      { id: 'health', label: 'Health', icon: Activity },
+      { id: 'vehicles', label: 'Vehicles', icon: Car },
+      { id: 'finance', label: 'Finance', icon: Wallet },
+      { id: 'reminders', label: 'Reminders', icon: Clock },
+    ],
+  },
 ];
 
 /* ── Generic Modal ── */
@@ -448,24 +462,41 @@ export default function FamilyPage() {
       </div>
 
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '32px', scrollbarWidth: 'none' }}>
-        {TABS.map(tab => {
-          const Icon = tab.icon;
-          const active = activeTab === tab.id;
-          return (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-              display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px',
-              background: active ? 'var(--color-text-1)' : 'transparent',
-              color: active ? 'var(--color-base)' : 'var(--color-text-2)',
-              border: active ? '1px solid var(--color-text-1)' : '1px solid transparent',
-              borderRadius: '99px', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.2s', whiteSpace: 'nowrap'
-            }}>
-              <Icon size={16} /> {tab.label}
-            </button>
-          );
-        })}
+      {/* Tabs — People / Records clusters */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, borderBottom: '1px solid var(--color-border)', paddingBottom: 16, marginBottom: 32 }}>
+        {TAB_CLUSTERS.map((cluster, ci) => (
+          <div key={cluster.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-3)', minWidth: 56 }}>
+              {cluster.label}
+            </span>
+            {ci > 0 && (
+              <span aria-hidden style={{ width: 1, height: 22, background: 'var(--color-border)', marginRight: 4 }} />
+            )}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', flex: 1 }}>
+              {cluster.tabs.map((tab) => {
+                const Icon = tab.icon;
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px',
+                      background: active ? 'var(--color-text-1)' : 'transparent',
+                      color: active ? 'var(--color-base)' : 'var(--color-text-2)',
+                      border: active ? '1px solid var(--color-text-1)' : '1px solid var(--color-border)',
+                      borderRadius: 99, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                      transition: 'all 0.2s', whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <Icon size={16} /> {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Content Area */}
@@ -491,7 +522,7 @@ export default function FamilyPage() {
                   <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '4px' }}>{m.name}</div>
                   <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{m.relation}</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: 'var(--color-text-2)' }}>
-                    <div><strong style={{ color: 'var(--color-text-1)' }}>DOB:</strong> <br/>{m.dob || '—'}</div>
+                    <div><strong style={{ color: 'var(--color-text-1)' }}>DOB:</strong> <br/>{formatDate(m.dob)}</div>
                     <div><strong style={{ color: 'var(--color-text-1)' }}>Blood:</strong> <br/>{m.blood_group || '—'}</div>
                     <div style={{ gridColumn: 'span 2' }}><strong style={{ color: 'var(--color-text-1)' }}>Phone:</strong> <br/>{m.phone || '—'}</div>
                   </div>
@@ -523,7 +554,7 @@ export default function FamilyPage() {
                   <div key={d.id} style={{ background: 'var(--color-surface)', border: `1px solid ${isExpiring ? '#EF4444' : 'var(--color-border)'}`, borderRadius: '24px', padding: '24px', position: 'relative' }}>
                     <button onClick={() => handleDelete('family_documents', d.id)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}><X size={16}/></button>
                     <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{getMemberName(d.member_id)}</div>
-                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '16px' }}>{d.doc_type}</div>
+                    <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '16px' }}>{labelEnum(d.doc_type, DOC_TYPE_LABELS)}</div>
                     
                     <div style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '12px' }}>
                       <strong style={{ color: 'var(--color-text-1)', display: 'block', marginBottom: '4px' }}>Document No:</strong>
@@ -531,7 +562,7 @@ export default function FamilyPage() {
                     </div>
                     {d.expiry_date && (
                       <div style={{ fontSize: '13px', color: isExpiring ? '#EF4444' : 'var(--color-text-2)' }}>
-                        <strong style={{ color: isExpiring ? '#EF4444' : 'var(--color-text-1)' }}>Expiry:</strong> {d.expiry_date}
+                        <strong style={{ color: isExpiring ? '#EF4444' : 'var(--color-text-1)' }}>Expiry:</strong> {formatDate(d.expiry_date)}
                       </div>
                     )}
                   </div>
@@ -567,8 +598,8 @@ export default function FamilyPage() {
                     <div style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px' }}>{i.provider} • <MaskedText text={i.policy_number} /></div>
                     
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: 'var(--color-text-2)' }}>
-                      <div><strong style={{ color: 'var(--color-text-1)' }}>Premium:</strong> <br/>{i.premium_amount ? `$${i.premium_amount}` : '—'}</div>
-                      <div style={{ color: isExpiring ? '#EF4444' : 'inherit' }}><strong style={{ color: isExpiring ? '#EF4444' : 'var(--color-text-1)' }}>Renewal:</strong> <br/>{i.renewal_date || '—'}</div>
+                      <div><strong style={{ color: 'var(--color-text-1)' }}>Premium:</strong> <br/>{formatINR(i.premium_amount)}</div>
+                      <div style={{ color: isExpiring ? '#EF4444' : 'inherit' }}><strong style={{ color: isExpiring ? '#EF4444' : 'var(--color-text-1)' }}>Renewal:</strong> <br/>{formatDate(i.renewal_date)}</div>
                       <div style={{ gridColumn: 'span 2' }}><strong style={{ color: 'var(--color-text-1)' }}>Nominee:</strong> <br/>{i.nominee || '—'}</div>
                     </div>
                   </div>
@@ -640,9 +671,9 @@ export default function FamilyPage() {
                     
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: 'var(--color-text-2)' }}>
                       <div><strong style={{ color: 'var(--color-text-1)' }}>Insurance:</strong> <br/>{v.insurance_provider || '—'}</div>
-                      <div style={{ color: isInsExpiring ? '#EF4444' : 'inherit' }}><strong style={{ color: isInsExpiring ? '#EF4444' : 'var(--color-text-1)' }}>Ins Exp:</strong> <br/>{v.insurance_expiry || '—'}</div>
-                      <div style={{ color: isPucExpiring ? '#EF4444' : 'inherit' }}><strong style={{ color: isPucExpiring ? '#EF4444' : 'var(--color-text-1)' }}>PUC Exp:</strong> <br/>{v.puc_expiry || '—'}</div>
-                      <div><strong style={{ color: 'var(--color-text-1)' }}>Service Due:</strong> <br/>{v.service_due_date || '—'}</div>
+                      <div style={{ color: isInsExpiring ? '#EF4444' : 'inherit' }}><strong style={{ color: isInsExpiring ? '#EF4444' : 'var(--color-text-1)' }}>Ins Exp:</strong> <br/>{formatDate(v.insurance_expiry)}</div>
+                      <div style={{ color: isPucExpiring ? '#EF4444' : 'inherit' }}><strong style={{ color: isPucExpiring ? '#EF4444' : 'var(--color-text-1)' }}>PUC Exp:</strong> <br/>{formatDate(v.puc_expiry)}</div>
+                      <div><strong style={{ color: 'var(--color-text-1)' }}>Service Due:</strong> <br/>{formatDate(v.service_due_date)}</div>
                     </div>
                   </div>
                 );
@@ -679,7 +710,7 @@ export default function FamilyPage() {
                       <strong style={{ color: 'var(--color-text-1)', display: 'block', marginBottom: '4px' }}>Account No:</strong>
                       <MaskedText text={f.account_number} />
                     </div>
-                    <div><strong style={{ color: 'var(--color-text-1)' }}>Balance:</strong> <br/>{f.current_balance ? `₹${f.current_balance}` : '—'}</div>
+                    <div><strong style={{ color: 'var(--color-text-1)' }}>Balance:</strong> <br/>{formatINR(f.current_balance)}</div>
                   </div>
                   {f.notes && <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '12px', borderRadius: '8px' }}>{f.notes}</div>}
                 </div>
@@ -711,8 +742,8 @@ export default function FamilyPage() {
                   <div style={{ fontSize: '13px', color: 'var(--color-text-3)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{rel.relation_type}</div>
                   
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '13px', color: 'var(--color-text-2)' }}>
-                    {rel.birthday && <div><strong style={{ color: 'var(--color-text-1)' }}>Birthday:</strong> <br/>{rel.birthday}</div>}
-                    {rel.anniversary_date && <div><strong style={{ color: 'var(--color-text-1)' }}>Anniversary:</strong> <br/>{rel.anniversary_date}</div>}
+                    {rel.birthday && <div><strong style={{ color: 'var(--color-text-1)' }}>Birthday:</strong> <br/>{formatDate(rel.birthday)}</div>}
+                    {rel.anniversary_date && <div><strong style={{ color: 'var(--color-text-1)' }}>Anniversary:</strong> <br/>{formatDate(rel.anniversary_date)}</div>}
                   </div>
                   {rel.notes && <div style={{ marginTop: '16px', fontSize: '13px', color: 'var(--color-text-2)', background: 'var(--color-elevated)', padding: '12px', borderRadius: '8px' }}>{rel.notes}</div>}
                 </div>
@@ -753,7 +784,7 @@ export default function FamilyPage() {
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: isOverdue && !r.completed ? '#EF4444' : 'var(--color-text-2)' }}>{r.due_date}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: isOverdue && !r.completed ? '#EF4444' : 'var(--color-text-2)' }}>{formatDate(r.due_date)}</div>
                       <button onClick={() => handleDelete('family_reminders', r.id)} style={{ background: 'none', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer' }}><X size={16}/></button>
                     </div>
                   </div>

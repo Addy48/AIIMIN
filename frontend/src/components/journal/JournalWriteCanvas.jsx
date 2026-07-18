@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Mic, MicOff } from 'lucide-react';
 import useJournalVoice from '../../hooks/useJournalVoice';
 import JournalMoodStrip from './JournalMoodStrip';
+import { formatDate } from '../../utils/formatDate';
 
 function appendText(base, chunk) {
   const cleanChunk = String(chunk || '').trim();
@@ -67,7 +68,7 @@ export default function JournalWriteCanvas({
         <div className="journal-studio__meta">
           <span>{wordCount} words</span>
           <span>•</span>
-          <span>{new Date().toLocaleDateString('en-GB')}</span>
+          <span>{formatDate(new Date())}</span>
         </div>
         <JournalMoodStrip value={mood} onChange={setMood} disabled={readOnly} />
         <div className="journal-studio__actions">

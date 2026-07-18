@@ -58,6 +58,14 @@ export default function PersonalizationSection({ profile, onProfileUpdate }) {
   const [aiTone, setAiTone] = useState(profile?.ai_tone || 'motivating');
   const [favoriteSports, setFavoriteSports] = useState(profile?.favorite_sports || []);
   const [favoriteTeams, setFavoriteTeams] = useState(profile?.favorite_teams || {});
+  // Client-only — no user_profiles column yet (schema lock). Syncs Focus page via localStorage.
+  const [weeklyFocusTarget, setWeeklyFocusTarget] = useState(() => {
+    try {
+      return String(localStorage.getItem('aiimin_weekly_focus_target_h') || '15');
+    } catch {
+      return '15';
+    }
+  });
   const save = async (patch) => {
     try {
       const updated = await apiPatch('/account/user-profile', patch);
@@ -65,6 +73,14 @@ export default function PersonalizationSection({ profile, onProfileUpdate }) {
     } catch (err) {
       /* fail silently — UI already updated */
     }
+  };
+  const persistWeeklyFocusTarget = (raw) => {
+    const n = Math.min(80, Math.max(1, Number(raw) || 15));
+    setWeeklyFocusTarget(String(n));
+    try {
+      localStorage.setItem('aiimin_weekly_focus_target_h', String(n));
+      window.dispatchEvent(new CustomEvent('aiimin-weekly-focus-target', { detail: n }));
+    } catch { /* ignore */ }
   };
 
   const toggleSport = (sport) => {
@@ -299,6 +315,34 @@ export default function PersonalizationSection({ profile, onProfileUpdate }) {
               </button>
             );
           })}
+        </div>
+      </section>
+
+      {/* ─── Focus target ─── */}
+      <section style={{
+        background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+        borderRadius: 'var(--r-xl)', padding: '24px', marginBottom: 20,
+      }}>
+        <h2 className="text-h3" style={{ marginBottom: 4, color: 'var(--color-text-1)' }}>Weekly focus target</h2>
+        <p className="text-sm" style={{ color: 'var(--color-text-2)', marginBottom: 16 }}>
+          Hours of deep work you aim for each week. Shows on the Focus page progress bar.
+          Saved on this device only (not synced to account yet).
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <input
+            type="number"
+            min={1}
+            max={80}
+            value={weeklyFocusTarget}
+            onChange={(e) => setWeeklyFocusTarget(e.target.value)}
+            onBlur={() => persistWeeklyFocusTarget(weeklyFocusTarget)}
+            style={{
+              width: 88, padding: '10px 12px', borderRadius: 10,
+              border: '1px solid var(--color-border)', background: 'var(--color-elevated)',
+              color: 'var(--color-text-1)', fontWeight: 700, fontSize: 15,
+            }}
+          />
+          <span style={{ fontSize: 13, color: 'var(--color-text-3)' }}>hours / week</span>
         </div>
       </section>
 

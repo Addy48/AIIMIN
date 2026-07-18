@@ -28,6 +28,8 @@ import {
 } from '../api/notes';
 import toast from '../utils/toast';
 import { extractTextFromPDF } from '../utils/pdfUtils';
+import { formatDate } from '../utils/formatDate';
+import { NOTE_SOURCE_LABELS, labelEnum } from '../utils/enumLabels';
 import '../styles/notesStudio.css';
 
 function previewText(note) {
@@ -41,12 +43,12 @@ function snippet(note, n = 96) {
 }
 
 function formatWhen(iso) {
-  if (!iso) return '';
-  try {
-    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  } catch {
-    return '';
-  }
+  return formatDate(iso, '');
+}
+
+function sourceBadgeLabel(sourceType) {
+  if (!sourceType || sourceType === 'admin_simulated') return null;
+  return labelEnum(sourceType, NOTE_SOURCE_LABELS);
 }
 
 const SOURCE_OPTS = [
@@ -58,12 +60,13 @@ const SOURCE_OPTS = [
 function VoiceRecallBanner({ items, onOutcome }) {
   if (!items?.length) return null;
   const item = items[0];
+  const srcLabel = sourceBadgeLabel(item.source_type) || 'Source';
   return (
     <div className="voice-recall" role="region" aria-label="Voice recall">
       <div>
         <p className="voice-recall__title">Quiet recall</p>
         <p className="voice-recall__meta">
-          {item.source_type} · box {item.box} — recalled clean, or had to think?
+          {srcLabel} · box {item.box} — recalled clean, or had to think?
         </p>
       </div>
       <div className="voice-recall__actions">
@@ -104,7 +107,9 @@ export default function NotesPage() {
         fetchNotes({ q: q || undefined }),
         fetchRecallDue().catch(() => []),
       ]);
-      setNotes(Array.isArray(list) ? list : []);
+      setNotes(Array.isArray(list)
+        ? list.filter((n) => n.source_type !== 'admin_simulated' || process.env.NODE_ENV === 'development')
+        : []);
       setRecall(Array.isArray(due) ? due : []);
     } catch (err) {
       console.error('[Notes]', err);
@@ -350,9 +355,11 @@ export default function NotesPage() {
               onClick={() => openNote(note)}
             >
               <div className="notes-row__top">
-                <span className={`notes-tag notes-tag--${note.source_type || 'text'}`}>
-                  {note.source_type || 'text'}
-                </span>
+                {sourceBadgeLabel(note.source_type) && (
+                  <span className={`notes-tag notes-tag--${note.source_type || 'text'}`}>
+                    {sourceBadgeLabel(note.source_type)}
+                  </span>
+                )}
                 <span className="notes-row__date">{formatWhen(note.created_at || note.updated_at)}</span>
               </div>
               <div className="notes-row__title">{note.title || 'Untitled'}</div>
@@ -448,7 +455,7 @@ export default function NotesPage() {
       <p className="notes-empty__kicker">Reference layer</p>
       <h2 className="notes-empty__title">Sources, not a second journal</h2>
       <p className="notes-empty__body">
-        Capture PDFs, voice transcripts, and text you want to keep next to habits — confirm links yourself, never silent.
+        Capture PDFs, voice recordings, and text you want to keep alongside your habits and journal. Add a source to get started.
       </p>
       <div className="notes-empty__actions">
         {SOURCE_OPTS.map(({ id, label, Icon }) => (
@@ -466,7 +473,7 @@ export default function NotesPage() {
       <header className="notes-reader__head">
         <div className="notes-reader__meta">
           <span className={`notes-tag notes-tag--${selected.source_type || 'text'}`}>
-            {selected.source_type || 'text'}
+            {sourceBadgeLabel(selected.source_type) || 'Text'}
           </span>
           {selected.status && (
             <span className={`notes-tag${selected.status === 'linked' ? ' notes-tag--accent' : ''}`}>

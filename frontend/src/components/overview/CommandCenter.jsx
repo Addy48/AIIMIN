@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Check, ChevronRight, Flame } from 'lucide-react';
 import { apiGet } from '../../utils/api';
-import { calculateLifeScore } from '../../utils/lifeScoreEngine';
+import { useLifeScore } from '../../hooks/useLifeScore';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { LIFE_ARC_LABEL } from '../../constants/arc';
+import { formatINR } from '../../utils/formatDate';
 
 /* ─── Constants ─────────────────────────────────────────────────── */
 const PRIORITIES_KEY = 'aiimin_cmd_priorities';
@@ -67,11 +68,11 @@ export default function CommandCenter({ user }) {
   const [habits, setHabits] = useState([]);
   const [habitLogs, setHabitLogs] = useState({});
   const [finSnap, setFinSnap] = useState(null);
-  const [lifeScore, setLifeScore] = useState(null);
+  const { lifeScore, refetch: refetchLifeScore } = useLifeScore(user);
 
   useEffect(() => {
-    calculateLifeScore(user).then(setLifeScore);
-  }, [user, habits, habitLogs, priorities]);
+    if (user && !user.isGuest) refetchLifeScore();
+  }, [user, habits, habitLogs, priorities, refetchLifeScore]);
 
   // Load habits from localStorage
   useEffect(() => {
@@ -123,8 +124,10 @@ export default function CommandCenter({ user }) {
     setTimeout(() => setNoteSaved(false), 2000);
   }, [note]);
 
-  // Top 3 habits by streak + status
-  const topHabits = habits
+  // Top 3 habits by streak + status (dedupe by id — localStorage can accumulate duplicates)
+  const topHabits = Array.from(
+    new Map(habits.filter((h) => h?.id).map((h) => [h.id, h])).values()
+  )
     .map(h => {
       const streak = calcStreak(h.id, habitLogs);
       const status = getStreakStatus(h.id, habitLogs, streak);
@@ -167,9 +170,18 @@ export default function CommandCenter({ user }) {
               <div style={{ fontSize: '12px', color: 'var(--color-text-2)', lineHeight: 1.4 }}>
                 {lifeScore.explanation}
               </div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
                 <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Behav: {lifeScore.contributors.behavioral.score}</div>
                 <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Mental: {lifeScore.contributors.mental_clarity.score}</div>
+                {lifeScore.contributors.goal_momentum && (
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Goals: {lifeScore.contributors.goal_momentum.score}</div>
+                )}
+                {lifeScore.contributors.financial && (
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Money: {lifeScore.contributors.financial.score}</div>
+                )}
+                {lifeScore.contributors.recovery && (
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Sleep: {lifeScore.contributors.recovery.score}</div>
+                )}
               </div>
             </div>
           </div>
@@ -272,14 +284,14 @@ export default function CommandCenter({ user }) {
               <div>
                 <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Spent</div>
                 <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-1)', fontFamily: 'var(--font-mono, monospace)', lineHeight: 1 }}>
-                  ₹{(finSnap.total_expenses || 0).toLocaleString('en-IN')}
+                  {formatINR(Math.abs(Number(finSnap.total_expenses) || 0))}
                 </div>
               </div>
               {finSnap.total_income > 0 && (
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Income</div>
                   <div style={{ fontSize: '14px', fontWeight: 800, color: '#22C55E', fontFamily: 'var(--font-mono, monospace)', lineHeight: 1 }}>
-                    +₹{(finSnap.total_income || 0).toLocaleString('en-IN')}
+                    +{formatINR(Math.abs(Number(finSnap.total_income) || 0))}
                   </div>
                 </div>
               )}
@@ -295,7 +307,7 @@ export default function CommandCenter({ user }) {
                   }} />
                 </div>
                 <span style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>
-                  Budget: ₹{(finSnap.budget_limit || 0).toLocaleString('en-IN')}
+                  Budget: {formatINR(Math.abs(Number(finSnap.budget_limit) || 0))}
                 </span>
               </>
             )}

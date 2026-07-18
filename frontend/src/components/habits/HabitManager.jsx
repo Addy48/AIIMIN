@@ -6,16 +6,15 @@
  * Habits can then be added to routines via HabitsWidget.
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import supabase from '../../utils/supabase';
-import { insertRow, updateRow } from '../../services/dbService';
+import { apiGet, apiPost } from '../../utils/api';
+import { useHabitsQuery } from '../../hooks/useHabitsQuery';
 import toast from '../../utils/toast';
 import { EMOJI_PICKER, EMOJI_LABELS, HABIT_CATEGORIES, FREQUENCIES, CATEGORY_FILTER_ALL } from './HabitConstants';
 
 
 export default function HabitManager({ user }) {
-    const [habits, setHabits] = useState([]);
+    const { habits, loading, createHabit, updateHabit, invalidate } = useHabitsQuery({ enabled: Boolean(user) });
     const [routines, setRoutines] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [filterCat, setFilterCat] = useState(CATEGORY_FILTER_ALL);
 
@@ -30,24 +29,19 @@ export default function HabitManager({ user }) {
     const [selectedRoutine, setSelectedRoutine] = useState(null);
     const [hoveredEmoji, setHoveredEmoji] = useState(null);
 
-    const fetchHabits = useCallback(async () => {
+    const fetchRoutines = useCallback(async () => {
         if (!user) return;
-        setLoading(true);
-        const [habitsRes, routinesRes] = await Promise.all([
-            supabase.from('habits')
-                .select('id, name, emoji, category, frequency, created_at')
-                .eq('user_id', user.id).eq('status', 'active')
-                .order('created_at', { ascending: true }),
-            supabase.from('routines')
-                .select('id, name, time_of_day')
-                .eq('user_id', user.id).order('created_at', { ascending: true }),
-        ]);
-        setHabits(habitsRes.data || []);
-        setRoutines(routinesRes.data || []);
-        setLoading(false);
+        try {
+            const rows = await apiGet('/db/routines', {
+                params: { orderCol: 'created_at', ascending: 'true' },
+            });
+            setRoutines(Array.isArray(rows) ? rows : []);
+        } catch {
+            setRoutines([]);
+        }
     }, [user]);
 
-    useEffect(() => { fetchHabits(); }, [fetchHabits]);
+    useEffect(() => { fetchRoutines(); }, [fetchRoutines]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -61,23 +55,20 @@ export default function HabitManager({ user }) {
 
         setSaving(true);
         try {
-            const data = await insertRow('habits', [{
-                user_id: user.id,
+            const created = await createHabit({
                 name: name.trim(),
                 emoji,
-                frequency: frequency,
+                frequency,
                 category,
-            }]);
-            if (data?.[0]) {
-                // If routine selected, add habit to that routine
-                if (selectedRoutine && data[0].id) {
-                    await insertRow('routine_habits', [{
+            });
+            if (created?.id) {
+                if (selectedRoutine) {
+                    await apiPost('/db/routine_habits', {
                         routine_id: selectedRoutine,
-                        habit_id: data[0].id,
-                        position: 999, // append at end
-                    }]);
+                        habit_id: created.id,
+                        position: 999,
+                    });
                 }
-                setHabits(prev => [...prev, data[0]]);
                 resetForm();
             }
         } catch (err) {
@@ -93,8 +84,12 @@ export default function HabitManager({ user }) {
     };
 
     const handleArchive = async (id) => {
-        await updateRow('habits', { status: 'archived' }, 'id', id, 'user_id', user.id);
-        setHabits(prev => prev.filter(h => h.id !== id));
+        try {
+            await updateHabit(id, { status: 'archived' });
+            invalidate();
+        } catch (err) {
+            toast.error('Failed to archive habit: ' + err.message);
+        }
     };
 
     if (!user) return null;

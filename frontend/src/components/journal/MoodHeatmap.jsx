@@ -3,10 +3,10 @@ import { useThemeContext } from '../../context/ThemeContext';
 
 const MOODS = [
   { val: 1, emoji: '😞', label: 'Rough', color: '#ef4444' },
-  { val: 2, emoji: '😐', label: 'Meh', color: '#f59e0b' },
+  { val: 2, emoji: '😐', label: 'Meh', color: '#E8B84B' },
   { val: 3, emoji: '😊', label: 'Okay', color: '#10b981' },
-  { val: 4, emoji: '😄', label: 'Good', color: '#3b82f6' },
-  { val: 5, emoji: '🔥', label: 'Great', color: '#8b5cf6' },
+  { val: 4, emoji: '😄', label: 'Good', color: '#ff6b35' },
+  { val: 5, emoji: '🔥', label: 'Great', color: '#E8B84B' },
 ];
 
 export default function MoodHeatmap({ entries, onSelectEntry }) {

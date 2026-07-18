@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../../utils/supabase';
 import { apiPost } from '../../utils/api';
+import { createJournalEntry, updateJournalEntry } from '../../api/journal';
 import { Smile, Zap, Moon, Save, Trash2, X, Sparkles, Brain, HelpCircle, Calendar, FileText, Hash, Type, MoreHorizontal, Plus } from 'lucide-react';
 import { useThemeContext } from '../../context/ThemeContext';
 import { getJournalPrompts } from '../../services/aiService';
+import { formatDateLong } from '../../utils/formatDate';
 
 const MOODS = [
   { val: 1, emoji: '😞', label: 'Rough', color: '#ef4444' },
-  { val: 2, emoji: '😐', label: 'Meh', color: '#f59e0b' },
+  { val: 2, emoji: '😐', label: 'Meh', color: '#E8B84B' },
   { val: 3, emoji: '😊', label: 'Okay', color: '#10b981' },
-  { val: 4, emoji: '😄', label: 'Good', color: '#3b82f6' },
-  { val: 5, emoji: '🔥', label: 'Great', color: '#8b5cf6' },
+  { val: 4, emoji: '😄', label: 'Good', color: '#ff6b35' },
+  { val: 5, emoji: '🔥', label: 'Great', color: '#E8B84B' },
 ];
 
 const COVERS = [
@@ -75,20 +76,11 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
       };
 
       if (selectedEntry.id.toString().startsWith('temp')) {
-        const { data, error } = await supabase
-          .from('journal_entries')
-          .insert(payload)
-          .select()
-          .single();
-        if (error) throw error;
+        const data = await createJournalEntry(payload);
         onSaveSuccess(data, true);
       } else {
-        const { error } = await supabase
-          .from('journal_entries')
-          .update(payload)
-          .eq('id', selectedEntry.id);
-        if (error) throw error;
-        onSaveSuccess({ ...selectedEntry, ...payload }, false);
+        const data = await updateJournalEntry(selectedEntry.id, payload);
+        onSaveSuccess({ ...selectedEntry, ...data }, false);
       }
     } catch (e) {
       console.error("Save error:", e);
@@ -265,7 +257,7 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Calendar size={14} style={{ color: accent }} />
               <span style={{ fontSize: '13px', color: text3, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-                {new Date(selectedEntry.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                {formatDateLong(selectedEntry.date)}
               </span>
             </div>
             {isSaving && (
@@ -367,7 +359,7 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
                     style={{
                       background: 'rgba(59, 130, 246, 0.08)',
                       border: `1px solid var(--border)`,
-                      color: '#3b82f6',
+                      color: '#ff6b35',
                       padding: '8px 16px',
                       borderRadius: '10px',
                       fontSize: '12px',
@@ -430,7 +422,7 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
                       gap: '10px'
                     }}
                   >
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#ff6b35', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Deepen Your Reflection
                     </span>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -453,7 +445,7 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
                             cursor: 'pointer',
                             transition: 'all 0.2s',
                           }}
-                          onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = '#ff6b35'}
                           onMouseLeave={e => e.currentTarget.style.borderColor = border}
                         >
                           {p}

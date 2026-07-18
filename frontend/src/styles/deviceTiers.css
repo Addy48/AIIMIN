@@ -55,6 +55,21 @@ html[data-device-tier='tablet'] [role='button'] {
   min-height: 44px;
 }
 
+html[data-device-tier='phone'] .daily-log-water-btn {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+html[data-capacitor='true'] .mobile-shell,
+html[data-capacitor='true'] .mobile-capture {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+html[data-capacitor='true'] .mobile-bottom-nav {
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+}
+
 html[data-device-tier='tablet'] .notes-studio__layout.is-drawer-tier,
 html[data-device-tier='tablet'] .journal-studio {
   /* journal/notes already drawer at ≤900 — keep roomy */

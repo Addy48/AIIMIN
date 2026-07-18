@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Eye, EyeOff, Trash2, Edit2 } from 'lucide-react';
 import { fvApi, DOC_TYPES, CloseBtn, Field, getDaysUntil, expiryClass, expiryLabel, maskNumber } from './fvUtils';
+import { formatDate } from '../../utils/formatDate';
 
 import Modal from '../../components/ui/Modal';
 
@@ -110,8 +111,8 @@ const DocCard = ({ doc, onEdit, onDelete }) => {
       </div>
       {(doc.issue_date || doc.expiry_date) && (
         <div style={{ marginTop:'12px', display:'flex', gap:'20px', fontSize:'11px', color:'var(--color-text-3)' }}>
-          {doc.issue_date && <span>Issued: {new Date(doc.issue_date).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}</span>}
-          {doc.expiry_date && <span>Expires: {new Date(doc.expiry_date).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}</span>}
+          {doc.issue_date && <span>Issued: {formatDate(doc.issue_date)}</span>}
+          {doc.expiry_date && <span>Expires: {formatDate(doc.expiry_date)}</span>}
         </div>
       )}
       {doc.notes && <div style={{ marginTop:'8px', fontSize:'11px', color:'var(--color-text-3)', fontStyle:'italic' }}>{doc.notes}</div>}

@@ -1,11 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
-import { apiDelete, apiPatch } from '../utils/api';
+import { apiDelete, apiPatch, apiPost } from '../utils/api';
 import toast from '../utils/toast';
 import { useMockData } from '../providers/MockDataProvider';
 import { exportUserData } from '../utils/exportUserData';
-import { supabase } from '../utils/supabase';
 import {
   User, Palette, Bell, Shield, Database, Activity,
   Globe, Lock, ChevronRight, Check, X, Edit2,
@@ -159,28 +158,26 @@ const Settings = () => {
     }, [nameVal]);
   const handleDeleteAllData = useCallback(async () => {
     if (!window.confirm('This will wipe all your tracked data but KEEP your account. Proceed?')) return;
-    const input = window.prompt('Type "wipe data" to confirm:');
-    if (input !== 'wipe data') { toast.error('Deletion cancelled.'); return; }
+    const input = window.prompt('Type "WIPE ALL DATA" to confirm:');
+    if (input !== 'WIPE ALL DATA') { toast.error('Deletion cancelled.'); return; }
     const tid = toast.loading('Deleting all data...');
     try {
-      const userId = user.id;
-      await supabase.from('daily_logs').delete().eq('user_id', userId);
-      await supabase.from('lab_typing_tests').delete().eq('user_id', userId);
-      await supabase.from('money_transactions').delete().eq('user_id', userId);
-      await supabase.from('wealth_assets').delete().eq('user_id', userId);
-      await supabase.from('accounts').delete().eq('user_id', userId);
-      await supabase.from('job_applications').delete().eq('user_id', userId);
-      await supabase.from('resumes').delete().eq('user_id', userId);
-      await supabase.from('pomodoro_sessions').delete().eq('user_id', userId);
-      await supabase.from('budgets').delete().eq('user_id', userId);
-      await supabase.from('habits').delete().eq('user_id', userId);
-      await supabase.from('notes').delete().eq('user_id', userId);
+      await apiPost('/account/wipe-life-data', { confirm: 'WIPE ALL DATA' });
+      try {
+        const keep = /^(aiimin_theme|aiimin-theme|theme|better-auth)/i;
+        const toRemove = [];
+        for (let i = 0; i < localStorage.length; i += 1) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith('aiimin_') && !keep.test(key)) toRemove.push(key);
+        }
+        toRemove.forEach((key) => localStorage.removeItem(key));
+      } catch { /* ignore */ }
       toast.update(tid, 'All data deleted', 'success');
-      setTimeout(() => window.location.reload(), 1500);
+      setTimeout(() => window.location.reload(), 1200);
     } catch (err) {
-      toast.update(tid, 'Failed: ' + err.message, 'error');
+      toast.update(tid, 'Failed: ' + (err?.message || 'unknown'), 'error');
     }
-  }, [user]);
+  }, []);
 
   const handleDeleteAccount = useCallback(async () => {
     if (!window.confirm('This will PERMANENTLY delete everything. Proceed?')) return;
