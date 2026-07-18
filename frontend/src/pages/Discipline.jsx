@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, RefreshCw, ChevronDown, ChevronUp, Trophy, Brain, Zap, Lock, Wind, Activity, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Shield, RefreshCw, ChevronDown, ChevronUp, Trophy, Brain, Zap, Lock, Wind, Activity, CheckCircle, AlertTriangle, Flame, Crown, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import Modal from '../components/ui/Modal';
 import { startUrge, resolveUrge, fetchUrgePatterns, fetchStreakData, createOrUpdateStreak, resetStreak, fetchUrges, fetchDisciplineLogs } from '../api/discipline';
-import { apiPost } from '../utils/api';
+import { createJournalEntry } from '../api/journal';
 import toast from '../utils/toast';
 import '../styles/disciplinePage.css';
+import { DISCIPLINE_TARGET_LABELS, labelEnum } from '../utils/enumLabels';
+import { formatDate } from '../utils/formatDate';
+import UrgeModal from './DisciplineUrgeModal';
 
 /* ── Storage (fallback cache; API is source of truth) ── */
 const SK_DATA = 'aiimin_discipline_v3';
@@ -54,15 +57,15 @@ const initData = () => {
 
 /* ── Milestones ── */
 const MILESTONES = [
-  { days: 1,   icon: '🌱', label: 'First Day', msg: 'The hardest step is the first one.' },
-  { days: 3,   icon: '🔥', label: '3 Days',    msg: 'Three days of clarity. Keep going.' },
-  { days: 7,   icon: '⚡', label: '1 Week',    msg: 'A full week of discipline. Real progress.' },
-  { days: 14,  icon: '🧠', label: '2 Weeks',   msg: '14 days. Your brain is rewiring.' },
-  { days: 21,  icon: '💪', label: '3 Weeks',   msg: '21 days — a new habit is forming.' },
-  { days: 30,  icon: '🏆', label: '30 Days',   msg: 'A full month. Elite level discipline.' },
-  { days: 60,  icon: '🦅', label: '60 Days',   msg: 'Two months. You\'ve mastered your mind.' },
-  { days: 90,  icon: '👑', label: '90 Days',   msg: 'THREE MONTHS. Rewired & Reborn.' },
-  { days: 365, icon: '🌟', label: '1 Year',    msg: 'An entire year. A completely new life.' },
+  { days: 1,   Icon: Zap, label: 'First Day', msg: 'The hardest step is the first one.' },
+  { days: 3,   Icon: Flame, label: '3 Days', msg: 'Three days of clarity. Keep going.' },
+  { days: 7,   Icon: Zap, label: '1 Week', msg: 'A full week of discipline. Real progress.' },
+  { days: 14,  Icon: Brain, label: '2 Weeks', msg: '14 days. Your brain is rewiring.' },
+  { days: 21,  Icon: Activity, label: '3 Weeks', msg: '21 days — a new habit is forming.' },
+  { days: 30,  Icon: Trophy, label: '30 Days', msg: 'A full month. Elite level discipline.' },
+  { days: 60,  Icon: Shield, label: '60 Days', msg: "Two months. You've mastered your mind." },
+  { days: 90,  Icon: Crown, label: '90 Days', msg: 'THREE MONTHS. Rewired & Reborn.' },
+  { days: 365, Icon: Star, label: '1 Year', msg: 'An entire year. A completely new life.' },
 ];
 
 /* ── Recovery Strategies ── */
@@ -70,20 +73,20 @@ const STRATEGIES = [
   {
     title: 'The 10-Minute Rule',
     desc: 'When an urge hits, tell yourself you will wait 10 minutes. By the time 10 minutes pass, the chemical spike in your brain will usually have subsided.',
-    icon: <Wind size={20} color="#3B82F6" />,
-    color: '#3B82F6'
+    icon: <Wind size={20} color="#ff6b35" />,
+    color: '#ff6b35'
   },
   {
     title: 'HALT Method',
     desc: 'Are you Hungry, Angry, Lonely, or Tired? These four states make you highly vulnerable to relapse. Fix the underlying state instead of giving in.',
-    icon: <Activity size={20} color="#F59E0B" />,
-    color: '#F59E0B'
+    icon: <Activity size={20} color="#E8B84B" />,
+    color: '#E8B84B'
   },
   {
     title: 'Urge Surfing',
     desc: 'Don\'t fight the urge. Observe it like a wave. It rises, peaks, and crashes. Ride it out without acting on it. Every time you surf an urge, your brain gets stronger.',
-    icon: <Zap size={20} color="#8B5CF6" />,
-    color: '#8B5CF6'
+    icon: <Zap size={20} color="#10b981" />,
+    color: '#10b981'
   }
 ];
 
@@ -156,105 +159,7 @@ const ResetModal = ({ isOpen, onConfirm, onCancel, currentDays, currentHours }) 
   );
 };
 
-/* ── Urge Surfing Modal — improved: early exit, extend, optional note ── */
-const UrgeModal = ({ isOpen, onComplete, onCancel }) => {
-  const START = 15 * 60;
-  const [timeLeft, setTimeLeft] = useState(START);
-  const [note, setNote] = useState('');
-  const [phase, setPhase] = useState(0);
-
-  useEffect(() => {
-    if (!isOpen) return undefined;
-    setTimeLeft(START);
-    setNote('');
-    setPhase(0);
-    return undefined;
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (timeLeft <= 0 || !isOpen) return undefined;
-    const interval = setInterval(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000);
-    return () => clearInterval(interval);
-  }, [timeLeft, isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return undefined;
-    const cycle = setInterval(() => setPhase((p) => (p + 1) % 3), 4000);
-    return () => clearInterval(cycle);
-  }, [isOpen]);
-
-  const breathe = phase === 0 ? 'Inhale' : phase === 1 ? 'Hold' : 'Exhale';
-
-  return (
-    <Modal isOpen={isOpen} onClose={onCancel} maxWidth="520px">
-      <div style={{ textAlign: 'center' }}>
-        <div style={{
-          display: 'inline-flex', padding: '20px', marginBottom: '20px',
-          background: 'var(--color-accent-dim)', borderRadius: '50%',
-          border: '1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)',
-          transform: phase === 2 ? 'scale(0.96)' : 'scale(1.04)',
-          transition: 'transform 3.6s ease',
-        }}>
-          <Wind size={40} color="var(--color-accent)" />
-        </div>
-        <h2 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--color-text-1)', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>Urge Surfing</h2>
-        <p style={{ margin: '0 0 20px', fontSize: '14px', color: 'var(--color-text-2)', lineHeight: 1.5 }}>
-          This will peak and pass. You do not have to win against it — just outlast it.
-        </p>
-        <div style={{ fontSize: '56px', fontWeight: 900, fontFamily: 'var(--font-mono)', color: 'var(--color-text-1)', marginBottom: '8px', letterSpacing: '-0.04em' }}>
-          {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-        </div>
-        <div style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '24px' }}>{breathe}</div>
-        <textarea
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          rows={2}
-          placeholder="Optional — what is the urge saying? (skip if you want)"
-          style={{
-            width: '100%', padding: '14px', background: 'var(--color-base)',
-            border: '1px solid var(--color-border)', borderRadius: '12px',
-            marginBottom: '16px', fontSize: '14px', color: 'var(--color-text-1)', boxSizing: 'border-box',
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => onComplete(note)}
-          style={{
-            width: '100%', padding: '16px', marginBottom: '10px',
-            background: 'var(--color-accent)', border: 'none', borderRadius: '12px',
-            color: '#fff', fontWeight: 800, fontSize: '15px', cursor: 'pointer', minHeight: '48px',
-          }}
-        >
-          It passed — I surfed it
-        </button>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            type="button"
-            onClick={() => setTimeLeft((t) => t + 5 * 60)}
-            style={{
-              flex: 1, padding: '12px', background: 'var(--color-base)',
-              border: '1px solid var(--color-border)', borderRadius: '12px',
-              color: 'var(--color-text-1)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', minHeight: '44px',
-            }}
-          >
-            Extend 5 min
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{
-              flex: 1, padding: '12px', background: 'transparent',
-              border: '1px solid var(--color-border)', borderRadius: '12px',
-              color: 'var(--color-text-2)', fontWeight: 700, fontSize: '13px', cursor: 'pointer', minHeight: '44px',
-            }}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </Modal>
-  );
-};
+/* ── Urge Surfing Modal — extracted to DisciplineUrgeModal.jsx ── */
 
 /* ── Start Recovery Pledge ── */
 const StartRecoveryModal = ({ isOpen, onConfirm }) => {
@@ -474,8 +379,7 @@ const Discipline = () => {
     if (!user) return;
     const today = new Date().toISOString().split('T')[0];
     try {
-      await apiPost('/db/journal_entries', {
-        user_id: user.id,
+      await createJournalEntry({
         date: today,
         encrypted_content: content,
         mood,
@@ -487,7 +391,10 @@ const Discipline = () => {
     }
   };
 
-  const handleUrgeSurfed = async (note) => {
+  const handleUrgeSurfed = async (payload) => {
+    const note = typeof payload === 'string' ? payload : payload?.note;
+    const outcomeRaw = typeof payload === 'object' ? payload?.outcome : 'surfed';
+    const resisted = outcomeRaw !== 'gave_in';
     setShowUrge(false);
     const session = urgeSessionRef.current;
     urgeSessionRef.current = null;
@@ -497,20 +404,21 @@ const Discipline = () => {
           ? Math.round((Date.now() - session.startedAt) / 1000)
           : null;
         await resolveUrge(session.id, {
-          outcome: 'resisted',
+          outcome: resisted ? 'resisted' : 'relapsed',
           duration_to_resolve_sec: duration,
           note: note?.trim() || null,
         });
         const p = await fetchUrgePatterns().catch(() => null);
         if (p?.headline) setPatternHeadline(p.headline);
-        toast.success('Urge surfed');
+        toast.success(resisted ? 'Urge surfed' : 'Logged — start again');
       } catch {
         /* local note path still below */
       }
     }
     if (note?.trim()) {
-      const content = `#urge-surfed\n\nRode out an urge without folding.\n\n**During:**\n${note}`;
-      await logToJournal(content, 5);
+      const tag = resisted ? '#urge-surfed' : '#urge-gave-in';
+      const content = `${tag}\n\n${resisted ? 'Rode out an urge without folding.' : 'Gave in — data for the next surf.'}\n\n**During:**\n${note}`;
+      await logToJournal(content, resisted ? 5 : 3);
     }
   };
 
@@ -572,7 +480,7 @@ const Discipline = () => {
               
               {/* Massive Counter */}
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '40px', borderRadius: '24px', background: 'var(--bg-card)', border: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(to right, var(--color-accent), #3B82F6)' }} />
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(to right, var(--color-accent), #E8B84B)' }} />
                 <div style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--color-text-3)', letterSpacing: '0.15em', marginBottom: '24px' }}>Current Streak</div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '24px' }}>
                   <span className="discipline-page__days" style={{ fontSize: 'clamp(64px, 14vw, 120px)', fontWeight: 900, color: 'var(--color-text-1)', lineHeight: 1, letterSpacing: '-0.05em' }} ref={daysRef}>{currentDays}</span>
@@ -611,7 +519,7 @@ const Discipline = () => {
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={{ padding: '32px', borderRadius: '24px', background: 'var(--bg-card)', border: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: 1 }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '12px', color: 'var(--color-text-3)', textTransform: 'uppercase', fontWeight: 800, marginBottom: '6px', letterSpacing: '0.1em' }}>Target Defeat</div>
-                      <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-2)', textDecoration: 'line-through' }}>{data.addictionType}</div>
+                      <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--color-text-2)', textDecoration: 'line-through' }}>{labelEnum(data.addictionType, DISCIPLINE_TARGET_LABELS)}</div>
                     </div>
                     <div style={{ width: '1px', height: '100%', background: 'var(--color-border)', margin: '0 24px' }} />
                     <div style={{ flex: 1 }}>
@@ -632,8 +540,9 @@ const Discipline = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {MILESTONES.map((m, i) => {
                     const isPast = currentDays >= m.days;
+                    const MileIcon = m.Icon;
                     return (
-                      <div key={i} style={{ display: 'flex', gap: '16px', opacity: isPast ? 1 : 0.5, transition: 'all 0.3s' }}>
+                      <div key={m.days} style={{ display: 'flex', gap: '16px', opacity: isPast ? 1 : 0.5, transition: 'all 0.3s' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: isPast ? 'var(--color-accent)' : 'var(--bg-elevated)', border: `1px solid ${isPast ? 'transparent' : 'var(--color-border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             {isPast ? <CheckCircle size={16} color="#fff" /> : <Lock size={16} color="var(--color-text-3)" />}
@@ -641,7 +550,10 @@ const Discipline = () => {
                           {i !== MILESTONES.length - 1 && <div style={{ width: '2px', flex: 1, background: isPast ? 'var(--color-accent)' : 'var(--color-border)', margin: '8px 0', opacity: isPast ? 0.5 : 1 }} />}
                         </div>
                         <div style={{ paddingBottom: '20px', paddingTop: '6px' }}>
-                          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '4px' }}>{m.icon} {m.label}</div>
+                          <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <MileIcon size={16} color={isPast ? 'var(--color-accent)' : 'var(--color-text-3)'} />
+                            {m.label}
+                          </div>
                           <div style={{ fontSize: '13px', color: 'var(--color-text-2)', lineHeight: 1.5 }}>{m.msg}</div>
                         </div>
                       </div>
@@ -673,8 +585,8 @@ const Discipline = () => {
                   <Shield size={20} color="var(--color-accent)" /> Community Wall
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {TESTIMONIALS.map((t, i) => (
-                    <div key={i} style={{ padding: '24px', borderRadius: '20px', background: 'var(--bg-card)', border: '1px solid var(--color-border)' }}>
+                  {TESTIMONIALS.map((t) => (
+                    <div key={`${t.author}-${t.days}`} style={{ padding: '24px', borderRadius: '20px', background: 'var(--bg-card)', border: '1px solid var(--color-border)' }}>
                       <div style={{ fontSize: '14px', fontStyle: 'italic', color: 'var(--color-text-2)', lineHeight: 1.6, marginBottom: '16px' }}>"{t.text}"</div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-1)' }}>{t.author}</span>
@@ -713,7 +625,7 @@ const Discipline = () => {
                               <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-2)' }}>
                                 {entry.kind === 'urge' ? `Urge · ${entry.trigger}` : `After ${entry.streakAtReset} days`}
                               </span>
-                              <span style={{ fontSize: '12px', color: 'var(--color-text-3)', fontWeight: 600 }}>{new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                              <span style={{ fontSize: '12px', color: 'var(--color-text-3)', fontWeight: 600 }}>{formatDate(entry.date)}</span>
                             </div>
                             <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-text-1)', marginBottom: '12px' }}>Trigger: {entry.trigger}</div>
                             {entry.note && <div style={{ fontSize: '13px', color: 'var(--color-text-2)', fontStyle: 'italic', lineHeight: 1.6, background: 'var(--bg-surface)', padding: '12px', borderRadius: '12px', border: '1px solid var(--color-border)' }}>"{entry.note}"</div>}
@@ -728,7 +640,7 @@ const Discipline = () => {
 
             <p className="discipline-page__crisis">
               In crisis?{' '}
-              <a href="https://www.iasp.info/suicidalthoughts/" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.iasp.info/suicidalthoughts/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)', textDecoration: 'underline', fontWeight: 700 }}>
                 Find help now
               </a>
               {' '}· This page is not medical care.

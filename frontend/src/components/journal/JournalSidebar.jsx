@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, Download, BookOpen } from 'lucide-react';
 import { entryMatchesSearch, getEntryPreview, MODE_LABELS, parseEntry } from './journalUtils';
 import { SkeletonRow } from '../ui/Skeleton';
+import { formatDate } from '../../utils/formatDate';
 
 export default function JournalSidebar({
   entries,
@@ -99,7 +100,7 @@ export default function JournalSidebar({
               onClick={() => onSelect(entry)}
               className={`journal-sidebar__item${active ? ' is-active' : ''}`}
             >
-              <div className="journal-sidebar__item-date">{entry.date}</div>
+              <div className="journal-sidebar__item-date">{formatDate(entry.date)}</div>
               <div className="journal-sidebar__item-preview">
                 {getEntryPreview(entry.encrypted_content)}
               </div>

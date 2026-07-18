@@ -10,6 +10,7 @@ import { useAudio } from '../context/AudioContext';
 
 import { useAuth } from '../hooks/useAuth';
 import { fetchFocusWeekStats, logFocusSession } from '../api/focus';
+import { formatDate } from '../utils/formatDate';
 
 // ── Session presets ──────────────────────────────────────────────────────────
 const PRESETS = [
@@ -21,9 +22,9 @@ const PRESETS = [
 ];
 
 const PHASES = {
-  work: { label: 'FLOW STATE', color: '#6366f1', darkGlow: '#3730a3', lightGlow: '#818cf8', bgGlow: 'rgba(99, 102, 241, 0.15)' },
+  work: { label: 'FLOW STATE', color: '#ff6b35', darkGlow: '#c2410c', lightGlow: '#fb923c', bgGlow: 'rgba(255, 107, 53, 0.15)' },
   short: { label: 'COGNITIVE REST', color: '#10b981', darkGlow: '#047857', lightGlow: '#34d399', bgGlow: 'rgba(16, 185, 129, 0.08)' },
-  long: { label: 'DEEP RECOVERY', color: '#8b5cf6', darkGlow: '#6d28d9', lightGlow: '#a78bfa', bgGlow: 'rgba(139, 92, 246, 0.08)' },
+  long: { label: 'DEEP RECOVERY', color: '#E8B84B', darkGlow: '#a16207', lightGlow: '#fbbf24', bgGlow: 'rgba(232, 184, 75, 0.08)' },
 };
 
 // ── Flow State Breathing Visual ──────────────────────────────────────────────
@@ -184,6 +185,13 @@ const LiveTimerDisplay = ({ status, phase, totalSeconds, onComplete, phaseInfo }
 export default function FocusRoom() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [weeklyTargetH, setWeeklyTargetH] = useState(() => {
+    try {
+      return Math.min(80, Math.max(1, Number(localStorage.getItem('aiimin_weekly_focus_target_h')) || 15));
+    } catch {
+      return 15;
+    }
+  });
   const [preset, setPreset] = useState(PRESETS[1]); // 25m default
   const [phase, setPhase] = useState('work'); // work | short | long
   const [cycleCount, setCycleCount] = useState(0);
@@ -197,6 +205,17 @@ export default function FocusRoom() {
     try { return parseInt(localStorage.getItem('aiimin_focus_mins') || '0', 10); } catch { return 0; }
   });
   const [weekMinutes, setWeekMinutes] = useState(0);
+  const [weekRows, setWeekRows] = useState([]);
+  const WEEKLY_TARGET_H = weeklyTargetH;
+
+  useEffect(() => {
+    const onTarget = (e) => {
+      const n = Math.min(80, Math.max(1, Number(e?.detail) || Number(localStorage.getItem('aiimin_weekly_focus_target_h')) || 15));
+      setWeeklyTargetH(n);
+    };
+    window.addEventListener('aiimin-weekly-focus-target', onTarget);
+    return () => window.removeEventListener('aiimin-weekly-focus-target', onTarget);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -212,6 +231,7 @@ export default function FocusRoom() {
         setTodaySessions(sessions);
         setTodayMinutes(mins);
         setWeekMinutes(week);
+        setWeekRows([...rows].filter((r) => Number(r.minutes) > 0).reverse().slice(0, 3));
         localStorage.setItem('aiimin_focus_today', String(sessions));
         localStorage.setItem('aiimin_focus_mins', String(mins));
       } catch {
@@ -322,7 +342,7 @@ export default function FocusRoom() {
   const streakLabel = cycleCount >= 4 ? `🔥 ${Math.floor(cycleCount / 4)} streaks` : null;
 
   return (
-    <div style={{
+    <div className="focus-room-page" style={{
       position: 'relative',
       minHeight: 'calc(100vh - var(--nav-height) - 40px)',
       backgroundColor: 'var(--color-bg)',
@@ -409,9 +429,10 @@ export default function FocusRoom() {
             )}
           </div>
           
-          {/* Back to Lab Button */}
+          {/* Back to Today */}
           <button 
-            onClick={() => navigate('/dashboard')}
+            type="button"
+            onClick={() => navigate('/overview')}
             style={{
               padding: '12px 24px', borderRadius: '99px', background: 'var(--color-surface)',
               border: '1px solid var(--color-border)', color: 'var(--color-text-1)', fontSize: '13px', fontWeight: 700,
@@ -420,7 +441,7 @@ export default function FocusRoom() {
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-surface)'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
-            Back to Lab
+            Back to Today
           </button>
         </div>
       </div>
@@ -608,6 +629,101 @@ export default function FocusRoom() {
           )}
         </div>
       </div>
+
+      {/* Recent sessions + weekly target — fills dead space below CTA */}
+      {status === 'idle' && (
+        <div style={{
+          position: 'relative',
+          zIndex: 10,
+          width: 'min(560px, 92%)',
+          margin: '0 auto 48px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 20,
+        }}>
+          {weekRows.length > 0 && (
+            <div style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 16,
+              padding: '16px 20px',
+            }}>
+              <div style={{
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--color-text-3)',
+                marginBottom: 12,
+              }}>
+                Recent sessions
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {weekRows.map((r) => (
+                  <div
+                    key={r.date}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr auto 1fr',
+                      alignItems: 'center',
+                      gap: 12,
+                      fontSize: 12,
+                      color: 'var(--color-text-2)',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-mono, JetBrains Mono, monospace)', fontSize: 11 }}>
+                      {formatDate(r.date)}
+                    </span>
+                    <span style={{ textAlign: 'center', fontWeight: 700, color: 'var(--color-text-1)' }}>
+                      {Number(r.minutes) || 0} min
+                    </span>
+                    <span style={{ textAlign: 'right', color: 'var(--color-text-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {(mainIntent || 'Focus block').slice(0, 24)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p style={{
+                marginTop: 14,
+                marginBottom: 0,
+                fontSize: 11,
+                color: 'var(--color-text-3)',
+                fontWeight: 600,
+              }}>
+                This week’s logged blocks. Full history lands with Focus archive.
+              </p>
+            </div>
+          )}
+
+          <div style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 16,
+            padding: '16px 20px',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)' }}>
+                {(weekMinutes / 60).toFixed(1)}h of {WEEKLY_TARGET_H}h weekly target
+              </span>
+              <span style={{ fontSize: 11, color: 'var(--color-text-3)' }}>
+                {Math.min(100, Math.round((weekMinutes / (WEEKLY_TARGET_H * 60)) * 100))}%
+              </span>
+            </div>
+            <div style={{ height: 6, borderRadius: 99, background: 'var(--color-border)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%',
+                width: `${Math.min(100, (weekMinutes / (WEEKLY_TARGET_H * 60)) * 100)}%`,
+                background: '#ff6b35',
+                borderRadius: 99,
+                transition: 'width 0.6s ease',
+              }} />
+            </div>
+            <p style={{ margin: '10px 0 0', fontSize: 11, color: 'var(--color-text-3)' }}>
+              Your focus session will start immediately when you enter flow.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

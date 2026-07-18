@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import supabase from '../utils/supabase';
+import { fetchDailyLogs } from '../api/dailyLogs';
 
 /* ─── Metric configs ─── */
 const METRIC_OPTIONS = [
@@ -143,17 +143,14 @@ const YearlyHeatmap = ({ user }) => {
         const startDate = `${year}-01-01`;
         const endDate = `${year}-12-31`;
 
-        supabase.from('daily_logs')
-            .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry, pomodoro_minutes, water_bottles, breakfast_done')
-            .eq('user_id', user.id)
-            .gte('date', startDate)
-            .lte('date', endDate)
-            .then(({ data }) => {
+        fetchDailyLogs(startDate, endDate)
+            .then((data) => {
                 const map = {};
                 (data || []).forEach(log => { map[log.date] = log; });
                 setLogsMap(map);
                 setLoading(false);
-            });
+            })
+            .catch(() => setLoading(false));
     }, [user?.id, year]);
 
     const grid = useMemo(() => buildYearGrid(year), [year]);

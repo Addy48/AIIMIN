@@ -94,6 +94,7 @@ export default function SubscriptionSection() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [celebration, setCelebration] = useState(null);
+  const [showAllPlans, setShowAllPlans] = useState(false);
 
   const refreshStatus = useCallback(() => {
     return apiGet('/billing/status')
@@ -140,6 +141,116 @@ export default function SubscriptionSection() {
   const currentTierIndex = TIER_ORDER.indexOf(currentTier);
   const periodLabel = formatPlanTill(periodEnd);
   const currentName = STATIC_TIERS.find((t) => t.id === currentTier)?.name || 'Explore';
+  const nextUpgradeId = TIER_ORDER[currentTierIndex + 1] || null;
+  const primaryIds = showAllPlans
+    ? TIER_ORDER.filter((id) => id !== 'explore' || currentTier === 'explore')
+    : [currentTier, nextUpgradeId].filter(Boolean);
+  // Lead with 2 upgrade cards: Explore → Core+Pro; else current + next. "See all" unlocks full grid.
+  const visibleIds = showAllPlans
+    ? TIER_ORDER
+    : currentTier === 'explore'
+      ? ['core', 'pro']
+      : primaryIds;
+
+  const renderTierCard = (tier) => {
+    const isCurrent = tier.id === currentTier;
+    const tierIndex = TIER_ORDER.indexOf(tier.id);
+    const isUpgrade = tierIndex > currentTierIndex;
+    const isDowngrade = tierIndex < currentTierIndex;
+    const busy = actionLoading === tier.id;
+    const blockedDowngrade = upgradeOnly && isDowngrade;
+
+    return (
+      <div
+        key={tier.id}
+        className={[
+          'subscription-pricing-card',
+          `tier-soul-${tier.id}`,
+          isCurrent ? 'is-current' : '',
+          tier.popular ? 'is-popular' : '',
+        ].filter(Boolean).join(' ')}
+      >
+        {tier.popular && !isCurrent && (
+          <span className="subscription-tier-badge">Most Popular</span>
+        )}
+        {isCurrent && (
+          <span className="subscription-tier-badge is-current">Current Plan</span>
+        )}
+
+        <div className="subscription-tier-header">
+          <span className="subscription-tier-icon">{tier.icon}</span>
+          <span className="subscription-tier-name">{tier.name}</span>
+        </div>
+
+        <div className="subscription-tier-price">
+          {tier.foundingPriceLabel ? (
+            <>
+              <span className="subscription-tier-price-list">{tier.priceLabel}</span>
+              <span>{tier.foundingPriceLabel}</span>
+            </>
+          ) : (
+            tier.priceLabel
+          )}
+          {tier.price_inr > 0 && (
+            <span className="subscription-tier-price-unit">/ month</span>
+          )}
+        </div>
+        {tier.foundingPriceLabel && (
+          <p className="subscription-tier-founding-note">Waitlist founding rate</p>
+        )}
+
+        <p className="subscription-tier-desc">{tier.description}</p>
+
+        <ul className="subscription-tier-features">
+          {tier.features.map((f) => (
+            <li key={f}>
+              <Check size={13} strokeWidth={2.5} />
+              <span>{f}</span>
+            </li>
+          ))}
+        </ul>
+
+        {isCurrent ? (
+          <div className="subscription-tier-cta subscription-tier-cta--active">
+            ✓ Active
+            {periodLabel && currentTier !== 'explore' ? (
+              <span className="subscription-tier-cta-sub">{periodLabel}</span>
+            ) : null}
+          </div>
+        ) : blockedDowngrade ? (
+          <div className="subscription-tier-cta subscription-tier-cta--ghost">
+            Downgrade locked
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              disabled={busy || loading}
+              onClick={() => handleTierAction(tier.id)}
+              className={`subscription-tier-cta ${
+                isUpgrade
+                  ? 'subscription-tier-cta--primary'
+                  : 'subscription-tier-cta--switch'
+              }`}
+            >
+              {busy
+                ? 'Applying…'
+                : isUpgrade
+                  ? `Upgrade to ${tier.name} · ${tier.ctaPrice}`
+                  : isDowngrade
+                    ? `Switch to ${tier.name} · ${tier.ctaPrice}`
+                    : `Choose ${tier.name} · ${tier.ctaPrice}`}
+            </button>
+            {isUpgrade && (
+              <p style={{ margin: '8px 0 0', fontSize: 11, color: 'var(--color-text-3)', textAlign: 'center' }}>
+                Cancel anytime · No commitment
+              </p>
+            )}
+          </>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="subscription-section">
@@ -173,99 +284,52 @@ export default function SubscriptionSection() {
         <div className="skeleton" style={{ height: 48, borderRadius: 12 }} />
       )}
 
+      <p style={{ margin: '0 0 12px', fontSize: 12, color: 'var(--color-text-3)' }}>
+        Founding rates still open for waitlist members.
+      </p>
+
       <div className="subscription-pricing-grid">
-        {STATIC_TIERS.map((tier) => {
-          const isCurrent = tier.id === currentTier;
-          const tierIndex = TIER_ORDER.indexOf(tier.id);
-          const isUpgrade = tierIndex > currentTierIndex;
-          const isDowngrade = tierIndex < currentTierIndex;
-          const busy = actionLoading === tier.id;
-          const blockedDowngrade = upgradeOnly && isDowngrade;
+        {STATIC_TIERS.filter((t) => visibleIds.includes(t.id)).map(renderTierCard)}
+      </div>
 
-          return (
-            <div
-              key={tier.id}
-              className={[
-                'subscription-pricing-card',
-                `tier-soul-${tier.id}`,
-                isCurrent ? 'is-current' : '',
-                tier.popular ? 'is-popular' : '',
-              ].filter(Boolean).join(' ')}
-            >
-              {tier.popular && !isCurrent && (
-                <span className="subscription-tier-badge">Most Popular</span>
-              )}
-              {isCurrent && (
-                <span className="subscription-tier-badge is-current">Current Plan</span>
-              )}
-
-              <div className="subscription-tier-header">
-                <span className="subscription-tier-icon">{tier.icon}</span>
-                <span className="subscription-tier-name">{tier.name}</span>
-              </div>
-
-              <div className="subscription-tier-price">
-                {tier.foundingPriceLabel ? (
-                  <>
-                    <span className="subscription-tier-price-list">{tier.priceLabel}</span>
-                    <span>{tier.foundingPriceLabel}</span>
-                  </>
-                ) : (
-                  tier.priceLabel
-                )}
-                {tier.price_inr > 0 && (
-                  <span className="subscription-tier-price-unit">/ month</span>
-                )}
-              </div>
-              {tier.foundingPriceLabel && (
-                <p className="subscription-tier-founding-note">Waitlist founding rate</p>
-              )}
-
-              <p className="subscription-tier-desc">{tier.description}</p>
-
-              <ul className="subscription-tier-features">
-                {tier.features.map((f) => (
-                  <li key={f}>
-                    <Check size={13} strokeWidth={2.5} />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {isCurrent ? (
-                <div className="subscription-tier-cta subscription-tier-cta--active">
-                  ✓ Active
-                  {periodLabel && currentTier !== 'explore' ? (
-                    <span className="subscription-tier-cta-sub">{periodLabel}</span>
-                  ) : null}
-                </div>
-              ) : blockedDowngrade ? (
-                <div className="subscription-tier-cta subscription-tier-cta--ghost">
-                  Downgrade locked
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  disabled={busy || loading}
-                  onClick={() => handleTierAction(tier.id)}
-                  className={`subscription-tier-cta ${
-                    isUpgrade
-                      ? 'subscription-tier-cta--primary'
-                      : 'subscription-tier-cta--switch'
-                  }`}
-                >
-                  {busy
-                    ? 'Applying…'
-                    : isUpgrade
-                      ? `Upgrade to ${tier.name} · ${tier.ctaPrice}`
-                      : isDowngrade
-                        ? `Switch to ${tier.name} · ${tier.ctaPrice}`
-                        : `Choose ${tier.name} · ${tier.ctaPrice}`}
-                </button>
-              )}
-            </div>
-          );
-        })}
+      <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center' }}>
+        {!showAllPlans && (
+          <button
+            type="button"
+            onClick={() => setShowAllPlans(true)}
+            style={{
+              background: 'none', border: 'none', color: 'var(--color-accent)',
+              fontWeight: 700, fontSize: 13, cursor: 'pointer', padding: 0, textDecoration: 'underline',
+            }}
+          >
+            See all plans
+          </button>
+        )}
+        {showAllPlans && (
+          <button
+            type="button"
+            onClick={() => setShowAllPlans(false)}
+            style={{
+              background: 'none', border: 'none', color: 'var(--color-text-3)',
+              fontWeight: 600, fontSize: 13, cursor: 'pointer', padding: 0,
+            }}
+          >
+            Show fewer plans
+          </button>
+        )}
+        {currentTier !== 'explore' && !upgradeOnly && (
+          <button
+            type="button"
+            disabled={!!actionLoading || loading}
+            onClick={() => handleTierAction('explore')}
+            style={{
+              background: 'none', border: 'none', color: 'var(--color-text-3)',
+              fontWeight: 600, fontSize: 12, cursor: 'pointer', padding: 0, textDecoration: 'underline',
+            }}
+          >
+            Downgrade to Explore
+          </button>
+        )}
       </div>
 
       <p className="subscription-footnote text-caption">

@@ -45,8 +45,8 @@ const FinanceAnalytics = ({
   };
 
   return (
-    <motion.div key="analytics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px', marginBottom: '24px' }}>
+    <motion.div key="analytics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px', marginBottom: '24px', order: 2 }}>
 
         {/* Daily spend heatmap (MTD calendar) */}
         <div className="nordic-card" style={{ padding: '28px 32px' }}>
@@ -158,8 +158,8 @@ const FinanceAnalytics = ({
         </div>
       </div>
 
-      {/* Cash Flow Waterfall — labels under bars; hover readout */}
-      <div className="nordic-card" style={{ padding: '28px 32px' }}>
+      {/* Cash Flow Waterfall — leads Analytics (order 1) */}
+      <div className="nordic-card" style={{ padding: '28px 32px', order: 1, marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16, gap: 16, flexWrap: 'wrap' }}>
           <div>
             <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)' }}>Cash Flow Waterfall (MTD)</div>

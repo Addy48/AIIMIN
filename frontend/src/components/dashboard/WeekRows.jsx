@@ -1,33 +1,17 @@
-import React from 'react';
-import supabaseClient from '../../utils/supabase';
+import React, { useMemo } from 'react';
+import { useDailyLogsRange } from '../../hooks/useDailyLogsQuery';
 
 const WeekRows = ({ stat, user }) => {
-    const [weekData, setWeekData] = React.useState({});
-    const [loadingWeek, setLoadingWeek] = React.useState(false);
+    const { logs, loading: loadingWeek } = useDailyLogsRange(7, {
+        enabled: Boolean(user),
+        fields: 'date,sleep_hours,gym_done,steps,learning_done,mood,journal_entry',
+    });
 
-    React.useEffect(() => {
-        if (!user) return;
-        const fetchWeek = async () => {
-            setLoadingWeek(true);
-            const dates = [];
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                dates.push(d.toISOString().split('T')[0]);
-            }
-            const { data } = await supabaseClient
-                .from('daily_logs')
-                .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry')
-                .eq('user_id', user.id)
-                .gte('date', dates[0])
-                .lte('date', dates[dates.length - 1]);
-            const map = {};
-            (data || []).forEach(log => { map[log.date] = log; });
-            setWeekData(map);
-            setLoadingWeek(false);
-        };
-        fetchWeek();
-    }, [user, stat.id]);
+    const weekData = useMemo(() => {
+        const map = {};
+        (logs || []).forEach((log) => { map[log.date] = log; });
+        return map;
+    }, [logs]);
 
     const formatValue = (log, type) => {
         if (!log) return null;

@@ -97,7 +97,7 @@ export default function YourReportCard({ user, tier = 'explore' }) {
   }
 
   const ctaLabel = isElite ? 'Open Intelligence Report' : isProPlus ? 'Open Standard Report' : 'Open Snapshot';
-  const ctaTo = isElite ? '/reports?view=intelligence' : '/reports';
+  const ctaTo = isElite ? '/reports?view=intelligence' : '/reports?tab=snapshot';
 
   return (
     <section

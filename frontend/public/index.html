@@ -3,7 +3,10 @@
 
 <head>
   <meta charset="utf-8" />
-
+  <!-- cache-bust 2026-07-18-cal-v4: Safari ignore stale webpack chunks -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <!-- Favicon and Preload -->
   <link rel="preload" href="/AIIMIN_logo.svg" as="image" type="image/svg+xml">
   <link rel="icon" href="/favicon-light.svg" media="(prefers-color-scheme: light)">
@@ -14,7 +17,7 @@
 
   <!-- Viewport & theme -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#D4AF37" />
+  <meta name="theme-color" content="#FF6B35" />
   <meta name="color-scheme" content="dark light" />
 
   <!-- Primary Meta Tags -->

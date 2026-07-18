@@ -6,7 +6,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import useThemeColors from '../hooks/useThemeColors';
-import { apiPost, apiGet, apiPatch } from '../utils/api';
+import {
+  fetchJournalEntries,
+  createJournalEntry,
+  updateJournalEntry,
+} from '../api/journal';
+import { apiPost, apiGet } from '../utils/api';
 import { trackEvent } from '../hooks/usePageAnalytics';
 import toast from '../utils/toast';
 import useMediaQuery from '../hooks/useMediaQuery';
@@ -32,6 +37,7 @@ import {
   syncJournalToDailyLog,
 } from '../components/journal/journalUtils';
 import { useSwipeTabs } from '../hooks/useSwipeTabs';
+import { formatDateLong } from '../utils/formatDate';
 import '../styles/journalStudio.css';
 
 const MODE_META = {
@@ -79,9 +85,7 @@ export default function JournalPage() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const data = await apiGet('/db/journal_entries', {
-        params: { orderCol: 'date', ascending: 'false', limit: '100' },
-      });
+      const data = await fetchJournalEntries({ orderCol: 'date', ascending: false, limit: 100 });
       const rows = Array.isArray(data) ? data : [];
       setEntries(rows);
       setStreak(calcJournalStreak(rows));
@@ -162,10 +166,7 @@ export default function JournalPage() {
       theme: analysis.theme,
     };
     const enriched = serializeEntry(mode, { ...payload, ai: normalized });
-    await apiPatch('/db/journal_entries', {
-      payload: { encrypted_content: enriched },
-      where: { id: entryId },
-    });
+    await updateJournalEntry(entryId, { encrypted_content: enriched });
     localStorage.setItem(`aiimin_journal_ai_${entryId}`, JSON.stringify(normalized));
     setAnalysisMap((m) => ({ ...m, [entryId]: normalized }));
     setEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, encrypted_content: enriched } : e)));
@@ -199,14 +200,9 @@ export default function JournalPage() {
 
     let saved;
     if (existing?.id) {
-      const updated = await apiPatch('/db/journal_entries', {
-        payload: row,
-        where: { id: existing.id },
-      });
-      saved = Array.isArray(updated) ? updated[0] : updated;
+      saved = await updateJournalEntry(existing.id, row);
     } else {
-      const inserted = await apiPost('/db/journal_entries', row);
-      saved = Array.isArray(inserted) ? inserted[0] : inserted;
+      saved = await createJournalEntry(row);
     }
 
     setEntries((prev) => {
@@ -304,7 +300,7 @@ export default function JournalPage() {
           <div className="journal-studio__title-block">
             <h1 className="text-h2 journal-studio__title" style={{ color: c.text1 }}>Journal</h1>
             <time className="journal-studio__date" dateTime={today}>
-              {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {formatDateLong(new Date())}
             </time>
           </div>
           <div className="journal-studio__header-actions">
@@ -364,13 +360,36 @@ export default function JournalPage() {
           </div>
         ) : (
           <div className="journal-studio__templates journal-studio__templates--minimal">
-            <button
-              type="button"
-              className="journal-studio__template-pill journal-studio__template-pill--ghost"
-              onClick={() => setShowStructuredModes(true)}
-            >
-              Structured modes (CBT, morning pages…)
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {[
+                { id: 'write', label: 'Free Write', param: 'write' },
+                { id: 'cbt', label: 'CBT Record', param: 'cbt' },
+                { id: 'morning', label: 'Morning Pages', param: 'morning' },
+                { id: 'weekly', label: 'Weekly Review', param: 'weekly' },
+              ].map((m) => {
+                const active = activeMode === m.id || (m.param === 'write' && activeMode === 'write');
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setSearchParams({ mode: m.param })}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 999,
+                      border: active ? '1px solid var(--color-accent)' : '1px solid var(--color-border)',
+                      background: active ? 'rgba(255,107,53,0.12)' : 'transparent',
+                      color: active ? 'var(--color-accent)' : 'var(--color-text-2)',
+                      fontSize: 12,
+                      fontWeight: active ? 700 : 600,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

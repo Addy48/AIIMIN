@@ -18,6 +18,7 @@ import UniversalLogger from '../components/dashboard/UniversalLogger';
 import ArcBanner from '../components/profile/ArcBanner';
 import YourReportCard from '../components/overview/YourReportCard';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { formatDateLong } from '../utils/formatDate';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -155,10 +156,10 @@ const getTrajectorySnapshot = (timezone) => {
     },
     executionRatio: Math.round((percentBetween(startOfDay, nextDay) * 0.54) + (dayOfWeek * 3.5)),
     rows: [
-      { id: 'day', label: 'Day', value: percentBetween(startOfDay, nextDay), sub: daySub, color: 'var(--color-success)' },
-      { id: 'week', label: 'Week', value: percentBetween(startOfWeek, nextWeek), sub: `${Math.ceil((nextWeek - now) / 86400000)}d left`, color: '#3B82F6' },
-      { id: 'month', label: 'Month', value: percentBetween(startOfMonth, nextMonth), sub: `${Math.ceil((nextMonth - now) / 86400000)}d left`, color: '#EC4899' },
-      { id: 'year', label: 'Year', value: percentBetween(startOfYear, nextYear), sub: `${Math.ceil((nextYear - now) / 86400000)}d left`, color: '#F97316' },
+      { id: 'day', label: 'Day', value: percentBetween(startOfDay, nextDay), sub: daySub, color: '#10b981' },
+      { id: 'week', label: 'Week', value: percentBetween(startOfWeek, nextWeek), sub: `${Math.ceil((nextWeek - now) / 86400000)}d left`, color: '#ff6b35' },
+      { id: 'month', label: 'Month', value: percentBetween(startOfMonth, nextMonth), sub: `${Math.ceil((nextMonth - now) / 86400000)}d left`, color: '#E8B84B' },
+      { id: 'year', label: 'Year', value: percentBetween(startOfYear, nextYear), sub: `${Math.ceil((nextYear - now) / 86400000)}d left`, color: '#6b7280' },
     ],
     weekRhythm: Array.from({ length: 7 }, (_, index) => {
       if (index < dayOfWeek) return index % 2 === 0 ? 'strong' : 'active';
@@ -562,7 +563,7 @@ const Overview = () => {
         rightContent={
           <div style={{ textAlign:'right' }}>
             <div style={{ fontSize:'13px', fontWeight:700, color:'var(--color-text-2)' }}>
-              {now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}
+              {formatDateLong(now)}
             </div>
             <div style={{ fontSize:'10px', color:'var(--color-text-3)', marginTop:'3px' }}>
               Week {weekNum} · AIIMIN v3
@@ -667,9 +668,9 @@ const Overview = () => {
             <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)', marginBottom:'16px' }}>Recent Wins</div>
             <div style={{ display:'flex', flexWrap:'wrap', gap:'12px' }}>
               {[
-                { text: 'Morning Workout — 2h ago', icon: '🔥', color: '#22C55E' },
-                { text: 'Journal — yesterday', icon: '✏️', color: '#8B5CF6' },
-                { text: 'Saved ₹500 — 3h ago', icon: '💰', color: '#F59E0B' }
+                { text: 'Morning Workout — 2h ago', icon: '🔥', color: '#10b981' },
+                { text: 'Journal — yesterday', icon: '✏️', color: '#ff6b35' },
+                { text: 'Saved ₹500 — 3h ago', icon: '💰', color: '#E8B84B' }
               ].map((win, i) => (
                 <div key={i} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'99px' }}>
                   <div style={{ width:'6px', height:'6px', borderRadius:'50%', background: win.color }} />

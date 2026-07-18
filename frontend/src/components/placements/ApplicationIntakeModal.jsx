@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import Modal from '../ui/Modal';
 import { useAuth } from '../../hooks/useAuth';
+import { formatDate } from '../../utils/formatDate';
 
 const STATUS_CONFIG = {
   wishlist: { label: 'Wishlist', color: '#8C8C8C', icon: '📝' },
   applied: { label: 'Applied', color: '#556B2F', icon: '📤' },
-  interview: { label: 'Interview', color: '#E2725B', icon: '👥' },
+  interview: { label: 'In Interview', color: '#E8B84B', icon: '👥' },
   offer: { label: 'Offer', color: '#23503B', icon: '✨' },
   rejected: { label: 'Rejected', color: '#1C1C1C', icon: '✖️' }
 };
@@ -29,7 +30,7 @@ export default function ApplicationIntakeModal({
     const name = user?.full_name || 'Applicant';
     const company = appForm.company_name || 'the company';
     const role = appForm.role_title || 'the open position';
-    const today = new Date().toLocaleDateString();
+    const today = formatDate(new Date());
     
     const template = `[Your Contact Information]
 [Your Address]
