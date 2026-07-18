@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Day / light (system DayNight day) — AIIMIN light palette -->
+    <color name="colorPrimary">#FF6B35</color>
+    <color name="colorPrimaryDark">#EDE4D3</color>
+    <color name="colorAccent">#E85A24</color>
+    <color name="aiimin_bg">#EDE4D3</color>
+    <color name="aiimin_surface">#FFFFFF</color>
+    <color name="aiimin_status_bar">#EDE4D3</color>
+    <!-- Launcher chip stays brand dark for recognition -->
+    <color name="ic_launcher_background">#1A1A1A</color>
+</resources>
