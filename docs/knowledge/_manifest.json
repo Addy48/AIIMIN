@@ -1,9 +1,19 @@
 {
-  "lastUpdated": "2026-07-14",
+  "lastUpdated": "2026-07-18",
   "entrypoint": "docs/knowledge/00_HOME.md",
   "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
   "brainOs": true,
   "entities": {
+    "life_score": {
+      "moc": "docs/knowledge/09_FEATURES/LifeScore/LifeScore.md",
+      "routes": [
+        "POST /api/account/wipe-life-data"
+      ],
+      "services": [
+        "frontend/src/utils/lifeScoreEngine.js"
+      ],
+      "status": "api-backed-local"
+    },
     "sports": {
       "moc": "docs/knowledge/09_FEATURES/Sports/Sports.md",
       "changelog": "docs/knowledge/09_FEATURES/Sports/Changelog.md",
@@ -141,9 +151,20 @@
       "files": [
         "frontend/src/hooks/useDeviceTier.js",
         "frontend/src/components/system/DeviceGate.jsx",
-        "frontend/src/components/mobile/MobileCaptureApp.jsx"
+        "frontend/src/components/mobile/MobileCaptureApp.jsx",
+        "frontend/capacitor.config.json",
+        "frontend/android/"
       ],
-      "status": "phone-m-ipad-full"
+      "status": "phone-m-capacitor-android-v1"
+    },
+    "capacitor_android": {
+      "moc": "docs/knowledge/09_FEATURES/Mobile/Capacitor-Android.md",
+      "files": [
+        "frontend/capacitor.config.json",
+        "frontend/android/",
+        "frontend/src/utils/capacitorEnv.js"
+      ],
+      "status": "v1-remote-webview"
     },
     "overview": {
       "moc": "docs/knowledge/09_FEATURES/Overview/Overview.md",
@@ -177,6 +198,20 @@
         "frontend/src/pages/Goals.jsx"
       ],
       "status": "pipeline-achieved-fix"
+    },
+    "life_score": {
+      "moc": "docs/knowledge/09_FEATURES/LifeScore/LifeScore.md",
+      "routes": [
+        "POST /api/account/wipe-life-data"
+      ],
+      "services": [
+        "frontend/src/utils/lifeScoreEngine.js"
+      ],
+      "status": "api-backed-local"
+    },
+    "product_guide": {
+      "moc": "docs/knowledge/01_PRODUCT/AIIMIN-Product-Guide.md",
+      "status": "canonical-shipped"
     },
     "vault_brain_os": {
       "moc": "docs/knowledge/00_HOME.md",

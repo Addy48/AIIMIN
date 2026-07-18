@@ -63,3 +63,12 @@ Plan docs: `docs/AWS_MIGRATION_MASTER_PLAN.md`, `docs/AWS_SETUP.md`. Not over bu
 
 - [[02_ARCHITECTURE/Backend]]
 - [[09_FEATURES/Waitlist/Waitlist]]
+- [[09_FEATURES/Mobile/Capacitor-Android]]
+
+## Android (Capacitor)
+
+```bash
+cd frontend && npm run cap:android && npm run cap:open:android
+```
+
+Remote WebView → `https://aiimin.in/m`. No Firebase. Details: [[09_FEATURES/Mobile/Capacitor-Android]].

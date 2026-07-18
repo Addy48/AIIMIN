@@ -2,7 +2,7 @@
 
 > **Agents: read this first.** Then `15_MEMORY/Current-Context.md`. Then only docs for the task. Never whole-repo scan unless user says so.
 
-**Last updated:** 2026-07-14
+**Last updated:** 2026-07-18
 
 ## Project goal
 
@@ -52,6 +52,7 @@ Always-on project rules (see `.cursor/rules/aiimin-always-index.mdc`, local):
 8. Caveman chat; vault human docs = clear prose; memory packs in `15_MEMORY` = compressed.
 9. Skills before acting. Sparring > blind agreement.
 10. Long/confused/topic-change → **SWITCH CHAT** (loud 🚨 banner); keep [[15_MEMORY/Current-Context]] fresh — that is the handoff. No paste pack unless asked.
+11. Proof-or-stop — no `done`/`fixed`/`shipped` without same-turn evidence; statuses `passed`/`failed`/`blocked` — [[14_PROMPTS/Proof-or-Stop]]
 
 ## Next tasks
 
@@ -74,6 +75,7 @@ Phases 2–8 (field matrix, information graph, intent map, kill list, framework,
 | Need | Path |
 |------|------|
 | Current context | [[15_MEMORY/Current-Context]] |
+| **Product guide (full)** | [[01_PRODUCT/AIIMIN-Product-Guide]] |
 | Product | [[01_PRODUCT/Product]] |
 | Architecture | [[02_ARCHITECTURE/Overview]] |
 | Features index | [[09_FEATURES/Index]] |

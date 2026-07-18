@@ -31,6 +31,7 @@ Full: `docs/knowledge/08_DESIGN/Palette.md`
 - No secrets in vault/git
 - No auth/schema changes without explicit user instruction
 - Update vault before task complete
+- Proof-or-stop: no done/fixed/shipped without same-turn evidence (see vault `14_PROMPTS/Proof-or-Stop.md`)
 
 ## Fat history
 

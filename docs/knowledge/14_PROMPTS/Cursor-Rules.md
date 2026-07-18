@@ -16,6 +16,9 @@ All `alwaysApply: true`:
 | `caveman-always.mdc` | Terse chat |
 | `use-skills-always.mdc` | Skills before acting |
 | `aiimin-chat-handoff.mdc` | Loud 🚨 SWITCH CHAT; **Current-Context.md** = handoff (no paste pack unless asked) |
+| `aiimin-proof-or-stop.mdc` | No done/fixed/shipped without same-turn evidence — [[Proof-or-Stop]] |
+
+**Stop hook:** `.cursor/hooks/proof-or-stop.py` (wired in `.cursor/hooks.json`, `loop_limit: 1`)
 
 ## Default load
 
@@ -41,4 +44,4 @@ All `alwaysApply: true`:
 
 ## Review checklist
 
-Load order? Vault updated? Palette lock? Mobile capture-only? Auth/schema untouched without ask? Token discipline held?
+Load order? Vault updated? Palette lock? Mobile capture-only? Auth/schema untouched without ask? Token discipline held? Proof-or-stop evidence on closeout?

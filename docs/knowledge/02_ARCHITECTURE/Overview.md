@@ -42,3 +42,13 @@
 - MacBook Air M2 8GB — avoid high-memory local processes
 - Do not change auth or schema without explicit user instruction
 - Palette locked
+
+## Recent architecture changes (2026-07-19)
+
+- **Life Score / Intelligence:** `/intelligence/report` drivers, drift, forecast, clusters, archetypes computed from `intelligenceReportService.js` (real timeline data). Hardcoded placeholders removed.
+- **Client scoring:** `useLifeScore` + `calculateLifeScore` API-first via `/intelligence/lhs`; local fallback for guests/offline.
+- **Data writes:** `/api/db` blocks POST/PATCH/DELETE/upsert on `goals`, `habits`, `habit_logs`, `daily_logs` — use dedicated routes.
+- **React Query:** `useFinanceQuery` wired in Finance; `useDashboardPrefetch` mounted in AuthContext.
+- **Wealth:** AI text import logic in `server/services/wealthAiImportService.js`.
+- **Iteration 2 (2026-07-19):** `GET /dashboard/widgets` (was missing — WeekInNumbers lied); `GET /daily-logs` list; `useOverviewWeekSignals`; HabitManager → `/api/habits`; `useDailyStats` → API routes; wealth helpers extracted.
+- **Iteration 4 (2026-07-19):** `correlationService.js` (pool-backed Spearman + BH-FDR); `GET/POST /intelligence/correlations`; cron `/cron/correlations`; `useDailyLogsQuery` + `useCorrelationsQuery` — all analytics widgets share React Query cache; `CausalNodeAnalysis` uses real ρ not fake constants.
