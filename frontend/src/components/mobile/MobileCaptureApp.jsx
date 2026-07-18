@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import BrandLockup from '../brand/BrandLockup';
 import DailyLogForm from '../DailyLogForm';
+import MobileDesktopNudge from './MobileDesktopNudge';
 import { useAuth } from '../../hooks/useAuth';
+import { captureFooterLabel, captureHeroCopy } from './mobileShellCopy';
 import '../../styles/mobileCapture.css';
 
 /**
@@ -11,6 +13,7 @@ import '../../styles/mobileCapture.css';
  */
 export default function MobileCaptureApp() {
   const { user } = useAuth();
+  const [showNudge, setShowNudge] = useState(false);
 
   return (
     <div className="mobile-capture">
@@ -23,26 +26,25 @@ export default function MobileCaptureApp() {
         <section className="mobile-capture__hero">
           <h1 className="mobile-capture__title">Today</h1>
           <p className="mobile-capture__sub">
-            Log the day here. Full Life OS — insights, pipelines, focus room — opens on iPad or desktop.
-            A native phone app is coming.
+            {captureHeroCopy()}
           </p>
         </section>
 
         <section className="mobile-capture__card" aria-label="Daily log">
           {user ? (
-            <DailyLogForm user={user} />
+            <DailyLogForm user={user} enableOfflineQueue onSuccess={() => setShowNudge(true)} />
           ) : (
             <p className="mobile-capture__sub">
               <Link to="/login">Sign in</Link> to save today’s log.
             </p>
           )}
         </section>
+
+        <MobileDesktopNudge visible={showNudge} onDismiss={() => setShowNudge(false)} />
       </main>
 
-      <footer className="mobile-capture__footer">
-        <Link to="/account" className="mobile-capture__link">Account</Link>
-        <span aria-hidden>·</span>
-        <span className="mobile-capture__muted">Web capture only</span>
+      <footer className="mobile-capture__footer mobile-capture__footer--shell">
+        <span className="mobile-capture__muted">{captureFooterLabel()}</span>
       </footer>
     </div>
   );

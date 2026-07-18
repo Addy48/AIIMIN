@@ -95,8 +95,57 @@
   align-items: center;
 }
 
+.mobile-capture__footer--shell {
+  padding-bottom: 8px;
+}
+
 .mobile-capture__muted {
   color: #6b7280;
+}
+
+.mobile-desktop-nudge {
+  margin-top: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #2d2d2d;
+  border: 1px solid color-mix(in srgb, #ff6b35 35%, #3a3a3a);
+}
+
+.mobile-desktop-nudge p {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #a3a3a3;
+}
+
+.mobile-desktop-nudge__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mobile-desktop-nudge__link {
+  color: #ff6b35;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mobile-desktop-nudge__dismiss {
+  border: 1px solid #3a3a3a;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 44px;
 }
 
 /* Touch targets inside daily log on phone */
