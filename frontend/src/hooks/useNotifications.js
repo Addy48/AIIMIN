@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
 import { apiDelete, apiGet, apiPatch, apiPost } from '../utils/api';
-import supabase from '../utils/supabase';
+import { fetchDailyLog } from '../api/dailyLogs';
 
 export const useNotifications = () => {
     const { user, isSignedIn } = useAuth();
@@ -33,15 +33,9 @@ export const useNotifications = () => {
 
             const localNotifs = [];
             const today = new Date().toLocaleDateString('en-CA');
+            const log = await fetchDailyLog(user.id, today).catch(() => null);
 
-            const { data: log } = await supabase
-                .from('daily_logs')
-                .select('id')
-                .eq('user_id', user.id)
-                .eq('date', today)
-                .maybeSingle();
-
-            if (!log) {
+            if (!log || !log.id) {
                 localNotifs.push({
                     id: 'local_daily_log',
                     type: 'commitment_miss',
