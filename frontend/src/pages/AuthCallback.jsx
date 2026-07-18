@@ -6,6 +6,7 @@ import { apiGet } from '../utils/api';
 import { authClient } from '../lib/auth-client';
 import { getApiOrigin } from '../utils/authSession';
 import { useAuth } from '../hooks/useAuth';
+import { getPostAuthPath } from '../utils/mobileEntry';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
 
@@ -65,7 +66,7 @@ const AuthCallback = () => {
                 } else if (needsLifeArc) {
                     navigate('/onboarding?arc=1', { replace: true });
                 } else {
-                    navigate('/overview', { replace: true });
+                    navigate(getPostAuthPath(), { replace: true });
                 }
             } catch (err) {
                 console.error('[AuthCallback] profile check failed:', err);

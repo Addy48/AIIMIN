@@ -6,6 +6,7 @@ import useAuth from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
 import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
 import { apiGet, apiPost } from '../utils/api';
+import { getPostAuthPath } from '../utils/mobileEntry';
 
 const IS_WAITLIST_MODE = process.env.REACT_APP_WAITLIST_MODE === 'true';
 
@@ -611,7 +612,7 @@ const Login = () => {
     setError(null); setLoading(true);
     try {
       await signInWithUsername(identifier.trim(), finalPin);
-      navigate('/overview');
+      navigate(getPostAuthPath());
     } catch (err) {
       const status = err?.status || err?.response?.status;
       const raw = String(err?.message || '');
