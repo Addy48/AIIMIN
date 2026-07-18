@@ -1,5 +1,12 @@
 # Notes Changelog
 
+### 2026-07-18 — Hide ADMIN_SIMULATED + human source badges
+- **What:** Filter out `source_type=admin_simulated` outside development. Badges show Text/Voice/PDF labels only — never raw `admin_simulated`. Empty-state copy clarified.
+- **Why:** Screenshot audit P0 — internal seed labels visible to users
+- **Files:** `frontend/src/pages/Notes.jsx`, `frontend/src/utils/enumLabels.js`
+- **Status:** local
+- **Notes:** Part of [[12_SPRINTS/UI-Improvement-Brief-2026-07-18]]
+
 ### 2026-07-15 — Create broken: FK + content NOT NULL
 - **What:** `notes.user_id` FK retargeted `auth.users` → `public.users` (migration **044** applied). `content` DEFAULT `''`. API dual-write always non-null `content` from body/transcript/ocr. Drive import same. PATCH syncs `content` with `body_text`. Voice create no longer sends null-only body.
 - **Why:** Legacy table survived `CREATE TABLE IF NOT EXISTS` in 041; Better Auth ids not in `auth.users` — every create failed. Voice/PDF paths also hit `content NOT NULL`.

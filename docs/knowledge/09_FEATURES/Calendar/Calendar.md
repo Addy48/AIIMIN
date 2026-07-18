@@ -23,6 +23,31 @@
 
 ## Changelog
 
+### 2026-07-18 — Mini-month sidebar overflow (Sat/Sun outside box)
+- **What:** Calendar right sidebar mini-month no longer uses `minWidth/minHeight: 36px` cells inside a ~188px content box (7×36 > panel → Sat/Sun spilled). Grid is `repeat(7, minmax(0, 1fr))`, cells `width:100%` + `aspect-ratio:1`, panel `overflow:hidden`. Sidebar width 240px.
+- **Why:** User screenshot — orange “18” + weekend columns outside white card. This was **CalendarSidebar**, not Goals DeadlinePicker (labels M/T/W match sidebar).
+- **Files:** `frontend/src/components/calendar/CalendarSidebar.jsx` (+ DeadlinePicker overflow hardening)
+- **Status:** local
+- **Notes:** Headless browser hit `/login` (no session) — layout fix verified in served webpack chunk (`minmax(0, 1fr)`, no `36px` minWidth).
+
+### 2026-07-18 — Month chips v4 + Safari no-cache
+- **What:** Chips now hard-coded white card, `#C9BCA3` 1.5px border, 5px accent strip, `5px 10px` padding, visible shadow (`aiimin-cal-chip-v4`). CRA `devServer` sends `Cache-Control: no-store`. Index meta cache-bust.
+- **Why:** Safari kept stale JS; Cmd+Shift+R opens Reading List (not reload). Prior chip borders too faint on cream so looked “unchanged.”
+- **Files:** `MonthView.jsx`, `craco.config.js`, `public/index.html`
+- **Status:** local
+
+### 2026-07-18 — Month event chips: real bordered boxes
+- **What:** Chips rebuilt as surface card + 4px color strip + padded title (not border-left-only). Full `var(--color-border)` outline + light shadow so cream theme reads a closed box. Same pattern on compact `EventCard`.
+- **Why:** User screenshot after cache fix — fill present but text jammed on accent bar, outer border still invisible
+- **Files:** `frontend/src/components/calendar/MonthView.jsx`, `EventCard.jsx`
+- **Status:** local
+
+### 2026-07-18 — Month grid event chips solid boxes
+- **What:** Month-view chips use readable text (`--color-text-1`), tinted surface fill via `color-mix`, full border + left accent bar. `SYSTEM_COLORS` aligned to locked palette. Compact `EventCard` same treatment.
+- **Why:** User screenshots — “missing box”, colored text floating on white, low contrast
+- **Files:** `frontend/src/components/calendar/MonthView.jsx`, `frontend/src/components/calendar/EventCard.jsx`
+- **Status:** local
+
 ### 2026-07-09 — Google sync fix + Tasks + auto-pull
 - **What:** Fixed OAuth client mismatch on calendar pull (now uses `googleClient.js` with `GOOGLE_CALENDAR_*` env); sync all calendars + due Google Tasks; auto-pull after connect; empty-state Pull CTA; hide Reconnect when connected on calendar toolbar
 - **Why:** Connected toast showed but grid stayed empty — no auto-pull, wrong OAuth credentials on pull route, primary-only list, phone tasks are Tasks API not Calendar events

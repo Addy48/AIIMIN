@@ -70,6 +70,10 @@ Details: [[09_FEATURES/Waitlist/Waitlist]]
 
 Never delete prior context from entity changelogs. Append dated entries only.
 
+## Canonical guide
+
+Full in-depth product doc (purpose, devices, every feature, tiers, colors): [[01_PRODUCT/AIIMIN-Product-Guide]]
+
 ## Related
 
 - [[00_HOME]]

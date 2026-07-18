@@ -41,6 +41,13 @@
 
 ## Changelog
 
+### 2026-07-18 — AI abuse + CORS + waitlist Data API lock
+- **What:** CORS allowlist (block evil origins w/ credentials); usage-report no longer drains org provider budgets; atomic per-user AI burn (advisory lock + unit cap ≤5); lite usage settles via `trackExternalCall`; anon INSERT revoked on waitlist_emails/user_feedback.
+- **Why:** User ask — non-hacking, AI tier integrity, attack safety
+- **Files:** `api/index.js`, `server/routes/intelligence.js`, `server/services/apiUsageService.js`, `server/middleware/rateLimiter.js`, `server/migrations/048_revoke_anon_waitlist_feedback.sql`
+- **Status:** local + DB remote; 3× verified localhost + CORS deny + privileges
+- **Notes:** Tier caps still Explore 1 / Core 10 / Pro 25 / Elite 40 daily. Ship EC2 for prod CORS/AI.
+
 ### 2026-07-18 — API data plane + P0 security harden
 - **What:** Frontend supabase client now proxies table I/O through `/api/db` (Better Auth). Query-string session tokens removed. DB: DEFINER revoke, oauth PK, rateLimit table, hot FK indexes.
 - **Why:** Audit FAIL #22 identity split + #12/#13 security

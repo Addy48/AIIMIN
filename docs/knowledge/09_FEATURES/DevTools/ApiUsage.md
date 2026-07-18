@@ -55,3 +55,9 @@ Settings → Admin Tools → **API Usage** tab (visible when `useAccessGate` rol
 ## Status
 
 Shipped 2026-07-04 — budgets, logging, dev dashboard tab.
+
+### 2026-07-18 — Abuse harden
+- **What:** `/intelligence/usage-report` no longer calls `trackExternalCall` (was draining **global** provider ceilings). Now user-tier log only, units capped ≤3. `trackExternalCall` uses advisory lock + unit cap ≤5. Lite settle uses full track path.
+- **Why:** Authenticated attacker could burn org free-key budgets without real AI calls
+- **Files:** `server/routes/intelligence.js`, `server/services/apiUsageService.js`
+- **Status:** shipped local (restart API); prod needs EC2 deploy

@@ -28,6 +28,12 @@
 
 ## Changelog
 
+### 2026-07-18 — Weekend Review: stop showing AI prompt text
+- **What:** Insight cache bumped to `v3` (clears polluted keys). Stricter prompt-leak filter. If model echoes instructions or returns <2 real bullets, client builds 4 bullets from habits/mood/money/lab/discipline signals. `generateWeeklyInsight` returns empty on leak so fallback always wins. Command Center money uses `formatINR`.
+- **Why:** User screenshot — boxes 1–3 showed “under 110 words / no dollar signs” etc. instead of real review
+- **Files:** `frontend/src/components/overview/MondayInsight.jsx`, `frontend/src/services/aiService.js`, `frontend/src/components/overview/CommandCenter.jsx`
+- **Status:** local
+
 ### 2026-07-14 — J0=A single capture logger
 - **What:** Removed Quick Capture tile grid from Today. Redesigned Universal Logger (locked palette, no purple). Forced widget migration `logger=true`, drop `quick_capture`. Soft destination chips only.
 - **Why:** Adi chose option A for retention / one clear job

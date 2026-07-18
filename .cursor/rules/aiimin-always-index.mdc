@@ -18,6 +18,7 @@ All of these are `alwaysApply: true`. Follow them every turn.
 | `caveman-always.mdc` | Terse chat; vault human docs stay clear prose |
 | `use-skills-always.mdc` | Read matching SKILL.md before acting |
 | `aiimin-chat-handoff.mdc` | Loud 🚨 SWITCH CHAT; Current-Context = handoff |
+| `aiimin-proof-or-stop.mdc` | No done/fixed/shipped without same-turn evidence |
 
 Entrypoint: `docs/knowledge/00_HOME.md`  
 Memory: `docs/knowledge/15_MEMORY/Current-Context.md`  

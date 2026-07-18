@@ -1,5 +1,17 @@
 # Discipline Changelog
 
+### 2026-07-18 — Urge Surfing 3-step modal + milestone SVG
+- **What:** Urge flow extracted to `DisciplineUrgeModal` — 10s breath → 5min observe → log surfed/gave_in. Milestone labels use lucide SVG icons (not emoji).
+- **Why:** Screenshot audit P2/P4; prior claim incomplete
+- **Files:** `frontend/src/pages/Discipline.jsx`, `frontend/src/pages/DisciplineUrgeModal.jsx`
+- **Status:** local
+
+### 2026-07-18 — Enum labels + crisis link accent
+- **What:** Target field uses label map (`phone_scroll` → Phone scrolling). Crisis "Find help now" underlined orange. Testimonial keys by author+days. Slip dates via `formatDate`.
+- **Why:** Screenshot audit P0/P3
+- **Files:** `frontend/src/pages/Discipline.jsx`, `frontend/src/utils/enumLabels.js`, `frontend/src/utils/formatDate.js`
+- **Status:** local
+
 ### 2026-07-18 — Hydrate from API (not localStorage-only)
 - **What:** Discipline page loads streak + urges + logs from `/api/discipline/*` on mount; start/reset write API. Seeded `discipline_streaks` for demo account. Slip log merges urge history.
 - **Why:** Seeded DB data never appeared — UI was localStorage-only while Lab/Focus had same class of bug
