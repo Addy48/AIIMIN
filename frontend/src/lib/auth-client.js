@@ -1,4 +1,5 @@
 import { createAuthClient } from 'better-auth/react';
+import { dashClient } from '@better-auth/infra/client';
 import { usernameClient } from 'better-auth/client/plugins';
 import { twoFactorClient } from 'better-auth/client/plugins';
 import { captureAuthTokenFromResponse, readAccessToken } from '../utils/authSession';
@@ -19,6 +20,7 @@ export const authClient = createAuthClient({
         },
     },
     plugins: [
+        dashClient(),
         usernameClient(),
         twoFactorClient({
             onTwoFactorRedirect() {

@@ -2,6 +2,7 @@
  * Better Auth — AIIMIN identity provider (replaces Supabase Auth).
  */
 import { betterAuth } from 'better-auth';
+import { dash } from '@better-auth/infra';
 import { randomUUID } from 'crypto';
 import { bearer } from 'better-auth/plugins/bearer';
 import { username } from 'better-auth/plugins/username';
@@ -195,6 +196,9 @@ export const auth = betterAuth({
     },
 
     plugins: [
+        ...(process.env.BETTER_AUTH_API_KEY
+            ? [dash({ apiKey: process.env.BETTER_AUTH_API_KEY })]
+            : []),
         bearer(),
         oneTimeToken({ expiresIn: 5 }),
         username({
