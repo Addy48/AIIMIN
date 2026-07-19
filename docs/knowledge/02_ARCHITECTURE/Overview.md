@@ -1,5 +1,11 @@
 # Architecture Overview
 
+## Monorepo (read first)
+
+**One repo, three clients** — web Life OS, Capacitor `/m` shell, native Android V2. Shared API and auth; **separate UI code and commits**.
+
+→ Full diagram and rules: [[Monorepo]] · root `CONTRIBUTING.md`
+
 ## Current state
 
 - Frontend: React app under `frontend/src`
@@ -9,13 +15,15 @@
 
 ## Product split
 
-| Surface | Route | Role |
-|---------|-------|------|
+| Surface | Route / package | Role |
+|---------|-----------------|------|
 | Desktop | app routes (`/overview`, …) | Full Life OS — analytics, tools, pages |
 | Tablet / iPad | same routes | Full Life OS — touch masthead; see [[Device-Tiers]] |
-| Phone web | `/m` | Capture-only daily log (native app coming) |
+| Phone web | `/m` | Capture-only daily log (web stopgap) |
+| **Native Android V2** | `in.aiimin.app` | Rich companion — see [[17_NATIVE_APP_V2/00_INDEX]] |
+| Capacitor (legacy) | WebView → `/m` | Thin installable shell — see [[09_FEATURES/Mobile/Capacitor-Android]] |
 | Waitlist | `/` when waitlist mode | Marketing + signup gate |
-| Brand | `/brand` | Public waitlist brand or system brand |
+| Brand | `/brand` | Public brand book |
 
 ## Subsystem map
 

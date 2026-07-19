@@ -4,28 +4,28 @@
 
 **Date:** 2026-07-19
 
-## Today (this chat — closed)
+## Repo structure (locked)
 
-- Touch audit pass: `mobileTouchTargets.css` + `Touch-Audit.md`
-- Inventory: `plans/uncommitted-inventory-2026-07-19.md` (180 paths)
-- Dev APK built; `capacitor.config.json` **restored** to `https://aiimin.in/m`
-- Commit/push plan: `plans/commit-push-plan-2026-07-19.md`
-- **Nothing committed/pushed** — awaiting explicit user ask
+**One repo · three clients · never mix commits**
 
-## Next (new chat)
+| Client | Path | Typical branch |
+|--------|------|----------------|
+| Web Life OS | `frontend/` | `main` |
+| Capacitor `/m` | `frontend/android/`, `components/mobile/` | `feat/mobile-capture-capacitor` |
+| Native Android V2 | `native-android/` | feature branch (on mobile branch until merge) |
 
-1. **Mobile:** USB debug → `adb install` → smoke `/m` (dev: `cap:dev:phone` + LAN server)
-2. **Website first:** W1–W4 on `main` per commit plan → push → Vercel + EC2
-3. **Mobile branch:** `feat/mobile-capture-capacitor` M1 then M2 → merge after frontend deploy
-4. SeedData stays for QA · Play Store later
+Docs: `docs/knowledge/02_ARCHITECTURE/Monorepo.md` · `CONTRIBUTING.md` · root `README.md` overhauled.
 
-## Touch
+## Git ship
 
-- `plans/commit-push-plan-2026-07-19.md`
-- `plans/mobile-commit-split.md`
-- `docs/knowledge/09_FEATURES/Mobile/Touch-Audit.md`
+- `main` — website API + frontend polish (pushed)
+- `feat/mobile-capture-capacitor` — Capacitor + native V2 + repo docs (pushed `0d6cff87`)
+
+## Next
+
+1. Merge `feat/mobile-capture-capacitor` when founder approves (brings native + `/m`)
+2. Play signed APK + Supabase mobile migration
 
 ## Locks
 
-- Palette LOCKED · `/m` capture-only · no auth/schema without ask
-- Never mix website + mobile in one commit
+Palette · `/m` capture on phone web · no auth/schema without ask · no tool attribution in public docs
