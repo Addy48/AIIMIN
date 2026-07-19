@@ -5,9 +5,18 @@
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { mobileHealthLimiter, mobileSyncLimiter } from '../middleware/rateLimiter.js';
 import { randomUUID } from 'crypto';
 
 const app = new Hono();
+
+app.use('*', async (c, next) => {
+  const path = c.req.path;
+  if (path === '/health' || path.endsWith('/health')) {
+    return mobileHealthLimiter(c, next);
+  }
+  return mobileSyncLimiter(c, next);
+});
 
 const IDEMPOTENCY_TTL_HOURS = 48;
 
