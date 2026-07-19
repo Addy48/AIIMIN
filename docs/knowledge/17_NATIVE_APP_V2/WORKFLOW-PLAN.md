@@ -252,9 +252,15 @@ Plan wanted Hilt + `presentation/`. **Shipped in** `in.aiimin.app.ui.*` + `AppCo
 
 ## Next actions (ordered)
 
-1. Actions → Native Android → Run workflow → `build_release: true` → download signed APK
+1. Play Console: `native-android/dist/app-release-2.2.1-native.apk`
 2. Founder smoke: offline journal → sync → desktop verify
-3. `bash scripts/verify-repo.sh` before any ship claim
+
+### 2026-07-19 — Session 12 (device ship)
+
+- Launcher icon → official `ic_aiimin_mark` (Editor Pick / `logo-symbol.svg`)
+- v2.2.1-native (versionCode 19) · signed release on AIN065
+- Supabase RLS deny-all on mobile tables
+- `verify-repo.sh` VERIFY PASSED
 
 ### 2026-07-19 — Session 14 (repo closeout)
 
