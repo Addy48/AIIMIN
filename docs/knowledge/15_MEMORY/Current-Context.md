@@ -1,39 +1,33 @@
 # Current Context
 
-> **Handoff ready.** New chat: read Home → this file → [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
+> **Handoff ready.** New chat: read Home → [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
 
-**Date:** 2026-07-19 · **APK:** `2.2.0-native` · **Branch:** `main` (post-merge)
+**Date:** 2026-07-19 · **APK:** `2.2.1-native` · **Branch:** `main`
 
 ## Repo structure (locked)
 
-**One repo · three clients · never mix commits**
+One repo · three clients · never mix commits — `docs/knowledge/02_ARCHITECTURE/Monorepo.md`
 
-| Client | Path | Branch |
-|--------|------|--------|
-| Web Life OS | `frontend/` | `main` |
-| Capacitor `/m` | `frontend/android/`, `components/mobile/` | `main` |
-| Native Android V2 | `native-android/` | `main` |
+## Shipped this session
 
-Docs: `docs/knowledge/02_ARCHITECTURE/Monorepo.md` · `CONTRIBUTING.md` · root `README.md`
+- `scripts/verify-repo.sh` — full gate (web + native + API health)
+- RLS on `mobile_devices` + `mobile_idempotency` (Supabase migration `mobile_sync_rls`)
+- Mobile API rate limits (`mobileSyncLimiter`, `mobileHealthLimiter`)
+- CI fix: removed Mac-only `gradle.properties` java.home (use `local.properties`)
+- Skills registry + master fix plan on `main`
 
-## Functional status
+## Blocked on founder only
 
-- Native app: auth, bootstrap, journal/notes/habits outbox, WorkManager sync, biometric gate
-- **Prod API:** `GET /api/mobile/health` OK · `POST /api/mobile/sync/batch` → 401 without auth
-- Supabase: `mobile_sync` migration applied (`mobile_devices`, `mobile_idempotency`)
-- EC2: permanent deploy via `main` push (replaces hot-patch)
+1. **Signed Play APK** — GitHub secrets set; run Actions → Native Android → `build_release: true`
+2. **Device smoke** — offline journal → sync → verify on desktop (human)
+3. **Google OAuth return** on native (Custom Tabs handoff)
 
-## Next
+## Verify
 
-1. Run `bash scripts/verify-repo.sh` before ship claims
-2. GitHub keystore secrets → signed Play APK
-3. RLS for `mobile_devices` / `mobile_idempotency`
-4. P1 backlog: `plans/repo-fix-master-plan.md`
+```bash
+bash scripts/verify-repo.sh
+```
 
-## Touch
+## Locks
 
-- `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md`
-- `plans/repo-fix-master-plan.md`
-- `scripts/verify-repo.sh`
-
-Palette · `/m` capture on phone web · no auth/schema without ask · no tool attribution in docs
+Palette · `/m` capture on phone web · no auth/schema without ask

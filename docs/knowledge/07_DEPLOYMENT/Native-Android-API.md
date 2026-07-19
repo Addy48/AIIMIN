@@ -9,6 +9,8 @@ Before native sync works in production, ship these together:
 | `server/routes/mobile.js` | `bootstrap`, `sync/batch`, `devices`, `health` |
 | `api/index.js` | `mobile` in lazy `routeMap` |
 | `supabase/migrations/20260719_mobile_sync.sql` | `mobile_devices`, `mobile_idempotency` |
+| `supabase/migrations/20260719_mobile_sync_rls.sql` | RLS on `mobile_devices`, `mobile_idempotency` |
+| `server/middleware/rateLimiter.js` | `mobileSyncLimiter`, `mobileHealthLimiter` |
 
 ## 2. Database
 
@@ -36,4 +38,4 @@ curl -s -o /dev/null -w "%{http_code}" -X POST \
 # 401 without auth (not 404)
 ```
 
-**2026-07-19:** Prod returned **404** — `mobile.js` not yet on deployed `main`.
+**2026-07-19:** Prod `GET /api/mobile/health` → `{"ok":true,"surface":"native-mobile"}`. `POST /sync/batch` → **401** without auth (expected). RLS migration `mobile_sync_rls` applied in Supabase.

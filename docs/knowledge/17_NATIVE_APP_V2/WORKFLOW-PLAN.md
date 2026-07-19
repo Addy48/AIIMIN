@@ -33,7 +33,7 @@ tags:
 P0 ██████████ 100%  (7/7)
 P1 ██████████ 100%  (9/9)
 P2 ██████████ 100%  (5/5)
-P3 █████████░  90%  (functional · merge main + signed APK remain)
+P3 ██████████ 100%  (CI fixed · RLS live · signed APK = founder workflow_dispatch)
 ```
 
 ### Active now
@@ -41,8 +41,9 @@ P3 █████████░  90%  (functional · merge main + signed APK r
 | Priority | ID | Task | Status |
 |----------|-----|------|--------|
 | 🟡 | P3-5 | WorkManager offline queue | `COMPLETE` |
-| 🔴 | P3-6 | Signed APK + GitHub Actions | `IN_PROGRESS` — debug + unsigned release CI; signed needs secrets |
-| 🟠 | EC2 deploy | `sync/batch` live on prod | `COMPLETE` — hot-patch EC2; merge to `main` pending |
+| 🟡 | P3-6 | Signed APK + GitHub Actions | `READY` — secrets set; dispatch `build_release: true` |
+| 🟢 | EC2 deploy | `sync/batch` live on prod | `COMPLETE` — merged `main` |
+| 🟢 | RLS | `mobile_devices` / `mobile_idempotency` | `COMPLETE` — migration `mobile_sync_rls` |
 | 🟠 | P3-3 | Granular `/mobile/*` APIs | `IN_CONFLICT` — use `bootstrap` |
 
 ### Done recently (evidence)
@@ -251,9 +252,16 @@ Plan wanted Hilt + `presentation/`. **Shipped in** `in.aiimin.app.ui.*` + `AppCo
 
 ## Next actions (ordered)
 
-1. Download signed APK from `native-android` workflow artifact (`aiimin-native-release`)
+1. Actions → Native Android → Run workflow → `build_release: true` → download signed APK
 2. Founder smoke: offline journal → sync → desktop verify
-3. RLS policies for `mobile_devices` / `mobile_idempotency`
+3. `bash scripts/verify-repo.sh` before any ship claim
+
+### 2026-07-19 — Session 14 (repo closeout)
+
+- RLS `mobile_sync_rls` applied Supabase
+- Mobile rate limits on `/api/mobile/*`
+- `gradle.properties` CI-safe; `local.properties.example` for Mac JDK 17
+- `verify-repo.sh` VERIFY PASSED
 
 ### 2026-07-19 — Session 11 (ship)
 
