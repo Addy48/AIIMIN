@@ -11,7 +11,7 @@
 
 ## Functional status
 
-- **Web prod:** fixed P0 `useDeviceTier` missing React import (2026-07-19) — Vercel redeploy pending push
+- **Web prod:** P0 `useDeviceTier` React import fixed — live `main.bf120d17.js` on Vercel
 - Native app: auth, bootstrap, journal/notes/habits outbox, WorkManager sync, biometric gate
 - **Prod API:** `GET /api/mobile/health` OK · `POST /api/mobile/sync/batch` → 401 without auth
 - Supabase: `mobile_sync` + RLS deny-all on mobile tables (server-only via service role)
