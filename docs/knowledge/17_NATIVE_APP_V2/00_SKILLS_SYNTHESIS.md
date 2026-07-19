@@ -10,14 +10,14 @@
 
 | Source | Status | Location |
 |--------|--------|----------|
-| `rcosteira79/android-skills` (compose, android-ux, android-dev, data-layer, modularization, coroutines, flows, retrofit, ktor, datastore, paging, coil, gradle, testing, …) | **Installed** | `.agents/skills/*` |
-| `Drjacky/claude-android-ninja` | **Installed** | `.agents/skills/claude-android-ninja` + `~/.claude/skills/claude-android-ninja` |
-| `dpconde/claude-android-skill` | **Installed** | `.agents/skills/claude-android-skill` |
-| `ceorkm/mobile-app-ui-design` | **Installed** | `.agents/skills/mobile-app-ui-design` + `~/.agents/skills/mobile-app-ui-design` |
-| `kostja94/marketing-skills` | **Partial** — `npx skills add` ran; many platform skills failed PromptScript global; repo cloned at `/tmp/aiimin-skills-install/marketing-skills` (strategies/launch, brand, SEO, copywriting, …) | Copy into `.agents/skills/marketing-*` on next pass if needed |
-| `android skills add --skill=r8-analyzer` | **Blocked** — `android` CLI not on PATH | Use ninja `references/gradle-setup.md` R8 Keep-Rules Audit + mapping de-obfuscation instead |
+| Android skills suite (compose, UX, data-layer, modularization, coroutines, retrofit, …) | **Installed** | `.agents/skills/*` (local dev only — not shipped product) |
+| Android production checklist skill | **Installed** | `.agents/skills/` |
+| Now-in-Android modular layout skill | **Installed** | `.agents/skills/` |
+| Mobile UI design skill | **Installed** | `.agents/skills/mobile-app-ui-design` |
+| Marketing / launch skills | **Partial** | strategies subset as needed |
+| R8 analyzer CLI | **Blocked** — CLI not on PATH | Use Gradle R8 docs + mapping files instead |
 
-**Note:** Capacitor WebView-of-`/m` is **rejected** by android-dev / ninja / Now-in-Android skill ethos (offline-first native UI, not a browser chrome).
+**Note:** Capacitor WebView-of-`/m` is **rejected** for V2 (offline-first native UI, not a browser chrome).
 
 ---
 
@@ -76,7 +76,7 @@ Desktop keeps **density, multitasking, Lab graphs, Finance deep analytics, Place
 
 ---
 
-## 5. Synthesis — Android Ninja (`Drjacky`)
+## 5. Synthesis — Android production checklist
 
 Treat as **production checklist bible**:
 
@@ -93,7 +93,7 @@ Treat as **production checklist bible**:
 
 ---
 
-## 6. Synthesis — Now-in-Android skill (`dpconde`)
+## 6. Synthesis — Now-in-Android modular layout
 
 ```
 app/ → feature/*/api|impl → core/{data,database,network,model,ui,designsystem,datastore,testing}
@@ -103,7 +103,7 @@ Offline-first · UDF · Flow · feature modules · testable interfaces.
 
 ---
 
-## 7. Synthesis — Marketing skills (`kostja94`)
+## 7. Synthesis — Marketing / launch skills
 
 Relevant to native launch (not vanity social spam):
 

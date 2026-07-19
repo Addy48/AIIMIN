@@ -33,7 +33,7 @@ tags:
 P0 ██████████ 100%  (7/7)
 P1 ██████████ 100%  (9/9)
 P2 ██████████ 100%  (5/5)
-P3 ████████░░  80%  (P3-6 CI done · signed blocked · EC2 blocked)
+P3 █████████░  90%  (functional · merge main + signed APK remain)
 ```
 
 ### Active now
@@ -42,7 +42,7 @@ P3 ████████░░  80%  (P3-6 CI done · signed blocked · EC2 b
 |----------|-----|------|--------|
 | 🟡 | P3-5 | WorkManager offline queue | `COMPLETE` |
 | 🔴 | P3-6 | Signed APK + GitHub Actions | `IN_PROGRESS` — debug + unsigned release CI; signed needs secrets |
-| 🟠 | EC2 deploy | `sync/batch` live on prod | `BLOCKED` — `mobile.js` not on `main` yet |
+| 🟠 | EC2 deploy | `sync/batch` live on prod | `COMPLETE` — hot-patch EC2; merge to `main` pending |
 | 🟠 | P3-3 | Granular `/mobile/*` APIs | `IN_CONFLICT` — use `bootstrap` |
 
 ### Done recently (evidence)
@@ -166,7 +166,7 @@ base64 -i aiimin-release.keystore | pbcopy   # paste into ANDROID_KEYSTORE_BASE6
 | Plan endpoint | Exists? | Actual |
 |---------------|---------|--------|
 | `GET /mobile/home` | NO | `GET /mobile/bootstrap` |
-| `POST /mobile/sync/batch` | YES (repo) | **prod 404** 2026-07-19 — EC2 deploy pending; client tolerates |
+| `POST /mobile/sync/batch` | YES | prod live — 401 without auth (EC2 patch 2026-07-19) |
 | Auth sign-in username | YES | Better Auth |
 
 **Sync policy:** `MobileRepository.syncAll()` — outbox 404 never blocks bootstrap.
@@ -180,6 +180,12 @@ Plan wanted Hilt + `presentation/`. **Shipped in** `in.aiimin.app.ui.*` + `AppCo
 ---
 
 ## Session log
+
+### 2026-07-19 — Session 13 (ship)
+
+- Commit `5ae66b13` → `feat/mobile-capture-capacitor`
+- EC2 hot-patch: `mobile.js` + `api/index.js` · health OK · batch 401 (auth required)
+- `assembleDebug` + `assembleRelease` exit 0 · `adb install` Success
 
 ### 2026-07-19 — Session 12 (UI audit)
 
@@ -245,9 +251,9 @@ Plan wanted Hilt + `presentation/`. **Shipped in** `in.aiimin.app.ui.*` + `AppCo
 
 ## Next actions (ordered)
 
-1. **Commit + push** `server/routes/mobile.js`, `api/index.js`, `native-android/**`, migration → EC2 deploy
-2. **P3-6** — GitHub keystore secrets → signed Play release
-3. Run Supabase migration `20260719_mobile_sync.sql`
+1. Merge feature branch → `main` (founder)
+2. Supabase migration `20260719_mobile_sync.sql`
+3. Keystore secrets → signed release
 
 ---
 
