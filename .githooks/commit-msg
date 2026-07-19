@@ -1,0 +1,13 @@
+#!/bin/sh
+# Strip AI tool Co-authored-by trailers (Cursor, Copilot, etc.) before commit lands.
+# Enable once: git config core.hooksPath .githooks
+
+if [ ! -f "$1" ]; then
+  exit 0
+fi
+
+tmp=$(mktemp)
+grep -viE '^co-authored-by:.*(cursor|copilot|claude|openai|anthropic|github copilot)' "$1" > "$tmp" || true
+mv "$tmp" "$1"
+
+exit 0
