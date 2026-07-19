@@ -2,7 +2,9 @@
 
 > **Agents: read this first.** Then `15_MEMORY/Current-Context.md`. Then only docs for the task. Never whole-repo scan unless user says so.
 
-**Last updated:** 2026-07-18
+**Last updated:** 2026-07-19
+
+> **📌 Native Android build:** pin [[17_NATIVE_APP_V2/WORKFLOW-PLAN]] in sidebar — live P0–P3 tracker.
 
 ## Project goal
 
@@ -75,6 +77,8 @@ Phases 2–8 (field matrix, information graph, intent map, kill list, framework,
 | Need | Path |
 |------|------|
 | Current context | [[15_MEMORY/Current-Context]] |
+| **Native build tracker (PIN)** | [[17_NATIVE_APP_V2/WORKFLOW-PLAN]] |
+| **Native App V2 design pack** | [[17_NATIVE_APP_V2/00_INDEX]] |
 | **Product guide (full)** | [[01_PRODUCT/AIIMIN-Product-Guide]] |
 | Product | [[01_PRODUCT/Product]] |
 | Architecture | [[02_ARCHITECTURE/Overview]] |

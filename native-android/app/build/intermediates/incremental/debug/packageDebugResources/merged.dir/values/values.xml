@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="aiimin_accent">#FF6B35</color>
+    <color name="aiimin_bg">#1A1A1A</color>
+    <color name="ic_launcher_background">#FF6B35</color>
+    <string name="app_name">AIIMIN</string>
+    <style name="Theme.AIIMIN" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@color/aiimin_bg</item>
+        <item name="android:navigationBarColor">@color/aiimin_bg</item>
+        <item name="android:windowBackground">@color/aiimin_bg</item>
+    </style>
+</resources>
