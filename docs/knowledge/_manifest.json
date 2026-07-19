@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-07-18",
+  "lastUpdated": "2026-07-19",
   "entrypoint": "docs/knowledge/00_HOME.md",
   "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
   "brainOs": true,
@@ -217,6 +217,16 @@
       "moc": "docs/knowledge/00_HOME.md",
       "decision": "docs/knowledge/10_DECISIONS/2026-07-10-vault-brain-os.md",
       "status": "cutover-shipped"
+    },
+    "monorepo": {
+      "moc": "docs/knowledge/02_ARCHITECTURE/Monorepo.md",
+      "files": [
+        "README.md",
+        "CONTRIBUTING.md",
+        "frontend/README.md",
+        "native-android/README.md"
+      ],
+      "status": "three-client-boundaries-documented"
     }
   }
 }
