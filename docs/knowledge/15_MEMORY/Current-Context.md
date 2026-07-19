@@ -1,33 +1,29 @@
 # Current Context
 
-> **Handoff ready.** New chat: read Home → [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
+> **Handoff ready.** New chat: read Home → this file → [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
 
 **Date:** 2026-07-19 · **APK:** `2.2.1-native` · **Branch:** `main`
 
-## Repo structure (locked)
+## Device
 
-One repo · three clients · never mix commits — `docs/knowledge/02_ARCHITECTURE/Monorepo.md`
+- Phone: OnePlus AIN065 (`9597fdea`) — signed release installed
+- APK: `native-android/dist/app-release-2.2.1-native.apk`
 
-## Shipped this session
+## Functional status
 
-- `scripts/verify-repo.sh` — full gate (web + native + API health)
-- RLS on `mobile_devices` + `mobile_idempotency` (Supabase migration `mobile_sync_rls`)
-- Mobile API rate limits (`mobileSyncLimiter`, `mobileHealthLimiter`)
-- CI fix: removed Mac-only `gradle.properties` java.home (use `local.properties`)
-- Skills registry + master fix plan on `main`
+- Native app: auth, bootstrap, journal/notes/habits outbox, WorkManager sync, biometric gate
+- **Prod API:** `GET /api/mobile/health` OK · `POST /api/mobile/sync/batch` → 401 without auth
+- Supabase: `mobile_sync` + RLS deny-all on mobile tables (server-only via service role)
+- Launcher: official Editor Pick mark (`ic_aiimin_mark`)
 
-## Blocked on founder only
+## Next
 
-1. **Signed Play APK** — GitHub secrets set; run Actions → Native Android → `build_release: true`
-2. **Device smoke** — offline journal → sync → verify on desktop (human)
-3. **Google OAuth return** on native (Custom Tabs handoff)
+1. Play Console internal track upload
+2. Founder smoke: offline journal → sync → desktop verify
 
-## Verify
+## Touch
 
-```bash
-bash scripts/verify-repo.sh
-```
+- `native-android/dist/app-release-2.2.1-native.apk`
+- `docs/knowledge/17_NATIVE_APP_V2/WORKFLOW-PLAN.md`
 
-## Locks
-
-Palette · `/m` capture on phone web · no auth/schema without ask
+Palette · `/m` capture on phone web · no auth/schema without ask · no tool attribution in docs
