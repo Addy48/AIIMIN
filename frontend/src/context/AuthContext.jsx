@@ -13,6 +13,7 @@ import {
     getOAuthHandoffUrl,
     purgeLegacyAuthTokens,
 } from '../utils/authSession';
+import { useDashboardPrefetch } from '../hooks/useDashboardPrefetch';
 
 const AuthContext = createContext(null);
 
@@ -27,6 +28,8 @@ export function AuthProvider({ children }) {
 
     const session = sessionData?.session || null;
     const sessionUser = sessionData?.user || null;
+
+    useDashboardPrefetch(user);
 
     useEffect(() => {
         purgeLegacyAuthTokens();

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AIIMIN</string>
+    <string name="title_activity_main">AIIMIN</string>
+    <string name="package_name">in.aiimin.app</string>
+    <string name="custom_url_scheme">in.aiimin.app</string>
+</resources>
