@@ -38,6 +38,7 @@ Before `git add`:
 3. **Secrets?** Never `.env`, keystores, `*.pem`, `local.properties`.
 4. **Build artifacts?** Never `frontend/build/`, `native-android/**/build/`, `.gradle/`.
 5. **Attribution?** No Co-authored-by tool trailers; no “developed with X” in docs.
+6. **Hooks (optional):** `bash scripts/setup-git-hooks.sh` — strips tool trailers from commit messages.
 
 ---
 

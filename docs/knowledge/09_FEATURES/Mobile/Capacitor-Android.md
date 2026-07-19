@@ -67,6 +67,12 @@ Temporarily point `server.url` in `capacitor.config.json` to your LAN dev server
 - **Files:** see `docs/knowledge/17_NATIVE_APP_V2/CHANGELOG.md`
 - **Status:** partial (Compose Phase 1)
 
+### 2026-07-19 — P0: useDeviceTier crash (prod)
+- **What:** Added missing `useState` / `useEffect` import in `useDeviceTier.js` — site + `/m` white-screened
+- **Why:** Hook used React APIs without import; ErrorBoundary caught `ReferenceError: useState`
+- **Files:** `frontend/src/hooks/useDeviceTier.js`
+- **Status:** shipped
+
 ### 2026-07-19 — Production WebView + brand icons + DayNight
 - **What:** Default `server.url` → `https://www.aiimin.in/m` (HTTPS; no LAN cleartext). Debug builds allow cleartext via `src/debug/res/xml/network_security_config.xml`. Branded launcher + splash from AIIMIN mark (`npm run cap:icons`). Native DayNight chrome (palette light/dark). Status bar follows theme; first native launch follows system light/dark.
 - **Why:** Dev APK pointed at LAN HTTP with cleartext blocked — WebView blank / “won’t open”. Prod URL loads on device (login redirect when unauthed).
