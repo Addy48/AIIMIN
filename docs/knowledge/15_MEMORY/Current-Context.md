@@ -1,22 +1,33 @@
 # Current Context
 
-> Agents read after Home. **Build tracker:** [[17_NATIVE_APP_V2/WORKFLOW-PLAN]] · **UI audit:** [[17_NATIVE_APP_V2/UI-AUDIT]]
+> **Handoff ready.** New chat: read Home → this file → [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
 
-**Date:** 2026-07-19 · **APK:** `2.2.0-native`
+**Date:** 2026-07-19
 
-## Shipped this session
+## Repo structure (locked)
 
-- **Full UI audit** — dark mode PIN, theme consistency, safe areas, layout/copy fixes
-- `ScreenChrome` + `ScreenHeader` shared components
-- Vault doc: [[17_NATIVE_APP_V2/UI-AUDIT]]
+**One repo · three clients · never mix commits**
 
-## Evidence
+| Client | Path | Branch |
+|--------|------|--------|
+| Web Life OS | `frontend/` | `main` |
+| Capacitor `/m` | `frontend/android/`, `components/mobile/` | `feat/mobile-capture-capacitor` |
+| Native Android V2 | `native-android/` | feature branch |
 
-- `assembleDebug` exit 0
-- `adb install` Success
+Docs: `docs/knowledge/02_ARCHITECTURE/Monorepo.md` · `CONTRIBUTING.md` · root `README.md` overhauled.
+
+## Git ship
+
+- `main` @ website commits (pushed)
+- `feat/mobile-capture-capacitor` @ native + Capacitor (pushed)
+- Build artifacts stripped from `native-android/` index (this session)
 
 ## Next
 
-1. Commit + push mobile API → EC2 deploy
-2. Keystore secrets → signed release
-3. Founder smoke dark mode + Journal + More sub-screens
+1. Merge mobile branch when founder approves
+2. Native smoke: offline journal → sync → desktop verify
+3. Supabase migration `20260719_mobile_sync.sql`
+
+## Locks
+
+Palette · no auth/schema without ask · no tool attribution in docs · commit/push on ask

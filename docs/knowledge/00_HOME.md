@@ -31,14 +31,16 @@ See [[12_SPRINTS/Sprint-Current]] · craft: [[12_SPRINTS/Craft-Master-Plan-AJ]]
 
 ## Architecture (one screen)
 
+- **Monorepo:** three clients — web, Capacitor `/m`, native Android V2. **Never mix in one commit.** → [[02_ARCHITECTURE/Monorepo]]
 - Frontend: React 19 + Tailwind — `frontend/`
-- Backend: Node Express/Hono routes — `server/`
+- Native: Kotlin Compose — `native-android/`
+- Backend: Node Express/Hono routes — `server/` + `api/`
 - DB: Supabase PostgreSQL
 - Auth: Better Auth + Google OAuth
 - Host: Vercel (frontend) + EC2/API (`api.aiimin.in`)
-- Desktop `/` = full OS; Mobile `/m` = data capture only (phones); iPad/tablet = full OS ([[02_ARCHITECTURE/Device-Tiers]])
+- Desktop `/` = full OS; Mobile web `/m` = capture stopgap; **Native app** = rich companion ([[17_NATIVE_APP_V2/00_INDEX]])
 
-Deep: [[02_ARCHITECTURE/Overview]]
+Deep: [[02_ARCHITECTURE/Overview]] · [[02_ARCHITECTURE/Monorepo]]
 
 ## Important rules
 
@@ -77,6 +79,7 @@ Phases 2–8 (field matrix, information graph, intent map, kill list, framework,
 | Need | Path |
 |------|------|
 | Current context | [[15_MEMORY/Current-Context]] |
+| **Monorepo (3 clients)** | [[02_ARCHITECTURE/Monorepo]] |
 | **Native build tracker (PIN)** | [[17_NATIVE_APP_V2/WORKFLOW-PLAN]] |
 | **Native App V2 design pack** | [[17_NATIVE_APP_V2/00_INDEX]] |
 | **Product guide (full)** | [[01_PRODUCT/AIIMIN-Product-Guide]] |
