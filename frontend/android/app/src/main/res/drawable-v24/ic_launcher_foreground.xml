@@ -1,0 +1,10 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- AIIMIN arch bracket mark — accent #FF6B35 on adaptive icon -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M30,24 L30,84 L42,84 L42,48 L66,48 L66,84 L78,84 L78,24 L66,24 L66,38 L42,38 L42,24 Z" />
+</vector>

@@ -1,0 +1,193 @@
+html[data-device-tier='tablet'] {
+  --rail-width: 64px;
+}
+
+html[data-device-tier='tablet'] .dashboard-layout--rail .dashboard-layout__main {
+  margin-left: var(--rail-width, 64px);
+  width: calc(100% - var(--rail-width, 64px));
+  transition: margin-left 200ms cubic-bezier(0.4, 0, 0.2, 1), width 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html[data-device-tier='tablet'] .nav-masthead__center {
+  display: none !important;
+}
+
+html[data-device-tier='tablet'] .nav-masthead {
+  left: var(--rail-width, 64px);
+  width: calc(100% - var(--rail-width, 64px));
+  transition: left 200ms cubic-bezier(0.4, 0, 0.2, 1), width 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-rail {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: calc(var(--z-nav) + 1);
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-2);
+  border-right: 1px solid var(--color-border);
+  transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.tab-rail__brand-word {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-text-1);
+}
+
+.tab-rail:not(.tab-rail--expanded) .tab-rail__brand-word {
+  display: none;
+}
+
+.tab-rail__brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: var(--nav-height);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.tab-rail__brand-btn {
+  display: flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+
+.tab-rail:not(.tab-rail--expanded) .tab-rail__brand-btn .brand-lockup__word {
+  display: none;
+}
+
+.tab-rail__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface-1);
+  color: var(--color-text-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.tab-rail__chevron--peek {
+  position: absolute;
+  right: 6px;
+  top: 18px;
+  width: 28px;
+  height: 28px;
+}
+
+.tab-rail__primary {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tab-rail__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-2);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.tab-rail:not(.tab-rail--expanded) .tab-rail__link {
+  justify-content: center;
+  padding: 0;
+}
+
+.tab-rail__link:hover {
+  background: var(--color-surface-3);
+  color: var(--color-text-1);
+}
+
+.tab-rail__link--active {
+  background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface-3));
+  color: var(--color-accent);
+}
+
+.tab-rail__more-block {
+  padding: 0 6px 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.tab-rail__more-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0 0 8px;
+}
+
+.tab-rail__sublink {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--color-text-2);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tab-rail__sublink--active,
+.tab-rail__sublink:hover {
+  background: var(--color-surface-3);
+  color: var(--color-text-1);
+}
+
+.tab-rail__footer {
+  padding: 8px 6px 12px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tab-rail__avatar {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: linear-gradient(135deg, var(--color-accent), #10b981);
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.tab-rail--expanded .tab-rail__avatar {
+  width: calc(100% - 12px);
+  margin: 0 6px;
+}

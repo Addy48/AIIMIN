@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { upsertRow, getRows } from '../services/dbService';
+import { queueOfflineLog } from '../utils/offlineLogQueue';
 import TimePicker from './TimePicker';
 import MomentumBar from './MomentumBar';
 import toast from '../utils/toast';
@@ -9,7 +10,7 @@ import FloatingSaveButton from './dailylog/FloatingSaveButton';
 
 
 /* ─── DailyLogForm ─── */
-const DailyLogForm = ({ user, externalMood }) => {
+const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = false }) => {
     const [formData, setFormData] = useState({
         sleepStart: '',
         sleepEnd: '',
@@ -138,6 +139,19 @@ const DailyLogForm = ({ user, externalMood }) => {
                 mood: formData.mood,
             };
 
+            if (enableOfflineQueue && !navigator.onLine) {
+                await queueOfflineLog(payload);
+                toast.success('Saved offline — will sync when you reconnect.');
+                setJustSaved(true);
+                setShowCheckmark(true);
+                setTimeout(() => setShowCheckmark(false), 2000);
+                setTimeout(() => setJustSaved(false), 3000);
+                setTimeout(() => setIsDirty(false), 500);
+                onSuccess?.();
+                setLoading(false);
+                return;
+            }
+
             await upsertRow('daily_logs', payload, 'user_id,date');
 
             toast.success(`Log saved at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
@@ -149,6 +163,8 @@ const DailyLogForm = ({ user, externalMood }) => {
             setTimeout(() => {
                 setIsDirty(false);
             }, 500);
+
+            onSuccess?.();
         } catch (error) {
             toast.error('Save failed — check connection and try again.');
         } finally {
@@ -278,6 +294,7 @@ const DailyLogForm = ({ user, externalMood }) => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
                                         <button
                                             type="button"
+                                            className="daily-log-water-btn"
                                             onClick={() => { setFormData(prev => ({ ...prev, waterBottles: Math.max(0, (prev.waterBottles || 0) - 1) })); setIsDirty(true); }}
                                             style={{
                                                 width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px',
@@ -295,6 +312,7 @@ const DailyLogForm = ({ user, externalMood }) => {
                                         </div>
                                         <button
                                             type="button"
+                                            className="daily-log-water-btn"
                                             onClick={() => { setFormData(prev => ({ ...prev, waterBottles: (prev.waterBottles || 0) + 1 })); setIsDirty(true); }}
                                             style={{
                                                 width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px',
@@ -351,20 +369,8 @@ const DailyLogForm = ({ user, externalMood }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            onMouseEnter={e => {
-                                if (!loading) {
-                                    e.currentTarget.style.background = '#f7b84a';
-                                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(245,166,35,0.3)';
-                                }
-                            }}
-                            onMouseLeave={e => {
-                                if (!loading) {
-                                    e.currentTarget.style.background = '#f5a623';
-                                    e.currentTarget.style.boxShadow = 'none';
-                                }
-                            }}
                             style={{
-                                width: '100%', height: '46px', background: '#f5a623', border: 'none',
+                                width: '100%', height: '46px', background: 'var(--color-accent)', border: 'none',
                                 borderRadius: '12px', fontSize: '14px', fontWeight: 700, color: 'white',
                                 cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.45 : 1,
                                 transition: 'all 0.2s', letterSpacing: '0.02em',

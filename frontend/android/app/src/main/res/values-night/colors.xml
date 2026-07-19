@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Night / dark (system DayNight night) — AIIMIN dark palette -->
+    <color name="colorPrimary">#FF6B35</color>
+    <color name="colorPrimaryDark">#1A1A1A</color>
+    <color name="colorAccent">#FF6B35</color>
+    <color name="aiimin_bg">#1A1A1A</color>
+    <color name="aiimin_surface">#2D2D2D</color>
+    <color name="aiimin_status_bar">#1A1A1A</color>
+    <color name="ic_launcher_background">#1A1A1A</color>
+</resources>

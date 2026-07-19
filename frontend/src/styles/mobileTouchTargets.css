@@ -1,0 +1,62 @@
+/* Mobile shell touch audit — 44px floor (48px for primary actions on Capacitor) */
+
+.mobile-shell .mobile-bottom-nav {
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+}
+
+.mobile-shell .mobile-bottom-nav__tab {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 8px 6px 6px;
+  font-size: 11px;
+}
+
+.mobile-shell .mobile-desktop-nudge__link,
+.mobile-shell .mobile-score__nudge a,
+.mobile-shell .mobile-capture__link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.mobile-shell .mobile-lite-account__legal a {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+}
+
+.mobile-shell .mobile-capture .daily-log-water-btn {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.mobile-shell .mobile-capture button[type='submit'],
+.mobile-shell .mobile-capture .floating-save-btn {
+  min-height: 48px;
+}
+
+html[data-capacitor='true'] .mobile-shell .mobile-bottom-nav__tab {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+html[data-capacitor='true'] .mobile-shell .mobile-lite-account__action {
+  min-height: 52px;
+}
+
+html[data-capacitor='true'] .mobile-shell .mobile-desktop-nudge__dismiss {
+  min-height: 48px;
+  padding: 10px 16px;
+}
+
+/* Mood / toggle chips inside capture card */
+.mobile-shell .mobile-capture [role='button'],
+.mobile-shell .mobile-capture label:has(input[type='checkbox']) {
+  min-height: 44px;
+}

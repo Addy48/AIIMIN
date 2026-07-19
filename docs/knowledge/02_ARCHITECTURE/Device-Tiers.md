@@ -9,9 +9,12 @@
 
 | Tier | Detection | Experience |
 |------|-----------|------------|
-| **phone** | iPhone / Android Mobile UA, or width &lt;768 (non-iPad) | `/m` capture shell: Today log, `/m/score` glance, `/m/account` lite. Bottom nav (4 tabs). `/account` redirects to `/m/account`. No full OS bottom nav |
+| **phone web** | iPhone / Android Mobile UA, or width &lt;768 (non-iPad) | `/m` capture shell (Today / Score / Account) — **web stopgap only** |
+| **native app (V2)** | Installed Android/iOS app | **Rich companion** — Today + Practice + Revise + You + Account (not capture-only). Spec: [[17_NATIVE_APP_V2/00_MASTER_PLAN]] |
 | **tablet** | iPad (incl. iPadOS-as-Mac + touch), or width 768–1099 | **Full Life OS**. Masthead max 8 primary links + More (overflow patch). Touch ≥44px. Journal/Notes drawers ≤1099 |
 | **desktop** | width ≥1100 | Full Life OS, wide layouts |
+
+> **2026-07-19:** “Phone = data collection only” applied to **phone web `/m`**, not to native V2. Native redesign is a separate product sharing backend.
 
 Bypass for testing: `?forceDesktop=1`
 
@@ -33,6 +36,11 @@ Bypass for testing: `?forceDesktop=1`
 - `plans/mobile-ipad-os.md` (active implementation plan)
 
 ## Changelog
+
+### 2026-07-19 — Native V2 ≠ capture-only
+- **What:** Clarified phone **web** `/m` stays capture stopgap; **native app** is rich companion (Practice/Revise/Today/You/Account). Pointer to `17_NATIVE_APP_V2`.
+- **Why:** Capture-only as native ceiling is product fraud for a Life OS.
+- **Status:** documented
 
 ### 2026-07-19 — Capacitor native polish
 - **What:** Post-auth `/m` routing on phone+native; Android hardware back; offline banner; HTTPS network security
