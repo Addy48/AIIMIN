@@ -1,0 +1,23 @@
+# Gradle / Android Studio
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+.DS_Store
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Keystores — never commit
+*.keystore
+*.jks
+release.keystore
+
+# APK / AAB outputs (CI uploads artifacts)
+*.apk
+*.aab
+
+# Kotlin
+.kotlin/
