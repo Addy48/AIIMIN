@@ -25,10 +25,15 @@ Docs: `docs/knowledge/02_ARCHITECTURE/Monorepo.md` · `CONTRIBUTING.md` · root 
 
 ## Next
 
-1. GitHub keystore secrets → signed Play APK (`workflow_dispatch` + `build_release=true`)
-2. Founder smoke: offline journal → online → verify on desktop
-3. RLS policies for `mobile_devices` / `mobile_idempotency` (currently server-only, RLS off)
+1. Run `bash scripts/verify-repo.sh` before ship claims
+2. GitHub keystore secrets → signed Play APK
+3. RLS for `mobile_devices` / `mobile_idempotency`
+4. P1 backlog: `plans/repo-fix-master-plan.md`
 
-## Locks
+## Touch
+
+- `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md`
+- `plans/repo-fix-master-plan.md`
+- `scripts/verify-repo.sh`
 
 Palette · `/m` capture on phone web · no auth/schema without ask · no tool attribution in docs

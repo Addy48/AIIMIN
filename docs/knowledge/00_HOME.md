@@ -88,5 +88,6 @@ Phases 2–8 (field matrix, information graph, intent map, kill list, framework,
 | Features index | [[09_FEATURES/Index]] |
 | Design | [[08_DESIGN/Palette]] |
 | Deploy | [[07_DEPLOYMENT/Deploy]] |
+| **Skills registry** | [[16_DOCUMENTATION/Skills-Registry]] |
 | Manifest | `_manifest.json` |
 | Spec | `docs/superpowers/specs/2026-07-10-vault-brain-os-design.md` |
