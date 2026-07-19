@@ -78,7 +78,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aiimin-native-release-unsigned
-          path: native-android/app/build/outputs/apk/release/app-release.apk
+          path: native-android/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
   assemble-release:
