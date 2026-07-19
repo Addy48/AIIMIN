@@ -251,9 +251,17 @@ Plan wanted Hilt + `presentation/`. **Shipped in** `in.aiimin.app.ui.*` + `AppCo
 
 ## Next actions (ordered)
 
-1. Merge feature branch → `main` (founder)
-2. Supabase migration `20260719_mobile_sync.sql`
-3. Keystore secrets → signed release
+1. Download signed APK from `native-android` workflow artifact (`aiimin-native-release`)
+2. Founder smoke: offline journal → sync → desktop verify
+3. RLS policies for `mobile_devices` / `mobile_idempotency`
+
+### 2026-07-19 — Session 11 (ship)
+
+- Merged `feat/mobile-capture-capacitor` → `main` (`015f015b`)
+- EC2 deploy workflow success (permanent `mobile.js` on prod)
+- Supabase `mobile_sync` migration applied (`20260719090903`)
+- GitHub secrets: `ANDROID_KEYSTORE_*` set; release workflow dispatched
+- `native-android/.gitignore` — exclude `*.keystore`
 
 ---
 
