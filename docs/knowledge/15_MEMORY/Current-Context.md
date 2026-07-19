@@ -11,7 +11,8 @@
 
 ## Functional status
 
-- **Web prod:** P0 `useDeviceTier` React import fixed — live `main.bf120d17.js` on Vercel
+- **Web prod:** P0 `useDeviceTier` React import fixed — live on Vercel
+- **Family `/family`:** card ⋯ menu (view/edit/duplicate/archive/delete) on all 9 tabs — push pending
 - Native app: auth, bootstrap, journal/notes/habits outbox, WorkManager sync, biometric gate
 - **Prod API:** `GET /api/mobile/health` OK · `POST /api/mobile/sync/batch` → 401 without auth
 - Supabase: `mobile_sync` + RLS deny-all on mobile tables (server-only via service role)
@@ -21,6 +22,11 @@
 
 1. Play Console internal track upload
 2. Founder smoke: offline journal → sync → desktop verify
+3. Optional: `bash scripts/setup-git-hooks.sh` (strip tool Co-authored-by from future commits)
+
+## Session stop (2026-07-19)
+
+Repo on `main` · web hotfix live · CI green · native APK on device. Resume from WORKFLOW-PLAN.
 
 ## Touch
 
