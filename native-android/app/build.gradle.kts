@@ -13,8 +13,8 @@ android {
         applicationId = "in.aiimin.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 18
-        versionName = "2.2.0-native"
+        versionCode = 19
+        versionName = "2.2.1-native"
         buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

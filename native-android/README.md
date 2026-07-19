@@ -43,15 +43,11 @@ flowchart TB
 
 ## Requirements
 
-- JDK **17**
+- JDK **17** (`brew install openjdk@17`)
 - Android SDK API **35**
 - Device or emulator API **26+**
 
-```bash
-# macOS one-time
-brew install openjdk@17
-echo 'export PATH="/opt/homebrew/opt/openjdk@17/bin:$HOME/Library/Android/sdk/platform-tools:$PATH"' >> ~/.zshrc
-```
+Copy `local.properties.example` → `local.properties` and set `sdk.dir` + `org.gradle.java.home` (Mac). **Do not commit** `local.properties`.
 
 ---
 
