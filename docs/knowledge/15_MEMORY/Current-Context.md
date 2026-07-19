@@ -1,31 +1,22 @@
 # Current Context
 
-> Agents read after Home. Keep ≤400 lines.
+> Agents read after Home. **Build tracker:** [[17_NATIVE_APP_V2/WORKFLOW-PLAN]] · **UI audit:** [[17_NATIVE_APP_V2/UI-AUDIT]]
 
-**Date:** 2026-07-19
+**Date:** 2026-07-19 · **APK:** `2.2.0-native`
 
-## Today (this chat — closed)
+## Shipped this session
 
-- Touch audit pass: `mobileTouchTargets.css` + `Touch-Audit.md`
-- Inventory: `plans/uncommitted-inventory-2026-07-19.md` (180 paths)
-- Dev APK built; `capacitor.config.json` **restored** to `https://aiimin.in/m`
-- Commit/push plan: `plans/commit-push-plan-2026-07-19.md`
-- **Nothing committed/pushed** — awaiting explicit user ask
+- **Full UI audit** — dark mode PIN, theme consistency, safe areas, layout/copy fixes
+- `ScreenChrome` + `ScreenHeader` shared components
+- Vault doc: [[17_NATIVE_APP_V2/UI-AUDIT]]
 
-## Next (new chat)
+## Evidence
 
-1. **Mobile:** USB debug → `adb install` → smoke `/m` (dev: `cap:dev:phone` + LAN server)
-2. **Website first:** W1–W4 on `main` per commit plan → push → Vercel + EC2
-3. **Mobile branch:** `feat/mobile-capture-capacitor` M1 then M2 → merge after frontend deploy
-4. SeedData stays for QA · Play Store later
+- `assembleDebug` exit 0
+- `adb install` Success
 
-## Touch
+## Next
 
-- `plans/commit-push-plan-2026-07-19.md`
-- `plans/mobile-commit-split.md`
-- `docs/knowledge/09_FEATURES/Mobile/Touch-Audit.md`
-
-## Locks
-
-- Palette LOCKED · `/m` capture-only · no auth/schema without ask
-- Never mix website + mobile in one commit
+1. Commit + push mobile API → EC2 deploy
+2. Keystore secrets → signed release
+3. Founder smoke dark mode + Journal + More sub-screens

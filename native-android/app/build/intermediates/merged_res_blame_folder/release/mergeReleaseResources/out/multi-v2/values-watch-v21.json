@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "in.aiimin.app-mergeReleaseResources-2:/values-watch-v21/values-watch-v21.xml",
+            "map": [
+                {
+                    "source": "/private/var/folders/03/ftfhb_490jdgrzj4krrrhyzm0000gn/T/cursor-sandbox-cache/b82ee04fa5563f78427bec8545d8fed2/gradle/caches/8.11.1/transforms/5548140979d786c7ce662e692b4af355/transformed/appcompat-1.2.0/res/values-watch-v21/values-watch-v21.xml",
+                    "from": {
+                        "startLines": "2,6,10",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,271,499",
+                        "endLines": "5,9,13",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "266,494,724"
+                    }
+                }
+            ]
+        }
+    ]
+}
