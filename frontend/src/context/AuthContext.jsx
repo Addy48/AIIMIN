@@ -9,11 +9,9 @@ import {
 } from '../lib/auth-client';
 import {
     authFetchOptions,
-    captureAuthTokenFromResponse,
     clearAccessToken,
     getOAuthHandoffUrl,
-    persistAccessToken,
-    readAccessToken,
+    purgeLegacyAuthTokens,
 } from '../utils/authSession';
 
 const AuthContext = createContext(null);
@@ -30,24 +28,28 @@ export function AuthProvider({ children }) {
     const session = sessionData?.session || null;
     const sessionUser = sessionData?.user || null;
 
+    useEffect(() => {
+        purgeLegacyAuthTokens();
+    }, []);
+
     const checkSession = useCallback(async () => {
-        const token = readAccessToken();
-        if (!token && !sessionUser) {
+        if (!sessionUser) {
             setUser(null);
             setLoading(false);
             return null;
         }
 
-        const fallbackUser = sessionUser ? {
+        const fallbackUser = {
             id: sessionUser.id,
             email: sessionUser.email,
             full_name: sessionUser.name || sessionUser.fullName || '',
             username: sessionUser.username || sessionUser.displayUsername || '',
             role: 'user',
+            emailVerified: Boolean(sessionUser.emailVerified),
             isGuest: false,
-        } : null;
+        };
 
-        if (fallbackUser) setUser((prev) => prev || fallbackUser);
+        setUser((prev) => prev || fallbackUser);
         setLoading(false);
 
         try {
@@ -65,7 +67,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         if (isPending) return;
-        if (sessionUser || readAccessToken()) {
+        if (sessionUser) {
             checkSession();
         } else {
             setUser(null);
@@ -96,7 +98,6 @@ export function AuthProvider({ children }) {
         });
 
         if (result.error) throw new Error(result.error.message || 'Signup failed');
-        captureAuthTokenFromResponse(result.response);
 
         await refetch?.();
         await checkSession();
@@ -123,9 +124,6 @@ export function AuthProvider({ children }) {
         }
 
         if (result.error) throw new Error(result.error.message || 'Invalid credentials');
-        captureAuthTokenFromResponse(result.response);
-        const token = result.response?.headers?.get?.('set-auth-token');
-        if (token) persistAccessToken(token);
 
         await refetch?.();
         const profile = await checkSession();
@@ -147,7 +145,8 @@ export function AuthProvider({ children }) {
         user,
         session: sessionUser,
         loading: loading || isPending,
-        isSignedIn: Boolean(sessionUser) || Boolean(readAccessToken()),
+        isSignedIn: Boolean(sessionUser),
+        emailVerified: Boolean(sessionUser?.emailVerified),
         signInWithGoogle,
         signUpWithUsername,
         signInWithUsername,

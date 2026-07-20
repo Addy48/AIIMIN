@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import toast from '../utils/toast';
-import { apiGet, apiPost, apiPut, apiDelete, API_URL, getCurrentAccessToken } from '../utils/api';
+import { apiGet, apiPost, apiPut, apiDelete, API_URL } from '../utils/api';
 import { FileSearch, FileText } from 'lucide-react';
 import ATSAnalyzer from './ATSAnalyzer';
 import ApplicationIntakeModal from '../components/placements/ApplicationIntakeModal';
@@ -223,9 +223,7 @@ export default function Placements() {
         const uploadData = await fetch(`${API_URL}/placements/resumes/upload`, {
           method: 'POST',
           body: formData,
-          headers: {
-            'Authorization': `Bearer ${await getCurrentAccessToken()}`
-          }
+          credentials: 'include',
         }).then(r => {
             if (!r.ok) throw new Error('Upload failed');
             return r.json();

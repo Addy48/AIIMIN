@@ -18,6 +18,25 @@ setInterval(() => {
     }
 }, 60_000);
 
+const WRITE_VERIFY_EXEMPT_PREFIXES = [
+    '/api/auth',
+    '/api/waitlist',
+    '/api/billing/webhook',
+    '/api/health',
+    '/api/keepalive',
+];
+
+function requiresVerifiedEmail(c) {
+    const method = c.req.method;
+    if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return false;
+    const path = c.req.path;
+    return !WRITE_VERIFY_EXEMPT_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
+
+function isSyntheticEmail(email) {
+    return String(email || '').toLowerCase().endsWith('@aiimin.com');
+}
+
 export const requireAuth = async (c, next) => {
     if (process.env.NODE_ENV !== 'production' && c.req.header('authorization') === 'Bearer mock-test-token') {
         c.set('user', { id: '88888888-8888-4888-8888-888888888888', email: 'dev@aiimin.in', role: 'user', onboarding_stage: 1, username: 'DEVUSER' });
@@ -102,6 +121,14 @@ export const requireAuth = async (c, next) => {
     } catch (err) {
         console.error('[auth middleware] Error:', err.message);
         return c.json({ error: 'Unauthorized: session error', details: err.message }, 401);
+    }
+
+    const verifiedUser = c.get('user');
+    if (requiresVerifiedEmail(c) && !verifiedUser?.emailVerified && !isSyntheticEmail(verifiedUser?.email)) {
+        return c.json({
+            error: 'Email verification required before saving data.',
+            code: 'EMAIL_NOT_VERIFIED',
+        }, 403);
     }
 
     await next();

@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Loader2, ChevronRight, Star } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiPatch, apiGet } from '../utils/api';
-import { readAccessToken } from '../utils/authSession';
 import { suggestOsIdFromName } from '../utils/osId';
 import { hasLifeArc } from '../constants/arc';
 import ArcEditor from '../components/profile/ArcEditor';
@@ -325,7 +324,7 @@ export default function Onboarding() {
             const upperUsername = username.trim().toUpperCase();
             const trimmedName = fullName.trim();
 
-            if (!readAccessToken()) {
+            if (!isSignedIn) {
                 throw new Error('Session expired. Please sign in again.');
             }
 
