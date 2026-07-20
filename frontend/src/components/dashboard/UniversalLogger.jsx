@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { getCurrentAccessToken, API_URL } from '../../utils/api';
+import { API_URL } from '../../utils/api';
 import toast from '../../utils/toast';
 
 const EXAMPLES = [
@@ -29,10 +29,10 @@ export default function UniversalLogger({ onSuccess }) {
     if (!text.trim() || state === STATES.thinking) return;
     setState(STATES.thinking);
     try {
-      const token = await getCurrentAccessToken();
       const response = await fetch(`${API_URL}/intelligence/universal-log`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text.trim() }),
       });
       const data = await response.json();

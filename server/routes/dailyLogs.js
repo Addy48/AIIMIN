@@ -92,6 +92,10 @@ app.post('/', requireAuth, async (c) => {
 app.get('/:userId/:date', requireAuth, async (c) => {
     try {
         const { userId, date } = c.req.param();
+        const sessionUserId = c.get('userId');
+        if (userId !== sessionUserId) {
+            return c.json({ error: 'Forbidden' }, 403);
+        }
         const { rows } = await pool.query(
             'SELECT * FROM daily_logs WHERE user_id = $1 AND date = $2',
             [userId, date]
@@ -101,6 +105,8 @@ app.get('/:userId/:date', requireAuth, async (c) => {
         console.error('[daily-logs GET]', error);
         return c.json({ error: error.message || 'Internal server error' }, 500);
     }
+});
+
 /**
  * POST /api/daily-logs/journal/ai-analyze
  * Performs a sentiment/cognitive analysis on the journal entry using Moonshot (via NVIDIA API).

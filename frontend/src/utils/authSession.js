@@ -1,57 +1,42 @@
 /**
- * Token storage for Better Auth bearer sessions (SPA ↔ API on different ports).
+ * Better Auth session — httpOnly cookies only (no token in localStorage).
+ * Legacy bearer keys are purged on load.
  */
-const TOKEN_KEY = 'aiimin_bearer_token';
+const LEGACY_TOKEN_KEYS = ['aiimin_bearer_token', 'access_token'];
 
-export const persistAccessToken = (token) => {
-    if (!token) return;
+export const purgeLegacyAuthTokens = () => {
+    if (typeof window === 'undefined') return;
     try {
-        localStorage.setItem(TOKEN_KEY, token);
-        sessionStorage.setItem(TOKEN_KEY, token);
+        for (const key of LEGACY_TOKEN_KEYS) {
+            localStorage.removeItem(key);
+            sessionStorage.removeItem(key);
+        }
     } catch (_) { /* ignore */ }
 };
 
+/** @deprecated Tokens must not be stored client-side — cookies only */
+export const persistAccessToken = () => {
+    purgeLegacyAuthTokens();
+};
+
+/** @deprecated Always empty — session is httpOnly cookie */
 export const readAccessToken = () => {
-    try {
-        return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || '';
-    } catch (_) {
-        return '';
-    }
+    purgeLegacyAuthTokens();
+    return '';
 };
 
 export const clearAccessToken = () => {
-    try {
-        localStorage.removeItem(TOKEN_KEY);
-        sessionStorage.removeItem(TOKEN_KEY);
-    } catch (_) { /* ignore */ }
+    purgeLegacyAuthTokens();
 };
 
-export const captureAuthTokenFromResponse = (response) => {
-    const token = response?.headers?.get?.('set-auth-token')
-        || response?.headers?.get?.('Set-Auth-Token');
-    if (token) persistAccessToken(token);
-    return token;
-};
+/** No-op — cookies set by Better Auth response */
+export const captureAuthTokenFromResponse = () => null;
 
-/** Persist bearer from Better Auth JSON body when header is unavailable. */
-export const persistSessionFromAuthResponse = async (response) => {
-    captureAuthTokenFromResponse(response);
-    if (readAccessToken()) return readAccessToken();
-    try {
-        const json = await response.clone().json();
-        const token = json?.session?.token || json?.token;
-        if (token) {
-            persistAccessToken(token);
-            return token;
-        }
-    } catch (_) { /* ignore */ }
-    return readAccessToken();
-};
+/** No-op — session cookie is set by Better Auth */
+export const persistSessionFromAuthResponse = async () => '';
 
 export const authFetchOptions = {
-    onSuccess: (ctx) => {
-        captureAuthTokenFromResponse(ctx?.response);
-    },
+    credentials: 'include',
 };
 
 export const isOAuthCallbackRoute = () => (
@@ -78,11 +63,12 @@ export const isCalendarIntegrationCallback = () => {
     return window.location.pathname === '/calendar' && params.get('integration') === 'google';
 };
 
-/** @deprecated Supabase-only — no-op under Better Auth */
-export const ensureSupabaseSession = async () => readAccessToken();
-/** @deprecated */
-export const requireFreshAccessToken = async () => readAccessToken();
-/** @deprecated */
+/** Session checks use Better Auth cookies + /auth/me — not localStorage */
+export const ensureSupabaseSession = async () => '';
+export const requireFreshAccessToken = async () => '';
 export const isAccessTokenExpired = () => false;
-/** @deprecated */
 export const resolveOAuthSession = async () => null;
+
+if (typeof window !== 'undefined') {
+    purgeLegacyAuthTokens();
+}

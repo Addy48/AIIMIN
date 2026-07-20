@@ -146,12 +146,11 @@ const Finance = () => {
       formData.append('file', file);
 
       // Use raw fetch so we don't set Content-Type (browser auto-sets multipart boundary)
-      const { getCurrentAccessToken, API_URL } = await import('../utils/api');
-      const token = await getCurrentAccessToken();
+      const { API_URL } = await import('../utils/api');
 
       const response = await fetch(`${API_URL}/wealth/import`, {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'include',
         body: formData,
       });
 
@@ -179,13 +178,12 @@ const Finance = () => {
     if (!aiImportText.trim()) return;
     setAiImportStatus('processing');
     try {
-      const { getCurrentAccessToken, API_URL } = await import('../utils/api');
-      const token = await getCurrentAccessToken();
+      const { API_URL } = await import('../utils/api');
       const response = await fetch(`${API_URL}/wealth/import/ai`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ text: aiImportText }),
       });
