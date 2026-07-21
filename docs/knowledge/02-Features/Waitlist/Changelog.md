@@ -1,5 +1,12 @@
 # Waitlist Changelog
 
+### 2026-07-10 — Login/signup Field a11y (Selfloop QA)
+- **What:** Login + signup text inputs now expose proper accessible names in the a11y tree. `Field` wires `htmlFor`/`id`, `name`, and `aria-label`; decorative placeholder overlay is `aria-hidden`. Step enter/exit animations no longer use `opacity: 0` (that hid inputs from the accessibility tree during/after motion). Login identifier label is `OS-ID / Email` with `aria-label="OS-ID / EMAIL"`.
+- **Why:** Selfloop automated QA flagged 5 high a11y bugs — identifier / Full Name / Recovery Email missing from accessibility tree.
+- **Files:** `frontend/src/pages/Login.jsx`, `docs/knowledge/02-Features/Waitlist/Changelog.md`, `docs/knowledge/_manifest.json`
+- **Status:** shipped
+- **Notes:** Re-run Selfloop login + signup step-1 scans after Vercel deploy.
+
 ## 2026-07-08 — Better Auth Google OAuth session fix
 
 - **What:** Google sign-in no longer bounces to `/login` after account pick. Bearer token captured from `set-auth-token` on all auth client calls; `AuthCallback` retries `get-session`, refetches React session, validates before profile redirect. API Node handler forwards multiple `Set-Cookie` headers (OAuth sets session + cache cookies). Login/root routes honor `readAccessToken()` not only `useSession().session`.
