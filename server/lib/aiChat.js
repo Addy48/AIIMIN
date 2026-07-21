@@ -66,11 +66,20 @@ export async function groqChat({
   };
 }
 
+/** Default: Nemotron Nano — free NIM, fast. Llama 3.3-70B often cold-starts / times out. */
+export function getNvidiaChatModel() {
+  return (
+    process.env.NVIDIA_CHAT_MODEL
+    || 'nvidia/nemotron-3-nano-30b-a3b'
+  ).trim();
+}
+
 /**
  * Try NVIDIA NIM, then Groq.
  */
 export async function nvidiaOrGroqChat(opts) {
   const nvidiaKey = getNvidiaKey();
+  const model = opts.nvidiaModel || getNvidiaChatModel();
   if (nvidiaKey) {
     try {
       const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
@@ -81,22 +90,23 @@ export async function nvidiaOrGroqChat(opts) {
           Accept: 'application/json',
         },
         body: JSON.stringify({
-          model: opts.nvidiaModel || process.env.NVIDIA_CHAT_MODEL || 'moonshotai/kimi-k2.6',
+          model,
           messages: opts.messages,
           max_tokens: opts.maxTokens || 512,
           temperature: opts.temperature ?? 0.7,
+          top_p: opts.topP ?? 0.7,
           stream: false,
         }),
-        signal: AbortSignal.timeout(opts.timeoutMs || 30000),
+        signal: AbortSignal.timeout(opts.timeoutMs || 45000),
       });
       if (res.ok) {
         const data = await res.json();
         const text = data.choices?.[0]?.message?.content || '';
-        if (text) return { ok: true, text, provider: 'moonshot' };
+        if (text) return { ok: true, text, provider: 'nvidia', model };
       }
-      console.warn('[aiChat] NVIDIA failed:', res.status);
+      console.warn('[aiChat] NVIDIA failed:', res.status, model);
     } catch (err) {
-      console.warn('[aiChat] NVIDIA error:', err.message);
+      console.warn('[aiChat] NVIDIA error:', err.message, model);
     }
   }
   return groqChat(opts);

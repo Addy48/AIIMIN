@@ -328,12 +328,8 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
             return c.json({ text: data.choices?.[0]?.message?.content || '' });
         }
 
-        if (provider === 'moonshot' || provider === 'kimi') {
-            const apiKey = process.env.NVIDIA_API_KEY;
-            if (!apiKey) {
-                return c.json({ error: 'NVIDIA_API_KEY not configured on server' }, 503);
-            }
-
+        if (provider === 'moonshot' || provider === 'kimi' || provider === 'nvidia') {
+            const { nvidiaOrGroqChat } = await import('../lib/aiChat.js');
             await trackExternalCall({
                 userId,
                 provider: 'moonshot',
@@ -341,26 +337,15 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
                 units: 1,
             });
 
-            const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    model: 'moonshotai/kimi-k2.6',
-                    messages: fullMessages,
-                    max_tokens: maxTokens,
-                    temperature,
-                }),
+            const chat = await nvidiaOrGroqChat({
+                messages: fullMessages,
+                maxTokens,
+                temperature,
             });
-
-            const data = await res.json();
-            if (!res.ok) {
-                return c.json({ error: data.error?.message || data.message || 'Moonshot request failed' }, res.status);
+            if (!chat.ok) {
+                return c.json({ error: chat.error || 'NVIDIA/Groq request failed' }, 503);
             }
-
-            return c.json({ text: data.choices?.[0]?.message?.content || '' });
+            return c.json({ text: chat.text || '', provider: chat.provider, model: chat.model });
         }
 
         return c.json({ error: 'Invalid provider' }, 400);
