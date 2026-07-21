@@ -14,7 +14,8 @@
     "auth:migrate": "npx @better-auth/cli@latest migrate --config server/lib/auth.js --yes",
     "auth:import-users": "node scripts/migrate-supabase-users-to-better-auth.mjs",
     "auth:backfill-accounts": "node scripts/backfill-better-auth-accounts.mjs",
-    "auth:reset-fresh": "node scripts/reset-fresh-start.mjs --confirm"
+    "auth:reset-fresh": "node scripts/reset-fresh-start.mjs --confirm",
+    "test:ai-keys": "node scripts/test-ai-keys.mjs"
   },
   "dependencies": {
     "@better-auth/infra": "^0.3.5",

@@ -77,12 +77,17 @@ export function AuthProvider({ children }) {
 
     const signInWithGoogle = async () => {
         const origin = window.location.origin;
-        await signIn.social({
-            provider: 'google',
-            callbackURL: getOAuthHandoffUrl(),
-            errorCallbackURL: `${origin}/auth/callback?status=error`,
-            fetchOptions: authFetchOptions,
-        });
+        try {
+            await signIn.social({
+                provider: 'google',
+                callbackURL: getOAuthHandoffUrl(),
+                errorCallbackURL: `${origin}/auth/callback?status=error`,
+                fetchOptions: authFetchOptions,
+            });
+        } catch (err) {
+            toast.error('Could not reach the auth server. Is the API running?');
+            throw err;
+        }
     };
 
     const signUpWithUsername = async (username, pin, fullName = '', email = '') => {
