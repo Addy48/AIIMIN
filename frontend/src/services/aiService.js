@@ -49,6 +49,15 @@ const PROVIDERS = {
                'devils_advocate', 'decision_analysis'],
   },
 
+  gemini_lite: {
+    name: 'Gemini Lite',
+    model: 'gemini-2.0-flash',
+    contextWindow: 1000000,
+    dailyLimit: null,
+    handles: ['arc_sharpen', 'journal_prompt', 'habit_coach', 'emotion_tag', 'short_summary'],
+    useServerLite: true,
+  },
+
   gemini: {
     name: 'Gemini Flash',
     model: 'gemini-2.0-flash',
@@ -71,14 +80,14 @@ const PROVIDERS = {
 // ─── Task Type → Provider Routing (Groq prioritized first for all) ────────────
 
 const TASK_ROUTING = {
-  emotion_tag:          ['groq', 'kimi'],
-  habit_coach:          ['groq', 'kimi'],
-  short_summary:        ['groq', 'kimi'],
+  emotion_tag:          ['gemini_lite', 'groq', 'kimi'],
+  habit_coach:          ['gemini_lite', 'groq', 'kimi'],
+  short_summary:        ['gemini_lite', 'groq', 'kimi'],
   sport_preview:        ['groq', 'kimi'],
   sport_summary:        ['groq', 'kimi'],
   subscription_audit:   ['groq', 'kimi'],
   spending_alert:       ['groq', 'kimi'],
-  journal_prompt:       ['groq', 'kimi'],
+  journal_prompt:       ['gemini_lite', 'groq', 'kimi'],
   note_connection:      ['groq', 'kimi'],
   weekly_report:        ['groq', 'kimi'],
   safe_to_spend:        ['groq', 'kimi'],
@@ -179,6 +188,18 @@ async function callProvider(providerName, messages, options = {}) {
     ? [{ role: 'system', content: systemPrompt }, ...messages]
     : messages;
 
+  if (provider.useServerLite) {
+    const userContent = fullMessages.filter((m) => m.role === 'user').map((m) => m.content).join('\n');
+    const data = await apiPost('/intelligence/lite', {
+      task: options.liteTask || 'short_summary',
+      text: userContent,
+      context: userContent,
+    });
+    trackCall(providerName);
+    reportServerUsage('gemini', `/intelligence/lite:${options.liteTask || 'short_summary'}`);
+    return data.text || '';
+  }
+
   // All AI keys live on the server — never in the client bundle.
   if (provider.useServerGenerate) {
     const data = await apiPost('/intelligence/generate', {
@@ -223,12 +244,14 @@ export async function askAI(taskType, messages, options = {}) {
 
   for (const name of chain) {
     if (PROVIDERS[name]?.disabled) continue;
+    if (name === 'gemini_lite' && !options.liteTask && !TASK_ROUTING[taskType]?.includes('gemini_lite')) continue;
     if (isRateLimited(name)) {
       console.warn(`[aiService] ${name} near rate limit — trying next provider.`);
       continue;
     }
     try {
-      const result = await callProvider(name, messages, options);
+      const liteTask = options.liteTask || (name === 'gemini_lite' ? taskType : undefined);
+      const result = await callProvider(name, messages, { ...options, liteTask: liteTask || options.liteTask });
       console.log(`[aiService] Task "${taskType}" → served by ${name}`);
       if (!bypassCache) {
         cacheResponse(cacheKey, result);
@@ -279,7 +302,7 @@ export async function getJournalPrompts(textSnippet = '') {
 ${textSnippet ? `Journal context: "${textSnippet.slice(0, 500)}"` : 'Make them universal.'}
 Return ONLY a valid JSON array of strings (no markdown code blocks, no other text):
 ["question 1", "question 2", "question 3"]`
-    }], { maxTokens: 250, temperature: 0.8 });
+    }], { maxTokens: 250, temperature: 0.8, liteTask: 'journal_prompt' });
     const match = raw.match(/\[[\s\S]*?\]/);
     if (!match) throw new Error("No JSON array found");
     return JSON.parse(match[0]);
@@ -328,7 +351,7 @@ Tone: ${aiTone}. Style: ${toneGuide[aiTone] || toneGuide.motivating}
 Completion this week: ${thisWeek}/7. Best days: ${bestDays.join(', ') || 'none yet'}. Current streak: ${currentStreak} days.
 Science: cite Lally et al. (2010) — habit automaticity averages ~66 days, never say "21 days to form a habit".
 Be specific, motivating, and highly actionable.`
-    }], { maxTokens: 150, temperature: 0.7 });
+    }], { maxTokens: 150, temperature: 0.7, liteTask: 'habit_coach' });
   } catch (err) {
     return "Stay consistent — research shows automaticity builds over ~66 days on average, not 21. Your next rep matters most.";
   }

@@ -46,11 +46,11 @@ app.get('/keepalive', async (c) => {
 // ── Auth routes — custom AIIMIN endpoints + Better Auth catch-all ──
 import authRoutes from '../server/routes/auth.js';
 import { auth as betterAuth } from '../server/lib/auth.js';
-import { authCredentialLimiter } from '../server/middleware/rateLimiter.js';
+import { authCredentialLimiterIfSensitive } from '../server/middleware/rateLimiter.js';
 
 app.route('/auth', authRoutes);
 
-app.on(['GET', 'POST'], '/auth/*', authCredentialLimiter, async (c) => betterAuth.handler(c.req.raw));
+app.on(['GET', 'POST'], '/auth/*', authCredentialLimiterIfSensitive, async (c) => betterAuth.handler(c.req.raw));
 
 // ── Lazy route cache ──
 const cache = {};
