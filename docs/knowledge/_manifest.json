@@ -1,10 +1,12 @@
 {
-  "lastUpdated": "2026-07-10",
-  "entrypoint": "docs/knowledge/00-Command-Center.md",
+  "lastUpdated": "2026-07-11",
+  "entrypoint": "docs/knowledge/00_HOME.md",
+  "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
+  "brainOs": true,
   "entities": {
     "sports": {
-      "moc": "docs/knowledge/02-Features/Sports/Sports.md",
-      "changelog": "docs/knowledge/02-Features/Sports/Changelog.md",
+      "moc": "docs/knowledge/09_FEATURES/Sports/Sports.md",
+      "changelog": "docs/knowledge/09_FEATURES/Sports/Changelog.md",
       "routes": [
         "GET /api/sports",
         "POST /api/sports/refresh",
@@ -17,20 +19,20 @@
       "status": "dual-cricket-failover-live"
     },
     "font_scale": {
-      "moc": "docs/knowledge/02-Features/Account/Personalization.md",
+      "moc": "docs/knowledge/09_FEATURES/Account/Personalization.md",
       "status": "persona-presets-shipped"
     },
     "calendar": {
-      "moc": "docs/knowledge/02-Features/Calendar/Calendar.md",
+      "moc": "docs/knowledge/09_FEATURES/Calendar/Calendar.md",
       "status": "google-sync-tasks-auto-pull"
     },
     "typography": {
-      "moc": "docs/knowledge/02-Features/Typography/Typography.md",
+      "moc": "docs/knowledge/09_FEATURES/Typography/Typography.md",
       "status": "token-rollout-phase1-complete"
     },
     "waitlist": {
-      "moc": "docs/knowledge/02-Features/Waitlist/Waitlist.md",
-      "changelog": "docs/knowledge/02-Features/Waitlist/Changelog.md",
+      "moc": "docs/knowledge/09_FEATURES/Waitlist/Waitlist.md",
+      "changelog": "docs/knowledge/09_FEATURES/Waitlist/Changelog.md",
       "routes": [
         "GET /api/waitlist/count",
         "POST /api/waitlist",
@@ -42,13 +44,40 @@
       "status": "google-oauth-bearer-fix-shipped"
     },
     "api_usage": {
-      "moc": "docs/knowledge/02-Features/DevTools/ApiUsage.md",
-      "changelog": "docs/knowledge/02-Features/DevTools/Changelog.md",
+      "moc": "docs/knowledge/09_FEATURES/DevTools/ApiUsage.md",
+      "changelog": "docs/knowledge/09_FEATURES/DevTools/Changelog.md",
       "routes": [
         "GET /api/admin/api-usage",
         "GET /api/admin/api-usage/providers"
       ],
       "status": "dev-dashboard-live"
+    },
+    "auth": {
+      "moc": "docs/knowledge/09_FEATURES/Auth/Auth.md",
+      "changelog": "docs/knowledge/09_FEATURES/Auth/Auth.md",
+      "files": [
+        "frontend/src/pages/Login.jsx",
+        "frontend/src/pages/AuthCallback.jsx",
+        "server/routes/auth.js"
+      ],
+      "status": "login-field-a11y-native-input"
+    },
+    "daily_log": {
+      "moc": "docs/knowledge/09_FEATURES/DailyLog/DailyLog.md",
+      "status": "core-logging-shipped"
+    },
+    "gamification": {
+      "moc": "docs/knowledge/09_FEATURES/Gamification/Gamification.md",
+      "status": "xp-ranks-quests-shipped"
+    },
+    "intelligence": {
+      "moc": "docs/knowledge/09_FEATURES/Intelligence/AI-Provider-Map.md",
+      "status": "provider-map-live"
+    },
+    "vault_brain_os": {
+      "moc": "docs/knowledge/00_HOME.md",
+      "decision": "docs/knowledge/10_DECISIONS/2026-07-10-vault-brain-os.md",
+      "status": "cutover-shipped"
     }
   }
 }

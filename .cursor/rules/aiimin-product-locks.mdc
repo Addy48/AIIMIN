@@ -1,0 +1,28 @@
+---
+description: AIIMIN product locks — palette, mobile, auth/schema, secrets
+alwaysApply: true
+---
+
+# Product Locks (Always)
+
+## Palette LOCKED
+
+Dark: bg `#1a1a1a`, cards `#2d2d2d`, accent `#ff6b35`, done `#10b981`, muted `#6b7280`  
+Light: bg `#f9f9f9`, cards `#ffffff`, same accents  
+No new brand colors without explicit user approval. Details: `docs/knowledge/08_DESIGN/Palette.md`
+
+## Mobile
+
+Route `/m` = data collection ONLY. No analytics, insights, pomodoro, or tools on mobile.
+
+## Auth / schema
+
+Do not change auth logic or database schema unless the user explicitly asks.
+
+## Secrets
+
+Never put API keys, tokens, passwords, or connection strings in vault notes, chat dumps meant for commit, or committed files. Env **names** OK; values stay in host secrets / local `.env`.
+
+## AGENTS.md
+
+Keep slim pointer only. Deep memory = vault. Do not re-fatten `AGENTS.md`.

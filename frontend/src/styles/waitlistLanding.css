@@ -4087,13 +4087,65 @@ html {
     display: none !important;
   }
 
+  .waitlist-page {
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .waitlist-hero-panels,
   .waitlist-hero-row {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .waitlist-hero-side {
+    position: static;
+    height: auto;
+    min-height: 0;
+    width: 100%;
+  }
+
+  .waitlist-hero-form-wrap {
+    min-height: 0;
+    height: auto;
+    scroll-margin-top: 24px;
+    scroll-margin-bottom: 96px;
+  }
+
+  .waitlist-hero-form {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+  }
+
+  .waitlist-hero-form input,
+  .waitlist-hero-form button,
+  .waitlist-hero-form a,
+  .waitlist-submit-btn {
+    pointer-events: auto;
+    touch-action: manipulation;
   }
 
   .waitlist-hero {
-    padding-top: 28px;
-    padding-bottom: 32px;
+    padding-top: 12px;
+    padding-bottom: 24px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .waitlist-hero-orbit,
+  .waitlist-hero-glow {
+    pointer-events: none;
+  }
+
+  .mobile-hero-context {
+    padding-bottom: 8px;
+  }
+
+  .mobile-preview-wrap {
+    margin-bottom: 4px;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   .waitlist-title {
@@ -4106,7 +4158,9 @@ html {
 
   .waitlist-main {
     gap: 20px;
-    padding-bottom: 100px;
+    padding-bottom: 120px;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   .waitlist-faq-wrap h2 {
@@ -4144,6 +4198,16 @@ html {
 
   .waitlist-mobile-cta {
     display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 40;
+    max-width: calc(100vw - 32px);
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+
+  .waitlist-theme-icon-btn--mobile-fixed {
+    display: none !important;
   }
 }
 

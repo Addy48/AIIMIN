@@ -1,13 +1,11 @@
 /**
  * Subscription tiers + Stripe checkout (P11).
- * Stub mode when STRIPE_SECRET_KEY is unset.
+ * Click-upgrade is the default until Stripe prices are configured.
  */
 import { pool } from '../lib/db.js';
 import { patchUserProfile, getUserProfile } from './userProfileService.js';
 
-export function isSubscriptionMode() {
-  return process.env.SUBSCRIPTION_MODE === 'true';
-}
+export const TIER_ORDER = ['explore', 'core', 'pro', 'elite'];
 
 export const TIERS = {
   explore: {
@@ -19,7 +17,7 @@ export const TIERS = {
   core: {
     id: 'core',
     name: 'Core',
-    price_inr: 25,
+    price_inr: 29,
     stripe_price_env: 'STRIPE_PRICE_CORE',
     features: [
       'Full discipline engine + urge tracking',
@@ -32,7 +30,7 @@ export const TIERS = {
   pro: {
     id: 'pro',
     name: 'Pro',
-    price_inr: 61,
+    price_inr: 59,
     stripe_price_env: 'STRIPE_PRICE_PRO',
     features: [
       'Everything in Core',
@@ -57,6 +55,44 @@ export const TIERS = {
   },
 };
 
+/** Stripe secret + at least one price id present. */
+export function isStripeCheckoutReady() {
+  const secret = process.env.STRIPE_SECRET_KEY;
+  if (!secret) return false;
+  return Boolean(
+    process.env.STRIPE_PRICE_CORE
+    || process.env.STRIPE_PRICE_PRO
+    || process.env.STRIPE_PRICE_ELITE,
+  );
+}
+
+/**
+ * Instant plan changes without Stripe.
+ * On when SUBSCRIPTION_MODE=true, or when Stripe is not ready yet.
+ */
+export function isClickUpgradeEnabled() {
+  if (process.env.SUBSCRIPTION_MODE === 'true') return true;
+  if (process.env.SUBSCRIPTION_MODE === 'false' && isStripeCheckoutReady()) return false;
+  return !isStripeCheckoutReady();
+}
+
+/** Alias kept for existing callers. */
+export function isSubscriptionMode() {
+  return isClickUpgradeEnabled();
+}
+
+/**
+ * Testing allows up + down. Set UPGRADE_ONLY=true later to block downgrades.
+ */
+export function isUpgradeOnlyMode() {
+  return process.env.UPGRADE_ONLY === 'true';
+}
+
+export function tierRank(tierId) {
+  const idx = TIER_ORDER.indexOf(tierId);
+  return idx >= 0 ? idx : 0;
+}
+
 export function listPlans() {
   return Object.values(TIERS);
 }
@@ -70,6 +106,18 @@ export async function selectSubscriptionTier(userId, tierId) {
   if (!TIERS[tierId]) {
     throw new Error('Invalid tier');
   }
+
+  if (!isClickUpgradeEnabled()) {
+    throw new Error('Billing checkout required');
+  }
+
+  const current = await getUserTier(userId);
+  if (isUpgradeOnlyMode() && tierRank(tierId) < tierRank(current)) {
+    const err = new Error('Downgrades are disabled until billing is live');
+    err.code = 'UPGRADE_ONLY';
+    throw err;
+  }
+
   return handleSubscriptionUpgrade(userId, tierId);
 }
 
@@ -79,11 +127,12 @@ export async function createCheckoutSession(userId, tierId, successUrl, cancelUr
     throw new Error('Invalid tier');
   }
 
-  if (isSubscriptionMode()) {
+  if (isClickUpgradeEnabled()) {
     await selectSubscriptionTier(userId, tierId);
     const sep = successUrl.includes('?') ? '&' : '?';
     return {
       subscriptionMode: true,
+      clickUpgrade: true,
       tier: tierId,
       url: `${successUrl}${sep}upgraded=1&tier=${tierId}`,
     };

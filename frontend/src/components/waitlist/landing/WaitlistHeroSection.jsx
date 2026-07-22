@@ -58,9 +58,10 @@ export default function WaitlistHeroSection({
           </div>
         </div>
 
-        <div className="waitlist-hero-panels waitlist-desktop-only">
+        {/* Form stays outside desktop-only so mobile can join. Copy column is desktop-only. */}
+        <div className="waitlist-hero-panels">
           <motion.div
-            className="waitlist-hero-copy"
+            className="waitlist-hero-copy waitlist-desktop-only"
             initial="hidden"
             animate="visible"
             variants={fadeUp}
@@ -90,7 +91,9 @@ export default function WaitlistHeroSection({
           >
             <div className="waitlist-hero-form-wrap" id="waitlist-join">
               <div className="waitlist-hero-form">
-                <p className="waitlist-mobile-form-title waitlist-mobile-only">Join the waitlist — founding member perks at launch</p>
+                <p className="waitlist-mobile-form-title waitlist-mobile-only">
+                  Join the waitlist — founding perks at launch
+                </p>
                 <WaitlistForm variant="hero" onSuccess={onSignupSuccess} showUrgency />
                 <div className="waitlist-desktop-only waitlist-hero-form-aside">
                   <WaitlistHeroAside count={count} />

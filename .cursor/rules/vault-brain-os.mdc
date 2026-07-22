@@ -1,0 +1,34 @@
+---
+description: Project Brain OS — token-light vault-first context loading for AIIMIN
+alwaysApply: true
+---
+
+# Vault Brain OS — Context Loading
+
+Vault path: `docs/knowledge/`. This is the Project Brain. Prefer it over scanning the repo.
+
+## Mandatory load order
+
+1. `docs/knowledge/00_HOME.md`
+2. `docs/knowledge/15_MEMORY/Current-Context.md`
+3. Only architecture / feature / DB / API notes relevant to the task
+4. Only source files directly involved in the change
+
+## Hard limits
+
+- Never scan the entire repository unless the user explicitly requests it
+- If context is missing, create or update the appropriate vault note instead of dumping more code into context
+- Keep `15_MEMORY/Current-Context.md` updated when the working focus changes
+- Every architectural decision, feature, bug fix, migration, and API change must be reflected in the vault before the task is complete
+
+## Dual-layer content
+
+- Human feature/architecture docs: clear Obsidian prose
+- `15_MEMORY/*` and slim `AGENTS.md`: caveman-compressed
+- Chat replies: follow caveman-always rule
+
+## Do not
+
+- Bypass Home/Current Context “to go faster”
+- Re-introduce a fat AGENTS.md dump
+- Store secrets in vault notes

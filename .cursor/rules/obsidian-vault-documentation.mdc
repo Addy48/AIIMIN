@@ -1,0 +1,69 @@
+---
+description: Document every AIIMIN change in the Obsidian Project Brain (docs/knowledge)
+alwaysApply: true
+---
+
+# Obsidian Vault — Mandatory Documentation
+
+Vault: `docs/knowledge/` (Project Brain OS). Document behavior/contract changes before the task is done.
+
+## When to document
+
+Document for any change that touches features, UI, routes, APIs, auth, env, schema, deploy, gamification, launch, pricing, or access gates. Also bug fixes that alter behavior, and refactors that move entry points.
+
+Skip only pure typo/formatting with zero behavioral impact.
+
+## Structure
+
+| Path | Purpose |
+|------|---------|
+| `00_HOME.md` | First agent read — goal, blockers, links |
+| `15_MEMORY/` | Current Context + compressed AI packs |
+| `01_PRODUCT/` | Product + launch |
+| `02_ARCHITECTURE/` | Split architecture notes |
+| `03_DATABASE/` | One note per major table |
+| `04_API/` | Endpoint / group notes |
+| `05_FRONTEND/` | Frontend map |
+| `06_AI/` | AI pipeline |
+| `07_DEPLOYMENT/` | Deploy + env names |
+| `08_DESIGN/` | Palette + design |
+| `09_FEATURES/<Entity>/` | Feature MOC + Changelog |
+| `10_DECISIONS/` | ADRs |
+| `11_BUGS/` | Bug records |
+| `12_SPRINTS/` | Sprint notes |
+| `14_PROMPTS/` | Agent prompts |
+| `16_DOCUMENTATION/` | How-tos |
+| `99_ARCHIVE/` | Historical only |
+| `_templates/` | Templates |
+| `_manifest.json` | Entity index |
+
+## Workflow
+
+1. Identify entity in `_manifest.json` or create under `09_FEATURES/`
+2. Update MOC — state, contracts, files, env, risks
+3. Append changelog (never rewrite history)
+4. Patch `_manifest.json` when contracts shift
+5. Patch `00_HOME.md` / Product / Current Context when launch, auth, pricing, or multi-feature behavior changes
+
+## Changelog format
+
+```markdown
+### YYYY-MM-DD — <short title>
+- **What:** concrete behavior change
+- **Why:** reason or user request
+- **Files:** comma-separated paths
+- **Status:** shipped | partial | blocked | reverted
+- **Notes:** optional
+```
+
+## Quality
+
+- Wikilinks OK. Be specific (routes, payload shapes, env names, columns).
+- New feature: template + manifest + Features Index link.
+- Vault update ships with the code change — not a follow-up.
+
+## Do not
+
+- Remove or overwrite prior changelog entries
+- Store secrets in vault
+- Document only in chat

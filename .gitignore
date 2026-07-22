@@ -43,6 +43,7 @@ deploy/EC2.env.paste
 
 # Tools & editors
 .claude/
+.superpowers/
 .sst/
 .sst
 

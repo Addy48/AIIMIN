@@ -1,0 +1,25 @@
+---
+description: Master index of always-on AIIMIN rules (read pointers, stay short)
+alwaysApply: true
+---
+
+# AIIMIN Always-On Rules Index
+
+All of these are `alwaysApply: true`. Follow them every turn.
+
+| Rule file | Enforces |
+|-----------|----------|
+| `vault-brain-os.mdc` | Home → Context → feature docs → only needed code |
+| `obsidian-vault-documentation.mdc` | Vault update before task done |
+| `aiimin-token-discipline.mdc` | No whole-repo scans; minimal context |
+| `aiimin-product-locks.mdc` | Palette, mobile `/m`, auth/schema, secrets, slim AGENTS |
+| `aiimin-git-workflow.mdc` | Commit/PR/push only on ask; vault ships with code |
+| `aiimin-communication.mdc` | Concise, sparring, design/EEG exceptions |
+| `caveman-always.mdc` | Terse chat; vault human docs stay clear prose |
+| `use-skills-always.mdc` | Read matching SKILL.md before acting |
+| `aiimin-chat-handoff.mdc` | When to new-chat + generate handoff pack |
+
+Entrypoint: `docs/knowledge/00_HOME.md`  
+Memory: `docs/knowledge/15_MEMORY/Current-Context.md`  
+Handoff: `docs/knowledge/15_MEMORY/Handoff-Latest.md`  
+Prompts: `docs/knowledge/14_PROMPTS/Cursor-Rules.md`
