@@ -4,6 +4,7 @@ import { apiGet, apiPost } from '../../../utils/api';
 import toast from '../../../utils/toast';
 import { trackEvent } from '../../../hooks/usePageAnalytics';
 import { IS_SUBSCRIPTION_MODE } from '../../../utils/tierGating';
+import TierUpgradeCelebration from '../../../components/account/TierUpgradeCelebration';
 import '../../../styles/subscriptionSection.css';
 
 const STATIC_TIERS = [
@@ -80,19 +81,21 @@ function notifyTierChanged(tierId) {
 
 export default function SubscriptionSection() {
   const [currentTier, setCurrentTier] = useState('explore');
-  const [subscriptionMode, setSubscriptionMode] = useState(IS_SUBSCRIPTION_MODE);
+  const [clickUpgrade, setClickUpgrade] = useState(IS_SUBSCRIPTION_MODE);
+  const [upgradeOnly, setUpgradeOnly] = useState(false);
   const [renewalDate, setRenewalDate] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [celebration, setCelebration] = useState(null);
 
   const refreshStatus = useCallback(() => {
     return apiGet('/billing/status')
       .then((st) => {
         if (st?.tier) setCurrentTier(st.tier);
         if (st?.current_period_end) setRenewalDate(st.current_period_end);
-        if (typeof st?.subscription_mode === 'boolean') {
-          setSubscriptionMode(st.subscription_mode);
-        }
+        const enabled = Boolean(st?.click_upgrade ?? st?.subscription_mode ?? IS_SUBSCRIPTION_MODE);
+        setClickUpgrade(enabled);
+        setUpgradeOnly(Boolean(st?.upgrade_only));
       })
       .catch(() => {});
   }, []);
@@ -101,52 +104,23 @@ export default function SubscriptionSection() {
     refreshStatus().finally(() => setLoading(false));
   }, [refreshStatus]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const upgraded = params.get('upgraded') === '1';
-    const stubTier = params.get('tier');
-    const checkoutStub = params.get('checkout') === 'stub';
-
-    if (!upgraded && !checkoutStub) return;
-
-    const applyTierFromUrl = async () => {
-      if (stubTier && (subscriptionMode || checkoutStub)) {
-        try {
-          const res = await apiPost('/billing/select-tier', { tier: stubTier });
-          setCurrentTier(res.tier || stubTier);
-          notifyTierChanged(res.tier || stubTier);
-          toast.success(`You're now on ${STATIC_TIERS.find((t) => t.id === res.tier)?.name || res.tier}`);
-        } catch {
-          await refreshStatus();
-        }
-      } else if (upgraded) {
-        await refreshStatus();
-        notifyTierChanged(stubTier || currentTier);
-      }
-
-      trackEvent('upgrade_completed', { tier: stubTier || currentTier });
-      params.delete('upgraded');
-      params.delete('checkout');
-      params.delete('tier');
-      const next = params.toString();
-      const url = `${window.location.pathname}${next ? `?${next}` : ''}`;
-      window.history.replaceState({}, '', url);
-    };
-
-    applyTierFromUrl();
-  }, [subscriptionMode, refreshStatus, currentTier]);
+  const applyTierLocally = (fromTier, nextTier) => {
+    setCurrentTier(nextTier);
+    notifyTierChanged(nextTier);
+    setCelebration({ fromTier, toTier: nextTier });
+    const name = STATIC_TIERS.find((t) => t.id === nextTier)?.name || nextTier;
+    toast.success(`You're now on ${name}`);
+    trackEvent('upgrade_completed', { tier: nextTier });
+  };
 
   const selectTier = async (tierId) => {
     trackEvent('upgrade_clicked', { tier: tierId });
     setActionLoading(tierId);
+    const fromTier = currentTier;
     try {
       const res = await apiPost('/billing/select-tier', { tier: tierId });
       const nextTier = res.tier || tierId;
-      setCurrentTier(nextTier);
-      notifyTierChanged(nextTier);
-      const name = STATIC_TIERS.find((t) => t.id === nextTier)?.name || nextTier;
-      toast.success(`You're now on ${name}`);
-      trackEvent('upgrade_completed', { tier: nextTier });
+      applyTierLocally(fromTier, nextTier);
     } catch (e) {
       toast.error(e.message || 'Could not change plan. Try again.');
     } finally {
@@ -157,15 +131,12 @@ export default function SubscriptionSection() {
   const startCheckout = async (tierId) => {
     trackEvent('upgrade_clicked', { tier: tierId });
     setActionLoading(tierId);
+    const fromTier = currentTier;
     try {
       const res = await apiPost('/billing/checkout', { tier: tierId });
-      if (res.subscriptionMode || subscriptionMode) {
+      if (res.subscriptionMode || res.clickUpgrade || clickUpgrade) {
         const nextTier = res.tier || tierId;
-        setCurrentTier(nextTier);
-        notifyTierChanged(nextTier);
-        const name = STATIC_TIERS.find((t) => t.id === nextTier)?.name || nextTier;
-        toast.success(`You're now on ${name}`);
-        trackEvent('upgrade_completed', { tier: nextTier });
+        applyTierLocally(fromTier, nextTier);
         return;
       }
       if (res.url) {
@@ -181,7 +152,7 @@ export default function SubscriptionSection() {
   };
 
   const handleTierAction = (tierId) => {
-    if (subscriptionMode || IS_SUBSCRIPTION_MODE) {
+    if (clickUpgrade || IS_SUBSCRIPTION_MODE) {
       return selectTier(tierId);
     }
     return startCheckout(tierId);
@@ -195,18 +166,20 @@ export default function SubscriptionSection() {
         <p className="text-label" style={{ color: 'var(--color-text-3)', marginBottom: 6 }}>Account</p>
         <h1 className="text-h1" style={{ marginBottom: 8 }}>Subscription</h1>
         <p className="text-sm" style={{ color: 'var(--color-text-2)' }}>
-          AIIMIN grows with you. Upgrade or downgrade any time.
+          AIIMIN grows with you. Upgrade or switch any time
+          {clickUpgrade ? ' — testing mode, no charge.' : '.'}
         </p>
       </div>
 
-      {subscriptionMode && (
+      {clickUpgrade && (
         <div
           className="subscription-current-banner"
           style={{ borderColor: 'color-mix(in srgb, var(--color-accent) 40%, var(--color-border))' }}
         >
           <span className="subscription-current-dot" />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-1)' }}>
-            Subscription mode — pick a plan and it applies instantly. Stripe billing comes later.
+            Click to change plan instantly. Stripe billing comes later
+            {upgradeOnly ? ' · downgrades locked' : ''}.
           </span>
         </div>
       )}
@@ -238,12 +211,14 @@ export default function SubscriptionSection() {
           const isUpgrade = tierIndex > currentTierIndex;
           const isDowngrade = tierIndex < currentTierIndex;
           const busy = actionLoading === tier.id;
+          const blockedDowngrade = upgradeOnly && isDowngrade;
 
           return (
             <div
               key={tier.id}
               className={[
                 'subscription-pricing-card',
+                `tier-soul-${tier.id}`,
                 isCurrent ? 'is-current' : '',
                 tier.popular ? 'is-popular' : '',
               ].filter(Boolean).join(' ')}
@@ -290,22 +265,20 @@ export default function SubscriptionSection() {
 
               {isCurrent ? (
                 <div className="subscription-tier-cta subscription-tier-cta--active">✓ Active</div>
+              ) : blockedDowngrade ? (
+                <div className="subscription-tier-cta subscription-tier-cta--ghost">
+                  Downgrade locked
+                </div>
               ) : (
                 <button
                   type="button"
                   disabled={busy || loading}
                   onClick={() => handleTierAction(tier.id)}
                   className={`subscription-tier-cta ${
-                    isUpgrade && tier.id === 'core'
+                    isUpgrade
                       ? 'subscription-tier-cta--primary'
-                      : 'subscription-tier-cta--ghost'
+                      : 'subscription-tier-cta--switch'
                   }`}
-                  style={!isUpgrade || tier.id !== 'core' ? {
-                    border: '1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-border))',
-                    color: 'var(--color-accent)',
-                    background: 'var(--color-accent-dim)',
-                    cursor: busy ? 'wait' : 'pointer',
-                  } : undefined}
                 >
                   {busy
                     ? 'Applying…'
@@ -324,6 +297,13 @@ export default function SubscriptionSection() {
       <p className="subscription-footnote text-caption">
         All prices in INR · Cancel any time · Billed monthly · Support: support@aiimin.in
       </p>
+
+      <TierUpgradeCelebration
+        open={Boolean(celebration)}
+        fromTier={celebration?.fromTier || 'explore'}
+        toTier={celebration?.toTier || 'core'}
+        onClose={() => setCelebration(null)}
+      />
     </div>
   );
 }

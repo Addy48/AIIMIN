@@ -24,7 +24,6 @@ const AuthCallback = () => {
         const queryStatus = searchParams.get('status');
         const reason = searchParams.get('reason');
         const authError = searchParams.get('error');
-
         if (authError || queryStatus === 'error') {
             setError(reason || authError || 'Authentication failed');
             setTimeout(() => navigate('/login'), 4000);
