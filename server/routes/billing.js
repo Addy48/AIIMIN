@@ -15,7 +15,6 @@ import {
 } from '../services/billingService.js';
 import { getUserProfile } from '../services/userProfileService.js';
 import { pool } from '../lib/db.js';
-import Stripe from 'stripe';
 
 const app = new Hono();
 
@@ -31,6 +30,7 @@ app.get('/status', requireAuth, async (c) => {
   return c.json({
     tier,
     prev_tier: profile?.prev_tier || 'explore',
+    current_period_end: profile?.subscription_period_end || null,
     renewal: profile?.stripe_subscription_id ? 'active' : null,
     subscription_mode: clickUpgrade,
     click_upgrade: clickUpgrade,
@@ -102,6 +102,7 @@ app.post('/webhook', async (c) => {
       return c.json({ error: 'Missing stripe-signature header' }, 400);
     }
 
+    const { default: Stripe } = await import('stripe');
     const stripe = new Stripe(stripeKey);
     const event = stripe.webhooks.constructEvent(body, sig, secret);
 
