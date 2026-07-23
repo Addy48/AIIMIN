@@ -26,6 +26,12 @@
 
 ## Changelog
 
+### 2026-07-11 — Profile OS-ID + plan meta row
+- **What:** OS-ID and plan chip share one matched meta row (same height 44px, radius 12px). Plan chip inline: `Pro · till 10 aug 2026`. Stacks full-width under ~520px.
+- **Why:** Side-by-side badges looked mismatched (different height/weight).
+- **Files:** `frontend/src/pages/account/sections/ProfileSection.jsx`, `frontend/src/components/account/PlanStatusChip.jsx`, `frontend/src/styles/subscriptionSection.css`
+- **Status:** shipped
+
 ### 2026-07-11 — Account plan UX polish (desktop width + profile chip)
 - **What:** Account page uses wider desktop layout (~1680px). Plan status lives only on My Profile via `PlanStatusChip` (tier icon + color, copy like `till 10 aug 2026`) — removed from sidebar. Stripe/testing billing banner and celebration “Testing · no charge” removed; celebration receipt shows Valid till date. Celebration modal wider on laptop/desktop.
 - **Why:** Desktop felt cramped; plan letter badges (C/P/E) and duplicate sidebar chip; Stripe copy premature.

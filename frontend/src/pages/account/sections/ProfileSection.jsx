@@ -97,50 +97,32 @@ export default function ProfileSection({
               {profile?.full_name || user?.full_name || 'Guest User'}
             </h1>
 
-            <div
-              style={{
-                marginTop: 10,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                flexWrap: 'wrap',
-                padding: '6px 10px 6px 12px',
-                borderRadius: 10,
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-surface-1)',
-              }}
-            >
-              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--color-text-3)' }}>
-                OS-ID
-              </span>
-              <span
-                className="profile-os-id"
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 17,
-                  fontWeight: 600,
-                  letterSpacing: '0.14em',
-                  fontVariantNumeric: 'tabular-nums',
-                  color: hasOsId ? 'var(--color-text-1)' : 'var(--color-text-3)',
-                }}
+            <div className="profile-meta-row">
+              <div
+                className="profile-os-id-chip"
+                title={hasOsId ? 'Permanent — cannot be changed' : undefined}
               >
-                {hasOsId ? osId : '— — — — — — — —'}
-              </span>
-              {hasOsId && (
+                <span className="profile-os-id-label">OS-ID</span>
                 <span
-                  title="Permanent — cannot be changed"
-                  style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--color-text-3)' }}
+                  className="profile-os-id-value"
+                  style={{ color: hasOsId ? 'var(--color-text-1)' : 'var(--color-text-3)' }}
                 >
-                  <Lock size={12} />
+                  {hasOsId ? osId : '————————'}
                 </span>
-              )}
-            </div>
+                {hasOsId ? (
+                  <span className="profile-os-id-lock" aria-hidden="true">
+                    <Lock size={13} strokeWidth={2.2} />
+                  </span>
+                ) : null}
+              </div>
 
-            <PlanStatusChip
-              tier={planTier}
-              periodEnd={periodEnd}
-              onClick={() => onOpenSubscription?.()}
-            />
+              <PlanStatusChip
+                tier={planTier}
+                periodEnd={periodEnd}
+                onClick={() => onOpenSubscription?.()}
+                className="plan-status-chip--inline"
+              />
+            </div>
 
             <div
               style={{

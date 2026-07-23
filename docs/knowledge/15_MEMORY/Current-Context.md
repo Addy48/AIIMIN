@@ -12,7 +12,7 @@
 
 ## Working on
 
-- FE polish ready for hard-refresh verify; commit/push when user asks (Vercel FE; no API change this round)
+- Profile OS-ID + plan meta row polish (matched height/inline chip)
 
 ## Recent decisions
 
@@ -22,6 +22,5 @@
 
 ## Next step
 
-1. Hard-refresh Account → My Profile + Subscription
-2. Confirm chip shows icon + `till …`; celebration has Valid till, no Stripe line
-3. Commit + push when asked
+1. Wait Vercel READY for `93c889ea`
+2. Hard-refresh Account → My Profile meta row
