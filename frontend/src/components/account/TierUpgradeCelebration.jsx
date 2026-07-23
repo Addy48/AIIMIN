@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatPlanTill } from './PlanStatusChip';
 import '../../styles/tierUpgradeCelebration.css';
 
 const TIER_SOUL = {
@@ -53,10 +54,12 @@ export default function TierUpgradeCelebration({
   open,
   fromTier = 'explore',
   toTier = 'core',
+  periodEnd = null,
   onClose,
 }) {
   const soul = TIER_SOUL[toTier] || TIER_SOUL.core;
   const [phase, setPhase] = useState('idle');
+  const tillLabel = formatPlanTill(periodEnd);
 
   const prefersReduced = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -222,10 +225,12 @@ export default function TierUpgradeCelebration({
                       <span>New plan</span>
                       <span>{TIER_LABELS[toTier] || toTier}</span>
                     </div>
-                    <div className="tier-celeb-receipt-row">
-                      <span>Billing</span>
-                      <span>Testing · no charge</span>
-                    </div>
+                    {toTier !== 'explore' && tillLabel ? (
+                      <div className="tier-celeb-receipt-row">
+                        <span>Valid</span>
+                        <span>{tillLabel}</span>
+                      </div>
+                    ) : null}
                     <button type="button" className="tier-celeb-cta" onClick={onClose}>
                       {soul.cta}
                     </button>

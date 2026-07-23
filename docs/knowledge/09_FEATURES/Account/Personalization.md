@@ -12,6 +12,7 @@
 - `frontend/src/pages/account/sections/PersonalizationSection.jsx`
 - `frontend/src/pages/account/sections/SubscriptionSection.jsx`
 - `frontend/src/components/account/TierUpgradeCelebration.jsx`
+- `frontend/src/components/account/PlanStatusChip.jsx`
 - `frontend/src/components/settings/NavPinEditor.jsx`
 - `frontend/src/constants/navItems.js`
 - `frontend/src/hooks/useNavPreferences.js`
@@ -25,7 +26,19 @@
 
 ## Changelog
 
-### 2026-07-11 — Click-upgrade for all + identity celebration
+### 2026-07-11 — Account plan UX polish (desktop width + profile chip)
+- **What:** Account page uses wider desktop layout (~1680px). Plan status lives only on My Profile via `PlanStatusChip` (tier icon + color, copy like `till 10 aug 2026`) — removed from sidebar. Stripe/testing billing banner and celebration “Testing · no charge” removed; celebration receipt shows Valid till date. Celebration modal wider on laptop/desktop.
+- **Why:** Desktop felt cramped; plan letter badges (C/P/E) and duplicate sidebar chip; Stripe copy premature.
+- **Files:** `frontend/src/pages/account/AccountPage.jsx`, `frontend/src/pages/account/sections/ProfileSection.jsx`, `frontend/src/pages/account/sections/SubscriptionSection.jsx`, `frontend/src/components/account/PlanStatusChip.jsx`, `frontend/src/components/account/TierUpgradeCelebration.jsx`, `frontend/src/styles/subscriptionSection.css`, `frontend/src/styles/tierUpgradeCelebration.css`
+- **Status:** shipped
+
+### 2026-07-11 — Fix live upgrade 500 + plan badge + active-until
+- **What:** Removed top-level `stripe` import that crashed the whole billing router on EC2 (`ERR_MODULE_NOT_FOUND`). Upgrades always use `POST /billing/select-tier`. Added `subscription_period_end` (1 month from plan change). Account sidebar + profile show colored plan mark; click opens Subscription. CTAs show price (`Upgrade to Core · ₹29/mo`). Banner shows Active until date.
+- **Why:** Live Internal Server Error on every upgrade click; user asked for plan indicator + month active window + clear prices.
+- **Files:** `server/routes/billing.js`, `server/services/billingService.js`, `server/services/userProfileService.js`, `server/migrations/040_subscription_period_end.sql`, `frontend/src/pages/account/AccountPage.jsx`, `frontend/src/pages/account/sections/ProfileSection.jsx`, `frontend/src/pages/account/sections/SubscriptionSection.jsx`, `frontend/src/styles/subscriptionSection.css`, `frontend/src/utils/tierGating.js`
+- **Status:** shipped
+
+
 - **What:** Plan changes work for every signed-in user without Stripe. `POST /api/billing/select-tier` enabled when Stripe is not configured (or `SUBSCRIPTION_MODE=true`). Access service honors profile tier in click-upgrade mode (no force-elite overwrite). Subscription UI: per-tier card colors + identity-shift celebration overlay (hold → land → unlocks → receipt). `UPGRADE_ONLY=true` later blocks downgrades.
 - **Why:** Upgrade buttons returned errors in prod; no payment provider yet; testing needs instant up/down for all accounts.
 - **Files:** `server/services/billingService.js`, `server/routes/billing.js`, `server/services/accessService.js`, `frontend/src/pages/account/sections/SubscriptionSection.jsx`, `frontend/src/components/account/TierUpgradeCelebration.jsx`, `frontend/src/styles/tierUpgradeCelebration.css`, `frontend/src/styles/subscriptionSection.css`, `deploy/.env.production.example`

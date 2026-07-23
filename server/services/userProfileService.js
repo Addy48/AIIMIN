@@ -24,6 +24,7 @@ const PATCHABLE_PROFILE_FIELDS = [
     'prev_tier',
     'last_celebrated_milestone',
     'subscription_tier',
+    'subscription_period_end',
     'stripe_customer_id',
     'stripe_subscription_id',
     'font_scale',
@@ -33,7 +34,7 @@ const PROFILE_SELECT = `
     user_id, persona_tags, favorite_sports, favorite_teams, dashboard_modules,
     domain_priorities, ai_tone, ai_features_enabled, ai_journal_opt_in,
     onboarding_complete, tagline, location, notification_prefs, seen_tips,
-    prev_tier, last_celebrated_milestone, subscription_tier,
+    prev_tier, last_celebrated_milestone, subscription_tier, subscription_period_end,
     stripe_customer_id, stripe_subscription_id, font_scale,
     created_at, updated_at
 `;
@@ -104,7 +105,8 @@ export async function getUserProfile(pool, userId) {
     } catch (err) {
         if (!/does not exist|column/i.test(err.message)) throw err;
         const { rows } = await pool.query(
-            `SELECT user_id, tagline, onboarding_complete, subscription_tier, prev_tier, font_scale, updated_at
+            `SELECT user_id, tagline, onboarding_complete, subscription_tier, prev_tier,
+                    subscription_period_end, font_scale, updated_at
              FROM user_profiles WHERE user_id = $1 LIMIT 1`,
             [userId],
         );

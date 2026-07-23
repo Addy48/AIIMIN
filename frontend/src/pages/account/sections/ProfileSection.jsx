@@ -6,6 +6,8 @@ import useFieldSave, { FieldSaveIndicator } from '../../../hooks/useFieldSave';
 import { apiPatch } from '../../../utils/api';
 import { LIFE_ARC_LABEL, ARC_TAGLINE } from '../../../constants/arc';
 import ArcMark from '../../../components/brand/ArcMark';
+import PlanStatusChip from '../../../components/account/PlanStatusChip';
+import '../../../styles/subscriptionSection.css';
 
 const fieldStyle = {
   width: '100%',
@@ -25,7 +27,14 @@ const cardStyle = {
   background: 'var(--color-surface-2)',
 };
 
-export default function ProfileSection({ user, profile, onProfileUpdate }) {
+export default function ProfileSection({
+  user,
+  profile,
+  onProfileUpdate,
+  planTier = 'explore',
+  periodEnd = null,
+  onOpenSubscription,
+}) {
   const [name, setName] = useState(user?.full_name || '');
   const [lifeArc, setLifeArc] = useState(profile?.tagline || '');
   const [location, setLocation] = useState(profile?.location || '');
@@ -126,6 +135,12 @@ export default function ProfileSection({ user, profile, onProfileUpdate }) {
                 </span>
               )}
             </div>
+
+            <PlanStatusChip
+              tier={planTier}
+              periodEnd={periodEnd}
+              onClick={() => onOpenSubscription?.()}
+            />
 
             <div
               style={{

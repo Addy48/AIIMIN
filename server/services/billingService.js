@@ -186,9 +186,14 @@ export async function handleSubscriptionUpgrade(userId, newTier, stripeIds = {})
   const profile = await getUserProfile(pool, userId);
   const oldTier = profile?.subscription_tier || 'explore';
 
+  const periodEnd = newTier === 'explore'
+    ? null
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
   await patchUserProfile(pool, userId, {
     prev_tier: oldTier,
     subscription_tier: newTier,
+    subscription_period_end: periodEnd,
     ...(stripeIds.customerId ? { stripe_customer_id: stripeIds.customerId } : {}),
     ...(stripeIds.subscriptionId ? { stripe_subscription_id: stripeIds.subscriptionId } : {}),
   });
@@ -208,5 +213,5 @@ export async function handleSubscriptionUpgrade(userId, newTier, stripeIds = {})
     }
   }
 
-  return { oldTier, newTier };
+  return { oldTier, newTier, subscription_period_end: periodEnd };
 }
