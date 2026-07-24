@@ -850,3 +850,27 @@ button:disabled, button[disabled] {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Goals & Vision — editorial ampersand */
+.goals-vision-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.goals-vision-title__word {
+  font-style: normal;
+}
+
+.goals-vision-title__amp {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.12em;
+  line-height: 1;
+  color: var(--color-text-1);
+  transform: translateY(0.02em);
+}

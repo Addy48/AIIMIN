@@ -7,9 +7,10 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { useUserProfile } from '../hooks/useUserProfile';
 import useThemeColors from '../hooks/useThemeColors';
-import { apiPost } from '../utils/api';
+import { apiPost, apiGet } from '../utils/api';
 import { supabase } from '../utils/supabase';
 import { trackEvent } from '../hooks/usePageAnalytics';
+import toast from '../utils/toast';
 import useMediaQuery from '../hooks/useMediaQuery';
 import FeatureTip from '../components/ui/FeatureTip';
 import FeatureGate from '../components/account/FeatureGate';
@@ -19,7 +20,7 @@ import CBTRecordMode from '../components/journal/CBTRecordMode';
 import WhatWentWellMode from '../components/journal/WhatWentWellMode';
 import MorningPagesMode from '../components/journal/MorningPagesMode';
 import WeeklyReviewMode from '../components/journal/WeeklyReviewMode';
-import JournalWriteCanvas from '../components/journal/JournalWriteCanvas';
+import JournalCapture from '../components/journal/JournalCapture';
 import JournalReadView from '../components/journal/JournalReadView';
 import {
   JOURNAL_MODES,
@@ -66,6 +67,8 @@ export default function JournalPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [streak, setStreak] = useState(0);
   const [analysisMap, setAnalysisMap] = useState({});
+  const [draftSuggestions, setDraftSuggestions] = useState([]);
+  const [showStructuredModes, setShowStructuredModes] = useState(false);
 
   const setMode = (param) => {
     setSearchParams({ mode: param });
@@ -107,6 +110,44 @@ export default function JournalPage() {
     fetchEntries();
   }, [fetchEntries]);
 
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    const today = new Date().toISOString().split('T')[0];
+    apiGet(`/daily-logs/${user.id}/${today}`)
+      .then((log) => {
+        const drafts = [];
+        if (log && log.gym_done === false) {
+          drafts.push({ id: 'gym-skip', text: 'Skipped gym today — note why or how I feel about it.' });
+        }
+        if (log && Number(log.mood) <= 2) {
+          drafts.push({ id: 'low-mood', text: 'Rough day — mood dipped. What triggered it?' });
+        }
+        if (log && log.learning_done && log.learning_topic) {
+          drafts.push({ id: 'learn', text: `Learned: ${log.learning_topic}. Key takeaway?` });
+        }
+        setDraftSuggestions(drafts.slice(0, 2));
+      })
+      .catch(() => setDraftSuggestions([]));
+    return undefined;
+  }, [user?.id, entries.length]);
+
+  const classifyAndTagEntry = async (entryId, body, mood) => {
+    if (!body?.trim() || body === '[mood check-in]') return;
+    try {
+      const analysis = await apiPost('/daily-logs/journal/ai-analyze', {
+        text: body,
+        mood: mapMoodToEntryColumn(mood),
+        energy: 3,
+      });
+      if (analysis?.sentiment) {
+        const tag = analysis.sentiment === 'warning' ? 'cbt' : analysis.sentiment === 'reflective' ? 'morning' : 'write';
+        localStorage.setItem(`aiimin_journal_mode_${entryId}`, tag);
+      }
+    } catch {
+      // auto-tag is best-effort
+    }
+  };
+
   const syncWinsToGoals = async (wins = []) => {
     if (!user?.id) return;
     const today = new Date().toISOString().split('T')[0];
@@ -145,9 +186,11 @@ export default function JournalPage() {
     if (!user?.id) return;
     const today = new Date().toISOString().split('T')[0];
     const mood = Number(moodValue) || 6;
+    const bodyText = getPlainTextFromPayload(mode, payload);
+    if (!bodyText && mode !== 'write') return;
     const payloadWithMeta = {
       ...payload,
-      meta: { ...(payload.meta || {}), mood },
+      meta: { ...(payload.meta || {}), mood, captured_via: payload.body === '[mood check-in]' ? 'mood_only' : 'capture' },
     };
     const encrypted_content = serializeEntry(mode, payloadWithMeta);
     const existing = findEntryForDate(entries, today, mode);
@@ -193,6 +236,7 @@ export default function JournalPage() {
       : [saved, ...entries];
     setStreak(calcJournalStreak(nextEntries));
     trackEvent('journal_saved', { mode });
+    toast.success(payload.body === '[mood check-in]' ? 'Mood logged' : 'Captured');
     if (mode === 'www' && payload.wins) syncWinsToGoals(payload.wins).catch(() => {});
     syncJournalToDailyLog({
       userId: user.id,
@@ -201,17 +245,23 @@ export default function JournalPage() {
       mood,
     }).catch(() => {});
     apiPost('/daily-logs/journal/ai-analyze', {
-      content: encrypted_content,
-      entry_id: saved.id,
+      text: bodyText || payload.body,
       mood: mapMoodToEntryColumn(mood),
+      energy: 3,
     })
       .then((analysis) => {
         if (analysis?.emotion_tag) {
           persistEntryAnalysis(saved.id, mode, payloadWithMeta, analysis).catch(() => {});
+        } else if (analysis?.sentiment) {
+          classifyAndTagEntry(saved.id, bodyText || payload.body, mood);
         }
       })
       .catch(() => {});
   };
+
+  const saveQuickMood = (payload) => saveEntry('write', { body: payload.body, meta: { mood: payload.mood } }, payload.mood);
+
+  const saveCapture = (payload) => saveEntry('write', { body: payload.body, meta: { mood: payload.mood } }, payload.mood);
 
   const handleExport = () => {
     const blob = new Blob([exportEntriesPlainText(entries)], { type: 'text/plain;charset=utf-8' });
@@ -302,27 +352,49 @@ export default function JournalPage() {
 
         <FeatureTip
           tipId="journal_tip"
-          message="Type or speak today's note. Templates live in the row below when you need structure."
+          message="Capture in one tap — type, hold mic, or mood only. Templates are optional."
           seenTips={profile?.seen_tips || []}
         />
 
-        <div className="journal-studio__templates">
-          {JOURNAL_MODES.map((m) => {
-            const meta = MODE_META[m.id] || {};
-            const isActive = activeMode === m.id;
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => setMode(m.param)}
-                className={`journal-studio__template-pill ${isActive ? 'journal-studio__template-pill--active' : ''}`}
-              >
-                <span style={{ opacity: isActive ? 1 : 0.7 }}>{meta.icon}</span>
-                {meta.label || m.label}
-              </button>
-            );
-          })}
-        </div>
+        {showStructuredModes ? (
+          <div className="journal-studio__templates">
+            {JOURNAL_MODES.filter((m) => m.id !== 'write').map((m) => {
+              const meta = MODE_META[m.id] || {};
+              const isActive = activeMode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setMode(m.param)}
+                  className={`journal-studio__template-pill ${isActive ? 'journal-studio__template-pill--active' : ''}`}
+                >
+                  <span style={{ opacity: isActive ? 1 : 0.7 }}>{meta.icon}</span>
+                  {meta.label || m.label}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              className="journal-studio__template-pill"
+              onClick={() => {
+                setShowStructuredModes(false);
+                setMode('write');
+              }}
+            >
+              Back to capture
+            </button>
+          </div>
+        ) : (
+          <div className="journal-studio__templates journal-studio__templates--minimal">
+            <button
+              type="button"
+              className="journal-studio__template-pill journal-studio__template-pill--ghost"
+              onClick={() => setShowStructuredModes(true)}
+            >
+              Structured modes (CBT, morning pages…)
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={`journal-studio__layout${isMobile ? ' is-mobile' : ''}`}>
@@ -347,13 +419,14 @@ export default function JournalPage() {
               ) : (
                 <>
                   {activeMode === 'write' && (
-                    <JournalWriteCanvas
-                      key={`write-${todayWrite?.id || 'new'}`}
-                      initialBody={parseEntry(todayWrite?.encrypted_content).body || ''}
+                    <JournalCapture
+                      key={`capture-${todayWrite?.id || 'new'}`}
+                      initialBody={parseEntry(todayWrite?.encrypted_content).body === '[mood check-in]' ? '' : (parseEntry(todayWrite?.encrypted_content).body || '')}
                       initialMood={parseEntry(todayWrite?.encrypted_content).meta?.mood || 6}
-                      onSave={(payload) => saveEntry('write', { body: payload.body }, payload.mood)}
-                      prompt="Start with what feels true right now. Keep it honest and simple."
-                      saveLabel={todayWrite ? 'Update entry' : 'Save entry'}
+                      todaySaved={Boolean(todayWrite)}
+                      draftSuggestions={draftSuggestions}
+                      onSave={saveCapture}
+                      onQuickMoodSave={saveQuickMood}
                     />
                   )}
                   {activeMode === 'free_write' && <FreeWriteMode onSave={(p) => saveEntry('free_write', p)} />}
