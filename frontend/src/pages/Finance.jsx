@@ -349,10 +349,15 @@ const Finance = () => {
     
     // FIRE Calculation (Rough)
     // Goal = 25 * Annual Expenses
+    // FIRE: 25× annual expenses. Only project when expenses + positive savings exist.
     const annualExpenses = mExp * 12;
     const goal = annualExpenses * 25;
     const monthlySavings = mInc - mExp;
-    const yearsToFI = monthlySavings > 0 ? Math.round((goal - totalNetWorth) / (monthlySavings * 12)) : 50;
+    let yearsToFI = null;
+    if (mExp > 0 && monthlySavings > 0) {
+      const remaining = goal - totalNetWorth;
+      yearsToFI = remaining <= 0 ? 0 : Math.max(0, Math.min(99, Math.round(remaining / (monthlySavings * 12))));
+    }
 
     // Velocity Data (Last 6 months)
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
@@ -423,8 +428,8 @@ savingsRate: (sRate * 100).toFixed(1),
   const formatCurrency = (val) => new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-    maximumFractionDigits: 0
-  }).format(val);
+    maximumFractionDigits: 0,
+  }).format(Number(val) || 0);
 
   const monthStr = new Date().toLocaleString('default', { month: 'long', year: 'numeric' }).toUpperCase();
   const runwayMonths = monthlyExpenses > 0 ? Math.round(totalBalance / monthlyExpenses) : 0;
@@ -440,12 +445,8 @@ savingsRate: (sRate * 100).toFixed(1),
 
       {/* Header */}
       <PageHeader 
-        title={
-          <span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            Wealth Vault<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
-          </span>
-        }
-        subtitle={`Capital Allocation · ${monthStr}`}
+        title="Wealth Vault"
+        subtitle={`Capital allocation · ${monthStr}`}
         rightContent={
           <>
             <button 

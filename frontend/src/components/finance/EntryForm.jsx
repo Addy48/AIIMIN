@@ -118,25 +118,28 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
       {/* Amount and Date row */}
       <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '16px' }}>
         <div>
-          <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>Amount (INR)</label>
+          <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-1)', marginBottom: '8px', fontWeight: 700 }}>Amount (INR)</label>
           <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', opacity: 0.3 }}>₹</span>
+            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '20px', color: 'var(--color-text-2)', fontWeight: 600 }}>₹</span>
             <input 
               type="number" step="0.01" autoFocus placeholder="0.00"
               value={amount} onChange={e => setAmount(e.target.value)}
               style={{
-                width: '100%', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px',
-                padding: '14px 16px 14px 36px', fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-serif)', color: 'var(--color-text-1)',
+                width: '100%', background: 'var(--bg-elevated)', border: '1.5px solid var(--color-border)', borderRadius: '12px',
+                padding: '14px 16px 14px 36px', fontSize: '24px', fontWeight: 600, fontFamily: 'var(--font-serif)', color: amount ? 'var(--color-text-1)' : 'var(--color-text-2)',
                 outline: 'none'
               }}
             />
           </div>
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>Date</label>
+          <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-1)', marginBottom: '8px', fontWeight: 700 }}>Date</label>
           <input 
             type="date"
-            value={date} onChange={e => setDate(e.target.value)}
+            value={date}
+            max={new Date().toISOString().split('T')[0]}
+            onChange={e => setDate(e.target.value)}
+            aria-label="Transaction date"
             style={{
               width: '100%', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px',
               padding: '14px 12px', fontSize: '14px', color: 'var(--color-text-1)', outline: 'none'
@@ -147,21 +150,27 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
 
       {/* Account Selection */}
       <div>
-        <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '12px' }}>
+        <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-1)', marginBottom: '12px', fontWeight: 700 }}>
           {type === 'transfer' ? 'Source Account' : 'Account'}
         </label>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        {accounts.length === 0 ? (
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-text-2)', lineHeight: 1.5, padding: '12px 14px', background: 'var(--bg-elevated)', border: '1px dashed var(--color-border)', borderRadius: '12px' }}>
+            No accounts yet. Add one in the <strong>Accounts</strong> tab before recording entries.
+          </p>
+        ) : (
+        <div role="group" aria-label="Select account" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {accounts.map(a => (
             <button
               key={a.id}
               type="button"
+              aria-pressed={accountId === a.id}
               onClick={() => setAccountId(a.id)}
               style={{
                 padding: '8px 16px', borderRadius: '10px', border: '1px solid',
                 borderColor: accountId === a.id ? 'var(--color-text-1)' : 'var(--color-border)',
                 background: accountId === a.id ? 'var(--color-text-1)' : 'var(--bg-elevated)',
-                color: accountId === a.id ? 'var(--color-base)' : 'var(--color-text-2)',
-                fontSize: '12px', fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s',
+                color: accountId === a.id ? 'var(--color-base)' : 'var(--color-text-1)',
+                fontSize: '12px', fontWeight: accountId === a.id ? 700 : 500, cursor: 'pointer', transition: 'all 0.2s',
                 display: 'flex', alignItems: 'center', gap: '6px'
               }}
             >
@@ -169,12 +178,16 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
             </button>
           ))}
         </div>
+        {!accountId && accounts.length > 0 && (
+          <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--color-text-2)' }}>Select which account this entry belongs to.</p>
+        )}
+        )}
       </div>
 
       {/* Target Account (Transfers Only) */}
       {type === 'transfer' && (
         <div>
-          <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '12px' }}>Target Account</label>
+          <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-1)', marginBottom: '12px', fontWeight: 700 }}>Target Account</label>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {accounts.filter(a => a.id !== accountId).map(a => (
               <button
@@ -200,7 +213,7 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
       {/* Category Selection (Expenses) */}
       {type === 'expense' && (
         <div>
-          <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '12px' }}>Category</label>
+          <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-1)', marginBottom: '12px', fontWeight: 700 }}>Category</label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {EXPENSE_CATS.map(cat => (
               <button
@@ -211,13 +224,13 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
                   padding: '12px 8px', borderRadius: '12px', border: '1px solid',
                   borderColor: category === cat.name ? cat.color : 'var(--color-border)',
                   background: category === cat.name ? `${cat.color}15` : 'var(--bg-elevated)',
-                  color: category === cat.name ? cat.color : 'var(--color-text-2)',
+                  color: category === cat.name ? cat.color : 'var(--color-text-1)',
                   cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
                   transition: 'all 0.2s'
                 }}
               >
                 <span style={{ fontSize: '20px' }}>{cat.icon}</span>
-                <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cat.name.split(' ')[0]}</span>
+                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{cat.name.split(' ')[0]}</span>
               </button>
             ))}
           </div>
@@ -226,7 +239,7 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
 
       {/* Note */}
       <div>
-        <label style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '8px' }}>Reference Note</label>
+        <label style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-1)', marginBottom: '8px', fontWeight: 700 }}>Reference Note</label>
         <input 
           type="text" placeholder="Swiggy, Amazon, Rent..."
           value={note} onChange={e => setNote(e.target.value)}

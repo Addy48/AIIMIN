@@ -6,6 +6,13 @@ import YearlyHabitMatrix from '../components/overview/YearlyHabitMatrix';
 import Modal from '../components/ui/Modal';
 import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
 
+const normalizeCategory = (cat) => {
+  const raw = String(cat || 'General').trim().replace(/\s+/g, ' ');
+  if (!raw) return 'General';
+  // Collapse case variants: Health / health / HEALTH → Health
+  return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+};
+
 const getDayKey = (d = new Date()) => {
   // Use local time, format to YYYY-MM-DD
   const offset = d.getTimezoneOffset() * 60000;
@@ -92,7 +99,7 @@ const HabitRow = ({ habit, todayKey, onToggle, onDelete, onEdit }) => {
               <div style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '1px' }}>{habit.meta?.description}</div>
             </div>
             <span style={{ fontSize: '9px', fontWeight: 800, padding: '3px 8px', background: `${habit.meta?.color || '#3B82F6'}18`, color: habit.meta?.color || '#3B82F6', borderRadius: '99px', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-              {habit.category || 'General'}
+              {normalizeCategory(habit.category)}
             </span>
           </div>
 
@@ -114,15 +121,15 @@ const HabitRow = ({ habit, todayKey, onToggle, onDelete, onEdit }) => {
             <div style={{ borderLeft: '1px solid var(--color-border)', marginLeft: '4px', paddingLeft: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '14px', fontWeight: 900, color: streak > 0 ? '#F59E0B' : 'var(--color-text-3)' }}>🔥{streak}</div>
-                <div style={{ fontSize: '9px', color: 'var(--color-text-3)', fontWeight: 700 }}>streak</div>
+                <div style={{ fontSize: '10px', color: 'var(--color-text-2)', fontWeight: 700 }}>Streak</div>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '14px', fontWeight: 900, color: habit.meta?.color || '#3B82F6' }}>{weekDone}/{habit.frequency === 'daily' ? 7 : (habit.meta?.target || 7)}</div>
-                <div style={{ fontSize: '9px', color: 'var(--color-text-3)', fontWeight: 700 }}>this wk</div>
+                <div style={{ fontSize: '10px', color: 'var(--color-text-2)', fontWeight: 700 }}>This week</div>
               </div>
               <div style={{ textAlign: 'center' }}>
                 <div style={{ fontSize: '14px', fontWeight: 900, color: 'var(--color-text-1)' }}>{doneCount}</div>
-                <div style={{ fontSize: '9px', color: 'var(--color-text-3)', fontWeight: 700 }}>all time</div>
+                <div style={{ fontSize: '10px', color: 'var(--color-text-2)', fontWeight: 700 }}>All time</div>
               </div>
             </div>
           </div>
@@ -136,8 +143,8 @@ const HabitRow = ({ habit, todayKey, onToggle, onDelete, onEdit }) => {
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: isDone ? (habit.meta?.color || '#3B82F6') : 'var(--color-text-3)', padding: 0, transition: 'all 0.15s', transform: isDone ? 'scale(1.1)' : 'scale(1)' }}>
             {isDone ? <CheckCircle size={32} strokeWidth={2} /> : <Circle size={32} />}
           </button>
-          <div style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: isDone ? (habit.meta?.color || '#3B82F6') : 'var(--color-text-3)', letterSpacing: '0.06em' }}>
-            {isDone ? 'DONE' : 'TODO'}
+          <div style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: isDone ? (habit.meta?.color || '#3B82F6') : 'var(--color-text-2)', letterSpacing: '0.06em' }}>
+            {isDone ? 'Done today' : 'Not done'}
           </div>
           <button onClick={() => onDelete(habit.id)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: '4px', borderRadius: '6px', opacity: 0.5, marginTop: '4px' }}>
@@ -203,7 +210,7 @@ const AddModal = ({ isOpen, onClose, onAdd }) => {
     <Modal isOpen={isOpen} onClose={onClose} title="New Habit" maxWidth="480px">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Icon</div>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Icon</div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {ICONS.map(ic => (
                 <button key={ic} onClick={() => setIcon(ic)}
@@ -214,39 +221,39 @@ const AddModal = ({ isOpen, onClose, onAdd }) => {
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Name</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Name</div>
             <input style={inp} placeholder="e.g. Morning Run" value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} />
           </div>
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Description (optional)</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Description (optional)</div>
             <input style={inp} placeholder="Short description..." value={desc} onChange={e => setDesc(e.target.value)} />
           </div>
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Category</div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Category</div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {CATS.map(c => (
-                <button key={c} onClick={() => setCat(c)}
-                  style={{ padding: '6px 12px', borderRadius: '99px', border: `1px solid ${cat === c ? 'var(--color-accent)' : 'var(--color-border)'}`, background: cat === c ? 'var(--color-accent)' : 'transparent', color: cat === c ? '#fff' : 'var(--color-text-2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {c}
+                <button key={c} type="button" onClick={() => setCat(c)}
+                  style={{ padding: '6px 12px', borderRadius: '99px', border: `1px solid ${cat === c ? 'var(--color-accent)' : 'var(--color-border)'}`, background: cat === c ? 'var(--color-accent)' : 'transparent', color: cat === c ? '#fff' : 'var(--color-text-1)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {c === 'Custom' ? 'Other' : c}
                 </button>
               ))}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Color</div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Color</div>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               {COLORS.map(c => (
-                <button key={c} onClick={() => setColor(c)}
-                  style={{ width: '28px', height: '28px', borderRadius: '50%', background: c, border: `3px solid ${color === c ? '#fff' : 'transparent'}`, cursor: 'pointer', outline: 'none', boxShadow: color === c ? `0 0 0 2px ${c}` : 'none', transition: 'all 0.15s' }} />
+                <button key={c} type="button" aria-label={`Color ${c}`} onClick={() => setColor(c)}
+                  style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px', borderRadius: '50%', background: c, border: `3px solid ${color === c ? '#fff' : 'transparent'}`, cursor: 'pointer', outline: 'none', boxShadow: color === c ? `0 0 0 2px ${c}` : 'none', transition: 'all 0.15s' }} />
               ))}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Weekly Target ({target} days)</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Weekly Target ({target} days)</div>
             <input type="range" min={1} max={7} value={target} onChange={e => setTarget(e.target.value)}
               style={{ width: '100%', accentColor: color, height: '4px' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '10px', color: 'var(--color-text-3)' }}>
-              <span>1x / week</span><span>Daily</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '11px', color: 'var(--color-text-2)' }}>
+              <span>1× / week</span><span>Daily</span>
             </div>
           </div>
           <button onClick={submit} disabled={loading || !name.trim()}
@@ -280,7 +287,7 @@ const WeeklyHeatmap = ({ habits }) => {
         {labels.map((l, i) => {
           const isToday = getDayKey(days[i]) === getDayKey();
           return (
-            <div key={l} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 800, color: isToday ? 'var(--color-accent)' : 'var(--color-text-3)', textTransform: 'uppercase' }}>
+            <div key={l} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 800, color: isToday ? 'var(--color-accent)' : 'var(--color-text-1)', textTransform: 'uppercase' }}>
               {l}
               <div style={{ fontSize: '13px', fontWeight: 900, color: isToday ? 'var(--color-accent)' : 'var(--color-text-2)', marginTop: '2px' }}>{days[i].getDate()}</div>
             </div>
@@ -406,8 +413,16 @@ const Habits = () => {
     setHabits(p => [h, ...p]);
   };
 
-  const CATS = ['all', ...new Set(habits.map(h => h.category || 'General'))];
-  const filtered = filter === 'all' ? habits : habits.filter(h => (h.category || 'General') === filter);
+  const categoryOptions = [...new Map(
+    habits.map((h) => {
+      const label = normalizeCategory(h.category);
+      return [label.toLowerCase(), label];
+    })
+  ).values()];
+  const CATS = ['all', ...categoryOptions];
+  const filtered = filter === 'all'
+    ? habits
+    : habits.filter((h) => normalizeCategory(h.category) === filter);
 
   if (loading) {
     return (
@@ -421,11 +436,7 @@ const Habits = () => {
     <div className="page-container">
       {/* Header */}
       <PageHeader 
-        title={
-          <span style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            Habits<span style={{ color: 'var(--color-accent)', opacity: 0.5 }}>.</span>
-          </span>
-        }
+        title="Habits"
         subtitle="Daily Discipline"
         rightContent={
           <>
@@ -467,7 +478,7 @@ const Habits = () => {
               padding: '6px 16px', borderRadius: '99px', fontFamily: 'inherit',
               border: `1px solid ${filter === c ? 'var(--color-accent)' : 'var(--color-border)'}`,
               background: filter === c ? 'var(--color-accent)' : 'transparent',
-              color: filter === c ? '#fff' : 'var(--color-text-2)',
+              color: filter === c ? '#fff' : 'var(--color-text-1)',
               fontSize: '12px', fontWeight: 700, cursor: 'pointer',
               textTransform: c === 'all' ? 'none' : 'capitalize',
             }}>

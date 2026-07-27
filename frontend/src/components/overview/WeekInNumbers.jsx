@@ -117,7 +117,7 @@ export default function WeekInNumbers({ user }) {
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                 {Icon && <Icon size={12} style={{ color }} />}
-                <div style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-3)' }}>
+                <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-2)' }}>
                   {label}
                 </div>
               </div>
@@ -129,7 +129,7 @@ export default function WeekInNumbers({ user }) {
                   </>
                 ) : value}
               </div>
-              <div style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-2)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {sub}
               </div>
             </motion.div>

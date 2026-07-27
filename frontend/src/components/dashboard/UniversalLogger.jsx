@@ -79,7 +79,7 @@ export default function UniversalLogger({ onSuccess }) {
         <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>✨</div>
         <div>
           <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-1)', lineHeight: 1 }}>Universal Logger</div>
-          <div style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 600 }}>AI-powered · speak naturally</div>
+          <div style={{ fontSize: '12px', color: 'var(--color-text-1)', fontWeight: 600 }}>AI-powered · speak naturally</div>
         </div>
       </div>
 

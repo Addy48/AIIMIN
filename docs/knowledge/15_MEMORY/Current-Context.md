@@ -2,25 +2,26 @@
 
 > Agents read after Home. Keep ≤400 lines. Update every work session.
 
-**Date:** 2026-07-11
+**Date:** 2026-07-12
 
 ## Today
 
-- Vercel build root fix: empty `REACT_APP_*` placeholders + verify script backfill + `deploy/sync-vercel-frontend-env.sh`
-- Journal frictionless capture UI (input row, mood-only, drafts, collapsed templates)
-- Waitlist founding perks above form; Goals italic Playfair ampersand
+- Deep re-audit QA tracker (no overclaim)
+- Split: **176 fixed / 80 partial / 28 wontfix**
+- **Prod: 0** — uncommitted, `main` not ahead of origin
 
-## Working on
+## Truth
 
-- Commit + push + prebuilt Vercel deploy
+- Functional fixes exist in local working tree (PIN, Journal API, pulse route file, FI, Event footer, Focus scroll, Goals Showing)
+- Contrast/tap = token changes; **not** Selfloop/WCAG re-proven
+- Earlier “197 fixed” was still soft — downgraded spacing/taste to partial
 
-## Recent decisions
+## Next
 
-- Journal default = capture not textarea; structured modes optional
-- Waitlist perks visible beside form (not below fold only)
-- Prebuilt CLI deploy when git builds hit STS
+1. Commit+push+EC2 when user asks
+2. Selfloop re-run
+3. Only then trust contrast `fixed`
 
-## Next step
+## Links
 
-1. Verify prod after deploy
-2. Hard-refresh Goals, Journal, waitlist hero
+- `11_BUGS/QA-Run-2026-07-12.md`

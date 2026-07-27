@@ -60,10 +60,10 @@ const WeekCell = React.memo(({ day, dateStr, isToday, calendarEvents }) => {
       borderRadius:'16px', padding:'12px', display:'flex', flexDirection:'column', height: '100%'
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom:'10px', borderBottom: isToday ? '1px dashed rgba(34,197,94,0.3)' : '1px dashed var(--color-border)', paddingBottom:'8px', flexShrink: 0 }}>
-        <div style={{ fontSize:'10px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.1em', color: isToday ? 'var(--color-success)' : 'var(--color-text-3)' }}>
+        <div style={{ fontSize:'13px', fontWeight:900, textTransform:'uppercase', letterSpacing:'0.06em', color: isToday ? 'var(--color-success)' : 'var(--color-text-1)' }}>
           {day}
         </div>
-        <div style={{ fontSize:'12px', fontWeight:800, color: isToday ? 'var(--color-success)' : 'var(--color-text-1)', background: isToday ? 'rgba(16, 185, 129, 0.1)' : 'transparent', padding: isToday ? '2px 6px' : '0', borderRadius: '4px' }}>
+        <div style={{ fontSize:'14px', fontWeight:800, color: isToday ? 'var(--color-success)' : 'var(--color-text-1)', background: isToday ? 'rgba(16, 185, 129, 0.1)' : 'transparent', padding: isToday ? '2px 6px' : '0', borderRadius: '4px' }}>
           {new Date(dateStr).getDate()}
         </div>
       </div>
@@ -427,7 +427,7 @@ const TodayMicroTask = () => {
             value={task.text}
             onChange={(e) => setTask({ ...task, text: e.target.value })}
             onKeyDown={handleSave}
-            placeholder="What's the one small thing that must get done today?"
+            placeholder="One small thing for today"
             style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--color-text-1)', fontSize: '15px', fontWeight: 600, outline: 'none' }}
           />
         ) : (
@@ -439,7 +439,7 @@ const TodayMicroTask = () => {
               {task.done && <span style={{ color: '#fff', fontSize: '12px', fontWeight: 900 }}>✓</span>}
             </div>
             <span style={{ fontSize: '15px', fontWeight: 600, color: task.done ? 'var(--color-text-3)' : 'var(--color-text-1)', textDecoration: task.done ? 'line-through' : 'none', flex: 1 }}>
-              {task.text}
+              {task.text || 'Tap to set today’s micro-task'}
             </span>
           </>
         )}
@@ -614,19 +614,19 @@ const Overview = () => {
           {isVisible('quick_capture') && (
           <div>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
-              <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-3)' }}>Quick Capture</div>
-              <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-accent)', cursor:'pointer' }}>Smart Log &rarr;</div>
+              <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-2)' }}>Quick Capture</div>
+              <Link to="/journal" style={{ fontSize:'12px', fontWeight:800, color:'var(--color-accent)', textDecoration:'underline' }}>Smart Log</Link>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'16px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'16px', padding:'16px' }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'16px', padding:'16px' }}>
               {[
                 { label: 'Log a Habit', icon: '✅', to: '/habits' },
                 { label: 'Journal Entry', icon: '✏️', to: '/journal' },
                 { label: 'Track Expense', icon: '💸', to: '/finance' },
-                { label: 'Add Goal', icon: '🎯', to: '/placements' }
+                { label: 'Add Goal', icon: '🎯', to: '/goals' }
               ].map((item, i) => (
-                <Link key={i} to={item.to} style={{ textDecoration:'none', display:'flex', flexDirection:'column', alignItems:'center', gap:'12px', padding:'20px 12px', border:'1.5px dashed var(--color-border)', borderRadius:'12px', transition:'all 0.2s', background:'var(--color-elevated)' }} onMouseEnter={e=>e.currentTarget.style.borderColor='var(--color-accent)'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
-                  <div style={{ fontSize:'24px' }}>{item.icon}</div>
-                  <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-text-2)' }}>{item.label}</div>
+                <Link key={i} to={item.to} style={{ textDecoration:'none', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'10px', minHeight:'96px', padding:'16px 10px', border:'1.5px dashed var(--color-border)', borderRadius:'12px', transition:'all 0.2s', background:'var(--color-elevated)' }} onMouseEnter={e=>e.currentTarget.style.borderColor='var(--color-accent)'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
+                  <div style={{ fontSize:'22px', lineHeight:1 }}>{item.icon}</div>
+                  <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-text-2)', textAlign:'center' }}>{item.label}</div>
                 </Link>
               ))}
             </div>
@@ -693,16 +693,15 @@ const Overview = () => {
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
               <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
                 <div style={{ fontSize:'14px', fontWeight:800, color:'var(--color-text-1)' }}>Command Timeline</div>
-                <div style={{ fontSize:'10px', fontWeight:800, color:'#22C55E', background:'rgba(34,197,94,0.1)', padding:'4px 8px', borderRadius:'6px', display:'flex', alignItems:'center', gap:'4px' }}>
-                  <span style={{ width:'4px', height:'4px', borderRadius:'50%', background:'#22C55E' }} />
-                  AI SCHEDULE
+                <div style={{ fontSize:'10px', fontWeight:700, color:'var(--color-text-2)', background:'var(--color-elevated)', border:'1px solid var(--color-border)', padding:'4px 8px', borderRadius:'6px' }}>
+                  From calendar
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-surface)', padding: '4px', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-                  <button onClick={() => setWeekOffset(p => p - 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-2)', display: 'flex', alignItems: 'center', padding: '4px' }}><ChevronLeft size={16} /></button>
+                  <button type="button" onClick={() => setWeekOffset(p => p - 1)} aria-label="Previous week" style={{ background: 'var(--color-elevated)', border: '1px solid var(--color-border)', borderRadius: '8px', cursor: 'pointer', color: 'var(--color-text-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', minWidth: '36px' }}><ChevronLeft size={16} /></button>
                   <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--color-text-1)', width: '60px', textAlign: 'center' }}>Week {weekNum}</div>
-                  <button onClick={() => setWeekOffset(p => p + 1)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-2)', display: 'flex', alignItems: 'center', padding: '4px' }}><ChevronRight size={16} /></button>
+                  <button type="button" onClick={() => setWeekOffset(p => p + 1)} aria-label="Next week" style={{ background: 'var(--color-elevated)', border: '1px solid var(--color-border)', borderRadius: '8px', cursor: 'pointer', color: 'var(--color-text-1)', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', minWidth: '36px' }}><ChevronRight size={16} /></button>
                 </div>
                 <button onClick={() => setWeekOffset(0)} style={{ fontSize:'11px', fontWeight:700, color:'var(--color-text-2)', background:'var(--color-surface)', border:'1px solid var(--color-border)', padding:'6px 12px', borderRadius:'8px', cursor:'pointer' }}>
                   Today

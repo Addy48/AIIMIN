@@ -10,7 +10,7 @@ export const SYSTEM_COLORS = {
     finance:    { color: 'var(--color-warning)', bg: 'rgba(234,179,8,0.1)',  border: 'rgba(234,179,8,0.2)',  icon: '💰', label: 'Finance' },
     social:     { color: 'var(--color-info)',    bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.2)', icon: '🤝', label: 'Social' },
     reflection: { color: 'var(--color-text-3)',  bg: 'rgba(161,161,170,0.1)', border: 'rgba(161,161,170,0.2)', icon: '💭', label: 'Reflection' },
-    general:    { color: 'var(--color-text-2)',  bg: 'rgba(113,113,122,0.1)', border: 'rgba(113,113,122,0.2)', icon: '📅', label: 'General' },
+    general:    { color: 'var(--color-text-2)',  bg: 'rgba(113,113,122,0.1)', border: 'rgba(113,113,122,0.2)', icon: '◎', label: 'General' },
 };
 
 /**
