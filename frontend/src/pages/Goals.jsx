@@ -22,6 +22,8 @@ const PILLARS = [
 
 const STATUS_OPTS = ['Active', 'On Track', 'At Risk', 'Achieved'];
 
+const normalizeGoalStatus = (status) => (STATUS_OPTS.includes(status) ? status : 'Active');
+
 const STATUS_COLORS = {
   'Active': '#6b7280',
   'On Track': '#10b981',
@@ -87,7 +89,7 @@ const GoalCard = ({ goal, onUpdate, onDelete }) => {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '2px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '2px' }}>
               <span style={{ color: pillar.color }}>{pillar.icon}</span>
               <h3 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-1)', margin: 0 }}>{goal.title || 'Untitled Goal'}</h3>
             </div>
@@ -115,7 +117,7 @@ const GoalCard = ({ goal, onUpdate, onDelete }) => {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {goal.milestones?.map((m, i) => m.text && (
-            <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '2px 4px', borderRadius: '4px', background: m.done ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
+            <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '2px 4px', borderRadius: '4px', background: m.done ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
               <input type="checkbox" checked={m.done} onChange={() => toggleMilestone(i)} style={{ accentColor: pillar.color, margin: 0, width: '12px', height: '12px' }} />
               <span style={{ fontSize: '11px', fontWeight: 500, color: m.done ? 'var(--color-text-3)' : 'var(--color-text-2)', textDecoration: m.done ? 'line-through' : 'none' }}>{m.text}</span>
             </label>
@@ -160,10 +162,10 @@ const GoalModal = ({ isOpen, onClose, onSave }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Define Commitment" maxWidth="560px">
+    <Modal isOpen={isOpen} onClose={onClose} title="Define Goal" maxWidth="560px">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Domain</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Domain</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
               {PILLARS.map(p => (
                 <button key={p.key} onClick={() => setGoal(g => ({ ...g, pillar: p.key }))}
@@ -172,7 +174,7 @@ const GoalModal = ({ isOpen, onClose, onSave }) => {
                       borderRadius: '16px', 
                       border: `1px solid ${goal.pillar === p.key ? p.color : 'rgba(255,255,255,0.05)'}`, 
                       background: goal.pillar === p.key ? p.bg : 'rgba(255,255,255,0.02)', 
-                      color: goal.pillar === p.key ? p.color : 'var(--color-text-3)', 
+                      color: goal.pillar === p.key ? p.color : 'var(--color-text-2)', 
                       fontSize: '11px', 
                       fontWeight: 800, 
                       cursor: 'pointer', 
@@ -190,11 +192,11 @@ const GoalModal = ({ isOpen, onClose, onSave }) => {
 
           <div style={{ display: 'flex', gap: '20px' }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Goal Title</div>
-              <input style={inp} placeholder="e.g. Master React in 30 days" value={goal.title} onChange={e => setGoal(g => ({ ...g, title: e.target.value }))} />
+              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Goal Title</div>
+              <input style={inp} placeholder="What do you want to achieve?" value={goal.title} onChange={e => setGoal(g => ({ ...g, title: e.target.value }))} />
             </div>
             <div style={{ width: '140px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Priority</div>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Priority</div>
               <select style={inp} value={goal.priority} onChange={e => setGoal(g => ({ ...g, priority: e.target.value }))}>
                 {PRIORITIES.map(p => <option key={p.level} value={p.level}>{p.level}</option>)}
               </select>
@@ -202,21 +204,21 @@ const GoalModal = ({ isOpen, onClose, onSave }) => {
           </div>
 
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>The "Why"</div>
-            <input style={inp} placeholder="Because this skill opens doors to financial freedom." value={goal.why} onChange={e => setGoal(g => ({ ...g, why: e.target.value }))} />
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Why it matters</div>
+            <input style={inp} placeholder="Why does this goal matter to you?" value={goal.why} onChange={e => setGoal(g => ({ ...g, why: e.target.value }))} />
           </div>
 
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Target Date</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Target Date</div>
             <input type="date" style={inp} value={goal.targetDate} onChange={e => setGoal(g => ({ ...g, targetDate: e.target.value }))} />
           </div>
 
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-3)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Milestones ({goal.milestones.length}/5)</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Milestones ({goal.milestones.length} of 5 max)</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {goal.milestones.map((m, i) => (
                 <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                  <input style={{ ...inp, flex: 1 }} placeholder={`Milestone ${i + 1}`} value={m.text} onChange={e => updateMilestone(i, e.target.value)} />
+                  <input style={{ ...inp, flex: 1 }} placeholder={`Step ${i + 1} — e.g. Finish first draft`} value={m.text} onChange={e => updateMilestone(i, e.target.value)} />
                   {goal.milestones.length > 1 && <button onClick={() => removeMilestone(i)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><X size={16} /></button>}
                 </div>
               ))}
@@ -243,7 +245,7 @@ const GoalModal = ({ isOpen, onClose, onSave }) => {
                 boxShadow: `0 8px 20px ${pillar.color}40`,
                 transition: 'all 0.2s'
             }}>
-            Confirm Commitment
+            Confirm Goal
           </button>
         </div>
     </Modal>
@@ -325,9 +327,14 @@ const Goals = () => {
     }
   };
 
-  const baseGoals = viewMode === 'archive' ? goals.filter(g => g.status === 'Achieved') : goals.filter(g => g.status !== 'Achieved');
-  const filtered = filter === 'all' ? baseGoals : baseGoals.filter(g => g.pillar === filter);
-  const onTrackCount = goals.filter(g => g.status === 'On Track' || g.status === 'Achieved').length;
+  const baseGoals = viewMode === 'archive'
+    ? goals.filter((g) => normalizeGoalStatus(g.status) === 'Achieved')
+    : goals.filter((g) => normalizeGoalStatus(g.status) !== 'Achieved');
+  const filtered = filter === 'all' ? baseGoals : baseGoals.filter((g) => g.pillar === filter);
+  const onTrackCount = goals.filter((g) => normalizeGoalStatus(g.status) === 'On Track').length;
+  const activeCount = goals.filter((g) => normalizeGoalStatus(g.status) !== 'Achieved').length;
+  const wonCount = goals.filter((g) => normalizeGoalStatus(g.status) === 'Achieved').length;
+  const boardTotal = filtered.length;
 
   return (
     <div className="page-container">
@@ -336,30 +343,30 @@ const Goals = () => {
         title={<GoalsVisionTitle />}
         subtitle={
           <span style={{ color: 'var(--color-text-3)', fontSize: '12px', margin: 0, fontWeight: 500 }}>
-            <span style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{onTrackCount} active commitments</span> shaping your reality.
+            <span style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{activeCount} active commitment{activeCount === 1 ? '' : 's'}</span> shaping your reality.
           </span>
         }
         rightContent={
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-1)' }}>{goals.length}</div>
-                  <div style={{ fontSize: '9px', fontWeight: 800, color: 'var(--color-text-3)', textTransform: 'uppercase' }}>Total</div>
+                  <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--color-text-1)' }}>{boardTotal}</div>
+                  <div style={{ fontSize: '9px', fontWeight: 800, color: 'var(--color-text-2)', textTransform: 'uppercase' }}>Showing</div>
               </div>
               <div style={{ padding: '8px 16px', background: 'rgba(16, 185, 129, 0.05)', borderRadius: '12px', textAlign: 'center', border: '1px solid rgba(16, 185, 129, 0.1)' }}>
-                  <div style={{ fontSize: '20px', fontWeight: 900, color: '#10b981' }}>{goals.filter(g => g.status === 'Achieved').length}</div>
+                  <div style={{ fontSize: '16px', fontWeight: 800, color: '#10b981' }}>{wonCount}</div>
                   <div style={{ fontSize: '9px', fontWeight: 800, color: '#10b981', textTransform: 'uppercase' }}>Won</div>
               </div>
             </div>
             <button onClick={() => setShowModal(true)}
               style={{ 
-                  background: 'var(--color-text-1)', 
+                  background: 'var(--color-accent)', 
                   border: 'none', 
                   borderRadius: '12px', 
                   padding: '12px 24px', 
                   fontSize: '14px', 
                   fontWeight: 900, 
-                  color: 'var(--color-base)', 
+                  color: '#fff', 
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -390,7 +397,7 @@ const Goals = () => {
                             cursor: 'pointer', 
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '6px',
+                            gap: '8px',
                             transition: 'all 0.2s',
                             color: isActive ? p.color : 'var(--color-text-3)',
                             fontSize: '12px',
@@ -415,7 +422,7 @@ const Goals = () => {
             {viewMode === 'pipeline' ? (
                 <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px', scrollSnapType: 'x mandatory' }}>
                     {STATUS_OPTS.map(status => {
-                        const columnGoals = filtered.filter(g => g.status === status);
+                        const columnGoals = filtered.filter((g) => normalizeGoalStatus(g.status) === status);
                         return (
                             <div key={status} style={{ flex: '0 0 280px', display: 'flex', flexDirection: 'column', gap: '12px', scrollSnapAlign: 'start' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 8px' }}>

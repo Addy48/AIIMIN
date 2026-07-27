@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Brain, CalendarClock, FlaskConical, Target, Wallet, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import supabase from '../../utils/supabase';
 import { apiGet } from '../../utils/api';
 import { generateWeeklyInsight } from '../../services/aiService';
 
@@ -61,6 +60,7 @@ export default function MondayInsight({ user }) {
       } catch {
         setSignals(null);
       }
+      setLoading(false);
       return;
     }
 
@@ -106,15 +106,17 @@ export default function MondayInsight({ user }) {
 
         let moodTrend = 'No mood logs this week';
         if (user && !user.isGuest) {
-          const { data } = await supabase
-            .from('journal_entries')
-            .select('mood, date')
-            .eq('user_id', user.id)
-            .order('date', { ascending: false })
-            .limit(7);
-          if (data?.length > 0) {
-            const avg = data.reduce((s, x) => s + (x.mood || 3), 0) / data.length;
-            moodTrend = `${avg.toFixed(1)}/5 average (${data.length} entries)`;
+          try {
+            const entries = await apiGet('/db/journal_entries', {
+              params: { orderCol: 'date', ascending: 'false', limit: '7' },
+            });
+            const data = Array.isArray(entries) ? entries : [];
+            if (data.length > 0) {
+              const avg = data.reduce((s, x) => s + (x.mood || 3), 0) / data.length;
+              moodTrend = `${avg.toFixed(1)}/5 average (${data.length} entries)`;
+            }
+          } catch {
+            // mood trend optional
           }
         }
 
@@ -139,12 +141,17 @@ export default function MondayInsight({ user }) {
 
         let labSessions = 0;
         if (user && !user.isGuest) {
-          const { count } = await supabase
-            .from('lab_mindset_logs')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user.id)
-            .gte('logged_at', new Date(Date.now() - 7 * 86400000).toISOString());
-          labSessions = count || 0;
+          try {
+            const labRows = await apiGet('/db/lab_mindset_logs', {
+              params: {
+                gte: JSON.stringify({ logged_at: new Date(Date.now() - 7 * 86400000).toISOString() }),
+                limit: '200',
+              },
+            });
+            labSessions = Array.isArray(labRows) ? labRows.length : 0;
+          } catch {
+            labSessions = 0;
+          }
         }
 
         let disciplineStreak = 0;
@@ -199,12 +206,12 @@ export default function MondayInsight({ user }) {
 
   const title = isWeekendReview ? 'Weekend Review' : 'Monday Morning Insight';
   const parsed = parseInsight(insight);
-  const visibleUntil = isWeekendReview ? 'Visible through Sunday' : 'Visible today';
-  const dismissCopy = 'Dismiss hides it until next Monday';
+  const visibleUntil = isWeekendReview ? 'Visible through Sunday.' : 'Visible today.';
+  const dismissCopy = 'Dismiss hides it until next Monday.';
   const signalItems = [
     { label: 'Habits', value: signals?.habits || 'Loading', meta: signals?.habitRate || '7 day rate', icon: Target, color: 'var(--color-accent)' },
     { label: 'Money', value: signals?.finance || 'Loading', meta: signals?.financeMeta || 'last 7 days', icon: Wallet, color: 'var(--color-accent)' },
-    { label: 'Mood', value: signals?.mood || 'Loading', meta: 'journal signal', icon: Brain, color: 'var(--color-accent)' },
+    { label: 'Mood', value: signals?.mood || 'Loading', meta: '7-day journal avg', icon: Brain, color: 'var(--color-accent)' },
     { label: 'Lab', value: signals?.lab || 'Loading', meta: signals?.discipline || 'discipline', icon: FlaskConical, color: 'var(--color-accent)' },
   ];
 
@@ -219,7 +226,7 @@ export default function MondayInsight({ user }) {
         borderRadius: '24px',
         padding: 0,
         position: 'relative',
-        overflow: 'hidden',
+        overflow: 'visible',
         boxShadow: '0 18px 45px rgba(20, 61, 42, 0.08)',
       }}
     >
@@ -263,7 +270,7 @@ export default function MondayInsight({ user }) {
                   <Icon size={12} /> {label}
                 </div>
                 <div style={{ fontSize: '15px', fontWeight: 900, color: 'var(--color-text-1)', marginTop: 8, lineHeight: 1.15 }}>{value}</div>
-                <div style={{ fontSize: '10px', color: 'var(--color-text-3)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{meta}</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-2)', marginTop: 4, lineHeight: 1.35 }}>{meta}</div>
               </div>
             ))}
           </div>
@@ -425,6 +432,10 @@ export default function MondayInsight({ user }) {
           font-size: 13px;
           line-height: 1.45;
           font-weight: 750;
+          overflow-wrap: anywhere;
+          white-space: normal;
+          overflow: visible;
+          text-overflow: unset;
         }
         .weekly-review-empty {
           padding: 14px;

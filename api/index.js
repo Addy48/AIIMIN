@@ -79,6 +79,8 @@ const routeMap = {
     'billing':       () => import('../server/routes/billing.js'),
     'discipline':    () => import('../server/routes/discipline.js'),
     'focus':         () => import('../server/routes/focus.js'),
+    'db':            () => import('../server/routes/db.js'),
+    'user':          () => import('../server/routes/user.js'),
 };
 
 async function loadRouter(name) {

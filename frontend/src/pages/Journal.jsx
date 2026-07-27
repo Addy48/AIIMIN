@@ -7,8 +7,7 @@ import {
 import { useAuth } from '../hooks/useAuth';
 import { useUserProfile } from '../hooks/useUserProfile';
 import useThemeColors from '../hooks/useThemeColors';
-import { apiPost, apiGet } from '../utils/api';
-import { supabase } from '../utils/supabase';
+import { apiPost, apiGet, apiPatch } from '../utils/api';
 import { trackEvent } from '../hooks/usePageAnalytics';
 import toast from '../utils/toast';
 import useMediaQuery from '../hooks/useMediaQuery';
@@ -79,14 +78,10 @@ export default function JournalPage() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false })
-        .limit(100);
-      if (error) throw error;
-      const rows = data || [];
+      const data = await apiGet('/db/journal_entries', {
+        params: { orderCol: 'date', ascending: 'false', limit: '100' },
+      });
+      const rows = Array.isArray(data) ? data : [];
       setEntries(rows);
       setStreak(calcJournalStreak(rows));
       const cached = {};
@@ -152,8 +147,7 @@ export default function JournalPage() {
     if (!user?.id) return;
     const today = new Date().toISOString().split('T')[0];
     const valid = wins.filter((win) => win?.text?.trim());
-    await Promise.all(valid.map((win) => supabase.from('wins').insert({
-      user_id: user.id,
+    await Promise.all(valid.map((win) => apiPost('/db/wins', {
       date: today,
       title: win.text.trim(),
       description: win.why?.trim() || null,
@@ -167,11 +161,10 @@ export default function JournalPage() {
       theme: analysis.theme,
     };
     const enriched = serializeEntry(mode, { ...payload, ai: normalized });
-    await supabase
-      .from('journal_entries')
-      .update({ encrypted_content: enriched })
-      .eq('id', entryId)
-      .eq('user_id', user.id);
+    await apiPatch('/db/journal_entries', {
+      payload: { encrypted_content: enriched },
+      where: { id: entryId },
+    });
     localStorage.setItem(`aiimin_journal_ai_${entryId}`, JSON.stringify(normalized));
     setAnalysisMap((m) => ({ ...m, [entryId]: normalized }));
     setEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, encrypted_content: enriched } : e)));
@@ -205,23 +198,14 @@ export default function JournalPage() {
 
     let saved;
     if (existing?.id) {
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .update(row)
-        .eq('id', existing.id)
-        .eq('user_id', user.id)
-        .select()
-        .single();
-      if (error) throw error;
-      saved = data;
+      const updated = await apiPatch('/db/journal_entries', {
+        payload: row,
+        where: { id: existing.id },
+      });
+      saved = Array.isArray(updated) ? updated[0] : updated;
     } else {
-      const { data, error } = await supabase
-        .from('journal_entries')
-        .insert(row)
-        .select()
-        .single();
-      if (error) throw error;
-      saved = data;
+      const inserted = await apiPost('/db/journal_entries', row);
+      saved = Array.isArray(inserted) ? inserted[0] : inserted;
     }
 
     setEntries((prev) => {
@@ -352,7 +336,7 @@ export default function JournalPage() {
 
         <FeatureTip
           tipId="journal_tip"
-          message="Capture in one tap — type, hold mic, or mood only. Templates are optional."
+          message="Type, hold mic, or tap mood. Templates stay optional."
           seenTips={profile?.seen_tips || []}
         />
 

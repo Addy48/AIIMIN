@@ -298,7 +298,7 @@ export default function FocusRoom() {
       backgroundColor: 'var(--color-bg)',
       backgroundImage: `radial-gradient(circle at 50% 0%, ${phaseInfo.bgGlow} 0%, var(--color-bg) 100%)`,
       color: 'var(--color-text-1)',
-      overflow: 'hidden', display: 'flex', flexDirection: 'column',
+      overflowX: 'hidden', overflowY: 'auto', display: 'flex', flexDirection: 'column',
       borderRadius: '32px',
       border: '1px solid var(--color-border)',
       boxShadow: `0 20px 60px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.08), inset 0 0 80px ${phaseInfo.bgGlow}`,
@@ -327,11 +327,11 @@ export default function FocusRoom() {
       }} />
 
       {/* ── TOP NAV ── */}
-      <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '48px 64px' }}>
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '32px 48px 16px', flexWrap: 'wrap', gap: '16px' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.3em', color: phaseInfo.color, opacity: 0.9, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ height: 6, width: 6, borderRadius: '50%', background: phaseInfo.color, boxShadow: `0 0 10px ${phaseInfo.color}`, animation: status === 'running' ? 'pulse 2s infinite' : 'none' }} />
-            Immersion Engine
+            Focus Room
           </div>
           <div style={{ fontSize: '28px', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--color-text-1)', fontFamily: 'var(--font-serif)', display: 'flex', alignItems: 'center', gap: 8 }}>
             Let's build something extraordinary today, {user?.full_name?.split(' ')[0] || 'Architect'}.
@@ -356,7 +356,7 @@ export default function FocusRoom() {
           <div style={{ display: 'flex', gap: '32px', background: 'rgba(255,255,255,0.02)', padding: '14px 32px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.05)', backdropFilter: 'blur(20px)', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '4px' }}>Deep Work</div>
-              <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--color-text-1)' }}>{todayMinutes}<span style={{ fontSize: '12px', color: 'var(--color-text-3)', marginLeft: '2px' }}>m</span></div>
+              <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--color-text-1)' }}>{todayMinutes === 0 ? '0' : `${todayMinutes}`}<span style={{ fontSize: '12px', color: 'var(--color-text-3)', marginLeft: '2px' }}>{todayMinutes === 0 ? ' min' : 'm'}</span></div>
             </div>
             <div style={{ width: '1px', background: 'rgba(255,255,255,0.05)' }} />
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -400,14 +400,14 @@ export default function FocusRoom() {
               initial={{ opacity: 0, y: -20, height: 0 }} 
               animate={{ opacity: 1, y: 0, height: 'auto' }} 
               exit={{ opacity: 0, y: -30, height: 0, filter: 'blur(10px)', scale: 0.95 }}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', marginBottom: '60px' }}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px', marginBottom: '28px' }}
             >
-              <div style={{ display: 'flex', gap: '8px', background: 'var(--color-surface)', padding: '6px', borderRadius: '99px', border: '1px solid var(--color-border)', backdropFilter: 'blur(20px)' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', background: 'var(--color-surface)', padding: '6px', borderRadius: '99px', border: '1px solid var(--color-border)', backdropFilter: 'blur(20px)' }}>
                 {Object.entries(PHASES).map(([k, v]) => (
                   <button key={k} onClick={() => initPhase(k)} style={{
                     padding: '10px 24px', borderRadius: '99px',
                     background: phase === k ? 'var(--color-border)' : 'transparent',
-                    color: phase === k ? 'var(--color-text-1)' : 'var(--color-text-3)',
+                    color: phase === k ? 'var(--color-text-1)' : 'var(--color-text-2)',
                     border: 'none', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                     transition: 'all 0.3s ease', letterSpacing: '0.2em', textTransform: 'uppercase'
                   }}>
@@ -416,7 +416,7 @@ export default function FocusRoom() {
                 ))}
               </div>
 
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
                 {PRESETS.map(p => (
                   <button key={p.label} onClick={() => changePreset(p)} style={{
                     padding: '10px 28px', borderRadius: '99px',
@@ -449,12 +449,12 @@ export default function FocusRoom() {
 
         {/* INTENT INPUT */}
         <div style={{ 
-          width: '700px', marginTop: '60px', transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+          width: 'min(700px, 92%)', marginTop: '28px', transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
           opacity: status === 'running' ? 0.3 : 1, transform: status === 'running' ? 'scale(0.95) translateY(20px)' : 'scale(1) translateY(0)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: status === 'running' ? phaseInfo.color : 'var(--color-text-3)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: status === 'running' ? phaseInfo.color : 'var(--color-text-2)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.25em', marginBottom: '16px' }}>
             {status === 'running' ? <Lock size={16} /> : <Target size={16} />}
-            {status === 'running' ? 'LOCKED INTENT' : 'SINGULAR FOCUS INTENT'}
+            {status === 'running' ? 'Locked intent' : 'Focus intent'}
           </div>
           <div style={{ 
             position: 'relative', width: '100%',
@@ -494,13 +494,13 @@ export default function FocusRoom() {
       </div>
 
       {/* ── BOTTOM CONTROLS ── */}
-      <div style={{ position: 'relative', zIndex: 10, padding: '56px', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+      <div style={{ position: 'relative', zIndex: 10, padding: '24px 48px 48px', display: 'flex', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
           {status === 'idle' && (
             <button onClick={start} style={{
-              padding: '24px 80px', borderRadius: '99px', border: 'none',
+              padding: '20px 64px', borderRadius: '99px', border: 'none',
               background: `linear-gradient(135deg, ${phaseInfo.lightGlow}, ${phaseInfo.darkGlow})`,
-              color: '#FFF', fontSize: '20px', fontWeight: 600, cursor: 'pointer',
+              color: '#FFF', fontSize: '18px', fontWeight: 600, cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: '16px', letterSpacing: '-0.02em',
               boxShadow: `0 20px 50px ${phaseInfo.color}40, inset 0 2px 10px rgba(255,255,255,0.3)`, transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
             }}

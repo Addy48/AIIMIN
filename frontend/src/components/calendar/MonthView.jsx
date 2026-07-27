@@ -97,12 +97,12 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
             >
               {/* Day number */}
               <div style={{
-                width: '24px', height: '24px', borderRadius: '6px',
+                width: '28px', height: '28px', borderRadius: '8px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '12px', fontWeight: isToday ? 700 : 500,
+                fontSize: '13px', fontWeight: isToday ? 700 : 600,
                 fontFamily: 'var(--font-sans)',
                 background: isToday ? 'var(--color-accent)' : 'transparent',
-                color: isToday ? (isDark ? '#000' : '#fff') : (isWeekend ? text2 : text1),
+                color: isToday ? (isDark ? '#000' : '#fff') : text1,
                 marginBottom: '8px',
                 transition: 'all 200ms var(--ease)',
               }}>
@@ -124,7 +124,7 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
                         color: color,
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                         cursor: 'pointer', borderLeft: `2px solid ${color}`,
-                        lineHeight: 1.4,
+                        lineHeight: 1.4, maxWidth: '100%',
                         transition: 'transform 150ms var(--ease)',
                       }}
                       onMouseEnter={e => e.currentTarget.style.transform = 'translateX(2px)'}

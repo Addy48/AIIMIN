@@ -39,14 +39,14 @@ export default function JournalSidebar({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <div>
             <span className="text-label">History</span>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: c.text3 }}>Search and revisit past entries.</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: c.text1, fontWeight: 500 }}>Search and revisit past entries.</p>
           </div>
-          <button type="button" onClick={onExport} aria-label="Export journal" style={{ background: c.surface3, border: `1px solid ${c.border}`, borderRadius: 8, color: c.text3, cursor: 'pointer', padding: 7, display: 'inline-flex' }}>
-            <Download size={16} />
+          <button type="button" onClick={onExport} aria-label="Export journal" style={{ background: c.surface3, border: `1px solid ${c.border}`, borderRadius: 8, color: c.text2, cursor: 'pointer', padding: '8px 10px', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700 }}>
+            <Download size={14} /> Export
           </button>
         </div>
         <div style={{ position: 'relative', marginBottom: 12 }}>
-          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: c.text3 }} />
+          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: c.text2 }} />
           <input
             type="text"
             placeholder="Search entries…"
@@ -55,7 +55,7 @@ export default function JournalSidebar({
             style={{ width: '100%', padding: '11px 12px 11px 36px', borderRadius: 10, border: `1px solid ${c.border}`, background: c.inputBg, color: c.text1, fontSize: 13 }}
           />
         </div>
-        <div className="journal-sidebar__pills">
+        <div className="journal-sidebar__pills" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           <button
             type="button"
             className={`journal-sidebar__pill ${modeFilter === 'all' ? 'journal-sidebar__pill--active' : ''}`}
@@ -88,8 +88,8 @@ export default function JournalSidebar({
           <div style={{ margin: '18px 4px', padding: 18, border: `1px dashed ${c.borderLit}`, borderRadius: 14, background: c.surface1, textAlign: 'center' }}>
             <BookOpen size={22} style={{ color: c.accent, marginBottom: 10 }} />
             <p style={{ margin: 0, color: c.text1, fontSize: 13, fontWeight: 750 }}>No entries match this view.</p>
-            <p style={{ margin: '6px 0 0', color: c.text3, fontSize: 12, lineHeight: 1.45 }}>
-              Write today&apos;s note or clear your filters to bring older reflections back.
+            <p style={{ margin: '6px 0 0', color: c.text1, fontSize: 12, lineHeight: 1.45 }}>
+              Write a note for today, or clear filters to see older entries.
             </p>
           </div>
         )}

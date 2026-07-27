@@ -76,7 +76,7 @@ export default function PulseCheckModal({ user }) {
         </h3>
         
         <div style={{ marginBottom: '24px' }}>
-          <div style={{ fontSize: '13px', color: 'var(--color-text-2)', marginBottom: '16px', fontWeight: 600 }}>
+          <div style={{ fontSize: '13px', color: 'var(--color-text-1)', marginBottom: '16px', fontWeight: 600 }}>
             Question {currentQ + 1} of 5
           </div>
           <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-1)' }}>
@@ -90,14 +90,15 @@ export default function PulseCheckModal({ user }) {
               key={opt.value}
               onClick={() => handleAnswer(opt.value)}
               style={{
-                background: 'var(--bg-elevated, var(--color-elevated))', border: '1px solid var(--border, var(--color-border))', borderRadius: '12px',
-                padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--text-1, var(--color-text-1))',
-                cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '12px'
+                background: 'var(--color-elevated)', border: '2px solid var(--color-border)', borderRadius: '12px',
+                padding: '16px', textAlign: 'left', fontSize: '14px', fontWeight: 600, color: 'var(--color-text-1)',
+                cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '12px',
+                minHeight: '48px',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.background = 'var(--bg-card, var(--color-surface))'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border, var(--color-border))'; e.currentTarget.style.background = 'var(--bg-elevated, var(--color-elevated))'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.background = 'var(--color-surface)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'var(--color-elevated)'; }}
             >
-              <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--bg-card, var(--color-surface))', border: '1px solid var(--border, var(--color-border))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: 'var(--text-3, var(--color-text-3))' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--color-surface)', border: '2px solid var(--color-text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 800, color: 'var(--color-text-1)', flexShrink: 0 }}>
                 {opt.value}
               </div>
               {opt.label}
