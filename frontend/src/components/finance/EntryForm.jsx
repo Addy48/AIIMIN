@@ -158,29 +158,31 @@ const EntryForm = ({ user, accounts, initialType, onSuccess }) => {
             No accounts yet. Add one in the <strong>Accounts</strong> tab before recording entries.
           </p>
         ) : (
-        <div role="group" aria-label="Select account" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {accounts.map(a => (
-            <button
-              key={a.id}
-              type="button"
-              aria-pressed={accountId === a.id}
-              onClick={() => setAccountId(a.id)}
-              style={{
-                padding: '8px 16px', borderRadius: '10px', border: '1px solid',
-                borderColor: accountId === a.id ? 'var(--color-text-1)' : 'var(--color-border)',
-                background: accountId === a.id ? 'var(--color-text-1)' : 'var(--bg-elevated)',
-                color: accountId === a.id ? 'var(--color-base)' : 'var(--color-text-1)',
-                fontSize: '12px', fontWeight: accountId === a.id ? 700 : 500, cursor: 'pointer', transition: 'all 0.2s',
-                display: 'flex', alignItems: 'center', gap: '6px'
-              }}
-            >
-              <span style={{ fontSize: '14px' }}>{a.icon || '🏦'}</span> {a.name}
-            </button>
-          ))}
-        </div>
-        {!accountId && accounts.length > 0 && (
-          <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--color-text-2)' }}>Select which account this entry belongs to.</p>
-        )}
+          <>
+            <div role="group" aria-label="Select account" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {accounts.map(a => (
+                <button
+                  key={a.id}
+                  type="button"
+                  aria-pressed={accountId === a.id}
+                  onClick={() => setAccountId(a.id)}
+                  style={{
+                    padding: '8px 16px', borderRadius: '10px', border: '1px solid',
+                    borderColor: accountId === a.id ? 'var(--color-text-1)' : 'var(--color-border)',
+                    background: accountId === a.id ? 'var(--color-text-1)' : 'var(--bg-elevated)',
+                    color: accountId === a.id ? 'var(--color-base)' : 'var(--color-text-1)',
+                    fontSize: '12px', fontWeight: accountId === a.id ? 700 : 500, cursor: 'pointer', transition: 'all 0.2s',
+                    display: 'flex', alignItems: 'center', gap: '6px'
+                  }}
+                >
+                  <span style={{ fontSize: '14px' }}>{a.icon || '🏦'}</span> {a.name}
+                </button>
+              ))}
+            </div>
+            {!accountId && (
+              <p style={{ margin: '8px 0 0', fontSize: '12px', color: 'var(--color-text-2)' }}>Select which account this entry belongs to.</p>
+            )}
+          </>
         )}
       </div>
 
