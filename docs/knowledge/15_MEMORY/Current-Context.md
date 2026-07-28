@@ -6,34 +6,19 @@
 
 ## Today
 
-- QA fixes **committed + pushed**: `e3212bc9` on `main` / `origin/main`
-- Tracker: 176 fixed / 80 partial / 28 wontfix
-- **EC2 deploy blocked from this agent** (SSH port 22 + API curl proxy 403). User must deploy or wait for GitHub Action.
+- Vercel ERROR root cause: `EntryForm.jsx` broken ternary (sibling JSX without fragment)
+- Fix: wrap account picker + hint in `<>...</>`
+- Local `npm run build` PASS
+- QA SHA was `e3212bc9` / docs `e8a39332` — both ERROR on Vercel until this fix ships
 
-## Ship checklist
+## Ship now
 
-| Step | Status |
-|------|--------|
-| Commit | done `e3212bc9` |
-| Push `main` | done |
-| Vercel frontend | auto from `main` — confirm READY in dashboard |
-| EC2 API | **NOT verified from agent** — run SSH deploy or check Action |
-
-## Deploy if Action fails
-
-```bash
-ssh -i ~/Desktop/aiimin.pem ubuntu@13.207.146.15 \
-  'bash ~/AIIMIN/deploy/github-ec2-deploy.sh'
-curl -sS https://api.aiimin.in/api/health
-# expect SHA e3212bc9; POST /api/user/pulse-check → 401 not 404
-```
-
-## Next
-
-1. Confirm EC2 health SHA = `e3212bc9`
-2. Confirm Vercel READY
-3. Re-run Selfloop
+1. Commit EntryForm fix + context
+2. Push `main`
+3. Confirm Vercel READY
+4. EC2 API deploy (SSH or Action)
 
 ## Links
 
-- `11_BUGS/QA-Run-2026-07-12.md`
+- Failed dpl: `dpl_7obBuprXNPaNJQ4ZAiw3ubvng8A1` (EntryForm SyntaxError L181)
+- QA tracker: `11_BUGS/QA-Run-2026-07-12.md`
