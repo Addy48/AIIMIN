@@ -1,0 +1,53 @@
+---
+description: Use Mobbin MCP for design, prototyping, flows, and UI research
+alwaysApply: true
+---
+
+# Mobbin MCP — Design Research
+
+Server: `user-Mobbin`. Use on **any** task touching app design, prototyping, brainstorming, UI patterns, onboarding, flows, or screen references.
+
+## When to call (mandatory)
+
+- New feature UI / screen layout
+- Onboarding, checkout, settings, empty states
+- App flow mapping (multi-step journeys)
+- Design brainstorm or competitor pattern research
+- Web marketing sections (pricing, hero, footer)
+
+Skip only for pure backend / DB / deploy with zero UI.
+
+## Tools
+
+| Tool | Use |
+|------|-----|
+| `search_screens` | Single screens — `query` + `platform` (`ios` \| `web`); prefer `mode: deep` |
+| `search_flows` | Multi-step journeys — `query` + `platform`; keep `limit` ≤ 5 |
+| `search_sections` | Website sections (pricing, hero, etc.) |
+
+Always `GetMcpTools` for `user-Mobbin` before first call in a session.
+
+## Workflow
+
+1. **Screens** — layout, components, one-off patterns
+2. **Flows** — onboarding, signup, checkout, full journeys
+3. **Sections** — web landing / marketing blocks
+4. **Examine returned images** — do not summarize from metadata alone
+5. **Cite** — every screen mentioned = markdown link to its `mobbin_url`
+6. **Synthesize** — map patterns to AIIMIN palette + Genesis; Mobbin = reference, not copy-paste
+
+## Query tips
+
+- One intent per search (no combined flows)
+- Name apps when filtering (e.g. "Revolut onboarding")
+- Platform via parameter, not in query string
+- Paginate with `page` if first batch weak
+
+## Auth / errors
+
+- Auth error → `mcp_auth` on `user-Mobbin`, retry once
+- `paid plan` error → MCP wired but account needs Mobbin paid tier; tell founder, continue with vault + frontend-design skill
+
+## Pair with
+
+`frontend-design`, `brainstorming`, `mobile-app-ui-design`, `docs/knowledge/08_DESIGN/`

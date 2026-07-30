@@ -1,8 +1,22 @@
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-DOC
+migration_batch: W4
+fm_source: script
+---
 # Skills registry — AIIMIN repo
 
 > **Agents:** read this when choosing a skill. **Humans:** install global skills via `~/AGENTS.md`.
 
-**Last updated:** 2026-07-19
+**Last updated:** 2026-07-30
 
 ---
 
@@ -42,6 +56,16 @@
 | **better-auth-best-practices** | `.agents/skills/` | Auth flows — read-only unless founder asks |
 | **supabase-postgres-best-practices** | `.agents/skills/` | RLS, indexes, mobile tables |
 | **database-schema-designer** | `.agents/skills/` | Migration design (founder approval) |
+
+### P1 — Design research (MCP)
+
+| Tool | Server | Repo use |
+|------|--------|----------|
+| **Mobbin `search_screens`** | `user-Mobbin` (Cursor MCP) | Single-screen UI reference — cite `mobbin_url` |
+| **Mobbin `search_flows`** | `user-Mobbin` | Onboarding, checkout, multi-step journeys |
+| **Mobbin `search_sections`** | `user-Mobbin` | Web marketing sections (pricing, hero) |
+
+Rule: `.cursor/rules/aiimin-mobbin-mcp.mdc` — mandatory on design, prototyping, brainstorming. Requires Mobbin paid plan for live results.
 
 ### P1 — Web Life OS (`frontend/`)
 

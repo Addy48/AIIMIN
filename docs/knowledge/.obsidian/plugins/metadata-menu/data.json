@@ -1,0 +1,31 @@
+{
+  "settingsVersion": "1",
+  "firstDayOfWeek": "1",
+  "frontmatterListDisplay": "horizontal",
+  "queryListDisplay": "horizontal",
+  "fileClassExclude": [
+    "Genesis",
+    "Roadmap/UX-Architecture",
+    "Roadmap/UX-Intelligence",
+    "Archive",
+    "99_ARCHIVE",
+    "_templates"
+  ],
+  "fileClassesPath": "Operations/Metadata-Menu/fileClasses",
+  "fileClassAlias": "fileClass",
+  "globalFileClass": "",
+  "isAutosaveDisabled": false,
+  "autolink": false,
+  "enableMD": true,
+  "enableTables": true,
+  "enableLinks": true,
+  "enableEditor": true,
+  "enableBacklinks": true,
+  "enableStarred": true,
+  "enableSearch": true,
+  "enableFileExplorer": true,
+  "enableFilter": true,
+  "frontmatterFieldPrefix": "",
+  "showIndexingStatus": true,
+  "indexing": true
+}

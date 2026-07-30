@@ -1,0 +1,19 @@
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-PROMPT
+migration_batch: W4
+fm_source: script
+---
+# Paste into: Cursor Settings → Rules → User Rules
+# (global — all projects / all chats on this machine)
+# Project always-on rule also lives at: .cursor/rules/aiimin-proof-or-stop.mdc
+
+PROOF-OR-STOP (always on): Never claim done/fixed/shipped/tests pass without same-turn evidence. Closeouts must end with Status: passed|failed|blocked. Skipped checks = blocked/failed, not pass. Evidence = command exit 0 cited, or Read/Grep confirming the change, or live health URL — same turn only. Keep evidence short. Do not grade own homework from earlier turns.

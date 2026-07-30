@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Mobile commit split
+
+## Parent
+
+- [[09_FEATURES/Mobile/Mobile|Mobile]] · [[09_FEATURES/Index]]
 
 See `plans/mobile-commit-split.md` in repo root for file lists.
 

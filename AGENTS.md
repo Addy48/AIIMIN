@@ -9,8 +9,11 @@
 
 1. `docs/knowledge/00_HOME.md`
 2. `docs/knowledge/15_MEMORY/Current-Context.md`
-3. Only relevant notes under `docs/knowledge/` for the task
-4. Only source files involved in the change
+3. Constitutional work → `docs/knowledge/Maps of Content/Genesis.md` then `docs/knowledge/Genesis/` (immutable)
+4. Only relevant notes under `docs/knowledge/` for the task
+5. Only source files involved in the change
+
+**Genesis** lives at `docs/knowledge/Genesis/` (single source). Do not edit Genesis content. Do not create a second copy. Vault notes cannot override Genesis (`can_override_genesis: false`).
 
 Never whole-repo scan unless user explicitly asks.
 

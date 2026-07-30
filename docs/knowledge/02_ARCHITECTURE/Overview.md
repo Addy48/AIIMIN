@@ -1,4 +1,22 @@
+---
+authority: engineering
+derived_from: Genesis/P8 · Genesis/P9
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+constitutional_reference: Genesis/P8 Master Specification/00_INDEX.md
+---
+
 # Architecture Overview
+
+> **Impl map.** Constitutional IA/navigation/platforms = Genesis P8 + P9. This note cannot override Genesis. [[Maps of Content/Architecture]] · [[Maps of Content/Interaction-Architecture]] · [[Genesis/P8 Master Specification/03_Information_Architecture|P8 IA]]
 
 ## Monorepo (read first)
 

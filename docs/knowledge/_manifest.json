@@ -1,8 +1,24 @@
 {
-  "lastUpdated": "2026-07-19",
+  "lastUpdated": "2026-07-25",
   "entrypoint": "docs/knowledge/00_HOME.md",
   "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
   "brainOs": true,
+  "genesis": "docs/knowledge/Genesis/",
+  "genesisMoc": "docs/knowledge/Maps of Content/Genesis.md",
+  "authorityChain": [
+    "Genesis",
+    "Constitution",
+    "Interaction Architecture",
+    "Design System",
+    "Engineering",
+    "Implementation",
+    "Operations",
+    "Roadmap"
+  ],
+  "canOverrideGenesis": false,
+  "migrationStage": "A-FROZEN",
+  "migrationProject": "CLOSED",
+  "vaultFreezeCertificate": "docs/knowledge/Founder/01_VAULT_FREEZE_CERTIFICATE.md",
   "entities": {
     "life_score": {
       "moc": "docs/knowledge/09_FEATURES/LifeScore/LifeScore.md",

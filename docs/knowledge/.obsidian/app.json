@@ -1,0 +1,13 @@
+{
+  "promptDelete": true,
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "Daily Notes",
+  "attachmentFolderPath": "Assets",
+  "showUnsupportedFiles": true,
+  "userIgnoreFilters": [
+    "Genesis/**/supporting/**",
+    "Archive/Duplicates/**",
+    "99_ARCHIVE/**"
+  ]
+}

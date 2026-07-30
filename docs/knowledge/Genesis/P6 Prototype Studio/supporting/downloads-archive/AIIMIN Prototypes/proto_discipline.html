@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIIMIN - Discipline Prototypes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F5F4EF; --primary-green: #2D5016; --accent-green: #4A7C2F; 
+            --light-green: #8CC968; --border-color: #E5E4DF; --text-main: #1C1C1A; 
+            --text-muted: #666666; --card-bg: #FFFFFF;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; padding-top: 100px; }
+        * { box-sizing: border-box; }
+        
+        .explorer-bar { background-color: #1C1C1A; height: 40px; display: flex; align-items: center; padding: 0 20px; gap: 15px; position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .explorer-btn { background: none; border: 1px solid #333; color: #aaa; font-size: 12px; padding: 4px 12px; border-radius: 4px; cursor: pointer; }
+        .explorer-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+
+        .navbar { background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; position: fixed; top: 40px; width: 100%; z-index: 999; }
+        .nav-brand { font-weight: 800; font-size: 20px; }
+        .nav-links { display: flex; gap: 20px; font-size: 14px; font-weight: 500; color: var(--text-muted); }
+        .nav-link.active { color: var(--primary-green); border-bottom: 2px solid var(--primary-green); }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px; display: none; }
+        .container.active { display: block; }
+        
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        .page-label { font-size: 12px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .page-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin: 0 0 24px 0; }
+
+        .btn-green { background: var(--primary-green); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; }
+        .layout-2col { display: flex; gap: 30px; }
+        .col-main { flex: 2; }
+        .col-side { flex: 1; }
+
+        /* V1 Protocol */
+        .streak-big { font-size: 72px; font-weight: 800; line-height: 1; color: var(--primary-green); margin: 20px 0; }
+        .milestone-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px; font-weight: 500;}
+        .m-check { color: var(--light-green); font-weight: bold; }
+        .m-next { color: var(--text-muted); }
+        .toolkit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .toolkit-card { border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; text-align: center; font-weight: 600; font-size: 14px; background: white;}
+
+        /* V2 Warrior */
+        #v2 .page-title { text-transform: uppercase; letter-spacing: -2px; font-size: 48px; color: var(--primary-green); margin-bottom: 5px; }
+        .warrior-level { display: inline-block; background: #1C1C1A; color: #F1C40F; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 15px;}
+        .xp-bar { height: 8px; background: #eee; border-radius: 4px; margin: 10px 0; overflow: hidden; }
+        .xp-fill { width: 62%; height: 100%; background: #F1C40F; }
+        .btn-emergency { background: white; color: #E74C3C; border: 2px solid #E74C3C; padding: 15px; width: 100%; font-size: 18px; font-weight: 800; border-radius: 12px; cursor: pointer; text-transform: uppercase;}
+
+        /* V3 Compass */
+        #v3 { background-color: #FDFBF7; }
+        #v3 .page-title { font-family: serif; font-size: 36px; font-weight: 400; color: #4A4A4A; }
+        .emotion-btn { font-size: 24px; padding: 10px; background: white; border: 1px solid #eee; border-radius: 50%; cursor: pointer; }
+        .compass-toolkit { display: flex; gap: 15px; }
+        .compass-card { flex: 1; text-align: center; padding: 20px; background: #F4F0FF; color: #5D3FD3; border-radius: 16px; font-weight: 600; }
+        .wave-anim { animation: pulse 2s infinite ease-in-out; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* V4 Science */
+        .timeline { display: flex; justify-content: space-between; position: relative; margin: 40px 0; }
+        .timeline::before { content: ''; position: absolute; top: 10px; left: 0; right: 0; height: 4px; background: #eee; z-index: 1; }
+        .tl-point { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; width: 60px; }
+        .tl-dot { width: 24px; height: 24px; border-radius: 50%; background: #eee; border: 4px solid white; }
+        .tl-dot.done { background: var(--light-green); }
+        .tl-dot.active { background: var(--primary-green); box-shadow: 0 0 0 4px rgba(45,80,22,0.2); }
+        .tl-label { font-size: 11px; font-weight: 700; margin-top: 8px; color: var(--text-muted); text-align: center;}
+    </style>
+</head>
+<body>
+
+    <div class="explorer-bar">
+        <button class="explorer-btn active" onclick="showVariant(1)">V1 The Protocol</button>
+        <button class="explorer-btn" onclick="showVariant(2)">V2 Warrior Mode</button>
+        <button class="explorer-btn" onclick="showVariant(3)">V3 The Compass</button>
+        <button class="explorer-btn" onclick="showVariant(4)">V4 Neural Rewire</button>
+    </div>
+
+    <div class="navbar">
+        <div class="nav-brand">AIIMIN</div>
+        <div class="nav-links"><a href="#" class="nav-link">Today</a><a href="#" class="nav-link active">Discipline</a></div>
+    </div>
+
+    <!-- VARIANT 1: THE PROTOCOL -->
+    <div id="v1" class="container active">
+        <div class="page-label">Discipline Engine</div>
+        <div class="page-title">The Protocol. <select style="margin-left:auto; font-size:16px; padding:8px; border-radius:8px;"><option>Porn/NoFap</option></select></div>
+        
+        <div class="layout-2col">
+            <div class="col-main card" style="text-align: center; padding: 40px;">
+                <div style="font-size:14px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Current Streak</div>
+                <div class="streak-big">18 DAYS</div>
+                <div style="margin-bottom:30px; font-weight:600; color:var(--accent-green);">Day 18 of 90 — Keep Going</div>
+                
+                <div style="text-align:left; max-width:300px; margin:0 auto 30px auto;">
+                    <div class="milestone-item"><span class="m-check">✓</span> First Day</div>
+                    <div class="milestone-item"><span class="m-check">✓</span> 1 Week</div>
+                    <div class="milestone-item"><span class="m-check">✓</span> 2 Weeks</div>
+                    <div class="milestone-item"><span class="m-next">⬜ 21 Days (3 more!)</span></div>
+                    <div class="milestone-item"><span class="m-next">⬜ 30 Days</span></div>
+                </div>
+                
+                <button class="btn-green">Pledge Today</button>
+                <div style="margin-top:15px; font-size:12px; color:var(--text-muted); text-decoration:underline; cursor:pointer;">Reset Streak</div>
+            </div>
+            
+            <div class="col-side">
+                <div class="card">
+                    <h3 style="margin-top:0; font-size:14px;">Log an Urge</h3>
+                    <select style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px;"><option>Trigger: Boredom</option><option>Stress</option></select>
+                    <input type="range" min="1" max="10" style="width:100%; margin-bottom:10px;">
+                    <button style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; background:white; font-weight:600;">Log Data</button>
+                    <div style="margin-top:15px; font-size:12px; color:var(--text-muted);">
+                        <b>Pattern:</b> Most urges 11PM-1AM due to Boredom. Action: Go to sleep earlier.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="page-label" style="margin-top:10px;">Emergency Toolkit</div>
+        <div class="toolkit-grid">
+            <div class="toolkit-card">⏳ 10-Minute Rule</div>
+            <div class="toolkit-card">🛑 HALT Check</div>
+            <div class="toolkit-card">🌊 Urge Surfing</div>
+        </div>
+    </div>
+
+    <!-- VARIANT 2: WARRIOR -->
+    <div id="v2" class="container">
+        <div class="page-title">Warrior Mode</div>
+        <div style="font-weight:600; color:var(--text-muted); margin-bottom:30px;">Discipline is the highest form of self-respect.</div>
+        
+        <div class="layout-2col">
+            <div class="col-side card" style="text-align:center;">
+                <div style="font-size:64px; margin-bottom:10px;">🔥</div>
+                <div style="font-size:48px; font-weight:900; line-height:1;">18</div>
+                <div style="font-weight:800; margin-bottom:15px;">DAYS CLEAN</div>
+                <div class="warrior-level">⚔️ WARRIOR</div>
+                <div style="font-size:12px; font-weight:700;">1,240 / 2,000 XP</div>
+                <div class="xp-bar"><div class="xp-fill"></div></div>
+            </div>
+            
+            <div class="col-main">
+                <div class="card">
+                    <h3 style="margin-top:0;">Weekly Challenge</h3>
+                    <div style="font-weight:600; margin-bottom:10px;">Resist 5 urges this week (3/5 done)</div>
+                    <div class="xp-bar"><div class="xp-fill" style="width:60%; background:var(--primary-green);"></div></div>
+                </div>
+                <button class="btn-emergency">🚨 URGE IS HITTING</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VARIANT 3: COMPASS -->
+    <div id="v3" class="container">
+        <div class="page-title">Hi J. You're doing better than you think.</div>
+        <div style="font-size:18px; color:#666; margin-bottom:40px;">Day 18 of your journey. This is hard. It's also worth it.</div>
+        
+        <div class="card" style="text-align:center; padding:30px; border:none; box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+            <div style="font-size:16px; font-weight:600; margin-bottom:20px;">How are you feeling right now?</div>
+            <div style="display:flex; justify-content:center; gap:15px;">
+                <div class="emotion-btn">😌</div><div class="emotion-btn">😤</div><div class="emotion-btn">😢</div><div class="emotion-btn">😰</div><div class="emotion-btn">💪</div>
+            </div>
+        </div>
+        
+        <div class="compass-toolkit">
+            <div class="compass-card wave-anim">🌊 Ride the Wave</div>
+            <div class="compass-card">🚶 Take a Walk</div>
+            <div class="compass-card">🧊 Splash Cold Water</div>
+        </div>
+        
+        <div style="text-align:center; margin-top:40px; font-size:14px; color:#888;">
+            If you slipped, that's okay. No judgment, just growth. <a href="#" style="color:#5D3FD3;">Log a slip</a>
+        </div>
+    </div>
+
+    <!-- VARIANT 4: NEURAL REWIRE -->
+    <div id="v4" class="container">
+        <div class="page-label">Neural Rewire</div>
+        <div class="page-title">Your Brain is Healing.</div>
+        <div style="font-weight:500; color:var(--text-muted);">Day 18 — Dopamine pathways are recalibrating. This is real, measurable change.</div>
+        
+        <div class="card" style="margin-top:30px;">
+            <div class="timeline">
+                <div class="tl-point"><div class="tl-dot done"></div><div class="tl-label">Day 3</div></div>
+                <div class="tl-point"><div class="tl-dot done"></div><div class="tl-label">Day 7</div></div>
+                <div class="tl-point"><div class="tl-dot done"></div><div class="tl-label">Day 14</div></div>
+                <div class="tl-point"><div class="tl-dot active"></div><div class="tl-label" style="color:var(--primary-green)">Day 18</div></div>
+                <div class="tl-point"><div class="tl-dot"></div><div class="tl-label">Day 21</div></div>
+                <div class="tl-point"><div class="tl-dot"></div><div class="tl-label">Day 30</div></div>
+                <div class="tl-point"><div class="tl-dot"></div><div class="tl-label">Day 90</div></div>
+            </div>
+            <div style="background:var(--pale-green); padding:15px; border-radius:8px; font-size:14px; line-height:1.5;">
+                <b>What's happening now:</b> At Day 18, your brain's D2 dopamine receptors are re-sensitizing. You may still feel urges but they're decreasing in intensity. The prefrontal cortex is regaining executive control.
+            </div>
+        </div>
+        
+        <div class="layout-2col">
+            <div class="col-main card">
+                <h3 style="margin-top:0;">Evidence-Based Tools</h3>
+                <ul style="line-height:1.8; font-size:14px;">
+                    <li>🧠 <b>Cold Exposure:</b> Reduces immediate cravings by spiking adrenaline.</li>
+                    <li>🏃 <b>Exercise:</b> Healthy dopamine replacement.</li>
+                    <li>🧘 <b>Meditation:</b> Strengthens prefrontal cortex (willpower center).</li>
+                </ul>
+            </div>
+            <div class="col-side card">
+                <h3 style="margin-top:0;">Data</h3>
+                <div style="margin-bottom:10px;"><b>Urges resisted:</b> 5 this week</div>
+                <div><b>Avg intensity:</b> 6.2 → 4.8 <span style="color:var(--primary-green);">📉</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showVariant(num) {
+            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.explorer-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('v' + num).classList.add('active');
+            document.querySelector(`.explorer-btn:nth-child(${num})`).classList.add('active');
+        }
+    </script>
+</body>
+</html>

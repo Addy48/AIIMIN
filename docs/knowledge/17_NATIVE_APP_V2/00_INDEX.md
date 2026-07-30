@@ -1,9 +1,27 @@
+---
+authority: engineering
+derived_from: Genesis/P8 · Genesis/P9
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+constitutional_reference: Genesis/P8 Master Specification/13_Platform_Specifications.md
+---
+
 # AIIMIN Native Application — Documentation Index
 
 > **Status:** Phase 1 Compose **shipping** (`native-android/` v2.1.x)  
 > **🔴 LIVE BUILD TRACKER (pin in sidebar):** [[WORKFLOW-PLAN]]  
-> **Last updated:** 2026-07-19  
+> **Last updated:** 2026-07-25  
 > **Owner:** Aaditya Upadhyay / AIIMIN
+
+> **Constitutional notice:** IA / UX / Design System / Motion / User Journeys doctrine in this pack is **superseded** by Genesis P8/P9. Those notes are stubs → `Archive/Superseded/Native-V2-Doctrine/`. Engineering docs (backend, DB, sync, workflow) remain living. Nucleus: [[Maps of Content/Genesis]] · Roadmap: [[Maps of Content/Roadmap]] · Legal drafts: [[Roadmap/Legal-Index]].
 
 **Build note:** See [[CHANGELOG]] + [[WORKFLOW-PLAN]] — `./gradlew :app:assembleDebug` in `native-android/`. Capacitor `frontend/android/` is legacy, not V2.
 

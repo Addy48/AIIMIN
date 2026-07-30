@@ -1,4 +1,20 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
 # Features Index
+
+Constitutional parents: [[Maps of Content/Genesis]] · [[Maps of Content/Product]] · discovery [[Maps of Content/Research]] · behavior [[Maps of Content/Interaction-Architecture]]
 
 | Feature | MOC | Status |
 |---------|-----|--------|

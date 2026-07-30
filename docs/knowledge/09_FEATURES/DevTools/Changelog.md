@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # API Usage Changelog
+
+## Parent
+
+- [[09_FEATURES/DevTools/DevTools|DevTools]] · [[09_FEATURES/Index]]
 
 ### 2026-07-16 — OpenRouter lite routing
 - **What:** Free OpenRouter used for **low-token lite** tasks (`gpt-oss-20b:free` primary); Groq kept for heavy. Model CSV failover + reasoning.effort=minimal.

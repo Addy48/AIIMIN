@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Mobile touch audit (capture shell)
+
+## Parent
+
+- [[09_FEATURES/Mobile/Mobile|Mobile]] · [[09_FEATURES/Index]]
 
 **Standard:** 44px minimum tap targets (WCAG 2.5.5). Capacitor native: 48px for primary nav + actions.
 

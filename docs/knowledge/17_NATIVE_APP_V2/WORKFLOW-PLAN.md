@@ -1,12 +1,24 @@
 ---
-aliases:
-  - Native Build Tracker
-  - Android V2 Tracker
-  - WORKFLOW PLAN
+authority: engineering
+derived_from: Genesis/P8 Master Specification/13_Platform_Specifications.md
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
 tags:
   - pin
   - native-android
   - build-tracker
+migration_batch: W4
+fm_source: script
+aliases:
+  - Native Build Tracker
+  - Android V2 Tracker
+  - WORKFLOW PLAN
 ---
 
 # Native Android V2 — Build Tracker

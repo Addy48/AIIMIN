@@ -1,27 +1,63 @@
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: founder
+lifecycle: living
+last_reviewed: 2026-07-26
+can_override_genesis: false
+knowledge_layer: KL-META
+graph_role: boot
+note_type: NT-BOOT
+tags:
+  - type/hub
+  - domain/ops
+  - status/living
+migration_batch: W4
+fm_source: script
+---
+
 # AIIMIN — Home
 
-> **Agents: read this first.** Then `15_MEMORY/Current-Context.md`. Then only docs for the task. Never whole-repo scan unless user says so.
 
-**Last updated:** 2026-07-19
+> [!important] Law
+> Genesis is immutable. This Home is operations — `can_override_genesis: false`.
 
-> **📌 Native Android build:** pin [[17_NATIVE_APP_V2/WORKFLOW-PLAN]] in sidebar — live P0–P3 tracker.
+> [!abstract] Derived
+> Dashboards and maps are derived. Current-Context is today's SoT for focus.
+
+
+> **Agents: read this first.** Then [[15_MEMORY/Current-Context]]. Then [[Maps of Content/Genesis]] for constitutional work. Then only feature/arch/DB/API notes needed. Never whole-repo scan unless user says so.
+
+**Last updated:** 2026-07-26
+
+## Authority (non-negotiable)
+
+| Layer | Location | Can override Genesis? |
+|-------|----------|----------------------|
+| **Genesis v1.0 (P1–P9)** | `Genesis/` | — (nucleus) |
+| Constitution / IA / Interaction | P5 · P8 · P9 via [[Maps of Content/Genesis]] | **NO** |
+| Engineering / Implementation | Numbered folders `01_`–`17_` (Stage A) | **NO** |
+| Operations / Roadmap | Sprints, bugs, deploy, Current Context | **NO** |
+
+Navigation: **Home → Genesis → P5 → P8 → P9 → Engineering → Implementation → Roadmap**
 
 ## Project goal
 
-Personal Life OS — daily metrics, money, calendar, focus, discipline, sports context, gamification. Browser dashboard. Owner: Aaditya Upadhyay.
+Personal Life OS — daily metrics, money, calendar, focus, discipline, sports context, gamification. Owner: Aaditya Upadhyay.
 
 ## Current version / lens
 
-- Waitlist gate live when `REACT_APP_WAITLIST_MODE=true`
-- Go-live target: end Sep 2026; tester close 31 Jul
-- Code progress: high; launch blockers: GA4/Sentry, LC checklist, tester E2E
-- Selfloop QA 2026-07-12 remediated — see [[11_BUGS/QA-Run-2026-07-12]] (255 fixed / 29 wontfix); re-run before tester E2E
-- Selfloop Login QA 2026-07-14 (47) fixed locally — [[11_BUGS/QA-Run-2026-07-14-Login]]; ship + re-proof pending
-- Active craft program: [[12_SPRINTS/Craft-Master-Plan-AJ]] · status [[12_SPRINTS/Craft-Status-Report-2026-07-15]]
-
-## Current sprint
-
-See [[12_SPRINTS/Sprint-Current]] · craft: [[12_SPRINTS/Craft-Master-Plan-AJ]]
+- Waitlist gate when `REACT_APP_WAITLIST_MODE=true`
+- Go-live target: end Sep 2026; founding/tester registration closes **31 Aug 2026**
+- **Genesis v1.0 (P1–P9) COMPLETE** · immutable at `Genesis/`
+- **Obsidian Vault Stage A FROZEN** · SoT `docs/knowledge/` · [[Founder/01_VAULT_FREEZE_CERTIFICATE]]
+- **Program 0 (Product Readiness)** · [[Roadmap/Program-0-Product-Readiness/00_INDEX]] · priorities [[Roadmap/Operational-Priorities]]
+- **UX Intelligence Package v1.0** · [[Roadmap/UX-Intelligence/00_INDEX]] · [[Roadmap/UX-Intelligence/15_EXECUTIVE_SUMMARY]]
+- **UX Architecture v1.0** · **COMPLETE · FROZEN · PUBLISHED** · [[Roadmap/UX-Architecture/00_INDEX]] · [[Roadmap/UX-Architecture/95_Publication_Record]] · D05 CLOSED
+- **Program V1 — Obsidian Knowledge OS** · **COMPLETE · FROZEN · PUBLISHED** (design) · [[Roadmap/Program-V1-Obsidian-Knowledge-OS/00_INDEX]] · [[Roadmap/Program-V1-Obsidian-Knowledge-OS/95_Publication_Record]]
+- **Brain OS Implementation** · **EXECUTED (W0–W6 vault/config)** · [[Roadmap/Brain-OS-Implementation/00_INDEX]] · evidence [[Roadmap/Brain-OS-Implementation/W6_Validation_Evidence]] · [[Dashboards/00_Founder-Workspace-Index|Founder Workspace]]
+- Native tracker: [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
 
 ## Current blockers
 
@@ -31,63 +67,59 @@ See [[12_SPRINTS/Sprint-Current]] · craft: [[12_SPRINTS/Craft-Master-Plan-AJ]]
 
 ## Architecture (one screen)
 
-- **Monorepo:** three clients — web, Capacitor `/m`, native Android V2. **Never mix in one commit.** → [[02_ARCHITECTURE/Monorepo]]
+- **Monorepo:** three clients — web, Capacitor `/m`, native Android V2. Never mix in one commit. → [[02_ARCHITECTURE/Monorepo]]
 - Frontend: React 19 + Tailwind — `frontend/`
 - Native: Kotlin Compose — `native-android/`
-- Backend: Node Express/Hono routes — `server/` + `api/`
-- DB: Supabase PostgreSQL
-- Auth: Better Auth + Google OAuth
-- Host: Vercel (frontend) + EC2/API (`api.aiimin.in`)
-- Desktop `/` = full OS; Mobile web `/m` = capture stopgap; **Native app** = rich companion ([[17_NATIVE_APP_V2/00_INDEX]])
+- Backend: Node — `server/` + `api/`
+- DB: Supabase PostgreSQL · Auth: Better Auth + Google OAuth
+- Host: Vercel + EC2 API (`api.aiimin.in`)
+- Desktop = full OS; `/m` = capture-only; Native = rich companion
 
-Deep: [[02_ARCHITECTURE/Overview]] · [[02_ARCHITECTURE/Monorepo]]
+Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]]
 
 ## Important rules
 
-Always-on project rules (see `.cursor/rules/aiimin-always-index.mdc`, local):
-
-1. Vault = source of truth. Update vault before task done.
-2. Load order: Home → Current Context → feature/arch/DB/API → only needed source files.
+1. Vault = source of truth. Genesis = constitutional nucleus inside vault.
+2. Load order: Home → Current Context → Genesis MOC (if constitutional) → feature/arch/DB/API → only needed source.
 3. Token discipline: no whole-repo scan unless user asks.
-4. Color palette LOCKED — see [[08_DESIGN/Palette]]
-5. Mobile = data collection only. No analytics/tools on `/m`.
-6. No secrets in vault. No schema/auth changes without explicit user ask.
-7. Commit / push / PR only when user explicitly asks.
-8. Caveman chat; vault human docs = clear prose; memory packs in `15_MEMORY` = compressed.
-9. Skills before acting. Sparring > blind agreement.
-10. Long/confused/topic-change → **SWITCH CHAT** (loud 🚨 banner); keep [[15_MEMORY/Current-Context]] fresh — that is the handoff. No paste pack unless asked.
-11. Proof-or-stop — no `done`/`fixed`/`shipped` without same-turn evidence; statuses `passed`/`failed`/`blocked` — [[14_PROMPTS/Proof-or-Stop]]
+4. Palette LOCKED — [[08_DESIGN/Palette]] (derived from P8 Visual).
+5. `/m` = data collection only.
+6. No secrets in vault. No schema/auth changes without Founder ask.
+7. Commit / push / PR only when Founder asks.
+8. Proof-or-stop — [[14_PROMPTS/Proof-or-Stop]]
+9. Numbered folders are Stage A frozen shape; Stage B semantic rename is deferred future work (not an open migration).
 
-## Next tasks
-
-- Keep Current Context fresh daily
-- Fill remaining API/DB pages as features touch them
-- Run launch checklist when ready
-
-## Product Intelligence
-
-Phases 2–8 (field matrix, information graph, intent map, kill list, framework, research, Product Bible):
+## Genesis (nucleus)
 
 | Need | Path |
 |------|------|
-| Merged handoff | `docs/product-intelligence/COMPLETE_PRODUCT_INTELLIGENCE.md` |
-| Product Bible index | `docs/AIIMIN_PRODUCT_BIBLE/00_INDEX.md` |
-| Interaction audit | `docs/interaction-audit/COMPLETE_INTERACTION_AUDIT.md` |
+| **Genesis MOC** | [[Maps of Content/Genesis]] |
+| Discovery archive | `Genesis/00_DISCOVERY_ARCHIVE.md` |
+| P5 Constitution | `Genesis/P5 Constitution/00_EXECUTIVE_SUMMARY.md` |
+| P7 Governance | `Genesis/P7 Governance/MASTER_GOVERNANCE_INDEX.md` |
+| **P8 Master Spec v1.0** | `Genesis/P8 Master Specification/00_INDEX.md` |
+| **P9 Interaction Architecture** | `Genesis/P9 Interaction Architecture/00_INDEX.md` |
+| P6 Prototype | `Genesis/P6 Prototype Studio/Prototype/index.html` |
+| Research (bible/intel/audit) | [[Maps of Content/Research]] |
+
+Legacy stub folders (`AIIMIN_DESIGN_BIBLE/`, etc.) and duplicate `docs/AIIMIN_PRODUCT_BIBLE/` trees are **not** authority — see Archive.
+
+## Maps of Content
+
+[[Maps of Content/00_Knowledge-Graph]] · [[Maps of Content/Genesis]] · [[Maps of Content/Interaction-Architecture]] · [[Maps of Content/Engineering]] · [[Maps of Content/Design]] · [[Maps of Content/Product]] · [[Maps of Content/Research]] · [[Maps of Content/Roadmap]] · [[Maps of Content/Founder]]
 
 ## Links
 
 | Need | Path |
 |------|------|
+| Freeze certificate | [[Founder/01_VAULT_FREEZE_CERTIFICATE]] |
+| Vault state | [[Founder/03_FINAL_VAULT_STATE]] |
 | Current context | [[15_MEMORY/Current-Context]] |
-| **Monorepo (3 clients)** | [[02_ARCHITECTURE/Monorepo]] |
-| **Native build tracker (PIN)** | [[17_NATIVE_APP_V2/WORKFLOW-PLAN]] |
-| **Native App V2 design pack** | [[17_NATIVE_APP_V2/00_INDEX]] |
-| **Product guide (full)** | [[01_PRODUCT/AIIMIN-Product-Guide]] |
-| Product | [[01_PRODUCT/Product]] |
-| Architecture | [[02_ARCHITECTURE/Overview]] |
-| Features index | [[09_FEATURES/Index]] |
-| Design | [[08_DESIGN/Palette]] |
+| Constitution hub | [[Constitution/00_Constitution-Hub]] |
+| Interaction hub | [[Interaction Architecture/00_Interaction-Hub]] |
+| Glossary | [[Glossary/00_Glossary]] |
+| Rule index | [[Rule Index/00_Rule-Index]] |
+| Features | [[09_FEATURES/Index]] |
 | Deploy | [[07_DEPLOYMENT/Deploy]] |
-| **Skills registry** | [[16_DOCUMENTATION/Skills-Registry]] |
+| Skills | [[16_DOCUMENTATION/Skills-Registry]] |
 | Manifest | `_manifest.json` |
-| Spec | `docs/superpowers/specs/2026-07-10-vault-brain-os-design.md` |

@@ -9,7 +9,7 @@ Before acting on any task, check whether a skill applies. If there is even a 1% 
 
 ## Rule
 
-1. **Scan** available skills (`.agents/skills/`, `.cursor/skills-cursor/`, `~/.claude/skills/`, plugin skills).
+1. **Scan** available skills — see `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md` and `.agents/skills-manifest.json`
 2. **Read** the matching `SKILL.md` before planning or implementing.
 3. **Follow** the skill workflow — do not improvise a parallel process when a skill exists.
 4. **Announce** briefly which skill is in use (e.g. "Using create-rule skill").
@@ -26,13 +26,16 @@ Before acting on any task, check whether a skill applies. If there is even a 1% 
 | Task | Skill to check |
 |------|----------------|
 | Bug / failure | `systematic-debugging` |
-| New feature / design | `brainstorming`, `frontend-design` |
+| New feature / design | `brainstorming`, `frontend-design` + **Mobbin MCP** (`search_screens`, `search_flows`) |
+| UI patterns / flows / onboarding | **Mobbin MCP** — screens + flows before proposing layouts |
 | Cursor rules | `create-rule` |
 | Commits | `caveman-commit` |
 | Code review | `caveman-review`, `review-security` |
 | Deploy / Vercel | `deployments-cicd`, `deployment-expert` |
 | Auth changes | `better-auth-best-practices`, `create-auth-skill` |
 | Knowledge graph | `graphify` |
+| Fullstack scaffold / architecture | `senior-fullstack` (`~/.cursor/skills/`) |
+| GitHub README / repo marketing | `github` (`~/.cursor/skills/`) |
 | Canvas / rich output | `canvas` |
 
 ## Do not

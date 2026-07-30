@@ -1,0 +1,96 @@
+{
+  "items": [
+    {
+      "type": "group",
+      "title": "Core",
+      "items": [
+        {
+          "type": "file",
+          "path": "15_MEMORY/Current-Context.md",
+          "title": "Current Context"
+        },
+        {
+          "type": "file",
+          "path": "00_HOME.md",
+          "title": "Home"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/00_Founder-Workspace-Index.md",
+          "title": "Workspace Index"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/01_Executive-Dashboard.md",
+          "title": "Executive"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/10_Daily-Operations-Dashboard.md",
+          "title": "Daily Ops"
+        },
+        {
+          "type": "file",
+          "path": "Maps of Content/00_Knowledge-Graph.md",
+          "title": "Knowledge Graph"
+        },
+        {
+          "type": "file",
+          "path": "Maps of Content/Genesis.md",
+          "title": "Genesis MOC"
+        },
+        {
+          "type": "file",
+          "path": "Roadmap/Program-V1-Obsidian-Knowledge-OS/00_INDEX.md",
+          "title": "Program V1"
+        },
+        {
+          "type": "file",
+          "path": "Maps of Content/Visual-Maps-Index.md",
+          "title": "Visual Maps"
+        },
+        {
+          "type": "file",
+          "path": "Roadmap/Brain-OS-Implementation/00_INDEX.md",
+          "title": "Brain OS Impl"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "title": "Modes",
+      "items": [
+        {
+          "type": "file",
+          "path": "Dashboards/10_Daily-Operations-Dashboard.md",
+          "title": "Ops"
+        },
+        {
+          "type": "file",
+          "path": "Maps of Content/Genesis.md",
+          "title": "Law"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/03_UX-Dashboard.md",
+          "title": "Ship UX"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/05_Engineering-Dashboard.md",
+          "title": "Build"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/09_Decisions-Dashboard.md",
+          "title": "Decide"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/08_Risk-Dashboard.md",
+          "title": "Hygiene"
+        }
+      ]
+    }
+  ]
+}

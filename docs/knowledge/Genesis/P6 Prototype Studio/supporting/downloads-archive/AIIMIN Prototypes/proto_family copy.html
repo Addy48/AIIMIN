@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIIMIN · Family Vault — Prototypes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F5F4EF;--card:#fff;--g:#2D5016;--gm:#4A7C2F;--gl:#8CC968;--gp:#E8F0E0;--t1:#1C1C1A;--t2:#6B6B62;--tm:#9B9B92;--br:#E8E7E1;--r:12px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-size:14px}
+.vsw{position:fixed;top:12px;right:16px;z-index:999;display:flex;gap:6px;background:rgba(245,244,239,.95);backdrop-filter:blur(8px);padding:6px;border-radius:10px;border:1px solid var(--br)}
+.vbtn{padding:5px 12px;border-radius:7px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--t2);transition:.15s}
+.vbtn.on{background:var(--g);color:#fff}
+nav{height:50px;display:flex;align-items:center;padding:0 22px;gap:2px;border-bottom:1px solid var(--br);background:rgba(245,244,239,.93);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100}
+.logo{font-weight:800;font-size:15px;color:var(--g);margin-right:24px;display:flex;align-items:center;gap:7px}
+.logo-box{width:26px;height:26px;background:var(--g);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800}
+.nl{padding:4px 9px;border-radius:6px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer}
+.nl.a{background:var(--g);color:#fff;font-weight:600}
+.nr{margin-left:auto;display:flex;align-items:center;gap:8px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.page{max-width:1100px;margin:0 auto;padding:28px 20px 50px}
+.plbl{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--tm);margin-bottom:3px}
+.ptitle{font-size:26px;font-weight:800;letter-spacing:-.7px;margin-bottom:20px}
+.sc{background:var(--card);border-radius:var(--r);border:1px solid var(--br);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.btn-primary{background:var(--g);color:#fff;border:none;border-radius:9px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-primary:hover{background:#1A3009}
+.btn-out{background:transparent;color:var(--g);border:1.5px solid var(--g);border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-out:hover{background:var(--gp)}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700}
+.version-panel{display:none}
+.version-panel.show{display:block}
+
+/* STAT CARDS ROW */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat-card{padding:16px;background:var(--card);border-radius:var(--r);border:1px solid var(--br)}
+.stat-val{font-size:28px;font-weight:800;letter-spacing:-1px;margin-bottom:2px}
+.stat-lbl{font-size:11px;color:var(--t2);font-weight:500}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--bg);border-radius:9px;padding:4px;border:1px solid var(--br);margin-bottom:18px;width:fit-content}
+.tab{padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:var(--t2);transition:.15s;border:none;background:transparent}
+.tab.on{background:var(--g);color:#fff}
+
+/* MEMBER CARDS V1 */
+.members-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.mcard{background:var(--card);border-radius:14px;border:1px solid var(--br);padding:18px;transition:.2s;cursor:pointer}
+.mcard:hover{box-shadow:0 4px 16px rgba(0,0,0,.09);transform:translateY(-2px)}
+.mcard-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.mav{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.mname{font-size:14px;font-weight:700}
+.mrel{font-size:11px;color:var(--tm)}
+.mstatus-ok{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--gm);background:var(--gp);padding:2px 7px;border-radius:20px}
+.mstatus-warn{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:#D97706;background:#FFFBEB;padding:2px 7px;border-radius:20px}
+.minfo-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--br);font-size:11px}
+.minfo-row:last-child{border:none}
+.minfo-lbl{color:var(--tm)}
+.minfo-val{font-weight:600}
+.mcard-actions{display:flex;gap:7px;margin-top:12px}
+
+/* PRESCRIPTIONS VIEW V2 */
+.person-header{display:flex;align-items:center;gap:16px;background:var(--card);border-radius:14px;border:1px solid var(--br);padding:18px;margin-bottom:16px}
+.pbig-av{width:56px;height:56px;border-radius:50%;background:var(--gp);display:flex;align-items:center;justify-content:center;font-size:24px}
+.pname{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.prel{font-size:12px;color:var(--tm)}
+.pdetails{display:flex;gap:16px;margin-top:6px}
+.pdet{font-size:11px;color:var(--t2)}
+.pdet span{font-weight:600;color:var(--t1)}
+.content-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.section-head{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);margin-bottom:10px}
+.med-item{display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--bg);border-radius:9px;margin-bottom:7px;border:1px solid var(--br)}
+.med-icon{font-size:16px}
+.med-name{font-size:12px;font-weight:700}
+.med-dose{font-size:11px;color:var(--t2)}
+.med-exp{font-size:10px;color:var(--tm);margin-top:2px}
+.med-exp.near{color:#DC2626}
+.doc-item{display:flex;align-items:center;gap:9px;padding:9px 10px;background:var(--bg);border-radius:9px;margin-bottom:6px;border:1px solid var(--br);cursor:pointer;transition:.15s}
+.doc-item:hover{border-color:var(--gl)}
+.doc-ico{font-size:16px}
+.doc-name{font-size:11px;font-weight:600;flex:1}
+.doc-date{font-size:10px;color:var(--tm)}
+.ins-card{background:linear-gradient(135deg,#1A3009,#2D5016);border-radius:12px;padding:16px;color:#fff;margin-bottom:8px}
+.ins-provider{font-size:13px;font-weight:700;margin-bottom:4px}
+.ins-type{font-size:10px;color:rgba(255,255,255,.55)}
+.ins-row{display:flex;justify-content:space-between;margin-top:10px;font-size:11px}
+.ins-lbl{color:rgba(255,255,255,.5)}
+.ins-val{font-weight:700;color:#fff}
+.ins-renewal{margin-top:8px;background:rgba(255,255,255,.1);border-radius:8px;padding:7px 10px;font-size:11px;color:rgba(255,255,255,.8)}
+.alert-band{background:#FFF7ED;border:1px solid #FED7AA;border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:11px;color:#92400E;margin-bottom:12px}
+
+/* V3 Timeline view */
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:var(--br);border-radius:2px}
+.tl-item{position:relative;margin-bottom:12px}
+.tl-dot{position:absolute;left:-17px;top:12px;width:10px;height:10px;border-radius:50%;background:var(--gl);border:2px solid var(--card)}
+.tl-card{background:var(--card);border-radius:10px;border:1px solid var(--br);padding:12px 14px;transition:.2s}
+.tl-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.tl-date{font-size:10px;color:var(--tm);margin-bottom:3px}
+.tl-title{font-size:12px;font-weight:700}
+.tl-desc{font-size:11px;color:var(--t2)}
+.tl-dot.warn{background:#F59E0B}
+.tl-dot.ok{background:var(--gl)}
+
+/* V4 Overview grid */
+.fam-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.fov-card{background:var(--card);border-radius:10px;border:1px solid var(--br);padding:13px;text-align:center}
+.fov-av{width:38px;height:38px;border-radius:50%;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.fov-name{font-size:12px;font-weight:700}
+.fov-status{font-size:10px;margin-top:3px}
+.fov-meds{font-size:10px;color:var(--tm);margin-top:4px}
+.fov-card.sel{border-color:var(--gm);box-shadow:0 0 0 2px var(--gp)}
+</style>
+</head>
+<body>
+<div class="vsw">
+  <button class="vbtn on" onclick="show(1)">V1 · Member Cards</button>
+  <button class="vbtn" onclick="show(2)">V2 · Health Records</button>
+  <button class="vbtn" onclick="show(3)">V3 · Timeline</button>
+  <button class="vbtn" onclick="show(4)">V4 · Overview Grid</button>
+</div>
+<nav>
+  <div class="logo"><div class="logo-box">A</div>AIIMIN</div>
+  <span class="nl">Today</span><span class="nl">Habits</span><span class="nl">Goals</span>
+  <span class="nl">Journal</span><span class="nl">Finance</span><span class="nl a">Family</span>
+  <span class="nl">Calendar</span><span class="nl">Placement</span><span class="nl">Sports</span>
+  <span class="nl">Discipline</span><span class="nl">Focus</span><span class="nl">Lab</span>
+  <div class="nr"><div class="av">J</div></div>
+</nav>
+
+<!-- V1: Member Cards Grid -->
+<div id="v1" class="version-panel show">
+<div class="page">
+  <div class="plbl">Secure Central Repository · Health, Insurance & Documents</div>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div class="ptitle">Family Vault.</div>
+    <button class="btn-primary">+ Add Member</button>
+  </div>
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-val" style="color:var(--g)">4</div><div class="stat-lbl">Family Members</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#3B82F6">3</div><div class="stat-lbl">Active Insurance Policies</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#F59E0B">2</div><div class="stat-lbl">Reminders Due</div></div>
+  </div>
+
+  <!-- Alert -->
+  <div class="alert-band" style="margin-bottom:16px">⚠️ Dad's Metformin expires in 5 days · <strong style="cursor:pointer;text-decoration:underline">Set reminder</strong></div>
+
+  <div class="members-grid">
+    <!-- Self -->
+    <div class="mcard">
+      <div class="mcard-top">
+        <div class="mav" style="background:#E8F5E0">🧑</div>
+        <div><div class="mname">Aaditya (Me)</div><div class="mrel">Self · Blood: B+</div></div>
+        <div style="margin-left:auto"><span class="mstatus-ok">✓ Healthy</span></div>
+      </div>
+      <div class="minfo-row"><span class="minfo-lbl">Active Meds</span><span class="minfo-val">1 medication</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Insurance</span><span class="minfo-val">Star Health · ₹5L</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Last Report</span><span class="minfo-val">Blood test · May 2026</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Next Appt</span><span class="minfo-val">Jun 20 · Dr. Sharma</span></div>
+      <div class="mcard-actions">
+        <button class="btn-primary" style="font-size:11px;padding:6px 12px">View Records</button>
+        <button class="btn-out" style="font-size:11px;padding:5px 12px">+ Report</button>
+      </div>
+    </div>
+    <!-- Dad -->
+    <div class="mcard">
+      <div class="mcard-top">
+        <div class="mav" style="background:#DBEAFE">👨</div>
+        <div><div class="mname">Dad</div><div class="mrel">Father · Blood: O+</div></div>
+        <div style="margin-left:auto"><span class="mstatus-warn">⚠ Med expiring</span></div>
+      </div>
+      <div class="minfo-row"><span class="minfo-lbl">Active Meds</span><span class="minfo-val">Metformin, Atorvastatin</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Insurance</span><span class="minfo-val">HDFC Ergo · ₹10L</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Last Report</span><span class="minfo-val">BP · Apr 2026</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Renewal</span><span class="minfo-val" style="color:#DC2626">Mar 2027 ⚠</span></div>
+      <div class="mcard-actions">
+        <button class="btn-primary" style="font-size:11px;padding:6px 12px">View Records</button>
+        <button class="btn-out" style="font-size:11px;padding:5px 12px">+ Report</button>
+      </div>
+    </div>
+    <!-- Mom -->
+    <div class="mcard">
+      <div class="mcard-top">
+        <div class="mav" style="background:#FDF2F8">👩</div>
+        <div><div class="mname">Mom</div><div class="mrel">Mother · Blood: A+</div></div>
+        <div style="margin-left:auto"><span class="mstatus-ok">✓ Healthy</span></div>
+      </div>
+      <div class="minfo-row"><span class="minfo-lbl">Active Meds</span><span class="minfo-lbl">None</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Insurance</span><span class="minfo-val">HDFC Ergo · ₹10L</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Last Report</span><span class="minfo-val">Annual · Jan 2026</span></div>
+      <div class="minfo-row"><span class="minfo-lbl">Next Appt</span><span class="minfo-lbl">None scheduled</span></div>
+      <div class="mcard-actions">
+        <button class="btn-primary" style="font-size:11px;padding:6px 12px">View Records</button>
+        <button class="btn-out" style="font-size:11px;padding:5px 12px">+ Report</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V2: Per-person health records deep dive -->
+<div id="v2" class="version-panel">
+<div class="page">
+  <div class="plbl">Family Vault · Health Records</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="ptitle" style="margin-bottom:0">Family Vault.</div>
+    <button class="btn-primary">+ Add Member</button>
+  </div>
+
+  <!-- Person selector -->
+  <div style="display:flex;gap:8px;margin-bottom:18px">
+    <div style="padding:7px 14px;background:var(--g);color:#fff;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer">🧑 Me</div>
+    <div style="padding:7px 14px;background:var(--card);border:1px solid var(--br);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;color:var(--t2)">👨 Dad</div>
+    <div style="padding:7px 14px;background:var(--card);border:1px solid var(--br);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;color:var(--t2)">👩 Mom</div>
+    <button class="btn-out" style="font-size:11px;padding:6px 12px">+ Add Member</button>
+  </div>
+
+  <!-- Person header card -->
+  <div class="person-header">
+    <div class="pbig-av">🧑</div>
+    <div>
+      <div class="pname">Aaditya (Me)</div>
+      <div class="prel">Self</div>
+      <div class="pdetails">
+        <div class="pdet">Blood: <span>B+</span></div>
+        <div class="pdet">DOB: <span>Jan 15, 2002</span></div>
+        <div class="pdet">Allergies: <span>None</span></div>
+      </div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn-out" style="font-size:11px">Edit Profile</button>
+    </div>
+  </div>
+
+  <div class="alert-band">💊 Vitamin D3 — prescription renewal due Jun 30 · <strong style="cursor:pointer;text-decoration:underline">View</strong></div>
+
+  <div class="content-grid">
+    <!-- Medications -->
+    <div>
+      <div class="section-head">Active Medications</div>
+      <div class="med-item">
+        <div class="med-icon">💊</div>
+        <div style="flex:1">
+          <div class="med-name">Vitamin D3 60K</div>
+          <div class="med-dose">Once weekly · Dr. Sharma · Apollo</div>
+          <div class="med-exp near">⚠ Exp: Jun 30, 2026</div>
+        </div>
+        <button class="btn-out" style="font-size:10px;padding:4px 9px">Renew</button>
+      </div>
+      <button class="btn-out" style="font-size:11px;width:100%;margin-top:4px">+ Add Medication</button>
+
+      <div style="margin-top:16px" class="section-head">Prescriptions</div>
+      <div class="doc-item"><div class="doc-ico">📄</div><div class="doc-name">Dr. Sharma — Vitamin D3</div><div class="doc-date">Apr 12, 2026</div><span style="font-size:10px;color:var(--gm);font-weight:600">↓</span></div>
+      <div class="doc-item"><div class="doc-ico">📄</div><div class="doc-name">Annual Physical</div><div class="doc-date">Jan 3, 2026</div><span style="font-size:10px;color:var(--gm);font-weight:600">↓</span></div>
+      <button class="btn-out" style="font-size:11px;width:100%;margin-top:4px">+ Upload Prescription</button>
+    </div>
+
+    <!-- Right col -->
+    <div>
+      <div class="section-head">Medical Reports</div>
+      <div class="doc-item"><div class="doc-ico">🧪</div><div><div class="doc-name">Blood Sugar — 94 mg/dL</div><div class="doc-date">May 2026 · Normal</div></div><span style="font-size:10px;color:var(--gm);font-weight:600">↓</span></div>
+      <div class="doc-item"><div class="doc-ico">❤️</div><div><div class="doc-name">BP — 118/78 mmHg</div><div class="doc-date">Apr 2026 · Normal</div></div><span style="font-size:10px;color:var(--gm);font-weight:600">↓</span></div>
+      <button class="btn-out" style="font-size:11px;width:100%;margin-top:4px">+ Add Report</button>
+
+      <div style="margin-top:16px" class="section-head">Health Insurance</div>
+      <div class="ins-card">
+        <div class="ins-provider">Star Health Individual</div>
+        <div class="ins-type">Individual Floater</div>
+        <div class="ins-row">
+          <div><div class="ins-lbl">Sum Insured</div><div class="ins-val">₹5,00,000</div></div>
+          <div><div class="ins-lbl">Premium</div><div class="ins-val">₹8,200/yr</div></div>
+          <div><div class="ins-lbl">Renewal</div><div class="ins-val">Aug 2027</div></div>
+        </div>
+        <div class="ins-renewal">✅ Policy active · Cashless at 12,000+ hospitals</div>
+      </div>
+      <button class="btn-out" style="font-size:11px;width:100%;margin-top:4px">+ Add Policy</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V3: Timeline / Activity view -->
+<div id="v3" class="version-panel">
+<div class="page">
+  <div class="plbl">Family Vault · Health Timeline</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div class="ptitle" style="margin-bottom:0">Family Vault.</div>
+    <div style="display:flex;gap:8px">
+      <select style="padding:6px 12px;border-radius:8px;border:1px solid var(--br);background:var(--card);font-family:'Inter',sans-serif;font-size:12px;font-weight:600">
+        <option>All Members</option><option>Dad</option><option>Mom</option><option>Me</option>
+      </select>
+      <button class="btn-primary">+ Add Event</button>
+    </div>
+  </div>
+  <div class="stat-row" style="margin-bottom:18px">
+    <div class="stat-card"><div class="stat-val" style="color:var(--g)">4</div><div class="stat-lbl">Members</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#F59E0B">2</div><div class="stat-lbl">Action Needed</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#3B82F6">8</div><div class="stat-lbl">Documents Stored</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Health Timeline</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot warn"></div>
+          <div class="tl-card">
+            <div class="tl-date">Jun 12, 2026 — TODAY</div>
+            <div class="tl-title">⚠️ Dad's Metformin expires in 5 days</div>
+            <div class="tl-desc">Refill needed · Dr. Mehta · Apollo Pharmacy</div>
+            <button class="btn-primary" style="font-size:10px;padding:4px 10px;margin-top:8px">Set Reminder</button>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot ok"></div>
+          <div class="tl-card">
+            <div class="tl-date">Jun 20, 2026</div>
+            <div class="tl-title">📅 Aaditya — Dr. Sharma Appointment</div>
+            <div class="tl-desc">Annual checkup · Apollo Hospital</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot ok"></div>
+          <div class="tl-card">
+            <div class="tl-date">May 15, 2026</div>
+            <div class="tl-title">🧪 Aaditya — Blood Test Results</div>
+            <div class="tl-desc">Blood Sugar: 94 mg/dL · All normal</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot ok"></div>
+          <div class="tl-card">
+            <div class="tl-date">Apr 12, 2026</div>
+            <div class="tl-title">📄 Dad — Prescription Updated</div>
+            <div class="tl-desc">Metformin 500mg 2x daily · Dr. Mehta</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot warn"></div>
+          <div class="tl-card">
+            <div class="tl-date">Upcoming · Mar 15, 2027</div>
+            <div class="tl-title">🛡️ HDFC Ergo Policy Renewal</div>
+            <div class="tl-desc">Family Floater · ₹18,400 due · 277 days away</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Insurance Overview</div>
+      <div class="ins-card">
+        <div class="ins-provider">HDFC Ergo Family Floater</div>
+        <div class="ins-type">Dad + Mom · Covered</div>
+        <div class="ins-row">
+          <div><div class="ins-lbl">Sum Insured</div><div class="ins-val">₹10,00,000</div></div>
+          <div><div class="ins-lbl">Premium</div><div class="ins-val">₹18,400/yr</div></div>
+        </div>
+        <div class="ins-renewal">🔔 Renewal: Mar 15, 2027 · 277 days remaining</div>
+      </div>
+      <div class="ins-card" style="margin-top:8px">
+        <div class="ins-provider">Star Health Individual</div>
+        <div class="ins-type">Aaditya · Self</div>
+        <div class="ins-row">
+          <div><div class="ins-lbl">Sum Insured</div><div class="ins-val">₹5,00,000</div></div>
+          <div><div class="ins-lbl">Premium</div><div class="ins-val">₹8,200/yr</div></div>
+        </div>
+        <div class="ins-renewal">✅ Active until Aug 2027</div>
+      </div>
+      <button class="btn-out" style="font-size:11px;width:100%;margin-top:8px">+ Add Policy</button>
+
+      <div style="font-size:11px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.8px;margin:18px 0 10px">Upcoming Appointments</div>
+      <div class="doc-item"><div class="doc-ico">📅</div><div><div class="doc-name">Aaditya — Dr. Sharma</div><div class="doc-date">Jun 20 · Apollo Hospital</div></div></div>
+      <button class="btn-out" style="font-size:11px;width:100%;margin-top:6px">+ Schedule Appointment</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V4: Compact overview grid, then deep section tabs -->
+<div id="v4" class="version-panel">
+<div class="page">
+  <div class="plbl">Family Vault · Quick Overview</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <div class="ptitle" style="margin-bottom:0">Family Vault.</div>
+    <button class="btn-primary">+ Add Member</button>
+  </div>
+
+  <!-- Quick family overview strip -->
+  <div class="fam-overview">
+    <div class="fov-card sel">
+      <div class="fov-av" style="background:var(--gp)">🧑</div>
+      <div class="fov-name">Me</div>
+      <div class="fov-status" style="color:var(--gm)">✓ Healthy</div>
+      <div class="fov-meds">1 med · B+</div>
+    </div>
+    <div class="fov-card">
+      <div class="fov-av" style="background:#DBEAFE">👨</div>
+      <div class="fov-name">Dad</div>
+      <div class="fov-status" style="color:#D97706">⚠ Med expiry</div>
+      <div class="fov-meds">2 meds · O+</div>
+    </div>
+    <div class="fov-card">
+      <div class="fov-av" style="background:#FDF2F8">👩</div>
+      <div class="fov-name">Mom</div>
+      <div class="fov-status" style="color:var(--gm)">✓ Healthy</div>
+      <div class="fov-meds">0 meds · A+</div>
+    </div>
+    <div class="fov-card" style="border-style:dashed;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+      <div style="font-size:22px">＋</div>
+      <div style="font-size:11px;color:var(--tm);font-weight:600">Add Member</div>
+    </div>
+  </div>
+
+  <div class="alert-band" style="margin-bottom:14px">⚠️ Dad's Metformin expires in 5 days · <strong style="cursor:pointer;text-decoration:underline">Set reminder</strong></div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab on">💊 Medications</button>
+    <button class="tab">📋 Reports</button>
+    <button class="tab">📄 Prescriptions</button>
+    <button class="tab">🛡️ Insurance</button>
+    <button class="tab">📅 Appointments</button>
+  </div>
+
+  <!-- Medications table for selected person (Me) -->
+  <div>
+    <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:12px">Showing: Aaditya (Me)</div>
+    <div class="med-item">
+      <div class="med-icon">💊</div>
+      <div style="flex:1">
+        <div class="med-name">Vitamin D3 60K IU</div>
+        <div class="med-dose">Once weekly · Prescribed by Dr. Sharma · Apollo Clinic</div>
+        <div class="med-exp near">⚠ Prescription expires Jun 30, 2026</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-out" style="font-size:10px;padding:4px 9px">Renew</button>
+        <button class="btn-out" style="font-size:10px;padding:4px 9px">Edit</button>
+      </div>
+    </div>
+    <button class="btn-out" style="font-size:11px;margin-top:4px">+ Add Medication</button>
+  </div>
+</div>
+</div>
+
+<script>
+function show(n){
+  document.querySelectorAll('.version-panel').forEach(p=>p.classList.remove('show'));
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('v'+n).classList.add('show');
+  document.querySelectorAll('.vbtn')[n-1].classList.add('on');
+}
+</script>
+</body>
+</html>

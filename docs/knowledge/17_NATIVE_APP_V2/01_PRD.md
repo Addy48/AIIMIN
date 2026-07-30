@@ -1,3 +1,17 @@
+---
+authority: engineering
+derived_from: Genesis/P8 · Genesis/P9
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+---
 # AIIMIN Native Application — Master Product Requirements Document (PRD)
 
 > **Document:** 01 · **Pack:** [[17_NATIVE_APP_V2/00_INDEX]]  

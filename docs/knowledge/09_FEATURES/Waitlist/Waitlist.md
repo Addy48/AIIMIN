@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Waitlist
+
+## Parent
+
+- [[09_FEATURES/Index]]
 
 ## Current state
 
@@ -49,7 +68,7 @@ Landing (modular v9 — July 2026):
 | Core subscription | Complimentary Core at launch (waitlist only) |
 | Pro founding price | **₹49/mo** (~17% off ₹59) for 12 months |
 | Elite founding price | **₹79/mo** (~20% off ₹99) for 12 months |
-| Tester perk | Elite free for 1 year if registered by 31 July (invite only) |
+| Tester perk | Elite free for 1 year if registered by **31 August 2026** (invite only) |
 | Referral queue | Share link moves position up 5 spots per signup |
 
 ## Pricing tiers (public landing copy)

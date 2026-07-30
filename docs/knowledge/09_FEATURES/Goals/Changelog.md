@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Goals Changelog
+
+## Parent
+
+- [[09_FEATURES/Goals/Goals|Goals]] · [[09_FEATURES/Index]]
 
 ### 2026-07-18 — Goal cards + deadline picker visual pass 2
 - **What:** Goal cards use solid `var(--color-surface)` + border + light shadow (no invisible translucent box). DeadlinePicker trigger is bordered chip; panel labeled “Deadline”, Mo–Su headers, accent orange select. Hide milestone rows that are just “Nd left” echoes of the deadline label.

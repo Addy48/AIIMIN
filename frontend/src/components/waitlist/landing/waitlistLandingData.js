@@ -70,7 +70,7 @@ export const LAUNCH_PHASES = [
     statusLabel: 'Open now',
     window: 'Today → Jul 2026',
     userAction: 'Join the waitlist or sign in as an invited tester. Confirm email, optionally reserve your OS-ID.',
-    approval: 'Waitlist: instant signup. Testers: invite-only approval by 31 July.',
+    approval: 'Waitlist: instant signup. Testers: invite-only approval by 31 August.',
     unlocks: ['Founding perks locked in', 'Priority onboarding queue'],
   },
   {
@@ -197,7 +197,7 @@ export const ACCESS_PACKAGES = [
     tag: 'VIP invite',
     tagVariant: 'premium',
     title: 'Invited testers',
-    deadline: () => 'Register by 31 July',
+    deadline: () => 'Register by 31 August',
     perks: [
       { icon: ShieldCheck, text: 'Elite (₹99/mo) free for 12 months — ₹1,188 value' },
       { icon: Rocket, text: 'First access to every beta module before public release' },
@@ -300,7 +300,7 @@ export const FAQS = [
   },
   {
     q: 'What do invited testers get?',
-    a: 'The VIP package: Elite free for 12 months (₹1,188 value), first beta access to every module, priority OS-ID, prototype features, and direct founder feedback channel. Register by 31 July.',
+    a: 'The VIP package: Elite free for 12 months (₹1,188 value), first beta access to every module, priority OS-ID, prototype features, and direct founder feedback channel. Register by 31 August.',
   },
   {
     q: 'What do waitlist members get?',

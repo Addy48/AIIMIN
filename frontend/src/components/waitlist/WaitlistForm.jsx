@@ -432,7 +432,7 @@ export default function WaitlistForm({
 
       {showUrgency && (
         <p className="urgency-chip" role="status">
-          Tester registration closes <strong>31 July</strong>
+          Tester registration closes <strong>31 August</strong>
         </p>
       )}
 

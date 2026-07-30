@@ -1,0 +1,864 @@
+{
+  "meta": {
+    "document": "Component Principles Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+    "source_alias": "10_COMPONENT_PRINCIPLES.md (exact match \u2014 no remap)",
+    "source_version": "3.0",
+    "source_status": "FROZEN",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-142\u2026GOV-152",
+    "gov_id_range_referenced": "GOV-001\u2026GOV-141 (prior; referenced only)",
+    "decision_count_new": 11,
+    "recommendation_count": 7,
+    "existing_gov_referenced_count": 32,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "prior_governance_untouched": true,
+    "standard_untouched": true,
+    "source_untouched": true
+  },
+  "existing_gov_references": [
+    {
+      "c": "C-7 (feedback belongs to system)",
+      "gov": [
+        "GOV-077",
+        "GOV-089",
+        "GOV-132"
+      ],
+      "note": "Mandatory feedback + sync/latency honesty \u2014 shared toast/error patterns elevated lightly via C-7 reuse; no new feedback-existence GOV"
+    },
+    {
+      "c": "C-10 (destructive branded confirm)",
+      "gov": [
+        "GOV-065",
+        "GOV-015",
+        "GOV-046",
+        "GOV-125"
+      ],
+      "note": "Branded ConfirmDialog + ban window.confirm + optimistic/confirm already canon \u2014 no re-mint"
+    },
+    {
+      "c": "C-11 (chips first-class)",
+      "gov": [
+        "GOV-126",
+        "GOV-136"
+      ],
+      "note": "Infer-then-chip + mixed-initiative already Interaction/AI canon \u2014 no re-mint"
+    },
+    {
+      "c": "C-8 capture speed anchors",
+      "gov": [
+        "GOV-066",
+        "GOV-116",
+        "GOV-059",
+        "GOV-008"
+      ],
+      "note": "Enter-to-save / after-commit / capture speed / anti-form \u2014 sacred capture components elevated in GOV-148"
+    },
+    {
+      "c": "C-9 calm read anchors",
+      "gov": [
+        "GOV-029",
+        "GOV-109"
+      ],
+      "note": "Calm read + density modes \u2014 read-component law elevated in GOV-149"
+    },
+    {
+      "c": "C-12 lockup + ceilings",
+      "gov": [
+        "GOV-012",
+        "GOV-039",
+        "GOV-013",
+        "GOV-041",
+        "GOV-085",
+        "GOV-075"
+      ],
+      "note": "Split lockup + /m ceiling + native\u2260/m + nav primacy ND \u2014 nav component obedience elevated in GOV-150"
+    },
+    {
+      "c": "C-6 / C-13 a11y + anti-AI-magic",
+      "gov": [
+        "GOV-133",
+        "GOV-053",
+        "GOV-112"
+      ],
+      "note": "A11y as interaction quality + no AI magic + motion refuse AI-awake \u2014 component API / decorative AI bans elevated"
+    },
+    {
+      "c": "C-14 vault ship gate",
+      "gov": [
+        "GOV-017",
+        "GOV-044"
+      ],
+      "note": "Vault ships with behavior change \u2014 component contract versioning elevated in GOV-152"
+    },
+    {
+      "c": "Shared primitives / one primitive many surfaces",
+      "gov": [
+        "GOV-040",
+        "GOV-020",
+        "GOV-110"
+      ],
+      "note": "Shared primitives + native token extension \u2014 ownership/extract laws elevated in GOV-143/144"
+    },
+    {
+      "c": "Empty / cards / icons",
+      "gov": [
+        "GOV-067",
+        "GOV-106",
+        "GOV-111"
+      ],
+      "note": "Empty teach + cards-for-interaction + icons-keep-words support component states/composition"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-142",
+      "title": "Components encode behavior contracts \u2014 not duplicate cards",
+      "category": "Component \u2014 Existence Justification",
+      "decision": "A component is justified when it standardizes interaction, accessibility, and state \u2014 not when it duplicates a slightly different card.",
+      "reason": "Principle C-1 \u2014 Components exist to encode behavior contracts.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-040",
+        "GOV-106",
+        "GOV-062"
+      ],
+      "blocks": [
+        "Component Library Intake",
+        "Design System",
+        "Component Blueprints"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-1 \u2014 Components exist to encode behavior contracts"
+          ],
+          "quote": "A component is justified when it standardizes interaction, accessibility, and state \u2014 not when it duplicates a slightly different card."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Purpose"
+          ],
+          "quote": "Define how reusable components earn existence, behave, and relate \u2014 without styling recipes."
+        }
+      ],
+      "implementation_impact": "Reject new shared components that only restyle cards. Require stated interaction/a11y/state contract.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-143",
+      "title": "Prefer primitives over snowflakes \u2014 extract on second demand",
+      "category": "Component \u2014 Extraction Rule",
+      "decision": "If two pages need the same behavior, extract a primitive. If one page needs a one-off, keep it local until the second demand appears.",
+      "reason": "Principle C-2 \u2014 Prefer primitives over page-specific snowflakes.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-142",
+        "GOV-040",
+        "GOV-020"
+      ],
+      "blocks": [
+        "Component Library Intake",
+        "Page Refactors"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-2 \u2014 Prefer primitives over page-specific snowflakes"
+          ],
+          "quote": "If two pages need the same behavior, extract. If one page needs a one-off, keep it local until the second demand appears."
+        }
+      ],
+      "implementation_impact": "No premature abstraction. Second consumer triggers extract. Document extract decisions in vault when contract-level.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-144",
+      "title": "One component owns a primitive \u2014 variants not parallel inventions",
+      "category": "Component \u2014 Ownership",
+      "decision": "One component owns each primitive. Examples: one Mood control family; one Confirm destructive pattern; one Capture input family. Variants are sizes/contexts, not parallel inventions.",
+      "reason": "Principle C-3 \u2014 One component owns a primitive. Prevents identity fracture via duplicate primitives.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-142",
+        "GOV-143",
+        "GOV-065",
+        "GOV-066",
+        "GOV-126"
+      ],
+      "blocks": [
+        "Mood Component",
+        "ConfirmDialog",
+        "CaptureBar/Logger",
+        "Component Audit"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-3 \u2014 One component owns a primitive"
+          ],
+          "quote": "Examples: one Mood control family; one Confirm destructive pattern; one Capture input family. Variants are sizes/contexts, not parallel inventions."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Reasoning"
+          ],
+          "quote": "AIIMIN\u2019s debt includes duplicate primitives and lingering `window.confirm`."
+        }
+      ],
+      "implementation_impact": "Audit and kill parallel Confirm/Mood/Capture inventions. New variants must extend owner, not fork.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-145",
+      "title": "Interactive component states are mandatory design work",
+      "category": "Component \u2014 States",
+      "decision": "Every interactive component defines: default, hover/focus (as applicable), active, disabled, loading, error, empty, success. Missing states ship as bugs.",
+      "reason": "Principle C-4 \u2014 States are mandatory design work.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-142",
+        "GOV-077",
+        "GOV-067",
+        "GOV-132"
+      ],
+      "blocks": [
+        "Component Specs",
+        "Visual QA",
+        "Android Components"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website",
+        "Accessibility"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-4 \u2014 States are mandatory design work"
+          ],
+          "quote": "Every interactive component defines: default, hover/focus (as applicable), active, disabled, loading, error, empty, success. Missing states ship as bugs."
+        }
+      ],
+      "implementation_impact": "Component checklists include full state matrix. Missing state = bug, not polish backlog.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-146",
+      "title": "Composition over configuration explosion",
+      "category": "Component \u2014 API Shape",
+      "decision": "Prefer slots/composition to large boolean-prop matrices that recreate the universe.",
+      "reason": "Principle C-5 \u2014 Composition over configuration explosion.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-142",
+        "GOV-143"
+      ],
+      "blocks": [
+        "Component API Reviews",
+        "Design System"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-5 \u2014 Composition over configuration explosion"
+          ],
+          "quote": "Prefer slots/composition to 40 boolean props that recreate the universe."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "Mega-components that do everything poorly."
+        }
+      ],
+      "implementation_impact": "Reject mega-components with sprawling booleans. Prefer composable slots. Refactor when prop matrices explode.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-147",
+      "title": "Accessibility is part of the component API",
+      "category": "Component \u2014 Accessibility",
+      "domain": "accessibility",
+      "decision": "Focus management, labels, roles, and hit targets ship with the component \u2014 not as a consumer afterthought.",
+      "reason": "Principle C-6 \u2014 Accessibility is part of the component API. Elevates GOV-133 into component-contract law.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-133",
+        "GOV-071",
+        "GOV-142",
+        "GOV-056"
+      ],
+      "blocks": [
+        "Component Specs",
+        "Accessibility Audit",
+        "Hit Target Spec"
+      ],
+      "referenced_by": [
+        "P8",
+        "Accessibility",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-6 \u2014 Accessibility is part of the component API"
+          ],
+          "quote": "Focus management, labels, roles, hit targets ship with the component \u2014 not as a consumer afterthought."
+        }
+      ],
+      "implementation_impact": "Component APIs include a11y affordances by default. Consumers must not re-implement labels/focus for basic use.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/"
+    },
+    {
+      "id": "GOV-148",
+      "title": "Capture components are sacred \u2014 no ceremony wrapping Enter-to-save",
+      "category": "Component \u2014 Capture",
+      "decision": "CaptureBar / Logger / Palette routing components may not be wrapped in ceremony that slows Enter-to-save.",
+      "reason": "Principle C-8 \u2014 Capture components are sacred.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-066",
+        "GOV-116",
+        "GOV-059",
+        "GOV-008",
+        "GOV-144"
+      ],
+      "blocks": [
+        "CaptureBar",
+        "Universal Logger",
+        "Command Palette UI",
+        "Onboarding Wrappers"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Desktop",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-8 \u2014 Capture components are sacred"
+          ],
+          "quote": "CaptureBar / Logger / Palette routing components may not be wrapped in ceremony that slows Enter-to-save."
+        }
+      ],
+      "implementation_impact": "Ban ceremony wrappers around capture submit. Measure against Enter-to-save. Align with GOV-116 after-commit motion.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-149",
+      "title": "Read components stay calm \u2014 score, chart, digest do not demand input",
+      "category": "Component \u2014 Read Surfaces",
+      "decision": "Score, chart, and digest components optimize scan and comprehension; they do not demand input.",
+      "reason": "Principle C-9 \u2014 Read components stay calm.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-029",
+        "GOV-109",
+        "GOV-142"
+      ],
+      "blocks": [
+        "Score Components",
+        "Charts",
+        "Digest/Briefing UI"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Desktop",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-9 \u2014 Read components stay calm"
+          ],
+          "quote": "Score, chart, and digest components optimize scan and comprehension; they do not demand input."
+        }
+      ],
+      "implementation_impact": "Read components: no forced input chrome. Separate capture/edit affordances from scan surfaces.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-150",
+      "title": "Navigation components obey locks \u2014 BrandLockup split and device-tier shells",
+      "category": "Component \u2014 Navigation",
+      "decision": "Navigation components obey product locks: BrandLockup split targets; device-tier nav shells (BottomNav / TabRail / Masthead) respect ceilings.",
+      "reason": "Principle C-12 \u2014 Navigation components obey locks.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-012",
+        "GOV-039",
+        "GOV-013",
+        "GOV-041",
+        "GOV-085",
+        "GOV-075"
+      ],
+      "blocks": [
+        "BrandLockup",
+        "BottomNav",
+        "TabRail",
+        "Masthead",
+        "Device Tier Shells"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Desktop",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-12 \u2014 Navigation components obey locks"
+          ],
+          "quote": "BrandLockup split targets; device-tier nav shells (BottomNav / TabRail / Masthead) respect ceilings."
+        }
+      ],
+      "implementation_impact": "Do not unify BrandLockup click targets. Shell components enforce /m vs desktop vs native ceilings. Depends on open GOV-012/075 ND \u2014 founder align.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-151",
+      "title": "No decorative AI components \u2014 intelligence via outcomes and chips",
+      "category": "Component \u2014 AI Refusal",
+      "domain": "ai",
+      "decision": "Components named or styled to signify \u201cAI\u201d without behavior are banned. Intelligence appears as outcomes and chips, not badges.",
+      "reason": "Principle C-13 \u2014 No decorative AI components.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-053",
+        "GOV-126",
+        "GOV-136",
+        "GOV-112",
+        "GOV-142"
+      ],
+      "blocks": [
+        "AI Badge Components",
+        "Marketing Chrome",
+        "Insights Decor"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "AI",
+        "Desktop",
+        "Website",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-13 \u2014 No decorative AI components"
+          ],
+          "quote": "Components named or styled to signify \u201cAI\u201d without behavior are banned. Intelligence appears as outcomes and chips, not badges."
+        }
+      ],
+      "implementation_impact": "Remove AI-glow badges without behavior. Prefer chips/outcomes. Ban idle AI identity chrome in component library.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/"
+    },
+    {
+      "id": "GOV-152",
+      "title": "Component versioning by contract \u2014 vault note when behavior defaults change",
+      "category": "Component \u2014 Versioning / Governance",
+      "domain": "governance",
+      "decision": "Changing a component\u2019s default behavior requires a vault/Bible note when it alters product contracts (e.g., confirm patterns, capture submit).",
+      "reason": "Principle C-14 \u2014 Versioning by contract.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-017",
+        "GOV-044",
+        "GOV-142",
+        "GOV-144"
+      ],
+      "blocks": [
+        "Component Changelogs",
+        "ConfirmDialog Changes",
+        "Capture Submit Changes"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Vault",
+        "Desktop",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "C-14 \u2014 Versioning by contract"
+          ],
+          "quote": "Changing a component\u2019s default behavior requires vault/Bible note when it alters product contracts (e.g., confirm patterns, capture submit)."
+        }
+      ],
+      "implementation_impact": "Contract-altering component PRs must update vault/Bible. Cosmetic-only changes do not require contract notes.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/10_COMPONENT_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Component-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Component-Principles/"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-062",
+      "title": "Ratify Approved Component GOVs (142\u2013149, 151\u2013152) as citeable component canon",
+      "reason": "C-1\u2026C-14 extract library existence/ownership/state/API laws.",
+      "impact": "PRs cite GOV-IDs for component intake.",
+      "risk": "Medium \u2014 duplicate primitives return.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-142",
+        "GOV-143",
+        "GOV-144",
+        "GOV-145",
+        "GOV-146",
+        "GOV-147",
+        "GOV-148",
+        "GOV-149",
+        "GOV-151",
+        "GOV-152"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Component-Principles"
+    },
+    {
+      "id": "REC-063",
+      "title": "Audit and kill parallel Mood / Confirm / Capture inventions under GOV-144",
+      "reason": "Reasoning cites duplicate primitives + lingering window.confirm.",
+      "impact": "Single owner per primitive.",
+      "risk": "High identity fracture if skipped.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-144",
+        "GOV-065",
+        "GOV-066"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Component-Principles"
+    },
+    {
+      "id": "REC-064",
+      "title": "Publish mandatory state matrix checklist for interactive components",
+      "reason": "GOV-145 \u2014 missing states ship as bugs.",
+      "impact": "QA gate on component PRs.",
+      "risk": "Medium.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-145",
+        "GOV-077",
+        "GOV-067"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Component-Principles"
+    },
+    {
+      "id": "REC-065",
+      "title": "Founder align GOV-150 nav shells with GOV-012 lockup ND and GOV-075/097 primacy",
+      "reason": "C-12 Depends on open navigation/lockup Needs Discussion items.",
+      "impact": "Unblocks BrandLockup + BottomNav/TabRail/Masthead as citeable.",
+      "risk": "High thrash if shells fight IA.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-150",
+        "GOV-012",
+        "GOV-039",
+        "GOV-075",
+        "GOV-097"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Component-Principles"
+    },
+    {
+      "id": "REC-066",
+      "title": "Cross-client component contract parity audit (web vs native)",
+      "reason": "Known risks: Web and native drifting into differently behaving \u201csame\u201d components. Future impact: contracts first.",
+      "impact": "Same contracts across renderers.",
+      "risk": "High cousin-behavior.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-144",
+        "GOV-110",
+        "GOV-118",
+        "GOV-040"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Component-Principles"
+    },
+    {
+      "id": "REC-067",
+      "title": "Ban design-system theater \u2014 tokens without behavior contracts",
+      "reason": "Known risks: Design-system theater (tokens without behavior contracts).",
+      "impact": "Token work must cite GOV-142 contracts.",
+      "risk": "Medium vanity DS.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-142",
+        "GOV-073",
+        "GOV-145"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Component-Principles"
+    },
+    {
+      "id": "REC-068",
+      "title": "Next P7: 16_COMPONENT_BLUEPRINTS or 14_DESIGN_SYSTEM_SPECIFICATION or 11_ACCESSIBILITY",
+      "reason": "C Dependencies cite blueprints + DSS; a11y detail still deferred.",
+      "impact": "Continues build-without-reread.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-142",
+        "GOV-147",
+        "GOV-145",
+        "GOV-073"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Component-Principles"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-C-001",
+      "type": "Dependency on open ND \u2014 BrandLockup / nav primacy",
+      "detail": "GOV-150 Needs Discussion because GOV-012 and GOV-075 still open.",
+      "related_gov": [
+        "GOV-150",
+        "GOV-012",
+        "GOV-075",
+        "GOV-097"
+      ],
+      "recommendation": "REC-065"
+    },
+    {
+      "id": "CF-C-002",
+      "type": "Known risk \u2014 design-system theater",
+      "detail": "Tokens without behavior contracts.",
+      "related_gov": [
+        "GOV-142",
+        "GOV-073"
+      ],
+      "recommendation": "REC-067"
+    },
+    {
+      "id": "CF-C-003",
+      "type": "Known risk \u2014 mega-components",
+      "detail": "Mega-components that do everything poorly \u2014 tension with GOV-146.",
+      "related_gov": [
+        "GOV-146",
+        "GOV-144"
+      ],
+      "recommendation": "REC-063 + API review"
+    },
+    {
+      "id": "CF-C-004",
+      "type": "Known risk \u2014 web/native behavior drift",
+      "detail": "Same-named components behaving differently across clients.",
+      "related_gov": [
+        "GOV-144",
+        "GOV-110",
+        "GOV-040"
+      ],
+      "recommendation": "REC-066"
+    },
+    {
+      "id": "CF-C-005",
+      "type": "Complementary reuse \u2014 Confirm/chips already canon",
+      "detail": "C-10/C-11 restated GOV-065/126; no re-mint.",
+      "related_gov": [
+        "GOV-065",
+        "GOV-126"
+      ],
+      "recommendation": "Keep REC-018 ConfirmDialog CI ban"
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-C-001",
+      "missing": "Component Blueprints inventory (concrete APIs)",
+      "why": "Principles cite 16_COMPONENT_BLUEPRINTS",
+      "next": "REC-068"
+    },
+    {
+      "id": "M-C-002",
+      "missing": "Named toast/inline-error system component owners",
+      "why": "C-7 says shared patterns; owners unnamed",
+      "next": "Blueprints + GOV-077"
+    },
+    {
+      "id": "M-C-003",
+      "missing": "Hit-target numeric floors in component API",
+      "why": "C-6 names hit targets; numbers in Accessibility",
+      "next": "Govern 11_ACCESSIBILITY"
+    },
+    {
+      "id": "M-C-004",
+      "missing": "Full Mood/Confirm/Capture owner map",
+      "why": "C-3 examples only",
+      "next": "REC-063"
+    }
+  ],
+  "questions_for_founder": [
+    "Approve one-owner-per-primitive (GOV-144) including Mood/Confirm/Capture families?",
+    "Approve mandatory state matrix as ship bugs (GOV-145)?",
+    "GOV-150 nav shells \u2014 Approve after lockup/primacy ADR / Amend / Reject?",
+    "Ban decorative AI components (GOV-151) including marketing?",
+    "Run web\u2194native contract parity audit now (REC-066)?",
+    "Next: Component Blueprints / Design System Spec / Accessibility (REC-068)?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 7,
+    "ai_readiness": 7,
+    "conflict_hygiene": 8,
+    "metric_rigor": 7,
+    "amendment_process": 9,
+    "completeness_build_without_reread": 7,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 80,
+    "interpretation": "Component Principles supply existence justification, extract-on-second-demand, one-owner primitives, mandatory states, composition-over-props, a11y-in-API, sacred capture, calm read, decorative-AI ban, and contract versioning. C-10/C-11 reused. GOV-150 Needs Discussion until lockup/nav ND closes. Cross-client drift flagged, not invented away."
+  },
+  "validation": {
+    "continuous_gov_ids": true,
+    "json_schema": true,
+    "duplicate_gov_detection": true,
+    "duplicate_decision_detection": true,
+    "broken_dependency_detection": true,
+    "broken_references": true,
+    "missing_evidence": true,
+    "status": "PASSED"
+  }
+}

@@ -1,3 +1,17 @@
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-PROMPT
+migration_batch: W4
+fm_source: script
+---
 # Proof-or-Stop
 
 > Always-on anti–false-completion discipline for Cursor agents.
@@ -18,7 +32,7 @@ Agents often claim `done` / `fixed` / `tests pass` from pattern completion, not 
 | Session inject | `sessionStart` hook → short PROOF-OR-STOP context | New chats get reminder even if rules flaky |
 | Capture + Stop | `afterAgentResponse` saves text; `stop` nudges once if claim lacks evidence | Machine enforcement |
 | User hooks | `~/.cursor/hooks.json` (optional Terminal install) | All projects on this Mac |
-| Optional User Rules paste | [[Proof-or-Stop-USER-RULES]] → Cursor Settings → Rules → User Rules | Global soft rule in UI |
+| Optional User Rules paste | [[Proof-or-Stop-USER-RULES]] (`14_PROMPTS/Proof-or-Stop-USER-RULES.md`) → Cursor Settings → Rules → User Rules | Global soft rule in UI |
 
 ## Agent contract (summary)
 

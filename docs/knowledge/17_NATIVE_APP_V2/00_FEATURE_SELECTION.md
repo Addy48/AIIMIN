@@ -1,3 +1,17 @@
+---
+authority: engineering
+derived_from: Genesis/P8 · Genesis/P9
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+---
 # Feature selection logic (Native V2)
 
 > **Owner revision 2026-07-19 (eve):** Journal voice+type first · Keep-style notes · Calendar lite only · Resumes-only career · Drive usable · **Family docs = priority** · drop large-screen ports.

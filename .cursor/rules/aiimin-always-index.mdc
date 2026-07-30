@@ -19,6 +19,7 @@ All of these are `alwaysApply: true`. Follow them every turn.
 | `use-skills-always.mdc` | Read matching SKILL.md before acting |
 | `aiimin-chat-handoff.mdc` | Loud 🚨 SWITCH CHAT; Current-Context = handoff |
 | `aiimin-proof-or-stop.mdc` | No done/fixed/shipped without same-turn evidence |
+| `aiimin-mobbin-mcp.mdc` | Mobbin MCP for design, flows, prototyping, UI research |
 
 Entrypoint: `docs/knowledge/00_HOME.md`  
 Memory: `docs/knowledge/15_MEMORY/Current-Context.md`  

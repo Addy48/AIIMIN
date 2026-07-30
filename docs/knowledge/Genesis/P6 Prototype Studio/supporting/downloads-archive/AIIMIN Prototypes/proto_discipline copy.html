@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIIMIN · Discipline — Prototypes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F5F4EF;--card:#fff;--g:#2D5016;--gm:#4A7C2F;--gl:#8CC968;--gp:#E8F0E0;--t1:#1C1C1A;--t2:#6B6B62;--tm:#9B9B92;--br:#E8E7E1;--r:12px;--red:#DC2626;--amber:#D97706;--blue:#2563EB}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-size:14px}
+.vsw{position:fixed;top:12px;right:16px;z-index:999;display:flex;gap:6px;background:rgba(245,244,239,.95);backdrop-filter:blur(8px);padding:6px;border-radius:10px;border:1px solid var(--br)}
+.vbtn{padding:5px 12px;border-radius:7px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--t2);transition:.15s}
+.vbtn.on{background:var(--g);color:#fff}
+nav{height:50px;display:flex;align-items:center;padding:0 22px;gap:2px;border-bottom:1px solid var(--br);background:rgba(245,244,239,.93);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100}
+.logo{font-weight:800;font-size:15px;color:var(--g);margin-right:24px;display:flex;align-items:center;gap:7px}
+.logo-box{width:26px;height:26px;background:var(--g);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800}
+.nl{padding:4px 9px;border-radius:6px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer}
+.nl.a{background:var(--g);color:#fff;font-weight:600}
+.nr{margin-left:auto;display:flex;align-items:center;gap:8px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.page{max-width:1000px;margin:0 auto;padding:28px 20px 50px}
+.sc{background:var(--card);border-radius:var(--r);border:1px solid var(--br);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.btn-p{background:var(--g);color:#fff;border:none;border-radius:9px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-p:hover{background:#1A3009}
+.btn-o{background:transparent;color:var(--g);border:1.5px solid var(--g);border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.btn-o:hover{background:var(--gp)}
+.btn-danger{background:#DC2626;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer}
+.version-panel{display:none}
+.version-panel.show{display:block}
+
+/* ── STREAK HERO ── */
+.streak-hero{background:linear-gradient(135deg,#1A3009,#2D5016);border-radius:16px;padding:24px;text-align:center;color:#fff;position:relative;overflow:hidden;margin-bottom:16px}
+.streak-hero::after{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,.06),transparent 70%);border-radius:50%}
+.sh-lbl{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:8px}
+.sh-num{font-size:72px;font-weight:800;color:#fff;letter-spacing:-4px;line-height:1}
+.sh-unit{font-size:16px;font-weight:700;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1px}
+.sh-msg{font-size:14px;color:rgba(255,255,255,.7);margin:10px 0 16px;font-style:italic}
+.sh-btns{display:flex;justify-content:center;gap:10px}
+.sh-pledge{background:#fff;color:var(--g);border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer;transition:.2s}
+.sh-pledge:hover{background:var(--gp)}
+.sh-reset{background:rgba(220,38,38,.2);color:#FCA5A5;border:1px solid rgba(220,38,38,.3);border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer}
+.sh-stats{display:flex;justify-content:center;gap:28px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1)}
+.sh-stat-val{font-size:18px;font-weight:800;color:#fff}
+.sh-stat-lbl{font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.7px;margin-top:2px}
+
+/* ── MILESTONES ── */
+.milestones{display:flex;flex-direction:column;gap:8px}
+.ms-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:10px;border:1px solid var(--br);background:var(--card);transition:.15s}
+.ms-item.done{background:var(--gp);border-color:var(--gl)}
+.ms-item.current{background:#FFF7ED;border-color:#FED7AA}
+.ms-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.ms-body{flex:1}
+.ms-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.ms-desc{font-size:11px;color:var(--t2);line-height:1.4}
+.ms-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.ms-done-badge{background:var(--gp);color:var(--gm)}
+.ms-cur-badge{background:#FEF3C7;color:#92400E}
+.ms-lock{color:var(--tm)}
+
+/* ── TOOLKIT ── */
+.toolkit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tk-card{padding:16px;border-radius:12px;background:var(--card);border:1px solid var(--br);transition:.2s;cursor:pointer}
+.tk-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.09);transform:translateY(-2px);border-color:var(--gl)}
+.tk-icon{font-size:22px;margin-bottom:8px}
+.tk-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.tk-desc{font-size:11px;color:var(--t2);line-height:1.4}
+.tk-action{margin-top:10px;font-size:11px;font-weight:700;color:var(--gm)}
+
+/* ── HABIT TRACKS (V1) ── */
+.track-selector{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.track-pill{padding:6px 14px;border-radius:20px;border:1.5px solid var(--br);background:var(--card);font-size:12px;font-weight:700;cursor:pointer;transition:.2s;color:var(--t2)}
+.track-pill.on{background:var(--g);color:#fff;border-color:var(--g)}
+.track-pill:hover:not(.on){border-color:var(--gl);background:var(--gp);color:var(--g)}
+
+/* ── URGE LOG (V2) ── */
+.urge-card{background:linear-gradient(135deg,#450a0a,#7f1d1d);border-radius:14px;padding:20px;color:#fff;margin-bottom:14px}
+.urge-title{font-size:16px;font-weight:800;margin-bottom:4px}
+.urge-sub{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:14px}
+.urge-scale{display:flex;gap:6px}
+.urge-num{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;border:1.5px solid transparent}
+.urge-num:hover{background:rgba(255,255,255,.2)}
+.urge-num.sel{background:#fff;color:#7f1d1d;border-color:#fff}
+
+/* ── BRAIN SCIENCE BOX ── */
+.science-box{background:var(--card);border-radius:12px;border-left:4px solid var(--gm);padding:16px;margin-bottom:14px}
+.sb-title{font-size:12px;font-weight:800;color:var(--g);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.sb-text{font-size:12px;color:var(--t2);line-height:1.6}
+.sb-text strong{color:var(--t1)}
+
+/* ── RELAPSE LOG (compassion mode) ── */
+.relapse-card{background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:16px;margin-bottom:14px}
+.rc-title{font-size:13px;font-weight:700;color:#92400E;margin-bottom:6px}
+.rc-text{font-size:12px;color:#78350F;line-height:1.5;margin-bottom:10px}
+.rc-inp{width:100%;padding:8px 12px;border:1px solid #FED7AA;border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;background:#FFFBEB;resize:none;outline:none;height:60px}
+
+/* ── V3 MULTI-TRACK ── */
+.multi-track-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mt-card{background:var(--card);border-radius:14px;border:1px solid var(--br);padding:16px}
+.mt-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.mt-name{font-size:14px;font-weight:800}
+.mt-streak{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:800;color:var(--g)}
+.mt-bar{height:6px;background:var(--br);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.mt-fill{height:100%;border-radius:10px}
+.mt-phase{font-size:11px;color:var(--t2);margin-bottom:10px}
+.mt-actions{display:flex;gap:7px}
+</style>
+</head>
+<body>
+<div class="vsw">
+  <button class="vbtn on" onclick="show(1)">V1 · Enhanced</button>
+  <button class="vbtn" onclick="show(2)">V2 · Science Mode</button>
+  <button class="vbtn" onclick="show(3)">V3 · Multi-Track</button>
+</div>
+<nav>
+  <div class="logo"><div class="logo-box">A</div>AIIMIN</div>
+  <span class="nl">Today</span><span class="nl">Habits</span><span class="nl">Goals</span>
+  <span class="nl">Journal</span><span class="nl">Finance</span><span class="nl">Family</span>
+  <span class="nl">Calendar</span><span class="nl">Placement</span><span class="nl">Sports</span>
+  <span class="nl a">Discipline</span><span class="nl">Focus</span><span class="nl">Lab</span>
+  <div class="nr"><div class="av">J</div></div>
+</nav>
+
+<!-- V1: Enhanced current — adds bad habit tracks, science tips -->
+<div id="v1" class="version-panel show">
+<div class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--tm);margin-bottom:2px">Daily Discipline</div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-.7px">Discipline.</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:2px">Master your mind. Protect your energy. Build the streak.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-o" style="font-size:11px">📋 History</button>
+      <button class="btn-p">🌊 Urge Surfing</button>
+    </div>
+  </div>
+
+  <!-- Track selector -->
+  <div style="margin:18px 0 4px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tm)">What are you working on quitting?</div>
+  <div class="track-selector">
+    <div class="track-pill on">🔞 No PMO</div>
+    <div class="track-pill">🍺 No Alcohol</div>
+    <div class="track-pill">🎰 No Gambling</div>
+    <div class="track-pill">📱 No Doom Scrolling</div>
+    <div class="track-pill">🍔 No Junk Food</div>
+    <div class="track-pill">🚬 No Smoking</div>
+    <div class="track-pill" style="border-style:dashed">＋ Custom</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:360px 1fr;gap:14px;margin-top:16px">
+    <!-- Left: Streak card -->
+    <div>
+      <div class="streak-hero">
+        <div class="sh-lbl">Current Streak · No PMO</div>
+        <div class="sh-num">3</div>
+        <div class="sh-unit">DAYS</div>
+        <div class="sh-msg">"Three days of clarity. Your brain is already thanking you."</div>
+        <div class="sh-btns">
+          <button class="sh-pledge">✓ Pledge Today</button>
+          <button class="sh-reset">⟳ Reset</button>
+        </div>
+        <div class="sh-stats">
+          <div><div class="sh-stat-val">21</div><div class="sh-stat-lbl">Longest streak</div></div>
+          <div><div class="sh-stat-val">3</div><div class="sh-stat-lbl">Total resets</div></div>
+          <div><div class="sh-stat-val">47</div><div class="sh-stat-lbl">Days clean total</div></div>
+        </div>
+      </div>
+
+      <!-- Science box -->
+      <div class="science-box">
+        <div class="sb-title">🧠 What's happening at Day 3</div>
+        <div class="sb-text"><strong>Dopamine baseline is resetting.</strong> After 3 days, the brain's reward system starts to normalize. Intrinsic motivation increases. Many people notice better focus and mood around days 5–7. Keep going — the compulsion feelings typically peak then subside.</div>
+      </div>
+    </div>
+
+    <!-- Right: Milestones + toolkit -->
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);margin-bottom:10px">Milestone Road</div>
+      <div class="milestones">
+        <div class="ms-item done"><div class="ms-icon">🌱</div><div class="ms-body"><div class="ms-title">First Day</div><div class="ms-desc">The hardest step is the first one. You chose differently.</div></div><span class="ms-badge ms-done-badge">✓ Done</span></div>
+        <div class="ms-item done"><div class="ms-icon">🔥</div><div class="ms-body"><div class="ms-title">3 Days</div><div class="ms-desc">Three days of clarity. Dopamine baseline resetting.</div></div><span class="ms-badge ms-done-badge">✓ Done</span></div>
+        <div class="ms-item current"><div class="ms-icon">⚡</div><div class="ms-body"><div class="ms-title">1 Week — 4 days to go</div><div class="ms-desc">A full week. Real brain rewiring begins. Energy increases.</div></div><span class="ms-badge ms-cur-badge">In progress</span></div>
+        <div class="ms-item"><div class="ms-icon ms-lock">🔒</div><div class="ms-body"><div class="ms-title" style="color:var(--tm)">2 Weeks</div><div class="ms-desc" style="color:var(--tm)">14 days — new neural pathways forming.</div></div></div>
+        <div class="ms-item"><div class="ms-icon ms-lock">🔒</div><div class="ms-body"><div class="ms-title" style="color:var(--tm)">30 Days</div><div class="ms-desc" style="color:var(--tm)">Full month. Elite level discipline.</div></div></div>
+        <div class="ms-item"><div class="ms-icon ms-lock">🔒</div><div class="ms-body"><div class="ms-title" style="color:var(--tm)">90 Days</div><div class="ms-desc" style="color:var(--tm)">Three months — rebuilt and reborn.</div></div></div>
+      </div>
+
+      <div style="margin-top:16px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);margin-bottom:10px">Emergency Toolkit</div>
+      <div class="toolkit-grid">
+        <div class="tk-card"><div class="tk-icon">⏱️</div><div class="tk-title">10-Minute Rule</div><div class="tk-desc">When urge hits, wait 10 minutes. The chemical spike subsides.</div><div class="tk-action">Try now →</div></div>
+        <div class="tk-card"><div class="tk-icon">🛑</div><div class="tk-title">HALT Check</div><div class="tk-desc">Hungry? Angry? Lonely? Tired? Fix the root state, not the urge.</div><div class="tk-action">Check now →</div></div>
+        <div class="tk-card"><div class="tk-icon">🌊</div><div class="tk-title">Urge Surfing</div><div class="tk-desc">Observe the urge like a wave. Ride it — it peaks and crashes.</div><div class="tk-action">Start session →</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V2: Science-first, CBT-inspired, urge logging -->
+<div id="v2" class="version-panel">
+<div class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--tm);margin-bottom:2px">Mind Fortress</div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-.7px">Discipline.</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:2px">Science-backed habit breaking. One urge at a time.</div>
+    </div>
+    <button class="btn-p">🆘 Emergency Help</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:16px">
+    <div>
+      <!-- Compact streak -->
+      <div class="streak-hero" style="padding:18px;text-align:left;margin-bottom:14px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="sh-lbl">No PMO · Current Streak</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+              <div class="sh-num" style="font-size:52px">3</div>
+              <div class="sh-unit">DAYS</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Next milestone</div>
+            <div style="font-size:18px;font-weight:800;color:#fff">Day 7</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5)">4 days away</div>
+          </div>
+        </div>
+        <div class="sh-btns" style="justify-content:flex-start;margin-top:14px">
+          <button class="sh-pledge">✓ Pledge Today</button>
+          <button class="sh-reset">⟳ Reset</button>
+        </div>
+      </div>
+
+      <!-- Urge Logger -->
+      <div class="urge-card">
+        <div class="urge-title">🌊 Urge Logger</div>
+        <div class="urge-sub">Logging an urge instead of acting on it trains your brain. Rate intensity:</div>
+        <div class="urge-scale">
+          <div class="urge-num">1</div><div class="urge-num">2</div><div class="urge-num">3</div>
+          <div class="urge-num">4</div><div class="urge-num">5</div><div class="urge-num sel">6</div>
+          <div class="urge-num">7</div><div class="urge-num">8</div><div class="urge-num">9</div><div class="urge-num">10</div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <input style="flex:1;padding:8px 12px;border-radius:8px;border:none;background:rgba(255,255,255,.15);color:#fff;font-family:'Inter',sans-serif;font-size:12px;outline:none" placeholder="What triggered this? (optional)">
+          <button style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">Log & Surf 🌊</button>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,.45)">You've logged 4 urges today · Each one you didn't act on is a win</div>
+      </div>
+
+      <!-- Compassionate relapse section -->
+      <div class="relapse-card">
+        <div class="rc-title">🤝 Slipped? That's okay. Let's learn from it.</div>
+        <div class="rc-text">Relapse is part of recovery for most people. The research is clear: <strong>shame makes it worse, reflection makes it better.</strong> What happened? What were you feeling before it? This isn't a judgment — it's data.</div>
+        <textarea class="rc-inp" placeholder="What happened, what triggered it, and what I'll do differently…"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn-danger" style="font-size:11px;padding:6px 14px">Log Relapse & Reset</button>
+          <button class="btn-o" style="font-size:11px;padding:5px 14px">Read Recovery Tips</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+      <!-- HALT Tool -->
+      <div class="sc" style="padding:14px;margin-bottom:12px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);margin-bottom:10px">🛑 HALT Check</div>
+        <div style="font-size:12px;color:var(--t2);margin-bottom:10px">Most urges are really one of these 4 states:</div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="padding:8px 12px;background:var(--bg);border-radius:8px;font-size:12px;cursor:pointer;transition:.15s;border:1px solid var(--br)" onmouseover="this.style.borderColor='#8CC968'" onmouseout="this.style.borderColor='var(--br)'"><strong>🍎 Hungry</strong> — Eat something real first</div>
+          <div style="padding:8px 12px;background:var(--bg);border-radius:8px;font-size:12px;cursor:pointer;transition:.15s;border:1px solid var(--br)" onmouseover="this.style.borderColor='#8CC968'" onmouseout="this.style.borderColor='var(--br)'"><strong>😤 Angry</strong> — Go for a 5-min walk</div>
+          <div style="padding:8px 12px;background:var(--bg);border-radius:8px;font-size:12px;cursor:pointer;transition:.15s;border:1px solid var(--br)" onmouseover="this.style.borderColor='#8CC968'" onmouseout="this.style.borderColor='var(--br)'"><strong>😔 Lonely</strong> — Text one person right now</div>
+          <div style="padding:8px 12px;background:var(--bg);border-radius:8px;font-size:12px;cursor:pointer;transition:.15s;border:1px solid var(--br)" onmouseover="this.style.borderColor='#8CC968'" onmouseout="this.style.borderColor='var(--br)'"><strong>😴 Tired</strong> — Sleep takes priority</div>
+        </div>
+      </div>
+
+      <!-- Brain science timeline -->
+      <div class="sc" style="padding:14px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);margin-bottom:12px">🧠 Brain Recovery Timeline</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--gp);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--g);flex-shrink:0">3d</div>
+            <div><div style="font-size:11px;font-weight:700">You are here</div><div style="font-size:10px;color:var(--t2)">Dopamine baseline resetting</div></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;opacity:.6">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--br);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--t2);flex-shrink:0">7d</div>
+            <div><div style="font-size:11px;font-weight:700;color:var(--t2)">Withdrawal peak passes</div><div style="font-size:10px;color:var(--tm)">Energy and focus improve</div></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;opacity:.4">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--br);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--t2);flex-shrink:0">14d</div>
+            <div><div style="font-size:11px;font-weight:700;color:var(--t2)">New neural pathways</div><div style="font-size:10px;color:var(--tm)">Brain rewires reward circuits</div></div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;opacity:.3">
+            <div style="width:30px;height:30px;border-radius:50%;background:var(--br);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--t2);flex-shrink:0">90d</div>
+            <div><div style="font-size:11px;font-weight:700;color:var(--t2)">Full recovery baseline</div><div style="font-size:10px;color:var(--tm)">Rebuilt. Rewired. Reborn.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V3: Multi-track — quit multiple bad habits simultaneously -->
+<div id="v3" class="version-panel">
+<div class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--tm);margin-bottom:2px">Daily Discipline</div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-.7px">Discipline.</div>
+      <div style="font-size:12px;color:var(--t2)">Quit bad habits. Build identity. One day at a time.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-o" style="font-size:11px">📋 History</button>
+      <button class="btn-p">+ Add Track</button>
+    </div>
+  </div>
+
+  <!-- Multi track grid -->
+  <div class="multi-track-grid" style="margin-bottom:18px">
+    <!-- Track 1 -->
+    <div class="mt-card">
+      <div class="mt-header">
+        <div>
+          <div style="font-size:10px;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px">No PMO</div>
+          <div class="mt-name">🔞 Pornography</div>
+        </div>
+        <div class="mt-streak">🔥 3d</div>
+      </div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">Day 3 of 90 · Phase: Early (toughest)</div>
+      <div class="mt-bar"><div class="mt-fill" style="width:3.3%;background:linear-gradient(90deg,var(--gl),var(--g))"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tm);margin-bottom:10px"><span>Day 3</span><span>Goal: Day 90</span></div>
+      <div class="mt-actions">
+        <button class="btn-p" style="font-size:11px;padding:6px 12px">✓ Pledge Today</button>
+        <button class="btn-o" style="font-size:11px;padding:5px 12px">🌊 Urge Help</button>
+      </div>
+    </div>
+
+    <!-- Track 2 -->
+    <div class="mt-card">
+      <div class="mt-header">
+        <div>
+          <div style="font-size:10px;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px">Quitting</div>
+          <div class="mt-name">📱 Doom Scrolling</div>
+        </div>
+        <div class="mt-streak">🔥 12d</div>
+      </div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">Day 12 of 30 · Phase: Getting easier!</div>
+      <div class="mt-bar"><div class="mt-fill" style="width:40%;background:linear-gradient(90deg,#60A5FA,#2563EB)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tm);margin-bottom:10px"><span>Day 12</span><span>Goal: Day 30</span></div>
+      <div class="mt-actions">
+        <button class="btn-p" style="font-size:11px;padding:6px 12px">✓ Pledge Today</button>
+        <button style="background:#EFF6FF;color:#2563EB;border:1.5px solid #BFDBFE;border-radius:9px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer">📊 Stats</button>
+      </div>
+    </div>
+
+    <!-- Track 3 -->
+    <div class="mt-card">
+      <div class="mt-header">
+        <div>
+          <div style="font-size:10px;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px">Reducing</div>
+          <div class="mt-name">🍔 Junk Food</div>
+        </div>
+        <div class="mt-streak" style="color:#F97316">🔥 5d</div>
+      </div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">5 days clean · Best: 14 days</div>
+      <div class="mt-bar"><div class="mt-fill" style="width:35%;background:linear-gradient(90deg,#FED7AA,#F97316)"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tm);margin-bottom:10px"><span>Day 5</span><span>Goal: Day 14</span></div>
+      <div class="mt-actions">
+        <button class="btn-p" style="font-size:11px;padding:6px 12px">✓ Pledge Today</button>
+        <button class="btn-o" style="font-size:11px;padding:5px 12px">🔄 Reset</button>
+      </div>
+    </div>
+
+    <!-- Add track -->
+    <div style="background:transparent;border:2px dashed var(--br);border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:.2s;min-height:160px" onmouseover="this.style.borderColor='#8CC968';this.style.background='var(--gp)'" onmouseout="this.style.borderColor='var(--br)';this.style.background='transparent'">
+      <div style="font-size:28px">＋</div>
+      <div style="font-size:13px;font-weight:700;color:var(--t2)">Add New Track</div>
+      <div style="font-size:11px;color:var(--tm);text-align:center">Alcohol, Gambling, Smoking, or custom bad habit</div>
+    </div>
+  </div>
+
+  <!-- Emergency toolkit -->
+  <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);margin-bottom:10px">Emergency Toolkit — Use when urge hits</div>
+  <div class="toolkit-grid">
+    <div class="tk-card"><div class="tk-icon">⏱️</div><div class="tk-title">10-Minute Rule</div><div class="tk-desc">Wait 10 minutes. The dopamine spike subsides. Proven in addiction research.</div><div class="tk-action">Start timer →</div></div>
+    <div class="tk-card"><div class="tk-icon">🛑</div><div class="tk-title">HALT — Check your state</div><div class="tk-desc">Hungry, Angry, Lonely, Tired? Fix the underlying need, not the symptom.</div><div class="tk-action">Run HALT →</div></div>
+    <div class="tk-card"><div class="tk-icon">🌊</div><div class="tk-title">Urge Surfing</div><div class="tk-desc">Don't fight it. Observe it. Urges peak in 15–20 min then crash. Ride it.</div><div class="tk-action">Start session →</div></div>
+    <div class="tk-card"><div class="tk-icon">🧠</div><div class="tk-title">Thought Record (CBT)</div><div class="tk-desc">Name the distorted thought. Challenge it. Replace it. CBT in 3 steps.</div><div class="tk-action">Open →</div></div>
+    <div class="tk-card"><div class="tk-icon">🏃</div><div class="tk-title">Physical Break</div><div class="tk-desc">20 push-ups, a sprint, cold water on face. Move the dopamine somewhere else.</div><div class="tk-action">Log movement →</div></div>
+    <div class="tk-card"><div class="tk-icon">🤝</div><div class="tk-title">Accountability Call</div><div class="tk-desc">Text your accountability partner right now. Saying it out loud cuts the power in half.</div><div class="tk-action">Send message →</div></div>
+  </div>
+</div>
+</div>
+
+<script>
+function show(n){
+  document.querySelectorAll('.version-panel').forEach(p=>p.classList.remove('show'));
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('v'+n).classList.add('show');
+  document.querySelectorAll('.vbtn')[n-1].classList.add('on');
+}
+</script>
+</body>
+</html>

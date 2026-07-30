@@ -1,4 +1,22 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification/01_Product_Identity.md
+status: active
+owner: product
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+constitutional_reference: Genesis/P8 Master Specification/01_Product_Identity.md
+---
+
 # Product
+
+> **Authority:** Identity and philosophy law = Genesis P8 Ch01–02. This note is **launch/ops snapshot** only. It cannot override Genesis. See [[Maps of Content/Product]] · [[Maps of Content/Research]] · [[Genesis/P8 Master Specification/01_Product_Identity|P8 Identity]].
 
 ## Snapshot
 
@@ -31,11 +49,11 @@ When `REACT_APP_WAITLIST_MODE=true`:
 - Primary CTA: **Reserve my spot**
 - Signup returns position + referral code; `localStorage` key `aiimin_waitlist`
 - Social proof only when signup count ≥ 100
-- Go-live target: end of September 2026. Tester registration closes 31 July.
+- Go-live target: end of September 2026. Founding / tester registration closes **31 August 2026**.
 - Dev/tester emails get elite tier + full app access
 - Public sign-in without allowlist → pending screen
 
-Details: [[09_FEATURES/Waitlist/Waitlist]]
+Details: [[09_FEATURES/Waitlist/Waitlist]] · Priorities: [[Roadmap/Operational-Priorities]]
 
 ## Launch runbook (LC-01 to LC-14)
 

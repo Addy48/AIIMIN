@@ -1,0 +1,570 @@
+{
+  "meta": {
+    "document": "Motion Principles Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+    "source_alias": "08_MOTION_PRINCIPLES.md → 09_MOTION_PRINCIPLES.md (P5; 08_ is Interaction Principles)",
+    "source_version": "3.0",
+    "source_status": "FROZEN",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-112…GOV-121",
+    "gov_id_range_referenced": "GOV-001…GOV-111 (prior; referenced only)",
+    "decision_count_new": 10,
+    "recommendation_count": 7,
+    "existing_gov_referenced_count": 20,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "constitution_untouched": true,
+    "non_negotiables_untouched": true,
+    "ia_principles_untouched": true,
+    "design_system_principles_untouched": true,
+    "standard_untouched": true,
+    "source_untouched": true
+  },
+  "existing_gov_references": [
+    {
+      "m": "M-1 (motion is meaning — general meaning law)",
+      "gov": ["GOV-063", "GOV-054", "GOV-038"],
+      "note": "Meaning + emotional triad + decoration-must-not-confuse already canon; purpose allowlist / AI-awake refuse elevated in GOV-112"
+    },
+    {
+      "m": "M-5 (respect reduced motion — core)",
+      "gov": ["GOV-072"],
+      "note": "Reduced motion honored already NN canon; operational detail (instant essential feedback; decorative yields; no animation-end sole path) via REC-045 — no re-mint"
+    },
+    {
+      "m": "M-6 (never delay capture — speed anchors)",
+      "gov": ["GOV-059", "GOV-066", "GOV-028"],
+      "note": "Capture speed / ceremony-free save / capture-first already canon; after-commit motion latency law elevated in GOV-116"
+    },
+    {
+      "m": "M-9 (celebration rare — anti-casino anchors)",
+      "gov": ["GOV-055", "GOV-009", "GOV-068"],
+      "note": "Anti-nag/casino + honest Life Score already; proportional completion ack elevated in GOV-119; GOV-068 still Needs Discussion"
+    },
+    {
+      "m": "Feedback existence (saved/failed/toggled)",
+      "gov": ["GOV-077"],
+      "note": "No interaction without feedback — motion is one feedback channel, not the only channel"
+    },
+    {
+      "m": "Calm read / Human Momentum philosophy",
+      "gov": ["GOV-029", "GOV-030", "GOV-003", "GOV-031"],
+      "note": "Calm surfaces + emotional triad + brand frame + emotional refuse bound motion philosophy"
+    },
+    {
+      "m": "Cross-surface consistency anchors",
+      "gov": ["GOV-040", "GOV-085"],
+      "note": "Shared primitives + native≠/m ceiling; emotional tempo match elevated in GOV-118"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-112",
+      "title": "Motion purpose allowlist — feedback, continuity, hierarchy, state",
+      "category": "Motion — Purpose",
+      "domain": "motion",
+      "decision": "Motion is allowed only for: (1) Feedback (saved, failed, toggled), (2) Continuity (shared-element orientation), (3) Hierarchy (attention to primary action), (4) State (expand/collapse, enter/exit). Forbidden: idle flair, perpetual loops, and “AI awake” breathing glows as identity. Motion communicates; it does not entertain for its own sake.",
+      "reason": "Principle M-1 — Motion is meaning. Elevates concrete purpose allowlist + AI-identity refuse beyond GOV-063 general meaning law.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": ["GOV-063", "GOV-054", "GOV-038", "GOV-053"],
+      "blocks": ["Motion Spec", "Design System Motion Tokens", "Motion QA Checklist", "AI Surface Motion"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Website", "Desktop", "AI"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-1 — Motion is meaning"],
+          "quote": "Allowed purposes: 1. Feedback (saved, failed, toggled) 2. Continuity (shared-element orientation) 3. Hierarchy (attention to primary action) 4. State (expand/collapse, enter/exit)"
+        },
+        {
+          "articles": [],
+          "sections": ["M-1 — Motion is meaning"],
+          "quote": "Forbidden purposes: idle flair, perpetual loops, “AI awake” breathing glows as identity."
+        },
+        {
+          "articles": [],
+          "sections": ["Purpose"],
+          "quote": "Define when and why AIIMIN moves — so motion communicates rather than entertains."
+        }
+      ],
+      "implementation_impact": "Motion PRs must declare which allowlisted purpose they serve. Reject idle loops and AI breathing-glow identity. Spatial continuity = Continuity purpose (shared-element), not a separate inventable category.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-113",
+      "title": "Duration band — ~150–250ms micro; longer needs narrative reason",
+      "category": "Motion — Duration",
+      "domain": "motion",
+      "decision": "Prefer ~150–250ms for micro-interactions. Longer motion requires a narrative reason (e.g. first-run brand moment), not a dashboard habit.",
+      "reason": "Principle M-2 — Short by default. Supplies the duration band Constitution explicitly deferred to Motion Principles.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": ["GOV-112", "GOV-054", "GOV-118"],
+      "blocks": ["Motion Spec", "Design System Motion Tokens", "Web Motion Presets", "Android Motion Tokens"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Website", "Desktop"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-2 — Short by default"],
+          "quote": "Prefer ~150–250ms for micro-interactions. Longer motion needs a narrative reason (first-run brand moment), not a dashboard habit."
+        },
+        {
+          "articles": [],
+          "sections": ["Reasoning"],
+          "quote": "Craft history already set discipline: ~150–250ms, opacity+transform, max 2–3 intentional motions per composition."
+        }
+      ],
+      "implementation_impact": "Default micro tokens live in ~150–250ms band. Brand/first-run may exceed with documented narrative reason. Resolve CF-M-001 with GOV-118 (platform vernacular) via REC-044 — emotional tempo wins over literal ms when OS tokens differ.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-114",
+      "title": "Prefer opacity + transform; avoid layout thrash and vestibular distress",
+      "category": "Motion — Technique / Accessibility",
+      "domain": "motion",
+      "decision": "Prefer fade/slide/scale (opacity + transform) over layout thrash and blur fireworks. Avoid motion that causes vestibular distress.",
+      "reason": "Principle M-3 — Opacity + transform preferred. Technique law + a11y bound.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": ["GOV-112", "GOV-072", "GOV-056"],
+      "blocks": ["Motion Spec", "Component Enter/Exit Patterns", "Visual QA"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Website", "Desktop", "Accessibility"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-3 — Opacity + transform preferred"],
+          "quote": "Prefer fade/slide/scale over layout thrash and blur fireworks. Avoid motion that causes vestibular distress (see Accessibility)."
+        },
+        {
+          "articles": [],
+          "sections": ["Reasoning"],
+          "quote": "Craft history already set discipline: ~150–250ms, opacity+transform, max 2–3 intentional motions per composition."
+        }
+      ],
+      "implementation_impact": "Default enter/exit/feedback use opacity+transform. Ban blur-firework and large unexpected layout thrash on product surfaces. Vestibular-safe alternatives required under reduced motion.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-115",
+      "title": "Motion budget per composition — brand 2–3; product fewer",
+      "category": "Motion — Budget",
+      "domain": "motion",
+      "decision": "Marketing/brand compositions may use 2–3 intentional motions to create presence. Product OS surfaces use fewer. If everything moves, calm is dead.",
+      "reason": "Principle M-4 — Budget per composition. Operationalizes calm under Human Momentum.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": ["GOV-112", "GOV-029", "GOV-054", "GOV-003"],
+      "blocks": ["Brand Motion QA", "Today Motion Budget", "Landing Motion Reviews"],
+      "referenced_by": ["P8", "Design System", "Website", "Desktop", "Brand"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-4 — Budget per composition"],
+          "quote": "Marketing/brand: 2–3 intentional motions can create presence. Product OS: fewer. If everything moves, calm is dead."
+        },
+        {
+          "articles": [],
+          "sections": ["Reasoning"],
+          "quote": "Craft history already set discipline: ~150–250ms, opacity+transform, max 2–3 intentional motions per composition."
+        }
+      ],
+      "implementation_impact": "Brand/landing: cap intentional motions at 2–3 per composition. Product OS: prefer 0–1 motion moments per view unless purpose-justified. Motion reviews count intentional motions.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-116",
+      "title": "Never delay capture — animate after commit, not before",
+      "category": "Motion — Performance / Capture",
+      "domain": "motion",
+      "decision": "Motion must not add latency to save/log/toggle paths. Feedback may animate after commit, not before.",
+      "reason": "Principle M-6 — Never delay capture. Motion subordinate to capture speed and ceremony-free save.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": ["GOV-059", "GOV-066", "GOV-028", "GOV-112", "GOV-077"],
+      "blocks": ["Capture Path Motion", "Habit Toggle Motion", "Save Feedback Spec"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Desktop", "Website"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-6 — Never delay capture"],
+          "quote": "Motion must not add latency to save/log/toggle paths. Feedback can animate after commit, not before."
+        }
+      ],
+      "implementation_impact": "Commit/save/toggle execute immediately. Success/fail feedback may animate after state lands. Never gate commit behind animation start or duration.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-117",
+      "title": "One easing family per surface class",
+      "category": "Motion — Easing",
+      "domain": "motion",
+      "decision": "Use one easing family per surface class. Do not mix bouncy carnival with corporate easeInOut randomly.",
+      "reason": "Principle M-7 — Consistent physics metaphor. Consistency law for motion identity.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": ["GOV-112", "GOV-113", "GOV-040"],
+      "blocks": ["Motion Spec", "Design System Motion Tokens", "Easing Token Map"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Website", "Desktop"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-7 — Consistent physics metaphor"],
+          "quote": "One easing family per surface class. Do not mix bouncy carnival with corporate easeInOut randomly."
+        }
+      ],
+      "implementation_impact": "Define surface classes (e.g. Product OS, Brand/Marketing, Capture micro) each with one easing family. No ad-hoc bounce on product chrome. Named curves deferred to Design System Spec (REC-042).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-118",
+      "title": "Platform vernacular OK — emotional tempo must match",
+      "category": "Motion — Cross-Platform Consistency",
+      "domain": "motion",
+      "decision": "Native may use platform motion tokens; web may use its motion stack — but emotional tempo (calm, quick, purposeful) must match across surfaces.",
+      "reason": "Principle M-8 — Platform vernacular. Consistency of feeling over identical implementation.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": ["GOV-040", "GOV-085", "GOV-054", "GOV-112"],
+      "blocks": ["Cross-Client Motion Parity", "Android Motion Mapping", "Web Motion Presets"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Website", "Desktop"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-8 — Platform vernacular"],
+          "quote": "Native may use platform motion tokens; web may use Framer/Motion — but emotional tempo (calm, quick, purposeful) must match."
+        },
+        {
+          "articles": [],
+          "sections": ["Reasoning"],
+          "quote": "Native has its own motion language doc; principles must keep web and native emotionally consistent."
+        }
+      ],
+      "implementation_impact": "Do not force identical ms/easing libraries across web/native. Audit emotional tempo: calm, quick, purposeful. Resolve duration-band tension with GOV-113 via REC-044.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-119",
+      "title": "Celebration rare and proportional — no habit-tick fireworks",
+      "category": "Motion — Success / Celebration",
+      "domain": "motion",
+      "decision": "Completion may acknowledge; it must not fireworks every habit tick. XP celebration ≠ confetti addiction. Success motion stays proportional to stakes.",
+      "reason": "Principle M-9 — Celebration is rare and proportional. Elevates success-motion law beyond GOV-055 anti-casino.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": ["GOV-055", "GOV-009", "GOV-112", "GOV-068"],
+      "blocks": ["XP Celebration Spec", "Habit Complete Motion", "Gamification Motion QA"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Desktop", "Website"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-9 — Celebration is rare and proportional"],
+          "quote": "Completion can acknowledge; it must not fireworks every habit tick. XP celebration ≠ confetti addiction."
+        }
+      ],
+      "implementation_impact": "Habit ticks: quiet/instant or minimal ack. Reserve richer celebration for meaningful milestones aligned with XP role (GOV-068). No confetti loops.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-120",
+      "title": "Page transitions orient — not cinematic taxes on daily use",
+      "category": "Motion — Navigation / Transitions",
+      "domain": "motion",
+      "decision": "Route/page changes may gently orient the user; they must not become cinematic taxes on daily use.",
+      "reason": "Principle M-10 — Page transitions serve orientation. Navigation motion = orientation, not spectacle.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": ["GOV-112", "GOV-113", "GOV-029", "GOV-115"],
+      "blocks": ["Router Transition Spec", "Android Nav Transitions", "Desktop Route Motion"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Desktop", "Website"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["M-10 — Page transitions serve orientation"],
+          "quote": "Route changes may gently orient; they must not become cinematic taxes on daily use."
+        }
+      ],
+      "implementation_impact": "Default route transitions: short, orienting, skippable under reduced motion. Ban long cinematic page plays on daily OS paths.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    },
+    {
+      "id": "GOV-121",
+      "title": "Loading motion must not mask poor performance",
+      "category": "Motion — Loading / Performance Honesty",
+      "domain": "motion",
+      "decision": "Loading animations must not be used to mask poor performance. Motion may communicate waiting state; it must not disguise latency as craft.",
+      "reason": "Known risks — Loading animations masking poor performance. Implied by Purpose (communicate, not entertain) + capture/performance posture.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "Medium",
+      "implementation_cost": "Medium",
+      "depends_on": ["GOV-112", "GOV-116", "GOV-089"],
+      "blocks": ["Loading Indicator Spec", "Performance Budgets", "Skeleton Motion"],
+      "referenced_by": ["P8", "Design System", "Android Build", "Desktop", "Website", "Backend"],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": ["Known risks"],
+          "quote": "Loading animations masking poor performance."
+        },
+        {
+          "articles": [],
+          "sections": ["Purpose"],
+          "quote": "Define when and why AIIMIN moves — so motion communicates rather than entertains."
+        }
+      ],
+      "implementation_impact": "Treat slow loads as performance bugs first. Loading motion = honest wait signal, not polish theater. Pair with sync honesty (GOV-089).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/09_MOTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Motion-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Motion-Principles/"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-041",
+      "title": "Ratify Approved Motion GOVs (112, 114–121) as citeable motion canon",
+      "reason": "Motion Principles pass extracts duration/easing/budget/capture/platform laws Constitution deferred.",
+      "impact": "Agents/PRs cite GOV-IDs for motion reviews instead of taste debates.",
+      "risk": "Medium if delayed — motion debt and demo-polish return.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": ["GOV-112", "GOV-114", "GOV-115", "GOV-116", "GOV-117", "GOV-118", "GOV-119", "GOV-120", "GOV-121"],
+      "canon_class": "recommendation",
+      "origin_artifact": "Motion-Principles"
+    },
+    {
+      "id": "REC-042",
+      "title": "Publish motion token companion (duration bands, easing families, surface classes) under Design System Spec / token SoT",
+      "reason": "GOV-113/117 name rules; named curves and token file still missing (also REC-020).",
+      "impact": "One SoT for web presets + Android mapping under GOV-118.",
+      "risk": "High without tokens — each surface invents physics.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": ["GOV-113", "GOV-117", "GOV-118", "GOV-073"],
+      "canon_class": "recommendation",
+      "origin_artifact": "Motion-Principles"
+    },
+    {
+      "id": "REC-043",
+      "title": "Add Motion QA gates: purpose allowlist, capture-after-commit, budget count, celebration stakes, reduced-motion path",
+      "reason": "Operationalize GOV-112/115/116/119 + GOV-072 + Known risks.",
+      "impact": "PR checklist blocks idle flair, capture delay, habit fireworks, broken reduced-motion.",
+      "risk": "Low process cost; High drift if skipped.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": ["GOV-112", "GOV-115", "GOV-116", "GOV-119", "GOV-072"],
+      "canon_class": "recommendation",
+      "origin_artifact": "Motion-Principles"
+    },
+    {
+      "id": "REC-044",
+      "title": "Founder resolve CF-M-001: ~150–250ms band as emotional tempo with platform tokens (GOV-113 × GOV-118)",
+      "reason": "GOV-113 Needs Discussion — literal ms vs native platform vernacular.",
+      "impact": "Unblocks Android motion mapping without forcing web ms onto Material tokens.",
+      "risk": "High if skipped — either rigid ms fights OS or duration law becomes optional.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": ["GOV-113", "GOV-118"],
+      "canon_class": "recommendation",
+      "origin_artifact": "Motion-Principles"
+    },
+    {
+      "id": "REC-045",
+      "title": "Ban animation-end as sole success path; essential feedback works as instant state under reduced motion",
+      "reason": "M-5 + Known risks — Reduced-motion users getting broken states if logic tied to animation end events. Elevates GOV-072 ops without new GOV.",
+      "impact": "State machines complete without awaiting animationend; decorative motion yields.",
+      "risk": "High a11y break if ignored.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": ["GOV-072", "GOV-116", "GOV-077", "GOV-114"],
+      "canon_class": "recommendation",
+      "origin_artifact": "Motion-Principles"
+    },
+    {
+      "id": "REC-046",
+      "title": "Align celebration motion with Life Score vs XP role matrix when GOV-068 ratified",
+      "reason": "GOV-119 proportional celebration depends on GOV-068 Needs Discussion role split.",
+      "impact": "XP moments get celebration budget; Life Score stays honest/non-casino.",
+      "risk": "Medium — celebration creep while roles unmixed.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": ["GOV-119", "GOV-068", "GOV-055"],
+      "canon_class": "recommendation",
+      "origin_artifact": "Motion-Principles"
+    },
+    {
+      "id": "REC-047",
+      "title": "Next P7 artifact: 08_INTERACTION_PRINCIPLES or 11_ACCESSIBILITY_PRINCIPLES or 14_DESIGN_SYSTEM_SPECIFICATION",
+      "reason": "Motion deps cite Interaction + Accessibility; Design System Spec still owns token contracts. Page Blueprints still open from IA.",
+      "impact": "Continues build-without-reread for interaction/a11y/token stack.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": ["GOV-112", "GOV-072", "GOV-114", "GOV-073"],
+      "canon_class": "recommendation",
+      "origin_artifact": "Motion-Principles"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-M-001",
+      "type": "Complementary tension — duration band vs platform vernacular",
+      "detail": "M-2 locks ~150–250ms micro; M-8 allows native platform motion tokens. Not a hard contradiction if band = emotional tempo. Needs founder rule (REC-044). GOV-113 Needs Discussion.",
+      "related_gov": ["GOV-113", "GOV-118"],
+      "recommendation": "REC-044"
+    },
+    {
+      "id": "CF-M-002",
+      "type": "Dependency on open Needs Discussion",
+      "detail": "GOV-119 celebration proportional depends on GOV-068 Life Score vs XP roles still Needs Discussion.",
+      "related_gov": ["GOV-119", "GOV-068", "GOV-055"],
+      "recommendation": "REC-046 + keep REC-019"
+    },
+    {
+      "id": "CF-M-003",
+      "type": "Tradeoff — demoability vs calm",
+      "detail": "Tradeoffs: Restrained motion looks “less demoable” on Dribbble. Demoability is not the north star. Aligns with GOV-021 non-vanity success; not a canon conflict.",
+      "related_gov": ["GOV-115", "GOV-112", "GOV-021"],
+      "recommendation": "No change; cite Tradeoffs in Motion QA"
+    },
+    {
+      "id": "CF-M-004",
+      "type": "Known risk — craft polish motion debt",
+      "detail": "Known risks: Craft polish adding motion debt. GOV-112/115 address; enforcement still process-gap.",
+      "related_gov": ["GOV-112", "GOV-115"],
+      "recommendation": "REC-043"
+    },
+    {
+      "id": "CF-M-005",
+      "type": "Known risk — reduced-motion broken on animation-end",
+      "detail": "Known risks: Reduced-motion users getting broken states if logic tied to animation end events. GOV-072 covers honor; ops via REC-045.",
+      "related_gov": ["GOV-072", "GOV-116", "GOV-077"],
+      "recommendation": "REC-045"
+    },
+    {
+      "id": "CF-M-006",
+      "type": "Extract gap — gesture motion absent",
+      "detail": "Founder extract list asked for Gesture motion. Source 09_MOTION has no gesture principle. Do not invent. Govern later via Interaction Principles / Accessibility / Component Spec.",
+      "related_gov": ["GOV-112"],
+      "recommendation": "REC-047 → 08_INTERACTION_PRINCIPLES; Missing M-M-003"
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-M-001",
+      "missing": "Named easing curves / motion token file",
+      "why": "GOV-117 states family-per-class; curves unnamed",
+      "next": "REC-042 + govern 14_DESIGN_SYSTEM_SPECIFICATION"
+    },
+    {
+      "id": "M-M-002",
+      "missing": "Founder rule: ms band vs platform tokens",
+      "why": "CF-M-001 / GOV-113 Needs Discussion",
+      "next": "REC-044"
+    },
+    {
+      "id": "M-M-003",
+      "missing": "Gesture motion principles",
+      "why": "Not in 09_MOTION source — do not invent",
+      "next": "Govern 08_INTERACTION_PRINCIPLES / component blueprints"
+    },
+    {
+      "id": "M-M-004",
+      "missing": "Error-motion specific pattern beyond Feedback purpose",
+      "why": "M-1 lists failed as feedback purpose; no separate error choreography",
+      "next": "Component Blueprints / Interaction Principles — reuse GOV-112 + GOV-077"
+    },
+    {
+      "id": "M-M-005",
+      "missing": "AI response motion beyond refuse breathing-glow",
+      "why": "Only refuse stated; positive AI response motion pattern absent",
+      "next": "AI surface specs under GOV-112 + GOV-053; no invent now"
+    },
+    {
+      "id": "M-M-006",
+      "missing": "Motion QA checklist operationalization",
+      "why": "Known risks + GOV-112/115/116/119",
+      "next": "REC-043"
+    }
+  ],
+  "questions_for_founder": [
+    "Confirm ~150–250ms as emotional-tempo band with native platform tokens allowed (REC-044 / GOV-113)?",
+    "Ratify purpose allowlist + AI-awake breathing refuse as citeable (GOV-112)?",
+    "Confirm celebration: quiet habit ticks; richer only for XP milestones (GOV-119 × GOV-068)?",
+    "Approve loading-must-not-mask-perf as Medium-confidence canon (GOV-121)?",
+    "Adopt REC-045: no animation-end-only success paths?",
+    "Gesture motion: defer to Interaction Principles (CF-M-006) — confirm no invent?",
+    "Next artifact: Interaction, Accessibility, or Design System Spec (REC-047)?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 7,
+    "ai_readiness": 7,
+    "conflict_hygiene": 8,
+    "metric_rigor": 8,
+    "amendment_process": 8,
+    "completeness_build_without_reread": 7,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 80,
+    "interpretation": "Motion Principles supply purpose allowlist, duration band, technique, budget, capture-latency, easing family, platform tempo, celebration, page-transition, and loading-honesty laws deferred from Constitution. GOV-113 Needs Discussion until ms↔platform rule. Gesture motion absent from source — not invented. No hard contradiction with Constitution/NN/IA/VL."
+  },
+  "validation": {
+    "continuous_gov_ids": true,
+    "json_schema": true,
+    "duplicate_gov_detection": true,
+    "duplicate_decision_detection": true,
+    "broken_dependency_detection": true,
+    "broken_references": true,
+    "missing_evidence": true,
+    "status": "PASSED"
+  }
+}

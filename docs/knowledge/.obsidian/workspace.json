@@ -1,0 +1,74 @@
+{
+  "main": {
+    "id": "aiimin-main",
+    "type": "split",
+    "children": [
+      {
+        "id": "aiimin-leaf",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "00_HOME.md",
+            "mode": "source"
+          }
+        }
+      }
+    ]
+  },
+  "left": {
+    "id": "aiimin-left",
+    "type": "split",
+    "children": [
+      {
+        "id": "aiimin-file-explorer",
+        "type": "leaf",
+        "state": {
+          "type": "file-explorer",
+          "state": {}
+        }
+      },
+      {
+        "id": "aiimin-search",
+        "type": "leaf",
+        "state": {
+          "type": "search",
+          "state": {
+            "query": "",
+            "matchingCase": false
+          }
+        }
+      }
+    ]
+  },
+  "right": {
+    "id": "aiimin-right",
+    "type": "split",
+    "children": [
+      {
+        "id": "aiimin-backlink",
+        "type": "leaf",
+        "state": {
+          "type": "backlink",
+          "state": {
+            "collapseAll": false
+          }
+        }
+      },
+      {
+        "id": "aiimin-outgoing",
+        "type": "leaf",
+        "state": {
+          "type": "outgoing-link",
+          "state": {}
+        }
+      }
+    ]
+  },
+  "active": "aiimin-leaf",
+  "lastOpenFiles": [
+    "00_HOME.md",
+    "Maps of Content/Genesis.md",
+    "15_MEMORY/Current-Context.md"
+  ]
+}
