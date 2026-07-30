@@ -30,6 +30,8 @@ tags:
 
 ## Today
 
+**V1 BLUEPRINT WRITTEN** — [[Roadmap/AIIMIN-V1-Blueprint]] (2663 lines, §0–§23). Single implementation source: IA, onboarding, all feature specs, Life Graph schema, API, AI, privacy TPA, sync, AWS target, web↔app unity, states/edge cases, tests, roadmap W0–W13, open decisions OD-01…16 + ADR-B1…B5. Backlog below stays the raw capture list; Blueprint is the structured version.
+
 **V1 app brainstorm — ACTIVE** (not prototype-for-others; ship full v1). Founder: depth hero, monotone UI, health sync, money UPI, family vault, docs OS, calendar. Track here only — no new MD sprawl.
 
 **Personal OS prototypes v5-opus — reference only** — five HTML directions; v1 builds real app (web + native), not demo shortcuts.
@@ -367,6 +369,7 @@ tags:
 
 ## Touch
 
+- `Roadmap/AIIMIN-V1-Blueprint.md` ← V1 implementation source
 - `Roadmap/Brain-OS-Implementation/W6_Validation_Evidence.md`
 - `Roadmap/Brain-OS-Implementation/06_Living_Metrics.md`
 - `Dashboards/00_Founder-Workspace-Index.md`
