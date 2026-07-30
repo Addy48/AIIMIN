@@ -39,7 +39,6 @@ export const ROUTE_MIN_TIER = {
   '/identity': 'explore',
   '/notes': 'explore',
   '/journal': 'explore',
-  '/insights': 'core',
   '/habits': 'core',
   '/goals': 'core',
   '/finance': 'core',
@@ -50,6 +49,7 @@ export const ROUTE_MIN_TIER = {
   '/placements': 'core',
   '/family': 'pro',
   '/reports': 'pro',
+  /* /insights redirects → /reports?tab=patterns (tier applied on /reports) */
 };
 
 export function minTierForPath(pathname) {

@@ -302,29 +302,37 @@ const Settings = () => {
           />
           <Row
             label="Guided Introduction"
-            desc="Take a guided walkthrough of the whole website and its key features"
+            desc="Eight-stop Life OS tour — Today, capture, discipline, focus, Reports. Starts without a page reload."
             control={
-              <button 
+              <button
+                type="button"
                 onClick={() => {
-                  localStorage.removeItem('aiimin_tour_completed');
-                  toast.success('Onboarding tour reset! Starting from Overview...');
-                  setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent('aiimin:goto', { detail: '/overview' }));
-                    window.location.reload();
-                  }, 1000);
-                }} 
-                style={{ 
-                  padding: '8px 14px', 
-                  borderRadius: '10px', 
-                  background: 'var(--color-elevated)', 
-                  color: 'var(--color-accent)', 
-                  border: '1px solid var(--color-border)', 
-                  fontSize: '12px', 
-                  fontWeight: 700, 
-                  cursor: 'pointer' 
+                  // Never clear opt-out — invite must not return after Not now.
+                  if (typeof window.startProductTour === 'function') {
+                    window.startProductTour();
+                    toast.success('Tour started');
+                  } else {
+                    window.dispatchEvent(new CustomEvent('aiimin:start-tour'));
+                    toast.success('Starting tour…');
+                    setTimeout(() => {
+                      if (typeof window.startProductTour === 'function') window.startProductTour();
+                      else toast.error('Open any app page first, then try again');
+                    }, 200);
+                  }
+                }}
+                style={{
+                  padding: '10px 16px',
+                  minHeight: 40,
+                  borderRadius: 10,
+                  background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)',
+                  color: 'var(--color-accent)',
+                  border: '1px solid var(--color-accent)',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
                 }}
               >
-                Take Tour Again
+                Start product tour
               </button>
             }
           />

@@ -1,6 +1,7 @@
 export function generateReportPayload({ lhs, drivers, drift, forecast, clusters, archetypes, momentum, weeklyReview }) {
-    const bestDay = lhs.timeline.reduce((best, day) => (!best || day.globalScore > best.globalScore ? day : best), null);
-    const worstDay = lhs.timeline.reduce((worst, day) => (!worst || day.globalScore < worst.globalScore ? day : worst), null);
+    const timeline = Array.isArray(lhs?.timeline) ? lhs.timeline : [];
+    const bestDay = timeline.reduce((best, day) => (!best || day.globalScore > best.globalScore ? day : best), null);
+    const worstDay = timeline.reduce((worst, day) => (!worst || day.globalScore < worst.globalScore ? day : worst), null);
 
     return {
         executiveSummary: {

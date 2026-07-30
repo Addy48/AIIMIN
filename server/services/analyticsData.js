@@ -67,9 +67,6 @@ export async function getAnalyticsDataset(userId, windowDays = 120, opts = {}) {
     const hasEnd = Boolean(endOverride);
     const baseParams = hasEnd ? [userId, sinceDate, untilDate] : [userId, sinceDate];
     const dayCol = hasEnd ? 'AND date >= $2 AND date <= $3' : 'AND date >= $2';
-    const pomodoroCol = hasEnd
-        ? `AND DATE(started_at AT TIME ZONE 'UTC') >= $2 AND DATE(started_at AT TIME ZONE 'UTC') <= $3`
-        : `AND DATE(started_at AT TIME ZONE 'UTC') >= $2`;
     const routineCol = hasEnd
         ? `AND DATE(started_at AT TIME ZONE 'Asia/Kolkata') >= $2 AND DATE(started_at AT TIME ZONE 'Asia/Kolkata') <= $3`
         : `AND DATE(started_at AT TIME ZONE 'Asia/Kolkata') >= $2`;
@@ -93,11 +90,12 @@ export async function getAnalyticsDataset(userId, windowDays = 120, opts = {}) {
             baseParams
         ),
         pool.query(
-            `SELECT DATE(started_at AT TIME ZONE 'UTC') AS date,
+            // Live schema: daily rollup rows (date, cycles_completed, total_focus_minutes) — not per-start timestamps.
+            `SELECT date::text AS date,
                     COALESCE(SUM(cycles_completed), 0)::numeric AS focus_cycles,
-                    COALESCE(SUM(duration), 0)::numeric AS focus_minutes
+                    COALESCE(SUM(total_focus_minutes), 0)::numeric AS focus_minutes
              FROM pomodoro_sessions
-             WHERE user_id = $1 ${pomodoroCol}
+             WHERE user_id = $1 ${hasEnd ? 'AND date >= $2 AND date <= $3' : 'AND date >= $2'}
              GROUP BY 1
              ORDER BY 1 ASC`,
             baseParams

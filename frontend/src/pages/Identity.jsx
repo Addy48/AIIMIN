@@ -124,7 +124,7 @@ const modules = [
   { emoji: '🏠', name: 'Family', desc: 'Documents & legacy storage' },
   { emoji: '📝', name: 'Notes', desc: 'Structured knowledge capture' },
   { emoji: '🎯', name: 'Focus', desc: 'Deep work & flow sessions' },
-  { emoji: '📊', name: 'Insights', desc: 'Life metrics & skill tree' },
+  { emoji: '📊', name: 'Reports', desc: 'Period report, patterns & skills' },
   { emoji: '🤝', name: 'Placements', desc: 'Career pipeline & prep' },
   { emoji: '⚙️', name: 'Settings', desc: 'Privacy, data & preferences' },
 ];

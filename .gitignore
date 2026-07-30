@@ -43,9 +43,15 @@ deploy/EC2.env.paste
 
 # Tools & editors
 .claude/
+.cursor/
+.cursor/**
 .superpowers/
 .sst/
 .sst
+
+# Local QA dumps / agent noise (never ship)
+**/debug-*.log
+docs/knowledge/12_SPRINTS/protocol-shots/
 
 # One-time scripts (safe to delete after use)
 create_user.js
