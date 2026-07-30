@@ -1,12 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { API_URL } from '../../utils/api';
 import toast from '../../utils/toast';
+import {
+  OPEN_LOGGER_EVENT,
+  loggerShortcutLabel,
+} from '../../utils/loggerShortcut';
+import '../../styles/todayCapture.css';
 
 const EXAMPLES = [
-  "Worked out for 45 mins, feeling great. 8/10 today.",
-  "Skipped gym, ate junk food. Mood 4/10.",
-  "3 hours of deep focus. Diet on track. Energy 9/10.",
-  "Slept 9 hours, meditated. Feeling 7/10.",
+  'Worked out for 45 mins, feeling great. 8/10 today.',
+  'Skipped gym, ate junk food. Mood 4/10.',
+  '3 hours of deep focus. Diet on track. Energy 9/10.',
+  'Slept 9 hours, meditated. Feeling 7/10.',
+  'Spent ₹420 on groceries. Mood 6.',
+];
+
+const DESTINATIONS = [
+  { to: '/habits', label: 'Habits' },
+  { to: '/journal', label: 'Journal' },
+  { to: '/finance', label: 'Finance' },
+  { to: '/goals', label: 'Goals' },
 ];
 
 const STATES = {
@@ -16,12 +31,42 @@ const STATES = {
   error: 'error',
 };
 
+function actionLabel(action) {
+  if (action.type === 'log_mood') return `Mood logged: ${action.score}/10`;
+  if (action.type === 'log_habit') {
+    return `${action.name}: ${action.completed ? 'Completed' : 'Skipped'}`;
+  }
+  if (action.type === 'add_journal') return 'Saved to journal';
+  if (action.type === 'log_discipline') {
+    return `Discipline: ${action.reset ? 'Reset' : 'Maintained'}`;
+  }
+  if (action.type === 'log_expense' || action.type === 'add_expense') {
+    return action.name || 'Expense logged';
+  }
+  return action.type;
+}
+
+/**
+ * Sole Today-fold capture surface (J0 = A).
+ * Speaks naturally → AI sorts habits / mood / journal / money.
+ */
 export default function UniversalLogger({ onSuccess }) {
   const [text, setText] = useState('');
   const [state, setState] = useState(STATES.idle);
   const [results, setResults] = useState([]);
   const [exampleIdx, setExampleIdx] = useState(0);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    const onOpen = (event) => {
+      inputRef.current?.focus({ preventScroll: true });
+      if (event?.detail?.focusAiLog) {
+        inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
+    window.addEventListener(OPEN_LOGGER_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_LOGGER_EVENT, onOpen);
+  }, []);
 
   const placeholder = EXAMPLES[exampleIdx % EXAMPLES.length];
 
@@ -40,113 +85,112 @@ export default function UniversalLogger({ onSuccess }) {
       setResults(data.actions || []);
       setState(STATES.success);
       setText('');
-      toast.success('AI logged your entry!');
+      toast.success('Logged');
       if (onSuccess) onSuccess(data.actions);
-      // Reset to idle after 3 seconds
       setTimeout(() => {
         setState(STATES.idle);
         setResults([]);
-        setExampleIdx(i => i + 1);
-      }, 3000);
+        setExampleIdx((i) => i + 1);
+      }, 3200);
     } catch (err) {
       console.error('Universal log error:', err);
       setState(STATES.error);
       toast.error(err.message || 'Failed to process entry');
-      setTimeout(() => setState(STATES.idle), 2000);
+      setTimeout(() => setState(STATES.idle), 2200);
     }
   };
 
-  const actionEmoji = (type) => {
-    if (type === 'log_mood') return '😊';
-    if (type === 'log_habit') return '✅';
-    if (type === 'add_journal') return '📝';
-    if (type === 'log_discipline') return '🔁';
-    return '⚡';
-  };
+  const boxState =
+    state === STATES.thinking
+      ? 'is-thinking'
+      : state === STATES.success
+        ? 'is-success'
+        : state === STATES.error
+          ? 'is-error'
+          : '';
 
-  const actionLabel = (action) => {
-    if (action.type === 'log_mood') return `Mood logged: ${action.score}/10`;
-    if (action.type === 'log_habit') return `${action.name}: ${action.completed ? 'Completed ✓' : 'Skipped ✗'}`;
-    if (action.type === 'add_journal') return 'Saved to journal';
-    if (action.type === 'log_discipline') return `Discipline: ${action.reset ? 'Reset' : 'Maintained'}`;
-    return action.type;
-  };
+  const hint =
+    state === STATES.thinking
+      ? 'Sorting into habits, mood, journal…'
+      : state === STATES.success
+        ? 'Done — keep going or open a section below'
+        : 'Enter to log · Shift+Enter for newline';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-        <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>✨</div>
-        <div>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--color-text-1)', lineHeight: 1 }}>Universal Logger</div>
-          <div style={{ fontSize: '12px', color: 'var(--color-text-1)', fontWeight: 600 }}>AI-powered · speak naturally</div>
+    <section className="today-capture" aria-label="Today capture">
+      <div className="today-capture__head">
+        <div className="today-capture__identity">
+          <div className="today-capture__mark" aria-hidden>
+            <Sparkles size={18} strokeWidth={2} />
+          </div>
+          <div>
+            <p className="today-capture__eyebrow">Capture</p>
+            <h2 className="today-capture__title">Tell AIIMIN what happened</h2>
+            <p className="today-capture__sub">
+              One box. Describe your day — habits, mood, journal, money. AI sorts it.
+            </p>
+          </div>
         </div>
+        <span className="today-capture__chord" title="Global shortcut">
+          {loggerShortcutLabel()}
+        </span>
       </div>
 
-      {/* Input */}
-      <div style={{
-        background: 'var(--color-elevated)', borderRadius: '14px',
-        border: `1.5px solid ${state === STATES.thinking ? '#6366f1' : state === STATES.success ? '#10B981' : state === STATES.error ? '#ef4444' : 'var(--color-border)'}`,
-        transition: 'border-color 0.2s', overflow: 'hidden',
-        boxShadow: state === STATES.thinking ? '0 0 0 3px rgba(99,102,241,0.12)' : state === STATES.success ? '0 0 0 3px rgba(16,185,129,0.12)' : 'none',
-      }}>
+      <div className={`today-capture__box ${boxState}`.trim()}>
         <textarea
           ref={inputRef}
+          className="today-capture__textarea"
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(e) => setText(e.target.value)}
           placeholder={placeholder}
           disabled={state === STATES.thinking}
-          onKeyDown={e => {
+          aria-label="Describe what to log"
+          onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && text.trim()) {
               e.preventDefault();
               handleSubmit();
             }
           }}
-          style={{
-            width: '100%', minHeight: '72px', padding: '12px 14px',
-            background: 'transparent', border: 'none', outline: 'none',
-            color: 'var(--color-text-1)', fontSize: '13px', lineHeight: 1.5,
-            fontFamily: 'inherit', resize: 'none', boxSizing: 'border-box',
-            opacity: state === STATES.thinking ? 0.6 : 1,
-          }}
         />
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px 10px', borderTop: '1px solid var(--color-border)' }}>
-          <span style={{ fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 500 }}>
-            {state === STATES.thinking ? '🤖 Thinking...' : state === STATES.success ? '✓ Done!' : 'Press Enter or click →'}
-          </span>
+        <div className="today-capture__bar">
+          <span className="today-capture__hint">{hint}</span>
           <button
+            type="button"
+            className="today-capture__submit"
             onClick={handleSubmit}
             disabled={!text.trim() || state === STATES.thinking}
-            style={{
-              padding: '6px 14px', borderRadius: '8px', border: 'none', cursor: text.trim() && state === STATES.idle ? 'pointer' : 'default',
-              background: text.trim() && state === STATES.idle ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'var(--color-border)',
-              color: text.trim() && state === STATES.idle ? '#fff' : 'var(--color-text-3)',
-              fontSize: '12px', fontWeight: 700, transition: 'all 0.2s',
-            }}
           >
-            {state === STATES.thinking ? '...' : '→'}
+            {state === STATES.thinking ? 'Logging…' : (
+              <>
+                Log
+                <ArrowRight size={14} strokeWidth={2.5} />
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Results */}
       {state === STATES.success && results.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div className="today-capture__results" role="status">
           {results.map((action, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '8px 12px', borderRadius: '10px',
-              background: action.status === 'success' ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)',
-              border: `1px solid ${action.status === 'success' ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'}`,
-            }}>
-              <span style={{ fontSize: '14px' }}>{actionEmoji(action.type)}</span>
-              <span style={{ fontSize: '12px', fontWeight: 600, color: action.status === 'success' ? '#10B981' : '#F59E0B' }}>
-                {actionLabel(action)}
-              </span>
+            <div
+              key={`${action.type}-${i}`}
+              className={`today-capture__result${action.status === 'success' ? '' : ' is-warn'}`}
+            >
+              {actionLabel(action)}
             </div>
           ))}
         </div>
       )}
-    </div>
+
+      <div className="today-capture__dest">
+        <span className="today-capture__dest-label">Need a full page</span>
+        {DESTINATIONS.map((d) => (
+          <Link key={d.to} to={d.to}>
+            {d.label}
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }

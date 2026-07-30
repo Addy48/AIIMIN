@@ -25,8 +25,10 @@ const Navbar = ({ user }) => {
   const menuToggleRef = useRef(null);
   const moreRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const isDark = isDarkTheme(theme);
   const { resolveForUser } = useNavPreferences();
+  // Pinning restored: user-selected pins stay in primary strip; unpinned actives live in More (N)
   const { pinned: visiblePrimary, more: visibleMore } = resolveForUser(!!user?.isGuest);
   const visibleAll = [...visiblePrimary, ...visibleMore];
   const moreIsActive = visibleMore.some((link) => location.pathname.startsWith(link.to));
@@ -109,7 +111,7 @@ const Navbar = ({ user }) => {
                 </NavLink>
               ))}
             </div>
-            {visibleMore.length > 0 && (
+            {(visibleMore.length > 0 || true) && (
               <div className="nav-masthead__more-wrap" ref={moreRef}>
                 <button
                   type="button"
@@ -118,7 +120,7 @@ const Navbar = ({ user }) => {
                   aria-haspopup="true"
                   onClick={() => setMoreOpen((o) => !o)}
                 >
-                  More
+                  {visibleMore.length > 0 ? `More (${visibleMore.length})` : 'More'}
                   <ChevronDown
                     size={14}
                     className={`nav-masthead__more-chevron${moreOpen ? ' is-open' : ''}`}
@@ -146,6 +148,18 @@ const Navbar = ({ user }) => {
                           {label}
                         </NavLink>
                       ))}
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="nav-masthead__link"
+                        style={{ width: '100%', textAlign: 'left', cursor: 'pointer', borderTop: '1px solid var(--color-border)', marginTop: 4, paddingTop: 10 }}
+                        onClick={() => {
+                          setMoreOpen(false);
+                          navigate('/account?section=personalization');
+                        }}
+                      >
+                        Customize navigation…
+                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>

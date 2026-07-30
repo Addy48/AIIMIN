@@ -4,17 +4,20 @@ import Navbar from '../Navbar';
 import BottomNav from './BottomNav';
 import CommandPalette from '../system/CommandPalette';
 import ArcGuard from '../system/ArcGuard';
+import { useDeviceTier } from '../../hooks/useDeviceTier';
 
 /**
- * DashboardLayout — Authenticated shell.
- * Compact nav + clean Vercel-style content area.
- * Shows an amber guest-mode banner when user.isGuest === true.
+ * DashboardLayout — Authenticated shell for iPad + desktop Life OS.
+ * Phone browsers are redirected to /m (capture-only).
  */
 const DashboardLayout = ({ user }) => {
   const navigate = useNavigate();
+  useDeviceTier(); // keeps html[data-device-tier] in sync while shell mounted
 
   return (
-    <div style={{
+    <div
+      className="dashboard-layout"
+      style={{
       minHeight: '100vh',
       background: 'var(--color-base)',
       paddingTop: 'var(--nav-height)',

@@ -184,6 +184,26 @@ const ALL_ACTIONS = [
     type: 'navigate',
     keywords: ['settings', 'preferences', 'account', 'theme'],
   },
+  {
+    id: 'nav_sports',
+    label: 'Go to Sports',
+    description: 'Live sports context',
+    route: '/sports',
+    icon: Activity,
+    category: 'Navigation',
+    type: 'navigate',
+    keywords: ['sports', 'cricket', 'football', 'scores', 'live'],
+  },
+  {
+    id: 'nav_account',
+    label: 'Go to Account',
+    description: 'Profile, billing, personalization',
+    route: '/account',
+    icon: Settings,
+    category: 'Navigation',
+    type: 'navigate',
+    keywords: ['account', 'profile', 'billing', 'personalization'],
+  },
 
   // ── Quick Actions ────────────────────────────
   {

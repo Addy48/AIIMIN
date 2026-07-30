@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { Mic, Send, Sparkles } from 'lucide-react';
 import useJournalVoice from '../../hooks/useJournalVoice';
 import JournalMoodStrip from './JournalMoodStrip';
@@ -30,7 +30,6 @@ export default function JournalCapture({
   const [saving, setSaving] = useState(false);
   const [showStructured, setShowStructured] = useState(false);
   const inputRef = useRef(null);
-  const holdTimerRef = useRef(null);
   const [holdingMic, setHoldingMic] = useState(false);
 
   const canSave = !readOnly && (text.trim().length > 0 || todaySaved);
@@ -73,25 +72,20 @@ export default function JournalCapture({
 
   const onMicPointerDown = () => {
     if (!supported || readOnly) return;
-    holdTimerRef.current = setTimeout(() => {
-      setHoldingMic(true);
-      if (!isListening) toggle();
-    }, 120);
+    setHoldingMic(true);
+    if (!isListening) toggle();
   };
 
   const onMicPointerUp = () => {
-    clearTimeout(holdTimerRef.current);
     if (holdingMic && isListening) {
       stop();
-      setHoldingMic(false);
     }
+    setHoldingMic(false);
   };
 
-  useEffect(() => () => clearTimeout(holdTimerRef.current), []);
-
   const displayHint = useMemo(() => {
-    if (todaySaved) return 'Logged today — add more or tap mood to update.';
-    return 'Short entries count. Type, speak, or pick a mood.';
+    if (todaySaved) return 'Logged today — add more, or tap a mood to update.';
+    return 'Write freely. Hold the mic to speak — finals land fast.';
   }, [todaySaved]);
 
   return (

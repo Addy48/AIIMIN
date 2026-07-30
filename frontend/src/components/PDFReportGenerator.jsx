@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import { Download, AlertCircle, Calendar, FileText, CheckCircle } from 'lucide-react';
-import { getRows } from '../services/dbService';
 
 // Create styles for PDF
 const styles = StyleSheet.create({
@@ -101,11 +100,15 @@ const ReportDocument = ({ data, timeline }) => (
   </Document>
 );
 
-const PDFReportGenerator = ({ user }) => {
+const PDFReportGenerator = ({ user, rangeLabel, startDate, endDate, days }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [eligible, setEligible] = useState(false);
-  const [timeline, setTimeline] = useState('Last 30 Days');
+  const [timeline, setTimeline] = useState(rangeLabel || 'Last 30 Days');
+
+  useEffect(() => {
+    if (rangeLabel) setTimeline(rangeLabel);
+  }, [rangeLabel]);
   
   useEffect(() => {
     const fetchReportData = async () => {
@@ -117,25 +120,17 @@ const PDFReportGenerator = ({ user }) => {
 
       setLoading(true);
       try {
-        const logs = await getRows('daily_logs', { eq: { user_id: user.id } });
-        
-        if (!logs || logs.length === 0) {
-          setEligible(false);
-          return;
-        }
+        const params = new URLSearchParams({
+          days: String(days || (timeline.includes('15') ? 15 : timeline.includes('Year') ? 365 : timeline.includes('Quarter') ? 90 : 30)),
+        });
+        if (startDate) params.set('start', startDate);
+        if (endDate) params.set('end', endDate);
 
-        // Calculate date cutoff based on timeline
-        const now = new Date();
-        let cutoffDate = new Date();
-        if (timeline === 'Last 15 Days') cutoffDate.setDate(now.getDate() - 15);
-        else if (timeline === 'Last 30 Days') cutoffDate.setDate(now.getDate() - 30);
-        else if (timeline === 'Quarterly (Q2)') cutoffDate.setMonth(now.getMonth() - 3);
-        else if (timeline === 'Year-to-Date') cutoffDate = new Date(now.getFullYear(), 0, 1);
+        const { apiGet } = await import('../utils/api');
+        const report = await apiGet(`/intelligence/report?${params.toString()}`);
+        const rows = report?.meta?.timeline || [];
 
-        const filteredLogs = logs.filter(log => new Date(log.date) >= cutoffDate);
-
-        if (filteredLogs.length < 3) {
-          // Require at least 3 logs to generate a report, instead of 15
+        if (rows.length < 3) {
           setEligible(false);
           return;
         }
@@ -144,33 +139,25 @@ const PDFReportGenerator = ({ user }) => {
         let totalMood = 0, validMoodCount = 0;
         let gymDays = 0, learningDays = 0;
 
-        filteredLogs.forEach(log => {
-          if (log.sleep_start && log.sleep_end) {
-            const startParts = log.sleep_start.split(':');
-            const endParts = log.sleep_end.split(':');
-            if (startParts.length === 2 && endParts.length === 2) {
-              const startH = parseInt(startParts[0]), startM = parseInt(startParts[1]);
-              const endH = parseInt(endParts[0]), endM = parseInt(endParts[1]);
-              let hours = endH - startH + (endM - startM) / 60;
-              if (hours < 0) hours += 24;
-              totalSleep += hours;
-              validSleepCount++;
-            }
+        rows.forEach((log) => {
+          if (Number(log.sleep_hours) > 0) {
+            totalSleep += Number(log.sleep_hours);
+            validSleepCount++;
           }
-          if (log.mood) {
-            totalMood += log.mood;
+          if (Number(log.mood) > 0) {
+            totalMood += Number(log.mood);
             validMoodCount++;
           }
           if (log.gym_done) gymDays++;
           if (log.learning_done) learningDays++;
         });
 
-        const daysLogged = filteredLogs.length;
+        const daysLogged = rows.length;
         const avgSleep = validSleepCount > 0 ? (totalSleep / validSleepCount).toFixed(1) : 0;
         const avgMood = validMoodCount > 0 ? (totalMood / validMoodCount).toFixed(1) : 0;
         const gymConsistency = Math.round((gymDays / daysLogged) * 100);
         const learningConsistency = Math.round((learningDays / daysLogged) * 100);
-        const disciplineScore = Math.round((gymConsistency + learningConsistency + (avgMood * 10)) / 3);
+        const disciplineScore = Math.round((gymConsistency + learningConsistency + (Number(avgMood) * 10)) / 3);
 
         setEligible(true);
         setData({
@@ -190,7 +177,7 @@ const PDFReportGenerator = ({ user }) => {
     };
     
     fetchReportData();
-  }, [user?.id, timeline]);
+  }, [user?.id, timeline, rangeLabel, startDate, endDate, days]);
 
   if (loading) {
     return (
@@ -252,6 +239,11 @@ const PDFReportGenerator = ({ user }) => {
       
       <div style={{ marginBottom: '24px' }}>
         <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: 'var(--text-3)', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Reporting Period</label>
+        {rangeLabel ? (
+          <div style={{ padding: '14px 16px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', color: 'var(--text-1)', fontSize: '14px', fontWeight: 600 }}>
+            {timeline}
+          </div>
+        ) : (
         <div style={{ position: 'relative' }}>
             <Calendar size={16} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
             <select 
@@ -278,6 +270,7 @@ const PDFReportGenerator = ({ user }) => {
             </select>
             <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '5px solid var(--text-3)' }} />
         </div>
+        )}
       </div>
       
       <PDFDownloadLink 

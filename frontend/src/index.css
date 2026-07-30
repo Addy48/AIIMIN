@@ -297,14 +297,20 @@ button:disabled, button[disabled] {
 }
 
 /* ─── Mobile Responsiveness ──────────────────────────── */
-@media (max-width: 900px) {
-  /* Hide desktop nav elements on mobile */
-  .desktop-nav-links { display: none !important; }
-  .mobile-menu-btn { display: flex !important; }
-  
-  /* Reduce global padding on smaller screens */
-  :root {
+@media (max-width: 767px) {
+  /* Phone only — tablets keep masthead via data-device-tier overrides */
+  html:not([data-device-tier='tablet']):not([data-device-tier='desktop']) .desktop-nav-links,
+  html[data-device-tier='phone'] .desktop-nav-links { display: none !important; }
+  html[data-device-tier='phone'] .mobile-menu-btn { display: flex !important; }
+
+  html[data-device-tier='phone'] {
     --content-pad: 16px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --content-pad: 20px;
   }
 }
 
@@ -432,6 +438,7 @@ button:disabled, button[disabled] {
 }
 
 .nav-masthead__links {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 2px;

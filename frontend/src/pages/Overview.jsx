@@ -611,26 +611,18 @@ const Overview = () => {
 
           {isVisible('week_numbers') && <WeekInNumbers user={user} />}
 
-          {isVisible('quick_capture') && (
-          <div>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
-              <div style={{ fontSize:'11px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.1em', color:'var(--color-text-2)' }}>Quick Capture</div>
-              <Link to="/journal" style={{ fontSize:'12px', fontWeight:800, color:'var(--color-accent)', textDecoration:'underline' }}>Smart Log</Link>
+          {isVisible('logger') && (
+            <div
+              className="today-capture-shell"
+              style={{
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '20px',
+                padding: '20px 20px 16px',
+              }}
+            >
+              <UniversalLogger onSuccess={() => {}} />
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'12px', background:'var(--color-surface)', border:'1px solid var(--color-border)', borderRadius:'16px', padding:'16px' }}>
-              {[
-                { label: 'Log a Habit', icon: '✅', to: '/habits' },
-                { label: 'Journal Entry', icon: '✏️', to: '/journal' },
-                { label: 'Track Expense', icon: '💸', to: '/finance' },
-                { label: 'Add Goal', icon: '🎯', to: '/goals' }
-              ].map((item, i) => (
-                <Link key={i} to={item.to} style={{ textDecoration:'none', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'10px', minHeight:'96px', padding:'16px 10px', border:'1.5px dashed var(--color-border)', borderRadius:'12px', transition:'all 0.2s', background:'var(--color-elevated)' }} onMouseEnter={e=>e.currentTarget.style.borderColor='var(--color-accent)'} onMouseLeave={e=>e.currentTarget.style.borderColor='var(--color-border)'}>
-                  <div style={{ fontSize:'22px', lineHeight:1 }}>{item.icon}</div>
-                  <div style={{ fontSize:'12px', fontWeight:800, color:'var(--color-text-2)', textAlign:'center' }}>{item.label}</div>
-                </Link>
-              ))}
-            </div>
-          </div>
           )}
 
           {isVisible('countdown') && (
@@ -728,12 +720,6 @@ const Overview = () => {
 
         {/* RIGHT sidebar */}
         <div className="overview-rail">
-
-          {isVisible('logger') && (
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '20px' }}>
-            <UniversalLogger onSuccess={() => {}} />
-          </div>
-          )}
 
           {isVisible('command_center') && <CommandCenter user={user} />}
 

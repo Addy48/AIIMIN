@@ -6,6 +6,8 @@ import { useAuth } from '../hooks/useAuth';
 import { apiPost, apiPatch, apiGet } from '../utils/api';
 import { suggestOsIdFromName } from '../utils/osId';
 import { hasLifeArc } from '../constants/arc';
+import { NAV_PERSONA_PRESETS } from '../constants/navItems';
+import useNavPreferences from '../hooks/useNavPreferences';
 import ArcEditor from '../components/profile/ArcEditor';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
@@ -182,14 +184,16 @@ export default function Onboarding() {
     const [selectedGoals, setSelectedGoals] = useState([]);
     const [selectedHabits, setSelectedHabits] = useState([]);
     const [wakeTime, setWakeTime] = useState('07:00');
+    const [lifeModeId, setLifeModeId] = useState(null); // null until explicit pick — Custom allowed only if clicked
 
     const [loading,    setLoading]    = useState(false);
     const [error,      setError]      = useState('');
     const [usernameStatus, setUsernameStatus] = useState('idle'); // idle | checking | available | taken
 
-    const TOTAL_STEPS = 9; // 0–8 active steps. Step 9 is success
+    const TOTAL_STEPS = 10; // 0–9 active steps. Step 10 is success
 
     const { user, isSignedIn, loading: authLoading, checkSession } = useAuth();
+    const { applyPersonaPreset } = useNavPreferences();
 
     // Legacy ?northStar=1 → ?arc=1
     useEffect(() => {
@@ -314,9 +318,19 @@ export default function Onboarding() {
     const submitWakeUp = () => {
         if (!wakeTime) { setError('Please set your wake-up time'); return; }
         next();
-    }
+    };
 
-    /* ── Step 8: Life Score / Final Submission ── */
+    /* ── Step 8: Life mode (Track H) — required before Today ── */
+    const submitLifeMode = () => {
+        if (!lifeModeId) {
+            setError('Pick a life mode to continue. Custom is fine — you just have to choose it.');
+            return;
+        }
+        applyPersonaPreset(lifeModeId);
+        next();
+    };
+
+    /* ── Step 9: Life Score / Final Submission ── */
     const submitAll = async () => {
         setLoading(true);
         setError('');
@@ -331,6 +345,12 @@ export default function Onboarding() {
             if (!hasLifeArc(lifeArc)) {
                 throw new Error('Life Arc is required.');
             }
+
+            if (!lifeModeId) {
+                throw new Error('Life mode is required.');
+            }
+            // Apply again so nav prefs are set even if localStorage was cleared mid-flow
+            applyPersonaPreset(lifeModeId);
 
             await apiPost('/auth/complete-google-profile', {
                 username: upperUsername,
@@ -367,7 +387,7 @@ export default function Onboarding() {
             await checkSession();
 
             setDir(1);
-            setStep(9);
+            setStep(10);
             await new Promise(r => setTimeout(r, 2400));
             navigate('/overview', { replace: true });
         } catch (err) {
@@ -586,7 +606,58 @@ export default function Onboarding() {
             </div>
         </motion.div>,
 
-        /* Step 8 — Life Score Baseline */
+        /* Step 8 — Life mode (required before Today) */
+        <motion.div key="lifemode" {...slide(dir)}>
+            <h2 style={s.heading}>How do you want to use AIIMIN?</h2>
+            <p style={s.sub}>
+                Pick a life mode. This sets your starting nav pins and Today widgets.
+                Custom is available — you must choose it yourself (no silent default).
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', maxHeight: '340px', overflowY: 'auto' }}>
+                {NAV_PERSONA_PRESETS.map((preset) => {
+                    const selected = lifeModeId === preset.id;
+                    return (
+                        <div
+                            key={preset.id}
+                            onClick={() => { setLifeModeId(preset.id); setError(''); }}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    setLifeModeId(preset.id);
+                                    setError('');
+                                }
+                            }}
+                            style={{
+                                ...s.optionCard,
+                                border: selected ? '1.5px solid var(--color-accent)' : '1.5px solid var(--border)',
+                                background: selected ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)' : 'var(--bg-elevated)',
+                            }}
+                        >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: 0 }}>
+                                <span style={{ fontSize: '15px', fontWeight: selected ? 700 : 600, color: 'var(--text-1)' }}>{preset.label}</span>
+                                <span style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.45 }}>{preset.desc}</span>
+                            </div>
+                            {selected && <Check size={18} color="var(--color-accent)" style={{ flexShrink: 0 }} />}
+                        </div>
+                    );
+                })}
+            </div>
+            {error && <p style={s.err}>{error}</p>}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button onClick={back} style={s.ghostBtn} disabled={loading}>Back</button>
+                <button
+                    onClick={submitLifeMode}
+                    disabled={!lifeModeId}
+                    style={{ ...s.primaryBtn, flex: 1, opacity: lifeModeId ? 1 : 0.5 }}
+                >
+                    Continue <ChevronRight size={16} />
+                </button>
+            </div>
+        </motion.div>,
+
+        /* Step 9 — Life Score Baseline */
         <motion.div key="lifescore" {...slide(dir)} style={{ textAlign: 'center' }}>
             <motion.div 
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -628,7 +699,7 @@ export default function Onboarding() {
             </div>
         </motion.div>,
 
-        /* Step 9 — Success (Animated Intro) */
+        /* Step 10 — Success (Animated Intro) */
         <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', padding: '40px 0' }}>
             <motion.div
                 initial={{ scale: 0 }} animate={{ scale: 1 }}
@@ -692,8 +763,8 @@ export default function Onboarding() {
                         boxShadow: '0 32px 80px rgba(0,0,0,0.06)',
                     }}
                 >
-                    {/* Step indicator — only for steps 0–7 */}
-                    {step < 9 && !arcOnly && <StepIndicator current={step} total={TOTAL_STEPS} />}
+                    {/* Step indicator — only for active setup steps */}
+                    {step < 10 && !arcOnly && <StepIndicator current={step} total={TOTAL_STEPS} />}
 
                     <AnimatePresence mode="wait">
                         {arcOnly ? stepContent[5] : stepContent[step]}
@@ -701,7 +772,7 @@ export default function Onboarding() {
                 </motion.div>
 
                 {/* Footer */}
-                {step < 9 && !arcOnly && (
+                {step < 10 && !arcOnly && (
                     <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-3)', marginTop: '20px' }}>
                         Step {step + 1} of {TOTAL_STEPS} · Your data is always private.
                     </p>

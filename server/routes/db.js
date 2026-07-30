@@ -18,6 +18,7 @@ const USER_SCOPED_TABLES = new Set([
     'family_reminders', 'family_emergency_contacts',
     'journal_entries', 'wins', 'savings_goals', 'budgets', 'routines',
     'discipline_streaks', 'discipline_logs', 'replacement_habits', 'addiction_tracking',
+    'urge_events', 'anchor_edges', 'voice_recall_queue',
     'lab_typing_tests', 'lab_mindset_logs', 'lab_reading_log', 'lab_speaking_logs',
     'lab_reaction_tests', 'lab_personality_logs', 'lab_pit_logs', 'lab_aptitude_scores',
     'lab_system_design_logs', 'lab_streaks', 'lab_correlations', 'lab_insights',

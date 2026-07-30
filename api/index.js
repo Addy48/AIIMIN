@@ -78,6 +78,7 @@ const routeMap = {
     'cron':          () => import('../server/routes/cron.js'),
     'billing':       () => import('../server/routes/billing.js'),
     'discipline':    () => import('../server/routes/discipline.js'),
+    'notes':         () => import('../server/routes/notes.js'),
     'focus':         () => import('../server/routes/focus.js'),
     'db':            () => import('../server/routes/db.js'),
     'user':          () => import('../server/routes/user.js'),

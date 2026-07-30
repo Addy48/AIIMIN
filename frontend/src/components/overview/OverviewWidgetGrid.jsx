@@ -3,19 +3,18 @@ import { LayoutGrid, Eye, EyeOff } from 'lucide-react';
 
 const WIDGETS_KEY = 'aiimin_overview_widgets';
 const WIDGETS_VERSION_KEY = 'aiimin_overview_widgets_version';
-const WIDGETS_VERSION = '2026-07-04-simplified-today';
+const WIDGETS_VERSION = '2026-07-14-j0a-single-logger';
 const WIDGETS_CHANGE_EVENT = 'aiimin-overview-widgets-changed';
-const REDUNDANT_DEFAULT_OFF = new Set(['week_numbers', 'countdown', 'wins']);
+const REDUNDANT_DEFAULT_OFF = new Set(['week_numbers', 'countdown', 'wins', 'quick_capture']);
 
 const DEFAULT_WIDGETS = [
   { id: 'monday_insight', label: 'Weekly Insight', default: true },
   { id: 'week_numbers', label: 'Week in Numbers', default: false },
-  { id: 'quick_capture', label: 'Quick Capture', default: true },
   { id: 'countdown', label: 'Execution Window', default: false },
   { id: 'wins', label: 'Recent Wins', default: false },
   { id: 'micro_task', label: 'Micro Task', default: true },
   { id: 'timeline', label: 'Command Timeline', default: true },
-  { id: 'logger', label: 'Universal Logger', default: true },
+  { id: 'logger', label: 'Capture (Universal Logger)', default: true },
   { id: 'command_center', label: 'Command Center', default: true },
   { id: 'trajectory', label: 'Trajectory', default: true },
 ];
@@ -29,10 +28,16 @@ function loadWidgetPrefs() {
       if (version !== WIDGETS_VERSION) {
         const migrated = { ...defaults, ...saved };
         REDUNDANT_DEFAULT_OFF.forEach((id) => { migrated[id] = false; });
+        // J0=A: force single capture — logger on, tiles gone
+        migrated.logger = true;
+        delete migrated.quick_capture;
+        localStorage.setItem(WIDGETS_KEY, JSON.stringify(migrated));
         localStorage.setItem(WIDGETS_VERSION_KEY, WIDGETS_VERSION);
         return migrated;
       }
-      return { ...defaults, ...saved };
+      const cleaned = { ...defaults, ...saved };
+      delete cleaned.quick_capture;
+      return cleaned;
     }
   } catch { /* ignore */ }
   localStorage.setItem(WIDGETS_VERSION_KEY, WIDGETS_VERSION);

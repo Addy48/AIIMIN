@@ -438,4 +438,190 @@ app.delete('/replacement-habits/:id', requireAuth, async (c) => {
     }
 });
 
+/* ═══════════════════════════════════════════════════════
+   URGE EVENTS — surf timer + pattern language
+═══════════════════════════════════════════════════════ */
+
+const OUTCOMES = new Set(['resisted', 'acted', 'partial', 'still_riding']);
+
+app.post('/urge/start', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const body = await c.req.json().catch(() => ({}));
+        const category = String(body.category || 'custom').trim().slice(0, 80) || 'custom';
+        const intensity = body.intensity != null
+            ? Math.min(5, Math.max(1, parseInt(body.intensity, 10)))
+            : null;
+        const tags = Array.isArray(body.trigger_tags)
+            ? body.trigger_tags.map((t) => String(t).slice(0, 40)).slice(0, 12)
+            : [];
+        const linked = body.linked_replacement_habit_id || null;
+
+        const { rows } = await pool.query(
+            `INSERT INTO public.urge_events
+                (user_id, category, intensity, trigger_tags, linked_replacement_habit_id, status)
+             VALUES ($1, $2, $3, $4::jsonb, $5, 'open')
+             RETURNING id, user_id, category, started_at, intensity, trigger_tags,
+                       linked_replacement_habit_id, status, outcome, duration_to_resolve_sec`,
+            [userId, category, intensity, JSON.stringify(tags), linked]
+        );
+        return c.json(rows[0], 201);
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+app.post('/urge/:id/resolve', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id');
+    try {
+        const body = await c.req.json();
+        const outcome = String(body.outcome || '');
+        if (!OUTCOMES.has(outcome)) {
+            return c.json({ error: 'outcome must be resisted|acted|partial|still_riding' }, 400);
+        }
+        const duration = body.duration_to_resolve_sec != null
+            ? Math.max(0, parseInt(body.duration_to_resolve_sec, 10) || 0)
+            : null;
+        const note = body.note != null ? String(body.note).slice(0, 2000) : null;
+        const intensity = body.intensity != null
+            ? Math.min(5, Math.max(1, parseInt(body.intensity, 10)))
+            : null;
+        const tags = Array.isArray(body.trigger_tags)
+            ? body.trigger_tags.map((t) => String(t).slice(0, 40)).slice(0, 12)
+            : null;
+
+        const { rows: existing } = await pool.query(
+            `SELECT * FROM public.urge_events WHERE id = $1 AND user_id = $2`,
+            [id, userId]
+        );
+        if (existing.length === 0) return c.json({ error: 'Urge not found' }, 404);
+
+        const { rows } = await pool.query(
+            `UPDATE public.urge_events
+             SET outcome = $1,
+                 duration_to_resolve_sec = COALESCE($2, duration_to_resolve_sec),
+                 note = COALESCE($3, note),
+                 intensity = COALESCE($4, intensity),
+                 trigger_tags = COALESCE($5::jsonb, trigger_tags),
+                 status = 'resolved',
+                 resolved_at = NOW(),
+                 updated_at = NOW()
+             WHERE id = $6 AND user_id = $7
+             RETURNING id, user_id, category, started_at, resolved_at, intensity, trigger_tags,
+                       linked_replacement_habit_id, status, outcome, duration_to_resolve_sec`,
+            [
+                outcome,
+                duration,
+                note,
+                intensity,
+                tags ? JSON.stringify(tags) : null,
+                id,
+                userId,
+            ]
+        );
+
+        const urge = rows[0];
+        let habitReinforced = false;
+        if (outcome === 'resisted' && urge.linked_replacement_habit_id) {
+            try {
+                await pool.query(
+                    `INSERT INTO habit_logs (user_id, habit_id, completed_at, status, notes)
+                     VALUES ($1, $2, NOW(), 'completed', 'discipline_reinforce')`,
+                    [userId, urge.linked_replacement_habit_id]
+                );
+                habitReinforced = true;
+                await pool.query(
+                    `INSERT INTO public.anchor_edges
+                        (user_id, source_type, source_id, target_type, target_id, relationship, confirmed)
+                     VALUES ($1, 'discipline_event', $2, 'habit', $3, 'reinforces', true)
+                     ON CONFLICT DO NOTHING`,
+                    [userId, urge.id, String(urge.linked_replacement_habit_id)]
+                );
+            } catch {
+                // habit_logs / anchor optional — never fail resolve
+            }
+        }
+
+        return c.json({ ...urge, habitReinforced });
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+app.get('/urge', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const limit = Math.min(parseInt(c.req.query('limit') || '40', 10), 100);
+        const days = parseInt(c.req.query('days') || '30', 10);
+        const { rows } = await pool.query(
+            `SELECT id, category, started_at, resolved_at, intensity, trigger_tags,
+                    linked_replacement_habit_id, status, outcome, duration_to_resolve_sec
+             FROM public.urge_events
+             WHERE user_id = $1 AND started_at >= NOW() - ($2 || ' days')::interval
+             ORDER BY started_at DESC
+             LIMIT $3`,
+            [userId, String(days), limit]
+        );
+        return c.json(rows);
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+app.get('/patterns', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const { rows } = await pool.query(
+            `SELECT outcome, started_at, category
+             FROM public.urge_events
+             WHERE user_id = $1
+               AND status = 'resolved'
+               AND started_at >= NOW() - INTERVAL '30 days'
+             ORDER BY started_at DESC
+             LIMIT 80`,
+            [userId]
+        );
+
+        const total = rows.length;
+        const surfed = rows.filter((r) => r.outcome === 'resisted').length;
+        const window = rows.slice(0, 11);
+        const windowSurfed = window.filter((r) => r.outcome === 'resisted').length;
+
+        const hourCounts = {};
+        const dowCounts = {};
+        const dowNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        rows.forEach((r) => {
+            const d = new Date(r.started_at);
+            const h = d.getHours();
+            hourCounts[h] = (hourCounts[h] || 0) + 1;
+            const dow = d.getDay();
+            dowCounts[dow] = (dowCounts[dow] || 0) + 1;
+        });
+
+        const hourClusters = Object.entries(hourCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([hour, count]) => ({ hour: Number(hour), count }));
+        const dowClusters = Object.entries(dowCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 2)
+            .map(([dow, count]) => ({ day: dowNames[Number(dow)], count }));
+
+        return c.json({
+            totalResolved: total,
+            surfedCount: surfed,
+            recentWindow: window.length,
+            recentSurfed: windowSurfed,
+            headline: window.length
+                ? `Surfed ${windowSurfed} of last ${window.length} urges`
+                : 'No resolved urges in the last 30 days yet',
+            hourClusters,
+            dowClusters,
+        });
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
 export default app;
