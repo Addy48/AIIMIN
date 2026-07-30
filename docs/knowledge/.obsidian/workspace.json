@@ -10,7 +10,7 @@
           "type": "markdown",
           "state": {
             "file": "00_HOME.md",
-            "mode": "source"
+            "mode": "preview"
           }
         }
       }
@@ -68,7 +68,10 @@
   "active": "aiimin-leaf",
   "lastOpenFiles": [
     "00_HOME.md",
-    "Maps of Content/Genesis.md",
-    "15_MEMORY/Current-Context.md"
+    "15_MEMORY/Current-Context.md",
+    "Roadmap/AIIMIN-V1-Blueprint.md",
+    "Dashboards/00_Founder-Workspace-Index.md",
+    "Dashboards/Active-Work.base",
+    "Maps of Content/Genesis.md"
   ]
 }

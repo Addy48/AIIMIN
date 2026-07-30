@@ -1,7 +1,15 @@
 {
-  "lastUpdated": "2026-07-25",
+  "lastUpdated": "2026-07-30",
   "entrypoint": "docs/knowledge/00_HOME.md",
   "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
+  "v1Blueprint": "docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md",
+  "vaultOperatingModel": "docs/knowledge/10_DECISIONS/2026-07-30-vault-operating-model.md",
+  "founderWorkspace": "docs/knowledge/Dashboards/00_Founder-Workspace-Index.md",
+  "bases": [
+    "docs/knowledge/Dashboards/Active-Work.base",
+    "docs/knowledge/Dashboards/Decisions.base",
+    "docs/knowledge/Dashboards/Knowledge-Health.base"
+  ],
   "brainOs": true,
   "genesis": "docs/knowledge/Genesis/",
   "genesisMoc": "docs/knowledge/Maps of Content/Genesis.md",
@@ -215,24 +223,19 @@
       ],
       "status": "pipeline-achieved-fix"
     },
-    "life_score": {
-      "moc": "docs/knowledge/09_FEATURES/LifeScore/LifeScore.md",
-      "routes": [
-        "POST /api/account/wipe-life-data"
-      ],
-      "services": [
-        "frontend/src/utils/lifeScoreEngine.js"
-      ],
-      "status": "api-backed-local"
-    },
     "product_guide": {
       "moc": "docs/knowledge/01_PRODUCT/AIIMIN-Product-Guide.md",
       "status": "canonical-shipped"
     },
     "vault_brain_os": {
       "moc": "docs/knowledge/00_HOME.md",
-      "decision": "docs/knowledge/10_DECISIONS/2026-07-10-vault-brain-os.md",
-      "status": "cutover-shipped"
+      "decision": "docs/knowledge/10_DECISIONS/2026-07-30-vault-operating-model.md",
+      "files": [
+        "docs/knowledge/15_MEMORY/Current-Context.md",
+        "docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md",
+        "docs/knowledge/Dashboards/00_Founder-Workspace-Index.md"
+      ],
+      "status": "blueprint-first-ops-v2"
     },
     "monorepo": {
       "moc": "docs/knowledge/02_ARCHITECTURE/Monorepo.md",

@@ -7,7 +7,7 @@
   "showUnsupportedFiles": true,
   "userIgnoreFilters": [
     "Genesis/**/supporting/**",
-    "Archive/Duplicates/**",
+    "Archive/**",
     "99_ARCHIVE/**"
   ]
 }

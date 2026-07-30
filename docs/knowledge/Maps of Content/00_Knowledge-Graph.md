@@ -4,7 +4,7 @@ derived_from: Genesis
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: master-hub
@@ -20,17 +20,19 @@ fm_source: script
 
 # Knowledge Graph — Hub
 
-Authority flows **up** to Genesis. Knowledge flows **down** to Engineering → Implementation → Operations → Roadmap.
+Authority flows **up** to Genesis. Implementation flows **down** through the V1 Blueprint → subsystem contracts → source. Operations flow through Current Context.
 
 ## Nucleus
 
 1. [[00_HOME]]
-2. [[Maps of Content/Genesis]] → [[Genesis/P8 Master Specification/00_INDEX|P8]] · [[Genesis/P9 Interaction Architecture/00_INDEX|P9]]
-3. [[Constitution/00_Constitution-Hub]] → [[Genesis/P5 Constitution/00_EXECUTIVE_SUMMARY|P5]]
-4. [[Interaction Architecture/00_Interaction-Hub]] → [[Genesis/P9 Interaction Architecture/00_INDEX|P9]]
-5. [[Maps of Content/Engineering]] → implementation
-6. [[Maps of Content/Roadmap]]
-7. [[Maps of Content/Research]] · [[Maps of Content/Interaction-Architecture]]
+2. [[15_MEMORY/Current-Context]] — current execution only
+3. [[Maps of Content/Genesis]] → [[Genesis/P8 Master Specification/00_INDEX|P8]] · [[Genesis/P9 Interaction Architecture/00_INDEX|P9]]
+4. [[Roadmap/AIIMIN-V1-Blueprint]] — V1 implementation contract
+5. [[Constitution/00_Constitution-Hub]] → [[Genesis/P5 Constitution/00_EXECUTIVE_SUMMARY|P5]]
+6. [[Interaction Architecture/00_Interaction-Hub]] → [[Genesis/P9 Interaction Architecture/00_INDEX|P9]]
+7. [[Maps of Content/Engineering]] → implementation
+8. [[Maps of Content/Roadmap]]
+9. [[Maps of Content/Research]] · [[Maps of Content/Interaction-Architecture]]
 
 ## All MOCs
 
@@ -53,6 +55,9 @@ Authority flows **up** to Genesis. Knowledge flows **down** to Engineering → I
 - [[Dashboards/00_Founder-Workspace-Index|Workspace Index]]
 - [[Dashboards/01_Executive-Dashboard|Executive]]
 - [[Dashboards/10_Daily-Operations-Dashboard|Daily Ops]]
+- [[Dashboards/Active-Work.base|Active Work Base]]
+- [[Dashboards/Decisions.base|Decisions Base]]
+- [[Dashboards/Knowledge-Health.base|Knowledge Health Base]]
 - [[Maps of Content/Visual-Maps-Index|Visual Maps]]
 - [[Maps of Content/Graph-Legend|Graph Legend]]
 - [[Operations/Collision-Register|Collision Register]]
@@ -64,7 +69,7 @@ Authority flows **up** to Genesis. Knowledge flows **down** to Engineering → I
 
 ## Cold
 
-- [[Archive/README|Archive]] (if present) · `99_ARCHIVE/` — do not cite as living SoT
+- [[Archive/README|Archive]] · [[Archive/Superseded/Repository-Root/README|Superseded root docs]] · `99_ARCHIVE/` — never cite as living SoT
 
 ## Indexes
 

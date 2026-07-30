@@ -1,0 +1,46 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - 'lifecycle == "living"'
+    - not:
+        - 'file.inFolder("Genesis")'
+        - 'file.inFolder("Archive")'
+        - 'file.inFolder("99_ARCHIVE")'
+        - 'file.inFolder("_templates")'
+
+properties:
+  file.name:
+    displayName: "Note"
+  status:
+    displayName: "Status"
+  owner:
+    displayName: "Owner"
+  last_reviewed:
+    displayName: "Reviewed"
+  knowledge_layer:
+    displayName: "Layer"
+
+views:
+  - type: table
+    name: "Active"
+    filters:
+      or:
+        - 'status == "active"'
+        - 'status == "in-progress"'
+        - 'status == "proposed"'
+        - 'status == "draft"'
+    order:
+      - file.name
+      - status
+      - owner
+      - knowledge_layer
+      - last_reviewed
+
+  - type: table
+    name: "Recently updated"
+    limit: 50
+    order:
+      - file.name
+      - status
+      - file.mtime
+      - last_reviewed

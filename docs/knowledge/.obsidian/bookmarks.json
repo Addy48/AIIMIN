@@ -11,6 +11,11 @@
         },
         {
           "type": "file",
+          "path": "Roadmap/AIIMIN-V1-Blueprint.md",
+          "title": "V1 Blueprint"
+        },
+        {
+          "type": "file",
           "path": "00_HOME.md",
           "title": "Home"
         },
@@ -28,6 +33,21 @@
           "type": "file",
           "path": "Dashboards/10_Daily-Operations-Dashboard.md",
           "title": "Daily Ops"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/Active-Work.base",
+          "title": "Active Work"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/Decisions.base",
+          "title": "Decisions"
+        },
+        {
+          "type": "file",
+          "path": "Dashboards/Knowledge-Health.base",
+          "title": "Knowledge Health"
         },
         {
           "type": "file",

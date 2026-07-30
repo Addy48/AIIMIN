@@ -16,5 +16,6 @@
   "file-recovery": true,
   "sync": false,
   "canvas": true,
-  "daily-notes": true
+  "daily-notes": true,
+  "bases": true
 }

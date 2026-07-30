@@ -4,7 +4,7 @@ derived_from: Genesis/P9 Phase 5 Downstream Handoff
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: domain-hub
@@ -24,7 +24,7 @@ fm_source: script
 > UX Architecture / UX Intelligence are frozen — cite indexes; do not relocate packs.
 
 > [!abstract] Derived
-> Program V1 design is frozen published; Brain OS Implementation is living execution.
+> Historical programs remain frozen. The AIIMIN V1 Blueprint is the current implementation contract.
 
 
 Post-P9 downstream (under Phase 5 DH contracts): UX Architecture · Design System · Engineering specs.
@@ -32,6 +32,8 @@ Post-P9 downstream (under Phase 5 DH contracts): UX Architecture · Design Syste
 | Item | Note |
 |------|------|
 | Current context | [[15_MEMORY/Current-Context]] |
+| **AIIMIN V1 Blueprint** | **CURRENT IMPLEMENTATION CONTRACT** · [[Roadmap/AIIMIN-V1-Blueprint]] |
+| Vault operating model | [[10_DECISIONS/2026-07-30-vault-operating-model]] |
 | Native roadmap | [[Roadmap/Native-Roadmap]] |
 | Legal drafts (future) | [[Roadmap/Legal-Index]] |
 | **Operational priorities (1–8)** | [[Roadmap/Operational-Priorities]] |

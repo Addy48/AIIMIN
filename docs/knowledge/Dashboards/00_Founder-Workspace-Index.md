@@ -4,7 +4,7 @@ derived_from: Roadmap/Program-V1-Obsidian-Knowledge-OS/04_Founder_Workspace_Data
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: dashboard
@@ -35,6 +35,12 @@ fm_source: script
 
 ## Cockpit map
 
+| Start | Link |
+|-------|------|
+| **Build V1** | [[Roadmap/AIIMIN-V1-Blueprint]] |
+| **Continue active work** | [[15_MEMORY/Current-Context]] |
+| **Check law** | [[Maps of Content/Genesis]] |
+
 | Dashboard | Link |
 |-----------|------|
 | Executive | [[01_Executive-Dashboard]] |
@@ -48,12 +54,21 @@ fm_source: script
 | Decisions | [[09_Decisions-Dashboard]] |
 | Daily Ops | [[10_Daily-Operations-Dashboard]] |
 
+## Live Bases
+
+| View | Link |
+|------|------|
+| Active work | [[Active-Work.base]] |
+| Decisions | [[Decisions.base]] |
+| Knowledge health | [[Knowledge-Health.base]] |
+
 ## Boot
 
 1. [[15_MEMORY/Current-Context]]
 2. [[00_HOME]]
-3. [[Maps of Content/00_Knowledge-Graph]]
-4. [[Maps of Content/Genesis]]
+3. [[Roadmap/AIIMIN-V1-Blueprint]]
+4. [[Maps of Content/00_Knowledge-Graph]]
+5. [[Maps of Content/Genesis]] when constitutional context is required
 
 ## Plugin check
 

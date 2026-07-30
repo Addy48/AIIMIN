@@ -43,7 +43,7 @@ Constitutional and vault programs are closed. Product has broad feature surface 
 | Area | Evidence |
 |------|----------|
 | Launch readiness | Home: GA4/Sentry, LC-01…14, tester E2E still blockers |
-| Stale planning docs | Root `MASTER_PLAN.md` (Jun 25) still cites Clerk / outdated pending; Progress Summary (Jun 30) cites Clerk |
+| Stale planning docs | Archived under [[Archive/Superseded/Repository-Root/README]]; both June plans cite obsolete Clerk state |
 | Feature maturity uneven | Journal “craft in progress”; Discipline urge-redesign-planned; Gamification vs P8 non-negotiables tension risk |
 | Constitution vs UI | Shipped UI predates P8/P9; not yet re-architected under DH |
 | Light canvas eng lag | Vault/P8 `#f9f9f9`; CSS may still ivory |

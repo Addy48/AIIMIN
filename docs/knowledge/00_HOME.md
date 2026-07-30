@@ -4,7 +4,7 @@ derived_from: Genesis
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: boot
@@ -24,12 +24,12 @@ fm_source: script
 > Genesis is immutable. This Home is operations — `can_override_genesis: false`.
 
 > [!abstract] Derived
-> Dashboards and maps are derived. Current-Context is today's SoT for focus.
+> Dashboards, maps, and Bases are derived. The V1 Blueprint is implementation scope; Current Context is execution focus.
 
 
 > **Agents: read this first.** Then [[15_MEMORY/Current-Context]]. Then [[Maps of Content/Genesis]] for constitutional work. Then only feature/arch/DB/API notes needed. Never whole-repo scan unless user says so.
 
-**Last updated:** 2026-07-26
+**Last updated:** 2026-07-30
 
 ## Authority (non-negotiable)
 
@@ -37,10 +37,11 @@ fm_source: script
 |-------|----------|----------------------|
 | **Genesis v1.0 (P1–P9)** | `Genesis/` | — (nucleus) |
 | Constitution / IA / Interaction | P5 · P8 · P9 via [[Maps of Content/Genesis]] | **NO** |
+| **V1 implementation contract** | [[Roadmap/AIIMIN-V1-Blueprint]] | **NO** |
 | Engineering / Implementation | Numbered folders `01_`–`17_` (Stage A) | **NO** |
 | Operations / Roadmap | Sprints, bugs, deploy, Current Context | **NO** |
 
-Navigation: **Home → Genesis → P5 → P8 → P9 → Engineering → Implementation → Roadmap**
+Navigation: **Home → Current Context → Genesis (when needed) → V1 Blueprint → subsystem note → source**
 
 ## Project goal
 
@@ -52,6 +53,8 @@ Personal Life OS — daily metrics, money, calendar, focus, discipline, sports c
 - Go-live target: end Sep 2026; founding/tester registration closes **31 Aug 2026**
 - **Genesis v1.0 (P1–P9) COMPLETE** · immutable at `Genesis/`
 - **Obsidian Vault Stage A FROZEN** · SoT `docs/knowledge/` · [[Founder/01_VAULT_FREEZE_CERTIFICATE]]
+- **AIIMIN V1 Blueprint v1.0** · current implementation contract · [[Roadmap/AIIMIN-V1-Blueprint]]
+- **Vault operating model** · Blueprint-first, compact handoff, stable paths · [[10_DECISIONS/2026-07-30-vault-operating-model]]
 - **Program 0 (Product Readiness)** · [[Roadmap/Program-0-Product-Readiness/00_INDEX]] · priorities [[Roadmap/Operational-Priorities]]
 - **UX Intelligence Package v1.0** · [[Roadmap/UX-Intelligence/00_INDEX]] · [[Roadmap/UX-Intelligence/15_EXECUTIVE_SUMMARY]]
 - **UX Architecture v1.0** · **COMPLETE · FROZEN · PUBLISHED** · [[Roadmap/UX-Architecture/00_INDEX]] · [[Roadmap/UX-Architecture/95_Publication_Record]] · D05 CLOSED
@@ -87,7 +90,20 @@ Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]]
 6. No secrets in vault. No schema/auth changes without Founder ask.
 7. Commit / push / PR only when Founder asks.
 8. Proof-or-stop — [[14_PROMPTS/Proof-or-Stop]]
-9. Numbered folders are Stage A frozen shape; Stage B semantic rename is deferred future work (not an open migration).
+9. Numbered folders are frozen Stage A paths. Improve the operating layer; do not mass-rename linked folders.
+10. Product scope belongs in the Blueprint or an accepted ADR, not Current Context.
+
+## Start by job
+
+| Job | Open |
+|-----|------|
+| Continue current work | [[15_MEMORY/Current-Context]] |
+| Understand / build V1 | [[Roadmap/AIIMIN-V1-Blueprint]] |
+| Check constitutional law | [[Maps of Content/Genesis]] |
+| Find implementation notes | [[Maps of Content/Engineering]] |
+| Make or inspect a decision | [[Dashboards/09_Decisions-Dashboard]] |
+| Review active work | [[Dashboards/00_Founder-Workspace-Index]] |
+| Inspect historical material | [[Archive/README]] |
 
 ## Genesis (nucleus)
 
@@ -115,6 +131,8 @@ Legacy stub folders (`AIIMIN_DESIGN_BIBLE/`, etc.) and duplicate `docs/AIIMIN_PR
 | Freeze certificate | [[Founder/01_VAULT_FREEZE_CERTIFICATE]] |
 | Vault state | [[Founder/03_FINAL_VAULT_STATE]] |
 | Current context | [[15_MEMORY/Current-Context]] |
+| V1 Blueprint | [[Roadmap/AIIMIN-V1-Blueprint]] |
+| Vault operating decision | [[10_DECISIONS/2026-07-30-vault-operating-model]] |
 | Constitution hub | [[Constitution/00_Constitution-Hub]] |
 | Interaction hub | [[Interaction Architecture/00_Interaction-Hub]] |
 | Glossary | [[Glossary/00_Glossary]] |

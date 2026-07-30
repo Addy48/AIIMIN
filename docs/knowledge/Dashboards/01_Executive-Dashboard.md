@@ -4,7 +4,7 @@ derived_from: Roadmap/Program-V1-Obsidian-Knowledge-OS/04_Founder_Workspace_Data
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: dashboard
@@ -36,7 +36,9 @@ fm_source: script
 ## Today
 
 - SoT: [[15_MEMORY/Current-Context]]
+- V1 contract: [[Roadmap/AIIMIN-V1-Blueprint]]
 - Daily Ops: [[10_Daily-Operations-Dashboard]]
+- Active work: [[Active-Work.base]]
 
 ## Blockers (curated from Home)
 
@@ -60,6 +62,8 @@ SORT file.path ASC
 
 ## Open decisions
 
+Native Base: [[Decisions.base]]
+
 ```dataview
 TABLE status, last_reviewed
 FROM "10_DECISIONS"
@@ -78,4 +82,4 @@ FLATTEN file.name AS n
 GROUP BY true
 ```
 
-> FM coverage incomplete until Wave W4 — dual-read path fallbacks OK.
+Native Base: [[Knowledge-Health.base]]

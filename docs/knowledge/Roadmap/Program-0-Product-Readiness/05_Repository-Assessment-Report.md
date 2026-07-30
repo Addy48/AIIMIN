@@ -33,14 +33,14 @@ fm_source: script
 | `docs/AIIMIN_PRODUCT_BIBLE/README.md` etc. | Redirect stubs | Keep |
 | `prototypes/`, `logo-designs/`, `plans/` | Experiments / plans | Archive or label clearly |
 | `AIIMIN Prototype Studio/` | Stub after P6 move | Stub only |
-| Root `MASTER_PLAN.md`, `AIIMIN_PROGRESS_SUMMARY.md` | **Stale** | Mark superseded → point to vault Features Index / Program 0 |
+| `Archive/Superseded/Repository-Root/` | **Archived** | June plans preserved; use V1 Blueprint + Current Context |
 | `Secrets, Keys/`, `aiimin.pem` | Secrets | Ensure gitignored; never vault |
 | `node_modules/` | Generated | Ignore |
 | `laptop-disk-audit-*.html` | One-off | Archive or delete later |
 
 ## Clutter / risk
 
-1. Stale root planning claiming Clerk / outdated pending.  
+1. Historical planning is archived; immutable Genesis reports still describe its original root location.
 2. Many stub `MOVED` folders — intentional but noisy in Explorer.  
 3. Uncommitted Genesis+vault migration (~200+ paths) — SoT not on remote.  
 4. Duplicate historical copies only in `docs/knowledge/Archive/Duplicates/` (OK).  
