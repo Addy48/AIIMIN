@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -14,10 +14,12 @@ fm_source: script
 ---
 # Monorepo — one repo, three clients
 
-**Last updated:** 2026-07-19  
+**Last updated:** 2026-07-30
 **Owner:** Aaditya Upadhyay
 
 AIIMIN ships as **one Git repository** with **three independent client surfaces**. They share backend auth and Postgres — they do **not** share UI code, build systems, or release trains.
+
+Canonical-path decision: [[10_DECISIONS/2026-07-30-repository-layout]]. Production roots remain top-level because they already match build and release boundaries.
 
 ---
 
@@ -95,6 +97,7 @@ Native app **does not** load `/m`. It calls `/api/mobile/*` directly.
 | `api/` | Vercel serverless entry (Hono router) |
 | `server/routes/mobile.js` | Native V2 bootstrap + sync batch |
 | `supabase/migrations/` | SQL migrations |
+| `scripts/diagnostics/` | Manual probes; never part of CI |
 
 Shared contract: **same Better Auth user** on web and native. Different route namespaces — web uses REST feature routes; native uses `/api/mobile/*`.
 
@@ -145,6 +148,7 @@ Full file lists: `plans/mobile-commit-split.md`, `plans/commit-push-plan-2026-07
 |------|------|
 | Vault home | `docs/knowledge/00_HOME.md` |
 | This doc | `docs/knowledge/02_ARCHITECTURE/Monorepo.md` |
+| Reorganization report | `docs/knowledge/16_DOCUMENTATION/Repository-Reorganization.md` |
 | Device tiers | `docs/knowledge/02_ARCHITECTURE/Device-Tiers.md` |
 | Native V2 tracker | `docs/knowledge/17_NATIVE_APP_V2/WORKFLOW-PLAN.md` |
 | Capacitor | `docs/knowledge/09_FEATURES/Mobile/Capacitor-Android.md` |

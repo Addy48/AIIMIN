@@ -80,6 +80,7 @@ AIIMIN/
 ├── native-android/        # ⚠ Native V2 — Kotlin + Compose (separate app)
 ├── server/                # Express API (EC2 deploy)
 ├── api/                   # Vercel serverless entry
+├── scripts/               # Maintained automation + manual diagnostics
 ├── docs/knowledge/        # Project brain (Obsidian vault)
 ├── plans/                 # Commit splits, sprint plans
 └── CONTRIBUTING.md        # Client boundaries + commit rules
@@ -167,6 +168,7 @@ Full spec: `docs/knowledge/08_DESIGN/Palette.md`
 | Doc | Purpose |
 |-----|---------|
 | [docs/knowledge/00_HOME.md](docs/knowledge/00_HOME.md) | Agent + human entry |
+| [docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md](docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md) | V1 implementation contract |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Commit boundaries |
 | [docs/knowledge/02_ARCHITECTURE/Monorepo.md](docs/knowledge/02_ARCHITECTURE/Monorepo.md) | Three-client architecture |
 | [docs/knowledge/17_NATIVE_APP_V2/WORKFLOW-PLAN.md](docs/knowledge/17_NATIVE_APP_V2/WORKFLOW-PLAN.md) | Native build tracker |

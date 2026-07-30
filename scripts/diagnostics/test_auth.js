@@ -1,4 +1,4 @@
-import { pool } from './server/lib/db.js';
+import { pool } from '../../server/lib/db.js';
 async function test() {
     try {
         const res = await pool.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'users'");

@@ -33,6 +33,8 @@ tags:
 **Protected checkpoints:**
 - `aee0a821` — pre-tidy repository state
 - `a6e58854` — completed V1 Blueprint + handoff
+- `fbf31b46` — Blueprint-first Vault operating model
+- `e6924e1b` — generated npm cache removed from Git index
 
 ## Authority
 
@@ -44,26 +46,23 @@ tags:
 
 ## Current work
 
-- Make Vault useful as human + agent source of truth.
-- Keep frozen Stage A paths; improve navigation and operating views instead of mass-renaming linked folders.
-- Archive stale root Markdown with original filenames and Git history.
-- Untrack generated npm cache while preserving local files.
-- Validate links, JSON/YAML, Git hygiene, and available builds before production-directory moves.
+- Repository reorganization validation passed. Report: [[16_DOCUMENTATION/Repository-Reorganization]].
+- Production roots remain canonical under [[10_DECISIONS/2026-07-30-repository-layout]].
+- Root diagnostics moved to `scripts/diagnostics/`; movement-required imports validated.
+- Vault now boots Home → Current Context → Blueprint → subsystem notes.
 
 ## Known blockers
 
-- Frontend baseline build unavailable: CRACO binary missing from current dependency install.
 - Mobbin MCP authenticated but paid-plan blocked.
 - Final production GA4/Sentry env + launch E2E remain outside this cleanup.
+- Dependency restore reports npm audit debt: root 66 findings; frontend 6. No forced upgrade applied during safe organization.
 
 ## Next
 
-1. Wire Home, Knowledge Graph, Roadmap, Founder Workspace, bookmarks, and Bases to Blueprint.
-2. Repair `_manifest.json` duplication/staleness.
-3. Finish archive indexes and root-doc reference updates.
-4. Untrack `frontend/.npm-cache/`; keep 298 MB local cache and all env/key files untouched.
-5. Run repository, link, config, frontend, native, and API checks.
-6. Move production roots only after a passing baseline and explicit dependency-safe move plan.
+1. Review `chore/repository-tidy`; push only on Founder request.
+2. Open `docs/knowledge/` in Obsidian and smoke the three native Bases visually.
+3. Start V1 implementation from Blueprint roadmap W0 after cleanup review.
+4. Handle npm audit findings as a separate dependency/security change.
 
 ## Do not
 
@@ -79,10 +78,9 @@ tags:
 - `docs/knowledge/00_HOME.md`
 - `docs/knowledge/15_MEMORY/Current-Context.md`
 - `docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md`
-- `docs/knowledge/Maps of Content/00_Knowledge-Graph.md`
-- `docs/knowledge/Maps of Content/Roadmap.md`
-- `docs/knowledge/Dashboards/`
-- `docs/knowledge/.obsidian/`
+- `docs/knowledge/16_DOCUMENTATION/Repository-Reorganization.md`
+- `docs/knowledge/10_DECISIONS/2026-07-30-repository-layout.md`
+- `docs/knowledge/02_ARCHITECTURE/Monorepo.md`
 - `docs/knowledge/_manifest.json`
-- `docs/knowledge/Archive/Superseded/`
+- `scripts/diagnostics/`
 - `.gitignore`

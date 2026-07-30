@@ -4,6 +4,8 @@
   "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
   "v1Blueprint": "docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md",
   "vaultOperatingModel": "docs/knowledge/10_DECISIONS/2026-07-30-vault-operating-model.md",
+  "repositoryLayout": "docs/knowledge/10_DECISIONS/2026-07-30-repository-layout.md",
+  "repositoryReorganization": "docs/knowledge/16_DOCUMENTATION/Repository-Reorganization.md",
   "founderWorkspace": "docs/knowledge/Dashboards/00_Founder-Workspace-Index.md",
   "bases": [
     "docs/knowledge/Dashboards/Active-Work.base",
@@ -239,13 +241,15 @@
     },
     "monorepo": {
       "moc": "docs/knowledge/02_ARCHITECTURE/Monorepo.md",
+      "decision": "docs/knowledge/10_DECISIONS/2026-07-30-repository-layout.md",
       "files": [
         "README.md",
         "CONTRIBUTING.md",
         "frontend/README.md",
-        "native-android/README.md"
+        "native-android/README.md",
+        "scripts/diagnostics/"
       ],
-      "status": "three-client-boundaries-documented"
+      "status": "canonical-top-level-boundaries"
     }
   }
 }

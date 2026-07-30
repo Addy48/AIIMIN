@@ -1,4 +1,4 @@
-import { requireAuth } from './server/middleware/auth.js';
+import { requireAuth } from '../../server/middleware/auth.js';
 const c = {
     req: {
         raw: { headers: new Headers() },

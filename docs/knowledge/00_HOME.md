@@ -77,8 +77,9 @@ Personal Life OS — daily metrics, money, calendar, focus, discipline, sports c
 - DB: Supabase PostgreSQL · Auth: Better Auth + Google OAuth
 - Host: Vercel + EC2 API (`api.aiimin.in`)
 - Desktop = full OS; `/m` = capture-only; Native = rich companion
+- Canonical paths stay top-level: [[10_DECISIONS/2026-07-30-repository-layout]]
 
-Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]]
+Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]] · [[16_DOCUMENTATION/Repository-Reorganization]]
 
 ## Important rules
 
