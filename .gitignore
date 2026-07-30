@@ -23,6 +23,7 @@ backend/.env.production
 
 # Build outputs
 frontend/build/
+frontend/.npm-cache/
 
 # Capacitor / Android local secrets
 frontend/android/local.properties
