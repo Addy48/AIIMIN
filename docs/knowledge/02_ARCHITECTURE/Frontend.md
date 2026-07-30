@@ -15,8 +15,9 @@ Overview, Habits, Goals, FocusRoom, Journal, Finance, CalendarPage, Sports, Acco
 
 ## Mobile
 
-- Entry: mobile app components under `frontend/src/components/mobile/`
-- Rule: data collection only — no analytics/tools
+- Phone web: `/m` capture-only (`MobileCaptureApp`) — DeviceGate redirects phones away from full OS
+- iPad / tablet: full Life OS — [[02_ARCHITECTURE/Device-Tiers]]
+- Rule: phones collect; tablets/desktops command
 
 ## Waitlist UI
 

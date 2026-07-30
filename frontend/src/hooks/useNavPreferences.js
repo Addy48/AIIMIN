@@ -25,18 +25,39 @@ const DEFAULT_PREFS = {
   personaPresetId: 'custom',
 };
 
+function ensureNotesNav(activeIds, pinnedIds) {
+  let active = [...activeIds];
+  let pinned = [...pinnedIds];
+  if (!active.includes('notes')) active.push('notes');
+  active = sanitizeActiveIds(active);
+  if (!pinned.includes('notes') && pinned.length < NAV_MAX_PINNED) {
+    const ji = pinned.indexOf('journal');
+    if (ji >= 0) pinned.splice(ji + 1, 0, 'notes');
+    else pinned.push('notes');
+  }
+  pinned = sanitizePinnedIds(pinned).filter((id) => active.includes(id));
+  return { activeIds: active, pinnedIds: pinned };
+}
+
 function readPrefs() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULT_PREFS };
     const parsed = JSON.parse(raw);
-    const activeIds = sanitizeActiveIds(parsed.activeIds);
-    return {
-      pinnedIds: sanitizePinnedIds(parsed.pinnedIds).filter((id) => activeIds.includes(id)),
+    const baseActive = sanitizeActiveIds(parsed.activeIds);
+    const basePinned = sanitizePinnedIds(parsed.pinnedIds).filter((id) => baseActive.includes(id));
+    const { activeIds, pinnedIds } = ensureNotesNav(baseActive, basePinned);
+    const next = {
+      pinnedIds,
       activeIds,
       bottomNavEnabled: parsed.bottomNavEnabled !== false,
       personaPresetId: parsed.personaPresetId || 'custom',
     };
+    // Persist one-time Notes nav migration
+    if (!baseActive.includes('notes') || (!basePinned.includes('notes') && pinnedIds.includes('notes'))) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    }
+    return next;
   } catch {
     return { ...DEFAULT_PREFS };
   }

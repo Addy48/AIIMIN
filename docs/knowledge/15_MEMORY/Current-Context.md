@@ -1,40 +1,23 @@
 # Current Context
 
-> Agents read after Home. Keep ≤400 lines. Update every work session.
+> Agents read after Home. Keep ≤400 lines.
 
-**Date:** 2026-07-12
+**Date:** 2026-07-15
 
 ## Today
 
-- Vercel fixed + **READY**: `dpl_8eTzBgrhKmc192bix9v9VAissfP4` / SHA `d420cef9`
-- Cause: `EntryForm.jsx` ternary siblings without fragment → SyntaxError
-- QA code on `main` (`e3212bc9` + build fix)
-- **EC2 still blocked from agent** (SSH denied). User/Action must deploy API.
-
-## Ship checklist
-
-| Step | Status |
-|------|--------|
-| Commit+push QA | done `e3212bc9` |
-| Fix Vercel build | done `d420cef9` |
-| Vercel production | **READY** |
-| EC2 API | **not from agent** — run SSH script |
-
-## EC2 (you)
-
-```bash
-ssh -i ~/Desktop/aiimin.pem ubuntu@13.207.146.15 \
-  'bash ~/AIIMIN/deploy/github-ec2-deploy.sh'
-curl -sS https://api.aiimin.in/api/health
-# POST /api/user/pulse-check must be 401 not 404
-```
+- Shipping Login Selfloop QA fixes (PIN UI/a11y + rate limit 30/15m + Retry-After)
+- Register: `docs/knowledge/11_BUGS/QA-Run-2026-07-14-Login.md`
 
 ## Next
 
-1. EC2 deploy verify
-2. Selfloop re-run
+1. Confirm Vercel READY + EC2 health/SHA
+2. Selfloop re-run `/login`
+3. Regrade from new screenshots
 
-## Links
+## Touch
 
-- QA: `11_BUGS/QA-Run-2026-07-12.md`
-- Vercel: https://vercel.com/fwvevs-projects/aiimin/8eTzBgrhKmc192bix9v9VAissfP4
+- `frontend/src/pages/Login.jsx`
+- `frontend/src/context/AuthContext.jsx`
+- `server/middleware/rateLimiter.js`
+- `server/lib/auth.js`

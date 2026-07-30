@@ -108,4 +108,30 @@ app.get('/:id/logs', requireAuth, async (c) => {
     }
 });
 
+// POST /api/habits/:id/logs — mark habit complete (Discipline reinforce uses this)
+app.post('/:id/logs', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const id = c.req.param('id');
+        const body = await c.req.json().catch(() => ({}));
+        const notes = body?.notes ? String(body.notes).slice(0, 500) : null;
+
+        const { rows: owned } = await pool.query(
+            'SELECT id FROM habits WHERE id = $1 AND user_id = $2',
+            [id, userId]
+        );
+        if (owned.length === 0) return c.json({ error: 'Habit not found' }, 404);
+
+        const { rows } = await pool.query(
+            `INSERT INTO habit_logs (user_id, habit_id, completed_at, status, notes)
+             VALUES ($1, $2, NOW(), 'completed', $3)
+             RETURNING *`,
+            [userId, id, notes]
+        );
+        return c.json(rows[0], 201);
+    } catch (err) {
+        return c.json({ error: err.message }, 500);
+    }
+});
+
 export default app;

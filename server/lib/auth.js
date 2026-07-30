@@ -137,8 +137,8 @@ export const auth = betterAuth({
         window: 15 * 60,
         max: 100,
         customRules: {
-            '/sign-in/**': { window: 15 * 60, max: 5 },
-            '/sign-up/**': { window: 15 * 60, max: 5 },
+            '/sign-in/**': { window: 15 * 60, max: 30 },
+            '/sign-up/**': { window: 15 * 60, max: 15 },
             '/forget-password': { window: 60 * 60, max: 5 },
             '/reset-password': { window: 60 * 60, max: 5 },
             '/callback/**': false,

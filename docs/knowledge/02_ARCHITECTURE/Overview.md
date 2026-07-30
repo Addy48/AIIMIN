@@ -11,8 +11,9 @@
 
 | Surface | Route | Role |
 |---------|-------|------|
-| Desktop | `/` | Full OS — analytics, tools, pages |
-| Mobile | `/m` | Data capture only |
+| Desktop | app routes (`/overview`, …) | Full Life OS — analytics, tools, pages |
+| Tablet / iPad | same routes | Full Life OS — touch masthead; see [[Device-Tiers]] |
+| Phone web | `/m` | Capture-only daily log (native app coming) |
 | Waitlist | `/` when waitlist mode | Marketing + signup gate |
 | Brand | `/brand` | Public waitlist brand or system brand |
 

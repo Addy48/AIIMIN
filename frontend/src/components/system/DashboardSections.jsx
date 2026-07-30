@@ -5,9 +5,9 @@ import MoodTracker from '../MoodTracker';
 import Streaks from '../Streaks';
 import MoneyManager from '../MoneyManager';
 // Removed Reports import
-import QuickCapture from '../dashboard/QuickCapture';
 import WinsEngine from '../WinsEngine';
 import MomentumBar from '../MomentumBar';
+import UniversalLogger from '../dashboard/UniversalLogger';
 import ErrorBoundary from './ErrorBoundary';
 import PDFReportGenerator from '../PDFReportGenerator';
 import HabitsPage from '../habits/HabitsPage';
@@ -243,7 +243,7 @@ export function ReflectionSection({ user, recentLogs, pomoCyclesTotal, dsaCountT
                 <MoodTracker user={user} onMoodChange={() => { }} />
                 <div className="grid-2">
                     <div className="glass-panel" style={{ borderRadius: 'var(--r-lg)', padding: 'var(--card-px)' }}>
-                        <QuickCapture user={user} />
+                        <UniversalLogger onSuccess={() => {}} />
                     </div>
                     <WinsEngine />
                 </div>

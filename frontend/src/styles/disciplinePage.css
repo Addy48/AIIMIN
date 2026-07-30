@@ -1,0 +1,79 @@
+/* Discipline Engine — device-tier layout (keeps classic UI, stacks smart) */
+
+.discipline-page__crisis {
+  margin: 32px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-3, #6b7280);
+  line-height: 1.5;
+}
+
+.discipline-page__crisis a {
+  color: var(--color-accent, #ff6b35);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Mobile / small phone */
+@media (max-width: 767px) {
+  .discipline-page .content-container {
+    gap: 28px !important;
+  }
+
+  .discipline-page__stats,
+  .discipline-page__lower {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .discipline-page__stat-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .discipline-page__header {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .discipline-page__header > div:last-child {
+    width: 100%;
+  }
+
+  .discipline-page__header > div:last-child button {
+    flex: 1;
+  }
+}
+
+/* Tablet / iPad portrait-ish */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .discipline-page__stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .discipline-page__lower {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+  }
+
+  .discipline-page__stat-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* Desktop wide: keep 2-col hero + roomy lower */
+@media (min-width: 1100px) {
+  .discipline-page .content-container {
+    max-width: 1180px !important;
+  }
+
+  .discipline-page__stats {
+    grid-template-columns: 1.15fr 0.85fr !important;
+    gap: 28px !important;
+  }
+
+  .discipline-page__lower {
+    gap: 48px !important;
+  }
+}

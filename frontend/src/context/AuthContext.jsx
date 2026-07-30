@@ -128,7 +128,12 @@ export function AuthProvider({ children }) {
             });
         }
 
-        if (result.error) throw new Error(result.error.message || 'Invalid credentials');
+        if (result.error) {
+            const err = new Error(result.error.message || 'Invalid credentials');
+            err.status = result.error.status || result.error.statusCode || undefined;
+            if (/too many|rate limit/i.test(err.message)) err.status = 429;
+            throw err;
+        }
 
         await refetch?.();
         const profile = await checkSession();

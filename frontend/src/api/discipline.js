@@ -1,5 +1,5 @@
 /**
- * Discipline API — authenticated helpers for Discipline.jsx
+ * Discipline API — streak + urge surf helpers
  */
 import { apiGet, apiPost, apiPatch, apiPut, apiDelete } from '../utils/api';
 
@@ -46,4 +46,21 @@ export async function updateReplacementHabit(id, data) {
 
 export async function deleteReplacementHabit(id) {
   return apiDelete(`${BASE}/replacement-habits/${id}`);
+}
+
+export async function startUrge(data = {}) {
+  return apiPost(`${BASE}/urge/start`, data);
+}
+
+export async function resolveUrge(id, data) {
+  return apiPost(`${BASE}/urge/${id}/resolve`, data);
+}
+
+export async function fetchUrges(opts = {}) {
+  const { limit = 40, days = 30 } = opts;
+  return apiGet(`${BASE}/urge`, { params: { limit: String(limit), days: String(days) } });
+}
+
+export async function fetchUrgePatterns() {
+  return apiGet(`${BASE}/patterns`);
 }

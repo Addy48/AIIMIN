@@ -346,14 +346,15 @@
 ───────────────────────────────────────────────────────── */
 [data-theme="aiimin-light"] {
   color-scheme: light;
-  --color-base:    #F5F3EF;
+  /* Track I — warm ivory canvas; charcoal body. Dark theme untouched. */
+  --color-base:    #EDE4D3;
   --color-surface: #FFFFFF;
-  --color-elevated: #FAFAF8;
-  --color-overlay: #F0EDE8;
-  --color-border:     #E2E0DB;
-  --color-border-lit: #D1CEC8;
+  --color-elevated: #F7F1E6;
+  --color-overlay: #E6DCC8;
+  --color-border:     #D9CEB8;
+  --color-border-lit: #C9BCA3;
   --color-text-1:      #14171A;
-  --color-text-2:      #4B5563;
+  --color-text-2:      #3F464E;
   --color-text-3:      #6B7280;
   --color-accent:       #E85A24;
   --color-accent-dark:  #C44E1A;
