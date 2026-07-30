@@ -44,8 +44,8 @@
 - **What:** Pass 2 kills remaining partials: CTA chips (no fake hit area), Forgot as 48px surface button, dark-glass pills, stronger PIN borders/mask/active pulse, numpad **Clear\|0\|Del** (no empty cell), error `#991b1b`/`#fef2f2`, form subtitle `#1a1a1a`, rate-limiter `Retry-After`. Pass 1: sentence-case hero, mask identity, hide desktop form brand, Del text, limit 30/15m.
 - **Why:** Selfloop `2026-07-14T20-06-37-663Z` + user demand to close partials honestly
 - **Files:** `Login.jsx`, `AuthContext.jsx`, `rateLimiter.js`, `auth.js`, `11_BUGS/QA-Run-2026-07-14-Login.md`
-- **Status:** partial — **local only; not committed/shipped**
-- **Notes:** #41 wrong PIN still rejects. Ship required for live #40.
+- **Status:** shipped — EC2 `2c4e2691` health ok; Vercel READY `25cd5d03` on `aiimin.in`
+- **Notes:** #41 wrong PIN still rejects. Selfloop re-run next.
 
 ### 2026-07-11 — Login Field a11y (Selfloop QA round 2)
 - **What:** Removed Safari fake-placeholder overlay (`placeholder=" "` + absolute `div`). `Field` now uses a native `<input>` with real `placeholder`, stable `login-field-${name}` ids, `htmlFor`/`aria-label`, and step motion locked to `opacity: 1` (never 0).

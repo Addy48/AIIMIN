@@ -16,9 +16,9 @@ async function getWeeklyStats(userId) {
       [userId],
     ).catch(() => ({ rows: [{ total: 0 }] })),
     pool.query(
-      `SELECT COALESCE(SUM(duration_minutes), 0)::int AS mins
+      `SELECT COALESCE(SUM(total_focus_minutes), 0)::int AS mins
        FROM pomodoro_sessions
-       WHERE user_id = $1 AND completed_at >= $2::date`,
+       WHERE user_id = $1 AND date >= $2::date`,
       [userId, since],
     ).catch(() => ({ rows: [{ mins: 0 }] })),
     pool.query(

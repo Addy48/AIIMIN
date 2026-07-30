@@ -1,0 +1,273 @@
+/* Product tour — coach card + invite. Locked AIIMIN palette. */
+
+.ptour-invite {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
+  z-index: 9990;
+  display: flex;
+  align-items: stretch;
+  max-width: min(360px, calc(100vw - 32px));
+  background: var(--bg-card, #2d2d2d);
+  border: 1px solid var(--color-border, #3a3a3a);
+  border-radius: 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  font-family: var(--font-sans);
+  text-align: left;
+  padding: 0;
+  cursor: default;
+}
+
+.ptour-invite__accent {
+  width: 4px;
+  flex-shrink: 0;
+  background: var(--color-accent, #ff6b35);
+}
+
+.ptour-invite__body {
+  flex: 1;
+  padding: 14px 12px 14px 16px;
+  min-width: 0;
+}
+
+.ptour-invite__kicker {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent, #ff6b35);
+}
+
+.ptour-invite__title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-1);
+  line-height: 1.25;
+}
+
+.ptour-invite__sub {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--color-text-3);
+}
+
+.ptour-invite__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ptour-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+
+.ptour-btn:focus-visible {
+  outline: 2px solid var(--color-accent, #ff6b35);
+  outline-offset: 2px;
+}
+
+.ptour-btn--primary {
+  background: var(--color-accent, #ff6b35);
+  color: #fff;
+}
+
+.ptour-btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+.ptour-btn--ghost {
+  background: transparent;
+  color: var(--color-text-2);
+  border-color: var(--color-border);
+}
+
+.ptour-btn--ghost:hover {
+  background: var(--bg-elevated, rgba(255, 255, 255, 0.04));
+}
+
+.ptour-invite__dismiss {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin: 8px 8px 0 0;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-3);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.ptour-invite__dismiss:hover {
+  background: var(--bg-elevated, rgba(255, 255, 255, 0.06));
+  color: var(--color-text-1);
+}
+
+.ptour-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.ptour-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  pointer-events: auto;
+}
+
+.aiimin-light .ptour-scrim {
+  background: rgba(20, 23, 26, 0.22);
+}
+
+.ptour-card {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
+  width: min(380px, calc(100vw - 32px));
+  background: var(--bg-card, #2d2d2d);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 20px 20px 16px;
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+  font-family: var(--font-sans);
+}
+
+.ptour-card__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.ptour-card__chapter {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent, #ff6b35);
+}
+
+.ptour-card__count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.ptour-progress {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--bg-elevated, rgba(255, 255, 255, 0.06));
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.ptour-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent, #ff6b35);
+  transition: width 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ptour-card__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--color-text-1);
+  text-wrap: balance;
+}
+
+.ptour-card__body {
+  margin: 0 0 18px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-2);
+  max-width: 42ch;
+}
+
+.ptour-card__nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.ptour-card__nav-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ptour-dots {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.ptour-dots__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-3);
+  opacity: 0.35;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.ptour-dots__dot.is-active {
+  opacity: 1;
+  background: var(--color-accent, #ff6b35);
+  width: 16px;
+  border-radius: 999px;
+}
+
+.ptour-dots__dot.is-done {
+  opacity: 0.7;
+  background: var(--color-done, #10b981);
+}
+
+@media (max-width: 600px) {
+  .ptour-invite,
+  .ptour-card {
+    left: 16px;
+    right: 16px;
+    bottom: max(16px, env(safe-area-inset-bottom));
+    max-width: none;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptour-btn,
+  .ptour-progress__fill {
+    transition: none;
+  }
+}

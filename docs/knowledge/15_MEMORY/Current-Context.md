@@ -6,18 +6,15 @@
 
 ## Today
 
-- Shipping Login Selfloop QA fixes (PIN UI/a11y + rate limit 30/15m + Retry-After)
-- Register: `docs/knowledge/11_BUGS/QA-Run-2026-07-14-Login.md`
+Honest gap: tour + Insights→Reports stayed **local** (never pushed) — prod still old UI.
+Report 500 root: `analyticsData` queried `pomodoro_sessions.started_at` / `duration` — live table is daily rollup `date`, `cycles_completed`, `total_focus_minutes`. Fixed.
 
 ## Next
 
-1. Confirm Vercel READY + EC2 health/SHA
-2. Selfloop re-run `/login`
-3. Regrade from new screenshots
+1. Push fix + UI ship; verify Vercel READY + EC2 + `/reports` loads
+2. Hard-refresh prod; old tour pill gone
 
 ## Touch
 
-- `frontend/src/pages/Login.jsx`
-- `frontend/src/context/AuthContext.jsx`
-- `server/middleware/rateLimiter.js`
-- `server/lib/auth.js`
+- `server/services/analyticsData.js`, `reportGenerator.js`, `weeklyReviewEngine.js`, `weeklyDigestService.js`
+- Tour/Reports merge frontend files (unpushed → shipping)
