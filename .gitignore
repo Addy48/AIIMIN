@@ -41,10 +41,12 @@ deploy/EC2.env.paste
 
 # Account Design Lab — tracked in repo (was local-only prototypes)
 
-# Tools & editors
+# Tools & editors (local only — never ship on GitHub)
 .claude/
 .cursor/
 .cursor/**
+.qwen/
+.qwen/**
 .superpowers/
 .sst/
 .sst

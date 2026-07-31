@@ -28,8 +28,8 @@ Write commit messages terse and exact. Conventional Commits format. No fluff. Wh
 
 **What NEVER goes in:**
 - "This commit does X", "I", "we", "now", "currently" — the diff says what
-- "As requested by..." — use Co-authored-by trailer
-- "Generated with Claude Code" or any AI attribution — unless the user's own rule requires an `Assisted-by`/AI-attribution trailer, then add it as a trailer
+- "As requested by..." — leave out (repo is solo-attributed; no Co-authored-by trailers)
+- Any AI tool attribution (`Co-authored-by: Cursor`, Claude, GPT, Copilot, Assisted-by, Generated with…) — never
 - Emoji (unless project convention requires)
 - Restating the file name when scope already says it
 

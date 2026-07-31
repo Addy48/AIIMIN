@@ -6,15 +6,20 @@
 
 ## Today
 
-Honest gap: tour + Insights→Reports stayed **local** (never pushed) — prod still old UI.
-Report 500 root: `analyticsData` queried `pomodoro_sessions.started_at` / `duration` — live table is daily rollup `date`, `cycles_completed`, `total_focus_minutes`. Fixed.
+Trust fix + ship verified.
+
+- Report 500: pomodoro columns — `analyticsData.js` (shipped)
+- Tour + Insights→Reports live on prod (bundle has Patterns / tour stops)
+- Vercel READY was `ba4e7dc1` (pre-rewrite SHA); tip now `476c7a75` after history scrub
+- GitHub: all `Co-authored-by: Cursor` trailers stripped (force-push main); `.qwen` untracked; remote `claude/*` branch deleted
+- EC2 health ok
 
 ## Next
 
-1. Push fix + UI ship; verify Vercel READY + EC2 + `/reports` loads
-2. Hard-refresh prod; old tour pill gone
+1. Hard-refresh `/reports` — confirm report body (login) not just tabs
+2. Optional: untrack or rewrite `.agents/**` README text that still names Claude (skills, not product)
+3. Cursor UI may re-append Co-authored-by on next commit — strip before push
 
 ## Touch
 
-- `server/services/analyticsData.js`, `reportGenerator.js`, `weeklyReviewEngine.js`, `weeklyDigestService.js`
-- Tour/Reports merge frontend files (unpushed → shipping)
+- tip `476c7a75` · reports+tour already in tree
