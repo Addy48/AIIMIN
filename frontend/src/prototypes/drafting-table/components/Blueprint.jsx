@@ -29,6 +29,7 @@ export function Blueprint({
   legend,
   accent = false,
   tint = false,
+  marks = true,
   style,
   cornerColor,
   children,
@@ -42,7 +43,7 @@ export function Blueprint({
         ...style,
       }}
     >
-      <Corners color={cornerColor} />
+      {marks && <Corners color={cornerColor} />}
       {legend && (
         <div
           style={{

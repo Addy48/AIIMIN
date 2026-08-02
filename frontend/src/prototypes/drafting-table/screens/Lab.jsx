@@ -1,5 +1,6 @@
 import React from 'react';
 import { Corners } from '../components/Blueprint';
+import Scatter from '../components/Scatter';
 import { ScreenHead, SectionRule, F } from '../components/ui';
 
 export default function Lab({ vm }) {
@@ -33,18 +34,11 @@ export default function Lab({ vm }) {
 
       {/* Scatter */}
       <SectionRule label="SCATTER" />
-      <div style={{ position: 'relative', border: '1px solid var(--hair)', height: 150, marginTop: 'var(--space-3)' }}>
-        <svg viewBox="0 0 300 150" width="100%" height="150" style={{ display: 'block' }}>
-          <line x1="0" y1="112" x2="300" y2="38" stroke="var(--color-accent)" strokeWidth="1.5" strokeDasharray="4 3" />
-          {[
-            [28, 126], [52, 118], [70, 104], [96, 112], [118, 88], [134, 96],
-            [156, 72], [172, 80], [194, 58], [212, 66], [236, 44], [258, 52],
-          ].map(([cx, cy], i) => (
-            <circle key={i} cx={cx} cy={cy} r="3" fill="var(--muted)" />
-          ))}
-          <circle cx="276" cy="34" r="3.5" fill="var(--color-accent)" />
-        </svg>
-      </div>
+      <Scatter
+        rho={vm.pairRho}
+        xLabel={(vm.pairLabel.split('→')[0] || 'X').trim().toUpperCase()}
+        yLabel={(vm.pairLabel.split('→')[1] || 'Y').trim().toUpperCase()}
+      />
 
       {/* Survivors table */}
       <SectionRule label="ALL SURVIVORS · q < 0.10" />

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Blueprint } from '../components/Blueprint';
 import Sparkline from '../components/Sparkline';
-import { ScreenHead, SectionRule, F } from '../components/ui';
+import Minimums from '../components/Minimums';
+import { ScreenHead, F } from '../components/ui';
 import useCountUp from '../useCountUp';
 
 const AREAS = [
@@ -82,13 +83,23 @@ export default function DaySheet({ vm }) {
         ))}
       </div>
 
-      {/* Action Required · 01 — the one accent object */}
+      {/* Action Required — the one accent object. Accent left-bar nudge, no corner marks. */}
       {vm.showAction && (
-        <Blueprint accent tint style={{ marginTop: 'var(--space-6)', padding: 'var(--space-4)' }}>
-          <div style={{ font: "600 10px 'Barlow Condensed', sans-serif", letterSpacing: '.2em', color: 'var(--color-accent)' }}>
-            ACTION REQUIRED · 01
+        <div
+          style={{
+            marginTop: 'var(--space-6)',
+            padding: 'var(--space-4)',
+            paddingLeft: 'calc(var(--space-4) + 3px)',
+            background: 'var(--tint)',
+            borderLeft: '3px solid var(--color-accent)',
+            boxShadow: 'inset 0 0 0 1px var(--hair)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ width: 5, height: 5, background: 'var(--color-accent)', display: 'block' }} />
+            <span style={{ font: "600 10px 'Barlow Condensed', sans-serif", letterSpacing: '.2em', color: 'var(--color-accent)' }}>ACTION REQUIRED</span>
           </div>
-          <div style={{ ...F.body(15, 400, 1.45), marginTop: 'var(--space-2)', textWrap: 'pretty' }}>
+          <div style={{ ...F.body(15, 400, 1.45), marginTop: 'var(--space-3)', textWrap: 'pretty' }}>
             Log yesterday's <span style={F.mono(14, 500)}>₹1,240</span> Swiggy spend. Food budget at 84% with 9 days remaining.
           </div>
           <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
@@ -127,7 +138,7 @@ export default function DaySheet({ vm }) {
               DEFER
             </button>
           </div>
-        </Blueprint>
+        </div>
       )}
 
       {/* Detected pattern */}
@@ -180,36 +191,7 @@ export default function DaySheet({ vm }) {
       </div>
 
       {/* Daily minimums */}
-      <SectionRule label="DAILY MINIMUMS" value={vm.minsLabel} />
-      <div style={{ marginTop: 'var(--space-3)' }}>
-        {vm.mins.map((m, i) => (
-          <div
-            key={i}
-            className="tap"
-            onClick={m.toggle}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-3)',
-              padding: '9px 0',
-              borderBottom: '1px solid var(--hair)',
-              cursor: 'pointer',
-            }}
-          >
-            <span
-              style={{
-                width: 14,
-                height: 14,
-                flex: 'none',
-                display: 'block',
-                border: `1px solid ${m.edge}`,
-                background: m.fill,
-              }}
-            />
-            <span style={{ ...F.body(13.5), color: m.color, textDecoration: m.line }}>{m.label}</span>
-          </div>
-        ))}
-      </div>
+      <Minimums mins={vm.mins} done={vm.minsDone} total={vm.minsTotal} />
     </div>
   );
 }

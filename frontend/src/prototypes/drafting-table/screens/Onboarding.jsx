@@ -1,22 +1,12 @@
 import React from 'react';
+import BrandMark from '../components/BrandMark';
 import { PrimaryButton, F } from '../components/ui';
-
-// The logo: a registration mark (square frame, four crosshair ticks, solid centre).
-function RegMark({ size = 18 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="1.4">
-      <rect x="3.5" y="3.5" width="17" height="17" />
-      <path d="M12 2v6M12 16v6M2 12h6M16 12h6" />
-      <rect x="9" y="9" width="6" height="6" fill="var(--color-accent)" stroke="none" />
-    </svg>
-  );
-}
 
 export default function Onboarding({ vm }) {
   return (
     <div className="scr" style={{ padding: '6px var(--space-6) 28px', minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', paddingTop: 'var(--space-2)' }}>
-        <RegMark />
+        <BrandMark size={22} />
         <span style={{ font: "600 13px 'Barlow Condensed', sans-serif", letterSpacing: '.28em', textTransform: 'uppercase' }}>AIIMIN</span>
       </div>
 

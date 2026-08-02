@@ -55,3 +55,19 @@ export const TIER_PRICE = { explore: 'FREE', core: '₹29', pro: '₹49', elite:
 
 // 14-bar life-score sparkline (height %, last three in accent — see DaySheet).
 export const SPARK_BARS = [52, 58, 49, 66, 61, 70, 64, 72, 69, 75, 71, 80, 74, 78];
+
+// Life modes — context presets that re-weight the day (approved, minimal on mobile).
+export const LIFE_MODES = ['BUILD', 'RECOVER', 'EXAM', 'TRAVEL'];
+
+// Identity strip (proto values; real ones come from the account on sync).
+export const IDENTITY = {
+  name: 'Aaditya Upadhyay',
+  initials: 'AU',
+  arc: 'Become a good person — the only path worth pursuing.',
+  rank: 'CHAMPION',
+  rankNo: 6,
+  rankTotal: 10,
+  xp: 17091,
+  xpToNext: 2909,
+  nextRank: 'LEGEND',
+};

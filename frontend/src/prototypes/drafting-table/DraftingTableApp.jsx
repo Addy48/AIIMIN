@@ -7,6 +7,7 @@ import {
 } from './data';
 import { computeScore, scoreDelta, scoreBand, minsLabel, minsPenalty } from './score';
 import BottomNav from './components/BottomNav';
+import BrandMark from './components/BrandMark';
 import DaySheet from './screens/DaySheet';
 import LiveScore from './screens/LiveScore';
 import Money from './screens/Money';
@@ -49,6 +50,7 @@ const INITIAL = {
   toast: null,
   lastLedger: null,
   tier: 'pro',
+  lifeMode: 'BUILD',
 };
 
 export default function DraftingTableApp() {
@@ -85,8 +87,11 @@ export default function DraftingTableApp() {
       // Day sheet
       showAction: st.showAction,
       deferAction: () => { merge({ showAction: false }); flash("Deferred to tomorrow's sheet."); },
+      minsDone: done,
+      minsTotal: st.mins.length,
       mins: MIN_LABELS.map((label, i) => ({
         label,
+        done: st.mins[i],
         edge: st.mins[i] ? 'var(--color-accent)' : 'var(--rule)',
         fill: st.mins[i] ? 'var(--color-accent)' : 'transparent',
         color: st.mins[i] ? 'var(--muted)' : 'var(--color-text)',
@@ -210,6 +215,9 @@ export default function DraftingTableApp() {
 
       reduceMotion: st.reduceMotion,
 
+      lifeMode: st.lifeMode,
+      setLifeMode: (m) => { merge({ lifeMode: m }); flash('Life mode · ' + m.toLowerCase() + '.'); },
+
       // Toast
       undo: () => {
         if (st.lastLedger) merge({ ledger: st.ledger.filter((r) => r !== st.lastLedger), lastLedger: null, toast: null });
@@ -230,11 +238,7 @@ export default function DraftingTableApp() {
         {/* Dev chrome: brand + theme toggle */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="1.4">
-              <rect x="3.5" y="3.5" width="17" height="17" />
-              <path d="M12 2v6M12 16v6M2 12h6M16 12h6" />
-              <rect x="9" y="9" width="6" height="6" fill="var(--color-accent)" stroke="none" />
-            </svg>
+            <BrandMark size={18} />
             <span style={{ font: "600 14px 'Barlow Condensed', sans-serif", letterSpacing: '.26em', textTransform: 'uppercase', color: '#e7e7ea' }}>AIIMIN</span>
             <span style={{ font: "400 11px 'JetBrains Mono', monospace", color: '#6b6e73' }}>DRAFTING TABLE</span>
           </div>
