@@ -1,8 +1,10 @@
 import React from 'react';
 import { Blueprint } from '../components/Blueprint';
 import { ScreenHead, PrimaryButton, F } from '../components/ui';
+import useCountUp from '../useCountUp';
 
 export default function LiveScore({ vm }) {
+  const shownScore = useCountUp(vm.score, vm.reduceMotion);
   return (
     <div className="scr" style={{ padding: '6px var(--space-6) 28px' }}>
       <ScreenHead title="LIVE SCORE" meta="PROVISIONAL" metaColor="var(--color-accent)" />
@@ -10,8 +12,8 @@ export default function LiveScore({ vm }) {
       {/* Provisional score figure */}
       <Blueprint style={{ marginTop: 'var(--space-6)', padding: 'var(--space-6) var(--space-4) var(--space-4)', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 'var(--space-3)' }}>
-          <span className="fig" key={vm.score} style={{ font: "700 72px/.86 'JetBrains Mono', monospace", letterSpacing: '-.04em' }}>
-            {vm.score}
+          <span style={{ font: "700 72px/.86 'JetBrains Mono', monospace", letterSpacing: '-.04em' }}>
+            {shownScore}
           </span>
           <span style={{ ...F.mono(15, 500), color: 'var(--color-accent)' }}>{vm.delta}</span>
         </div>
@@ -52,8 +54,8 @@ export default function LiveScore({ vm }) {
               onClick={r.bump}
               style={{ position: 'relative', height: 24, border: '1px solid var(--hair)', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
             >
-              <i style={{ position: 'absolute', left: 0, top: 0, bottom: 0, background: 'var(--tint)', display: 'block', width: r.pct }} />
-              <i style={{ position: 'absolute', top: -4, bottom: -4, width: 9, marginLeft: -4, background: 'var(--color-accent)', display: 'block', left: r.pct }} />
+              <i style={{ position: 'absolute', left: 0, top: 0, bottom: 0, background: 'var(--tint)', display: 'block', width: r.pct, transition: 'width 240ms cubic-bezier(.22,1,.36,1)' }} />
+              <i style={{ position: 'absolute', top: -4, bottom: -4, width: 9, marginLeft: -4, background: 'var(--color-accent)', display: 'block', left: r.pct, transition: 'left 240ms cubic-bezier(.22,1,.36,1)' }} />
             </div>
           </div>
         ))}

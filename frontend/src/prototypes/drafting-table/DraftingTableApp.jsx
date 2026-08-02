@@ -208,6 +208,8 @@ export default function DraftingTableApp() {
       tier: st.tier,
       tierLabel: TIER_LABELS[st.tier],
 
+      reduceMotion: st.reduceMotion,
+
       // Toast
       undo: () => {
         if (st.lastLedger) merge({ ledger: st.ledger.filter((r) => r !== st.lastLedger), lastLedger: null, toast: null });

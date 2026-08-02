@@ -68,9 +68,13 @@
 .dt-root .scr > *:nth-child(n+6) { animation-delay: .2s; }
 
 .dt-root .tap {
-  transition: transform 110ms cubic-bezier(.23,1,.32,1), background 140ms, color 140ms, border-color 140ms, opacity 140ms;
+  transition: transform 110ms cubic-bezier(.23,1,.32,1), background 160ms, color 140ms, border-color 160ms, box-shadow 160ms, opacity 140ms;
 }
 .dt-root .tap:active { transform: scale(.97); }
+/* Faint accent wash on hover — warmth without breaking the line-drawing language. */
+@media (hover: hover) {
+  .dt-root .tap:hover { box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--color-accent) 7%, transparent); }
+}
 
 .dt-root .sk { position: relative; overflow: hidden; }
 .dt-root .sk::after {

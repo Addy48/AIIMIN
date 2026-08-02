@@ -2,6 +2,7 @@ import React from 'react';
 import { Blueprint } from '../components/Blueprint';
 import Sparkline from '../components/Sparkline';
 import { ScreenHead, SectionRule, F } from '../components/ui';
+import useCountUp from '../useCountUp';
 
 const AREAS = [
   { label: 'CRAFT', val: '88' },
@@ -20,6 +21,7 @@ const METRICS = [
 ];
 
 export default function DaySheet({ vm }) {
+  const shownScore = useCountUp(vm.score, vm.reduceMotion);
   return (
     <div className="scr" style={{ padding: '6px var(--space-6) 28px' }}>
       <ScreenHead title="AIIMIN · DAY SHEET" meta="02.08.26 TUE" />
@@ -31,11 +33,9 @@ export default function DaySheet({ vm }) {
       >
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
           <span
-            className="fig"
-            key={vm.score}
             style={{ font: "700 72px/.82 'JetBrains Mono', monospace", letterSpacing: '-.04em' }}
           >
-            {vm.score}
+            {shownScore}
           </span>
           <div style={{ paddingBottom: 'var(--space-2)' }}>
             <div style={{ ...F.mono(12.5, 500), color: 'var(--color-accent)' }}>{vm.delta} · 7d</div>
