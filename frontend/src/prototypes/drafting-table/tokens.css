@@ -93,6 +93,7 @@
   border: none; outline: none; resize: none; width: 100%;
 }
 .dt-root textarea::placeholder { color: var(--muted); }
+.dt-root input::placeholder { color: var(--muted); }
 
 .dt-root a { color: var(--color-accent); }
 .dt-root a:hover { opacity: .75; }

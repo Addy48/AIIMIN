@@ -14,18 +14,22 @@ export default function useCountUp(value, reduce = false, duration = 520) {
   const rafRef = useRef(null);
 
   useEffect(() => {
-    if (reduce) { setDisplay(value); return undefined; }
+    if (reduce) { fromRef.current = value; setDisplay(value); return undefined; }
+    // Animate from whatever is on screen right now, not from the last
+    // *completed* target — otherwise rapid changes start from a stale origin.
     const from = fromRef.current;
     const to = value;
-    if (from === to) return undefined;
+    // Nothing to animate — make sure what's on screen matches the target.
+    if (from === to) { setDisplay(to); return undefined; }
     const start = performance.now();
 
     const tick = (now) => {
       const t = Math.min(1, (now - start) / duration);
       const eased = easeOutExpo(t);
-      setDisplay(Math.round(from + (to - from) * eased));
+      const at = Math.round(from + (to - from) * eased);
+      fromRef.current = at;
+      setDisplay(at);
       if (t < 1) rafRef.current = requestAnimationFrame(tick);
-      else fromRef.current = to;
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => rafRef.current && cancelAnimationFrame(rafRef.current);

@@ -2,6 +2,7 @@ import React from 'react';
 import { Blueprint } from '../components/Blueprint';
 import Sparkline from '../components/Sparkline';
 import Minimums from '../components/Minimums';
+import TodayCapture from '../components/TodayCapture';
 import { ScreenHead, F } from '../components/ui';
 import useCountUp from '../useCountUp';
 
@@ -27,63 +28,10 @@ export default function DaySheet({ vm }) {
     <div className="scr" style={{ padding: '6px var(--space-6) 28px' }}>
       <ScreenHead title="AIIMIN · DAY SHEET" meta="02.08.26 TUE" />
 
-      {/* Life score block */}
-      <Blueprint
-        legend="LIFE SCORE"
-        style={{ marginTop: 'var(--space-6)', padding: 'var(--space-6) var(--space-4) var(--space-4)' }}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
-          <span
-            style={{ font: "700 72px/.82 'JetBrains Mono', monospace", letterSpacing: '-.04em' }}
-          >
-            {shownScore}
-          </span>
-          <div style={{ paddingBottom: 'var(--space-2)' }}>
-            <div style={{ ...F.mono(12.5, 500), color: 'var(--color-accent)' }}>{vm.delta} · 7d</div>
-            <div style={{ ...F.body(11), color: 'var(--muted)', marginTop: 2 }}>Band: {vm.band}</div>
-          </div>
-        </div>
-        <Sparkline />
-      </Blueprint>
+      {/* Capture-first — the day leads with the act, not the dashboard (genesis GOV-106) */}
+      <TodayCapture vm={vm} />
 
-      {/* Six-area grid (3×2) */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          border: '1px solid var(--hair)',
-          borderRight: 'none',
-          marginTop: 'var(--space-6)',
-        }}
-      >
-        {AREAS.map((a, i) => (
-          <div
-            key={a.label}
-            className={a.money ? 'tap' : undefined}
-            onClick={a.money ? () => vm.go('money') : undefined}
-            style={{
-              borderRight: '1px solid var(--hair)',
-              borderTop: i >= 3 ? '1px solid var(--hair)' : undefined,
-              padding: 'var(--space-3)',
-              background: a.money ? 'var(--tint)' : undefined,
-              cursor: a.money ? 'pointer' : undefined,
-            }}
-          >
-            <div style={{ ...F.cellLabel, color: a.money ? 'var(--color-accent)' : 'var(--muted)' }}>{a.label}</div>
-            <div
-              style={{
-                font: "700 22px/1 'JetBrains Mono', monospace",
-                marginTop: 4,
-                color: a.money ? 'var(--color-accent)' : undefined,
-              }}
-            >
-              {a.val}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Action Required — the one accent object. Accent left-bar nudge, no corner marks. */}
+      {/* Action Required — the one accent nudge, kept high (it is an action) */}
       {vm.showAction && (
         <div
           style={{
@@ -106,40 +54,54 @@ export default function DaySheet({ vm }) {
             <button
               className="tap"
               onClick={() => vm.go('cap')}
-              style={{
-                font: "600 12px 'Barlow Condensed', sans-serif",
-                letterSpacing: '.1em',
-                textTransform: 'uppercase',
-                color: 'var(--color-bg)',
-                background: 'var(--color-accent)',
-                border: 'none',
-                borderRadius: 'var(--radius-md)',
-                padding: '9px 16px',
-                cursor: 'pointer',
-              }}
+              style={{ font: "600 12px 'Barlow Condensed', sans-serif", letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--color-bg)', background: 'var(--color-accent)', border: 'none', borderRadius: 'var(--radius-md)', padding: '9px 16px', cursor: 'pointer' }}
             >
               LOG IT
             </button>
             <button
               className="tap"
               onClick={vm.deferAction}
-              style={{
-                font: "600 12px 'Barlow Condensed', sans-serif",
-                letterSpacing: '.1em',
-                textTransform: 'uppercase',
-                color: 'var(--color-accent)',
-                background: 'transparent',
-                border: '1px solid var(--rule)',
-                borderRadius: 'var(--radius-md)',
-                padding: '9px 16px',
-                cursor: 'pointer',
-              }}
+              style={{ font: "600 12px 'Barlow Condensed', sans-serif", letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--color-accent)', background: 'transparent', border: '1px solid var(--rule)', borderRadius: 'var(--radius-md)', padding: '9px 16px', cursor: 'pointer' }}
             >
               DEFER
             </button>
           </div>
         </div>
       )}
+
+      {/* Life score — the day's read, now secondary to the act above */}
+      <div style={{ ...F.sectionLabel, marginTop: 'var(--space-6)' }}>TODAY'S READ</div>
+      <Blueprint legend="LIFE SCORE" style={{ marginTop: 'var(--space-4)', padding: 'var(--space-6) var(--space-4) var(--space-4)' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
+          <span style={{ font: "700 72px/.82 'JetBrains Mono', monospace", letterSpacing: '-.04em' }}>{shownScore}</span>
+          <div style={{ paddingBottom: 'var(--space-2)' }}>
+            <div style={{ ...F.mono(12.5, 500), color: 'var(--color-accent)' }}>{vm.delta} · 7d</div>
+            <div style={{ ...F.body(11), color: 'var(--muted)', marginTop: 2 }}>Band: {vm.band}</div>
+          </div>
+        </div>
+        <Sparkline />
+      </Blueprint>
+
+      {/* Six-area grid (3×2) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', border: '1px solid var(--hair)', borderRight: 'none', marginTop: 'var(--space-6)' }}>
+        {AREAS.map((a, i) => (
+          <div
+            key={a.label}
+            className={a.money ? 'tap' : undefined}
+            onClick={a.money ? () => vm.go('money') : undefined}
+            style={{
+              borderRight: '1px solid var(--hair)',
+              borderTop: i >= 3 ? '1px solid var(--hair)' : undefined,
+              padding: 'var(--space-3)',
+              background: a.money ? 'var(--tint)' : undefined,
+              cursor: a.money ? 'pointer' : undefined,
+            }}
+          >
+            <div style={{ ...F.cellLabel, color: a.money ? 'var(--color-accent)' : 'var(--muted)' }}>{a.label}</div>
+            <div style={{ font: "700 22px/1 'JetBrains Mono', monospace", marginTop: 4, color: a.money ? 'var(--color-accent)' : undefined }}>{a.val}</div>
+          </div>
+        ))}
+      </div>
 
       {/* Detected pattern */}
       <div style={{ marginTop: 'var(--space-6)', borderTop: '1px solid var(--rule)', paddingTop: 'var(--space-3)' }}>
@@ -150,39 +112,16 @@ export default function DaySheet({ vm }) {
         <button
           className="tap"
           onClick={() => vm.go('lab')}
-          style={{
-            font: "600 11px 'Barlow Condensed', sans-serif",
-            letterSpacing: '.14em',
-            color: 'var(--color-accent)',
-            background: 'none',
-            border: 'none',
-            padding: 'var(--space-2) 0 0',
-            cursor: 'pointer',
-          }}
+          style={{ font: "600 11px 'Barlow Condensed', sans-serif", letterSpacing: '.14em', color: 'var(--color-accent)', background: 'none', border: 'none', padding: 'var(--space-2) 0 0', cursor: 'pointer' }}
         >
           OPEN IN LAB →
         </button>
       </div>
 
       {/* Metric grid 2×2 */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          border: '1px solid var(--hair)',
-          borderRight: 'none',
-          marginTop: 'var(--space-6)',
-        }}
-      >
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid var(--hair)', borderRight: 'none', marginTop: 'var(--space-6)' }}>
         {METRICS.map((m, i) => (
-          <div
-            key={m.label}
-            style={{
-              borderRight: '1px solid var(--hair)',
-              borderTop: i >= 2 ? '1px solid var(--hair)' : undefined,
-              padding: 'var(--space-3)',
-            }}
-          >
+          <div key={m.label} style={{ borderRight: '1px solid var(--hair)', borderTop: i >= 2 ? '1px solid var(--hair)' : undefined, padding: 'var(--space-3)' }}>
             <div style={F.cellLabel}>{m.label}</div>
             <div style={{ font: "700 20px/1 'JetBrains Mono', monospace", marginTop: 4 }}>{m.val}</div>
             <div style={{ ...F.mono(10), color: 'var(--muted)' }}>{m.sub}</div>

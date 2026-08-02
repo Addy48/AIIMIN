@@ -17,16 +17,18 @@ import OsId from './screens/OsId';
 import Config from './screens/Config';
 import Onboarding from './screens/Onboarding';
 import EdgeStates from './screens/EdgeStates';
+import Journal from './screens/Journal';
 
 const SCREENS = {
   hero: DaySheet, score: LiveScore, money: Money, cap: Capture,
   lab: Lab, osid: OsId, set: Config, onb: Onboarding, state: EdgeStates,
+  journal: Journal,
 };
 
 // Dev toolbar jump targets (outside the phone — not part of the design).
 const JUMPS = [
   ['onb', 'START'], ['hero', 'DAY'], ['score', 'SCORE'], ['money', 'MONEY'],
-  ['cap', 'CAPTURE'], ['lab', 'LAB'], ['osid', 'OS-ID'], ['set', 'CONFIG'], ['state', 'STATES'],
+  ['cap', 'CAPTURE'], ['journal', 'JOURNAL'], ['lab', 'LAB'], ['osid', 'OS-ID'], ['set', 'CONFIG'], ['state', 'STATES'],
 ];
 
 const INITIAL = {
@@ -51,6 +53,14 @@ const INITIAL = {
   lastLedger: null,
   tier: 'pro',
   lifeMode: 'BUILD',
+  microTask: '',
+  journal: [
+    { date: '01 AUG', mood: 4, template: 'FREE WRITE', excerpt: 'Shipped the sync fix. Mind clear until evening, then the scroll pull.' },
+    { date: '31 JUL', mood: 3, template: 'MORNING PAGES', excerpt: 'Slept badly. Walked anyway. The walk is the whole game.' },
+    { date: '29 JUL', mood: 5, template: 'WEEKLY REVIEW', excerpt: 'Best week in a while — gym 5x, spends down 12%, journal every day.' },
+  ],
+  journalDraft: '',
+  journalMood: 3,
 };
 
 export default function DraftingTableApp() {
@@ -162,7 +172,7 @@ export default function DraftingTableApp() {
         flash('Drifted. Kept in hold, nothing committed.');
       },
       preset_food: () => merge({ screen: 'cap', capText: 'paid 1240 swiggy dinner with rohan, felt sluggish after' }),
-      preset_journal: () => merge({ capText: 'long day, shipped the sync fix, mind felt clear until evening' }),
+      preset_journal: () => merge({ screen: 'journal' }),
       preset_voice: () => flash('Voice capture held · transcribing.'),
       preset_scan: () => flash('Receipt scanned · offer ready in hold.'),
       preset_habit: () => merge({ screen: 'hero' }),
@@ -218,13 +228,34 @@ export default function DraftingTableApp() {
       lifeMode: st.lifeMode,
       setLifeMode: (m) => { merge({ lifeMode: m }); flash('Life mode · ' + m.toLowerCase() + '.'); },
 
+      // Today: capture-first hero + micro-task
+      startCapture: (text) => merge({ screen: 'cap', capText: text || '' }),
+      microTask: st.microTask,
+      setMicroTask: (v) => merge({ microTask: v }),
+
+      // Journal surface
+      journal: st.journal,
+      journalDraft: st.journalDraft,
+      journalMood: st.journalMood,
+      onJournalDraft: (e) => merge({ journalDraft: e.target.value }),
+      setJournalMood: (m) => merge({ journalMood: m }),
+      saveJournal: (template = 'FREE WRITE') => {
+        const text = st.journalDraft.trim();
+        if (!text) { flash('Write something first.'); return; }
+        merge({
+          journal: [{ date: '02 AUG', mood: st.journalMood, template, excerpt: text.slice(0, 90) }].concat(st.journal),
+          journalDraft: '',
+        });
+        flash('Journal entry saved.');
+      },
+
       // Toast
       undo: () => {
         if (st.lastLedger) merge({ ledger: st.ledger.filter((r) => r !== st.lastLedger), lastLedger: null, toast: null });
         else merge({ toast: null });
       },
     };
-  }, [st, score, dark, go, merge, flash]);
+  }, [st, score, done, dark, go, merge, flash]);
 
   const Active = SCREENS[st.screen];
 

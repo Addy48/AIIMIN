@@ -1,6 +1,6 @@
 import React from 'react';
 import { Corners } from '../components/Blueprint';
-import { ScreenHead, SectionRule, PrimaryButton, F } from '../components/ui';
+import { SectionRule, PrimaryButton, F } from '../components/ui';
 
 const SPEC = [
   ['Length', 'EXACTLY 8'],
