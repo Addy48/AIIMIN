@@ -15,6 +15,13 @@ import DataDeletion from './pages/legal/DataDeletion';
 import Security from './pages/legal/Security';
 import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
+import Cookies from './pages/legal/Cookies';
+import AcceptableUse from './pages/legal/AcceptableUse';
+import Refunds from './pages/legal/Refunds';
+import AiDisclosure from './pages/legal/AiDisclosure';
+import Grievance from './pages/legal/Grievance';
+import Subprocessors from './pages/legal/Subprocessors';
+import LegalHub from './pages/legal/LegalHub';
 import Brand from './pages/Brand';
 
 // Layout & eager components
@@ -34,6 +41,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AppQueryProvider } from './context/QueryProvider';
 import { AudioProvider } from './context/AudioContext';
 import ErrorBoundary from './components/system/ErrorBoundary';
+import ConsentBanner from './components/system/ConsentBanner';
 import TierRouteGuard from './components/account/TierRouteGuard';
 import EmailVerifiedGuard from './components/system/EmailVerifiedGuard';
 import DeviceGate from './components/system/DeviceGate';
@@ -66,6 +74,7 @@ const FamilyPage    = React.lazy(() => import('./pages/Family'));
 const AccountPage   = React.lazy(() => import('./pages/AccountPage'));
 const ReportsPage   = React.lazy(() => import('./pages/Reports'));
 const SeedData      = React.lazy(() => import('./pages/SeedData'));
+const DraftingTablePrototype = React.lazy(() => import('./prototypes/drafting-table'));
 /* ── Suspense fallback ────────────────────────────────────────────────── */
 const Fallback = () => (
   <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -73,6 +82,25 @@ const Fallback = () => (
   </div>
 );
 const Lazy = ({ children }) => <React.Suspense fallback={<Fallback />}>{children}</React.Suspense>;
+
+/* Public surfaces that stay reachable while an account waits for waitlist approval. */
+const PUBLIC_PATH_PREFIXES = [
+  '/privacy',
+  '/terms',
+  '/contact',
+  '/about',
+  '/security',
+  '/data-deletion',
+  '/cookies',
+  '/acceptable-use',
+  '/refunds',
+  '/ai-disclosure',
+  '/grievance',
+  '/subprocessors',
+  '/legal',
+  '/brand',
+  '/proto',
+];
 
 /* ── Root App ─────────────────────────────────────────────────────── */
 function App() {
@@ -105,16 +133,11 @@ function AppContent({ user, session }) {
   const { canAccessApp, loading: accessLoading, isWaitlistMode } = useAccessGate();
 
   const showWaitlistAtRoot = isWaitlistMode && !canAccessApp && !accessLoading;
+  const isProto = location.pathname.startsWith('/proto');
 
   const showPendingScreen = isWaitlistMode && isSignedIn && !canAccessApp && !accessLoading
     && !['/login', '/'].includes(location.pathname)
-    && !location.pathname.startsWith('/privacy')
-    && !location.pathname.startsWith('/terms')
-    && !location.pathname.startsWith('/contact')
-    && !location.pathname.startsWith('/about')
-    && !location.pathname.startsWith('/security')
-    && !location.pathname.startsWith('/data-deletion')
-    && !location.pathname.startsWith('/brand');
+    && !PUBLIC_PATH_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
 
   if (accessLoading && isWaitlistMode) {
     return <Fallback />;
@@ -200,7 +223,15 @@ function AppContent({ user, session }) {
         <Route path="/security" element={<Security />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/cookies" element={<Cookies />} />
+        <Route path="/acceptable-use" element={<AcceptableUse />} />
+        <Route path="/refunds" element={<Refunds />} />
+        <Route path="/ai-disclosure" element={<AiDisclosure />} />
+        <Route path="/grievance" element={<Grievance />} />
+        <Route path="/subprocessors" element={<Subprocessors />} />
+        <Route path="/legal" element={<LegalHub />} />
         <Route path="/brand" element={<Brand />} />
+        <Route path="/proto/draft" element={<Lazy><DraftingTablePrototype /></Lazy>} />
         <Route path="/design-lab" element={<Navigate to="/account?section=design" replace />} />
 
         {/* ── 404 ── */}
@@ -208,11 +239,13 @@ function AppContent({ user, session }) {
 
       </Routes>
 
-      {/* Global Widgets */}
-      {canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-      {canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
-      {isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
-      {!isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      {!isProto && <ConsentBanner />}
+
+      {/* Global Widgets — suppressed on the /proto/* prototype preview surface */}
+      {!isProto && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+      {!isProto && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+      {!isProto && isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
+      {!isProto && !isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
     </DeviceGate>
   );
