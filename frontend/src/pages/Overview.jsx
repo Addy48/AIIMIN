@@ -7,7 +7,6 @@ import { Plus, X, ChevronRight, ChevronLeft, Keyboard, Mic, AlertTriangle, Sun, 
 import AnimatedNumber from '../components/ui/AnimatedNumber';
 import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
-import PulseCheckModal from '../components/overview/PulseCheckModal';
 import MondayInsight from '../components/overview/MondayInsight';
 import WeekInNumbers from '../components/overview/WeekInNumbers';
 import { useOverviewWidgets } from '../components/overview/OverviewWidgetGrid';
@@ -574,7 +573,11 @@ const Overview = () => {
 
       <ArcBanner lifeArc={profile?.tagline} />
 
-      <PulseCheckModal user={user} />
+      {/* Weekly Pulse (WHO-5) is deliberately NOT mounted here. It auto-opened on
+          Sundays two seconds after load, which interrupts capture and could stack
+          on top of the onboarding tour. Today is capture-first and declares one
+          job (Genesis P8). The component still exists for a future opt-in entry
+          point — see components/overview/PulseCheckModal.jsx. */}
 
       <Picker />
 

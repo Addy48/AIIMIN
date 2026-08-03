@@ -355,12 +355,13 @@ export const calculateLifeScoreLocal = async (user) => {
     localStorage.setItem(SCORE_PREV_KEY, String(finalScore));
   } catch { /* ignore */ }
 
+  // Canonical display labels — ADR 2026-08-03-life-score-taxonomy.
   const deltas = [
-    { name: 'Behavioral', val: behavioralScore - 50 },
-    { name: 'Mental Clarity', val: mentalScore - 50 },
-    { name: 'Goal Momentum', val: goalScore - 50 },
-    { name: 'Financial', val: financialScore - 50 },
-    { name: 'Recovery', val: recoveryScore - 50 },
+    { name: 'DISCIPLINE', val: behavioralScore - 50 },
+    { name: 'MOOD', val: mentalScore - 50 },
+    { name: 'MIND', val: goalScore - 50 },
+    { name: 'MONEY', val: financialScore - 50 },
+    { name: 'BODY', val: recoveryScore - 50 },
   ].sort((a, b) => b.val - a.val);
 
   const best = deltas[0];
@@ -382,12 +383,13 @@ export const calculateLifeScoreLocal = async (user) => {
     delta,
     explanation,
     source: usedApi ? 'api-partial' : 'local',
+    // Same canonical keys as the API path so consumers never branch on source.
     contributors: {
-      behavioral: { score: Math.round(behavioralScore), label: 'Behavioral' },
-      mental_clarity: { score: Math.round(mentalScore), label: 'Mental Clarity' },
-      goal_momentum: { score: Math.round(goalScore), label: 'Goal Momentum' },
-      financial: { score: Math.round(financialScore), label: 'Financial' },
-      recovery: { score: Math.round(recoveryScore), label: 'Recovery' },
+      physical: { score: Math.round(recoveryScore), label: 'BODY' },
+      cognitive: { score: Math.round(goalScore), label: 'MIND' },
+      discipline: { score: Math.round(behavioralScore), label: 'DISCIPLINE' },
+      financial: { score: Math.round(financialScore), label: 'MONEY' },
+      emotional: { score: Math.round(mentalScore), label: 'MOOD' },
     },
   };
 };
@@ -406,12 +408,16 @@ export const calculateLifeScore = async (user) => {
           if (!Number.isNaN(prev) && prev > 0) delta = score - prev;
           localStorage.setItem(SCORE_PREV_KEY, String(score));
         } catch { /* ignore */ }
+        // Canonical taxonomy — ADR 2026-08-03-life-score-taxonomy.
+        // Keys are the contract, labels are presentation. The previous mapping
+        // renamed all five and crossed two of them: `cognitive` was shown as
+        // "Goal Momentum" and `emotional` as "Mental Clarity".
         const contributors = {
-          behavioral: { score: Math.round(ss.discipline || 0), label: 'Behavioral' },
-          mental_clarity: { score: Math.round(ss.emotional || 0), label: 'Mental Clarity' },
-          goal_momentum: { score: Math.round(ss.cognitive || 0), label: 'Goal Momentum' },
-          financial: { score: Math.round(ss.financial || 0), label: 'Financial' },
-          recovery: { score: Math.round(ss.physical || 0), label: 'Recovery' },
+          physical: { score: Math.round(ss.physical || 0), label: 'BODY' },
+          cognitive: { score: Math.round(ss.cognitive || 0), label: 'MIND' },
+          discipline: { score: Math.round(ss.discipline || 0), label: 'DISCIPLINE' },
+          financial: { score: Math.round(ss.financial || 0), label: 'MONEY' },
+          emotional: { score: Math.round(ss.emotional || 0), label: 'MOOD' },
         };
         return {
           score,
