@@ -80,8 +80,7 @@ app.post('/', requireAuth, async (c) => {
                 learning_topic = EXCLUDED.learning_topic,
                 journal_entry = EXCLUDED.journal_entry,
                 mood = EXCLUDED.mood,
-                energy_level = EXCLUDED.energy_level,
-                updated_at = NOW()
+                energy_level = EXCLUDED.energy_level
              RETURNING *`,
             [
                 userId, date,

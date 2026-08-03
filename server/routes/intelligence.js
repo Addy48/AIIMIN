@@ -591,9 +591,9 @@ Respond with JSON like:
             try {
                 if (action.type === 'log_mood' && action.score) {
                     await pool.query(
-                        `INSERT INTO daily_logs (user_id, date, mood, energy, notes)
+                        `INSERT INTO daily_logs (user_id, date, mood, energy_level, journal_entry)
                          VALUES ($1, $2, $3, $3, $4)
-                         ON CONFLICT (user_id, date) DO UPDATE SET mood = $3, energy = $3, notes = COALESCE($4, daily_logs.notes)`,
+                         ON CONFLICT (user_id, date) DO UPDATE SET mood = $3, energy_level = $3, journal_entry = COALESCE($4, daily_logs.journal_entry)`,
                         [userId, today, Math.min(10, Math.max(1, Math.round(action.score))), action.note || null]
                     );
                     results.push({ type: 'log_mood', status: 'success', score: action.score });

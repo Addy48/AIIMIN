@@ -102,7 +102,7 @@ app.get('/bootstrap', requireAuth, async (c) => {
         [userId],
       ).catch(() => ({ rows: [] })),
       pool.query(
-        `SELECT id, title, start_time AS start_at, end_time AS end_at, all_day, event_type, meta
+        `SELECT id, title, start_time AS start_at, end_time AS end_at, all_day, event_type
          FROM calendar_events
          WHERE user_id = $1
            AND deleted_at IS NULL
@@ -110,10 +110,10 @@ app.get('/bootstrap', requireAuth, async (c) => {
          ORDER BY start_time ASC LIMIT 10`,
         [userId],
       ).catch(() => ({ rows: [] })),
-      pool.query(
-        `SELECT payload FROM life_score_cache WHERE user_id = $1 ORDER BY updated_at DESC LIMIT 1`,
-        [userId],
-      ).catch(() => ({ rows: [] })),
+      // No life_score_cache table exists — the score is computed server-side by
+      // services/lifeHealthEngine.js. This read always failed into an empty
+      // result; keep the shape, drop the dead query.
+      Promise.resolve({ rows: [] }),
       pool.query(
         `SELECT id, metric, target, frequency, meta, start_date, created_at
          FROM goals WHERE user_id = $1 AND deleted_at IS NULL
