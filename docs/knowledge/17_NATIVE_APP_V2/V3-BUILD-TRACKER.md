@@ -30,14 +30,14 @@ tags:
 |---|--------|-------|----------|
 | 0 | **Foundation** — project, theme, shell | ✅ done 2026-08-03 | `:app:assembleDebug` BUILD SUCCESSFUL · APK 12.5 MB · 4 screenshot goldens recorded and validating |
 | 1 | **Capture** — the trust surface | ✅ done 2026-08-03 (local state; API not wired) | `:app:assembleDebug` BUILD SUCCESSFUL · APK 13.0 MB · 13/13 parser unit tests · 5 screenshot goldens |
-| 2 | Today (capture-first) | | |
-| 3 | Money | | |
-| 4 | Config | | |
-| 5 | OS-ID | | |
-| 6 | Onboarding (6 steps) | | |
-| 7 | Journal | | |
-| 8 | Lab | | |
-| 9 | Live Score | **blocked** — founder must pick the 5-dimension taxonomy first | |
+| 2 | **`:core:model`** — Life Score engine v2 maths | ✅ done 2026-08-03 | 28/28 unit tests · attainment curve, asymmetric Hold, robust baseline, trajectory, composition |
+| 3 | Today (capture-first) | next | |
+| 4 | Money | | |
+| 5 | Config (instruments · mode · commitments · body facts) | | |
+| 6 | OS-ID | | |
+| 7 | Onboarding, 10 steps incl. the Groq calibration | | |
+| 8 | Score surface (state · trajectory · confidence · attribution) | **unblocked** 2026-08-03 — engine v2 decided | |
+| 9 | Journal · Lab | | |
 
 ## 0 · Foundation — done 2026-08-03
 
@@ -100,6 +100,30 @@ adb install -r native-android-v3/app/build/outputs/apk/debug/app-debug.apk
 raise if you want them: Detekt and Spotless (Detekt's current release is an
 alpha), JaCoCo coverage, baseline profiles, crash reporting, Gradle managed
 devices.
+
+## 2 · `:core:model` — the Life Score maths — done 2026-08-03
+
+Founder chose **O12 + O8 + O2 + O6 + O7 + O9** — the full instrument. Contract:
+[[10_DECISIONS/2026-08-03-life-score-engine-v2]]. The maths lives in pure Kotlin
+so it is testable without a device and mirrors the server contract exactly.
+
+Two founder complaints were solved here, and both are pinned by tests:
+
+- **The cliff.** 12,990 steps against a 13,000 target is `0.9997`, indistinguishable
+  from a hit. Nothing in the engine is binary. A symmetric S-curve was tried and
+  rejected in test — it scored 9,000 of 13,000 at 0.48, and two thirds of the work
+  is not half a day. The ease-out curve gives 0.74.
+- **The collapse.** Ten clean days then one slip takes Hold from 1.00 to 0.87, not
+  to zero. Best run never resets. The memory is asymmetric on purpose — slow to
+  fall (14-day half-life), quick to return (α = 0.30) — so the app can say
+  *"two days at your usual and you are back"*, which a streak counter never can.
+
+Three more real bugs were caught by the same test pass: a perfectly straight
+trend was being reported as HOLDING (zero standard error read as "flat"), a
+perfectly steady history could not answer whether today was unusual, and a day
+not logged risked being folded in as a zero.
+
+**Evidence:** `:core:model:test` — 28 tests, 0 failures.
 
 ## 1 · Capture — done 2026-08-03 (local state)
 

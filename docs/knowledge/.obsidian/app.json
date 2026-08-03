@@ -8,6 +8,10 @@
   "userIgnoreFilters": [
     "Genesis/**/supporting/**",
     "Archive/**",
-    "99_ARCHIVE/**"
+    "99_ARCHIVE/**",
+    "Roadmap/UX-Architecture/**",
+    "Roadmap/UX-Intelligence/**",
+    "_templates/**",
+    ".obsidian/**"
   ]
 }

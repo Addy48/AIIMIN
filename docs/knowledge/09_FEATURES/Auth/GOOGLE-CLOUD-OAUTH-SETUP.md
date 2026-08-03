@@ -1,3 +1,20 @@
+---
+authority: engineering
+derived_from: 09_FEATURES/Auth/Auth
+status: active
+owner: ops
+lifecycle: living
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-DOC
+tags:
+  - type/runbook
+  - domain/auth
+  - status/active
+---
+
 # Google Cloud Console — AIIMIN OAuth (one-time setup)
 
 Use **one OAuth 2.0 Client** (Web application) for both login and calendar, or two separate clients with the same redirect URIs pattern.

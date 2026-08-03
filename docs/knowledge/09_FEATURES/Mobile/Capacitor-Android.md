@@ -17,7 +17,7 @@ fm_source: script
 
 ## Parent
 
-- [[09_FEATURES/Mobile/Mobile|Mobile]] · [[09_FEATURES/Index]]
+- [[09_FEATURES/Index]]
 
 ## Contract
 

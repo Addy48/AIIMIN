@@ -4,7 +4,7 @@ derived_from: Roadmap/Program-V1-Obsidian-Knowledge-OS/04_Founder_Workspace_Data
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: dashboard
@@ -33,11 +33,19 @@ fm_source: script
 > [!abstract] Derived
 > Derived view. Edit sources/MOCs — not this query — except curated tables.
 
-## Spine
+## Living spine
 
-Program 0 → UX Intelligence → UX Architecture → Program V1 → Brain OS Implementation
+[[Roadmap/AIIMIN-V1-Blueprint]] → [[Roadmap/Operational-Priorities]] → subsystem roadmaps
 
 - [[Maps of Content/Roadmap]]
+- V1 waves: [[Roadmap/AIIMIN-V1-Blueprint#20. Implementation roadmap]]
+- Founder decisions: [[Roadmap/AIIMIN-V1-Blueprint#22. Open decisions register (Founder input required)]]
+
+## Frozen / historical programs
+
+- [[Roadmap/Program-0-Product-Readiness/00_INDEX]]
+- [[Roadmap/UX-Intelligence/00_INDEX]]
+- [[Roadmap/UX-Architecture/00_INDEX]]
 - [[Roadmap/Program-V1-Obsidian-Knowledge-OS/00_INDEX]]
 - [[Roadmap/Brain-OS-Implementation/00_INDEX]]
 

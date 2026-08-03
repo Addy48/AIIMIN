@@ -17,7 +17,7 @@ fm_source: script
 
 ## Parent
 
-- [[09_FEATURES/DevTools/DevTools|DevTools]] · [[09_FEATURES/Index]]
+- [[09_FEATURES/DevTools/ApiUsage|DevTools]] · [[09_FEATURES/Index]]
 
 ### 2026-07-16 — OpenRouter lite routing
 - **What:** Free OpenRouter used for **low-token lite** tasks (`gpt-oss-20b:free` primary); Groq kept for heavy. Model CSV failover + reasoning.effort=minimal.

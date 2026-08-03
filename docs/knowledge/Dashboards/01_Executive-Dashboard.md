@@ -49,6 +49,7 @@ See [[00_HOME#Current blockers]]
 - [[Maps of Content/Genesis|Genesis envelope]]
 - [[Roadmap/UX-Architecture/95_Publication_Record|UXA Publication]]
 - [[Roadmap/UX-Intelligence/00_INDEX|UX Intelligence]]
+- [[Roadmap/AIIMIN-V1-Blueprint|V1 implementation contract]]
 - [[Roadmap/Program-V1-Obsidian-Knowledge-OS/95_Publication_Record|Program V1 KOS]]
 
 ## Program status (path fallback)
@@ -78,8 +79,8 @@ LIMIT 20
 TABLE length(rows) AS notes
 FROM ""
 WHERE !contains(file.path, "Genesis") AND !contains(file.path, "Archive") AND !contains(file.path, "99_ARCHIVE") AND !contains(file.path, "_templates")
-FLATTEN file.name AS n
-GROUP BY true
+FLATTEN choice(authority, "has authority", "missing authority") AS metadata
+GROUP BY metadata
 ```
 
 Native Base: [[Knowledge-Health.base]]

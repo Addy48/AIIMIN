@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -23,6 +23,7 @@ Intelligence features, provider failover, usage budgets, sports/AI previews.
 - Architecture: [[02_ARCHITECTURE/AI-Pipeline]]
 - Provider map: [[09_FEATURES/Intelligence/AI-Provider-Map]]
 - Costs/usage UI: [[09_FEATURES/DevTools/ApiUsage]]
+- Proposed interaction taxonomy: [[06_AI/interaction-telemetry]]
 
 ## Topics to expand when touched
 

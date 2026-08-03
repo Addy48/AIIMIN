@@ -155,3 +155,6 @@ bash scripts/verify-repo.sh
 ```
 
 See `plans/repo-fix-master-plan.md` for prioritized fix backlog.
+
+### web-app-testing
+Playwright structural signature gate for v7 tab roots. Run: `node .agents/skills/web-app-testing/scripts/tab-skeleton-gate.mjs`. Fail if pairwise Jaccard > 0.42 or duplicate skeletons.

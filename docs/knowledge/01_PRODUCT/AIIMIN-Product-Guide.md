@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: product
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-PROD
 graph_role: leaf
@@ -14,7 +14,8 @@ fm_source: script
 ---
 # AIIMIN Product Guide
 
-> **Canonical product document.** What AIIMIN is, why it exists, what it does, where it runs, and how the pieces fit together.  
+> **Role:** Human-readable product overview for founders, testers, and collaborators.
+> **V1 implementation contract:** [[Roadmap/AIIMIN-V1-Blueprint]] — builders use it for target scope and sequencing.
 > **Audience:** founders, testers, agents, collaborators.  
 > **Last updated:** 2026-07-18
 

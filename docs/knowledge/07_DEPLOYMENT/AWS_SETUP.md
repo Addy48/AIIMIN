@@ -1,4 +1,24 @@
+---
+authority: engineering
+derived_from: 07_DEPLOYMENT/Deploy
+status: partial
+owner: ops
+lifecycle: living
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-DOC
+tags:
+  - type/runbook
+  - domain/deployment
+  - status/partial
+---
+
 # AIIMIN — AWS EC2 Setup Guide
+
+> [!caution] Verify before use
+> Commands remain useful, but prices and host state are snapshots. Reverify AWS state and [[07_DEPLOYMENT/Deploy]] before execution.
 
 ## Cost Estimate
 

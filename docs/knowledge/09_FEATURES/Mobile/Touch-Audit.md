@@ -17,7 +17,7 @@ fm_source: script
 
 ## Parent
 
-- [[09_FEATURES/Mobile/Mobile|Mobile]] · [[09_FEATURES/Index]]
+- [[09_FEATURES/Mobile/Capacitor-Android|Mobile]] · [[09_FEATURES/Index]]
 
 **Standard:** 44px minimum tap targets (WCAG 2.5.5). Capacitor native: 48px for primary nav + actions.
 

@@ -4,7 +4,7 @@ derived_from: Genesis/P8 · Genesis/P9
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: domain-hub
@@ -19,6 +19,7 @@ Implementation maps. **Cannot override Genesis.** Cite P8/P9 upward.
 
 | Area | Note |
 |------|------|
+| **V1 contract — IA, API, DB, sync, native** | [[Roadmap/AIIMIN-V1-Blueprint]] |
 | Architecture overview | [[02_ARCHITECTURE/Overview]] |
 | Monorepo | [[02_ARCHITECTURE/Monorepo]] |
 | Frontend map | [[05_FRONTEND/Frontend-Map]] |

@@ -1,3 +1,20 @@
+---
+authority: operations
+derived_from: Genesis · Roadmap/AIIMIN-V1-Blueprint
+status: active
+owner: founder
+lifecycle: living
+last_reviewed: 2026-08-03
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-HANDOFF
+tags:
+  - type/handoff
+  - domain/build
+  - status/active
+---
+
 # NEXT CHAT — Brief & Prompt
 
 > Written 2026-08-03. Paste §2 into the new chat. §1 is the grounded recon so the next

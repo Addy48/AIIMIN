@@ -1,3 +1,20 @@
+---
+authority: engineering
+derived_from: Genesis · Roadmap/AIIMIN-V1-Blueprint
+status: active
+owner: founder
+lifecycle: living
+last_reviewed: 2026-08-03
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-TEST
+tags:
+  - type/report
+  - domain/build
+  - status/active
+---
+
 # AIIMIN — Website Test Report · Genesis Gap · App Build Plan
 
 > Date 2026-08-02 · Branch `feat/drafting-table-prototype` · Author: Claude (partner pass)

@@ -1,4 +1,25 @@
+---
+authority: engineering
+derived_from: historical AWS Option A planning
+status: superseded
+owner: ops
+lifecycle: frozen
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-DOC
+superseded_by: 02_ARCHITECTURE/Backend.md
+tags:
+  - type/plan
+  - domain/deployment
+  - status/superseded
+---
+
 # AIIMIN — Full AWS Option A Master Plan
+
+> [!warning] Historical Option A
+> This migration was not adopted. Current architecture uses Supabase Postgres and Better Auth. Do not execute this plan without an accepted ADR.
 
 Last updated: 2026-07-04  
 Owner email: `aadityaupadhyay10@gmail.com`  

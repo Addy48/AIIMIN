@@ -1,3 +1,20 @@
+---
+authority: engineering
+derived_from: Genesis/P3 UX Intelligence
+status: proposed
+owner: product
+lifecycle: living
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+tags:
+  - type/specification
+  - domain/ai
+  - status/proposed
+---
+
 # AIIMIN — Interaction Telemetry Specification
 
 **Status:** Proposed taxonomy (no telemetry shipped).  

@@ -4,7 +4,7 @@ derived_from: Genesis
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -24,7 +24,7 @@ fm_source: script
 
 ## Agent rule (locked)
 
-Whenever code is **committed and pushed**, also ship the API to EC2 in the same turn. Do not stop at git push.
+Whenever a commit touching `server/`, `api/`, or `deploy/` is pushed—or the Founder says ship—also deploy the API to EC2 in the same turn. Do not stop at git push.
 
 1. Prefer GitHub Action `Deploy API to EC2` (`.github/workflows/deploy-api.yml`) — triggers on `server/**`, `api/**`, `deploy/**`, etc.
 2. If Action unavailable/failed, or user says deploy now: SSH and run remote deploy script.
@@ -59,7 +59,9 @@ See [[01_PRODUCT/Product]] environment matrix. Values live in host secret stores
 - **Empty dashboard placeholders:** Vercel may set `REACT_APP_API_URL=""` etc. `verify-production-env.mjs` backfills from committed `frontend/.env.production` when unset/empty. Run `deploy/sync-vercel-frontend-env.sh` to fix dashboard vars.
 - **`sts_credentials_fetch_failed`:** transient Vercel infra at `build-container-init`. Bypass: `vercel pull` → `vercel build --prod --yes` → `vercel deploy --prebuilt --prod --yes`.
 
-## AWS status (live check 2026-07-17)
+## Historical AWS snapshot
+
+The following table records the 2026-07-17 check. Reverify before using it as current operational state.
 
 | Item | Status |
 |------|--------|
@@ -71,10 +73,11 @@ See [[01_PRODUCT/Product]] environment matrix. Values live in host secret stores
 | CloudWatch alarms / SNS subs | Missing / empty — budgets email only |
 | Ops risk | Root disk **97%** used; SSH port 22 open to `0.0.0.0/0` |
 
-Plan docs: `docs/AWS_MIGRATION_MASTER_PLAN.md`, `docs/AWS_SETUP.md`. Not over budget.
+Planning references: [[07_DEPLOYMENT/AWS_MIGRATION_MASTER_PLAN]] · [[07_DEPLOYMENT/AWS_SETUP]].
 
 ## Related
 
+- [[07_DEPLOYMENT/Runbooks-Index]]
 - [[02_ARCHITECTURE/Backend]]
 - [[09_FEATURES/Waitlist/Waitlist]]
 - [[09_FEATURES/Mobile/Capacitor-Android]]

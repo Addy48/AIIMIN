@@ -1,3 +1,20 @@
+---
+authority: product
+derived_from: 09_FEATURES/Account/Personalization
+status: shipped
+owner: product
+lifecycle: frozen
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-DOC
+tags:
+  - type/specification
+  - domain/account
+  - status/shipped
+---
+
 # Click-upgrade + identity celebration (2026-07-11)
 
 ## Goal

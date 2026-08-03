@@ -117,3 +117,19 @@ Dependency restore reported npm audit debt: root install 66 findings (including 
 - Archive stale documents with provenance; do not silently delete them.
 - Keep generated outputs and caches out of Git.
 - Move a production root only when a concrete build/ownership benefit exceeds path migration cost and before/after validation passes.
+
+## 8. Post-audit Vault follow-up
+
+A second read-only audit found operating-layer defects that the first pass did not expose. The follow-up corrected them without touching application source:
+
+- made all dashboard IDs unique;
+- enabled the Obsidian core plugins used by the configured workspace;
+- opened Current Context by default and reduced the Core bookmark group to ten entrypoints;
+- added the Blueprint to agent boot, roadmap, product, engineering, feature, and native authority paths;
+- classified the old native roadmap and AWS Option A migration as superseded;
+- moved active telemetry, auth, deployment, frontend, and local-development documents into the Vault;
+- archived session snapshots, the old mobile PRD, an incomplete OAuth review, and superseded Vault planning under [[99_ARCHIVE/repository-docs-2026-07/README]];
+- left short compatibility pointers at every moved repository path;
+- indexed co-located deployment procedures in [[07_DEPLOYMENT/Runbooks-Index]].
+
+Follow-up validation parsed all changed JSON and Base YAML, confirmed 11 unique dashboard IDs, parsed frontmatter on all changed living notes, resolved every newly added link, and found no changes under Genesis or local secret paths.

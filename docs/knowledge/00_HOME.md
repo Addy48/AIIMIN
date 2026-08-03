@@ -27,9 +27,9 @@ fm_source: script
 > Dashboards, maps, and Bases are derived. The V1 Blueprint is implementation scope; Current Context is execution focus.
 
 
-> **Agents: read this first.** Then [[15_MEMORY/Current-Context]]. Then [[Maps of Content/Genesis]] for constitutional work. Then only feature/arch/DB/API notes needed. Never whole-repo scan unless user says so.
+> **Agents:** Home → **[[00_ROUTING]]** (find your job, open only the files it names) → [[15_MEMORY/Current-Context]] for what's happening now. [[Maps of Content/Genesis]] only for constitutional work. Never whole-repo or whole-vault scan unless asked.
 
-**Last updated:** 2026-07-30
+**Last updated:** 2026-08-03
 
 ## Authority (non-negotiable)
 
@@ -37,6 +37,7 @@ fm_source: script
 |-------|----------|----------------------|
 | **Genesis v1.0 (P1–P9)** | `Genesis/` | — (nucleus) |
 | Constitution / IA / Interaction | P5 · P8 · P9 via [[Maps of Content/Genesis]] | **NO** |
+| Frozen UX evidence / architecture | `Roadmap/UX-Intelligence/` · `Roadmap/UX-Architecture/` | **NO** |
 | **V1 implementation contract** | [[Roadmap/AIIMIN-V1-Blueprint]] | **NO** |
 | Engineering / Implementation | Numbered folders `01_`–`17_` (Stage A) | **NO** |
 | Operations / Roadmap | Sprints, bugs, deploy, Current Context | **NO** |
@@ -46,6 +47,16 @@ Navigation: **Home → Current Context → Genesis (when needed) → V1 Blueprin
 ## Project goal
 
 Personal Life OS — daily metrics, money, calendar, focus, discipline, sports context, gamification. Owner: Aaditya Upadhyay.
+
+## Current stage (2026-08-03)
+
+Branch `feat/drafting-table-prototype` · HEAD `941e7267`. **Mobile app build is ON HOLD.**
+Drafting Table prototype is **done** (`frontend/prototypes/AIIMIN-Drafting-Table.html`).
+Stage = make the vault trustworthy · harden the website · fix the machine.
+
+- **Status of everything** → [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]]
+- **Guardrails an agent must follow** → [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]]
+- **Single vault** — the second vault at `~/Documents/AIIMIN VAULT` is retired → [[16_DOCUMENTATION/VAULT-CONSOLIDATION-2026-08-03]]
 
 ## Current version / lens
 
@@ -84,7 +95,7 @@ Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]] · [[16_D
 ## Important rules
 
 1. Vault = source of truth. Genesis = constitutional nucleus inside vault.
-2. Load order: Home → Current Context → Genesis MOC (if constitutional) → feature/arch/DB/API → only needed source.
+2. Load order: Home → Current Context → V1 Blueprint → Genesis MOC (if constitutional) → subsystem note → only needed source.
 3. Token discipline: no whole-repo scan unless user asks.
 4. Palette LOCKED — [[08_DESIGN/Palette]] (derived from P8 Visual).
 5. `/m` = data collection only.
@@ -98,7 +109,9 @@ Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]] · [[16_D
 
 | Job | Open |
 |-----|------|
+| **Anything at all — route me** | **[[00_ROUTING]]** |
 | Continue current work | [[15_MEMORY/Current-Context]] |
+| See full project status | [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]] |
 | Understand / build V1 | [[Roadmap/AIIMIN-V1-Blueprint]] |
 | Check constitutional law | [[Maps of Content/Genesis]] |
 | Find implementation notes | [[Maps of Content/Engineering]] |

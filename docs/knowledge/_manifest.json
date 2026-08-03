@@ -6,6 +6,8 @@
   "vaultOperatingModel": "docs/knowledge/10_DECISIONS/2026-07-30-vault-operating-model.md",
   "repositoryLayout": "docs/knowledge/10_DECISIONS/2026-07-30-repository-layout.md",
   "repositoryReorganization": "docs/knowledge/16_DOCUMENTATION/Repository-Reorganization.md",
+  "repositoryDocsArchive": "docs/knowledge/99_ARCHIVE/repository-docs-2026-07/README.md",
+  "deploymentRunbooks": "docs/knowledge/07_DEPLOYMENT/Runbooks-Index.md",
   "founderWorkspace": "docs/knowledge/Dashboards/00_Founder-Workspace-Index.md",
   "bases": [
     "docs/knowledge/Dashboards/Active-Work.base",
@@ -19,6 +21,8 @@
     "Genesis",
     "Constitution",
     "Interaction Architecture",
+    "UX Architecture",
+    "V1 Blueprint",
     "Design System",
     "Engineering",
     "Implementation",
@@ -30,6 +34,11 @@
   "migrationProject": "CLOSED",
   "vaultFreezeCertificate": "docs/knowledge/Founder/01_VAULT_FREEZE_CERTIFICATE.md",
   "entities": {
+    "v1_blueprint": {
+      "moc": "docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md",
+      "decision": "docs/knowledge/10_DECISIONS/2026-07-30-vault-operating-model.md",
+      "status": "v1.0-living"
+    },
     "life_score": {
       "moc": "docs/knowledge/09_FEATURES/LifeScore/LifeScore.md",
       "routes": [

@@ -31,11 +31,6 @@
         },
         {
           "type": "file",
-          "path": "Dashboards/10_Daily-Operations-Dashboard.md",
-          "title": "Daily Ops"
-        },
-        {
-          "type": "file",
           "path": "Dashboards/Active-Work.base",
           "title": "Active Work"
         },
@@ -58,21 +53,6 @@
           "type": "file",
           "path": "Maps of Content/Genesis.md",
           "title": "Genesis MOC"
-        },
-        {
-          "type": "file",
-          "path": "Roadmap/Program-V1-Obsidian-Knowledge-OS/00_INDEX.md",
-          "title": "Program V1"
-        },
-        {
-          "type": "file",
-          "path": "Maps of Content/Visual-Maps-Index.md",
-          "title": "Visual Maps"
-        },
-        {
-          "type": "file",
-          "path": "Roadmap/Brain-OS-Implementation/00_INDEX.md",
-          "title": "Brain OS Impl"
         }
       ]
     },

@@ -1,3 +1,20 @@
+---
+authority: operations
+derived_from: Genesis · Roadmap/AIIMIN-V1-Blueprint
+status: active
+owner: founder
+lifecycle: living
+last_reviewed: 2026-08-03
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: hub
+note_type: NT-STATUS
+tags:
+  - type/status
+  - domain/build
+  - status/active
+---
+
 # AIIMIN — Master Status, App Plan & Next-Stage Handoff
 
 > Date 2026-08-02 · Branch `feat/drafting-table-prototype` (pushed to origin)
@@ -361,9 +378,10 @@ Only after P0–P2. Follow `AIIMIN_APP_BUILD_AGENT_PLAN.md` phases with its guar
 
 ## 9. OPEN DECISIONS FOR FOUNDER
 1. **Life Score taxonomy** — pick one 5-dimension set (blocks app + web consistency).
-2. **App stack** — Drafting Table React first (promote `/proto/draft` → `/m`, reuse the live
-   API), or straight to native Android? Recommendation: React first, native after the
-   contracts freeze.
+2. ~~**App stack**~~ — **DECIDED 2026-08-03: Kotlin + Jetpack Compose, native, Android-first,
+   built from scratch at `native-android-v3/`.** The earlier "React first" recommendation is
+   superseded by founder decision. `native-android/` (V2) is the old app — reference only for
+   its API/sync layer, never its UI. → [[15_MEMORY/Handoff-Native-App-Build]]
 3. **AI keys** — create the three free keys (Groq, Gemini, OpenRouter) so the router has
    something to route to.
 4. **Voice scope** — ship transcription-into-Capture first (recommended), or wait and build

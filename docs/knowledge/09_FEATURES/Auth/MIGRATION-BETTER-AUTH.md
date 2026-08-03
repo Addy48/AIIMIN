@@ -1,4 +1,24 @@
+---
+authority: engineering
+derived_from: 09_FEATURES/Auth/Auth
+status: shipped
+owner: eng
+lifecycle: frozen
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-DOC
+tags:
+  - type/migration
+  - domain/auth
+  - status/shipped
+---
+
 # Better Auth Migration — AIIMIN (2026-07-08)
+
+> [!note] Migration record
+> This note records the July 2026 cutover. Use [[09_FEATURES/Auth/Auth]] for the current authentication contract.
 
 ## Status: Local complete, production deploy pending
 
@@ -16,7 +36,7 @@
 - `REACT_APP_API_URL=http://localhost:3001/api`
 - `REACT_APP_WAITLIST_MODE=false` (local full app for dev/testers)
 - `WAITLIST_MODE=true` on API (production gate; dev/tester emails bypass)
-- Google redirects: `http://localhost:3001/api/...` — see `docs/GOOGLE-CLOUD-OAUTH-SETUP.md`
+- Google redirects: `http://localhost:3001/api/...` — see [[09_FEATURES/Auth/GOOGLE-CLOUD-OAUTH-SETUP]]
 
 ### Database
 - Better Auth tables: `user`, `session`, `account`, `verification`, `twoFactor`

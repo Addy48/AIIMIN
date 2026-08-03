@@ -4,7 +4,7 @@ derived_from: Genesis/P9
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-PROG
 graph_role: leaf
@@ -16,9 +16,11 @@ supersedes: 17_NATIVE_APP_V2/20_ROADMAP.md
 
 # Native Roadmap
 
-Canonical native roadmap content remains in the native pack for Stage A path stability.
+**V1 native contract:** [[Roadmap/AIIMIN-V1-Blueprint]] §2.2, §8, §13, §20.
 
-**Living note:** [[17_NATIVE_APP_V2/20_ROADMAP]]
+**Engineering tracker:** [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
+
+**Historical phased plan:** [[17_NATIVE_APP_V2/20_ROADMAP]] — retained for native-pack history; superseded for V1 sequencing.
 
 Doctrine (IA/UX/design/motion) in that pack is **superseded** by Genesis P8/P9 — see `Archive/Superseded/Native-V2-Doctrine/`.
 

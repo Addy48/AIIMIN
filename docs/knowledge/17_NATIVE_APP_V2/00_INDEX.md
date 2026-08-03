@@ -4,7 +4,7 @@ derived_from: Genesis/P8 · Genesis/P9
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -18,10 +18,10 @@ constitutional_reference: Genesis/P8 Master Specification/13_Platform_Specificat
 
 > **Status:** Phase 1 Compose **shipping** (`native-android/` v2.1.x)  
 > **🔴 LIVE BUILD TRACKER (pin in sidebar):** [[WORKFLOW-PLAN]]  
-> **Last updated:** 2026-07-25  
+> **Last updated:** 2026-07-30
 > **Owner:** Aaditya Upadhyay / AIIMIN
 
-> **Constitutional notice:** IA / UX / Design System / Motion / User Journeys doctrine in this pack is **superseded** by Genesis P8/P9. Those notes are stubs → `Archive/Superseded/Native-V2-Doctrine/`. Engineering docs (backend, DB, sync, workflow) remain living. Nucleus: [[Maps of Content/Genesis]] · Roadmap: [[Maps of Content/Roadmap]] · Legal drafts: [[Roadmap/Legal-Index]].
+> **Constitutional notice:** IA / UX / Design System / Motion / User Journeys doctrine in this pack is **superseded** by Genesis P8/P9. Target V1 scope and sequencing live in [[Roadmap/AIIMIN-V1-Blueprint]]. Engineering docs (backend, DB, sync, workflow) remain living. Nucleus: [[Maps of Content/Genesis]] · Legal drafts: [[Roadmap/Legal-Index]].
 
 **Build note:** See [[CHANGELOG]] + [[WORKFLOW-PLAN]] — `./gradlew :app:assembleDebug` in `native-android/`. Capacitor `frontend/android/` is legacy, not V2.
 
@@ -31,19 +31,28 @@ constitutional_reference: Genesis/P8 Master Specification/13_Platform_Specificat
 
 | Doc | Purpose |
 |-----|---------|
+| **[[AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]]** | **Current status of everything** — web + prototype + what's left. Read this first. |
+| **[[AIIMIN_APP_BUILD_AGENT_PLAN]]** | **Guardrails G1–G10** an agent must follow |
+| [[DRAFTING_TABLE_TESTING_AND_PLAN]] | Website test results |
+| [[NEXT_CHAT_BRIEF]] | Session handoff brief (2026-08-03) |
 | **[[WORKFLOW-PLAN]]** | **Living task board** — P0–P3, screen checklist, session log |
 | [[CHANGELOG]] | Shipped versions |
 | [[15_MEMORY/Current-Context]] | Agent handoff (short) |
+
+> [!warning] Native build is on hold
+> As of 2026-08-03 the mobile app build is paused by founder decision. This pack stays
+> valid as specification; current work is vault + website + machine. See
+> [[15_MEMORY/Current-Context]].
 
 ---
 
 ## 0. How to use this pack
 
 1. Read this **Index** end-to-end.
-2. Resolve **Missing Product Decisions** (Section 5) — blocking.
-3. Generate documents **in order 01 → 20** (dependencies flow downward).
-4. Each doc is the **source of truth** for its domain until superseded by dated ADR.
-5. **No implementation code** until Document 20 (Roadmap) Phase 0 exit criteria pass and owner signs Phase 1.
+2. Read [[Roadmap/AIIMIN-V1-Blueprint]] for target scope and wave sequencing.
+3. Use [[WORKFLOW-PLAN]] for current native implementation state.
+4. Treat pack engineering notes as subsystem evidence; they cannot override Genesis or the Blueprint.
+5. Resolve gated product decisions through `10_DECISIONS/` before implementation.
 
 Vault path: `docs/knowledge/17_NATIVE_APP_V2/`
 

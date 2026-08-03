@@ -17,5 +17,9 @@
   "sync": false,
   "canvas": true,
   "daily-notes": true,
-  "bases": true
+  "bases": true,
+  "bookmarks": true,
+  "workspaces": true,
+  "properties": true,
+  "outline": true
 }

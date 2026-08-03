@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-PROD
 graph_role: leaf
@@ -51,6 +51,8 @@ fm_source: script
 
 - [[02_ARCHITECTURE/Authentication]]
 - [[01_PRODUCT/Product]]
+- [[09_FEATURES/Auth/GOOGLE-CLOUD-OAUTH-SETUP]]
+- [[09_FEATURES/Auth/MIGRATION-BETTER-AUTH]]
 - [[11_BUGS/QA-Run-2026-07-14-Login]]
 
 ## Changelog

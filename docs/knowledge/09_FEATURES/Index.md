@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-PROD
 graph_role: leaf
@@ -16,9 +16,13 @@ fm_source: script
 
 Constitutional parents: [[Maps of Content/Genesis]] · [[Maps of Content/Product]] · discovery [[Maps of Content/Research]] · behavior [[Maps of Content/Interaction-Architecture]]
 
+> [!important] Scope
+> [[Roadmap/AIIMIN-V1-Blueprint]] defines target V1. Feature notes record shipped, partial, and subsystem-specific state.
+
 | Feature | MOC | Status |
 |---------|-----|--------|
-| **Product guide (canonical)** | [[../01_PRODUCT/AIIMIN-Product-Guide]] | canonical-shipped |
+| **V1 Blueprint** | [[../Roadmap/AIIMIN-V1-Blueprint]] | v1.0-living |
+| Product guide (human overview) | [[../01_PRODUCT/AIIMIN-Product-Guide]] | overview |
 | Waitlist | [[Waitlist/Waitlist]] | google-oauth-bearer-fix-shipped |
 | Sports | [[Sports/Sports]] | dual-cricket-failover-live |
 | Calendar | [[Calendar/Calendar]] | google-sync-tasks-auto-pull |

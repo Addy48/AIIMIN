@@ -17,7 +17,7 @@ fm_source: script
 
 ## Parent
 
-- [[09_FEATURES/DevTools/DevTools|DevTools]] · [[09_FEATURES/Index]]
+- [[09_FEATURES/Index]]
 
 ## Purpose
 

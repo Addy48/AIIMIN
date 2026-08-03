@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-PROD
 graph_role: leaf
@@ -17,7 +17,7 @@ fm_source: script
 
 ## Parent
 
-- [[09_FEATURES/Account/Account|Account]] · [[09_FEATURES/Index]]
+- [[09_FEATURES/Index]]
 
 ## Current state
 
@@ -25,6 +25,7 @@ fm_source: script
 - Text-size now persists in `user_profiles.font_scale` and hydrates on profile fetch
 - Local bootstrap still applies immediately from localStorage and is reconciled with profile state after auth
 - Life-mode presets (Student, Founder, etc.) now apply nav pins, overview widget visibility, and sports defaults in one click
+- Upgrade-celebration design record: [[09_FEATURES/Account/2026-07-11-click-upgrade-celebration-design]]
 
 ## Key files
 

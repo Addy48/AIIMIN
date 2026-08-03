@@ -4,7 +4,7 @@ derived_from: Roadmap/Program-V1-Obsidian-Knowledge-OS/02_Vault_Architecture_Spe
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-30
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: leaf
@@ -29,6 +29,7 @@ fm_source: script
 | `Constitution/` `Governance/` `Interaction Architecture/` `Glossary/` | KL-EXPR | |
 | `Roadmap/UX-Architecture/**` | KL-ARCH | Frozen — no bulk FM |
 | `Roadmap/UX-Intelligence/**` | KL-EVID | Frozen — no bulk FM |
+| `Roadmap/AIIMIN-V1-Blueprint.md` | KL-BUILD | V1 contract exception; `note_type: NT-BLUEPRINT` |
 | `Roadmap/**` (other) | KL-PROG | |
 | `01_PRODUCT/` `09_FEATURES/` | KL-PROD | |
 | `02_`–`07_` `03_DATABASE` `04_API` `17_NATIVE` | KL-BUILD | |

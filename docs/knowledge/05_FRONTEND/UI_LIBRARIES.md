@@ -1,3 +1,20 @@
+---
+authority: engineering
+derived_from: 05_FRONTEND/Frontend-Map
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+tags:
+  - type/documentation
+  - domain/frontend
+  - status/active
+---
+
 # UI Libraries — Bklit, Kokonut UI, Motion
 
 ## Dev setup (CRA + craco)

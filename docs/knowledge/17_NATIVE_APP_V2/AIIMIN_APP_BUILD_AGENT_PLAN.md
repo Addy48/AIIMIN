@@ -1,3 +1,20 @@
+---
+authority: operations
+derived_from: Genesis · Roadmap/AIIMIN-V1-Blueprint
+status: active
+owner: founder
+lifecycle: living
+last_reviewed: 2026-08-03
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: hub
+note_type: NT-PLAN
+tags:
+  - type/plan
+  - domain/build
+  - status/active
+---
+
 # AIIMIN Mobile App — Agentic Build Plan & Guardrails
 
 > The executable map for building the AIIMIN mobile app. Written **for an AI agent**

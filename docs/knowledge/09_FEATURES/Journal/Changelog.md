@@ -19,6 +19,12 @@ fm_source: script
 
 - [[09_FEATURES/Journal/Journal|Journal]] · [[09_FEATURES/Index]]
 
+### 2026-07-31 — Flagship Journal in v7 Life OS HTML prototype
+- **What:** Prototype Journal list + editor with mode chips after first line (Free / Expressive / WWW / Evening debrief / Structured reflection / Weekly); biometric lock affordance; AI-on-ask only; Settle toast. Part of full Soft Monotone Android Life OS HTML.
+- **Why:** Founder ask — full Blueprint prototype, not thin shell; Journal research-backed UX
+- **Files:** `frontend/prototypes/personal-os/v7-android-life-os.html`, `frontend/prototypes/personal-os/DESIGN.md`, `frontend/prototypes/personal-os/v7-build/`
+- **Status:** partial (HTML prototype; product code later)
+
 ### 2026-07-18 — Editor / canvas / read dates en-IN (lie-check pass 2)
 - **What:** `JournalEditor` (was en-US), `JournalWriteCanvas` (was en-GB), `JournalReadView` (was en-GB) now use `formatDate` / `formatDateLong`.
 - **Why:** Prior “journal dates done” only covered sidebar + page header — incomplete claim

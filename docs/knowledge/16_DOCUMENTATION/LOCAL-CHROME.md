@@ -1,3 +1,20 @@
+---
+authority: engineering
+derived_from: 16_DOCUMENTATION/Getting-Started
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-DOC
+tags:
+  - type/runbook
+  - domain/development
+  - status/active
+---
+
 # Run AIIMIN locally in Chrome
 
 ## Prerequisites

@@ -4,7 +4,7 @@ derived_from: Genesis · Roadmap/AIIMIN-V1-Blueprint
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-30
+last_reviewed: 2026-08-03
 can_override_genesis: false
 knowledge_layer: KL-OPS
 graph_role: context
@@ -18,69 +18,79 @@ tags:
 # Current Context
 
 > [!tip] Agent boot
-> [[00_HOME]] → this note → only `Touch` paths. Read [[Maps of Content/Genesis]] only for constitutional work. Proof-or-stop on every completion claim.
+> [[00_HOME]] → [[00_ROUTING]] → this note → only the `Touch` paths below. Proof-or-stop.
 
-**Date:** 2026-07-30 · **Branch:** `chore/repository-tidy`
+**Date:** 2026-08-03 · Branch `feat/drafting-table-prototype` · HEAD `941e7267`
 
-## Today
+## Stage
 
-**Active program:** safe repository + Vault reorganization.
+Two tracks running in parallel, in separate chats:
 
-**V1 implementation source:** [[Roadmap/AIIMIN-V1-Blueprint]] (§0–§23). Use it for product scope, IA, onboarding, feature contracts, Life Graph, API, AI, privacy, sync, cloud target, quality, roadmap, and open decisions.
+1. **Native Android app — building from scratch**, Kotlin + Compose, screen by screen.
+   → [[15_MEMORY/Handoff-Native-App-Build]]
+2. **Website hardening · Vercel · AWS · machine.** → [[15_MEMORY/Handoff-Website-Hardening]]
 
-**Historical raw capture:** [[Archive/Superseded/Planning/Current-Context-pre-blueprint-2026-07-30]]. Useful provenance; not living scope.
+Plus this track: the vault (done — see below).
 
-**Protected checkpoints:**
-- `aee0a821` — pre-tidy repository state
-- `a6e58854` — completed V1 Blueprint + handoff
-- `fbf31b46` — Blueprint-first Vault operating model
-- `e6924e1b` — generated npm cache removed from Git index
+> [!important] Stack decided 2026-08-03
+> Mobile app = **Kotlin + Jetpack Compose, native, Android-first, from scratch** at
+> `native-android-v3/`. Chosen over Expo/RN and Compose Multiplatform for the native ceiling.
+> `native-android/` (V2, `2.1.8-native`) is the **old app** — its design is superseded; keep
+> it only as reference for `sync/`, `session/`, `security/`, `data/network/`. Its 382 MB of
+> build caches were deleted (420 MB → 38 MB); the 40 hand-written Kotlin files remain.
 
-## Authority
+Full picture: [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]]
+Guardrails (G1–G10, non-negotiable): [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]] §0
 
-1. `Genesis/` = immutable constitutional law.
-2. [[Roadmap/AIIMIN-V1-Blueprint]] = current V1 implementation contract; cannot override Genesis.
-3. Feature / architecture / DB / API notes = subsystem contracts.
-4. This note = current execution focus only. No product backlog duplication.
-5. `Archive/` and `99_ARCHIVE/` = provenance, never living authority.
+## Done — do not redo
 
-## Current work
+- **Drafting Table prototype — complete.** 10 screens, one self-contained file
+  `frontend/prototypes/AIIMIN-Drafting-Table.html`. Rebuild:
+  `node frontend/scripts/build-proto.mjs`. Dev route `/proto/draft`.
+  Palette + typography are **founder-approved and LOCKED** (G4).
+- **Prototype bake-off (TIDE / RELAY / ATLAS) — closed.** Superseded by the Drafting Table
+  direction. Do not resume it; the earlier `personal-os/CLAUDE_MASTER_BOOT.md` mission is spent.
+- **Supabase-shim crash fixed & committed.** `frontend/src/utils/supabase.js` lacked
+  `.abortSignal()`, which threw on every authed page load and caused an ErrorBoundary
+  remount loop. `abortSignal()` and `range()` added.
+- **Vault consolidated to one source of truth (2026-08-03).** The second vault at
+  `~/Documents/AIIMIN VAULT` is retired to `99_ARCHIVE/documents-vault-2026-08-03/`.
+  → [[16_DOCUMENTATION/VAULT-CONSOLIDATION-2026-08-03]]
 
-- Repository reorganization validation passed. Report: [[16_DOCUMENTATION/Repository-Reorganization]].
-- Production roots remain canonical under [[10_DECISIONS/2026-07-30-repository-layout]].
-- Root diagnostics moved to `scripts/diagnostics/`; movement-required imports validated.
-- Vault now boots Home → Current Context → Blueprint → subsystem notes.
+## Queue
 
-## Known blockers
+1. **Vault** — single source of truth. **Done**; two approvals pending (§ report §6).
+2. **App (own chat)** — foundation → Capture → capture-first Today → Money → Config → OS-ID
+   → Onboarding → Journal → Lab → Score (Score blocked on taxonomy).
+3. **Website (own chat)** — reproduce and fix Journal + Notes; then Finance MTD ₹0, Life
+   Score taxonomy, remove Weekly Pulse from entry, Goals count, waitlist count masking; then
+   the P2 untested list.
+4. **Vercel** — last deploy failed; start from `frontend/scripts/verify-production-env.mjs`.
+5. **AWS** — free-credit burn report via `aws-api` MCP (read-only).
+6. **MacBook** — performance audit. Memory pressure (8 GB RAM, ~70 % swap), **not** storage
+   (58 GB free).
 
-- Mobbin MCP authenticated but paid-plan blocked.
-- Final production GA4/Sentry env + launch E2E remain outside this cleanup.
-- Dependency restore reports npm audit debt: root 66 findings; frontend 6. No forced upgrade applied during safe organization.
+## Blocked on founder
 
-## Next
+- Voice scope (transcription-first vs full suite).
+- AI keys — Groq, Gemini, OpenRouter (all free tier), none created yet.
+- **Vercel** — the real build log needs `npm i -g vercel` or the Vercel connector
+  authorised. The old hypothesis is dead: verified 2026-08-03 that
+  `frontend/scripts/verify-production-env.mjs` exits 0 and the CRA build succeeds under
+  `CI=true`. No `engines`/`.nvmrc` is pinned, so Vercel picks its own Node.
+- **Notes** — needs a live login to capture the failing call. Everything checkable from
+  outside is clean: the exact INSERT succeeds, the route is deployed (401 unauth), RLS is
+  bypassed (`postgres`, `rolbypassrls`), and the single user is `emailVerified`.
 
-1. Review `chore/repository-tidy`; push only on Founder request.
-2. Open `docs/knowledge/` in Obsidian and smoke the three native Bases visually.
-3. Start V1 implementation from Blueprint roadmap W0 after cleanup review.
-4. Handle npm audit findings as a separate dependency/security change.
-
-## Do not
-
-- Edit `Genesis/`.
-- Change auth logic or database schema.
-- Delete or move local `.env`, key, certificate, keystore, or `local.properties` files.
-- Treat archived notes as current truth.
-- Duplicate Blueprint sections into Current Context.
-- Claim build/deploy success without same-turn evidence.
+**No longer blocked:** the Life Score taxonomy is decided —
+[[10_DECISIONS/2026-08-03-life-score-taxonomy]]. The Score screen can be built.
 
 ## Touch
 
-- `docs/knowledge/00_HOME.md`
-- `docs/knowledge/15_MEMORY/Current-Context.md`
-- `docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md`
-- `docs/knowledge/16_DOCUMENTATION/Repository-Reorganization.md`
-- `docs/knowledge/10_DECISIONS/2026-07-30-repository-layout.md`
-- `docs/knowledge/02_ARCHITECTURE/Monorepo.md`
-- `docs/knowledge/_manifest.json`
-- `scripts/diagnostics/`
-- `.gitignore`
+- `docs/knowledge/00_ROUTING.md`
+- `docs/knowledge/17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE.md`
+- `docs/knowledge/17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN.md`
+- `frontend/prototypes/AIIMIN-Drafting-Table.html`
+- `frontend/scripts/verify-production-env.mjs`
+- `server/routes/` · `frontend/src/` (website fixes only)
+- `docs/knowledge/Genesis/` (read-only)
