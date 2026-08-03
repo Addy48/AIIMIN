@@ -323,7 +323,12 @@ app.get('/insights', requireAuth, async (c) => {
             mostVulnerableTime: timeData[0]?.time_of_day || null,
             mostVulnerableTimeCount: timeData[0]?.count || 0,
             totalUrgesThisStreak: cravingData[0]?.total_urges || 0,
-            avgCraving: cravingData[0]?.avg_craving ? parseFloat(cravingData[0].avg_craving.toFixed(1)) : null,
+            // AVG() returns Postgres numeric, which node-pg hands back as a
+            // string — calling .toFixed() on it threw and 500'd the whole
+            // endpoint. Coerce before formatting.
+            avgCraving: cravingData[0]?.avg_craving != null
+                ? Number(Number(cravingData[0].avg_craving).toFixed(1))
+                : null,
         });
     } catch (err) {
         return c.json({ error: err.message }, 500);
