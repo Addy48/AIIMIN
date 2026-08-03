@@ -33,19 +33,13 @@ export function useFinanceQuery(enabled = true) {
     staleTime: 120_000,
   });
 
-  const safeToSpend = useQuery({
-    queryKey: ['finance', 'safe-to-spend'],
-    queryFn: () => apiGet('/wealth/safe-to-spend'),
-    enabled,
-    staleTime: 60_000,
-  });
-
-  const healthScore = useQuery({
-    queryKey: ['finance', 'health-score'],
-    queryFn: () => apiGet('/wealth/health-score'),
-    enabled,
-    staleTime: 120_000,
-  });
+  // There were two more queries here, for /wealth/safe-to-spend and
+  // /wealth/health-score. Neither route exists in server/routes/wealth.js, so
+  // both 404'd on every Finance load and React Query retried each three times —
+  // eight failed requests per visit. Nothing consumed their results either:
+  // Finance.jsx computes savingsRate and fiYears locally. Removed rather than
+  // stubbed; re-add them alongside real endpoints if those metrics move
+  // server-side.
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['finance'] });
@@ -59,8 +53,6 @@ export function useFinanceQuery(enabled = true) {
     loading: bundle.isLoading,
     aiSummary: aiSummary.data,
     aiSummaryLoading: aiSummary.isLoading,
-    safeToSpend: safeToSpend.data,
-    healthScore: healthScore.data,
     refetch: bundle.refetch,
     invalidate,
   };
