@@ -4,25 +4,11 @@
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
+// Shared with routes/mobile.js — both write journal_entries and must agree on
+// mode, or two same-day entries collide on the (user_id, date, mode) index.
+import { deriveJournalMode as deriveMode } from '../lib/journalMode.js';
 
 const app = new Hono();
-
-/**
- * Entries are stored one row per (user, date, mode). Mode lives in the v2 JSON
- * envelope the client serializes into encrypted_content; rows written before that
- * envelope are plain text and count as 'legacy'. See migration 049.
- */
-function deriveMode(encryptedContent) {
-    try {
-        const parsed = JSON.parse(encryptedContent);
-        if (parsed && parsed.v === 2 && typeof parsed.mode === 'string' && parsed.mode) {
-            return parsed.mode;
-        }
-    } catch {
-        // legacy plain-text entry
-    }
-    return 'legacy';
-}
 
 /** GET /api/journal — list entries */
 app.get('/', requireAuth, async (c) => {
@@ -81,11 +67,15 @@ app.post('/', requireAuth, async (c) => {
         const { rows } = await pool.query(
             `INSERT INTO journal_entries (user_id, date, encrypted_content, mood, energy_level, sleep_hours, mode)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
+             -- The body destructures mood/energy_level/sleep_hours to null when
+             -- absent, so a partial payload would blank stored metadata. Keep the
+             -- existing value unless the caller actually sent one. The envelope
+             -- itself is always sent, so it overwrites unconditionally.
              ON CONFLICT (user_id, date, mode) DO UPDATE SET
                 encrypted_content = EXCLUDED.encrypted_content,
-                mood = EXCLUDED.mood,
-                energy_level = EXCLUDED.energy_level,
-                sleep_hours = EXCLUDED.sleep_hours
+                mood = COALESCE(EXCLUDED.mood, journal_entries.mood),
+                energy_level = COALESCE(EXCLUDED.energy_level, journal_entries.energy_level),
+                sleep_hours = COALESCE(EXCLUDED.sleep_hours, journal_entries.sleep_hours)
              RETURNING *`,
             [userId, date, encrypted_content, mood, energy_level, sleep_hours, deriveMode(encrypted_content)]
         );

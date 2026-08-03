@@ -6,6 +6,7 @@ import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { mobileHealthLimiter, mobileSyncLimiter } from '../middleware/rateLimiter.js';
+import { deriveJournalMode } from '../lib/journalMode.js';
 import { randomUUID } from 'crypto';
 
 const app = new Hono();
@@ -267,14 +268,19 @@ app.post('/sync/batch', requireAuth, async (c) => {
           const content = payload.content || '';
           const date = payload.date || new Date().toISOString().slice(0, 10);
           await pool.query(
-            `INSERT INTO journal_entries (id, user_id, date, encrypted_content, mood, created_at)
-             VALUES ($1, $2, $3, $4, $5, NOW())
+            // mode must be derived here too. Without it the column default
+            // ('legacy') is applied to every mobile-synced entry, so two entries
+            // with different modes on the same date collide on the
+            // (user_id, date, mode) unique index from migration 049.
+            `INSERT INTO journal_entries (id, user_id, date, encrypted_content, mood, mode, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, NOW())
              ON CONFLICT (id) DO UPDATE SET
                encrypted_content = EXCLUDED.encrypted_content,
                mood = COALESCE(EXCLUDED.mood, journal_entries.mood),
+               mode = EXCLUDED.mode,
                date = EXCLUDED.date
              WHERE journal_entries.user_id = $2`,
-            [id, userId, date, content, payload.mood || null],
+            [id, userId, date, content, payload.mood || null, deriveJournalMode(content)],
           );
           results.push({ id: m.id, ok: true, entity_id: id });
         } else if (type === 'note.upsert') {

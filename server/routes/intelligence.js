@@ -591,10 +591,25 @@ Respond with JSON like:
             try {
                 if (action.type === 'log_mood' && action.score) {
                     await pool.query(
+                        // log_mood carries a mood score only. Copying it into
+                        // energy_level fabricated an energy reading the user never
+                        // gave, which then fed correlations and the Life Score.
+                        // Only write energy when the action actually supplies one.
                         `INSERT INTO daily_logs (user_id, date, mood, energy_level, journal_entry)
-                         VALUES ($1, $2, $3, $3, $4)
-                         ON CONFLICT (user_id, date) DO UPDATE SET mood = $3, energy_level = $3, journal_entry = COALESCE($4, daily_logs.journal_entry)`,
-                        [userId, today, Math.min(10, Math.max(1, Math.round(action.score))), action.note || null]
+                         VALUES ($1, $2, $3, $5, $4)
+                         ON CONFLICT (user_id, date) DO UPDATE SET
+                           mood = $3,
+                           energy_level = COALESCE($5, daily_logs.energy_level),
+                           journal_entry = COALESCE($4, daily_logs.journal_entry)`,
+                        [
+                            userId,
+                            today,
+                            Math.min(10, Math.max(1, Math.round(action.score))),
+                            action.note || null,
+                            action.energy != null
+                                ? Math.min(10, Math.max(1, Math.round(action.energy)))
+                                : null,
+                        ]
                     );
                     results.push({ type: 'log_mood', status: 'success', score: action.score });
                 } else if (action.type === 'log_habit' && action.name) {
