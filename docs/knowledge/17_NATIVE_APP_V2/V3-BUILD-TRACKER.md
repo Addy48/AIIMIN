@@ -1,0 +1,107 @@
+---
+authority: operations
+derived_from: 15_MEMORY/Handoff-Native-App-Build · 17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN
+status: active
+owner: founder
+lifecycle: living
+last_reviewed: 2026-08-03
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-LOG
+tags:
+  - type/log
+  - domain/build
+  - status/active
+---
+
+# Native Android V3 — build tracker
+
+> One row per screen. A screen is only ticked with real build output and a render
+> behind it (G5 · evidence before claims). Screens are built in the order set by
+> [[15_MEMORY/Handoff-Native-App-Build]] §3.
+
+**Project:** `native-android-v3/` · package `in.aiimin.app` (debug installs as
+`in.aiimin.app.v3`, so it sits next to V2) · Kotlin package root `aiimin.*`.
+
+## Progress
+
+| # | Screen | State | Evidence |
+|---|--------|-------|----------|
+| 0 | **Foundation** — project, theme, shell | ✅ done 2026-08-03 | `:app:assembleDebug` BUILD SUCCESSFUL · APK 12.5 MB · 4 screenshot goldens recorded and validating |
+| 1 | Capture | next | |
+| 2 | Today (capture-first) | | |
+| 3 | Money | | |
+| 4 | Config | | |
+| 5 | OS-ID | | |
+| 6 | Onboarding (6 steps) | | |
+| 7 | Journal | | |
+| 8 | Lab | | |
+| 9 | Live Score | **blocked** — founder must pick the 5-dimension taxonomy first | |
+
+## 0 · Foundation — done 2026-08-03
+
+**One job:** give every later screen a floor — the locked palette and type as
+code, the brand mark, base components, and a five-tab shell that installs.
+
+**Stack, as decided in the handoff.** Every version was checked against Maven
+Central / Google Maven on the day, not recalled:
+
+| | |
+|---|---|
+| AGP | 9.3.1 (needs Gradle 9.5.0 — the wrapper is pinned to it) |
+| Kotlin | 2.3.21 · KSP 2.3.10 (KSP has tracked its own version line since 2.3.0) |
+| SDK | compileSdk / targetSdk **37** (Android 17) · minSdk 26 |
+| Compose | BOM 2026.06.01, Material3 as substrate only |
+| DI · nav · data | Hilt 2.60.1 · Navigation3 1.1.5 · Room 3.0.1 + DataStore 1.2.1 + WorkManager 2.11.2 in the catalog, wired when a screen needs them |
+| Build logic | `build-logic/` composite build, ten convention plugins, `gradle/libs.versions.toml` version catalog, type-safe project accessors |
+
+**Modules.** `:app` and `:core:designsystem`. More are added when a screen needs
+them (G1 — no speculative scaffolding).
+
+**Design.** `frontend/src/prototypes/drafting-table/tokens.css` ported to Compose
+one-for-one: `AiiminColors` (both themes), `AiiminTypography` (the prototype's
+`F` scale), `AiiminSpacing` (the 3.4 dp grid), square corners with radius on
+buttons only. Barlow / Barlow Condensed / JetBrains Mono are **bundled** as OFL
+font files — no Google Fonts CDN at runtime. The peak-A mark is redrawn from the
+same 512-unit geometry as the web mark, warm node `#ff6b35` and nothing else.
+The five tab glyphs are hand-drawn strokes, not Material icons.
+
+**Verification without a device.** The machine has no emulator package installed
+and 8 GB of RAM with swap already loaded, so booting one alongside Gradle is out.
+Instead the project uses **Compose preview screenshot tests** — previews render
+to PNG on the JVM through layoutlib:
+
+```
+./gradlew :app:updateDebugScreenshotTest     # record goldens
+./gradlew :app:validateDebugScreenshotTest   # fail the build on a visual change
+```
+
+Goldens live in `app/src/screenshotTestDebug/reference/`. Every screen from here
+on gets a dark and a light golden, so a palette or type regression fails the
+build instead of reaching the phone.
+
+**Evidence 2026-08-03**
+
+- `:app:assembleDebug` — BUILD SUCCESSFUL, `app-debug.apk` 12.5 MB.
+- `aapt2 dump badging`: `in.aiimin.app.v3`, versionName `3.0.0-alpha01`,
+  minSdk 26, targetSdk 37, compileSdk 37.
+- `:app:updateDebugScreenshotTest` — 4 rendered: shell dark, shell light,
+  specimen dark, specimen light. `:app:validateDebugScreenshotTest` passes.
+
+**Not installed on a phone yet** — no device was attached. `adb install` when the
+phone is plugged in:
+
+```
+adb install -r native-android-v3/app/build/outputs/apk/debug/app-debug.apk
+```
+
+**Deliberately deferred**, so the first build stayed small on an 8 GB machine —
+raise if you want them: Detekt and Spotless (Detekt's current release is an
+alpha), JaCoCo coverage, baseline profiles, crash reporting, Gradle managed
+devices.
+
+## Related
+
+- [[15_MEMORY/Handoff-Native-App-Build]] · [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]]
+- [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]] §3 — the screen build units

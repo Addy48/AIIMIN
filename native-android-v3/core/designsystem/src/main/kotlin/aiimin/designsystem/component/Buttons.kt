@@ -1,0 +1,134 @@
+package aiimin.designsystem.component
+
+import android.view.HapticFeedbackConstants
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import aiimin.designsystem.theme.AiiminTheme
+import aiimin.designsystem.theme.Hairline
+import aiimin.designsystem.theme.MinTouchTarget
+
+/**
+ * The one filled object on the board: solid accent, page-ground ink, and the
+ * only place a corner radius is allowed.
+ */
+@Composable
+fun PrimaryButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val colors = AiiminTheme.colors
+    val shape = RoundedCornerShape(AiiminTheme.radii.md)
+    TapSurface(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.clip(shape).background(if (enabled) colors.accent else colors.hair),
+        contentPadding = 13.dp,
+    ) {
+        Text(
+            text = label.uppercase(),
+            style = AiiminTheme.type.chrome,
+            color = if (enabled) colors.onAccent else colors.muted,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+/** Outlined and quiet — the alternative to a Primary, never a second Primary. */
+@Composable
+fun GhostButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    color: Color = AiiminTheme.colors.accent,
+    enabled: Boolean = true,
+) {
+    val shape = RoundedCornerShape(AiiminTheme.radii.md)
+    TapSurface(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+            .clip(shape)
+            .border(BorderStroke(Hairline, AiiminTheme.colors.rule), shape),
+        contentPadding = 9.dp,
+    ) {
+        Text(
+            text = label.uppercase(),
+            style = AiiminTheme.type.button,
+            color = if (enabled) color else AiiminTheme.colors.muted,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+/**
+ * Shared press behaviour: a 0.97 squeeze on touch-down plus one light haptic
+ * tick — the prototype's `.tap` class, in the hand.
+ *
+ * No ripple: a spreading circle is Material's language, not a drafting board's.
+ */
+@Composable
+fun TapSurface(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    contentPadding: Dp = 0.dp,
+    content: @Composable () -> Unit,
+) {
+    val interactions = remember { MutableInteractionSource() }
+    val pressed by interactions.collectIsPressedAsState()
+    val squeeze by animateFloatAsState(
+        targetValue = if (pressed) 0.97f else 1f,
+        animationSpec = tween(durationMillis = 110),
+        label = "tap-squeeze",
+    )
+    val view = LocalView.current
+
+    Box(
+        modifier
+            .scale(squeeze)
+            .defaultMinSize(minHeight = MinTouchTarget)
+            .clickable(interactionSource = interactions, indication = null, enabled = enabled) {
+                view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                onClick()
+            }
+            .padding(contentPadding),
+        contentAlignment = Alignment.Center,
+    ) {
+        content()
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF15171A)
+@Composable
+private fun ButtonsPreview() {
+    AiiminTheme {
+        Box(Modifier.padding(20.dp)) {
+            PrimaryButton(label = "Settle", onClick = {})
+        }
+    }
+}
