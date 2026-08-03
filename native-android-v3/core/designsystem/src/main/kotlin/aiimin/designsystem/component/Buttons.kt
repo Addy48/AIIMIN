@@ -97,6 +97,8 @@ fun TapSurface(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     contentPadding: Dp = 0.dp,
+    /** Off for chips and inline marks, which carry their own padding. */
+    minTouchTarget: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val interactions = remember { MutableInteractionSource() }
@@ -111,7 +113,7 @@ fun TapSurface(
     Box(
         modifier
             .scale(squeeze)
-            .defaultMinSize(minHeight = MinTouchTarget)
+            .then(if (minTouchTarget) Modifier.defaultMinSize(minHeight = MinTouchTarget) else Modifier)
             .clickable(interactionSource = interactions, indication = null, enabled = enabled) {
                 view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
                 onClick()

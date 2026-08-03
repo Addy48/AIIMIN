@@ -36,3 +36,4 @@ rootProject.name = "aiimin-v3"
 // one surface at a time; no speculative scaffolding).
 include(":app")
 include(":core:designsystem")
+include(":feature:capture")

@@ -29,7 +29,7 @@ tags:
 | # | Screen | State | Evidence |
 |---|--------|-------|----------|
 | 0 | **Foundation** — project, theme, shell | ✅ done 2026-08-03 | `:app:assembleDebug` BUILD SUCCESSFUL · APK 12.5 MB · 4 screenshot goldens recorded and validating |
-| 1 | Capture | next | |
+| 1 | **Capture** — the trust surface | ✅ done 2026-08-03 (local state; API not wired) | `:app:assembleDebug` BUILD SUCCESSFUL · APK 13.0 MB · 13/13 parser unit tests · 5 screenshot goldens |
 | 2 | Today (capture-first) | | |
 | 3 | Money | | |
 | 4 | Config | | |
@@ -100,6 +100,49 @@ adb install -r native-android-v3/app/build/outputs/apk/debug/app-debug.apk
 raise if you want them: Detekt and Spotless (Detekt's current release is an
 alpha), JaCoCo coverage, baseline profiles, crash reporting, Gradle managed
 devices.
+
+## 1 · Capture — done 2026-08-03 (local state)
+
+**One job:** turn one sentence into structured truth you can correct before it
+commits.
+
+**The rule that shapes it:** nothing writes without an explicit Settle. The
+offer is a proposal — it lives in UI state and dies there unless the user
+presses Settle. Drift keeps the sentence in the hold tray with nothing written.
+
+**Correcting a wrong parse takes two taps.** Tap a chip → its editor opens
+pre-filled → SET. Dropping a reading is one tap on the chip's `×`. A reading the
+rules are not sure about (a bare number with no money context, a mood inferred
+from an adjective) arrives switched **off**, so an unattended Settle never
+writes a guess.
+
+**The parser is on-device and rule-based, on purpose.** `CaptureParser` reads
+amount · category · merchant · people · mood · duration. It is not the AI parse:
+`/intelligence/parse` is the real reader and lands with the API wiring. This one
+works offline, costs nothing, and is the fallback when the parse call fails or
+the tier's parse budget is spent. 13 unit tests pin its rules, including the two
+that bite: a duration is never read as an amount, and `8/10` is a mood, not ten
+rupees.
+
+**Module:** `:feature:capture`, the first module on the `aiimin.android.feature`
+convention plugin. MVVM with an immutable `CaptureUiState` and a `StateFlow`;
+the screen composable is stateless and takes callbacks, which is what lets the
+screenshot tests render every state.
+
+**Evidence 2026-08-03**
+
+- `:app:assembleDebug` BUILD SUCCESSFUL — `app-debug.apk` 13.0 MB.
+- `:feature:capture:testDebugUnitTest` — 13 tests, all passing.
+- `:app:validateDebugScreenshotTest` — 9 goldens (4 from Foundation + 5 here:
+  offer dark, offer light, correcting, settled with the Undo toast, empty).
+- A render bug was caught by this: the surface was not painting its own ground,
+  so dark-theme ink drew on white. Fixed, and every surface now paints its bg.
+
+**Not done, deliberately** — these need the API and land with the wiring step:
+Settle writing through `/api/*`, the offline queue flushing the hold tray
+(`HoldReason.QUEUED_OFFLINE` exists and renders, nothing enqueues yet), and the
+AI parse. Four of the six presets (Journal, Voice, Scan, Habit) are drawn muted
+and say what they are waiting for instead of pretending.
 
 ## Related
 

@@ -14,12 +14,12 @@ import aiimin.app.navigation.Lab
 import aiimin.app.navigation.Money
 import aiimin.app.navigation.Tab
 import aiimin.app.ui.shell.BottomBar
-import aiimin.app.ui.surface.CaptureSurface
 import aiimin.app.ui.surface.ConfigSurface
 import aiimin.app.ui.surface.DaySurface
 import aiimin.app.ui.surface.LabSurface
 import aiimin.app.ui.surface.MoneySurface
 import aiimin.designsystem.theme.AiiminTheme
+import aiimin.feature.capture.CaptureRoute
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -52,7 +52,7 @@ fun AiiminShell(modifier: Modifier = Modifier) {
             entryProvider = entryProvider {
                 entry<Day> { DaySurface() }
                 entry<Money> { MoneySurface() }
-                entry<Capture> { CaptureSurface() }
+                entry<Capture> { CaptureRoute() }
                 entry<Lab> { LabSurface() }
                 entry<Config> { ConfigSurface() }
             },

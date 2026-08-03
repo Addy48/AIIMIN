@@ -1,5 +1,6 @@
 package aiimin.app.ui.surface
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,6 +33,7 @@ private fun SurfaceScaffold(
     Column(
         modifier
             .fillMaxSize()
+            .background(AiiminTheme.colors.bg)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = AiiminTheme.space.page),
     ) {
@@ -61,15 +63,6 @@ fun MoneySurface(modifier: Modifier = Modifier) = SurfaceScaffold(
     meta = "OVERVIEW",
     oneJob = "Log and see money truth — safe to spend, where it went, what is owed.",
     waitingFor = "Overview, Budgets and Ledger land after the capture loop writes real entries.",
-    modifier = modifier,
-)
-
-@Composable
-fun CaptureSurface(modifier: Modifier = Modifier) = SurfaceScaffold(
-    title = "Capture",
-    meta = "NEXT",
-    oneJob = "Turn one sentence into structured truth you can correct before it commits.",
-    waitingFor = "The trust surface is next: free text, AI parse, editable chips, Settle or Drift.",
     modifier = modifier,
 )
 
