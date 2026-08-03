@@ -21,28 +21,23 @@ export async function exportUserData(session, isUsingMock, mockData) {
             calendar_events: mockData.calendarEvents || []
         };
     } else {
-        // In a real environment, you might hit a dedicated /export endpoint or fetch individually.
-        // For this dashboard, we will fetch standard datasets to dump them.
+        // This used to fan out to six endpoints, none of which exist:
+        //   /daily-log/all  /habits/logs/all  /pomodoro/sessions
+        //   /money/transactions  /reflections/all  /calendar/events
+        // The first five 404 and the sixth 400s without start/end params. Every
+        // call was wrapped in .catch(() => []), so the export silently wrote a
+        // file full of empty arrays instead of failing — users got nothing and
+        // were told it worked.
+        //
+        // The server already has a real exporter at GET /api/account/export.
         try {
-            const [daily, habit, pomo, finance, reflect, calendar] = await Promise.all([
-                apiGet('/daily-log/all', { session }).catch(() => []),
-                apiGet('/habits/logs/all', { session }).catch(() => []),
-                apiGet('/pomodoro/sessions', { session }).catch(() => []),
-                apiGet('/money/transactions', { session }).catch(() => []),
-                apiGet('/reflections/all', { session }).catch(() => []),
-                apiGet('/calendar/events', { session }).catch(() => [])
-            ]);
-
-            payload = {
-                export_timestamp: new Date().toISOString(),
-                daily_logs: daily,
-                habit_logs: habit,
-                pomodoro_sessions: pomo,
-                financial_transactions: finance,
-                reflection_logs: reflect,
-                calendar_events: calendar
-            };
+            const data = await apiGet('/account/export', { session });
+            if (!data || typeof data !== 'object') {
+                throw new Error('Export endpoint returned no data');
+            }
+            payload = { export_timestamp: new Date().toISOString(), ...data };
         } catch (err) {
+            // Never hand the user an empty file and call it an export.
             console.error('Failed to dump data from remote:', err);
             throw new Error('Data export failed from server');
         }
