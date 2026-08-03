@@ -30,6 +30,18 @@ import aiimin.designsystem.theme.AiiminTheme
 import aiimin.designsystem.theme.Hairline
 import aiimin.designsystem.theme.MinTouchTarget
 
+/** How a press feels in the hand. A commit must not feel like a browse. */
+enum class Feedback(internal val constant: Int) {
+    /** Any ordinary tap. */
+    TAP(HapticFeedbackConstants.CONTEXT_CLICK),
+
+    /** A write landed — Settle, Set, claim. Heavier on purpose. */
+    COMMIT(HapticFeedbackConstants.CONFIRM),
+
+    /** Something was refused or dropped. */
+    REJECT(HapticFeedbackConstants.REJECT),
+}
+
 /**
  * The one filled object on the board: solid accent, page-ground ink, and the
  * only place a corner radius is allowed.
@@ -40,12 +52,14 @@ fun PrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    feedback: Feedback = Feedback.COMMIT,
 ) {
     val colors = AiiminTheme.colors
     val shape = RoundedCornerShape(AiiminTheme.radii.md)
     TapSurface(
         onClick = onClick,
         enabled = enabled,
+        feedback = feedback,
         modifier = modifier.clip(shape).background(if (enabled) colors.accent else colors.hair),
         contentPadding = 13.dp,
     ) {
@@ -66,11 +80,13 @@ fun GhostButton(
     modifier: Modifier = Modifier,
     color: Color = AiiminTheme.colors.accent,
     enabled: Boolean = true,
+    feedback: Feedback = Feedback.TAP,
 ) {
     val shape = RoundedCornerShape(AiiminTheme.radii.md)
     TapSurface(
         onClick = onClick,
         enabled = enabled,
+        feedback = feedback,
         modifier = modifier
             .clip(shape)
             .border(BorderStroke(Hairline, AiiminTheme.colors.rule), shape),
@@ -99,6 +115,7 @@ fun TapSurface(
     contentPadding: Dp = 0.dp,
     /** Off for chips and inline marks, which carry their own padding. */
     minTouchTarget: Boolean = true,
+    feedback: Feedback = Feedback.TAP,
     content: @Composable () -> Unit,
 ) {
     val interactions = remember { MutableInteractionSource() }
@@ -115,7 +132,7 @@ fun TapSurface(
             .scale(squeeze)
             .then(if (minTouchTarget) Modifier.defaultMinSize(minHeight = MinTouchTarget) else Modifier)
             .clickable(interactionSource = interactions, indication = null, enabled = enabled) {
-                view.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
+                view.performHapticFeedback(feedback.constant)
                 onClick()
             }
             .padding(contentPadding),

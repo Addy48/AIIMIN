@@ -1,5 +1,9 @@
 package aiimin.feature.capture
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,9 +23,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import aiimin.designsystem.component.BlueprintBox
 import aiimin.designsystem.component.EmptyState
+import aiimin.designsystem.component.Feedback
 import aiimin.designsystem.component.FieldChip
 import aiimin.designsystem.component.GhostButton
 import aiimin.designsystem.component.HairRule
@@ -124,24 +132,28 @@ fun CaptureScreen(
 
             Presets(onPreset = onPreset, modifier = Modifier.padding(top = AiiminTheme.space.s6))
 
-            SectionRule(label = "Hold tray", value = "${state.holds.size} WAITING")
-            if (state.holds.isEmpty()) {
+            // Nothing held and nothing settled is one fact, not two empty
+            // states shouting it twice.
+            if (state.holds.isEmpty() && state.settled.isEmpty()) {
+                SectionRule(label = "The day so far")
                 EmptyState(
-                    label = "Nothing held",
-                    message = "A capture you drift instead of settling waits here, uncommitted, until you come back to it.",
+                    label = "Nothing yet today",
+                    message = "Write the first line. What you settle lands here; what you drift waits in the hold.",
                 )
             } else {
-                state.holds.forEach { held -> HoldRow(held) }
-            }
-
-            SectionRule(label = "Today's captures", value = "${state.settled.size}")
-            if (state.settled.isEmpty()) {
-                EmptyState(
-                    label = "Nothing settled yet",
-                    message = "Write a line above and settle it. What you commit shows here, newest first.",
-                )
-            } else {
-                state.settled.forEach { settled -> SettledRow(settled) }
+                if (state.holds.isNotEmpty()) {
+                    SectionRule(label = "Hold tray", value = "${state.holds.size} WAITING")
+                    state.holds.forEach { held -> HoldRow(held) }
+                }
+                SectionRule(label = "Today's captures", value = "${state.settled.size}")
+                if (state.settled.isEmpty()) {
+                    EmptyState(
+                        label = "Nothing settled yet",
+                        message = "Nothing has been committed today. What you settle lands here, newest first.",
+                    )
+                } else {
+                    state.settled.forEach { settled -> SettledRow(settled) }
+                }
             }
         }
 
@@ -168,6 +180,11 @@ private fun Composer(
     onDrift: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val composer = remember { FocusRequester() }
+    // Landing on Capture puts the cursor in the line. Waiting to be tapped is
+    // what made logging feel like filling in a form.
+    LaunchedEffect(Unit) { runCatching { composer.requestFocus() } }
+
     BlueprintBox(modifier = modifier, accent = true, tinted = true) {
         BasicTextField(
             value = state.text,
@@ -180,7 +197,8 @@ private fun Composer(
             cursorBrush = SolidColor(AiiminTheme.colors.accent),
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 66.dp),
+                .heightIn(min = 66.dp)
+                .focusRequester(composer),
             decorationBox = { field ->
                 if (state.text.isEmpty()) {
                     Text(
@@ -193,18 +211,25 @@ private fun Composer(
             },
         )
 
-        if (state.hasOffer && state.offer != null) {
-            Offer(
-                offer = state.offer,
-                editing = state.editing,
-                editingDraft = state.editingDraft,
-                onEditField = onEditField,
-                onEditDraftChange = onEditDraftChange,
-                onCommitEdit = onCommitEdit,
-                onCancelEdit = onCancelEdit,
-                onToggleField = onToggleField,
-            )
-        } else {
+        AnimatedVisibility(
+            visible = state.hasOffer && state.offer != null,
+            enter = fadeIn(tween(200)) + slideInVertically(tween(200)) { it / 3 },
+        ) {
+            val offer = state.offer
+            if (offer != null) {
+                Offer(
+                    offer = offer,
+                    editing = state.editing,
+                    editingDraft = state.editingDraft,
+                    onEditField = onEditField,
+                    onEditDraftChange = onEditDraftChange,
+                    onCommitEdit = onCommitEdit,
+                    onCancelEdit = onCancelEdit,
+                    onToggleField = onToggleField,
+                )
+            }
+        }
+        if (!state.hasOffer) {
             Text(
                 text = "Write anything. AIIMIN reads it and offers a structure — you correct it, then commit.",
                 style = AiiminTheme.type.bodySmall,
@@ -221,7 +246,12 @@ private fun Composer(
                 horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
             ) {
                 PrimaryButton(label = "Settle", onClick = onSettle, modifier = Modifier.weight(1f))
-                GhostButton(label = "Drift", onClick = onDrift, color = AiiminTheme.colors.muted)
+                GhostButton(
+                    label = "Drift",
+                    onClick = onDrift,
+                    color = AiiminTheme.colors.muted,
+                    feedback = Feedback.REJECT,
+                )
             }
         }
     }
@@ -336,7 +366,7 @@ private fun FieldEditor(
 @Composable
 private fun Presets(onPreset: (CapturePreset) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2)) {
-        CapturePreset.entries.chunked(3).forEach { row ->
+        CapturePreset.entries.sortedByDescending { it.available }.chunked(3).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2)) {
                 row.forEach { preset ->
                     TapSurface(

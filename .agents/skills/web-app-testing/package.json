@@ -1,0 +1,17 @@
+{
+  "name": "web-app-testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "gate": "node scripts/tab-skeleton-gate.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "playwright": "^1.62.1"
+  },
+  "type": "module",
+  "private": true
+}
