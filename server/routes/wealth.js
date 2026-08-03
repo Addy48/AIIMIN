@@ -597,9 +597,12 @@ Do not include markdown formatting like \`\`\`json.`;
         // Fallback summary if no NVIDIA key, API call failed, or limit reached
         if (!aiSummary) {
             aiSummary = {
+                // This endpoint reads a rolling 30-day window, not the calendar
+                // month. Saying "this month" here contradicted the MTD tiles on
+                // the same screen, which are calendar-month.
                 headline: netFlow >= 0
-                    ? `You're saving ₹${netFlow.toFixed(0)} this month — great work!`
-                    : `You've spent ₹${Math.abs(netFlow).toFixed(0)} more than you earned this month.`,
+                    ? `You're saving ₹${netFlow.toFixed(0)} over the last 30 days — great work!`
+                    : `You've spent ₹${Math.abs(netFlow).toFixed(0)} more than you earned in the last 30 days.`,
                 summary: `Over the last 30 days, you recorded ${transactions.length} transactions with ₹${totalIncome.toFixed(0)} income and ₹${totalExpense.toFixed(0)} in expenses.`,
                 insights: [
                     `Your top spending category is ${categoryBreakdown[0]?.category || 'Other'} at ₹${(categoryBreakdown[0]?.amount || 0).toFixed(0)}.`,

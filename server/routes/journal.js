@@ -7,6 +7,23 @@ import { requireAuth } from '../middleware/auth.js';
 
 const app = new Hono();
 
+/**
+ * Entries are stored one row per (user, date, mode). Mode lives in the v2 JSON
+ * envelope the client serializes into encrypted_content; rows written before that
+ * envelope are plain text and count as 'legacy'. See migration 049.
+ */
+function deriveMode(encryptedContent) {
+    try {
+        const parsed = JSON.parse(encryptedContent);
+        if (parsed && parsed.v === 2 && typeof parsed.mode === 'string' && parsed.mode) {
+            return parsed.mode;
+        }
+    } catch {
+        // legacy plain-text entry
+    }
+    return 'legacy';
+}
+
 /** GET /api/journal — list entries */
 app.get('/', requireAuth, async (c) => {
     try {
@@ -57,14 +74,20 @@ app.post('/', requireAuth, async (c) => {
             mood = null,
             energy_level = null,
             sleep_hours = null,
-            title = null,
         } = body;
 
+        // Idempotent: re-saving the same day+mode updates in place instead of
+        // raising a duplicate-key 500 when the client's entry list is stale.
         const { rows } = await pool.query(
-            `INSERT INTO journal_entries (user_id, date, encrypted_content, mood, energy_level, sleep_hours, title)
+            `INSERT INTO journal_entries (user_id, date, encrypted_content, mood, energy_level, sleep_hours, mode)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
+             ON CONFLICT (user_id, date, mode) DO UPDATE SET
+                encrypted_content = EXCLUDED.encrypted_content,
+                mood = EXCLUDED.mood,
+                energy_level = EXCLUDED.energy_level,
+                sleep_hours = EXCLUDED.sleep_hours
              RETURNING *`,
-            [userId, date, encrypted_content, mood, energy_level, sleep_hours, title]
+            [userId, date, encrypted_content, mood, energy_level, sleep_hours, deriveMode(encrypted_content)]
         );
         return c.json(rows[0], 201);
     } catch (err) {
@@ -79,7 +102,7 @@ app.patch('/:id', requireAuth, async (c) => {
         const id = c.req.param('id');
         const body = await c.req.json();
 
-        const allowed = ['date', 'encrypted_content', 'mood', 'energy_level', 'sleep_hours', 'title'];
+        const allowed = ['date', 'encrypted_content', 'mood', 'energy_level', 'sleep_hours'];
         const sets = [];
         const params = [];
         allowed.forEach((col) => {
@@ -89,6 +112,12 @@ app.patch('/:id', requireAuth, async (c) => {
             }
         });
         if (!sets.length) return c.json({ error: 'No fields to update' }, 400);
+
+        // Keep mode in step with the envelope it is derived from.
+        if (body.encrypted_content !== undefined) {
+            params.push(deriveMode(body.encrypted_content));
+            sets.push(`mode = $${params.length}`);
+        }
 
         params.push(id, userId);
         const { rows } = await pool.query(

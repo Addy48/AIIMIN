@@ -173,8 +173,11 @@ app.get('/count', async (c) => {
     const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM waitlist_emails');
     return c.json({ count: rows[0]?.count ?? 0 });
   } catch (err) {
+    // Never report zero for a failed lookup — "nobody has signed up" and "we
+    // could not read the list" are different facts, and the landing page shows
+    // this number as social proof.
     console.error('[Waitlist] count error:', err.message);
-    return c.json({ count: 0 });
+    return c.json({ error: 'Could not read the waitlist count' }, 503);
   }
 });
 
