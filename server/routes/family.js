@@ -83,9 +83,16 @@ app.post('/documents', requireAuth, async (c) => {
     if (daysUntil > 0 && daysUntil <= 365) {
       await pool.query(
         // source_type/source_id are this table's generic link columns.
+        // There is no unique constraint on family_reminders, so ON CONFLICT DO
+        // NOTHING never actually deduplicates — editing a document repeatedly
+        // stacked up identical reminders. Guard on the row shape instead.
         `INSERT INTO family_reminders (user_id,title,source_type,due_date,source_id,description,is_auto_generated)
-         VALUES ($1,$2,'doc_expiry',$3,$4,$5,true)
-         ON CONFLICT DO NOTHING`,
+         SELECT $1,$2,'doc_expiry',$3,$4,$5,true
+         WHERE NOT EXISTS (
+           SELECT 1 FROM family_reminders
+           WHERE user_id = $1 AND source_type = 'doc_expiry'
+             AND source_id = $4 AND due_date = $3
+         )`,
         [uid, `${doc_type.toUpperCase()} expiry`, expiry_date, rows[0].id, `Document expires on ${expiry_date}`]
       );
     }
@@ -147,9 +154,14 @@ app.post('/insurance', requireAuth, async (c) => {
     const daysUntil = Math.ceil((new Date(next_premium_date) - new Date()) / 86400000);
     if (daysUntil > 0 && daysUntil <= 60) {
       await pool.query(
+        // Same as doc_expiry above: no unique constraint, so guard explicitly.
         `INSERT INTO family_reminders (user_id,title,source_type,due_date,source_id,description,is_auto_generated)
-         VALUES ($1,$2,'premium_due',$3,$4,$5,true)
-         ON CONFLICT DO NOTHING`,
+         SELECT $1,$2,'premium_due',$3,$4,$5,true
+         WHERE NOT EXISTS (
+           SELECT 1 FROM family_reminders
+           WHERE user_id = $1 AND source_type = 'premium_due'
+             AND source_id = $4 AND due_date = $3
+         )`,
         [uid, `${policy_name} premium due`, next_premium_date, rows[0].id, `Premium of ₹${premium_amount || '?'} due`]
       );
     }
@@ -199,25 +211,24 @@ app.post('/health-records', requireAuth, async (c) => {
   const conditions = body.conditions ?? body.chronic_conditions;
   if (!member_id) return c.json({ error: 'member_id required' }, 400);
 
-  // These columns are TEXT, and there is no UNIQUE (user_id, member_id) on this
-  // table, so upsert by hand rather than with ON CONFLICT.
+  // These columns are TEXT, not arrays. Migration 051 adds
+  // UNIQUE (user_id, member_id) so this is a single atomic upsert — a
+  // read-then-write pair would let two concurrent saves both insert.
   const asText = (v) => (Array.isArray(v) ? v.filter(Boolean).join(', ') : v) || null;
-  const values = [asText(allergies), asText(conditions), asText(medications), doctor_name || null, doctor_phone || null];
 
-  const { rows: existing } = await pool.query(
-    `SELECT id FROM family_health WHERE user_id=$1 AND member_id=$2 LIMIT 1`, [uid, member_id]
+  const { rows } = await pool.query(
+    `INSERT INTO family_health (user_id,member_id,allergies,conditions,medications,doctor_name,doctor_phone)
+     VALUES ($1,$2,$3,$4,$5,$6,$7)
+     ON CONFLICT (user_id, member_id) DO UPDATE SET
+       allergies   = EXCLUDED.allergies,
+       conditions  = EXCLUDED.conditions,
+       medications = EXCLUDED.medications,
+       doctor_name = EXCLUDED.doctor_name,
+       doctor_phone = EXCLUDED.doctor_phone
+     RETURNING *`,
+    [uid, member_id, asText(allergies), asText(conditions), asText(medications),
+     doctor_name || null, doctor_phone || null]
   );
-  const { rows } = existing.length
-    ? await pool.query(
-        `UPDATE family_health SET allergies=$1,conditions=$2,medications=$3,doctor_name=$4,doctor_phone=$5
-         WHERE id=$6 AND user_id=$7 RETURNING *`,
-        [...values, existing[0].id, uid]
-      )
-    : await pool.query(
-        `INSERT INTO family_health (allergies,conditions,medications,doctor_name,doctor_phone,user_id,member_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-        [...values, uid, member_id]
-      );
   return c.json(rows[0], 201);
 });
 
