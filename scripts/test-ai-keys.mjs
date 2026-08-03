@@ -113,6 +113,29 @@ await test('NVIDIA_API_KEY (KIMI)', async () => {
   return { ok: Boolean(ok), status: res.status, note: ok ? 'ok' : (body.error?.message || 'failed').slice(0, 80) };
 });
 
+await test('OPENROUTER_API_KEY', async () => {
+  const key = process.env.OPENROUTER_API_KEY?.replace(/^"|"$/g, '');
+  if (!key) return { ok: false, status: 0, note: 'missing' };
+  const model = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free';
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://aiimin.in',
+      'X-Title': 'AIIMIN',
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: 'Hi' }],
+      max_tokens: 5,
+    }),
+  });
+  const body = await res.json().catch(() => ({}));
+  const ok = res.ok && body.choices?.[0]?.message?.content;
+  return { ok: Boolean(ok), status: res.status, note: ok ? 'ok' : (body.error?.message || 'failed').slice(0, 80) };
+});
+
 await test('XAI_API_KEY', async () => {
   const key = process.env.XAI_API_KEY?.replace(/^"|"$/g, '');
   if (!key) return { ok: false, status: 0, note: 'missing' };

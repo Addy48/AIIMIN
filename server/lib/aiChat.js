@@ -1,5 +1,5 @@
 /**
- * Shared chat helpers — prefer working providers (Groq first for heavy work).
+ * Shared chat helpers — Groq first for heavy work, OpenRouter free as fallback.
  */
 
 export function getGeminiKey() {
@@ -14,6 +14,10 @@ export function getGroqKey() {
   return (process.env.GROQ_API_KEY || '').replace(/^"|"$/g, '').trim() || null;
 }
 
+export function getOpenRouterKey() {
+  return (process.env.OPENROUTER_API_KEY || '').replace(/^"|"$/g, '').trim() || null;
+}
+
 export function getNvidiaKey() {
   return (
     process.env.NVIDIA_API_KEY
@@ -23,7 +27,7 @@ export function getNvidiaKey() {
 }
 
 /**
- * Heavy text generation via Groq (working free tier).
+ * Heavy text generation via Groq.
  * @returns {{ ok: boolean, text?: string, error?: string, provider: string }}
  */
 export async function groqChat({
@@ -66,6 +70,66 @@ export async function groqChat({
   };
 }
 
+/**
+ * OpenRouter (prefer :free models for zero spend).
+ */
+export async function openRouterChat({
+  messages,
+  maxTokens = 512,
+  temperature = 0.7,
+  model = process.env.OPENROUTER_MODEL || 'meta-llama/llama-3.3-70b-instruct:free',
+}) {
+  const apiKey = getOpenRouterKey();
+  if (!apiKey) return { ok: false, error: 'OPENROUTER_API_KEY missing', provider: 'openrouter' };
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.OPENROUTER_HTTP_REFERER || 'https://aiimin.in',
+      'X-Title': process.env.OPENROUTER_APP_TITLE || 'AIIMIN',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      max_tokens: maxTokens,
+      temperature,
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    return {
+      ok: false,
+      error: data.error?.message || `OpenRouter HTTP ${res.status}`,
+      provider: 'openrouter',
+    };
+  }
+
+  return {
+    ok: true,
+    text: data.choices?.[0]?.message?.content || '',
+    provider: 'openrouter',
+    model,
+  };
+}
+
+/** Groq first, then OpenRouter free fallback. */
+export async function heavyChat(opts) {
+  const groq = await groqChat(opts);
+  if (groq.ok && groq.text) return groq;
+
+  const or = await openRouterChat(opts);
+  if (or.ok && or.text) return or;
+
+  return {
+    ok: false,
+    error: groq.error || or.error || 'All heavy providers failed',
+    provider: groq.error && !getOpenRouterKey() ? 'groq' : 'heavy',
+  };
+}
+
 /** Default: Nemotron Nano — free NIM, fast. Llama 3.3-70B often cold-starts / times out. */
 export function getNvidiaChatModel() {
   return (
@@ -75,7 +139,7 @@ export function getNvidiaChatModel() {
 }
 
 /**
- * Try NVIDIA NIM, then Groq.
+ * Try NVIDIA NIM, then Groq, then OpenRouter.
  */
 export async function nvidiaOrGroqChat(opts) {
   const nvidiaKey = getNvidiaKey();
@@ -109,5 +173,5 @@ export async function nvidiaOrGroqChat(opts) {
       console.warn('[aiChat] NVIDIA error:', err.message, model);
     }
   }
-  return groqChat(opts);
+  return heavyChat(opts);
 }
