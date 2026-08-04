@@ -16,7 +16,7 @@ Do not re-add `title` to a write without a migration that creates it.
 
 ## Uniqueness contract (changed 2026-08-03)
 
-```
+```sql
 UNIQUE (user_id, date, mode)     -- migration 049
 ```
 

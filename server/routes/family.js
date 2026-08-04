@@ -83,16 +83,13 @@ app.post('/documents', requireAuth, async (c) => {
     if (daysUntil > 0 && daysUntil <= 365) {
       await pool.query(
         // source_type/source_id are this table's generic link columns.
-        // There is no unique constraint on family_reminders, so ON CONFLICT DO
-        // NOTHING never actually deduplicates — editing a document repeatedly
-        // stacked up identical reminders. Guard on the row shape instead.
+        // Deduplicated by family_reminders_auto_key (migration 052) rather than
+        // a WHERE NOT EXISTS, so two concurrent edits cannot both insert.
         `INSERT INTO family_reminders (user_id,title,source_type,due_date,source_id,description,is_auto_generated)
-         SELECT $1,$2,'doc_expiry',$3,$4,$5,true
-         WHERE NOT EXISTS (
-           SELECT 1 FROM family_reminders
-           WHERE user_id = $1 AND source_type = 'doc_expiry'
-             AND source_id = $4 AND due_date = $3
-         )`,
+         VALUES ($1,$2,'doc_expiry',$3,$4,$5,true)
+         ON CONFLICT (user_id, source_type, source_id, due_date)
+           WHERE is_auto_generated AND source_id IS NOT NULL
+         DO NOTHING`,
         [uid, `${doc_type.toUpperCase()} expiry`, expiry_date, rows[0].id, `Document expires on ${expiry_date}`]
       );
     }
@@ -154,14 +151,12 @@ app.post('/insurance', requireAuth, async (c) => {
     const daysUntil = Math.ceil((new Date(next_premium_date) - new Date()) / 86400000);
     if (daysUntil > 0 && daysUntil <= 60) {
       await pool.query(
-        // Same as doc_expiry above: no unique constraint, so guard explicitly.
+        // Same dedup index as doc_expiry above.
         `INSERT INTO family_reminders (user_id,title,source_type,due_date,source_id,description,is_auto_generated)
-         SELECT $1,$2,'premium_due',$3,$4,$5,true
-         WHERE NOT EXISTS (
-           SELECT 1 FROM family_reminders
-           WHERE user_id = $1 AND source_type = 'premium_due'
-             AND source_id = $4 AND due_date = $3
-         )`,
+         VALUES ($1,$2,'premium_due',$3,$4,$5,true)
+         ON CONFLICT (user_id, source_type, source_id, due_date)
+           WHERE is_auto_generated AND source_id IS NOT NULL
+         DO NOTHING`,
         [uid, `${policy_name} premium due`, next_premium_date, rows[0].id, `Premium of ₹${premium_amount || '?'} due`]
       );
     }
@@ -240,10 +235,12 @@ app.get('/reminders', requireAuth, async (c) => {
   const { done = 'false' } = c.req.query();
   const { rows } = await pool.query(
     // source_id is generic (member / document / policy); the join only resolves
-    // when it happens to point at a member.
+    // when it happens to point at a member. It is client-supplied on
+    // POST /reminders, so scope the join to the same owner — otherwise another
+    // user's member id would leak their name back through member_name.
     `SELECT r.*, m.name as member_name
      FROM family_reminders r
-     LEFT JOIN family_members m ON m.id = r.source_id
+     LEFT JOIN family_members m ON m.id = r.source_id AND m.user_id = r.user_id
      WHERE r.user_id=$1 AND r.completed=$2
      ORDER BY r.due_date ASC`,
     [uid, done === 'true']

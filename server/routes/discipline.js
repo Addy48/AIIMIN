@@ -531,8 +531,12 @@ app.post('/urge/:id/resolve', requireAuth, async (c) => {
         if (outcome === 'resisted' && urge.linked_replacement_habit_id) {
             try {
                 await pool.query(
+                    // habit_logs_status_check allows only 'done' | 'skipped'.
+                    // 'completed' threw, and the catch below swallowed it — so
+                    // habitReinforced stayed false and the anchor_edges insert
+                    // that follows never ran either.
                     `INSERT INTO habit_logs (user_id, habit_id, completed_at, status, notes)
-                     VALUES ($1, $2, NOW(), 'completed', 'discipline_reinforce')`,
+                     VALUES ($1, $2, NOW(), 'done', 'discipline_reinforce')`,
                     [userId, urge.linked_replacement_habit_id]
                 );
                 habitReinforced = true;
