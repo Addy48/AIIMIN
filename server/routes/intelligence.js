@@ -521,6 +521,99 @@ app.get('/report-gen/status', requireAuth, async (c) => {
 });
 
 // ==========================================
+// CAPTURE PARSE (offer only — no writes)
+// ==========================================
+/**
+ * POST /intelligence/parse
+ * Auth required. Uses server AI keys (Groq → OpenRouter). Returns Capture Offer
+ * chips; never writes. Local rule parser stays the offline / budget fallback.
+ */
+app.post('/parse', requireAuth, aiLimiter, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const body = await c.req.json();
+        const text = String(body?.text || '').trim();
+        if (!text) return c.json({ error: 'No text provided' }, 400);
+        if (text.length > 2000) return c.json({ error: 'Text too long' }, 400);
+
+        await trackExternalCall({
+            userId,
+            provider: 'groq',
+            endpoint: '/intelligence/parse',
+            units: 1,
+        });
+
+        const systemPrompt = `You parse one life-log sentence into Capture Offer chips for AIIMIN.
+Return ONLY valid JSON (no markdown). Schema:
+{
+  "chips": [
+    { "field": "amount"|"category"|"merchant"|"people"|"mood"|"duration", "value": string, "included": boolean }
+  ]
+}
+Rules:
+- amount: digits only or Indian grouping (e.g. "1,240"); included true only with money context (paid/spent/₹/rs).
+- category: short title case (Food, Transport, …).
+- merchant: proper name if clear.
+- people: one chip per person first name.
+- mood: "n/10" or low|steady|high; included false when guessed from adjectives only.
+- duration: "25 min" style.
+- Omit fields you cannot support. Never invent spends. Prefer fewer chips.`;
+
+        const chat = await heavyChat({
+            messages: [
+                { role: 'system', content: withVoiceRules(systemPrompt) },
+                { role: 'user', content: text },
+            ],
+            maxTokens: 400,
+            temperature: 0.1,
+        });
+        if (!chat.ok) {
+            return c.json({ error: chat.error || 'Parse failed' }, 503);
+        }
+        if (chat.provider === 'openrouter') {
+            await consumeProviderBudget('openrouter', 1).catch(() => {});
+            await logApiUsage({
+                userId,
+                provider: 'openrouter',
+                endpoint: '/intelligence/parse',
+                tokensOrHits: 1,
+            });
+        }
+
+        const rawText = (chat.text || '').trim().replace(/```json\n?|```/g, '');
+        let parsed;
+        try {
+            parsed = JSON.parse(rawText);
+        } catch {
+            return c.json({ error: 'AI could not parse your entry', raw: rawText }, 422);
+        }
+
+        const allowed = new Set(['amount', 'category', 'merchant', 'people', 'mood', 'duration']);
+        const chips = Array.isArray(parsed?.chips)
+            ? parsed.chips
+                .filter((ch) => ch && allowed.has(String(ch.field || '').toLowerCase()) && ch.value != null)
+                .map((ch) => ({
+                    field: String(ch.field).toLowerCase(),
+                    value: String(ch.value).trim().slice(0, 80),
+                    included: ch.included !== false,
+                }))
+                .filter((ch) => ch.value.length > 0)
+            : [];
+
+        return c.json({
+            text,
+            chips,
+            source: chat.provider || 'ai',
+        });
+    } catch (err) {
+        const budgetRes = budgetErrorResponse(c, err);
+        if (budgetRes) return budgetRes;
+        console.error('[intelligence/parse]', err.message);
+        return c.json({ error: 'Parse failed', message: err.message }, 500);
+    }
+});
+
+// ==========================================
 // UNIVERSAL AI LOGGER
 // ==========================================
 app.post('/universal-log', requireAuth, async (c) => {
@@ -535,7 +628,8 @@ app.post('/universal-log', requireAuth, async (c) => {
 Return ONLY valid JSON (no markdown, no explanation).
 
 Extract any of these action types from the user's text:
-- log_mood: if they mention how they feel or a mood/energy rating out of 10. Fields: { score: number 1-10, note: string }
+- log_mood: if they mention how they feel, or give a mood or energy rating out of 10. Fields: { score: number 1-10, energy: number 1-10, note: string }
+  "score" is MOOD only. Set "energy" only when they give an explicit energy/tiredness rating; omit it otherwise. If they rate energy but not mood, send "energy" and omit "score".
 - log_habit: if they mention completing or failing a habit/workout/diet. Fields: { name: string, completed: boolean }
 - add_journal: always add the raw text as a journal entry. Fields: { content: string }
 - log_discipline: if they mention breaking or resetting a discipline/streak. Fields: { name: string, reset: boolean }
@@ -589,14 +683,29 @@ Respond with JSON like:
 
         for (const action of actions) {
             try {
-                if (action.type === 'log_mood' && action.score) {
+                if (action.type === 'log_mood' && (action.score != null || action.energy != null)) {
+                    // mood and energy are separate readings. This used to copy
+                    // the mood score into energy_level, inventing a value the
+                    // user never gave and feeding it to correlations and the
+                    // Life Score. Each is now written only when supplied, so an
+                    // energy-only rating no longer lands in mood either.
+                    const clamp = (v) => Math.min(10, Math.max(1, Math.round(v)));
                     await pool.query(
-                        `INSERT INTO daily_logs (user_id, date, mood, energy, notes)
-                         VALUES ($1, $2, $3, $3, $4)
-                         ON CONFLICT (user_id, date) DO UPDATE SET mood = $3, energy = $3, notes = COALESCE($4, daily_logs.notes)`,
-                        [userId, today, Math.min(10, Math.max(1, Math.round(action.score))), action.note || null]
+                        `INSERT INTO daily_logs (user_id, date, mood, energy_level, journal_entry)
+                         VALUES ($1, $2, $3, $5, $4)
+                         ON CONFLICT (user_id, date) DO UPDATE SET
+                           mood = COALESCE($3, daily_logs.mood),
+                           energy_level = COALESCE($5, daily_logs.energy_level),
+                           journal_entry = COALESCE($4, daily_logs.journal_entry)`,
+                        [
+                            userId,
+                            today,
+                            action.score != null ? clamp(action.score) : null,
+                            action.note || null,
+                            action.energy != null ? clamp(action.energy) : null,
+                        ]
                     );
-                    results.push({ type: 'log_mood', status: 'success', score: action.score });
+                    results.push({ type: 'log_mood', status: 'success', score: action.score ?? null, energy: action.energy ?? null });
                 } else if (action.type === 'log_habit' && action.name) {
                     // Find existing habit by name fuzzy match
                     const habitRes = await pool.query(
