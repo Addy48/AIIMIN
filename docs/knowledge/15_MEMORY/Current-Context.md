@@ -20,7 +20,7 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → only the `Touch` paths below. Proof-or-stop.
 
-**Date:** 2026-08-03 · Branch `feat/drafting-table-prototype` · HEAD `941e7267`
+**Date:** 2026-08-04 · Branch `feat/native-android-v3` · Money screen shipping (local state)
 
 ## Stage
 
@@ -60,8 +60,8 @@ Guardrails (G1–G10, non-negotiable): [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT
 ## Queue
 
 1. **Vault** — single source of truth. **Done**; two approvals pending (§ report §6).
-2. **App (own chat)** — foundation → Capture → capture-first Today → Money → Config → OS-ID
-   → Onboarding → Journal → Lab → Score (Score blocked on taxonomy).
+2. **App (own chat)** — foundation → Capture → Today → **Money ✅** → **Config (next)** →
+   OS-ID → Onboarding → Journal · Lab → Score. Tracker: [[17_NATIVE_APP_V2/V3-BUILD-TRACKER]].
 3. **Website (own chat)** — reproduce and fix Journal + Notes; then Finance MTD ₹0, Life
    Score taxonomy, remove Weekly Pulse from entry, Goals count, waitlist count masking; then
    the P2 untested list.
@@ -87,10 +87,8 @@ Guardrails (G1–G10, non-negotiable): [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT
 
 ## Touch
 
-- `docs/knowledge/00_ROUTING.md`
-- `docs/knowledge/17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE.md`
+- `native-android-v3/` · `docs/knowledge/17_NATIVE_APP_V2/V3-BUILD-TRACKER.md`
+- `docs/knowledge/15_MEMORY/Handoff-Native-App-Build.md`
 - `docs/knowledge/17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN.md`
 - `frontend/prototypes/AIIMIN-Drafting-Table.html`
-- `frontend/scripts/verify-production-env.mjs`
-- `server/routes/` · `frontend/src/` (website fixes only)
 - `docs/knowledge/Genesis/` (read-only)

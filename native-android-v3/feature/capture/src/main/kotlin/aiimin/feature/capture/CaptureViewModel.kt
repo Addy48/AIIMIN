@@ -3,10 +3,12 @@ package aiimin.feature.capture
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import aiimin.core.data.DayStore
+import aiimin.core.data.MoneyStore
 import aiimin.feature.capture.parse.CaptureField
 import aiimin.feature.capture.parse.CaptureParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
@@ -30,12 +32,15 @@ class CaptureViewModel @Inject constructor(
     private val parser: CaptureParser,
     private val clock: Clock,
     private val day: DayStore,
+    private val money: MoneyStore,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CaptureUiState())
     val state: StateFlow<CaptureUiState> = _state.asStateFlow()
 
     private var nextId = 1L
+    /** Capture id → Money ledger id, so Undo can reverse both writes. */
+    private val moneyByCapture = mutableMapOf<Long, Long>()
 
     fun onTextChange(text: String) = _state.update { current ->
         current.copy(
@@ -89,9 +94,22 @@ class CaptureViewModel @Inject constructor(
             time = LocalTime.now(clock).format(TIME),
             amount = amount,
         )
-        // The day is shared. A settle here is a settle on Today — two surfaces
-        // telling one story is the whole point of one graph.
+        // The day and the ledger are shared. A settle here is a settle on
+        // Today and on Money — one graph, three surfaces telling one story.
         day.recordCapture(settled.label, settled.time, amount)
+        if (amount != null && amount > 0) {
+            val category = offer?.chip(CaptureField.CATEGORY)?.takeIf { it.included }?.value
+                ?.uppercase()
+                ?: "UNCATEGORISED"
+            val moneyId = money.recordExpense(
+                name = offer?.chip(CaptureField.MERCHANT)?.takeIf { it.included }?.value
+                    ?: settled.label.take(28),
+                amount = amount,
+                category = category,
+                dateLabel = LocalDate.now(clock).format(DATE),
+            )
+            moneyByCapture[settled.id] = moneyId
+        }
         current.copy(
             text = "",
             offer = null,
@@ -124,6 +142,7 @@ class CaptureViewModel @Inject constructor(
     fun onUndo(id: Long) = _state.update { current ->
         val undone = current.settled.firstOrNull { it.id == id } ?: return@update current
         day.removeCapture(undone.label)
+        moneyByCapture.remove(id)?.let { money.removeEntry(it) }
         current.copy(
             settled = current.settled - undone,
             text = undone.label,
@@ -161,6 +180,7 @@ class CaptureViewModel @Inject constructor(
 
     private companion object {
         val TIME: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+        val DATE: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM")
         const val NOTICE_MILLIS = 4200L
     }
 }

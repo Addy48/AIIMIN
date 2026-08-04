@@ -16,11 +16,11 @@ import aiimin.designsystem.component.Text
 import aiimin.designsystem.theme.AiiminTheme
 
 /**
- * Placeholders for the five surfaces of the shell.
+ * Placeholders for surfaces not yet built.
  *
  * Each states its ONE job (P8-R-124) and nothing else. They are replaced, one at
- * a time, by the real surface — Capture first, then Today, Money, Config. A
- * placeholder never pretends to hold data it does not have.
+ * a time, by the real surface. A placeholder never pretends to hold data it
+ * does not have. Money has graduated — see [aiimin.feature.money.MoneyRoute].
  */
 @Composable
 private fun SurfaceScaffold(
@@ -49,15 +49,6 @@ private fun SurfaceScaffold(
 }
 
 @Composable
-fun MoneySurface(modifier: Modifier = Modifier) = SurfaceScaffold(
-    title = "Money",
-    meta = "OVERVIEW",
-    oneJob = "Log and see money truth — safe to spend, where it went, what is owed.",
-    waitingFor = "Overview, Budgets and Ledger land after the capture loop writes real entries.",
-    modifier = modifier,
-)
-
-@Composable
 fun LabSurface(modifier: Modifier = Modifier) = SurfaceScaffold(
     title = "Lab",
     meta = "PATTERNS",
@@ -77,6 +68,6 @@ fun ConfigSurface(modifier: Modifier = Modifier) = SurfaceScaffold(
 
 @Preview(showBackground = true, backgroundColor = 0xFF15171A)
 @Composable
-private fun MoneySurfacePreview() {
-    AiiminTheme { MoneySurface() }
+private fun LabSurfacePreview() {
+    AiiminTheme { LabSurface() }
 }

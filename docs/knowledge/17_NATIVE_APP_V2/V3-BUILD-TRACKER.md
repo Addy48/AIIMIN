@@ -32,8 +32,8 @@ tags:
 | 1 | **Capture** — the trust surface | ✅ done 2026-08-03 (local state; API not wired) | `:app:assembleDebug` BUILD SUCCESSFUL · APK 13.0 MB · 13/13 parser unit tests · 5 screenshot goldens |
 | 2 | **`:core:model`** — Life Score engine v2 maths | ✅ done 2026-08-03 | 28/28 unit tests · attainment curve, asymmetric Hold, robust baseline, trajectory, composition |
 | 3 | **Today** — capture-first | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 13.0 MB · 71 tests green · 12 screenshot goldens |
-| 4 | Money | next | |
-| 5 | Config (instruments · mode · commitments · body facts) | | |
+| 4 | **Money** — log and see money truth | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 12 MB · 11/11 MoneyStore tests · 18 screenshot goldens validating (6 Money) |
+| 5 | Config (instruments · mode · commitments · body facts) | next | |
 | 6 | OS-ID | | |
 | 7 | Onboarding, 10 steps incl. the Groq calibration | | |
 | 8 | Score surface (state · trajectory · confidence · attribution) | **unblocked** 2026-08-03 — engine v2 decided | |
@@ -100,6 +100,31 @@ adb install -r native-android-v3/app/build/outputs/apk/debug/app-debug.apk
 raise if you want them: Detekt and Spotless (Detekt's current release is an
 alpha), JaCoCo coverage, baseline profiles, crash reporting, Gradle managed
 devices.
+
+## 4 · Money — done 2026-08-04 (local state)
+
+**One job:** log and see money truth.
+
+Three tabs, one instrument — Overview (safe-to-spend, spend bar, categories,
+week-over-week, seed-labelled net worth / receivable), Budgets (allocations +
+upcoming 14d), Ledger (signed income in accent, expenses mono). Add never invents
+a second form: it opens Capture. Capture settle with an amount writes the shared
+`MoneyStore` ledger; Undo reverses both day and ledger.
+
+**Empty is empty.** `MoneyState.empty()` draws "No money logged … That is empty —
+not ₹0." Safe-to-spend, net worth and receivable are `null` when there is no data —
+never a fake MTD zero. Seed month is labelled `SEED · LOCAL` / `SEED READ · NOT LIVE`.
+
+**Module:** `:feature:money` + `MoneyStore` in `:core:data`. Overview figures are
+derived from ledger rows and budget limits, not hard-coded beside live rows.
+
+**Evidence 2026-08-04:** `:app:assembleDebug` SUCCESSFUL, APK 12 MB ·
+`:core:data:testDebugUnitTest` MoneyStoreTest 11/11 · capture + model tests still
+green · `:app:validateDebugScreenshotTest` passes with 18 goldens (overview
+dark/light, budgets, ledger, empty, offline).
+
+**Not done, deliberately:** `/api` wealth routes, FI velocity / burn / runway,
+editing budgets on device, offline queue flush. Local surface first (G7).
 
 ## 3 · Today — done 2026-08-04 (local state)
 

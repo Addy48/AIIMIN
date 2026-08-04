@@ -16,9 +16,9 @@ import aiimin.app.navigation.Tab
 import aiimin.app.ui.shell.BottomBar
 import aiimin.app.ui.surface.ConfigSurface
 import aiimin.app.ui.surface.LabSurface
-import aiimin.app.ui.surface.MoneySurface
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.feature.capture.CaptureRoute
+import aiimin.feature.money.MoneyRoute
 import aiimin.feature.today.TodayRoute
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -58,7 +58,14 @@ fun AiiminShell(modifier: Modifier = Modifier) {
                         },
                     )
                 }
-                entry<Money> { MoneySurface() }
+                entry<Money> {
+                    MoneyRoute(
+                        onAddTransaction = {
+                            backStack.clear()
+                            backStack.add(Capture)
+                        },
+                    )
+                }
                 entry<Capture> { CaptureRoute() }
                 entry<Lab> { LabSurface() }
                 entry<Config> { ConfigSurface() }
