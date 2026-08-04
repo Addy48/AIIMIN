@@ -14,8 +14,11 @@ import {
   Cell,
 } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
+import { useUserProfile } from '../hooks/useUserProfile';
 import { apiGet } from '../utils/api';
+import { hasTier } from '../utils/tierGating';
 import PDFReportGenerator from '../components/PDFReportGenerator';
+import IvorySnapshot from '../components/reports/IvorySnapshot';
 import PatternsPanel from '../components/reports/PatternsPanel';
 import SkillTreePanel from '../components/reports/SkillTreePanel';
 
@@ -24,6 +27,9 @@ const TABS = [
   { id: 'patterns', label: 'Patterns' },
   { id: 'skills', label: 'Skills' },
 ];
+
+/** Pro+ gets Patterns + Skills; Core stays on Snapshot pulse only. */
+const PRO_TABS = TABS;
 
 const RANGE_PRESETS = [
   { id: '7', label: '7 days', days: 7 },
@@ -65,6 +71,9 @@ function normalizeTab(raw) {
 
 export default function Reports() {
   const { user } = useAuth();
+  const { profile } = useUserProfile();
+  const tier = profile?.subscription_tier || 'explore';
+  const isProPlus = hasTier(tier, 'pro');
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = normalizeTab(searchParams.get('tab'));
 
@@ -75,7 +84,13 @@ export default function Reports() {
     setSearchParams(next, { replace: true });
   };
 
-  const [preset, setPreset] = useState('30');
+  /* Core Snapshot = fixed 7d; Pro+ chooses range for Folio Standard */
+  const [preset, setPreset] = useState('7');
+
+  useEffect(() => {
+    if (isProPlus) setPreset((p) => (p === '7' ? '30' : p));
+    else setPreset('7');
+  }, [isProPlus]);
   const [customStart, setCustomStart] = useState(() => {
     const d = new Date(Date.now() - 29 * 86400000);
     return d.toISOString().slice(0, 10);
@@ -87,6 +102,9 @@ export default function Reports() {
 
   const query = useMemo(() => {
     const end = todayKey();
+    if (!isProPlus) {
+      return { days: 7, start: null, end: null, label: 'Last 7 days' };
+    }
     if (preset === 'ytd') {
       const start = ytdStart();
       return { days: daysBetween(start, end), start, end, label: `YTD ${start} → ${end}` };
@@ -98,7 +116,13 @@ export default function Reports() {
     }
     const days = RANGE_PRESETS.find((p) => p.id === preset)?.days || 30;
     return { days, start: null, end: null, label: `Last ${days} days` };
-  }, [preset, customStart, customEnd]);
+  }, [preset, customStart, customEnd, isProPlus]);
+
+  useEffect(() => {
+    if (!isProPlus && (tab === 'patterns' || tab === 'skills')) {
+      setTab('report');
+    }
+  }, [isProPlus, tab]);
 
   useEffect(() => {
     if (!user || user.isGuest) {
@@ -193,10 +217,13 @@ export default function Reports() {
           Reports
         </h1>
         <p style={{ color: 'var(--color-text-2)', fontSize: 14, maxWidth: 640, marginTop: 12 }}>
-          Period telemetry, behavioral patterns, and skills — one surface. Insights redirected here.
+          {isProPlus
+            ? 'Folio Life OS Standard PDF, patterns, and skills — Elite Deep paused.'
+            : 'Ivory Snapshot · 7-day pulse. Upgrade to Pro for Folio PDF + Patterns.'}
         </p>
       </div>
 
+      {isProPlus && (
       <div
         role="tablist"
         aria-label="Reports sections"
@@ -213,7 +240,7 @@ export default function Reports() {
           border: '1px solid var(--border)',
         }}
       >
-        {TABS.map((t) => {
+        {PRO_TABS.map((t) => {
           const on = tab === t.id;
           return (
             <button
@@ -240,8 +267,9 @@ export default function Reports() {
           );
         })}
       </div>
+      )}
 
-      {(tab === 'report' || tab === 'patterns') && (
+      {isProPlus && (tab === 'report' || tab === 'patterns') && (
         <>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
             {RANGE_PRESETS.map((p) => (
@@ -298,15 +326,28 @@ export default function Reports() {
         </>
       )}
 
-      {tab === 'patterns' && (
+      {isProPlus && tab === 'patterns' && (
         loading
           ? <div style={{ padding: 32, color: 'var(--color-text-3)' }}>Loading patterns…</div>
           : <PatternsPanel report={report} />
       )}
 
-      {tab === 'skills' && <SkillTreePanel />}
+      {isProPlus && tab === 'skills' && <SkillTreePanel />}
 
-      {tab === 'report' && (
+      {/* Core: Ivory Snapshot only */}
+      {!isProPlus && (
+        <>
+          {loading && <div style={{ padding: 32, color: 'var(--color-text-3)' }}>Loading 7-day Snapshot…</div>}
+          {error && !loading && (
+            <div style={{ padding: 24, color: '#ef4444', border: '1px solid #ef4444', borderRadius: 16 }}>{error}</div>
+          )}
+          {!loading && !error && (
+            <IvorySnapshot report={report} user={user} showUpgrade />
+          )}
+        </>
+      )}
+
+      {isProPlus && tab === 'report' && (
         <>
           {loading && <div style={{ padding: 32, color: 'var(--color-text-3)' }}>Loading report for this period…</div>}
           {error && !loading && (
@@ -315,6 +356,9 @@ export default function Reports() {
 
           {!loading && !error && (
             <>
+              <div style={{ marginBottom: 28 }}>
+                <IvorySnapshot report={report} user={user} showUpgrade={false} />
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 28 }}>
                 {[
                   { label: 'LHS score', val: kpis.global, desc: 'Period average' },
@@ -430,7 +474,7 @@ export default function Reports() {
               </div>
 
               <div style={{ marginBottom: 12 }}>
-                <h3 style={{ margin: '0 0 12px', fontSize: 16, color: 'var(--color-text-1)' }}>PDF export</h3>
+                <h3 style={{ margin: '0 0 12px', fontSize: 16, color: 'var(--color-text-1)' }}>Folio Life OS · Standard PDF</h3>
                 <PDFReportGenerator
                   user={user}
                   rangeLabel={query.label}
