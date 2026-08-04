@@ -1,31 +1,60 @@
 package aiimin.core.data
 
+import aiimin.core.data.di.ApplicationScope
+import aiimin.core.data.prefs.AppPreferences
+import aiimin.core.data.prefs.InMemoryAppPreferences
+import aiimin.core.data.prefs.PersistedPrefs
 import aiimin.core.model.LifeMode
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * Config prefs and identity strip — local (G7). Appearance drives [AiiminTheme]
- * from MainActivity. Life mode lives on [DayStore] so Today and Config agree.
+ * from MainActivity. Durable fields (theme, reduce-motion, calibration identity)
+ * land in [AppPreferences]; Day/Money seed stays in-memory until the API.
  */
 @Singleton
-class ConfigStore @Inject constructor() {
+class ConfigStore @Inject constructor(
+    private val prefs: AppPreferences,
+    @ApplicationScope private val scope: CoroutineScope,
+) {
+
+    /** Unit tests — in-memory prefs, no Android Context. */
+    constructor() : this(
+        InMemoryAppPreferences(),
+        CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
+    )
 
     private val _state = MutableStateFlow(ConfigState.seed())
     val state: StateFlow<ConfigState> = _state.asStateFlow()
 
-    fun toggleTheme() = _state.update {
-        it.copy(darkTheme = !it.darkTheme)
+    init {
+        scope.launch {
+            _state.value = ConfigState.seed().withPersisted(prefs.read())
+        }
     }
 
-    fun setDarkTheme(dark: Boolean) = _state.update { it.copy(darkTheme = dark) }
+    fun toggleTheme() {
+        _state.update { it.copy(darkTheme = !it.darkTheme) }
+        persist { writeTheme(_state.value.darkTheme) }
+    }
 
-    fun toggleReduceMotion() = _state.update {
-        it.copy(reduceMotion = !it.reduceMotion)
+    fun setDarkTheme(dark: Boolean) {
+        _state.update { it.copy(darkTheme = dark) }
+        persist { writeTheme(dark) }
+    }
+
+    fun toggleReduceMotion() {
+        _state.update { it.copy(reduceMotion = !it.reduceMotion) }
+        persist { writeReduceMotion(_state.value.reduceMotion) }
     }
 
     fun setSync(state: SyncState, meta: String = state.defaultMeta) = _state.update {
@@ -85,6 +114,27 @@ class ConfigStore @Inject constructor() {
     fun closeDelete() = _state.update { it.copy(deleteOpen = false, deleteDraft = "") }
 
     fun setDeleteDraft(value: String) = _state.update { it.copy(deleteDraft = value) }
+
+    /**
+     * Calibration settle — local identity write. Replaces seed OS-ID / arc /
+     * minimums label. Does not hit the network. Persists across process death.
+     */
+    fun applyCalibration(osId: String, arc: String, minimumsCount: Int) {
+        val label = "$minimumsCount set"
+        _state.update {
+            it.copy(
+                identity = it.identity.copy(osId = osId, arc = arc),
+                minimumsLabel = label,
+                isSeed = false,
+                notice = ConfigNotice("Calibration locked locally · $osId"),
+            )
+        }
+        persist { writeCalibration(osId, arc, label) }
+    }
+
+    private fun persist(block: suspend AppPreferences.() -> Unit) {
+        scope.launch { prefs.block() }
+    }
 }
 
 enum class SyncState(val label: String, val defaultMeta: String) {
@@ -131,6 +181,17 @@ data class ConfigState(
     val notice: ConfigNotice? = null,
 ) {
     val themeName: String get() = if (darkTheme) "Dark · Drafting Table" else "Light · Industry sheet"
+
+    fun withPersisted(p: PersistedPrefs): ConfigState = copy(
+        darkTheme = p.darkTheme,
+        reduceMotion = p.reduceMotion,
+        isSeed = p.isSeed,
+        minimumsLabel = p.minimumsLabel ?: minimumsLabel,
+        identity = identity.copy(
+            osId = p.osId ?: identity.osId,
+            arc = p.arc ?: identity.arc,
+        ),
+    )
 
     companion object {
         fun seed() = ConfigState(

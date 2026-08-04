@@ -31,16 +31,22 @@ object AiiminTheme {
 
     val radii: AiiminRadii
         @Composable @ReadOnlyComposable get() = LocalAiiminRadii.current
+
+    /** Config toggle + system animator scale — screens read this for motion. */
+    val reduceMotion: Boolean
+        @Composable @ReadOnlyComposable get() = LocalReduceMotion.current
 }
 
 val LocalAiiminColors = staticCompositionLocalOf { DraftingTableDark }
 val LocalAiiminTypography = staticCompositionLocalOf { AiiminTypography() }
 val LocalAiiminSpacing = staticCompositionLocalOf { AiiminSpacing() }
 val LocalAiiminRadii = staticCompositionLocalOf { AiiminRadii() }
+val LocalReduceMotion = staticCompositionLocalOf { false }
 
 @Composable
 fun AiiminTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    reduceMotion: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colors = if (darkTheme) DraftingTableDark else IndustrySheetLight
@@ -51,6 +57,7 @@ fun AiiminTheme(
         LocalAiiminTypography provides typography,
         LocalAiiminSpacing provides AiiminSpacing(),
         LocalAiiminRadii provides AiiminRadii(),
+        LocalReduceMotion provides reduceMotion,
     ) {
         MaterialTheme(
             colorScheme = colors.toMaterialScheme(),

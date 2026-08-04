@@ -45,6 +45,7 @@ import kotlin.math.roundToInt
 @Composable
 fun TodayRoute(
     onOpenCapture: (String) -> Unit,
+    onOpenScore: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
@@ -52,6 +53,7 @@ fun TodayRoute(
     TodayScreen(
         state = state,
         onOpenCapture = onOpenCapture,
+        onOpenScore = onOpenScore,
         onToggle = viewModel::onToggle,
         onMicroTaskChange = viewModel::onMicroTaskChange,
         modifier = modifier,
@@ -75,6 +77,7 @@ fun TodayScreen(
     onOpenCapture: (String) -> Unit,
     onToggle: (Long) -> Unit,
     onMicroTaskChange: (String) -> Unit,
+    onOpenScore: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -96,9 +99,9 @@ fun TodayScreen(
         // ③ floors — warnings, never score
         state.breachedFloors.forEach { floor -> FloorWarning(floor) }
 
-        // ④ the read
+        // ④ the read — tap opens Live Score
         SectionRule(label = "Today's read", value = state.mode.label)
-        TodayScore(state)
+        TodayScore(state, onOpenScore = onOpenScore)
 
         // ⑤ what is being held
         SectionRule(label = "Daily minimums", value = minimumsLabel(state))
@@ -251,40 +254,53 @@ private fun FloorWarning(entry: DayEntry) {
 }
 
 @Composable
-private fun TodayScore(state: DayState) {
+private fun TodayScore(state: DayState, onOpenScore: () -> Unit) {
     val score = state.score
-    Column(Modifier.padding(top = AiiminTheme.space.s3)) {
-        ScoreFigure(state = score.state, band = score.band, confidence = score.confidence)
+    TapSurface(
+        onClick = onOpenScore,
+        minTouchTarget = false,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(top = AiiminTheme.space.s3)) {
+            ScoreFigure(state = score.state, band = score.band, confidence = score.confidence)
 
-        TrajectoryLine(series = state.history, modifier = Modifier.padding(top = AiiminTheme.space.s2))
-        Text(
-            text = trajectoryLabel(score.trajectory.direction, state.history.size),
-            style = AiiminTheme.type.mono(10.5),
-            color = AiiminTheme.colors.muted,
-        )
+            TrajectoryLine(series = state.history, modifier = Modifier.padding(top = AiiminTheme.space.s2))
+            Text(
+                text = trajectoryLabel(score.trajectory.direction, state.history.size),
+                style = AiiminTheme.type.mono(10.5),
+                color = AiiminTheme.colors.muted,
+            )
 
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = AiiminTheme.space.s4),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            score.readings.forEach { reading ->
-                InstrumentCell(
-                    label = reading.instrument.label,
-                    value = reading.score,
-                    covered = reading.covered,
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = AiiminTheme.space.s4),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                score.readings.forEach { reading ->
+                    InstrumentCell(
+                        label = reading.instrument.label,
+                        value = reading.score,
+                        covered = reading.covered,
+                    )
+                }
+            }
+
+            if (score.attribution.isNotEmpty()) {
+                Text(
+                    text = score.attribution.joinToString("  ·  ") { attribution ->
+                        val sign = if (attribution.delta >= 0) "+" else "−"
+                        "${attribution.instrument.label} $sign${kotlin.math.abs(attribution.delta).roundToInt()}"
+                    },
+                    style = AiiminTheme.type.mono(10.5),
+                    color = AiiminTheme.colors.accent,
+                    modifier = Modifier.padding(top = AiiminTheme.space.s3),
                 )
             }
-        }
 
-        if (score.attribution.isNotEmpty()) {
             Text(
-                text = score.attribution.joinToString("  ·  ") { attribution ->
-                    val sign = if (attribution.delta >= 0) "+" else "−"
-                    "${attribution.instrument.label} $sign${kotlin.math.abs(attribution.delta).roundToInt()}"
-                },
-                style = AiiminTheme.type.mono(10.5),
+                text = "TAP · MARK THE DAY",
+                style = AiiminTheme.type.cellLabel,
                 color = AiiminTheme.colors.accent,
                 modifier = Modifier.padding(top = AiiminTheme.space.s3),
             )

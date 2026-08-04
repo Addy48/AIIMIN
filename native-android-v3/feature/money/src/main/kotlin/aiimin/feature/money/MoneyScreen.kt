@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -130,17 +132,26 @@ private fun TabStrip(selected: MoneyTab, onSelect: (MoneyTab) -> Unit) {
         Modifier
             .fillMaxWidth()
             .padding(top = AiiminTheme.space.s4)
+            .height(IntrinsicSize.Min)
             .border(Hairline, AiiminTheme.colors.hair),
     ) {
-        MoneyTab.entries.forEach { tab ->
+        MoneyTab.entries.forEachIndexed { i, tab ->
             val active = tab == selected
+            if (i > 0) {
+                Box(
+                    Modifier
+                        .width(Hairline)
+                        .fillMaxHeight()
+                        .background(AiiminTheme.colors.hair),
+                )
+            }
             TapSurface(
                 onClick = { onSelect(tab) },
                 minTouchTarget = false,
                 modifier = Modifier
                     .weight(1f)
-                    .background(if (active) AiiminTheme.colors.tint else Color.Transparent)
-                    .border(Hairline, AiiminTheme.colors.hair),
+                    .fillMaxHeight()
+                    .background(if (active) AiiminTheme.colors.tint else Color.Transparent),
             ) {
                 Text(
                     text = tab.name,
@@ -152,7 +163,7 @@ private fun TabStrip(selected: MoneyTab, onSelect: (MoneyTab) -> Unit) {
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 11.dp),
+                        .padding(vertical = 12.dp),
                 )
             }
         }
@@ -373,16 +384,18 @@ private fun WowBars(bars: List<WeekBar>) {
         Modifier
             .fillMaxWidth()
             .padding(top = AiiminTheme.space.s3)
-            .height(56.dp),
+            .height(72.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.Bottom,
     ) {
         bars.forEach { bar ->
             val h = ((bar.amount.toFloat() / max) * 48f).roundToInt().coerceAtLeast(4).dp
             Column(
-                Modifier.weight(1f),
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.Bottom,
             ) {
                 Box(
                     Modifier
@@ -395,8 +408,14 @@ private fun WowBars(bars: List<WeekBar>) {
                 )
                 Text(
                     text = bar.label,
-                    style = AiiminTheme.type.mono(9.0),
+                    style = AiiminTheme.type.mono(8.5),
                     color = if (bar.highlight) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp),
                 )
             }
         }

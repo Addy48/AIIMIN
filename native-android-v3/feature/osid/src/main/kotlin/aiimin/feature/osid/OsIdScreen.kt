@@ -32,6 +32,7 @@ import aiimin.core.model.OsIdRules
 import aiimin.designsystem.component.BlueprintBox
 import aiimin.designsystem.component.HairRule
 import aiimin.designsystem.component.PrimaryButton
+import aiimin.designsystem.component.ScreenHead
 import aiimin.designsystem.component.SectionRule
 import aiimin.designsystem.component.Text
 import aiimin.designsystem.theme.AiiminTheme
@@ -93,23 +94,10 @@ fun OsIdScreen(
             .padding(horizontal = AiiminTheme.space.page)
             .padding(bottom = AiiminTheme.space.s8),
     ) {
-        Text(
-            text = "IDENTIFIER · OS-ID",
-            style = AiiminTheme.type.chrome,
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(Hairline, AiiminTheme.colors.rule)
-                .padding(vertical = AiiminTheme.space.s3),
+        ScreenHead(
+            title = "Identifier · OS-ID",
+            meta = if (state.isSeed) "SEED" else null,
         )
-
-        if (state.isSeed) {
-            Text(
-                text = "SEED · LOCAL",
-                style = AiiminTheme.type.mono(9.5, FontWeight.Medium),
-                color = AiiminTheme.colors.muted,
-                modifier = Modifier.padding(top = AiiminTheme.space.s3),
-            )
-        }
 
         state.notice?.let { msg ->
             LaunchedEffect(msg) {

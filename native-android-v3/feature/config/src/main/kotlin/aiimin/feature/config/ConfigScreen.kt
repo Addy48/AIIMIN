@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,6 +41,7 @@ import aiimin.designsystem.brand.BrandMark
 import aiimin.designsystem.component.GhostButton
 import aiimin.designsystem.component.HairRule
 import aiimin.designsystem.component.PrimaryButton
+import aiimin.designsystem.component.ScreenHead
 import aiimin.designsystem.component.SectionRule
 import aiimin.designsystem.component.TapSurface
 import aiimin.designsystem.component.Text
@@ -49,6 +51,7 @@ import aiimin.designsystem.theme.Hairline
 @Composable
 fun ConfigRoute(
     onOpenOsId: () -> Unit,
+    onOpenJournal: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: ConfigViewModel = hiltViewModel(),
 ) {
@@ -60,7 +63,9 @@ fun ConfigRoute(
         onSelectMode = viewModel::onSelectMode,
         onSyncNow = viewModel::onSyncNow,
         onOpenOsId = onOpenOsId,
+        onOpenJournal = onOpenJournal,
         onOpenMinimums = viewModel::onOpenMinimums,
+        onReplayCalibration = viewModel::onReplayCalibration,
         onOpenConnections = viewModel::onOpenConnections,
         onExport = viewModel::onExport,
         onOpenDelete = viewModel::onOpenDelete,
@@ -86,7 +91,9 @@ fun ConfigScreen(
     onSelectMode: (LifeMode) -> Unit,
     onSyncNow: () -> Unit,
     onOpenOsId: () -> Unit,
+    onOpenJournal: () -> Unit = {},
     onOpenMinimums: () -> Unit,
+    onReplayCalibration: () -> Unit,
     onOpenConnections: () -> Unit,
     onExport: () -> Unit,
     onOpenDelete: () -> Unit,
@@ -105,23 +112,10 @@ fun ConfigScreen(
             .padding(horizontal = AiiminTheme.space.page)
             .padding(bottom = AiiminTheme.space.s8),
     ) {
-        Text(
-            text = "CONFIGURATION",
-            style = AiiminTheme.type.chrome,
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(Hairline, AiiminTheme.colors.rule)
-                .padding(vertical = AiiminTheme.space.s3),
+        ScreenHead(
+            title = "Configuration",
+            meta = if (prefs.isSeed) "SEED" else null,
         )
-
-        if (prefs.isSeed) {
-            Text(
-                text = "SEED · LOCAL",
-                style = AiiminTheme.type.mono(9.5, FontWeight.Medium),
-                color = AiiminTheme.colors.muted,
-                modifier = Modifier.padding(top = AiiminTheme.space.s3),
-            )
-        }
 
         prefs.notice?.let { notice ->
             LaunchedEffect(notice.message) {
@@ -140,8 +134,7 @@ fun ConfigScreen(
             )
         }
 
-        ProfileHero(prefs.identity, onOpenOsId)
-        RankStrip(prefs.identity)
+        ProfileBlock(prefs.identity, onOpenOsId)
         LifeArc(prefs.identity.arc)
 
         SectionRule(label = "Life mode")
@@ -155,7 +148,12 @@ fun ConfigScreen(
         SyncCard(prefs, onSyncNow)
 
         SectionRule(label = "Preferences")
-        PrefRow(label = "Appearance", value = prefs.themeName, valueAccent = true, onClick = onToggleTheme)
+        PrefRow(
+            label = "Appearance",
+            value = prefs.themeName,
+            valueAccent = true,
+            onClick = onToggleTheme,
+        )
         PrefRow(
             label = "Reduce motion",
             trailing = {
@@ -163,7 +161,9 @@ fun ConfigScreen(
             },
         )
         PrefRow(label = "Notifications", value = prefs.notificationsLabel)
-        PrefRow(label = "Daily minimums", value = prefs.minimumsLabel, onClick = onOpenMinimums, last = true)
+        PrefRow(label = "Daily minimums", value = prefs.minimumsLabel, onClick = onOpenMinimums)
+        PrefRow(label = "Journal", value = "4 templates", onClick = onOpenJournal)
+        PrefRow(label = "Replay calibration", value = "6 steps", onClick = onReplayCalibration, last = true)
 
         SectionRule(label = "Data")
         PrefRow(label = "Connections", value = prefs.connectionsLabel, onClick = onOpenConnections)
@@ -192,87 +192,88 @@ fun ConfigScreen(
 }
 
 @Composable
-private fun ProfileHero(identity: ConfigIdentity, onOpenOsId: () -> Unit) {
-    TapSurface(
-        onClick = onOpenOsId,
-        minTouchTarget = false,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = AiiminTheme.space.s6)
-            .border(Hairline, AiiminTheme.colors.hair)
-            .padding(AiiminTheme.space.s4),
-    ) {
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s4),
-        ) {
-            Box(
-                Modifier
-                    .size(40.dp)
-                    .border(Hairline, AiiminTheme.colors.hair)
-                    .padding(6.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                BrandMark(size = 28.dp)
-            }
-            Column(Modifier.weight(1f)) {
-                Text(text = identity.name, style = AiiminTheme.type.body.copy(fontWeight = FontWeight.Medium))
-                Text(
-                    text = "${identity.osId} · ${identity.tierLabel}",
-                    style = AiiminTheme.type.mono(10.5),
-                    color = AiiminTheme.colors.muted,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-            }
-            Text(text = "›", style = AiiminTheme.type.chrome, color = AiiminTheme.colors.muted)
-        }
-    }
-}
-
-@Composable
-private fun RankStrip(identity: ConfigIdentity) {
+private fun ProfileBlock(identity: ConfigIdentity, onOpenOsId: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .border(Hairline, AiiminTheme.colors.hair)
-            .padding(horizontal = AiiminTheme.space.s4, vertical = AiiminTheme.space.s3),
+            .padding(top = AiiminTheme.space.s6)
+            .border(Hairline, AiiminTheme.colors.hair),
     ) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom,
+        TapSurface(
+            onClick = onOpenOsId,
+            minTouchTarget = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AiiminTheme.space.s4),
         ) {
-            Text(
-                text = "RANK ${identity.rankNo}/${identity.rankTotal} · ${identity.rank}",
-                style = AiiminTheme.type.cellLabel,
-                color = AiiminTheme.colors.accent,
-            )
-            Text(
-                text = "${formatInr(identity.xp).removePrefix("₹")} XP",
-                style = AiiminTheme.type.mono(11.0, FontWeight.Medium),
-            )
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s4),
+            ) {
+                Box(
+                    Modifier
+                        .size(40.dp)
+                        .border(Hairline, AiiminTheme.colors.hair)
+                        .padding(6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    BrandMark(size = 28.dp)
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(text = identity.name, style = AiiminTheme.type.body.copy(fontWeight = FontWeight.Medium))
+                    Text(
+                        text = "${identity.osId} · ${identity.tierLabel}",
+                        style = AiiminTheme.type.mono(10.5),
+                        color = AiiminTheme.colors.muted,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+                Text(text = "›", style = AiiminTheme.type.chrome, color = AiiminTheme.colors.muted)
+            }
         }
-        Box(
+        HairRule()
+        Column(
             Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
-                .height(2.dp)
-                .background(AiiminTheme.colors.hair),
+                .padding(horizontal = AiiminTheme.space.s4, vertical = AiiminTheme.space.s3),
         ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    text = "RANK ${identity.rankNo}/${identity.rankTotal} · ${identity.rank}",
+                    style = AiiminTheme.type.cellLabel,
+                    color = AiiminTheme.colors.accent,
+                )
+                Text(
+                    text = "${formatInr(identity.xp).removePrefix("₹")} XP",
+                    style = AiiminTheme.type.mono(11.0, FontWeight.Medium),
+                )
+            }
             Box(
                 Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(identity.xpPct.coerceIn(0f, 1f))
-                    .background(AiiminTheme.colors.accent),
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .height(2.dp)
+                    .background(AiiminTheme.colors.hair),
+            ) {
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(identity.xpPct.coerceIn(0f, 1f))
+                        .background(AiiminTheme.colors.accent),
+                )
+            }
+            Text(
+                text = "${formatInr(identity.xpToNext).removePrefix("₹")} XP TO ${identity.nextRank}",
+                style = AiiminTheme.type.mono(9.5),
+                color = AiiminTheme.colors.muted,
+                modifier = Modifier.padding(top = 5.dp),
             )
         }
-        Text(
-            text = "${formatInr(identity.xpToNext).removePrefix("₹")} XP TO ${identity.nextRank}",
-            style = AiiminTheme.type.mono(9.5),
-            color = AiiminTheme.colors.muted,
-            modifier = Modifier.padding(top = 5.dp),
-        )
     }
 }
 
@@ -316,17 +317,26 @@ private fun ModeStrip(selected: LifeMode, onSelect: (LifeMode) -> Unit) {
         Modifier
             .fillMaxWidth()
             .padding(top = AiiminTheme.space.s3)
+            .height(IntrinsicSize.Min)
             .border(Hairline, AiiminTheme.colors.hair),
     ) {
-        LifeMode.entries.forEach { mode ->
+        LifeMode.entries.forEachIndexed { i, mode ->
             val on = mode == selected
+            if (i > 0) {
+                Box(
+                    Modifier
+                        .width(Hairline)
+                        .fillMaxHeight()
+                        .background(AiiminTheme.colors.hair),
+                )
+            }
             TapSurface(
                 onClick = { onSelect(mode) },
                 minTouchTarget = false,
                 modifier = Modifier
                     .weight(1f)
-                    .background(if (on) AiiminTheme.colors.tint else Color.Transparent)
-                    .border(Hairline, AiiminTheme.colors.hair),
+                    .fillMaxHeight()
+                    .background(if (on) AiiminTheme.colors.tint else Color.Transparent),
             ) {
                 Text(
                     text = mode.label,
@@ -523,6 +533,7 @@ private fun ConfigSeedPreview() {
             onSyncNow = {},
             onOpenOsId = {},
             onOpenMinimums = {},
+            onReplayCalibration = {},
             onOpenConnections = {},
             onExport = {},
             onOpenDelete = {},

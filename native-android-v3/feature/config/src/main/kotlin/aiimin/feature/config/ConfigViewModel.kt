@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import aiimin.core.data.ConfigStore
 import aiimin.core.data.DayStore
+import aiimin.core.data.OnboardingStore
 import aiimin.core.model.LifeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -24,6 +25,7 @@ import kotlinx.coroutines.launch
 class ConfigViewModel @Inject constructor(
     private val config: ConfigStore,
     private val day: DayStore,
+    private val onboarding: OnboardingStore,
 ) : ViewModel() {
 
     val state: StateFlow<ConfigUiState> = combine(config.state, day.state) { prefs, dayState ->
@@ -51,6 +53,8 @@ class ConfigViewModel @Inject constructor(
     fun onOpenMinimums() = config.setNotice(
         "Daily minimums live on Today. Edit them there after calibration.",
     )
+
+    fun onReplayCalibration() = onboarding.replay()
 
     fun onOpenConnections() = config.setNotice(
         "Connections need the live account graph. Listed here as seed labels only.",

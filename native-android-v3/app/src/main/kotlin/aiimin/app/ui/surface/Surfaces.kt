@@ -16,12 +16,13 @@ import aiimin.designsystem.component.Text
 import aiimin.designsystem.theme.AiiminTheme
 
 /**
- * Placeholders for surfaces not yet built.
+ * Placeholder scaffold for surfaces not yet built.
  *
- * Money and Config have graduated. A placeholder never pretends to hold data.
+ * Money, Config, Lab, Journal, Score, OS-ID, Onboarding have graduated.
+ * A placeholder never pretends to hold data.
  */
 @Composable
-private fun SurfaceScaffold(
+fun SurfaceScaffold(
     title: String,
     meta: String,
     oneJob: String,
@@ -46,17 +47,15 @@ private fun SurfaceScaffold(
     }
 }
 
-@Composable
-fun LabSurface(modifier: Modifier = Modifier) = SurfaceScaffold(
-    title = "Lab",
-    meta = "PATTERNS",
-    oneJob = "Ask, review and act on the patterns in your own record.",
-    waitingFor = "Correlations need months of logged days before they mean anything.",
-    modifier = modifier,
-)
-
 @Preview(showBackground = true, backgroundColor = 0xFF15171A)
 @Composable
-private fun LabSurfacePreview() {
-    AiiminTheme { LabSurface() }
+private fun SurfaceScaffoldPreview() {
+    AiiminTheme {
+        SurfaceScaffold(
+            title = "Reports",
+            meta = "NEXT",
+            oneJob = "Export a settled drawing of the week.",
+            waitingFor = "Reports land after Lab is live against the lab API.",
+        )
+    }
 }

@@ -30,6 +30,14 @@ data object Config : Destination
 @Serializable
 data object OsId : Destination
 
+/** Contextual — reached from Today's score figure. */
+@Serializable
+data object Score : Destination
+
+/** Contextual — reached from Config, not a bottom tab. */
+@Serializable
+data object Journal : Destination
+
 /** A tab in the bottom bar: a destination, its chrome label, and its glyph. */
 enum class Tab(val destination: Destination, val label: String, val icon: AiiminIcon) {
     DAY(Day, "DAY", AiiminIcon.Day),

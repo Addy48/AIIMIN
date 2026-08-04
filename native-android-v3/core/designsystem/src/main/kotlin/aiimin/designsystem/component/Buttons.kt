@@ -60,7 +60,10 @@ fun PrimaryButton(
         onClick = onClick,
         enabled = enabled,
         feedback = feedback,
-        modifier = modifier.clip(shape).background(if (enabled) colors.accent else colors.hair),
+        modifier = modifier
+            .clip(shape)
+            .background(if (enabled) colors.accent else colors.hair)
+            .defaultMinSize(minHeight = MinTouchTarget),
         contentPadding = 13.dp,
     ) {
         Text(
@@ -89,8 +92,9 @@ fun GhostButton(
         feedback = feedback,
         modifier = modifier
             .clip(shape)
-            .border(BorderStroke(Hairline, AiiminTheme.colors.rule), shape),
-        contentPadding = 9.dp,
+            .border(BorderStroke(Hairline, AiiminTheme.colors.rule), shape)
+            .defaultMinSize(minHeight = MinTouchTarget),
+        contentPadding = 13.dp,
     ) {
         Text(
             text = label.uppercase(),
@@ -120,9 +124,10 @@ fun TapSurface(
 ) {
     val interactions = remember { MutableInteractionSource() }
     val pressed by interactions.collectIsPressedAsState()
+    val reduceMotion = AiiminTheme.reduceMotion
     val squeeze by animateFloatAsState(
-        targetValue = if (pressed) 0.97f else 1f,
-        animationSpec = tween(durationMillis = 110),
+        targetValue = if (pressed && !reduceMotion) 0.97f else 1f,
+        animationSpec = tween(durationMillis = if (reduceMotion) 0 else 110),
         label = "tap-squeeze",
     )
     val view = LocalView.current

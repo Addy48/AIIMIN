@@ -27,7 +27,7 @@ import aiimin.designsystem.theme.AiiminTheme
 /**
  * DAY · MONEY · CAPTURE · LAB · CONFIG.
  *
- * The active tab is full ink; the rest sit at 0.4 — the prototype's behaviour.
+ * The active tab is full ink; the rest sit at 0.55 — readable, not washed out.
  * No pill, no indicator bar: the drawing marks state by weight, not by chrome.
  */
 @Composable
@@ -75,7 +75,7 @@ fun BottomBar(
 }
 
 private val BarHeight = 66.dp
-private const val INACTIVE_ALPHA = 0.4f
+private const val INACTIVE_ALPHA = 0.55f
 
 @Preview(showBackground = true, backgroundColor = 0xFF15171A)
 @Composable

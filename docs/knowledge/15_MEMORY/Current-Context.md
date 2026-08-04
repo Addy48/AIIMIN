@@ -20,17 +20,19 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → only the `Touch` paths below. Proof-or-stop.
 
-**Date:** 2026-08-04 · Branch `feat/native-android-v3` · Money screen shipping (local state)
+**Date:** 2026-08-04 · Branch `feat/native-android-v3` · DataStore ✅ · API wiring started (OS-ID live + parse; needs EC2 ship) · **phone APK installed** (`9597fdea`, `in.aiimin.app.v3`)
 
 ## Stage
 
-Two tracks running in parallel, in separate chats:
+Three tracks, **separate chats** (do not mix):
 
-1. **Native Android app — building from scratch**, Kotlin + Compose, screen by screen.
-   → [[15_MEMORY/Handoff-Native-App-Build]]
-2. **Website hardening · Vercel · AWS · machine.** → [[15_MEMORY/Handoff-Website-Hardening]]
+1. **Native Android app — product/APK**, Kotlin + Compose, screen by screen.
+   → [[15_MEMORY/Handoff-Native-App-Build]] · [[17_NATIVE_APP_V2/V3-BUILD-TRACKER]]
+2. **Play Store release rail** (no APK craft). Living ledger:
+   → [[17_NATIVE_APP_V2/Play-Store-Launch]] · overall state `BUILDING`
+3. **Website hardening · Vercel · AWS · machine.** → [[15_MEMORY/Handoff-Website-Hardening]]
 
-Plus this track: the vault (done — see below).
+Plus vault (done — see below).
 
 > [!important] Stack decided 2026-08-03
 > Mobile app = **Kotlin + Jetpack Compose, native, Android-first, from scratch** at
@@ -60,20 +62,27 @@ Guardrails (G1–G10, non-negotiable): [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT
 ## Queue
 
 1. **Vault** — single source of truth. **Done**; two approvals pending (§ report §6).
-2. **App (own chat)** — foundation → Capture → Today → Money → Config → **OS-ID ✅** →
-   **Onboarding (next)** → Journal · Lab → Score. Tracker: [[17_NATIVE_APP_V2/V3-BUILD-TRACKER]].
-3. **Website (own chat)** — reproduce and fix Journal + Notes; then Finance MTD ₹0, Life
+2. **App (product/APK chat)** — screen map ✅ · DataStore ✅ · **`:core:network` + live
+   OS-ID Claim + `/intelligence/parse` (server)** — prod curl still 404 until API deploy.
+   Next: say **push + ship API** · then Capture AI with session · Room · phone polish.
+3. **Play Store (release chat)** — ledger [[17_NATIVE_APP_V2/Play-Store-Launch]] · state `BUILDING`.
+   Next eng: stale `privacy.html` · live legal content verify · founder blockers (entity/address/Play account).
+   No APK / screen craft in this track.
+4. **Website (own chat)** — reproduce and fix Journal + Notes; then Finance MTD ₹0, Life
    Score taxonomy, remove Weekly Pulse from entry, Goals count, waitlist count masking; then
    the P2 untested list.
-4. **Vercel** — last deploy failed; start from `frontend/scripts/verify-production-env.mjs`.
-5. **AWS** — free-credit burn report via `aws-api` MCP (read-only).
-6. **MacBook** — performance audit. Memory pressure (8 GB RAM, ~70 % swap), **not** storage
+5. **Vercel** — last deploy failed; start from `frontend/scripts/verify-production-env.mjs`.
+6. **AWS** — free-credit burn report via `aws-api` MCP (read-only).
+7. **MacBook** — performance audit. Memory pressure (8 GB RAM, ~70 % swap), **not** storage
    (58 GB free).
 
 ## Blocked on founder
 
 - Voice scope (transcription-first vs full suite).
 - AI keys — Groq, Gemini, OpenRouter (all free tier), none created yet.
+- **Play / legal (release rail):** registered entity + type, postal address, mailbox proof,
+  counsel review, Play developer account, native billing model (Play Billing vs web-only).
+  Full list: [[17_NATIVE_APP_V2/Play-Store-Launch]] founder action queue.
 - **Vercel** — the real build log needs `npm i -g vercel` or the Vercel connector
   authorised. The old hypothesis is dead: verified 2026-08-03 that
   `frontend/scripts/verify-production-env.mjs` exits 0 and the CRA build succeeds under
@@ -87,7 +96,13 @@ Guardrails (G1–G10, non-negotiable): [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT
 
 ## Touch
 
-- `native-android-v3/` · `docs/knowledge/17_NATIVE_APP_V2/V3-BUILD-TRACKER.md`
+- **Play release chat:** `docs/knowledge/17_NATIVE_APP_V2/Play-Store-Launch.md` ·
+  `docs/knowledge/Roadmap/Legal-Pack-V1.md` · `frontend/src/constants/legal.js` ·
+  `frontend/src/pages/legal/` · `native-android-v3/app/build.gradle.kts` ·
+  `native-android-v3/app/src/main/AndroidManifest.xml`
+- **Product/APK chat:** `native-android-v3/` · `docs/knowledge/17_NATIVE_APP_V2/V3-BUILD-TRACKER.md`
+  · `native-android-v3/core/data/src/main/kotlin/aiimin/core/data/prefs/`
+  · `native-android-v3/core/data/src/main/kotlin/aiimin/core/data/di/DataModule.kt`
 - `docs/knowledge/15_MEMORY/Handoff-Native-App-Build.md`
 - `docs/knowledge/17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN.md`
 - `frontend/prototypes/AIIMIN-Drafting-Table.html`

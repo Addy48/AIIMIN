@@ -64,6 +64,53 @@ class DayStore @Inject constructor() {
     fun setMode(mode: LifeMode) = _state.update { it.copy(mode = mode) }
 
     fun setMicroTask(text: String) = _state.update { it.copy(microTask = text) }
+
+    /** Append a settled day figure so trajectory has something to climb. */
+    fun appendHistory(score: Double) = _state.update { day ->
+        day.copy(history = day.history + score, baselineDays = day.baselineDays + 1)
+    }
+
+    /**
+     * Calibration replaces the seed pursuits with the ones the person picked.
+     * Floors stay — physiology is not optional. Labels become SHOW_UP pursuits
+     * until the live instruments API arrives.
+     */
+    fun applyCalibration(labels: List<String>) = _state.update { day ->
+        val floors = day.floors.map { it.commitment }
+        val pursuits = labels.mapIndexed { i, label ->
+            Commitment(
+                id = (i + 1).toLong(),
+                instrument = instrumentFor(label),
+                kind = CommitmentKind.PURSUIT,
+                shape = aiimin.core.model.CommitmentShape.SHOW_UP,
+                label = label,
+            )
+        }
+        val nextFloors = floors.mapIndexed { i, c ->
+            c.copy(id = (pursuits.size + i + 1).toLong())
+        }
+        val all = pursuits + nextFloors
+        day.copy(
+            instruments = pursuits.map { it.instrument }.distinct().ifEmpty {
+                day.instruments
+            },
+            today = all.map { DayEntry(it, Observation(it.id, null), Hold.seed()) },
+            captures = emptyList(),
+            history = emptyList(),
+            baselineDays = 0,
+        )
+    }
+}
+
+private fun instrumentFor(label: String): Instrument {
+    val l = label.lowercase()
+    return when {
+        "walk" in l || "step" in l || "run" in l -> Instrument.BODY
+        "journal" in l || "read" in l -> Instrument.MIND
+        "spend" in l || "money" in l || "log" in l -> Instrument.MONEY
+        "lab" in l || "shadow" in l || "deep" in l -> Instrument.CRAFT
+        else -> Instrument.CRAFT
+    }
 }
 
 /** One committed capture, as the day sees it. */

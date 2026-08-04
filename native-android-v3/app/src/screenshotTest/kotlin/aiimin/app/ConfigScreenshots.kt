@@ -72,6 +72,7 @@ private fun Config(state: ConfigUiState) {
         onSyncNow = {},
         onOpenOsId = {},
         onOpenMinimums = {},
+        onReplayCalibration = {},
         onOpenConnections = {},
         onExport = {},
         onOpenDelete = {},

@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.designsystem.theme.Hairline
 
@@ -47,10 +48,10 @@ fun BlueprintBox(
         )
 
         if (marks) {
-            RegistrationMark(Modifier.align(Alignment.TopStart), (-5).dp, (-6).dp)
-            RegistrationMark(Modifier.align(Alignment.TopEnd), 5.dp, (-6).dp)
-            RegistrationMark(Modifier.align(Alignment.BottomStart), (-5).dp, 6.dp)
-            RegistrationMark(Modifier.align(Alignment.BottomEnd), 5.dp, 6.dp)
+            RegistrationMark(Modifier.align(Alignment.TopStart), (-6).dp, (-6).dp)
+            RegistrationMark(Modifier.align(Alignment.TopEnd), 6.dp, (-6).dp)
+            RegistrationMark(Modifier.align(Alignment.BottomStart), (-6).dp, 6.dp)
+            RegistrationMark(Modifier.align(Alignment.BottomEnd), 6.dp, 6.dp)
         }
 
         if (legend != null) {
@@ -70,10 +71,11 @@ fun BlueprintBox(
 
 @Composable
 private fun RegistrationMark(modifier: Modifier, dx: androidx.compose.ui.unit.Dp, dy: androidx.compose.ui.unit.Dp) {
+    // Proto Corners: 11px Barlow, −6 on every corner — not bodySmall, not asymmetric.
     Text(
         text = "+",
-        style = AiiminTheme.type.bodySmall,
-        color = AiiminTheme.colors.accent,
+        style = AiiminTheme.type.body.copy(fontSize = 11.sp, lineHeight = 11.sp),
+        color = AiiminTheme.colors.accent.copy(alpha = 0.85f),
         modifier = modifier.offset(x = dx, y = dy),
     )
 }

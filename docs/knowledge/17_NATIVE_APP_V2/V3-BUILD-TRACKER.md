@@ -35,9 +35,83 @@ tags:
 | 4 | **Money** — log and see money truth | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 12 MB · 11/11 MoneyStore tests · 18 screenshot goldens validating (6 Money) |
 | 5 | **Config** — configure the OS | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 13 MB · 6/6 ConfigStore tests · 22 screenshot goldens validating (4 Config) |
 | 6 | **OS-ID** — own your identifier | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · OsIdRulesTest 5/5 · 24 screenshot goldens (2 OS-ID) · Config → OS-ID push |
-| 7 | Onboarding, 10 steps incl. the Groq calibration | next | |
-| 8 | Score surface (state · trajectory · confidence · attribution) | **unblocked** 2026-08-03 — engine v2 decided | |
-| 9 | Journal · Lab | | |
+| 7 | **Onboarding** — 6-step calibration | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · OnboardingStoreTest 7/7 · core:data unit tests green · 28 screenshot goldens (4 Onboarding) · MainActivity gate + Config replay |
+| 8 | **Score** — mark and settle the day | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · ProvisionalScoreTest 4/4 · ScoreStoreTest 4/4 · 31 screenshot goldens (3 Score) · Today → Score push |
+| 9 | **Journal** — reflection capture | ✅ done 2026-08-04 (local state) | JournalStoreTest 3/3 · 34 screenshot goldens (3 Journal) · Config → Journal |
+| 10 | **Lab** — correlations | ✅ done 2026-08-04 (local state) | LabStoreTest 4/4 · 37 screenshot goldens (3 Lab) · LAB tab live |
+
+## Leftover (after screen map)
+
+| Track | State |
+|-------|--------|
+| Phone reinstall | ✅ 2026-08-04 17:32 — `adb install -r` Success · device `9597fdea` · `in.aiimin.app.v3` launched |
+| Scoped commits | waiting founder ask |
+| **API wiring** | **in progress** — `:core:network` + live OS-ID + `/intelligence/parse` added; **EC2 deploy needed** for prod |
+| DataStore persistence | ✅ done 2026-08-04 |
+| Groq calibration steps 4–5 | deferred (keys on server; arc sharpen still auth-gated) |
+| Reports / Search / voice | out of V3 screen map |
+
+Screen map **complete** for local Drafting Table parity (Foundation → Lab).
+
+## API wiring · OS-ID live — 2026-08-04 (partial)
+
+**One job this slice:** stop lying that shape-valid = available. Claim step now
+checks the live graph.
+
+**Server (needs deploy to `api.aiimin.in`):**
+- `GET /api/auth/osid-available?id=` — public; checks waitlist + `users` +
+  Better Auth `"user"`; returns `{ id, available, reason, message }`
+- `POST /api/intelligence/parse` — auth + AI budget; uses `GROQ_API_KEY` /
+  OpenRouter on the **server** (never shipped in the APK); Capture Offer chips
+  only, no writes
+- Waitlist `isUsernameTaken` aligned to the same three tables
+
+**Android:**
+- New module `:core:network` (Retrofit 3 · OkHttp · kotlinx.serialization) →
+  `https://api.aiimin.in/api/`
+- `OsIdAvailabilityRepository` + Claim UI: CHECKING / AVAILABLE · LIVE / TAKEN /
+  INVALID / OFFLINE · UNVERIFIED
+- Debounced live check from `OnboardingViewModel`
+
+**AI keys:** present in root `.env` (`GROQ_API_KEY`, `GEMINI_*`, `OPENROUTER_*`).
+Client never embeds them. Capture AI parse waits on session + EC2 ship of
+`/intelligence/parse`.
+
+**Evidence (local):**
+- `:core:network:testDebugUnitTest` — 3/3
+- `:app:assembleDebug` SUCCESS · APK ~14.0 MB · 37 screenshot goldens validating
+- Live curl `GET /api/auth/osid-available` → **404** until API redeploy (expected)
+
+**Next:** founder asks push+ship API → then curl free=`ZZZZ9999` / taken=`AADI0837`
+→ Capture AI when session exists · Room for day/money.
+
+## DataStore prefs — done 2026-08-04
+
+**One job:** survive process death for the shell gates that matter — theme,
+reduce-motion, onboarding completed, and the OS-ID / arc / minimums label
+calibration writes.
+
+**Shape.** `AppPreferences` in `:core:data` · Preferences DataStore file
+`aiimin_prefs` · Hilt `DataModule` (`@ApplicationScope` +
+`DataStoreAppPreferences`) · `InMemoryAppPreferences` for JVM unit tests.
+`ConfigStore` / `OnboardingStore` hydrate once on init and write on mutate.
+Day / Money / Lab / Journal / Score seed data stays in-memory (Room or API
+later — G8).
+
+**Motion.** `AiiminTheme(reduceMotion=…)` exposes `LocalReduceMotion`.
+`TapSurface`, Score figure/rail, and Capture offer enter respect it (duration 0).
+
+**Defaults held.** Cold DataStore still defaults `onboardingCompleted=true` so
+craft / screenshots reach the shell without a forced replay. Replay from Config
+persists `false` across kill.
+
+**Evidence 2026-08-04**
+
+- `:core:data:testDebugUnitTest` — 44 tests, 0 failures (incl. PrefsPersistenceTest 3/3)
+- `:app:assembleDebug` — BUILD SUCCESSFUL · APK ~13.5 MB · `in.aiimin.app.v3` · `3.0.0-alpha01`
+- `:app:validateDebugScreenshotTest` — 37 goldens validating
+
+**Not done:** phone install (no adb device) · Room for day/money.
 
 ## 0 · Foundation — done 2026-08-03
 
@@ -113,8 +187,81 @@ Part-number card (Blueprint accent) · specification (8 / uppercase / max 4 digi
 **Evidence 2026-08-04:** assembleDebug SUCCESSFUL · OsIdRulesTest 5/5 ·
 validateDebugScreenshotTest passes · dark + light goldens.
 
-**Not done, deliberately:** live availability check, claim / revision write,
-onboarding claim step (Onboarding next).
+**Not done, deliberately:** live availability check, claim / revision write via API.
+
+## 7 · Onboarding — done 2026-08-04 (local state)
+
+**One job:** get a person from install to their first settled log.
+
+Six Drafting Table steps (not the full 10-step Groq calibration yet): Welcome ·
+Sign in (visual stub — PIN never stored) · Claim OS-ID · Arc · Minimums · First
+capture. Module `:feature:onboarding` + `OnboardingStore` in `:core:data`. Settle
+writes identity/arc/minimums into `ConfigStore` / `DayStore`, records the first
+capture, opens the shell. MainActivity gates on `completed`. Config → Replay
+calibration restarts the path. Skip · local demo escapes for craft.
+
+**Evidence 2026-08-04:** `:app:assembleDebug` SUCCESSFUL · APK ~12.6 MB ·
+`OnboardingStoreTest` 7/7 · `:core:data:testDebugUnitTest` 30/30 ·
+`:app:validateDebugScreenshotTest` 28 goldens (4 Onboarding).
+
+**Craft pass (same day, before Onboarding):** blueprint `+` marks, button height
+parity, Money/Config tab strips single outer border, WowBars labels, Config
+profile+rank one frame, OS-ID `ScreenHead`, bottom-bar inactive α 0.55.
+Goldens re-recorded and validating. Device disconnected — `adb install` when
+phone returns.
+
+**Not done, deliberately:** Groq “tell me about your days” + proposal chips,
+live auth / Google, live OS-ID availability. DataStore `completed` ✅ (see Leftover).
+
+## 8 · Score — done 2026-08-04 (local state)
+
+**One job:** mark and settle the day.
+
+Provisional figure (Drafting Table curve: mins + rails + rung) · Mechanism 01
+Rail (Body/Mind/People, snap to fives) · Mechanism 02 Ladder (1–5) · what moved
+the number · Settle the day. Engine v2 state shown as honesty meta under the
+figure — pursuits stay on Today. `ScoreStore` + `ProvisionalScore` in
+`:core:model`. Today’s read taps into Score. Settle appends into `DayStore`
+history.
+
+**Evidence 2026-08-04:** assembleDebug SUCCESSFUL · APK ~12.6 MB ·
+ProvisionalScoreTest 4/4 · ScoreStoreTest 4/4 · OnboardingStoreTest 7/7 ·
+validateDebugScreenshotTest 31 goldens (3 Score).
+
+**Polish same pass:** onboarding gate defaults complete (Replay incomplete);
+OS-ID claim cells use hair dividers.
+
+**Not done, deliberately:** live drag rails, `/db/daily_logs` write, published
+engine figure as the Live Score headline (stays provisional mark for now).
+
+## 9 · Journal — done 2026-08-04 (local state)
+
+**One job:** reflection capture.
+
+Four templates (Free Write · CBT · Morning Pages · Weekly Review) · Blueprint
+composer · mood 1–5 (ROUGH→STRONG, mono, no emoji) · Save · history with excerpt.
+Module `:feature:journal` + `JournalStore`. Opened from Config → Journal
+(contextual, Config tab stays lit). Seed history labelled local.
+
+**Evidence 2026-08-04:** assembleDebug SUCCESSFUL · JournalStoreTest 3/3 ·
+validateDebugScreenshotTest 34 goldens (3 Journal).
+
+**Not done, deliberately:** voice entry, history search, export, `/journal` API.
+
+## 10 · Lab — done 2026-08-04 (local state)
+
+**One job:** ask, review, act on patterns.
+
+Selected-pair Blueprint card (ρ · q · n) · plain-English line · deterministic
+scatter (Drafting Table seed jitter + dashed trend) · survivors table (tap to
+select) · rejected-by-correction note (14). Module `:feature:lab` + `LabStore`.
+LAB tab swaps the placeholder for the real surface.
+
+**Evidence 2026-08-04:** assembleDebug SUCCESSFUL · APK ~12.7 MB · LabStoreTest
+4/4 · validateDebugScreenshotTest 37 goldens (3 Lab).
+
+**Not done, deliberately:** live Spearman + Benjamini–Hochberg, browse by area,
+date range, Reports entry, `/lab/*` API.
 
 ## 5 · Config — done 2026-08-04 (local state)
 
@@ -132,8 +279,8 @@ minimums name what they wait for instead of fake forms.
 6/6 · `:app:validateDebugScreenshotTest` passes with 22 goldens (dark, light,
 syncing, delete veil).
 
-**Not done, deliberately:** live sync, real account delete, OS-ID claim UI (next
-screen), DataStore persistence of theme.
+**Not done, deliberately:** live sync, real account delete. OS-ID surface ✅.
+DataStore theme / reduce-motion ✅ (see Leftover § DataStore).
 
 ## 4 · Money — done 2026-08-04 (local state)
 

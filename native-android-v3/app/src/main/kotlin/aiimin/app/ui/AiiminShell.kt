@@ -10,17 +10,21 @@ import androidx.compose.ui.Modifier
 import aiimin.app.navigation.Capture
 import aiimin.app.navigation.Config
 import aiimin.app.navigation.Day
+import aiimin.app.navigation.Journal
 import aiimin.app.navigation.Lab
 import aiimin.app.navigation.Money
 import aiimin.app.navigation.OsId
+import aiimin.app.navigation.Score
 import aiimin.app.navigation.Tab
 import aiimin.app.ui.shell.BottomBar
-import aiimin.app.ui.surface.LabSurface
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.feature.capture.CaptureRoute
 import aiimin.feature.config.ConfigRoute
+import aiimin.feature.journal.JournalRoute
+import aiimin.feature.lab.LabRoute
 import aiimin.feature.money.MoneyRoute
 import aiimin.feature.osid.OsIdRoute
+import aiimin.feature.score.ScoreRoute
 import aiimin.feature.today.TodayRoute
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -38,14 +42,15 @@ fun AiiminShell(modifier: Modifier = Modifier) {
     val backStack = rememberNavBackStack(Day)
     val top = backStack.lastOrNull()
     val currentTab = when (top) {
-        is OsId -> Tab.CONFIG
+        is OsId, is Journal -> Tab.CONFIG
+        is Score -> Tab.DAY
         else -> Tab.of(top)
     }
 
     AiiminShellContent(
         currentTab = currentTab,
         onSelectTab = { tab ->
-            if (tab != currentTab || top is OsId) {
+            if (tab != currentTab || top is OsId || top is Score || top is Journal) {
                 backStack.clear()
                 backStack.add(tab.destination)
             }
@@ -62,8 +67,10 @@ fun AiiminShell(modifier: Modifier = Modifier) {
                             backStack.clear()
                             backStack.add(Capture)
                         },
+                        onOpenScore = { backStack.add(Score) },
                     )
                 }
+                entry<Score> { ScoreRoute() }
                 entry<Money> {
                     MoneyRoute(
                         onAddTransaction = {
@@ -73,13 +80,15 @@ fun AiiminShell(modifier: Modifier = Modifier) {
                     )
                 }
                 entry<Capture> { CaptureRoute() }
-                entry<Lab> { LabSurface() }
+                entry<Lab> { LabRoute() }
                 entry<Config> {
                     ConfigRoute(
                         onOpenOsId = { backStack.add(OsId) },
+                        onOpenJournal = { backStack.add(Journal) },
                     )
                 }
                 entry<OsId> { OsIdRoute() }
+                entry<Journal> { JournalRoute() }
             },
         )
     }

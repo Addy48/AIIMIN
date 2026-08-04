@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -213,7 +214,11 @@ private fun Composer(
 
         AnimatedVisibility(
             visible = state.hasOffer && state.offer != null,
-            enter = fadeIn(tween(200)) + slideInVertically(tween(200)) { it / 3 },
+            enter = if (AiiminTheme.reduceMotion) {
+                fadeIn(tween(0))
+            } else {
+                fadeIn(tween(200)) + slideInVertically(tween(200)) { it / 3 }
+            },
         ) {
             val offer = state.offer
             if (offer != null) {
@@ -244,6 +249,7 @@ private fun Composer(
                     .fillMaxWidth()
                     .padding(top = AiiminTheme.space.s4),
                 horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 PrimaryButton(label = "Settle", onClick = onSettle, modifier = Modifier.weight(1f))
                 GhostButton(
@@ -251,6 +257,7 @@ private fun Composer(
                     onClick = onDrift,
                     color = AiiminTheme.colors.muted,
                     feedback = Feedback.REJECT,
+                    modifier = Modifier.defaultMinSize(minWidth = 88.dp),
                 )
             }
         }
