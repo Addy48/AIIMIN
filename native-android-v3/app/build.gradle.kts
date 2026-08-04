@@ -60,6 +60,7 @@ dependencies {
     implementation(projects.feature.capture)
     implementation(projects.feature.today)
     implementation(projects.feature.money)
+    implementation(projects.feature.config)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

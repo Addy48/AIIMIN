@@ -60,8 +60,8 @@ Guardrails (G1–G10, non-negotiable): [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT
 ## Queue
 
 1. **Vault** — single source of truth. **Done**; two approvals pending (§ report §6).
-2. **App (own chat)** — foundation → Capture → Today → **Money ✅** → **Config (next)** →
-   OS-ID → Onboarding → Journal · Lab → Score. Tracker: [[17_NATIVE_APP_V2/V3-BUILD-TRACKER]].
+2. **App (own chat)** — foundation → Capture → Today → Money → **Config ✅** → **OS-ID (next)** →
+   Onboarding → Journal · Lab → Score. Tracker: [[17_NATIVE_APP_V2/V3-BUILD-TRACKER]].
 3. **Website (own chat)** — reproduce and fix Journal + Notes; then Finance MTD ₹0, Life
    Score taxonomy, remove Weekly Pulse from entry, Goals count, waitlist count masking; then
    the P2 untested list.

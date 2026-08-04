@@ -33,8 +33,8 @@ tags:
 | 2 | **`:core:model`** — Life Score engine v2 maths | ✅ done 2026-08-03 | 28/28 unit tests · attainment curve, asymmetric Hold, robust baseline, trajectory, composition |
 | 3 | **Today** — capture-first | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 13.0 MB · 71 tests green · 12 screenshot goldens |
 | 4 | **Money** — log and see money truth | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 12 MB · 11/11 MoneyStore tests · 18 screenshot goldens validating (6 Money) |
-| 5 | Config (instruments · mode · commitments · body facts) | next | |
-| 6 | OS-ID | | |
+| 5 | **Config** — configure the OS | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 13 MB · 6/6 ConfigStore tests · 22 screenshot goldens validating (4 Config) |
+| 6 | OS-ID | next | |
 | 7 | Onboarding, 10 steps incl. the Groq calibration | | |
 | 8 | Score surface (state · trajectory · confidence · attribution) | **unblocked** 2026-08-03 — engine v2 decided | |
 | 9 | Journal · Lab | | |
@@ -100,6 +100,25 @@ adb install -r native-android-v3/app/build/outputs/apk/debug/app-debug.apk
 raise if you want them: Detekt and Spotless (Detekt's current release is an
 alpha), JaCoCo coverage, baseline profiles, crash reporting, Gradle managed
 devices.
+
+## 5 · Config — done 2026-08-04 (local state)
+
+**One job:** configure the OS.
+
+Profile hero (BrandMark + OS-ID strip) · XP/rank · Life Arc · life-mode switcher
+(BUILD/RECOVER/EXAM/TRAVEL, shared with Today via DayStore) · sync demo · appearance
+(drives `AiiminTheme` from MainActivity) · reduce motion · notifications / minimums
+labels · data rows · delete veil that **refuses** even after typing DELETE (G6).
+
+OS-ID tap is honest: notice that the OS-ID surface is next. Connections / export /
+minimums name what they wait for instead of fake forms.
+
+**Evidence 2026-08-04:** `:app:assembleDebug` SUCCESSFUL, APK 13 MB · ConfigStoreTest
+6/6 · `:app:validateDebugScreenshotTest` passes with 22 goldens (dark, light,
+syncing, delete veil).
+
+**Not done, deliberately:** live sync, real account delete, OS-ID claim UI (next
+screen), DataStore persistence of theme.
 
 ## 4 · Money — done 2026-08-04 (local state)
 

@@ -18,9 +18,7 @@ import aiimin.designsystem.theme.AiiminTheme
 /**
  * Placeholders for surfaces not yet built.
  *
- * Each states its ONE job (P8-R-124) and nothing else. They are replaced, one at
- * a time, by the real surface. A placeholder never pretends to hold data it
- * does not have. Money has graduated — see [aiimin.feature.money.MoneyRoute].
+ * Money and Config have graduated. A placeholder never pretends to hold data.
  */
 @Composable
 private fun SurfaceScaffold(
@@ -54,15 +52,6 @@ fun LabSurface(modifier: Modifier = Modifier) = SurfaceScaffold(
     meta = "PATTERNS",
     oneJob = "Ask, review and act on the patterns in your own record.",
     waitingFor = "Correlations need months of logged days before they mean anything.",
-    modifier = modifier,
-)
-
-@Composable
-fun ConfigSurface(modifier: Modifier = Modifier) = SurfaceScaffold(
-    title = "Config",
-    meta = "OS",
-    oneJob = "Configure the OS — identity, arc, life mode, sync, preferences, data.",
-    waitingFor = "Config follows Money: OS-ID, XP, Life Arc, life modes, sync state.",
     modifier = modifier,
 )
 
