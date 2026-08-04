@@ -48,8 +48,15 @@ export const ROUTE_MIN_TIER = {
   '/discipline': 'core',
   '/placements': 'core',
   '/family': 'pro',
-  '/reports': 'pro',
+  '/reports': 'core', /* Core+ Snapshot; Pro+ Folio PDF; Elite Deep paused */
   /* /insights redirects → /reports?tab=patterns (tier applied on /reports) */
+};
+
+/** Report product by plan: Snapshot (Core+), Standard Folio PDF (Pro+). Elite Deep not shipped. */
+export const REPORT_PRODUCT = {
+  snapshot: 'core',
+  standardPdf: 'pro',
+  deep: null, /* paused */
 };
 
 export function minTierForPath(pathname) {
