@@ -16,11 +16,62 @@ import { withVoiceRules } from '../lib/aiVoice.js';
 import { enrichSystemPrompt } from '../lib/arcContext.js';
 import { sharpenLifeArcLocally } from '../lib/arcSharpen.js';
 import { aiLimiter } from '../middleware/rateLimiter.js';
-import { trackExternalCall } from '../services/apiUsageService.js';
+import {
+    trackExternalCall,
+    getUserAiBudgetStatus,
+    consumeProviderBudget,
+    logApiUsage,
+    checkUserAiBudget,
+} from '../services/apiUsageService.js';
 import { geminiLiteGenerate, isGeminiLiteTask, GEMINI_LITE_TASKS } from '../lib/geminiLite.js';
-import { groqChat, heavyChat, openRouterChat, getGeminiKey } from '../lib/aiChat.js';
+import { heavyChat, openRouterChat, getGeminiKey } from '../lib/aiChat.js';
 
 const app = new Hono();
+
+function budgetErrorResponse(c, err) {
+  if (err.code === 'USER_AI_BUDGET_EXCEEDED') {
+    return c.json({
+      error: err.message,
+      code: err.code,
+      ...(err.meta || {}),
+    }, 429);
+  }
+  if (err.code === 'BUDGET_EXCEEDED') {
+    return c.json({ error: 'Provider daily limit reached', code: err.code }, 429);
+  }
+  return null;
+}
+
+function liteBudgetProvider(result) {
+  const p = result?.provider || '';
+  if (p.includes('openrouter')) return 'openrouter';
+  if (p.includes('groq')) return 'groq';
+  return 'gemini';
+}
+
+async function assertUserAiBudget(userId) {
+  const status = await checkUserAiBudget(userId, 1);
+  if (!status.allowed) {
+    const err = new Error(
+      `AI daily limit reached for ${status.tier} plan (${status.dailyLimit}/day). Upgrade for more.`,
+    );
+    err.code = 'USER_AI_BUDGET_EXCEEDED';
+    err.meta = status;
+    throw err;
+  }
+  return status;
+}
+
+async function settleLiteUsage(userId, endpoint, result) {
+  const provider = liteBudgetProvider(result);
+  const budget = await consumeProviderBudget(provider, 1);
+  if (!budget.allowed) {
+    const err = new Error(`${provider} daily budget exceeded`);
+    err.code = 'BUDGET_EXCEEDED';
+    throw err;
+  }
+  await logApiUsage({ userId, provider, endpoint, tokensOrHits: 1 });
+}
 
 // ==========================================
 // LIFE HEALTH SYSTEM (LHS) SCORES
@@ -191,12 +242,7 @@ app.post('/lite', requireAuth, aiLimiter, async (c) => {
         const promptFn = LITE_PROMPTS[task];
         const { userText, maxOutputTokens, temperature } = promptFn(context || text);
 
-        await trackExternalCall({
-            userId,
-            provider: 'gemini',
-            endpoint: `/intelligence/lite:${task}`,
-            units: 1,
-        });
+        await assertUserAiBudget(userId);
 
         const result = await geminiLiteGenerate({
             task,
@@ -209,8 +255,16 @@ app.post('/lite', requireAuth, aiLimiter, async (c) => {
             return c.json({ error: result.error, stub: true }, 503);
         }
 
-        return c.json({ text: result.text, provider: 'gemini-lite', model: result.model });
+        await settleLiteUsage(userId, `/intelligence/lite:${task}`, result);
+
+        return c.json({
+            text: result.text,
+            provider: result.provider || 'gemini-lite',
+            model: result.model,
+        });
     } catch (err) {
+        const budget = budgetErrorResponse(c, err);
+        if (budget) return budget;
         console.error('[intelligence/lite]', err.message);
         return c.json({ error: err.message }, 500);
     }
@@ -242,20 +296,32 @@ app.post('/generate', requireAuth, aiLimiter, async (c) => {
             ? [{ role: 'system', content: withVoiceRules(systemInstructionRaw) }, ...messages]
             : messages;
 
-        const result = await heavyChat({ messages: fullMessages, maxTokens, temperature });
-        if (!result.ok) {
-            return c.json({ error: result.error || 'Generate failed' }, 503);
-        }
-
+        // Reserve user-tier + primary global quota before calling free providers
         await trackExternalCall({
             userId,
-            provider: result.provider === 'openrouter' ? 'openrouter' : 'groq',
+            provider: 'groq',
             endpoint: '/intelligence/generate',
             units: 1,
         });
 
+        const result = await heavyChat({ messages: fullMessages, maxTokens, temperature });
+        if (!result.ok) {
+            return c.json({ error: result.error || 'Generate failed' }, 503);
+        }
+        if (result.provider === 'openrouter') {
+            await consumeProviderBudget('openrouter', 1).catch(() => {});
+            await logApiUsage({
+                userId,
+                provider: 'openrouter',
+                endpoint: '/intelligence/generate',
+                tokensOrHits: 1,
+            });
+        }
+
         return c.json({ text: result.text || '', provider: result.provider });
     } catch (err) {
+        const budget = budgetErrorResponse(c, err);
+        if (budget) return budget;
         console.error('[intelligence/generate]', err.message);
         return c.json({ error: err.message }, 500);
     }
@@ -296,6 +362,8 @@ app.post('/gemini-proxy', requireAuth, aiLimiter, async (c) => {
         const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
         return c.json({ text, candidates: data.candidates });
     } catch (err) {
+        const budget = budgetErrorResponse(c, err);
+        if (budget) return budget;
         console.error('[intelligence/gemini-proxy]', err.message);
         return c.json({ error: err.message }, 500);
     }
@@ -322,6 +390,14 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
             : messages;
 
         if (provider === 'groq' || provider === 'openrouter' || provider === 'heavy') {
+            const reserveProvider = provider === 'openrouter' ? 'openrouter' : 'groq';
+            await trackExternalCall({
+                userId,
+                provider: reserveProvider,
+                endpoint: '/intelligence/chat',
+                units: 1,
+            });
+
             const chat = provider === 'openrouter'
                 ? await openRouterChat({ messages: fullMessages, maxTokens, temperature })
                 : await heavyChat({ messages: fullMessages, maxTokens, temperature });
@@ -329,18 +405,28 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
                 return c.json({ error: chat.error || 'Heavy AI request failed' }, 503);
             }
 
-            await trackExternalCall({
-                userId,
-                provider: chat.provider === 'openrouter' ? 'openrouter' : 'groq',
-                endpoint: '/intelligence/chat',
-                units: 1,
-            });
+            if (reserveProvider === 'groq' && chat.provider === 'openrouter') {
+                await consumeProviderBudget('openrouter', 1).catch(() => {});
+                await logApiUsage({
+                    userId,
+                    provider: 'openrouter',
+                    endpoint: '/intelligence/chat',
+                    tokensOrHits: 1,
+                });
+            }
 
             return c.json({ text: chat.text || '', provider: chat.provider, model: chat.model });
         }
 
         if (provider === 'moonshot' || provider === 'kimi' || provider === 'nvidia') {
             const { nvidiaOrGroqChat } = await import('../lib/aiChat.js');
+            await trackExternalCall({
+                userId,
+                provider: 'moonshot',
+                endpoint: '/intelligence/chat',
+                units: 1,
+            });
+
             const chat = await nvidiaOrGroqChat({
                 messages: fullMessages,
                 maxTokens,
@@ -350,23 +436,13 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
                 return c.json({ error: chat.error || 'NVIDIA/Groq request failed' }, 503);
             }
 
-            const budgetProvider = chat.provider === 'openrouter'
-                ? 'openrouter'
-                : chat.provider === 'nvidia'
-                    ? 'moonshot'
-                    : 'groq';
-            await trackExternalCall({
-                userId,
-                provider: budgetProvider,
-                endpoint: '/intelligence/chat',
-                units: 1,
-            });
-
             return c.json({ text: chat.text || '', provider: chat.provider, model: chat.model });
         }
 
         return c.json({ error: 'Invalid provider' }, 400);
     } catch (err) {
+        const budget = budgetErrorResponse(c, err);
+        if (budget) return budget;
         console.error('[intelligence/chat]', err.message);
         return c.json({ error: err.message }, 500);
     }
@@ -388,9 +464,18 @@ app.post('/usage-report', requireAuth, aiLimiter, async (c) => {
         });
         return c.json({ success: true });
     } catch (err) {
-        if (err.code === 'BUDGET_EXCEEDED') {
-            return c.json({ error: 'Provider daily limit reached' }, 429);
-        }
+        const budget = budgetErrorResponse(c, err);
+        if (budget) return budget;
+        return c.json({ error: err.message }, 500);
+    }
+});
+
+/** GET /intelligence/ai-budget — caller's remaining AI quota today */
+app.get('/ai-budget', requireAuth, async (c) => {
+    try {
+        const status = await getUserAiBudgetStatus(c.get('userId'));
+        return c.json(status);
+    } catch (err) {
         return c.json({ error: err.message }, 500);
     }
 });
@@ -424,6 +509,13 @@ Respond with JSON like:
   ]
 }`);
 
+        await trackExternalCall({
+            userId,
+            provider: 'groq',
+            endpoint: '/intelligence/universal-log',
+            units: 1,
+        });
+
         const chat = await heavyChat({
             messages: [
                 { role: 'system', content: withVoiceRules(systemPrompt) },
@@ -435,13 +527,15 @@ Respond with JSON like:
         if (!chat.ok) {
             return c.json({ error: chat.error || 'Parse failed' }, 503);
         }
-
-        await trackExternalCall({
-            userId,
-            provider: chat.provider === 'openrouter' ? 'openrouter' : 'groq',
-            endpoint: '/intelligence/universal-log',
-            units: 1,
-        });
+        if (chat.provider === 'openrouter') {
+            await consumeProviderBudget('openrouter', 1).catch(() => {});
+            await logApiUsage({
+                userId,
+                provider: 'openrouter',
+                endpoint: '/intelligence/universal-log',
+                tokensOrHits: 1,
+            });
+        }
 
         const rawText = (chat.text || '').trim().replace(/```json\n?|```/g, '');
         let parsed;
@@ -504,6 +598,8 @@ Respond with JSON like:
 
         return c.json({ success: true, actions: results, parsed: actions });
     } catch (err) {
+        const budget = budgetErrorResponse(c, err);
+        if (budget) return budget;
         console.error('Error in universal-log:', err);
         return c.json({ error: 'Failed to process log entry', message: err.message }, 500);
     }
@@ -521,18 +617,13 @@ async function handleArcSharpen(c) {
 
     try {
         const userId = c.get('userId');
-        await trackExternalCall({
-            userId,
-            provider: 'gemini',
-            endpoint: '/intelligence/arc/sharpen',
-            units: 1,
-        });
+        await assertUserAiBudget(userId);
 
         const goalHint = goalIds.length ? `Goals: ${goalIds.join(', ')}.` : '';
         const result = await geminiLiteGenerate({
             task: 'arc_sharpen',
             userText: `${goalHint} Sharpen this Life Arc into one clear sentence (max 25 words): ${seed}`,
-            maxOutputTokens: 64,
+            maxOutputTokens: 128,
             temperature: 0.2,
         });
 
@@ -541,11 +632,21 @@ async function handleArcSharpen(c) {
             const words = text.split(/\s+/);
             if (words.length > 25) text = `${words.slice(0, 25).join(' ')}.`;
             if (!text) text = sharpenLifeArcLocally(seed, goalIds);
-            return c.json({ text, provider: 'gemini-lite' });
+            else await settleLiteUsage(userId, '/intelligence/arc/sharpen', result).catch(() => {});
+            return c.json({ text, provider: result.provider || 'gemini-lite', model: result.model });
         }
 
         return c.json({ text: sharpenLifeArcLocally(seed, goalIds), stub: true, fallback: true });
     } catch (err) {
+        if (err.code === 'USER_AI_BUDGET_EXCEEDED' || err.code === 'BUDGET_EXCEEDED') {
+            return c.json({
+                text: sharpenLifeArcLocally(seed, goalIds),
+                stub: true,
+                fallback: true,
+                code: err.code,
+                error: err.message,
+            });
+        }
         console.error('[intelligence/arc/sharpen]', err.message);
         return c.json({
             text: sharpenLifeArcLocally(seed, goalIds),

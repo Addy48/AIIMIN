@@ -1,7 +1,9 @@
 /**
  * apiUsageService.js — external API usage logging + daily budget enforcement.
+ * Dual gate: (1) per-user tier AI quota  (2) global provider free-key ceiling
  */
 import { pool } from '../lib/db.js';
+import { getUserTier } from './billingService.js';
 
 const ENV_LIMITS = {
   cricapi: 'CRICAPI_DAILY_LIMIT',
@@ -13,14 +15,30 @@ const ENV_LIMITS = {
   sports_cron: 'SPORTS_CRON_DAILY_LIMIT',
 };
 
+/** Global ceilings — protect free-sourced provider keys (org-wide). */
 const DEFAULT_LIMITS = {
   cricapi: 100,
   rapidapi_cricket: 100,
-  gemini: 200,
-  groq: 1000,
-  openrouter: 50,
-  moonshot: 500,
+  gemini: 150,
+  groq: 800,
+  openrouter: 40,
+  moonshot: 80,
   sports_cron: 48,
+};
+
+/** Providers that burn LLM free quota — counted against user tier. */
+export const AI_PROVIDERS = new Set(['gemini', 'groq', 'openrouter', 'moonshot']);
+
+/**
+ * Per-user daily AI call limits by subscription_tier.
+ * Matches plan marketing: Explore = 1 insight/day; higher tiers more, not infinite.
+ * Override: AI_DAILY_LIMIT_EXPLORE / _CORE / _PRO / _ELITE
+ */
+const DEFAULT_TIER_AI_LIMITS = {
+  explore: 1,
+  core: 10,
+  pro: 25,
+  elite: 40,
 };
 
 function nextUtcMidnight() {
@@ -34,11 +52,31 @@ function nextUtcMidnight() {
   return next.toISOString();
 }
 
+function utcTodayStart() {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
 function resolveDailyLimit(provider) {
   const envKey = ENV_LIMITS[provider];
   const fromEnv = envKey ? parseInt(process.env[envKey] || '', 10) : NaN;
   if (Number.isFinite(fromEnv) && fromEnv > 0) return fromEnv;
   return DEFAULT_LIMITS[provider] ?? 1000;
+}
+
+export function resolveTierAiLimit(tier) {
+  const t = String(tier || 'explore').toLowerCase();
+  const envKey = `AI_DAILY_LIMIT_${t.toUpperCase()}`;
+  const fromEnv = parseInt(process.env[envKey] || '', 10);
+  if (Number.isFinite(fromEnv) && fromEnv >= 0) return fromEnv;
+  return DEFAULT_TIER_AI_LIMITS[t] ?? DEFAULT_TIER_AI_LIMITS.explore;
+}
+
+export function listTierAiLimits() {
+  return Object.fromEntries(
+    Object.keys(DEFAULT_TIER_AI_LIMITS).map((tier) => [tier, resolveTierAiLimit(tier)]),
+  );
 }
 
 async function ensureBudgetRow(provider) {
@@ -95,11 +133,12 @@ export async function consumeProviderBudget(provider, units = 1) {
   const dailyLimit = resolveDailyLimit(provider);
   const { rows } = await pool.query(
     `UPDATE api_provider_budgets
-     SET used_today = used_today + $2
+     SET used_today = used_today + $2,
+         daily_limit = $3
      WHERE provider = $1
-       AND used_today + $2 <= daily_limit
+       AND used_today + $2 <= $3
      RETURNING used_today, daily_limit, reset_at`,
-    [provider, Math.max(1, units || 1)],
+    [provider, Math.max(1, units || 1), dailyLimit],
   );
 
   if (rows.length === 0) {
@@ -119,8 +158,51 @@ export async function consumeProviderBudget(provider, units = 1) {
   };
 }
 
+async function getUserAiUsedToday(userId) {
+  const { rows } = await pool.query(
+    `SELECT COALESCE(SUM(tokens_or_hits), 0)::int AS units
+     FROM api_usage_log
+     WHERE user_id = $1
+       AND created_at >= $2::timestamptz
+       AND provider = ANY($3::text[])`,
+    [userId, utcTodayStart(), [...AI_PROVIDERS]],
+  );
+  return rows[0]?.units || 0;
+}
+
 /**
- * Record usage: budget check + log row.
+ * Per-user AI quota for the day (tier-based). Does not increment — caller logs after.
+ */
+export async function checkUserAiBudget(userId, units = 1) {
+  if (!userId) {
+    return { allowed: true, remaining: null, dailyLimit: null, tier: null, usedToday: 0 };
+  }
+  const tier = await getUserTier(userId);
+  const dailyLimit = resolveTierAiLimit(tier);
+  const usedToday = await getUserAiUsedToday(userId).catch(() => 0);
+  const need = Math.max(1, units || 1);
+  const remaining = Math.max(0, dailyLimit - usedToday);
+  return {
+    allowed: usedToday + need <= dailyLimit,
+    remaining,
+    dailyLimit,
+    tier,
+    usedToday,
+  };
+}
+
+export async function getUserAiBudgetStatus(userId) {
+  const status = await checkUserAiBudget(userId, 0);
+  return {
+    ...status,
+    remaining: Math.max(0, (status.dailyLimit ?? 0) - (status.usedToday ?? 0)),
+    resetAt: nextUtcMidnight(),
+    limitsByTier: listTierAiLimits(),
+  };
+}
+
+/**
+ * Record usage: user-tier AI gate (if applicable) + global provider ceiling + log.
  */
 export async function trackExternalCall({
   userId = null,
@@ -129,15 +211,29 @@ export async function trackExternalCall({
   units = 1,
   enforceBudget = true,
 }) {
+  const need = Math.max(1, units || 1);
+
+  if (enforceBudget && userId && AI_PROVIDERS.has(provider)) {
+    const userBudget = await checkUserAiBudget(userId, need);
+    if (!userBudget.allowed) {
+      const err = new Error(
+        `AI daily limit reached for ${userBudget.tier} plan (${userBudget.dailyLimit}/day). Upgrade for more.`,
+      );
+      err.code = 'USER_AI_BUDGET_EXCEEDED';
+      err.meta = userBudget;
+      throw err;
+    }
+  }
+
   if (enforceBudget) {
-    const budget = await consumeProviderBudget(provider, units);
+    const budget = await consumeProviderBudget(provider, need);
     if (!budget.allowed) {
       const err = new Error(`${provider} daily budget exceeded`);
       err.code = 'BUDGET_EXCEEDED';
       throw err;
     }
   }
-  await logApiUsage({ userId, provider, endpoint, tokensOrHits: units });
+  await logApiUsage({ userId, provider, endpoint, tokensOrHits: need });
   return true;
 }
 
@@ -159,11 +255,13 @@ export async function getProviderBudgetStatus(provider) {
     };
   }
   const row = rows[0];
+  // Keep displayed limit in sync with current env defaults
+  const dailyLimit = resolveDailyLimit(provider);
   return {
     provider: row.provider,
-    dailyLimit: row.daily_limit,
+    dailyLimit,
     usedToday: row.used_today,
-    remaining: Math.max(0, row.daily_limit - row.used_today),
+    remaining: Math.max(0, dailyLimit - row.used_today),
     resetAt: row.reset_at,
   };
 }
@@ -175,8 +273,7 @@ export async function getAllProviderBudgets() {
 }
 
 export async function getUsageSummary() {
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
+  const todayStart = utcTodayStart();
 
   const [byProvider, byUser, totals] = await Promise.all([
     pool.query(
@@ -187,7 +284,7 @@ export async function getUsageSummary() {
        WHERE created_at >= $1
        GROUP BY provider
        ORDER BY units DESC`,
-      [todayStart.toISOString()],
+      [todayStart],
     ).catch(() => ({ rows: [] })),
     pool.query(
       `SELECT u.email,
@@ -202,21 +299,22 @@ export async function getUsageSummary() {
        GROUP BY u.email, l.user_id, l.provider
        ORDER BY units DESC
        LIMIT 50`,
-      [todayStart.toISOString()],
+      [todayStart],
     ).catch(() => ({ rows: [] })),
     pool.query(
       `SELECT COUNT(*)::int AS total_calls,
               COALESCE(SUM(tokens_or_hits), 0)::int AS total_units
        FROM api_usage_log
        WHERE created_at >= $1`,
-      [todayStart.toISOString()],
+      [todayStart],
     ).catch(() => ({ rows: [{ total_calls: 0, total_units: 0 }] })),
   ]);
 
   return {
-    date: todayStart.toISOString().slice(0, 10),
+    date: todayStart.slice(0, 10),
     totals: totals.rows[0] || { total_calls: 0, total_units: 0 },
     byProvider: byProvider.rows,
     byUser: byUser.rows,
+    tierAiLimits: listTierAiLimits(),
   };
 }
