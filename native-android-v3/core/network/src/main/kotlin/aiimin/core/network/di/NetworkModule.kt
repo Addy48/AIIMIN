@@ -1,6 +1,7 @@
 package aiimin.core.network.di
 
 import aiimin.core.network.AiiminApi
+import aiimin.core.network.ApiAuth
 import aiimin.core.network.BuildConfig
 import dagger.Module
 import dagger.Provides
@@ -41,12 +42,13 @@ object NetworkModule {
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(45, TimeUnit.SECONDS)
             .addInterceptor { chain ->
-                chain.proceed(
-                    chain.request().newBuilder()
-                        .header("X-App-Version", "3.0.0-alpha01")
-                        .header("X-Platform", "android-v3")
-                        .build(),
-                )
+                val builder = chain.request().newBuilder()
+                    .header("X-App-Version", "3.0.0-alpha01")
+                    .header("X-Platform", "android-v3")
+                ApiAuth.token?.let { token ->
+                    builder.header("Authorization", "Bearer $token")
+                }
+                chain.proceed(builder.build())
             }
             .addInterceptor(logging)
             .build()

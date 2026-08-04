@@ -224,6 +224,7 @@ private fun Composer(
             if (offer != null) {
                 Offer(
                     offer = offer,
+                    parseSource = state.parseSource,
                     editing = state.editing,
                     editingDraft = state.editingDraft,
                     onEditField = onEditField,
@@ -268,6 +269,7 @@ private fun Composer(
 @Composable
 private fun Offer(
     offer: ParsedCapture,
+    parseSource: ParseSource,
     editing: CaptureField?,
     editingDraft: String,
     onEditField: (CaptureField) -> Unit,
@@ -277,6 +279,16 @@ private fun Offer(
     onToggleField: (CaptureField) -> Unit,
 ) {
     Rule(Modifier.padding(vertical = AiiminTheme.space.s3))
+    Text(
+        text = parseSource.label.uppercase(),
+        style = AiiminTheme.type.mono(9.5),
+        color = if (parseSource == ParseSource.AI) {
+            AiiminTheme.colors.accent
+        } else {
+            AiiminTheme.colors.muted
+        },
+        modifier = Modifier.padding(bottom = AiiminTheme.space.s2),
+    )
 
     Text(
         text = "THE OFFER · ADJUST BEFORE COMMIT",

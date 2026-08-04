@@ -15,6 +15,8 @@ import aiimin.feature.capture.parse.ParsedCapture
 data class CaptureUiState(
     val text: String = "",
     val offer: ParsedCapture? = null,
+    /** Local rules vs server AI (`/intelligence/parse`). */
+    val parseSource: ParseSource = ParseSource.LOCAL,
     /** The field whose editor is open, if any. */
     val editing: CaptureField? = null,
     val editingDraft: String = "",
@@ -24,6 +26,18 @@ data class CaptureUiState(
 ) {
     val hasOffer: Boolean get() = offer?.isEmpty == false
     val canSettle: Boolean get() = text.isNotBlank()
+}
+
+enum class ParseSource {
+    LOCAL,
+    AI,
+    ;
+
+    val label: String
+        get() = when (this) {
+            LOCAL -> "Local rules"
+            AI -> "AI · live"
+        }
 }
 
 /** A capture the user drifted: read, kept, deliberately not committed. */
