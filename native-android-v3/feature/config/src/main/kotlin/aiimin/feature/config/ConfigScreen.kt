@@ -48,6 +48,7 @@ import aiimin.designsystem.theme.Hairline
 
 @Composable
 fun ConfigRoute(
+    onOpenOsId: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ConfigViewModel = hiltViewModel(),
 ) {
@@ -58,7 +59,7 @@ fun ConfigRoute(
         onToggleReduceMotion = viewModel::onToggleReduceMotion,
         onSelectMode = viewModel::onSelectMode,
         onSyncNow = viewModel::onSyncNow,
-        onOpenOsId = viewModel::onOpenOsId,
+        onOpenOsId = onOpenOsId,
         onOpenMinimums = viewModel::onOpenMinimums,
         onOpenConnections = viewModel::onOpenConnections,
         onExport = viewModel::onExport,

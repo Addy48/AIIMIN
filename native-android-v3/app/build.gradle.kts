@@ -61,6 +61,7 @@ dependencies {
     implementation(projects.feature.today)
     implementation(projects.feature.money)
     implementation(projects.feature.config)
+    implementation(projects.feature.osid)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

@@ -34,8 +34,8 @@ tags:
 | 3 | **Today** — capture-first | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 13.0 MB · 71 tests green · 12 screenshot goldens |
 | 4 | **Money** — log and see money truth | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 12 MB · 11/11 MoneyStore tests · 18 screenshot goldens validating (6 Money) |
 | 5 | **Config** — configure the OS | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 13 MB · 6/6 ConfigStore tests · 22 screenshot goldens validating (4 Config) |
-| 6 | OS-ID | next | |
-| 7 | Onboarding, 10 steps incl. the Groq calibration | | |
+| 6 | **OS-ID** — own your identifier | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · OsIdRulesTest 5/5 · 24 screenshot goldens (2 OS-ID) · Config → OS-ID push |
+| 7 | Onboarding, 10 steps incl. the Groq calibration | next | |
 | 8 | Score surface (state · trajectory · confidence · attribution) | **unblocked** 2026-08-03 — engine v2 decided | |
 | 9 | Journal · Lab | | |
 
@@ -100,6 +100,21 @@ adb install -r native-android-v3/app/build/outputs/apk/debug/app-debug.apk
 raise if you want them: Detekt and Spotless (Detekt's current release is an
 alpha), JaCoCo coverage, baseline profiles, crash reporting, Gradle managed
 devices.
+
+## 6 · OS-ID — done 2026-08-04 (local state)
+
+**One job:** own your identifier.
+
+Part-number card (Blueprint accent) · specification (8 / uppercase / max 4 digits /
+1 lifetime revision) · appears-on chips · copy to clipboard. Rules live in
+`:core:model` `OsIdRules` (5 unit tests). Reached contextually from Config profile
+— not a sixth tab. Seed id `AADI2004` from ConfigStore.
+
+**Evidence 2026-08-04:** assembleDebug SUCCESSFUL · OsIdRulesTest 5/5 ·
+validateDebugScreenshotTest passes · dark + light goldens.
+
+**Not done, deliberately:** live availability check, claim / revision write,
+onboarding claim step (Onboarding next).
 
 ## 5 · Config — done 2026-08-04 (local state)
 

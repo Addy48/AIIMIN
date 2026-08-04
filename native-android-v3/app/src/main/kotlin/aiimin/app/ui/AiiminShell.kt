@@ -12,6 +12,7 @@ import aiimin.app.navigation.Config
 import aiimin.app.navigation.Day
 import aiimin.app.navigation.Lab
 import aiimin.app.navigation.Money
+import aiimin.app.navigation.OsId
 import aiimin.app.navigation.Tab
 import aiimin.app.ui.shell.BottomBar
 import aiimin.app.ui.surface.LabSurface
@@ -19,6 +20,7 @@ import aiimin.designsystem.theme.AiiminTheme
 import aiimin.feature.capture.CaptureRoute
 import aiimin.feature.config.ConfigRoute
 import aiimin.feature.money.MoneyRoute
+import aiimin.feature.osid.OsIdRoute
 import aiimin.feature.today.TodayRoute
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -34,12 +36,16 @@ import androidx.navigation3.ui.NavDisplay
 @Composable
 fun AiiminShell(modifier: Modifier = Modifier) {
     val backStack = rememberNavBackStack(Day)
-    val currentTab = Tab.of(backStack.lastOrNull())
+    val top = backStack.lastOrNull()
+    val currentTab = when (top) {
+        is OsId -> Tab.CONFIG
+        else -> Tab.of(top)
+    }
 
     AiiminShellContent(
         currentTab = currentTab,
         onSelectTab = { tab ->
-            if (tab != currentTab) {
+            if (tab != currentTab || top is OsId) {
                 backStack.clear()
                 backStack.add(tab.destination)
             }
@@ -68,7 +74,12 @@ fun AiiminShell(modifier: Modifier = Modifier) {
                 }
                 entry<Capture> { CaptureRoute() }
                 entry<Lab> { LabSurface() }
-                entry<Config> { ConfigRoute() }
+                entry<Config> {
+                    ConfigRoute(
+                        onOpenOsId = { backStack.add(OsId) },
+                    )
+                }
+                entry<OsId> { OsIdRoute() }
             },
         )
     }

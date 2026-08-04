@@ -26,6 +26,10 @@ data object Lab : Destination
 @Serializable
 data object Config : Destination
 
+/** Contextual — reached from Config profile, not a bottom tab. */
+@Serializable
+data object OsId : Destination
+
 /** A tab in the bottom bar: a destination, its chrome label, and its glyph. */
 enum class Tab(val destination: Destination, val label: String, val icon: AiiminIcon) {
     DAY(Day, "DAY", AiiminIcon.Day),

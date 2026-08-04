@@ -48,10 +48,6 @@ class ConfigViewModel @Inject constructor(
         }
     }
 
-    fun onOpenOsId() = config.setNotice(
-        "OS-ID is its own surface — next in the build. Profile strip opens it then.",
-    )
-
     fun onOpenMinimums() = config.setNotice(
         "Daily minimums live on Today. Edit them there after calibration.",
     )
