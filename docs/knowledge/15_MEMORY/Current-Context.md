@@ -20,7 +20,7 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → only the `Touch` paths below. Proof-or-stop.
 
-**Date:** 2026-08-04 · Branch `feat/native-android-v3` · DataStore ✅ · API wiring started (OS-ID live + parse; needs EC2 ship) · **phone APK installed** (`9597fdea`, `in.aiimin.app.v3`)
+**Date:** 2026-08-04 · Branch `feat/native-android-v3` · OS-ID live on prod · Capture AI client ready (needs session) · **phone APK installed** (`9597fdea`, `in.aiimin.app.v3`)
 
 ## Stage
 
@@ -62,9 +62,9 @@ Guardrails (G1–G10, non-negotiable): [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT
 ## Queue
 
 1. **Vault** — single source of truth. **Done**; two approvals pending (§ report §6).
-2. **App (product/APK chat)** — screen map ✅ · DataStore ✅ · **`:core:network` + live
-   OS-ID Claim + `/intelligence/parse` (server)** — prod curl still 404 until API deploy.
-   Next: say **push + ship API** · then Capture AI with session · Room · phone polish.
+2. **App (product/APK chat)** — screen map ✅ · DataStore ✅ · **OS-ID live on prod** ✅ ·
+   Capture AI client ready (needs sign-in bearer). Next: sign-in (you type PIN) · Room ·
+   phone polish. Tracker: [[17_NATIVE_APP_V2/V3-BUILD-TRACKER]].
 3. **Play Store (release chat)** — ledger [[17_NATIVE_APP_V2/Play-Store-Launch]] · state `BUILDING`.
    Next eng: stale `privacy.html` · live legal content verify · founder blockers (entity/address/Play account).
    No APK / screen craft in this track.
