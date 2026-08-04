@@ -62,7 +62,18 @@ if ! curl -fsS --max-time 10 "$HEALTH_URL" >/dev/null 2>&1; then
   PROBLEMS="${PROBLEMS}- API health check failed at ${HEALTH_URL}. The API may be down.\n"
 fi
 
-RESTARTS="$(su - ubuntu -c 'pm2 jlist' 2>/dev/null | tr ',' '\n' | sed -n 's/.*"restart_time":\([0-9]*\).*/\1/p' | head -1)"
+# Select aiimin-api by name. Taking the first process was wrong the moment this
+# same script installed pm2-logrotate as a second PM2 entry.
+RESTARTS="$(su - ubuntu -c 'pm2 jlist' 2>/dev/null | python3 -c '
+import json, sys
+try:
+    for p in json.load(sys.stdin):
+        if p.get("name") == "aiimin-api":
+            print(p.get("pm2_env", {}).get("restart_time", ""))
+            break
+except Exception:
+    pass
+' 2>/dev/null)"
 if [ -n "${RESTARTS:-}" ] && [ "$RESTARTS" -gt 200 ] 2>/dev/null; then
   PROBLEMS="${PROBLEMS}- pm2 has restarted aiimin-api ${RESTARTS} times. Something is crashing it repeatedly.\n"
 fi
@@ -100,7 +111,12 @@ print(json.dumps({
 PY
 )"
 
-CODE="$(curl -s -o /tmp/aiimin-alert.out -w '%{http_code}' -X POST https://api.resend.com/emails \
+# This runs as root from the timer, so a fixed /tmp path is a symlink target
+# waiting to be overwritten with root privileges.
+ALERT_OUT="$(mktemp /tmp/aiimin-alert.XXXXXX)" || exit 1
+trap 'rm -f "$ALERT_OUT"' EXIT
+
+CODE="$(curl -s -o "$ALERT_OUT" -w '%{http_code}' -X POST https://api.resend.com/emails \
   -H "Authorization: Bearer ${KEY}" -H "Content-Type: application/json" -d "$PAYLOAD")"
 log "alert email -> ${TO} (HTTP ${CODE})"
-[ "$CODE" = "200" ] || { log "alert body: $(cat /tmp/aiimin-alert.out)"; exit 1; }
+[ "$CODE" = "200" ] || { log "alert body: $(cat "$ALERT_OUT")"; exit 1; }
