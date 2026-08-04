@@ -6,6 +6,7 @@ import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
 import { mobileHealthLimiter, mobileSyncLimiter } from '../middleware/rateLimiter.js';
+import { deriveJournalMode } from '../lib/journalMode.js';
 import { randomUUID } from 'crypto';
 
 const app = new Hono();
@@ -102,7 +103,7 @@ app.get('/bootstrap', requireAuth, async (c) => {
         [userId],
       ).catch(() => ({ rows: [] })),
       pool.query(
-        `SELECT id, title, start_time AS start_at, end_time AS end_at, all_day, event_type, meta
+        `SELECT id, title, start_time AS start_at, end_time AS end_at, all_day, event_type
          FROM calendar_events
          WHERE user_id = $1
            AND deleted_at IS NULL
@@ -110,10 +111,10 @@ app.get('/bootstrap', requireAuth, async (c) => {
          ORDER BY start_time ASC LIMIT 10`,
         [userId],
       ).catch(() => ({ rows: [] })),
-      pool.query(
-        `SELECT payload FROM life_score_cache WHERE user_id = $1 ORDER BY updated_at DESC LIMIT 1`,
-        [userId],
-      ).catch(() => ({ rows: [] })),
+      // No life_score_cache table exists — the score is computed server-side by
+      // services/lifeHealthEngine.js. This read always failed into an empty
+      // result; keep the shape, drop the dead query.
+      Promise.resolve({ rows: [] }),
       pool.query(
         `SELECT id, metric, target, frequency, meta, start_date, created_at
          FROM goals WHERE user_id = $1 AND deleted_at IS NULL
@@ -257,26 +258,52 @@ app.post('/sync/batch', requireAuth, async (c) => {
           );
           if (!owned.length) throw new Error('Habit not found');
           await pool.query(
+            // 'completed' violates habit_logs_status_check ('done' | 'skipped').
             `INSERT INTO habit_logs (user_id, habit_id, completed_at, status, notes)
-             VALUES ($1, $2, COALESCE($3::timestamptz, NOW()), 'completed', NULL)`,
+             VALUES ($1, $2, COALESCE($3::timestamptz, NOW()), 'done', NULL)`,
             [userId, habitId, payload.completed_at || null],
           );
           results.push({ id: m.id, ok: true });
         } else if (type === 'journal.upsert') {
-          const id = payload.id || randomUUID();
-          const content = payload.content || '';
-          const date = payload.date || new Date().toISOString().slice(0, 10);
-          await pool.query(
-            `INSERT INTO journal_entries (id, user_id, date, encrypted_content, mood, created_at)
-             VALUES ($1, $2, $3, $4, $5, NOW())
-             ON CONFLICT (id) DO UPDATE SET
-               encrypted_content = EXCLUDED.encrypted_content,
-               mood = COALESCE(EXCLUDED.mood, journal_entries.mood),
-               date = EXCLUDED.date
-             WHERE journal_entries.user_id = $2`,
-            [id, userId, date, content, payload.mood || null],
-          );
-          results.push({ id: m.id, ok: true, entity_id: id });
+          // A metadata-only mutation must not invent content. Defaulting
+          // `content` to '' and `date` to today used to blank the entry,
+          // reclassify a v2 envelope as 'legacy', and move an older entry to
+          // today. Distinguish "omitted" from "sent".
+          const hasContent = payload.content !== undefined && payload.content !== null;
+
+          if (!hasContent) {
+            if (!payload.id) throw new Error('journal.upsert needs content or an id');
+            const upd = await pool.query(
+              `UPDATE journal_entries
+                  SET mood = COALESCE($3, mood),
+                      date = COALESCE($4::date, date)
+                WHERE id = $1 AND user_id = $2
+                RETURNING id`,
+              [payload.id, userId, payload.mood ?? null, payload.date || null],
+            );
+            // Zero rows means the id is unknown or belongs to someone else —
+            // reporting ok:true there would silently drop the client's edit.
+            if (!upd.rows.length) throw new Error('Journal entry not found');
+            results.push({ id: m.id, ok: true, entity_id: upd.rows[0].id });
+          } else {
+            const content = String(payload.content);
+            const date = payload.date || new Date().toISOString().slice(0, 10);
+            // Conflict on the real identity of an entry — (user_id, date, mode)
+            // per migration 049. `payload.id` is optional, so a client that
+            // re-sends the same entry without one would generate a fresh UUID
+            // and collide on that index instead of updating.
+            const up = await pool.query(
+              `INSERT INTO journal_entries (id, user_id, date, encrypted_content, mood, mode, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6, NOW())
+               ON CONFLICT (user_id, date, mode) DO UPDATE SET
+                 encrypted_content = EXCLUDED.encrypted_content,
+                 mood = COALESCE(EXCLUDED.mood, journal_entries.mood)
+               RETURNING id`,
+              [payload.id || randomUUID(), userId, date, content,
+               payload.mood ?? null, deriveJournalMode(content)],
+            );
+            results.push({ id: m.id, ok: true, entity_id: up.rows[0].id });
+          }
         } else if (type === 'note.upsert') {
           const id = payload.id || randomUUID();
           const title = payload.title || '';

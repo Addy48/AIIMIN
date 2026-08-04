@@ -535,7 +535,8 @@ app.post('/universal-log', requireAuth, async (c) => {
 Return ONLY valid JSON (no markdown, no explanation).
 
 Extract any of these action types from the user's text:
-- log_mood: if they mention how they feel or a mood/energy rating out of 10. Fields: { score: number 1-10, note: string }
+- log_mood: if they mention how they feel, or give a mood or energy rating out of 10. Fields: { score: number 1-10, energy: number 1-10, note: string }
+  "score" is MOOD only. Set "energy" only when they give an explicit energy/tiredness rating; omit it otherwise. If they rate energy but not mood, send "energy" and omit "score".
 - log_habit: if they mention completing or failing a habit/workout/diet. Fields: { name: string, completed: boolean }
 - add_journal: always add the raw text as a journal entry. Fields: { content: string }
 - log_discipline: if they mention breaking or resetting a discipline/streak. Fields: { name: string, reset: boolean }
@@ -589,14 +590,29 @@ Respond with JSON like:
 
         for (const action of actions) {
             try {
-                if (action.type === 'log_mood' && action.score) {
+                if (action.type === 'log_mood' && (action.score != null || action.energy != null)) {
+                    // mood and energy are separate readings. This used to copy
+                    // the mood score into energy_level, inventing a value the
+                    // user never gave and feeding it to correlations and the
+                    // Life Score. Each is now written only when supplied, so an
+                    // energy-only rating no longer lands in mood either.
+                    const clamp = (v) => Math.min(10, Math.max(1, Math.round(v)));
                     await pool.query(
-                        `INSERT INTO daily_logs (user_id, date, mood, energy, notes)
-                         VALUES ($1, $2, $3, $3, $4)
-                         ON CONFLICT (user_id, date) DO UPDATE SET mood = $3, energy = $3, notes = COALESCE($4, daily_logs.notes)`,
-                        [userId, today, Math.min(10, Math.max(1, Math.round(action.score))), action.note || null]
+                        `INSERT INTO daily_logs (user_id, date, mood, energy_level, journal_entry)
+                         VALUES ($1, $2, $3, $5, $4)
+                         ON CONFLICT (user_id, date) DO UPDATE SET
+                           mood = COALESCE($3, daily_logs.mood),
+                           energy_level = COALESCE($5, daily_logs.energy_level),
+                           journal_entry = COALESCE($4, daily_logs.journal_entry)`,
+                        [
+                            userId,
+                            today,
+                            action.score != null ? clamp(action.score) : null,
+                            action.note || null,
+                            action.energy != null ? clamp(action.energy) : null,
+                        ]
                     );
-                    results.push({ type: 'log_mood', status: 'success', score: action.score });
+                    results.push({ type: 'log_mood', status: 'success', score: action.score ?? null, energy: action.energy ?? null });
                 } else if (action.type === 'log_habit' && action.name) {
                     // Find existing habit by name fuzzy match
                     const habitRes = await pool.query(

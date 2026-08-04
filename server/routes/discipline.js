@@ -323,7 +323,12 @@ app.get('/insights', requireAuth, async (c) => {
             mostVulnerableTime: timeData[0]?.time_of_day || null,
             mostVulnerableTimeCount: timeData[0]?.count || 0,
             totalUrgesThisStreak: cravingData[0]?.total_urges || 0,
-            avgCraving: cravingData[0]?.avg_craving ? parseFloat(cravingData[0].avg_craving.toFixed(1)) : null,
+            // AVG() returns Postgres numeric, which node-pg hands back as a
+            // string — calling .toFixed() on it threw and 500'd the whole
+            // endpoint. Coerce before formatting.
+            avgCraving: cravingData[0]?.avg_craving != null
+                ? Number(Number(cravingData[0].avg_craving).toFixed(1))
+                : null,
         });
     } catch (err) {
         return c.json({ error: err.message }, 500);
@@ -526,8 +531,12 @@ app.post('/urge/:id/resolve', requireAuth, async (c) => {
         if (outcome === 'resisted' && urge.linked_replacement_habit_id) {
             try {
                 await pool.query(
+                    // habit_logs_status_check allows only 'done' | 'skipped'.
+                    // 'completed' threw, and the catch below swallowed it — so
+                    // habitReinforced stayed false and the anchor_edges insert
+                    // that follows never ran either.
                     `INSERT INTO habit_logs (user_id, habit_id, completed_at, status, notes)
-                     VALUES ($1, $2, NOW(), 'completed', 'discipline_reinforce')`,
+                     VALUES ($1, $2, NOW(), 'done', 'discipline_reinforce')`,
                     [userId, urge.linked_replacement_habit_id]
                 );
                 habitReinforced = true;
