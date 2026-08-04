@@ -3,16 +3,24 @@
 Keys live only in **gitignored** files: root `.env` (local) and `deploy/EC2.env.paste` (production paste).
 Never commit real keys. Sync to EC2 with `bash scripts/sync-ec2-ai-env.sh` (SSH; no GitHub secrets).
 
-## Status (tested 2026-07-10)
+## Status (tested 2026-07-16)
 
 | Env var | Works? | Model | Role |
 |---------|--------|-------|------|
-| `GEMINI_LITE_API_KEY` | ✅ | `gemini-2.5-flash-lite` | **Light only** — 5 tasks |
-| `GEMINI_API_KEY` | ❌ invalid | — | Cleared; do not use |
-| `GROQ_API_KEY` | ✅ | `llama-3.3-70b-versatile` | **Heavy** — primary |
-| `OPENROUTER_API_KEY` | ✅ | `meta-llama/llama-3.3-70b-instruct:free` | **Heavy fallback** when Groq fails |
-| `NVIDIA_API_KEY` / `KIMI_API_KEY` | ⚠️ key ok, models 404 | — | Tried first; **falls back to Groq → OpenRouter** |
-| `XAI_API_KEY` | ❌ 403 | — | Not routed |
+| `GEMINI_LITE_API_KEY` | ❌ 429 quota | `gemini-2.5-flash-lite` | Light first choice |
+| `OPENROUTER_API_KEY` | ✅ | lite: `openai/gpt-oss-20b:free` (+ `nvidia/nemotron-nano-9b-v2:free`) | **Light fallback** when Gemini dead |
+| `GROQ_API_KEY` | ✅ | `llama-3.3-70b-versatile` | **Heavy primary** |
+| `OPENROUTER` heavy | ⚠️ | `llama-3.3-70b-instruct:free` often 429 → falls to gpt-oss-20b | Last-ditch only |
+| `NVIDIA` / xAI | ❌ | — | Unused / broken |
+
+### Routing (2026-07-16)
+
+- **Lite** (Arc, journal prompts, habit coach, emotion, short summary): Gemini → OpenRouter lite models (low tokens, `reasoning.effort=minimal`) → tiny Groq rescue
+- **Heavy** (universal log, journal analyze, wealth, generate/chat): Groq → OpenRouter heavy list only if Groq fails
+- Env: `OPENROUTER_LITE_MODELS`, `OPENROUTER_HEAVY_MODELS` (CSV failover)
+- Do **not** put weak free models on wealth JSON / CBT as primary — quality too low
+
+**Tier AI caps:** Explore 1 / Core 10 / Pro 25 / Elite 40. See [[09_FEATURES/DevTools/ApiUsage]].
 
 ## What each key powers
 
@@ -26,11 +34,11 @@ Never commit real keys. Sync to EC2 with `bash scripts/sync-ec2-ai-env.sh` (SSH;
 | Emotion tag | `/intelligence/lite` | ~80–150 |
 | Short summary | `/intelligence/lite` | ~100–200 |
 
-App budget: `GEMINI_DAILY_LIMIT=200` **calls/day** (not tokens).
+App budget: `GEMINI_DAILY_LIMIT=150` **calls/day** (not tokens).
 
-Google free tier (Flash-Lite class): typically **~1,000–1,500 RPD** and RPM caps — treat **200 app calls/day** as safe headroom for testers.
+**Per-user tier caps** (all AI providers combined): Explore **1** / Core **10** / Pro **25** / Elite **40** — env `AI_DAILY_LIMIT_*`. See [[09_FEATURES/DevTools/ApiUsage]].
 
-**Rough runtime:** ~200 light calls/day ≈ **~40–60k tokens/day** if each call ~200–300 tokens. At ~5 Arc sharpens + a few prompts per user/day → **~20–40 active users** on Gemini alone before app budget blocks.
+Google free tier (Flash-Lite class): typically **~1,000–1,500 RPD** and RPM caps — treat **150 app calls/day** as safe headroom for testers.
 
 ### Groq (`GROQ_API_KEY`) — heavy workhorse
 
@@ -44,7 +52,7 @@ Google free tier (Flash-Lite class): typically **~1,000–1,500 RPD** and RPM ca
 | Wealth SMS/AI import | `/wealth/import/ai` | ~500–1,500 |
 | CBT / weekly insight / sports / finance what-if | via `aiService` → chat | ~300–1,000 |
 
-App budget: `GROQ_DAILY_LIMIT=1000` **calls/day** (align with Groq free RPD for 70B).
+App budget: `GROQ_DAILY_LIMIT=800` **calls/day** (under Groq free ~1K RPD for 70B).
 
 Groq free tier (official, model-dependent): for `llama-3.3-70b-versatile` typically **~1,000 RPD**, **30 RPM**, **12K TPM**.
 
@@ -54,7 +62,7 @@ Groq free tier (official, model-dependent): for `llama-3.3-70b-versatile` typica
 |------|------------|--------|
 | Same heavy paths | via `heavyChat` / `nvidiaOrGroqChat` | Used when Groq fails or `provider=openrouter` |
 
-Env: `OPENROUTER_MODEL=meta-llama/llama-3.3-70b-instruct:free`, `OPENROUTER_DAILY_LIMIT=50` (OpenRouter free ~50 req/day without credits).
+Env: `OPENROUTER_MODEL=meta-llama/llama-3.3-70b-instruct:free`, `OPENROUTER_DAILY_LIMIT=40` (OpenRouter free ~50 req/day without credits — keep app under).
 
 Keys live in root `.env` + `deploy/EC2.env.paste`; sync: `bash scripts/sync-ec2-ai-env.sh`.
 

@@ -12,7 +12,7 @@ export const TIERS = {
     id: 'explore',
     name: 'Explore',
     price_inr: 0,
-    features: ['Limited daily logging', '3 habits', '2 goals', 'Basic overview', '1 AI insight per day'],
+    features: ['Limited daily logging', '3 habits', '2 goals', 'Basic overview', '1 AI call per day'],
   },
   core: {
     id: 'core',
@@ -25,6 +25,7 @@ export const TIERS = {
       'Finance safe-to-spend + SIP planner',
       'Sports feed personalization',
       'Lab cognitive benchmarks',
+      '10 AI calls per day',
     ],
   },
   pro: {
@@ -38,6 +39,7 @@ export const TIERS = {
       'Weekly AI life review emails',
       'Advanced finance what-if',
       'Priority support',
+      '25 AI calls per day',
     ],
   },
   elite: {
@@ -49,7 +51,7 @@ export const TIERS = {
       'Everything in Pro',
       'Early access to new modules',
       'Founder priority support',
-      'Unlimited AI insights',
+      '40 AI calls per day (highest quota)',
       'Lifetime feature previews',
     ],
   },

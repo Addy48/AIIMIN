@@ -1,7 +1,7 @@
 # Handoff Latest
 
-**When:** 2026-07-14  
-**From:** craft A–J execute stretch (G/H/I + unify plan)
+**When:** 2026-07-16  
+**From:** tier AI quotas + free-key strategy + key smoke
 
 ## Paste pack
 
@@ -12,35 +12,37 @@ Read first:
 1. docs/knowledge/00_HOME.md
 2. docs/knowledge/15_MEMORY/Current-Context.md
 3. docs/knowledge/15_MEMORY/Handoff-Latest.md
-4. docs/knowledge/12_SPRINTS/Craft-Master-Plan-AJ.md
+4. docs/knowledge/09_FEATURES/Intelligence/AI-Provider-Map.md
+5. docs/knowledge/09_FEATURES/DevTools/ApiUsage.md
 
 Done this chat:
-- Unified master plan Tracks A–J in Craft-Master-Plan-AJ.md
-- G1 Priority+ overflow More (N) + Reports in NAV_REGISTRY
-- G2 Cmd+K Sports + Account
-- H1 onboarding life-mode step (explicit pick; Custom click-only)
-- I1 light canvas #EDE4D3 + Palette.md; dark untouched
-- J0=A Universal Logger (prior); build exit 0
+- Per-user tier AI daily caps: Explore 1 / Core 10 / Pro 25 / Elite 40 (apiUsageService)
+- Dual gate + enforce on wealth/journal/universal-log (no enforceBudget:false bypass)
+- Marketing copy: no more “unlimited AI”
+- sync-ec2-ai-env.sh greps OPENROUTER_* + AI_DAILY_LIMIT_*; EC2 env already synced
+- Key smoke 2026-07-16: Groq OK; Gemini lite 429; OpenRouter 429; NVIDIA 404; xAI 403
+- Inventoried live AI vs dead aiService stubs; Elite = quota only, not new AI features
+- Owner constraint: never pay for AI keys (now or future) — free providers + hard caps only
 
 Still open:
-- PROTOCOL screenshots at ~500/~800/~1100 (all tracks)
-- Apply Supabase migration 043_note_drive_watches + Google Drive reconnect
-- Commit/push (+ EC2 if API) only when Adi asks
+- Commit/push tier-quota code so prod API actually enforces user limits
+- Rotate OpenRouter key (leaked earlier); refill Gemini/OpenRouter free quota or new free keys
+- Optional: vault note AI-Features-by-Tier.md
 
 Touch only if needed:
-- frontend/src/components/Navbar.jsx
-- frontend/src/pages/Onboarding.jsx
-- frontend/src/styles/tokens.css
-- frontend/src/components/system/CommandPalette.jsx
-- frontend/src/constants/navItems.js
-- server/migrations/043_note_drive_watches.sql
+- server/services/apiUsageService.js
+- server/routes/intelligence.js, dailyLogs.js, wealth.js
+- server/services/billingService.js
+- frontend subscription/landing tier copy
+- scripts/sync-ec2-ai-env.sh, deploy/EC2.env.paste, .env
 
 Constraints:
 - Vault-first. No whole-repo scan.
 - Palette lock. Mobile /m = capture only.
-- No auth/schema change unless I ask (043 Drive table explicitly excepted when I approve).
+- No auth/schema change unless I ask.
 - Commit only if I ask.
+- No paid AI APIs — free keys + tier/org budgets only.
 
 Next action:
-- Hard-refresh local: check masthead More (N), onboarding life-mode, light theme #EDE4D3; reply with go for screenshots or commit.
+- Ask: commit+push tier AI quota code? Then hunt free Gemini/OpenRouter keys / rotate OpenRouter.
 ```

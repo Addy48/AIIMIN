@@ -6,22 +6,20 @@
 
 ## Today
 
-- **Reports SHIPPED:** Core = Ivory Snapshot · Pro = Folio Life OS PDF (+ Patterns/Skills)
-- **Elite Deep PAUSED** — no Deep product
-- Prototypes gallery still at `prototypes/reports/` (locked directions)
-- OpenRouter lite/heavy + tier AI quotas still **local unpushed** (separate)
+- **Reports LIVE:** Core Ivory Snapshot · Pro Folio PDF (+ Patterns/Skills) · Elite Deep paused
+- **AI LIVE:** tier quotas Explore 1 / Core 10 / Pro 25 / Elite 40 · OpenRouter lite failover · dual budget gate
+- Marketing copy aligned (no unlimited AI; Snapshot/Folio named)
 
 ## Next
 
-1. Verify prod Core/Pro on `/reports` after Vercel deploy
-2. Elite Deep: pause until clearer JTBD
-3. AI quotas/OpenRouter: commit+EC2 only when asked
+1. Confirm `/reports` + AI budget on prod after this ship
+2. Elite Deep: still paused
+3. Keep EC2 env synced when AI model vars change
 
 ## Touch
 
-- `frontend/src/pages/Reports.jsx`
-- `frontend/src/components/reports/IvorySnapshot.*`
-- `frontend/src/components/PDFReportGenerator.jsx`
-- `frontend/src/utils/tierGating.js`
-- `prototypes/reports/**`
-- `docs/knowledge/09_FEATURES/Reports/*`
+- `server/services/apiUsageService.js`, `server/lib/aiChat.js`, `server/lib/geminiLite.js`
+- `server/routes/{intelligence,dailyLogs,wealth}.js`
+- `frontend` subscription + waitlist pricing copy
+- `.env.example`, `deploy/.env.production.example`
+- Reports: already on `main` (`26a07335`)

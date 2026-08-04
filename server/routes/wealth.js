@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import * as XLSX from 'xlsx';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
-import { nvidiaOrGroqChat, groqChat } from '../lib/aiChat.js';
+import { nvidiaOrGroqChat, heavyChat } from '../lib/aiChat.js';
 import { trackExternalCall } from '../services/apiUsageService.js';
 
 const wealthRoutes = new Hono();
@@ -1107,8 +1107,7 @@ Do not include markdown formatting like \`\`\`json.`;
                 provider: 'groq',
                 endpoint: '/wealth/ai-summary',
                 units: 1,
-                enforceBudget: false,
-            }).catch(() => {});
+            });
 
             const chat = await nvidiaOrGroqChat({
                 messages: [{ role: 'user', content: prompt }],
@@ -1123,6 +1122,9 @@ Do not include markdown formatting like \`\`\`json.`;
                 aiStatus = 'limit_reached';
             }
         } catch (aiErr) {
+            if (aiErr.code === 'USER_AI_BUDGET_EXCEEDED' || aiErr.code === 'BUDGET_EXCEEDED') {
+                aiStatus = 'limit_reached';
+            }
             console.warn('[wealth/ai-summary] AI call failed:', aiErr.message);
         }
 
@@ -1209,10 +1211,9 @@ Rules:
             provider: 'groq',
             endpoint: '/wealth/import/ai',
             units: 1,
-            enforceBudget: false,
-        }).catch(() => {});
+        });
 
-        const chat = await groqChat({
+        const chat = await heavyChat({
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: `Parse these transactions:\n\n${text.trim()}` },
@@ -1268,6 +1269,13 @@ Rules:
 
         return c.json({ success: true, imported, message: `AI imported ${imported} transactions` });
     } catch (err) {
+        if (err.code === 'USER_AI_BUDGET_EXCEEDED' || err.code === 'BUDGET_EXCEEDED') {
+            return c.json({
+                error: err.message,
+                code: err.code,
+                ...(err.meta || {}),
+            }, 429);
+        }
         console.error('[wealth/import/ai] Error:', err.message);
         return c.json({ error: 'Failed to process AI import', message: err.message }, 500);
     }
