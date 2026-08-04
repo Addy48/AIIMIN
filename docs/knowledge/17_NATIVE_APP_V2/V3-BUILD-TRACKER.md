@@ -46,7 +46,7 @@ tags:
 |-------|--------|
 | Phone reinstall | ✅ 2026-08-04 17:32 — `adb install -r` Success · device `9597fdea` · `in.aiimin.app.v3` launched |
 | Scoped commits | waiting founder ask |
-| **API wiring** | **in progress** — `:core:network` + live OS-ID + `/intelligence/parse` added; **EC2 deploy needed** for prod |
+| **API wiring** | **partial ✅** — OS-ID live on prod · Capture AI client ready (needs session) |
 | DataStore persistence | ✅ done 2026-08-04 |
 | Groq calibration steps 4–5 | deferred (keys on server; arc sharpen still auth-gated) |
 | Reports / Search / voice | out of V3 screen map |
@@ -77,13 +77,20 @@ checks the live graph.
 Client never embeds them. Capture AI parse waits on session + EC2 ship of
 `/intelligence/parse`.
 
-**Evidence (local):**
+**Evidence (local + live 2026-08-04):**
 - `:core:network:testDebugUnitTest` — 3/3
-- `:app:assembleDebug` SUCCESS · APK ~14.0 MB · 37 screenshot goldens validating
-- Live curl `GET /api/auth/osid-available` → **404** until API redeploy (expected)
+- `:app:assembleDebug` SUCCESS · APK ~14 MB · 37 screenshot goldens
+- EC2 deploy `BRANCH=feat/native-android-v3` → SHA `1cb24104` · health ok
+- Live curl:
+  - `ZZZZ9999` → `available:true`
+  - `AADI0837` → `available:false` / taken
+  - `BAD` → invalid shape
 
-**Next:** founder asks push+ship API → then curl free=`ZZZZ9999` / taken=`AADI0837`
-→ Capture AI when session exists · Room for day/money.
+**Capture AI (follow-up same day):** `CaptureParseRepository` + `ApiAuth` bearer;
+debounced parse when token set; UI shows `AI · live` vs `Local rules`.
+Sign-in to set bearer still next.
+
+**Next:** sign-in surface (founder types PIN) · Room for day/money · phone polish.
 
 ## DataStore prefs — done 2026-08-04
 
