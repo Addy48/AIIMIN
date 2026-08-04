@@ -2,6 +2,7 @@ package aiimin.feature.capture
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import aiimin.core.data.DayStore
 import aiimin.feature.capture.parse.CaptureField
 import aiimin.feature.capture.parse.CaptureParser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 class CaptureViewModel @Inject constructor(
     private val parser: CaptureParser,
     private val clock: Clock,
+    private val day: DayStore,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CaptureUiState())
@@ -87,6 +89,9 @@ class CaptureViewModel @Inject constructor(
             time = LocalTime.now(clock).format(TIME),
             amount = amount,
         )
+        // The day is shared. A settle here is a settle on Today — two surfaces
+        // telling one story is the whole point of one graph.
+        day.recordCapture(settled.label, settled.time, amount)
         current.copy(
             text = "",
             offer = null,
@@ -118,6 +123,7 @@ class CaptureViewModel @Inject constructor(
     /** Take back the last write, whole. */
     fun onUndo(id: Long) = _state.update { current ->
         val undone = current.settled.firstOrNull { it.id == id } ?: return@update current
+        day.removeCapture(undone.label)
         current.copy(
             settled = current.settled - undone,
             text = undone.label,

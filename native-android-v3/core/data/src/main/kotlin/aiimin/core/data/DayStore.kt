@@ -1,0 +1,201 @@
+package aiimin.core.data
+
+import aiimin.core.model.Attainment
+import aiimin.core.model.Commitment
+import aiimin.core.model.CommitmentKind
+import aiimin.core.model.Composition
+import aiimin.core.model.Hold
+import aiimin.core.model.Instrument
+import aiimin.core.model.InstrumentReading
+import aiimin.core.model.LifeMode
+import aiimin.core.model.LifeScore
+import aiimin.core.model.Observation
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
+/**
+ * The one place today lives, in memory, for every surface that draws it.
+ *
+ * Capture settles into it; Today reads from it. Without this the two surfaces
+ * would tell the user different stories about the same day, which is the exact
+ * drift the Genesis "one graph" rule exists to prevent.
+ *
+ * **This is deliberately local (guardrail G7).** It holds the shape the API will
+ * fill: the `/api` writes replace [recordCapture] and the profile arrives from
+ * calibration instead of [SeedProfile]. Nothing above this class has to change
+ * when that happens.
+ */
+@Singleton
+class DayStore @Inject constructor() {
+
+    private val _state = MutableStateFlow(DayState.seed())
+    val state: StateFlow<DayState> = _state.asStateFlow()
+
+    /** A settled capture lands on the day. Called by Capture, read by Today. */
+    fun recordCapture(label: String, time: String, amount: Int?) = _state.update { day ->
+        day.copy(captures = listOf(SettledLine(label, time, amount)) + day.captures)
+    }
+
+    fun removeCapture(label: String) = _state.update { day ->
+        day.copy(captures = day.captures.filterNot { it.label == label })
+    }
+
+    /**
+     * Mark a pursuit done, or reopen it. Attainment is continuous, so a
+     * SHOW_UP pursuit is 1.0 or 0.0, but a quantity pursuit takes the value it
+     * was actually given.
+     */
+    fun setProgress(commitmentId: Long, value: Double?) = _state.update { day ->
+        day.copy(
+            today = day.today.map { entry ->
+                if (entry.commitment.id != commitmentId) {
+                    entry
+                } else {
+                    entry.copy(observation = Observation(commitmentId, value))
+                }
+            },
+        )
+    }
+
+    fun setMode(mode: LifeMode) = _state.update { it.copy(mode = mode) }
+
+    fun setMicroTask(text: String) = _state.update { it.copy(microTask = text) }
+}
+
+/** One committed capture, as the day sees it. */
+data class SettledLine(val label: String, val time: String, val amount: Int?)
+
+/** A commitment plus what has happened to it today and how it has been holding. */
+data class DayEntry(
+    val commitment: Commitment,
+    val observation: Observation,
+    val hold: Hold,
+) {
+    val attainment: Double? get() = Attainment.of(commitment, observation)
+
+    /** A floor is breached when it was observed and fell short. Warn, never score. */
+    val floorBreached: Boolean
+        get() {
+            val recorded = observation.value ?: return false
+            return commitment.kind == CommitmentKind.FLOOR && recorded < commitment.target
+        }
+}
+
+/** Everything today is, in one immutable value. */
+data class DayState(
+    val instruments: List<Instrument>,
+    val baseWeights: Map<Instrument, Double>,
+    val mode: LifeMode,
+    val today: List<DayEntry>,
+    val captures: List<SettledLine>,
+    val history: List<Double>,
+    val baselineDays: Int,
+    val microTask: String,
+) {
+    val pursuits: List<DayEntry> get() = today.filter { it.commitment.scored }
+    val floors: List<DayEntry> get() = today.filter { !it.commitment.scored }
+    val breachedFloors: List<DayEntry> get() = floors.filter { it.floorBreached }
+
+    /**
+     * Today's score, composed the way the engine says: instrument readings over
+     * covered commitments only, weights conditioned by the mode, missing data
+     * widening the band instead of lowering the number.
+     */
+    val score: LifeScore
+        get() {
+            val readings = instruments.map { instrument ->
+                val entries = pursuits.filter { it.commitment.instrument == instrument }
+                val observed = entries.mapNotNull { entry ->
+                    val attainment = entry.attainment ?: return@mapNotNull null
+                    attainment * entry.commitment.weight to entry.commitment.weight
+                }
+                if (observed.isEmpty()) {
+                    InstrumentReading(instrument, score = 0.0, coverage = 0.0)
+                } else {
+                    val weightObserved = observed.sumOf { it.second }
+                    val weightAll = entries.sumOf { it.commitment.weight }
+                    InstrumentReading(
+                        instrument = instrument,
+                        score = (observed.sumOf { it.first } / weightObserved * 100.0)
+                            .coerceIn(0.0, 100.0),
+                        coverage = if (weightAll <= 0.0) 0.0 else weightObserved / weightAll,
+                    )
+                }
+            }
+            return Composition.compose(
+                readings = readings,
+                weights = Composition.weights(baseWeights, mode),
+                mode = mode,
+                history = history,
+                baselineDays = baselineDays,
+            )
+        }
+
+    companion object {
+        /**
+         * The stand-in profile until calibration exists.
+         *
+         * It is a **seed, not a default** — every one of these is meant to be
+         * replaced by what the user says about their own days. It is here so the
+         * surface can be built and looked at, and it is the first thing
+         * onboarding deletes.
+         */
+        fun seed(): DayState {
+            val commitments = listOf(
+                Commitment(
+                    id = 1, instrument = Instrument.CRAFT, kind = CommitmentKind.PURSUIT,
+                    shape = aiimin.core.model.CommitmentShape.MORE,
+                    label = "Deep work", unit = "min", target = 120.0, weight = 1.5,
+                ),
+                Commitment(
+                    id = 2, instrument = Instrument.BODY, kind = CommitmentKind.PURSUIT,
+                    shape = aiimin.core.model.CommitmentShape.MORE,
+                    label = "Walk", unit = "steps", target = 13_000.0,
+                ),
+                Commitment(
+                    id = 3, instrument = Instrument.MIND, kind = CommitmentKind.PURSUIT,
+                    shape = aiimin.core.model.CommitmentShape.SHOW_UP,
+                    label = "Journal",
+                ),
+                Commitment(
+                    id = 4, instrument = Instrument.MONEY, kind = CommitmentKind.PURSUIT,
+                    shape = aiimin.core.model.CommitmentShape.SHOW_UP,
+                    label = "Log spends",
+                ),
+                Commitment(
+                    id = 5, instrument = Instrument.BODY, kind = CommitmentKind.FLOOR,
+                    shape = aiimin.core.model.CommitmentShape.MORE,
+                    label = "Steps floor", unit = "steps", target = 5_000.0,
+                    reason = "ten hours seated",
+                ),
+                Commitment(
+                    id = 6, instrument = Instrument.RECOVERY, kind = CommitmentKind.FLOOR,
+                    shape = aiimin.core.model.CommitmentShape.MORE,
+                    label = "Sleep floor", unit = "h", target = 6.5,
+                    reason = "you said you sleep badly",
+                ),
+            )
+            return DayState(
+                instruments = listOf(
+                    Instrument.CRAFT, Instrument.BODY, Instrument.MIND, Instrument.MONEY,
+                ),
+                baseWeights = mapOf(
+                    Instrument.CRAFT to 1.5,
+                    Instrument.BODY to 1.0,
+                    Instrument.MIND to 1.0,
+                    Instrument.MONEY to 1.0,
+                ),
+                mode = LifeMode.BUILD,
+                today = commitments.map { DayEntry(it, Observation(it.id, null), Hold.seed()) },
+                captures = emptyList(),
+                history = emptyList(),
+                baselineDays = 0,
+                microTask = "",
+            )
+        }
+    }
+}

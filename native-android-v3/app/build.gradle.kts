@@ -55,7 +55,10 @@ android {
 
 dependencies {
     implementation(projects.core.designsystem)
+    implementation(projects.core.model)
+    implementation(projects.core.data)
     implementation(projects.feature.capture)
+    implementation(projects.feature.today)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

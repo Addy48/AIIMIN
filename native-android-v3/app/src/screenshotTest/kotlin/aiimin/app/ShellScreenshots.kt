@@ -14,7 +14,8 @@ import androidx.compose.ui.unit.dp
 import com.android.tools.screenshot.PreviewTest
 import aiimin.app.navigation.Tab
 import aiimin.app.ui.AiiminShellContent
-import aiimin.app.ui.surface.DaySurface
+import aiimin.feature.today.TodayScreen
+import aiimin.core.data.DayState
 import aiimin.designsystem.brand.BrandMark
 import aiimin.designsystem.component.DraftedBox
 import aiimin.designsystem.component.EmptyState
@@ -68,7 +69,14 @@ fun SpecimenLight() {
 /** The shell as it draws: the Day surface above, the five-tab bar below. */
 @Composable
 private fun Shell() {
-    AiiminShellContent(currentTab = Tab.DAY, onSelectTab = {}) { DaySurface() }
+    AiiminShellContent(currentTab = Tab.DAY, onSelectTab = {}) {
+        TodayScreen(
+            state = DayState.seed(),
+            onOpenCapture = {},
+            onToggle = {},
+            onMicroTaskChange = {},
+        )
+    }
 }
 
 /** The whole design system on one sheet — the thing to look at when a token moves. */

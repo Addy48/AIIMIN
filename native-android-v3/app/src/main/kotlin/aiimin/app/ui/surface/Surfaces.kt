@@ -49,15 +49,6 @@ private fun SurfaceScaffold(
 }
 
 @Composable
-fun DaySurface(modifier: Modifier = Modifier) = SurfaceScaffold(
-    title = "AIIMIN · Day sheet",
-    meta = "TODAY",
-    oneJob = "Act on this day. Capture leads; the score is a read below it, never the headline.",
-    waitingFor = "Today is built after Capture — it opens with the composer, so the composer has to exist first.",
-    modifier = modifier,
-)
-
-@Composable
 fun MoneySurface(modifier: Modifier = Modifier) = SurfaceScaffold(
     title = "Money",
     meta = "OVERVIEW",
@@ -86,6 +77,6 @@ fun ConfigSurface(modifier: Modifier = Modifier) = SurfaceScaffold(
 
 @Preview(showBackground = true, backgroundColor = 0xFF15171A)
 @Composable
-private fun DaySurfacePreview() {
-    AiiminTheme { DaySurface() }
+private fun MoneySurfacePreview() {
+    AiiminTheme { MoneySurface() }
 }

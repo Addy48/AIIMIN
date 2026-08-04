@@ -37,4 +37,6 @@ rootProject.name = "aiimin-v3"
 include(":app")
 include(":core:designsystem")
 include(":core:model")
+include(":core:data")
 include(":feature:capture")
+include(":feature:today")

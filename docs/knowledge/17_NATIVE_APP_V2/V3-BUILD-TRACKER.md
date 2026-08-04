@@ -31,8 +31,8 @@ tags:
 | 0 | **Foundation** — project, theme, shell | ✅ done 2026-08-03 | `:app:assembleDebug` BUILD SUCCESSFUL · APK 12.5 MB · 4 screenshot goldens recorded and validating |
 | 1 | **Capture** — the trust surface | ✅ done 2026-08-03 (local state; API not wired) | `:app:assembleDebug` BUILD SUCCESSFUL · APK 13.0 MB · 13/13 parser unit tests · 5 screenshot goldens |
 | 2 | **`:core:model`** — Life Score engine v2 maths | ✅ done 2026-08-03 | 28/28 unit tests · attainment curve, asymmetric Hold, robust baseline, trajectory, composition |
-| 3 | Today (capture-first) | next | |
-| 4 | Money | | |
+| 3 | **Today** — capture-first | ✅ done 2026-08-04 (local state) | `:app:assembleDebug` SUCCESSFUL · APK 13.0 MB · 71 tests green · 12 screenshot goldens |
+| 4 | Money | next | |
 | 5 | Config (instruments · mode · commitments · body facts) | | |
 | 6 | OS-ID | | |
 | 7 | Onboarding, 10 steps incl. the Groq calibration | | |
@@ -100,6 +100,39 @@ adb install -r native-android-v3/app/build/outputs/apk/debug/app-debug.apk
 raise if you want them: Detekt and Spotless (Detekt's current release is an
 alpha), JaCoCo coverage, baseline profiles, crash reporting, Gradle managed
 devices.
+
+## 3 · Today — done 2026-08-04 (local state)
+
+**One job:** act on this day.
+
+Reading order is doctrine, not taste (GOV-106, GOV-165 — there is no Dashboard):
+① the composer doorway ② the one small thing ③ floor warnings ④ the read
+⑤ minimums ⑥ what settled. Nothing above the fold asks to be understood before
+something can be done, and the score sits below because a number you cannot act
+on is not a reason to open an app.
+
+**The engine is on the screen now.** The figure carries its ± band and says how
+covered it is; the 28-day line only claims RISING when the slope clears its own
+error bar; instruments with no data read `—`, never `0`; minimums show **HOLD**,
+not a streak.
+
+**Floors behave as specified.** `3,100 · floor 5,000 steps · TEN HOURS SEATED`
+draws in danger, states the fact and the reason, and leaves the score untouched.
+Pinned by `DayStoreTest`: adding a breached floor moves the state by exactly
+zero.
+
+**New module `:core:data`** — an in-memory `DayStore` shared by every surface, so
+settling on Capture lands on Today immediately. It holds the shape the API will
+fill; nothing above it changes when `/api` arrives. `DayState.seed()` is a
+**seed, not a default** — it is the first thing calibration deletes.
+
+Two design bugs were caught in the render pass: the demo day claimed 12,990 steps
+*and* a breached 5,000-step floor (impossible), and quantity rows wore a checkbox
+that promised a tap they did not have. Both fixed — quantities now draw a fill
+gauge instead.
+
+**Evidence 2026-08-04:** `:app:assembleDebug` SUCCESSFUL, APK 13.0 MB · 71 tests
+across four modules, 0 failures · 12 screenshot goldens validating.
 
 ## 2 · `:core:model` — the Life Score maths — done 2026-08-03
 

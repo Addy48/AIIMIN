@@ -3,7 +3,11 @@ package aiimin.app
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.tools.screenshot.PreviewTest
+import aiimin.core.data.DayState
+import aiimin.core.data.SettledLine
+import aiimin.core.model.Observation
 import aiimin.designsystem.theme.AiiminTheme
+import aiimin.feature.today.TodayScreen
 import aiimin.feature.capture.CaptureScreen
 import aiimin.feature.capture.CaptureUiState
 import aiimin.feature.capture.HeldCapture
@@ -99,5 +103,69 @@ private fun Capture(state: CaptureUiState) {
         onDrift = {},
         onUndo = {},
         onPreset = {},
+    )
+}
+
+// --- Today ------------------------------------------------------------------
+
+@PreviewTest
+@Preview(name = "Today · dark", widthDp = PHONE_W, heightDp = 1200)
+@Composable
+fun TodayDark() {
+    AiiminTheme(darkTheme = true) { Today(DayState.seed()) }
+}
+
+@PreviewTest
+@Preview(name = "Today · light", widthDp = PHONE_W, heightDp = 1200)
+@Composable
+fun TodayLight() {
+    AiiminTheme(darkTheme = false) { Today(DayState.seed()) }
+}
+
+/** A day in progress: some pursuits met, a floor breached, four weeks of history. */
+@PreviewTest
+@Preview(name = "Today · in progress", widthDp = PHONE_W, heightDp = 1200)
+@Composable
+fun TodayInProgress() {
+    val seed = DayState.seed()
+    val progressed = seed.copy(
+        baselineDays = 34,
+        history = List(28) { 62.0 + it * 0.55 },
+        microTask = "Finish the parser and settle the day",
+        captures = listOf(
+            SettledLine("paid 1240 swiggy dinner with rohan", "21:14", 1240),
+            SettledLine("metro fare 60", "09:51", 60),
+        ),
+        today = seed.today.map { entry ->
+            val value = when (entry.commitment.id) {
+                1L -> 95.0      // deep work, 95 of the 120 minutes promised
+                2L -> 3_100.0   // a seated day — the walk barely happened
+                3L -> 1.0       // journalled
+                5L -> 3_100.0   // same steps, read as a floor: warns, never scores
+                6L -> 5.4       // slept 5.4 against a 6.5 floor
+                else -> null    // spends not logged — unknown, not zero
+            }
+            val holds = mapOf(1L to 0.93, 2L to 0.71, 3L to 0.87, 4L to 0.62)
+            entry.copy(
+                observation = Observation(entry.commitment.id, value),
+                hold = aiimin.core.model.Hold(
+                    value = holds[entry.commitment.id] ?: 0.0,
+                    currentRun = if (entry.commitment.id == 1L) 6 else 0,
+                    bestRun = if (entry.commitment.id == 1L) 21 else 4,
+                    observedDays = if (holds.containsKey(entry.commitment.id)) 34 else 0,
+                ),
+            )
+        },
+    )
+    AiiminTheme(darkTheme = true) { Today(progressed) }
+}
+
+@Composable
+private fun Today(state: DayState) {
+    TodayScreen(
+        state = state,
+        onOpenCapture = {},
+        onToggle = {},
+        onMicroTaskChange = {},
     )
 }
