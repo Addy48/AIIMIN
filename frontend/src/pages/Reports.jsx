@@ -73,7 +73,9 @@ export default function Reports() {
   const { user } = useAuth();
   const { profile } = useUserProfile();
   const tier = profile?.subscription_tier || 'explore';
+  const isCorePlus = hasTier(tier, 'core');
   const isProPlus = hasTier(tier, 'pro');
+  const isElite = hasTier(tier, 'elite');
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = normalizeTab(searchParams.get('tab'));
 
@@ -125,7 +127,7 @@ export default function Reports() {
   }, [isProPlus, tab]);
 
   useEffect(() => {
-    if (!user || user.isGuest) {
+    if (!user || user.isGuest || !isCorePlus) {
       setLoading(false);
       return undefined;
     }
@@ -150,7 +152,7 @@ export default function Reports() {
     };
     run();
     return () => { cancelled = true; };
-  }, [user, query.days, query.start, query.end]);
+  }, [user, query.days, query.start, query.end, isCorePlus]);
 
   const timeline = report?.meta?.timeline || [];
   const lhs = report?.lhs || null;
@@ -203,6 +205,119 @@ export default function Reports() {
     return <div style={{ padding: 40, color: 'var(--color-text-3)' }}>Sign in to view reports.</div>;
   }
 
+  if (!isCorePlus) {
+    return (
+      <div style={{ paddingBottom: 100, maxWidth: 920 }}>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{
+            fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: 'var(--color-text-3)', marginBottom: 8,
+          }}
+          >
+            Intelligence
+          </div>
+          <h1 style={{ font: 'var(--text-hero)', color: 'var(--color-text-1)', margin: 0, letterSpacing: '-0.02em' }}>
+            Reports
+          </h1>
+          <p style={{ color: 'var(--color-text-2)', fontSize: 14, maxWidth: 640, marginTop: 12 }}>
+            Explore sees the nav. Core unlocks Snapshot. Pro unlocks Standard PDF. Elite unlocks the interactive Intelligence Report.
+          </p>
+        </div>
+        <div style={{
+          position: 'relative',
+          borderRadius: 20,
+          overflow: 'hidden',
+          border: '1px solid var(--border)',
+          minHeight: 420,
+          background: '#0A0A0C',
+        }}
+        >
+          <div style={{
+            padding: 28,
+            filter: 'blur(7px)',
+            opacity: 0.55,
+            pointerEvents: 'none',
+            userSelect: 'none',
+          }}
+          >
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 9, color: 'rgba(237,228,211,0.4)', letterSpacing: '0.08em', marginBottom: 14 }}>
+              90-DAY LIFE FINGERPRINT · ELITE PREVIEW
+            </div>
+            <div style={{ fontFamily: 'Georgia, serif', fontSize: 34, fontWeight: 300, color: '#EDE4D3', lineHeight: 1.1, marginBottom: 22 }}>
+              Your quarter,<br /><span style={{ color: '#FF6B35' }}>decoded.</span>
+            </div>
+            <div style={{ display: 'flex', gap: 2, height: 48, alignItems: 'flex-end', marginBottom: 24 }}>
+              {Array.from({ length: 90 }, (_, i) => {
+                const s = 60 + ((i * 7) % 22);
+                const h = 10 + ((s - 60) / 22) * 38;
+                const c = s < 68 ? '#2D1008' : s < 74 ? '#B5401A' : '#FF6B35';
+                return <div key={i} style={{ flex: 1, height: h, background: c, borderRadius: '1px 1px 0 0' }} />;
+              })}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {['AVG 74', 'PEAK 82', 'FOCUS 186h', 'HABIT 81%'].map((t) => (
+                <div key={t} style={{ background: '#111113', border: '1px solid rgba(237,228,211,0.07)', borderRadius: 8, padding: 14, color: '#EDE4D3', fontFamily: 'Georgia, serif', fontSize: 20 }}>{t}</div>
+              ))}
+            </div>
+          </div>
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'linear-gradient(180deg, rgba(10,10,12,0.25), rgba(10,10,12,0.82))',
+            padding: 24,
+          }}
+          >
+            <div style={{
+              maxWidth: 400,
+              textAlign: 'center',
+              background: 'rgba(17,17,19,0.92)',
+              border: '1px solid rgba(255,107,53,0.28)',
+              borderRadius: 16,
+              padding: '28px 24px',
+            }}
+            >
+              <div style={{
+                display: 'inline-block',
+                fontFamily: 'JetBrains Mono, monospace',
+                fontSize: 10,
+                letterSpacing: '0.08em',
+                color: '#FF6B35',
+                border: '1px solid rgba(255,107,53,0.35)',
+                borderRadius: 4,
+                padding: '4px 10px',
+                marginBottom: 14,
+              }}
+              >
+                PRO
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: '#EDE4D3', marginBottom: 8 }}>
+                Unlock Intelligence Reports
+              </div>
+              <p style={{ fontSize: 13, color: 'rgba(237,228,211,0.55)', lineHeight: 1.6, marginBottom: 18 }}>
+                Core gets Ivory Snapshot. Pro gets Standard PDF + Correlation Intelligence. Elite gets the interactive 90-day web report.
+              </p>
+              <a
+                href="/account?section=subscription"
+                style={{
+                  display: 'inline-block',
+                  padding: '12px 18px',
+                  borderRadius: 12,
+                  background: '#FF6B35',
+                  color: '#fff',
+                  fontWeight: 800,
+                  fontSize: 13,
+                  textDecoration: 'none',
+                }}
+              >
+                View plans
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ paddingBottom: 100 }}>
       <div style={{ marginBottom: 24 }}>
@@ -217,9 +332,11 @@ export default function Reports() {
           Reports
         </h1>
         <p style={{ color: 'var(--color-text-2)', fontSize: 14, maxWidth: 640, marginTop: 12 }}>
-          {isProPlus
-            ? 'Folio Life OS Standard PDF, patterns, and skills — Elite Deep paused.'
-            : 'Ivory Snapshot · 7-day pulse. Upgrade to Pro for Folio PDF + Patterns.'}
+          {isElite
+            ? 'Snapshot + Standard PDF + Interactive Intelligence Report (web). Deep gen uses a separate monthly pool.'
+            : isProPlus
+              ? 'Snapshot + Correlation Intelligence + Folio Standard PDF (monthly generation pool).'
+              : 'Ivory Snapshot · 7-day pulse. Upgrade to Pro for Correlation Intelligence + Folio PDF.'}
         </p>
       </div>
 
@@ -342,7 +459,7 @@ export default function Reports() {
             <div style={{ padding: 24, color: '#ef4444', border: '1px solid #ef4444', borderRadius: 16 }}>{error}</div>
           )}
           {!loading && !error && (
-            <IvorySnapshot report={report} user={user} showUpgrade />
+            <IvorySnapshot report={report} user={user} showUpgrade showCorrelations={false} />
           )}
         </>
       )}
@@ -357,7 +474,7 @@ export default function Reports() {
           {!loading && !error && (
             <>
               <div style={{ marginBottom: 28 }}>
-                <IvorySnapshot report={report} user={user} showUpgrade={false} />
+                <IvorySnapshot report={report} user={user} showUpgrade={false} showCorrelations />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 28 }}>
                 {[

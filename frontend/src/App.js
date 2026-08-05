@@ -16,7 +16,6 @@ import Security from './pages/legal/Security';
 import About from './pages/legal/About';
 import Contact from './pages/legal/Contact';
 import Brand from './pages/Brand';
-import SystemBrand from './pages/legal/Brand';
 
 // Layout & eager components
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -192,7 +191,6 @@ function AppContent({ user, session }) {
         <Route path="/security" element={<Security />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/brand/system" element={<SystemBrand />} />
         <Route path="/brand" element={<Brand />} />
         <Route path="/design-lab" element={<Navigate to="/account?section=design" replace />} />
 

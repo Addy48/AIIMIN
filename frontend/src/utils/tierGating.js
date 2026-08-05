@@ -25,9 +25,15 @@ export const TIER_FEATURES = {
   finance_advanced: 'core',
   sports_personalized: 'core',
   lab_benchmark: 'core',
+  monday_insight: 'core',
   family_vault: 'pro',
   weekly_digest: 'pro',
   finance_whatif: 'pro',
+  wealth_ai: 'pro',
+  correlationsOnSnapshot: 'pro',
+  /** Explore-safe AI surfaces (also allowed on higher tiers). */
+  arc_sharpen: 'explore',
+  universal_logger: 'explore',
 };
 
 /** Minimum tier to open a route (subscription mode enforcement). */
@@ -48,15 +54,17 @@ export const ROUTE_MIN_TIER = {
   '/discipline': 'core',
   '/placements': 'core',
   '/family': 'pro',
-  '/reports': 'core', /* Core+ Snapshot; Pro+ Folio PDF; Elite Deep paused */
+  '/reports': 'explore', /* Explore = locked paywall; Core+ Snapshot; Pro+ Folio; Elite Intelligence */
   /* /insights redirects → /reports?tab=patterns (tier applied on /reports) */
 };
 
-/** Report product by plan: Snapshot (Core+), Standard Folio PDF (Pro+). Elite Deep not shipped. */
+/** Report product by plan: Snapshot (Core+), Standard Folio PDF (Pro+), Intelligence web (Elite). */
 export const REPORT_PRODUCT = {
   snapshot: 'core',
   standardPdf: 'pro',
-  deep: null, /* paused */
+  correlationsOnSnapshot: 'pro',
+  intelligenceWeb: 'elite',
+  deep: 'elite',
 };
 
 export function minTierForPath(pathname) {

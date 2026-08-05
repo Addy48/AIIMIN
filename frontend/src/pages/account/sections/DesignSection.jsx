@@ -5,9 +5,11 @@ import UILibraryPanel from './design/UILibraryPanel';
 import PersonalizationPrototypesPanel from './design/PersonalizationPrototypesPanel';
 import TodayPagePrototypesPanel from './design/TodayPagePrototypesPanel';
 import ShippedDesignArchivePanel from './design/ShippedDesignArchivePanel';
+import EliteReportsPrototypesPanel from './design/EliteReportsPrototypesPanel';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
+  { id: 'elite-reports', label: 'Elite reports' },
   { id: 'today-page', label: 'Today page prototypes' },
   { id: 'personalization', label: 'Personalization prototypes' },
   { id: 'ui-library', label: 'UI library' },
@@ -16,6 +18,7 @@ const TABS = [
 
 const PANELS = {
   overview: OverviewPanel,
+  'elite-reports': EliteReportsPrototypesPanel,
   'today-page': TodayPagePrototypesPanel,
   personalization: PersonalizationPrototypesPanel,
   'ui-library': UILibraryPanel,
@@ -33,7 +36,8 @@ export default function DesignSection() {
         <h1 className="text-h1" style={{ marginBottom: 8 }}>Design Lab</h1>
         <p className="text-sm" style={{ color: 'var(--color-text-2)', maxWidth: 640, lineHeight: 1.65 }}>
           Active prototypes and experiments only. Finished navbar, theme, accent, logo, and typography work
-          has been moved into the shipped archive.
+          has been moved into the shipped archive. Elite Intelligence Report craft lives under{' '}
+          <strong style={{ color: 'var(--color-text-1)' }}>Elite reports</strong>.
         </p>
       </div>
 
