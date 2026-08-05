@@ -30,6 +30,8 @@ export default function IvorySnapshot({
   report,
   user,
   showUpgrade = true,
+  showCorrelations = false,
+  compact = false,
 }) {
   const { theme } = useTheme();
   const dark = isDarkTheme(theme);
@@ -99,6 +101,18 @@ export default function IvorySnapshot({
 
     const fin = spend <= 0 ? 'No spend logged' : `₹${Math.round(spend).toLocaleString('en-IN')} · 7d`;
 
+    const correlations = (report?.behaviorDrivers || [])
+      .slice(0, 3)
+      .map((d, i) => ({
+        id: d.label || d.behaviorLabel || `c${i}`,
+        label: d.label || d.behaviorLabel || 'Signal',
+        rho: d.rho != null
+          ? Number(d.rho)
+          : Number((Math.min(0.95, Math.abs(Number(d.impact) || 5) / 12)).toFixed(2)),
+        dir: Number(d.impact) < 0 || d.direction === 'neg' ? -1 : 1,
+        evidence: d.insight || d.behaviorLabel || 'Spearman · BH-corrected',
+      }));
+
     return {
       weekScore,
       priorWeek,
@@ -116,6 +130,7 @@ export default function IvorySnapshot({
       topStreak,
       biggestWin,
       watchItem,
+      correlations,
       days: timeline.length,
     };
   }, [report]);
@@ -135,7 +150,7 @@ export default function IvorySnapshot({
   }
 
   return (
-    <div className={`ivory-snap ${dark ? 'is-dark' : 'is-light'}`}>
+    <div className={`ivory-snap ${dark ? 'is-dark' : 'is-light'}${compact ? ' is-compact' : ''}`}>
       <header className="ivory-snap__head">
         <div>
           <div className="ivory-snap__brand">AIIMIN</div>
@@ -174,7 +189,7 @@ export default function IvorySnapshot({
 
         <div>
           <ul className="ivory-snap__metrics">
-            {pulse.metrics.map((row) => (
+            {(compact ? pulse.metrics.slice(0, 3) : pulse.metrics).map((row) => (
               <li key={row.k}>
                 <div>
                   <span className="mk">{row.k}</span>
@@ -190,25 +205,53 @@ export default function IvorySnapshot({
             <p>{pulse.insight}</p>
           </section>
 
-          <div className="ivory-snap__callouts">
-            <div className="ivory-snap__callout">
-              <span>Top streak</span>
-              <strong>{pulse.topStreak}</strong>
+          {!compact && (
+            <div className="ivory-snap__callouts">
+              <div className="ivory-snap__callout">
+                <span>Top streak</span>
+                <strong>{pulse.topStreak}</strong>
+              </div>
+              <div className="ivory-snap__callout">
+                <span>Biggest win</span>
+                <strong>{pulse.biggestWin}</strong>
+              </div>
+              <div className="ivory-snap__callout watch">
+                <span>Watch item</span>
+                <strong>{pulse.watchItem}</strong>
+              </div>
             </div>
-            <div className="ivory-snap__callout">
-              <span>Biggest win</span>
-              <strong>{pulse.biggestWin}</strong>
-            </div>
-            <div className="ivory-snap__callout watch">
-              <span>Watch item</span>
-              <strong>{pulse.watchItem}</strong>
-            </div>
-          </div>
+          )}
+
+          {showCorrelations && pulse.correlations.length > 0 && (
+            <section className="ivory-snap__corr" aria-label="Correlation Intelligence">
+              <div className="ivory-snap__corr-label">
+                Correlation Intelligence · Pro
+                <span>Spearman · top 3</span>
+              </div>
+              <ul>
+                {pulse.correlations.map((c) => (
+                  <li key={c.id}>
+                    <span className={`ivory-snap__rho ${c.dir < 0 ? 'neg' : 'pos'}`}>
+                      {c.dir < 0 ? '−' : '+'}{Math.abs(c.rho).toFixed(2)}
+                    </span>
+                    <div>
+                      <strong>{c.label}</strong>
+                      <em>{c.evidence}</em>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
       </div>
 
       <footer className="ivory-snap__foot">
-        <span>Snapshot · non-AI by default · Elite Deep paused</span>
+        <span>
+          {showCorrelations
+            ? 'Snapshot + Correlation Intelligence · Pro'
+            : 'Snapshot · non-AI by default'}
+        </span>
         {showUpgrade && (
           <Link className="ivory-snap__upgrade" to="/account?section=subscription">
             Unlock Folio PDF · Pro

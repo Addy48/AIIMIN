@@ -29,12 +29,14 @@ function ensureNotesNav(activeIds, pinnedIds) {
   let active = [...activeIds];
   let pinned = [...pinnedIds];
   if (!active.includes('notes')) active.push('notes');
+  if (!active.includes('reports')) active.push('reports');
   active = sanitizeActiveIds(active);
   if (!pinned.includes('notes') && pinned.length < NAV_MAX_PINNED) {
     const ji = pinned.indexOf('journal');
     if (ji >= 0) pinned.splice(ji + 1, 0, 'notes');
     else pinned.push('notes');
   }
+  // Reports stays under More unless user explicitly pins it
   pinned = sanitizePinnedIds(pinned).filter((id) => active.includes(id));
   return { activeIds: active, pinnedIds: pinned };
 }
@@ -53,8 +55,12 @@ function readPrefs() {
       bottomNavEnabled: parsed.bottomNavEnabled !== false,
       personaPresetId: parsed.personaPresetId || 'custom',
     };
-    // Persist one-time Notes nav migration
-    if (!baseActive.includes('notes') || (!basePinned.includes('notes') && pinnedIds.includes('notes'))) {
+    // Persist one-time Notes / Reports nav migration
+    if (
+      !baseActive.includes('notes')
+      || !baseActive.includes('reports')
+      || (!basePinned.includes('notes') && pinnedIds.includes('notes'))
+    ) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     }
     return next;

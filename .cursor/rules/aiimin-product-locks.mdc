@@ -11,6 +11,15 @@ Dark: bg `#1a1a1a`, cards `#2d2d2d`, accent `#ff6b35`, done `#10b981`, muted `#6
 Light: bg `#f9f9f9`, cards `#ffffff`, same accents  
 No new brand colors without explicit user approval. Details: `docs/knowledge/08_DESIGN/Palette.md`
 
+## Navbar brand lockup LOCKED
+
+Split click targets — do not unify without explicit user ask:
+- **Logo mark** → `/brand` (full scrollable brand book: Human Momentum + identity + palette + storage + privacy/terms/compliance)
+- **AIIMIN wordmark text** → `/overview` (Today)
+
+Do **not** replace with mini-story or purple OAuth chrome.
+Files: `BrandLockup.jsx` · `Brand.jsx` · `brandPage.css`
+
 ## Mobile
 
 Route `/m` = data collection ONLY. No analytics, insights, pomodoro, or tools on mobile.

@@ -26,7 +26,7 @@ AIIMIN is a personal operating system for disciplined execution, reflection, and
 When `REACT_APP_WAITLIST_MODE=true`:
 
 - `/` shows modular waitlist landing (`WaitlistLanding.jsx` + `components/waitlist/landing/*`)
-- Wordmark links to `/brand` — WaitlistBrand for public visitors
+- **LOCKED:** Navbar logo → `/brand` (always-light Human Momentum manifesto + storage/privacy/terms; cursor ember spotlight); text → `/overview`.
 - Pricing: Pro founding ₹49/mo; Elite founding ₹79/mo; complimentary Core at launch; Core standard ₹29/mo
 - Primary CTA: **Reserve my spot**
 - Signup returns position + referral code; `localStorage` key `aiimin_waitlist`

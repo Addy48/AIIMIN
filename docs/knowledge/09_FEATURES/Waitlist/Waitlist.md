@@ -15,7 +15,7 @@ Landing (modular v9 — July 2026):
 - **Launch journey:** 4-phase vertical ladder (Reserve access → Founding launch → Module rollout → Full OS expansion) with access/approval notes
 - **Early access:** tester VIP vs waitlist founding packages (6 perks each)
 - **Testimonials:** 2 professors, 1 student, 1 working professional (regional credible tone)
-- **Brand:** `/brand` → `WaitlistBrand.jsx` (theme-synced via `aiimin-waitlist-theme`)
+- **Brand:** `/brand` → **Human Momentum manifesto** (`Brand.jsx` + `brandPage.css`): brand-first hero, numbered pillars, storage ledger, trust/legal, roadmap, architecture. Navbar: logo → `/brand`, text → `/overview`.
 - **Post-signup:** OS-ID reserve panel inline; referral share; `localStorage` key `aiimin_waitlist`
 - **SEO:** canonical `aiimin.in`, `og-image-v2.png`, JSON-LD Desktop Web
 
@@ -70,7 +70,7 @@ Landing (modular v9 — July 2026):
 - `frontend/src/components/waitlist/WaitlistSocialProof.jsx`
 - `frontend/src/components/waitlist/WaitlistQuickFeedback.jsx`
 - `frontend/src/components/waitlist/WaitlistThemeSync.jsx`
-- `frontend/src/pages/WaitlistBrand.jsx`
+- `frontend/src/pages/Brand.jsx`
 - `frontend/src/styles/waitlistLanding.css`
 - `server/routes/waitlist.js`
 - `server/migrations/034_waitlist_referrals.sql`

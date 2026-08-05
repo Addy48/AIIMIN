@@ -146,6 +146,22 @@ const Navbar = ({ user }) => {
                           onClick={() => setMoreOpen(false)}
                         >
                           {label}
+                          {to === '/reports' && (
+                            <span
+                              style={{
+                                marginLeft: 8,
+                                fontSize: 9,
+                                fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                                letterSpacing: '0.06em',
+                                color: 'var(--color-accent)',
+                                border: '1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)',
+                                borderRadius: 3,
+                                padding: '1px 5px',
+                              }}
+                            >
+                              INTEL
+                            </span>
+                          )}
                         </NavLink>
                       ))}
                       <button

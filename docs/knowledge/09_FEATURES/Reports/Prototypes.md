@@ -5,15 +5,34 @@
 | Tier | Locked direction | Notes |
 |------|------------------|-------|
 | **Core · Snapshot** | **Ivory Light** + **Ivory Dark** | Follows app theme. Device layouts: Phone / iPad / Laptop |
-| **Pro · Standard** | **Folio Life OS** | Academic Folio + Life OS identity |
-| **Elite · Deep** | **Paused** | Not locked. Still missing the right artifact |
+| **Pro · Standard** | **Folio Life OS** | White body + ivory header band + 14-day fingerprint + numbered findings |
+| **Elite · Intelligence** | **Craft in progress** | Web experience (not longer PDF). Design Lab: 6 interaction prototypes |
 
-## Elite pause constraints (for later)
+## Elite product rule (2026-07-17)
 
-- Do **not** dump raw “Appendix A” daily tables at the user — feels like noise, not a premium artifact
-- Single-page “architecture skins” rejected
-- Multipage science packs still didn’t feel like *the* Elite report
-- Resume only with a clearer job-to-be-done + craft bar, not more font swaps
+- **Pro = document** (downloadable Folio PDF)
+- **Elite = experience** (persistent URL `/reports/[id]`, interactive scroll, fingerprint hover, expandable correlations)
+- PDF download on Elite = archive snapshot of the web report, not the product
+- Signature element: **90-day Life Fingerprint** strip (Core/Pro do not get this)
+
+## Elite Design Lab prototypes (pick one)
+
+Path: Account → Design Lab → **Elite reports**
+
+| # | Direction | Interaction idea |
+|---|-----------|------------------|
+| 01 | Fingerprint Brief | Sticky nav + hover fingerprint hero (reference) |
+| 02 | Case Dossier | Left chapter rail + evidence drawers |
+| 03 | Quarter Timeline | Vertical narrative spine of weeks |
+| 04 | Correlation Lab | Graph-first Spearman edges |
+| 05 | Command Deck | Sticky fingerprint + open/close instrument panels |
+| 06 | Briefing Slides | Full-stage slides + arrow-key nav |
+
+## Elite pause constraints (still valid)
+
+- Do **not** dump raw “Appendix A” daily tables at the user
+- Reject font-only / skin-only variants as “new prototypes”
+- Do not ship Elite as a longer PDF
 
 ## Core device shells
 
@@ -27,16 +46,6 @@ Matches [[02_ARCHITECTURE/Device-Tiers]]:
 
 Preview **scales the whole frame** to fit your browser — layout math stays at those pixels (not full-window fakes).
 
-### 2026-07-17 — Real device viewports
-- **What:** Phone/iPad/Laptop now render inside fixed-resolution bezels with scale-to-fit
-- **Why:** Prior “device” modes only restyled drawer on full browser — didn’t look like those resolutions
-- **Files:** `device-frames.css`, `preview.js`, `snapshot.js`, `snapshot-all.css`
-- **Status:** locked Core polish
-
-
-
-Preview: open Ivory Light/Dark → **Phone / iPad / Laptop** buttons in chrome.
-
 ## Open
 
 ```bash
@@ -49,18 +58,15 @@ cd prototypes/reports && python3 -m http.server 8765
 
 | Plan | Live product |
 |------|----------------|
-| Core+ | Ivory Snapshot on `/reports` (7d) |
-| Pro+ | Snapshot + Folio PDF + Patterns/Skills |
-| Elite | Same as Pro for now — Deep paused |
+| Explore | Reports nav in More · locked Pro paywall (blurred Elite preview) |
+| Core+ | Ivory Snapshot on `/reports` + Today “Your Report” card |
+| Pro+ | Snapshot + Correlation Intelligence (top 3) + Folio PDF (monthly pool 6) |
+| Elite | Same as Pro until Intelligence web ships · prototypes in Design Lab |
 
 ## Changelog
 
-### 2026-07-17 — Production wire Core/Pro
-- **What:** Locked directions live on `/reports`; Elite Deep still paused
-- **Status:** shipping
-
-### 2026-07-17 — Lock Core + Pro; pause Elite; Core device tiers
-- **What:** Locked Ivory Light/Dark + Folio Life OS; Elite paused; Core phone/tablet/laptop prototype shells; no raw appendix for users (design rule)
-- **Why:** User locked Core/Pro; Elite not right yet; Core looked phone-only
-- **Files:** `prototypes/reports/**`, this note, Current Context
-- **Status:** Core/Pro locked · Elite paused
+### 2026-07-17 — Elite = web experience; six Design Lab paradigms
+- **What:** Elite reframed as interactive web report (not PDF). Six distinct interaction prototypes in Design Lab. Pro PDF upgraded (fingerprint, white/ivory, numbered findings). Reports under More. Today Your Report card. Two-pool AI (daily + report gen).
+- **Why:** User critique — Elite must not be “longer Pro”
+- **Files:** `EliteReportsPrototypesPanel.jsx`, `YourReportCard.jsx`, `PDFReportGenerator.jsx`, `apiUsageService.js`, vault
+- **Status:** local craft

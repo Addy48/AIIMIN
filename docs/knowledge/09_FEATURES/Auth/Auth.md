@@ -16,6 +16,7 @@
 - Routes: see [[04_API/auth]]
 - Login a11y: identifier / Full Name / Recovery Email / OS-ID must appear as `role=textbox` with accessible names matching placeholders (`OS-ID / EMAIL`, etc.)
 - PIN step subtitle masks identity (`AA****37` / email) — never show raw OS-ID
+- Login OS-ID → PIN only after `GET /auth/resolve` finds the user (404 stays on identifier step)
 - Desktop: brand only on left panel; mobile (≤900px): brand on form panel
 
 ## Files
@@ -39,6 +40,12 @@
 - [[11_BUGS/QA-Run-2026-07-14-Login]]
 
 ## Changelog
+
+### 2026-07-17 — Ghost OS-ID no longer opens PIN step
+- **What:** Login only advances to PIN after `/auth/resolve` succeeds for an OS-ID. Unknown OS-ID stays on step 1 with “OS-ID not found…”. Email path unchanged (format check only).
+- **Why:** Auto-advance at 8 chars skipped existence check — fake OS-IDs still asked for PIN
+- **Files:** `frontend/src/pages/Login.jsx`, this note
+- **Status:** local
 
 ### 2026-07-15 — Login Selfloop QA crush pass
 - **What:** Pass 2 kills remaining partials: CTA chips (no fake hit area), Forgot as 48px surface button, dark-glass pills, stronger PIN borders/mask/active pulse, numpad **Clear\|0\|Del** (no empty cell), error `#991b1b`/`#fef2f2`, form subtitle `#1a1a1a`, rate-limiter `Retry-After`. Pass 1: sentence-case hero, mask identity, hide desktop form brand, Del text, limit 30/15m.
