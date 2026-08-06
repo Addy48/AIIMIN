@@ -2,21 +2,22 @@
 
 > Agents read after Home. Keep ≤400 lines.
 
-**Date:** 2026-07-17
+**Date:** 2026-07-18
 
 ## Today
 
-- Shipping local pack: Reports two-pool tiers · Brand manifesto · Auth ghost-OS-ID · Elite Design Lab prototypes
-- **Tier lock:** Explore 1 AI / locked Reports · Core ₹29 Snapshot 10 AI · Pro ₹49 + correlations + 6 PDF/mo 25 AI · Elite ₹79 + 3 Deep + unlimited Standard 40 AI
-- **Brand lock:** light `/brand` · mark→brand · text→Today
-- **Auth:** resolve OS-ID before PIN
+- **Seed:** `scripts/seed-realistic-life.mjs` — one account (`SEED_USERNAME` / AADI0837). Removable: `node scripts/seed-realistic-life.mjs --wipe-only --confirm`. Docs [[16_DOCUMENTATION/Seed-Demo-History]].
+- **Reports:** Folio → **Life OS Review**; PDF download via `pdf().toBlob()`.
+- Finance / Lab / Focus / Discipline / calendar / habits UI + auth DB P0 in this commit batch.
 
 ## Next
 
-1. Confirm Vercel READY + `api.aiimin.in/api/health` SHA
-2. Elite Design Lab pick → `/reports/[id]`
-3. Optional: fix `you@example.com` in Privacy/Terms
+1. Use wipe-only when site needs fresh for AADI0837; re-seed with `--confirm` when testing again
+2. Keep local API on `:3001` for OS-ID / habits
+3. Do not push unless asked
 
 ## Touch
 
-- Reports / billing / apiUsage / Brand / Login / vault
+- `scripts/seed-realistic-life.mjs` · `docs/knowledge/16_DOCUMENTATION/Seed-Demo-History.md`
+- `frontend/src/components/PDFReportGenerator.jsx` · Finance / Lab / Focus / Discipline
+- `server/migrations/045_*` … `047_*` · `server/routes/{db,lab,focus,habits}.js`

@@ -1,5 +1,12 @@
 # Discipline Changelog
 
+### 2026-07-18 — Hydrate from API (not localStorage-only)
+- **What:** Discipline page loads streak + urges + logs from `/api/discipline/*` on mount; start/reset write API. Seeded `discipline_streaks` for demo account. Slip log merges urge history.
+- **Why:** Seeded DB data never appeared — UI was localStorage-only while Lab/Focus had same class of bug
+- **Files:** `frontend/src/pages/Discipline.jsx`, `server/routes/discipline.js`, `scripts/seed-realistic-life.mjs`
+- **Status:** shipped (local; restart `dev_server.js`)
+- **Notes:** Keep localStorage as cache only
+
 ### 2026-07-13 — Restore Engine UI + improve urge (not strip)
 - **What:** Reverted stripped Surf-only page; restored classic Discipline Engine (streak, milestones, toolkit). Urge modal: 15 min, early complete, extend, breathe cue, optional API urge sync + pattern headline. Softened slip copy. Device-tier CSS (`disciplinePage.css`). Crisis link.
 - **Why:** User rejected gut rewrite; wanted old UI improved

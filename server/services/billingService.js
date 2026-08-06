@@ -44,7 +44,7 @@ export const TIERS = {
     features: [
       'Everything in Core',
       'Correlation Intelligence on Snapshot (top 3)',
-      'Folio Life OS Standard PDF (14-day)',
+      'Life OS Review PDF (14-day)',
       '6 Standard PDFs / month (separate from daily AI)',
       'Family vault + Wealth AI',
       '25 AI calls per day',

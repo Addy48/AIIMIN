@@ -41,6 +41,13 @@
 
 ## Changelog
 
+### 2026-07-18 — API data plane + P0 security harden
+- **What:** Frontend supabase client now proxies table I/O through `/api/db` (Better Auth). Query-string session tokens removed. DB: DEFINER revoke, oauth PK, rateLimit table, hot FK indexes.
+- **Why:** Audit FAIL #22 identity split + #12/#13 security
+- **Files:** `frontend/src/utils/supabase.js`, `server/routes/db.js`, `server/lib/sessionResolve.js`, `server/lib/auth.js`, migrations 045–047, [[11_BUGS/Audit-Auth-DB-2026-07-18]]
+- **Status:** partial — restart API required; budget category embeds stripped by shim
+- **Notes:** Waitlist still uses `/api/waitlist` (not Data API).
+
 ### 2026-07-17 — Ghost OS-ID no longer opens PIN step
 - **What:** Login only advances to PIN after `/auth/resolve` succeeds for an OS-ID. Unknown OS-ID stays on step 1 with “OS-ID not found…”. Email path unchanged (format check only).
 - **Why:** Auto-advance at 8 chars skipped existence check — fake OS-IDs still asked for PIN

@@ -11,8 +11,8 @@ import {
 const FinanceOverview = ({ 
   totalNetWorth, returnPct, monthlyIncome, monthlyExpenses, formatCurrency,
   aiSummaryLoading, aiSummary,
-  savingsRate, fiYears, totalBalance, totalReturns,
-  financeChecks, velocityData
+  savingsRate, fiYears, fiProgressPct = 0, totalBalance, totalReturns,
+  financeChecks, velocityData, onReviewAnalytics
 }) => {
   const fiTrendLabel = fiYears == null
     ? 'Need savings data'
@@ -24,6 +24,8 @@ const FinanceOverview = ({
   const capitalSurplus = monthlyIncome - monthlyExpenses;
   const surplusLabel = `${capitalSurplus >= 0 ? '+' : '−'}${formatCurrency(Math.abs(capitalSurplus))}`;
   const isEmptyVault = !totalNetWorth && !monthlyIncome && !monthlyExpenses;
+  const progress = Math.max(0, Math.min(100, Number(fiProgressPct) || 0));
+  const chartData = Array.isArray(velocityData) && velocityData.length ? velocityData : [{ name: 'Now', value: Math.round(totalNetWorth || 0) }];
   const sanitizeAiText = (s) => {
     if (!s || typeof s !== 'string') return s;
     return s.replace(/\s*AI-\s*$/i, '').replace(/[\s-]+$/g, '').trim();
@@ -261,28 +263,37 @@ const FinanceOverview = ({
           
           <div style={{ height: '320px', paddingBottom: '8px' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={velocityData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+              <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 8 }}>
                 <defs>
                   <linearGradient id="velocityGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--color-accent)" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="var(--color-accent)" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#ff6b35" stopOpacity={0.28}/>
+                    <stop offset="95%" stopColor="#ff6b35" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="name" stroke="var(--color-text-2)" fontSize={12} tickLine={false} axisLine={false} dy={6} />
-                <YAxis hide />
+                <CartesianGrid strokeDasharray="0" vertical={false} stroke="var(--color-border)" strokeOpacity={0.45} />
+                <XAxis dataKey="name" stroke="var(--color-text-3)" fontSize={12} tickLine={false} axisLine={false} dy={6} />
+                <YAxis
+                  stroke="var(--color-text-3)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  width={56}
+                  tickFormatter={(v) => (v >= 100000 ? `${Math.round(v / 1000)}k` : String(v))}
+                />
                 <Tooltip 
                   contentStyle={{ background: 'var(--color-elevated)', border: '1px solid var(--color-border)', borderRadius: '12px' }}
-                  formatter={(val) => [formatCurrency(val), 'Projected NW']}
+                  formatter={(val) => [formatCurrency(val), 'Net worth path']}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="var(--color-accent)" 
-                  strokeWidth={4} 
+                  stroke="#ff6b35" 
+                  strokeWidth={3} 
                   fillOpacity={1} 
                   fill="url(#velocityGrad)"
-                  animationDuration={2000}
+                  animationDuration={1200}
+                  dot={{ r: 3, fill: '#ff6b35', strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -316,19 +327,25 @@ const FinanceOverview = ({
           <div style={{ position: 'relative', zIndex: 2 }}>
             <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '16px', padding: '20px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontSize: '12px' }}>
-                <span>Progress to Goal</span>
-                <span>{Math.round((totalNetWorth / (monthlyExpenses * 12 * 25 || 1)) * 100)}%</span>
+                <span>Progress to Goal (25× annual burn)</span>
+                <span>{Math.round(progress)}%</span>
               </div>
               <div style={{ height: '6px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
                 <motion.div 
                   initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(100, (totalNetWorth / (monthlyExpenses * 12 * 25 || 1)) * 100)}%` }}
-                  transition={{ duration: 2 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1.2 }}
                   style={{ height: '100%', background: '#10B981' }}
                 />
               </div>
+              {monthlyExpenses <= 0 && (
+                <div style={{ fontSize: 11, opacity: 0.7, marginTop: 10 }}>Needs expense history to compute FI target.</div>
+              )}
             </div>
-            <button style={{
+            <button
+              type="button"
+              onClick={() => onReviewAnalytics?.()}
+              style={{
               width: '100%',
               padding: '16px',
               background: 'white',
@@ -339,7 +356,7 @@ const FinanceOverview = ({
               fontSize: '13px',
               cursor: 'pointer'
             }}>
-              Optimize Velocity
+              Review Analytics
             </button>
           </div>
 

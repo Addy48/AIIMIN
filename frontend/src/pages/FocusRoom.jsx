@@ -9,6 +9,7 @@ import toast from '../utils/toast';
 import { useAudio } from '../context/AudioContext';
 
 import { useAuth } from '../hooks/useAuth';
+import { fetchFocusWeekStats, logFocusSession } from '../api/focus';
 
 // ── Session presets ──────────────────────────────────────────────────────────
 const PRESETS = [
@@ -195,6 +196,30 @@ export default function FocusRoom() {
   const [todayMinutes, setTodayMinutes] = useState(() => {
     try { return parseInt(localStorage.getItem('aiimin_focus_mins') || '0', 10); } catch { return 0; }
   });
+  const [weekMinutes, setWeekMinutes] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const rows = await fetchFocusWeekStats(7);
+        if (cancelled || !Array.isArray(rows)) return;
+        const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); // YYYY-MM-DD
+        const todayRow = rows.find((r) => r.date === todayKey || String(r.date).startsWith(todayKey));
+        const sessions = todayRow ? Number(todayRow.cycles) || 0 : 0;
+        const mins = todayRow ? Number(todayRow.minutes) || 0 : 0;
+        const week = rows.reduce((a, r) => a + (Number(r.minutes) || 0), 0);
+        setTodaySessions(sessions);
+        setTodayMinutes(mins);
+        setWeekMinutes(week);
+        localStorage.setItem('aiimin_focus_today', String(sessions));
+        localStorage.setItem('aiimin_focus_mins', String(mins));
+      } catch {
+        /* keep local */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const { audioFiles, audioIdx, nextAudio } = useAudio();
   const [mainIntent, setMainIntent] = useState(() => localStorage.getItem('aiimin_focus_intent') || '');
@@ -220,12 +245,17 @@ export default function FocusRoom() {
     const newMins = todayMinutes + mins;
     setTodaySessions(newSessions);
     setTodayMinutes(newMins);
+    setWeekMinutes((w) => w + mins);
     localStorage.setItem('aiimin_focus_today', String(newSessions));
     localStorage.setItem('aiimin_focus_mins', String(newMins));
     setCycleCount(prev => prev + 1);
     setStatus('success');
     toast.success(`Deep work session complete! +${mins} minutes`, { duration: 5000 });
-  }, [preset.work, todaySessions, todayMinutes]);
+    logFocusSession({
+      duration_minutes: mins,
+      session_intent: mainIntent || undefined,
+    }).catch(() => {});
+  }, [preset.work, todaySessions, todayMinutes, mainIntent]);
 
   const handleTimerComplete = useCallback(() => {
     if (phase === 'work') completeWork();
@@ -360,8 +390,13 @@ export default function FocusRoom() {
             </div>
             <div style={{ width: '1px', background: 'rgba(255,255,255,0.05)' }} />
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '4px' }}>Cycles</div>
+              <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '4px' }}>Sessions</div>
               <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--color-text-1)' }}>{todaySessions}</div>
+            </div>
+            <div style={{ width: '1px', background: 'rgba(255,255,255,0.05)' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-text-3)', marginBottom: '4px' }}>7d</div>
+              <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--color-text-1)' }}>{weekMinutes}<span style={{ fontSize: '12px', color: 'var(--color-text-3)', marginLeft: '2px' }}>m</span></div>
             </div>
             {streakLabel && (
               <>

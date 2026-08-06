@@ -1,83 +1,276 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 
-const FinanceAnalytics = ({ 
-  dailySpend, savingsRate, monthlyExpenses, monthlyIncome, 
-  topExpenses, formatCurrency 
+/**
+ * Finance Analytics — spend heatmap, savings gauge, cash-flow waterfall.
+ * Waterfall: shared scale; category labels always under bars; hover tooltips.
+ */
+const FinanceAnalytics = ({
+  dailySpend = [],
+  savingsRate = '0',
+  monthlyExpenses = 0,
+  monthlyIncome = 0,
+  topExpenses = [],
+  formatCurrency,
 }) => {
+  const rate = Math.max(0, Math.min(100, Number(savingsRate) || 0));
+  const saved = Math.max(0, monthlyIncome - monthlyExpenses);
+  const maxBar = Math.max(monthlyIncome, saved, 1);
+
+  const [hoverDay, setHoverDay] = useState(null);
+  const [hoverStep, setHoverStep] = useState(null);
+
+  const cells = useMemo(() => {
+    if (!dailySpend.length) return [];
+    return dailySpend;
+  }, [dailySpend]);
+
+  const maxDay = Math.max(1, ...cells.map((d) => d.amount || 0));
+  const cols = Math.min(31, Math.max(7, cells.length || 14));
+
+  const waterfallSteps = useMemo(() => {
+    const steps = [{ key: 'income', label: 'Income', value: monthlyIncome, kind: 'in' }];
+    topExpenses.forEach((exp, i) => {
+      steps.push({ key: `e-${i}`, label: exp.name || 'Other', value: exp.value, kind: 'out' });
+    });
+    steps.push({ key: 'saved', label: 'Saved', value: saved, kind: 'saved' });
+    return steps;
+  }, [monthlyIncome, topExpenses, saved]);
+
+  const formatDayLabel = (iso) => {
+    if (!iso) return '';
+    const d = new Date(`${iso}T12:00:00`);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
   return (
     <motion.div key="analytics" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-        
-        {/* Heatmap */}
-        <div className="nordic-card" style={{ padding: '32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)' }}>Daily Spend Velocity</div>
-            <div style={{ fontSize: '12px', color: 'var(--text-2)', display: 'flex', gap: '8px', alignItems: 'center' }}>
-              Intensity <div style={{ display: 'flex', gap: '2px' }}>{[0.1, 0.4, 0.7, 1].map(o => <div key={o} style={{ width: '8px', height: '8px', background: `rgba(220, 38, 38, ${o})`, borderRadius: '2px' }}/>)}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '24px', marginBottom: '24px' }}>
+
+        {/* Daily spend heatmap (MTD calendar) */}
+        <div className="nordic-card" style={{ padding: '28px 32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', gap: '12px' }}>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)' }}>Daily Spend Heatmap</div>
+              <div style={{ fontSize: '13px', color: 'var(--color-text-2)', marginTop: '6px' }}>Month-to-date · darker = heavier day</div>
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--color-text-3)', display: 'flex', gap: '6px', alignItems: 'center' }}>
+              Less
+              {[0.12, 0.35, 0.6, 0.9].map((o) => (
+                <div key={o} style={{ width: 10, height: 10, borderRadius: 3, background: `rgba(226, 114, 91, ${o})` }} />
+              ))}
+              More
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(15, 1fr)', gap: '4px' }}>
-            {dailySpend.map((d, i) => {
-              const intensity = Math.min(1, d.amount / (monthlyExpenses / 15 || 1000));
-              return (
-                <div 
-                  key={i} 
-                  title={`${d.date}: ${formatCurrency(d.amount)}`}
-                  style={{ 
-                    aspectRatio: '1', 
-                    background: `rgba(220, 38, 38, ${Math.max(0.1, intensity)})`, 
-                    borderRadius: '4px',
-                    cursor: 'help'
-                  }} 
-                />
-              );
-            })}
+
+          {/* Hover readout above grid */}
+          <div
+            style={{
+              minHeight: 28,
+              marginBottom: 12,
+              fontSize: 13,
+              fontWeight: 600,
+              color: hoverDay ? 'var(--color-text-1)' : 'var(--color-text-3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            {hoverDay ? (
+              <>
+                <span>{formatDayLabel(hoverDay.date)}</span>
+                <span style={{ color: 'var(--color-text-3)', fontWeight: 500 }}>·</span>
+                <span style={{ color: hoverDay.amount > 0 ? 'var(--color-rust, #e2725b)' : 'var(--color-text-2)' }}>
+                  {formatCurrency(hoverDay.amount)}
+                </span>
+              </>
+            ) : (
+              <span style={{ fontWeight: 500 }}>Hover a day for amount</span>
+            )}
           </div>
+
+          {cells.length === 0 ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-3)', fontSize: 13 }}>No spend logged this month.</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`, gap: 5 }}>
+              {cells.map((d) => {
+                const intensity = d.amount <= 0 ? 0 : Math.min(1, d.amount / maxDay);
+                const active = hoverDay?.date === d.date;
+                return (
+                  <div
+                    key={d.date}
+                    role="img"
+                    aria-label={`${d.date}: ${formatCurrency(d.amount)}`}
+                    onMouseEnter={() => setHoverDay(d)}
+                    onMouseLeave={() => setHoverDay(null)}
+                    style={{
+                      aspectRatio: '1',
+                      borderRadius: 4,
+                      background: intensity === 0
+                        ? 'var(--color-elevated)'
+                        : `rgba(226, 114, 91, ${0.15 + intensity * 0.85})`,
+                      border: active
+                        ? '2px solid var(--color-accent)'
+                        : intensity === 0
+                          ? '1px solid var(--color-border)'
+                          : '2px solid transparent',
+                      cursor: 'pointer',
+                      transform: active ? 'scale(1.08)' : 'none',
+                      transition: 'transform 0.12s ease, border-color 0.12s ease',
+                      outline: 'none',
+                    }}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Savings Gauge */}
-        <div className="nordic-card" style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '16px', alignSelf: 'flex-start' }}>Savings Rate Gauge</div>
-          <div style={{ position: 'relative', width: '200px', height: '100px', overflow: 'hidden' }}>
-            <div style={{ width: '200px', height: '200px', borderRadius: '50%', border: '20px solid var(--bg-elevated)', borderBottomColor: 'transparent', borderLeftColor: 'transparent', transform: 'rotate(-45deg)', position: 'absolute' }} />
-            <motion.div 
-              initial={{ rotate: -45 }}
-              animate={{ rotate: -45 + (180 * (savingsRate / 100)) }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              style={{ width: '200px', height: '200px', borderRadius: '50%', border: '20px solid #10B981', borderBottomColor: 'transparent', borderLeftColor: 'transparent', position: 'absolute' }} 
-            />
+        <div className="nordic-card" style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px' }}>Savings Rate</div>
+          <div style={{ position: 'relative', width: 200, height: 110, margin: '0 auto', overflow: 'hidden' }}>
+            <svg width="200" height="110" viewBox="0 0 200 110">
+              <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="var(--color-elevated)" strokeWidth="16" strokeLinecap="round" />
+              <motion.path
+                d="M20 100 A80 80 0 0 1 180 100"
+                fill="none"
+                stroke={rate >= 40 ? '#10b981' : 'var(--color-accent)'}
+                strokeWidth="16"
+                strokeLinecap="round"
+                strokeDasharray={`${(rate / 100) * 251} 251`}
+                initial={{ strokeDasharray: '0 251' }}
+                animate={{ strokeDasharray: `${(rate / 100) * 251} 251` }}
+                transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+              />
+            </svg>
           </div>
-          <div style={{ fontSize: '48px', fontWeight: 900, fontFamily: 'var(--font-serif)', marginTop: '-20px' }}>{savingsRate}%</div>
-          <div style={{ fontSize: '13px', color: 'var(--text-3)', marginTop: '8px' }}>Target: 40% | Status: {savingsRate >= 40 ? 'On Track' : 'Needs Optimization'}</div>
+          <div style={{ textAlign: 'center', marginTop: -8 }}>
+            <div style={{ fontSize: 44, fontWeight: 800, fontFamily: 'var(--font-serif)', letterSpacing: '-0.03em', color: 'var(--color-text-1)' }}>{savingsRate}%</div>
+            <div style={{ fontSize: 13, color: 'var(--color-text-3)', marginTop: 6 }}>
+              Target 40% · {rate >= 40 ? 'On track' : 'Below target'}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-2)', marginTop: 10 }}>
+              {formatCurrency(saved)} of {formatCurrency(monthlyIncome)} kept
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Cash Flow Waterfall */}
-      <div className="nordic-card" style={{ padding: '32px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-3)', marginBottom: '24px' }}>Cash Flow Waterfall (MTD)</div>
-        <div style={{ display: 'flex', gap: '4px', height: '120px', alignItems: 'flex-end', paddingTop: '40px' }}>
-          {/* Gross Income Bar */}
-          <div style={{ flex: 1, position: 'relative', height: '100%', background: '#10B981', borderRadius: '8px' }}>
-            <div style={{ position: 'absolute', top: '-28px', left: 0, width: '100%', textAlign: 'center', fontSize: '12px', fontWeight: 600 }}>{formatCurrency(monthlyIncome)}</div>
-            <div style={{ position: 'absolute', bottom: '12px', left: 0, width: '100%', textAlign: 'center', fontSize: '11px', color: 'white', fontWeight: 700 }}>INCOME</div>
+      {/* Cash Flow Waterfall — labels under bars; hover readout */}
+      <div className="nordic-card" style={{ padding: '28px 32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16, gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)' }}>Cash Flow Waterfall (MTD)</div>
+            <div style={{ fontSize: 13, color: 'var(--color-text-2)', marginTop: 6 }}>Income → top categories → remainder saved</div>
           </div>
-          {/* Top Expenses subtracted visually */}
-          {topExpenses.map((exp, i) => {
-            // Height is proportional to its impact on income
-            const heightPct = monthlyIncome > 0 ? (exp.value / monthlyIncome) * 100 : 0;
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-1)' }}>
+            Burn {formatCurrency(monthlyExpenses)} · Keep {formatCurrency(saved)}
+          </div>
+        </div>
+
+        <div
+          style={{
+            minHeight: 28,
+            marginBottom: 12,
+            fontSize: 13,
+            fontWeight: 600,
+            color: hoverStep ? 'var(--color-text-1)' : 'var(--color-text-3)',
+          }}
+        >
+          {hoverStep ? (
+            <>
+              <span style={{ textTransform: 'capitalize' }}>{hoverStep.label}</span>
+              <span style={{ color: 'var(--color-text-3)', fontWeight: 500 }}> · </span>
+              <span>
+                {hoverStep.kind === 'out' ? '−' : ''}
+                {formatCurrency(hoverStep.value)}
+              </span>
+              {hoverStep.kind === 'out' && monthlyIncome > 0 && (
+                <span style={{ color: 'var(--color-text-3)', fontWeight: 500 }}>
+                  {' '}
+                  ({((hoverStep.value / monthlyIncome) * 100).toFixed(1)}% of income)
+                </span>
+              )}
+            </>
+          ) : (
+            <span style={{ fontWeight: 500 }}>Hover a bar for details</span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, alignItems: 'stretch' }}>
+          {waterfallSteps.map((step) => {
+            const hPct = Math.max(step.kind === 'out' ? 8 : 12, (step.value / maxBar) * 100);
+            const bg = step.kind === 'in' ? '#10b981' : step.kind === 'saved' ? 'var(--color-accent)' : 'var(--color-rust, #e2725b)';
+            const active = hoverStep?.key === step.key;
             return (
-              <div key={i} style={{ flex: 1, position: 'relative', height: `${heightPct}%`, background: 'var(--color-rust)', borderRadius: '8px' }}>
-                 <div style={{ position: 'absolute', top: '-28px', left: 0, width: '100%', textAlign: 'center', fontSize: '11px', color: 'var(--text-2)' }}>-{formatCurrency(exp.value)}</div>
-                 <div style={{ position: 'absolute', bottom: '12px', left: 0, width: '100%', textAlign: 'center', fontSize: '10px', color: 'white', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '0 4px' }}>{exp.name}</div>
+              <div
+                key={step.key}
+                onMouseEnter={() => setHoverStep(step)}
+                onMouseLeave={() => setHoverStep(null)}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  cursor: 'pointer',
+                }}
+              >
+                {/* Bar column: amount + bar share fixed height; label sits below (never clipped) */}
+                <div style={{ height: 168, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative', paddingTop: 24 }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    textAlign: 'center',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: 'var(--color-text-1)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {step.kind === 'out' ? '−' : ''}{formatCurrency(step.value)}
+                  </div>
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${hPct}%` }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      width: '100%',
+                      background: bg,
+                      borderRadius: 10,
+                      minHeight: 12,
+                      boxShadow: active ? '0 0 0 2px var(--color-accent)' : 'none',
+                      opacity: active ? 1 : 0.92,
+                    }}
+                  />
+                </div>
+
+                {/* Category name — always visible under bar */}
+                <div
+                  title={step.label}
+                  style={{
+                    marginTop: 10,
+                    minHeight: 32,
+                    textAlign: 'center',
+                    fontSize: 10,
+                    fontWeight: 800,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.03em',
+                    color: active ? 'var(--color-text-1)' : 'var(--color-text-2)',
+                    lineHeight: 1.25,
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere',
+                  }}
+                >
+                  {step.label}
+                </div>
               </div>
-            )
+            );
           })}
-          {/* Remaining Savings Bar */}
-          <div style={{ flex: 1, position: 'relative', height: `${Math.max(0, savingsRate)}%`, background: 'var(--color-accent)', borderRadius: '8px' }}>
-            <div style={{ position: 'absolute', top: '-28px', left: 0, width: '100%', textAlign: 'center', fontSize: '12px', fontWeight: 600 }}>{formatCurrency(monthlyIncome - monthlyExpenses)}</div>
-            <div style={{ position: 'absolute', bottom: '12px', left: 0, width: '100%', textAlign: 'center', fontSize: '11px', color: 'white', fontWeight: 700 }}>SAVED</div>
-          </div>
         </div>
       </div>
     </motion.div>

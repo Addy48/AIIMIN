@@ -389,9 +389,14 @@ const Habits = () => {
       h.id === habit.id ? { ...h, meta: updatedMeta } : h
     ));
     
-    // API Call
+    // API Call — meta for quick UI + habit_logs for heatmap/history
     try {
       await apiPut(`/habits/${habit.id}`, { meta: updatedMeta });
+      if (!isDone) {
+        try {
+          await apiPost(`/habits/${habit.id}/logs`, { notes: 'toggle' });
+        } catch (_) { /* log optional if meta saved */ }
+      }
     } catch (err) {
       console.error('Failed to toggle habit', err);
       // Revert on failure

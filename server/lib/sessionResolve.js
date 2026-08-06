@@ -53,7 +53,7 @@ export async function resolveAuthSession(c) {
         const authHeader = c.req.header('authorization');
         if (authHeader?.startsWith('Bearer ')) token = authHeader.slice(7).trim();
     }
-    if (!token) token = c.req.query('token');
+    // Never accept session tokens from URL query — leaks via logs/Referer/history.
 
     if (token) {
         const direct = await lookupSessionByToken(token);

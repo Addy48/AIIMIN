@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useThemeContext } from '../context/ThemeContext';
-import { supabase } from '../utils/supabase';
+import { apiGet, apiPost } from '../utils/api';
 import VocalMastery from '../components/lab/VocalMastery';
 import TypingTest from '../components/lab/TypingTest';
 import DecisionMatrix from '../components/lab/DecisionMatrix';
@@ -21,9 +21,7 @@ import './lab/lab.css';
 
 import GrowthLoop from '../components/lab/GrowthLoop';
 
-/* ─────────────────────────────────────────────────────────────
-   LabFullPage — reads directly from Supabase, no backend needed
-───────────────────────────────────────────────────────────── */
+/* LabFullPage — load via API (Better Auth); direct Supabase RLS auth.uid() is empty */
 
 // TypingTestSupabase removed and replaced by premium component from ../components/lab/TypingTest
 
@@ -71,24 +69,24 @@ export default function LabFullPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
-      const [typingRes, mindsetRes, ls] = await Promise.all([
-        supabase.from("lab_typing_tests").select("wpm,accuracy_pct,day_of,test_invalid")
-          .eq("user_id", user.id).gte("day_of", weekAgo).order("wpm", { ascending: false }),
-        supabase.from("lab_mindset_logs").select("state,logged_at,day_of")
-          .eq("user_id", user.id).eq("day_of", new Date().toISOString().split("T")[0])
-          .order("logged_at", { ascending: false }).limit(1),
-        calculateLifeScore(user)
+      const [summary, ls] = await Promise.all([
+        apiGet('/lab/summary'),
+        calculateLifeScore(user),
       ]);
-      const validTests = (typingRes.data || []).filter(t => !t.test_invalid);
-      const bestWpm = validTests.length > 0 ? Math.max(...validTests.map(t => t.wpm)) : null;
-      const avgAccuracy = validTests.length > 0
-        ? Number((validTests.reduce((s, t) => s + Number(t.accuracy_pct), 0) / validTests.length).toFixed(1))
-        : null;
-      setTypingStats({ bestWpm, avgAccuracy, testsThisWeek: validTests.length, totalTests: typingRes.data?.length || 0 });
-      setTodayMindset((mindsetRes.data || [])[0] || null);
+      const typing = summary?.practice?.typing || {};
+      setTypingStats({
+        bestWpm: typing.weekly_best_wpm ?? null,
+        avgAccuracy: typing.avg_accuracy ?? null,
+        testsThisWeek: typing.tests_this_week ?? 0,
+        totalTests: typing.tests_this_week ?? 0,
+        streakDays: typing.streak_days ?? 0,
+        reactionMs: summary?.practice?.reaction?.mean_ms_last3 ?? null,
+        speakingScore: summary?.practice?.speaking?.latest_score ?? null,
+      });
+      const ms = summary?.intel?.mindset_state;
+      setTodayMindset(ms?.state ? { state: ms.state, logged_at: ms.logged_at } : null);
       setLifeScore(ls);
-    } catch (e) { /* silent */ }
+    } catch (e) { /* keep empty stats */ }
     finally { setLoading(false); }
   }, [user]); // eslint-disable-line
 
@@ -268,6 +266,8 @@ export default function LabFullPage() {
                   { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#3B82F6" },
                   { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#22C55E" },
                   { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#F59E0B" },
+                  { label: "Reaction (ms)", value: typingStats.reactionMs ?? "—", color: "#ff6b35" },
+                  { label: "Speaking score", value: typingStats.speakingScore ?? "—", color: "#8B5CF6" },
                   { label: "Life Score", value: lifeScore?.score ?? "—", color: "#8B5CF6", desc: lifeScore?.delta >= 0 ? `+${lifeScore?.delta}` : lifeScore?.delta },
                 ].map(stat => (
                   <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "12px", padding: "20px", borderTop: `4px solid ${stat.color}`, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
@@ -324,12 +324,14 @@ function SidebarButton({ active, onClick, emoji, label, color }) {
 function TypingHistory({ userId, cardBg, border, text1, text2, text3 }) {
   const [rows, setRows] = useState([]);
   useEffect(() => {
-    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
-    supabase.from("lab_typing_tests").select("id,wpm,accuracy_pct,day_of,test_invalid")
-      .eq("user_id", userId).gte("day_of", weekAgo).order("day_of", { ascending: false }).limit(10)
-      .then(({ data }) => setRows(data || []));
+    if (!userId) return;
+    apiGet('/lab/typing', { params: { days: '14' } })
+      .then((data) => setRows(Array.isArray(data) ? data.slice(0, 10) : []))
+      .catch(() => setRows([]));
   }, [userId]);
-  if (!rows.length) return null;
+  if (!rows.length) {
+    return <div style={{ color: text3, fontSize: 13, marginBottom: 16 }}>No typing tests yet — run Typing Speed to populate.</div>;
+  }
   return (
     <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "12px", overflow: "hidden" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 80px 80px", padding: "10px 16px", borderBottom: `1px solid ${border}` }}>
@@ -359,15 +361,22 @@ function ReadingLog({ userId, isDark, onClose }) {
   const text3 = 'var(--color-text-3)';
   const inp = { width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.04)', color: 'var(--color-text-1)', fontSize: '13px', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s', fontFamily: 'inherit' };
   useEffect(() => {
-    supabase.from("lab_reading_log").select("title,author,rating,logged_at").eq("user_id", userId)
-      .order("logged_at", { ascending: false }).limit(5).then(({ data }) => setRecent(data || []));
+    if (!userId) return;
+    apiGet('/lab/reading')
+      .then((data) => setRecent(Array.isArray(data) ? data.slice(0, 8) : []))
+      .catch(() => setRecent([]));
   }, [userId]);
   const handleSave = async () => {
     if (!form.title.trim()) return;
     setSaving(true);
     try {
-      await supabase.from("lab_reading_log").insert({ user_id: userId, ...form, pages: Number(form.pages)||0, logged_at: new Date().toISOString() });
-      setSaved(true); setTimeout(onClose, 1200);
+      await apiPost('/lab/reading', {
+        title: form.title.trim(),
+        pages: Number(form.pages) || 0,
+        notes: [form.author && `Author: ${form.author}`, form.notes].filter(Boolean).join('\n') || null,
+      });
+      setSaved(true);
+      setTimeout(onClose, 1200);
     } catch { setSaving(false); }
   };
   return (
@@ -402,7 +411,7 @@ function ReadingLog({ userId, isDark, onClose }) {
           {recent.map((r,i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${border}` }}>
               <span style={{ fontSize: "13px", color: text1, fontWeight: 600 }}>{r.title}</span>
-              <span style={{ fontSize: "12px", color: text3 }}>{"⭐".repeat(r.rating)}</span>
+              <span style={{ fontSize: "12px", color: text3 }}>{r.pages ? `${r.pages}p` : ''}</span>
             </div>
           ))}
         </div>

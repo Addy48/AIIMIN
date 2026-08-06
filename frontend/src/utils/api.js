@@ -56,7 +56,7 @@ export const apiRequest = async (path, options = {}, retried = false) => {
         ...(signal ? { signal } : {}),
     };
 
-    if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+    if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE')) {
         fetchOptions.body = typeof data === 'string' ? data : JSON.stringify(data);
     }
 
