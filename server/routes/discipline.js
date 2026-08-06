@@ -556,7 +556,7 @@ app.get('/urge', requireAuth, async (c) => {
         const days = parseInt(c.req.query('days') || '30', 10);
         const { rows } = await pool.query(
             `SELECT id, category, started_at, resolved_at, intensity, trigger_tags,
-                    linked_replacement_habit_id, status, outcome, duration_to_resolve_sec
+                    linked_replacement_habit_id, status, outcome, duration_to_resolve_sec, note
              FROM public.urge_events
              WHERE user_id = $1 AND started_at >= NOW() - ($2 || ' days')::interval
              ORDER BY started_at DESC

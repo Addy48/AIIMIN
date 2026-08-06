@@ -254,7 +254,7 @@ export default function IvorySnapshot({
         </span>
         {showUpgrade && (
           <Link className="ivory-snap__upgrade" to="/account?section=subscription">
-            Unlock Folio PDF · Pro
+            Unlock Life OS Review · Pro
           </Link>
         )}
       </footer>

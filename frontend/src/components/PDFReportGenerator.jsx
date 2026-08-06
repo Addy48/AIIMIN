@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
 import { Download, AlertCircle, Calendar, FileText, CheckCircle } from 'lucide-react';
 import { apiPost } from '../utils/api';
 
-/** Folio Life OS — Pro Standard PDF. White body + ivory header band. */
+/** Life OS Review — Pro Standard PDF. White body + ivory header band. */
+const REVIEW_PRODUCT = 'Life OS Review';
+const reviewFileName = (timeline) =>
+  `AIIMIN_Life_OS_Review_${String(timeline || 'Report').replace(/[^\w]+/g, '_').replace(/_+/g, '_')}.pdf`;
+
+const isLocalHost = () =>
+  typeof window !== 'undefined' && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
 const IVORY = '#EDE4D3';
 const INK = '#14171a';
 const MUTED = '#6b7280';
@@ -321,7 +327,7 @@ const ReportDocument = ({ data, timeline }) => {
           <View style={styles.coverRule} />
           <Text style={styles.coverBrand}>AIIMIN · Life OS</Text>
           <Text style={styles.coverTitle}>Standard Performance Review</Text>
-          <Text style={styles.coverSubtitle}>Folio Life OS · Pro report · 14-day window</Text>
+          <Text style={styles.coverSubtitle}>Life OS Review · Pro · 14-day fingerprint</Text>
           <LifeFingerprint scores={data.fingerprintScores} />
           <Text style={styles.coverScoreLabel}>System integrity</Text>
           <Text style={styles.coverScore}>{data.disciplineScore}</Text>
@@ -371,7 +377,7 @@ const ReportDocument = ({ data, timeline }) => {
               <Text style={styles.insightText}>
                 {data.daysLogged < 5
                   ? 'Insufficient data for a stable review. Continue daily logging to establish baseline telemetry.'
-                  : `Across this window you averaged ${data.avgSleep}h sleep and ${data.gymConsistency}% gym consistency with mood ${data.avgMood}/10. Treat weak days as signal, not failure — Folio is a performance review, not a scoreboard.`}
+                  : `Across this window you averaged ${data.avgSleep}h sleep and ${data.gymConsistency}% gym consistency with mood ${data.avgMood}/10. Treat weak days as signal, not failure — this is a performance review, not a scoreboard.`}
               </Text>
             </View>
             <View style={styles.methods}>
@@ -408,7 +414,7 @@ const ReportDocument = ({ data, timeline }) => {
             </View>
           </View>
         </View>
-        <Text style={styles.footer}>AIIMIN · Folio Life OS · Standard · Pro+ · Not for clinical use</Text>
+        <Text style={styles.footer}>AIIMIN · Life OS Review · Standard · Pro+ · Not for clinical use</Text>
       </Page>
 
       <Page size="A4" style={styles.page}>
@@ -429,7 +435,7 @@ const ReportDocument = ({ data, timeline }) => {
             </View>
           ))}
         </View>
-        <Text style={styles.footer}>AIIMIN · Folio Life OS · Recommendations · legal-finding format</Text>
+        <Text style={styles.footer}>AIIMIN · Life OS Review · Recommendations · legal-finding format</Text>
       </Page>
     </Document>
   );
@@ -541,14 +547,32 @@ const PDFReportGenerator = ({ user, rangeLabel, startDate, endDate, days }) => {
     fetchReportData();
   }, [user?.id, timeline, rangeLabel, startDate, endDate, days]);
 
-  const consumePoolThenDownload = async (downloadFn) => {
+  const handleDownload = async () => {
     setPoolError('');
     setConsuming(true);
     try {
-      await apiPost('/intelligence/report-gen/consume', { kind: 'standard_pdf' });
-      if (typeof downloadFn === 'function') downloadFn();
+      try {
+        await apiPost('/intelligence/report-gen/consume', { kind: 'standard_pdf' });
+      } catch (err) {
+        // Localhost: still emit PDF so craft/testing isn't blocked by pool/tier/API glitches
+        if (!isLocalHost()) throw err;
+        console.warn(`[${REVIEW_PRODUCT}] pool consume failed on localhost:`, err.message);
+        setPoolError(`${err.message} — downloading locally anyway.`);
+      }
+
+      const blob = await pdf(<ReportDocument data={data} timeline={timeline} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = reviewFileName(timeline);
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 4000);
     } catch (err) {
-      setPoolError(err.message || 'Monthly PDF generation pool exhausted');
+      setPoolError(err.message || `Could not generate ${REVIEW_PRODUCT}`);
     } finally {
       setConsuming(false);
     }
@@ -559,7 +583,7 @@ const PDFReportGenerator = ({ user, rangeLabel, startDate, endDate, days }) => {
       <div style={{ padding: '24px', background: 'var(--bg-elevated)', borderRadius: '16px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px' }}>
         <div style={{ color: 'var(--text-3)', fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div className="spinner" style={{ width: '16px', height: '16px', border: '2px solid var(--text-3)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-          Compiling Folio review…
+          Compiling Life OS Review…
         </div>
       </div>
     );
@@ -589,9 +613,9 @@ const PDFReportGenerator = ({ user, rangeLabel, startDate, endDate, days }) => {
             <FileText size={24} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>Folio Life OS PDF</h3>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>Life OS Review</h3>
             <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-3)' }}>
-              White body · ivory band · 14-day fingerprint · numbered findings. Uses monthly generation pool.
+              White body · ivory band · fingerprint · numbered findings. Uses monthly generation pool.
             </p>
           </div>
         </div>
@@ -643,47 +667,29 @@ const PDFReportGenerator = ({ user, rangeLabel, startDate, endDate, days }) => {
         </div>
       )}
 
-      <PDFDownloadLink
-        document={<ReportDocument data={data} timeline={timeline} />}
-        fileName={`AIIMIN_Folio_${timeline.replace(/\s+/g, '_')}.pdf`}
-        style={{ textDecoration: 'none' }}
+      <button
+        type="button"
+        disabled={consuming}
+        onClick={handleDownload}
+        style={{
+          width: '100%',
+          padding: '16px',
+          background: consuming ? 'var(--bg-card)' : 'var(--color-accent)',
+          color: consuming ? 'var(--text-3)' : '#fff',
+          border: consuming ? '1px solid var(--border)' : 'none',
+          borderRadius: '12px',
+          fontSize: '15px',
+          fontWeight: 800,
+          cursor: consuming ? 'not-allowed' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+        }}
       >
-        {({ loading: pdfLoading, url }) => (
-          <button
-            type="button"
-            disabled={pdfLoading || consuming}
-            onClick={(e) => {
-              e.preventDefault();
-              consumePoolThenDownload(() => {
-                if (url) {
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `AIIMIN_Folio_${timeline.replace(/\s+/g, '_')}.pdf`;
-                  a.click();
-                }
-              });
-            }}
-            style={{
-              width: '100%',
-              padding: '16px',
-              background: pdfLoading || consuming ? 'var(--bg-card)' : 'var(--color-accent)',
-              color: pdfLoading || consuming ? 'var(--text-3)' : '#fff',
-              border: pdfLoading || consuming ? '1px solid var(--border)' : 'none',
-              borderRadius: '12px',
-              fontSize: '15px',
-              fontWeight: 800,
-              cursor: pdfLoading || consuming ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-            }}
-          >
-            <Download size={18} />
-            {pdfLoading || consuming ? 'Compiling Folio…' : 'Download Folio Life OS PDF'}
-          </button>
-        )}
-      </PDFDownloadLink>
+        <Download size={18} />
+        {consuming ? 'Compiling Life OS Review…' : 'Download Life OS Review'}
+      </button>
     </div>
   );
 };

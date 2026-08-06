@@ -544,6 +544,12 @@ const Login = () => {
         triggerShake();
         return false;
       }
+      // API down / network — not a missing OS-ID
+      if (!status || /failed to fetch|network|econnrefused/i.test(String(err?.message || ''))) {
+        setError('Cannot reach API (localhost:3001). Start it: node dev_server.js');
+        triggerShake();
+        return false;
+      }
       setError('Could not verify OS-ID. Try again.');
       triggerShake();
       return false;

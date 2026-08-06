@@ -5,12 +5,12 @@ import React from 'react';
  * Redesigned with Nordic Calm palette.
  */
 export const SYSTEM_COLORS = {
-    work:       { color: 'var(--color-accent)',  bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.2)',  icon: '⚡', label: 'Work' },
-    health:     { color: 'var(--color-rust)',    bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.2)',  icon: '🧘', label: 'Health' },
-    finance:    { color: 'var(--color-warning)', bg: 'rgba(234,179,8,0.1)',  border: 'rgba(234,179,8,0.2)',  icon: '💰', label: 'Finance' },
-    social:     { color: 'var(--color-info)',    bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.2)', icon: '🤝', label: 'Social' },
-    reflection: { color: 'var(--color-text-3)',  bg: 'rgba(161,161,170,0.1)', border: 'rgba(161,161,170,0.2)', icon: '💭', label: 'Reflection' },
-    general:    { color: 'var(--color-text-2)',  bg: 'rgba(113,113,122,0.1)', border: 'rgba(113,113,122,0.2)', icon: '◎', label: 'General' },
+    work:       { color: '#e2725b',  bg: 'rgba(226,114,91,0.12)',  border: 'rgba(226,114,91,0.28)',  icon: '⚡', label: 'Work' },
+    health:     { color: '#10b981',  bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.28)',  icon: '🧘', label: 'Health' },
+    finance:    { color: '#F59E0B',  bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.28)',  icon: '💰', label: 'Finance' },
+    social:     { color: '#3B82F6',  bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.28)',  icon: '🤝', label: 'Social' },
+    reflection: { color: '#8B5CF6',  bg: 'rgba(139,92,246,0.1)',   border: 'rgba(139,92,246,0.25)',  icon: '💭', label: 'Reflection' },
+    general:    { color: '#6b7280',  bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.25)', icon: '◎', label: 'General' },
 };
 
 /**

@@ -96,13 +96,19 @@ app.get('/summary', requireAuth, async (c) => {
         const todayStr = new Date().toISOString().slice(0, 10);
         const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
 
-        const [typingRes, speakingRes, reactionRes, streaksRes, badgesRes, mindsetRes, userRes] = await Promise.all([
+        const [typingRes, typingWeekRes, speakingRes, reactionRes, streaksRes, badgesRes, mindsetRes, readingRes, userRes] = await Promise.all([
             pool.query(`SELECT wpm FROM lab_typing_tests WHERE user_id = $1 AND test_invalid = false AND day_of >= $2 ORDER BY wpm DESC LIMIT 1`, [userId, sevenDaysAgo]).catch(() => ({ rows: [] })),
+            pool.query(
+                `SELECT wpm, accuracy_pct, day_of, test_invalid FROM lab_typing_tests
+                 WHERE user_id = $1 AND day_of >= $2 ORDER BY day_of DESC, taken_at DESC LIMIT 40`,
+                [userId, sevenDaysAgo]
+            ).catch(() => ({ rows: [] })),
             pool.query(`SELECT confidence_score, logged_at FROM lab_speaking_logs WHERE user_id = $1 ORDER BY logged_at DESC LIMIT 1`, [userId]).catch(() => ({ rows: [] })),
             pool.query(`SELECT mean_ms FROM lab_reaction_tests WHERE user_id = $1 AND test_invalid = false ORDER BY taken_at DESC LIMIT 3`, [userId]).catch(() => ({ rows: [] })),
             pool.query(`SELECT metric, current_streak, longest_streak FROM lab_streaks WHERE user_id = $1`, [userId]).catch(() => ({ rows: [] })),
             pool.query(`SELECT metric, tier FROM lab_mastery_badges WHERE user_id = $1 ORDER BY granted_at DESC`, [userId]).catch(() => ({ rows: [] })),
             pool.query(`SELECT state, logged_at FROM lab_mindset_logs WHERE user_id = $1 AND day_of = $2 LIMIT 1`, [userId, todayStr]).catch(() => ({ rows: [] })),
+            pool.query(`SELECT COUNT(*)::int AS cnt FROM lab_reading_log WHERE user_id = $1`, [userId]).catch(() => ({ rows: [{ cnt: 0 }] })),
             pool.query(`SELECT lab_onboarded_at FROM users WHERE id = $1`, [userId]).catch(() => ({ rows: [] })),
         ]);
 
@@ -117,16 +123,31 @@ app.get('/summary', requireAuth, async (c) => {
             ? Math.round(reactionValues.reduce((a, b) => a + b, 0) / reactionValues.length)
             : null;
 
+        const weekTyping = (typingWeekRes.rows || []).filter((t) => !t.test_invalid);
+        const avgAccuracy = weekTyping.length > 0
+            ? Number((weekTyping.reduce((s, t) => s + Number(t.accuracy_pct || 0), 0) / weekTyping.length).toFixed(1))
+            : null;
+
         return c.json({
             practice: {
-                typing:    { weekly_best_wpm: typingRes.rows[0]?.wpm || null, mastery: badgeMap.typing || 'unranked', streak_days: streakMap.typing || 0 },
-                speaking:  { latest_score: speakingRes.rows[0]?.confidence_score || null, mastery: badgeMap.speaking || 'unranked' },
-                reaction:  { mean_ms_last3: reactionMean, mastery: badgeMap.reaction || 'unranked' },
-                decisions: { mastery: badgeMap.decisions || 'unranked' },
+                typing: {
+                    weekly_best_wpm: typingRes.rows[0]?.wpm || null,
+                    avg_accuracy: avgAccuracy,
+                    tests_this_week: weekTyping.length,
+                    recent: weekTyping.slice(0, 10),
+                    mastery: badgeMap.typing || 'unranked',
+                    streak_days: streakMap.typing || 0,
+                },
+                speaking:  { latest_score: speakingRes.rows[0]?.confidence_score || null, mastery: badgeMap.speaking || 'unranked', streak_days: streakMap.speaking || 0 },
+                reaction:  { mean_ms_last3: reactionMean, mastery: badgeMap.reaction || 'unranked', streak_days: streakMap.reaction || 0 },
+                decisions: { mastery: badgeMap.decisions || 'unranked', streak_days: streakMap.decisions || 0 },
             },
             intel: {
-                mindset_state: { state: mindsetRes.rows[0]?.state || null },
+                mindset_state: { state: mindsetRes.rows[0]?.state || null, logged_at: mindsetRes.rows[0]?.logged_at || null },
+                reading_count: readingRes.rows[0]?.cnt || 0,
             },
+            streaks: streaksRes.rows || [],
+            badges: badgesRes.rows || [],
             user: { lab_onboarded_at: userRes.rows[0]?.lab_onboarded_at || null },
         });
     } catch (err) {
@@ -214,6 +235,51 @@ app.post('/onboard', requireAuth, async (c) => {
             [userId]
         );
         return c.json({ success: true });
+    } catch (err) { return c.json({ error: err.message }, 500); }
+});
+
+// GET /api/lab/typing?days=30 — history (bypasses Supabase RLS; Better Auth users)
+app.get('/typing', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const days = Math.min(90, Math.max(1, parseInt(c.req.query('days') || '30', 10)));
+        const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+        const { rows } = await pool.query(
+            `SELECT id, wpm, accuracy_pct, day_of, test_invalid, taken_at, duration_sec
+             FROM lab_typing_tests WHERE user_id = $1 AND day_of >= $2
+             ORDER BY taken_at DESC LIMIT 50`,
+            [userId, since]
+        );
+        return c.json(rows);
+    } catch (err) { return c.json({ error: err.message }, 500); }
+});
+
+// GET /api/lab/reading
+app.get('/reading', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const { rows } = await pool.query(
+            `SELECT id, title, pages, notes, logged_at
+             FROM lab_reading_log WHERE user_id = $1
+             ORDER BY logged_at DESC LIMIT 40`,
+            [userId]
+        );
+        return c.json(rows);
+    } catch (err) { return c.json({ error: err.message }, 500); }
+});
+
+// POST /api/lab/reading
+app.post('/reading', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const { title, pages, notes } = await c.req.json();
+        if (!title || !String(title).trim()) return c.json({ error: 'title required' }, 400);
+        const { rows } = await pool.query(
+            `INSERT INTO lab_reading_log (user_id, title, pages, notes, logged_at)
+             VALUES ($1,$2,$3,$4,NOW()) RETURNING *`,
+            [userId, String(title).trim(), Number(pages) || 0, notes || null]
+        );
+        return c.json(rows[0], 201);
     } catch (err) { return c.json({ error: err.message }, 500); }
 });
 

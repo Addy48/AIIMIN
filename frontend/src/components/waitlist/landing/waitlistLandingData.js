@@ -163,7 +163,7 @@ export const PRICING = [
     includes: [
       'Everything in Core',
       'Correlation Intelligence on Snapshot (top 3)',
-      'Folio Life OS Standard PDF (14-day fingerprint)',
+      'Life OS Review PDF (14-day fingerprint)',
       '6 Standard PDFs / month · separate from daily AI',
       'Wealth AI summary + import',
       '25 AI calls per day',

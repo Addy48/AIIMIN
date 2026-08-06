@@ -1,124 +1,200 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { apiGet } from '../../utils/api';
 
-const DEFAULT_HABITS = [
-  { id: 'h1', name: 'Morning Workout', icon: '🏋️', category: 'Health', color: '#22C55E', description: 'Gym session / home workout', target: 7 },
-  { id: 'h2', name: 'Read 30 mins', icon: '📚', category: 'Learning', color: '#3B82F6', description: 'Books, articles, technical docs', target: 7 },
-  { id: 'h3', name: 'Journaling', icon: '✍️', category: 'Mindset', color: '#F59E0B', description: 'Daily reflection & gratitude', target: 7 },
-  { id: 'h4', name: 'Drink 3L Water', icon: '💧', category: 'Health', color: '#06B6D4', description: 'Hydration goal', target: 7 },
-  { id: 'h5', name: 'DSA Practice', icon: '💻', category: 'Career', color: '#8B5CF6', description: 'LeetCode / competitive prog', target: 5 },
-  { id: 'h6', name: 'No Junk Food', icon: '🥗', category: 'Health', color: '#EC4899', description: 'Clean eating only', target: 7 },
-];
+/** Local YYYY-MM-DD (avoids UTC shift that emptied early-year cells). */
+function toLocalDateKey(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
-const STORAGE_KEY = 'aiimin_habits_v3';
-const LOG_KEY     = 'aiimin_habits_logs_v3';
-
+/**
+ * Yearly habit heatmap — GitHub-style contribution grid from GET /habits meta.completedDates.
+ */
 export default function YearlyHabitMatrix() {
   const [data, setData] = useState({});
   const [totalHabits, setTotalHabits] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [hover, setHover] = useState(null);
 
   useEffect(() => {
-    let habits = [];
-    try { habits = JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_HABITS; }
-    catch { habits = DEFAULT_HABITS; }
-    
-    let logs = {};
-    try { logs = JSON.parse(localStorage.getItem(LOG_KEY) || '{}'); }
-    catch { logs = {}; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const habits = await apiGet('/habits');
+        if (cancelled) return;
+        const list = Array.isArray(habits) ? habits : [];
+        setTotalHabits(Math.max(1, list.length));
 
-    setTotalHabits(habits.length || 1);
-
-    const heatmapData = {};
-    Object.keys(logs).forEach(date => {
-        let count = 0;
-        Object.keys(logs[date]).forEach(habitId => {
-            if (logs[date][habitId]) count++;
-        });
-        heatmapData[date] = count;
-    });
-    setData(heatmapData);
+        const heatmapData = {};
+        for (const h of list) {
+          const dates = h?.meta?.completedDates || [];
+          for (const date of dates) {
+            const key = String(date).slice(0, 10);
+            heatmapData[key] = (heatmapData[key] || 0) + 1;
+          }
+        }
+        setData(heatmapData);
+      } catch (err) {
+        console.warn('[YearlyHabitMatrix] load failed:', err.message);
+        if (!cancelled) {
+          setData({});
+          setTotalHabits(1);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
-  const now = new Date();
-  const startD = new Date(now);
-  startD.setDate(startD.getDate() - 364);
+  const { weeks, monthLabels, activeDays, bestStreak } = useMemo(() => {
+    const now = new Date();
+    now.setHours(12, 0, 0, 0);
+    const start = new Date(now);
+    start.setDate(start.getDate() - 364);
+    // Align to Monday
+    const dow = start.getDay();
+    const mondayOffset = dow === 0 ? -6 : 1 - dow;
+    start.setDate(start.getDate() + mondayOffset);
 
-  const matrix = [];
-  for (let i = 0; i < 7; i++) matrix.push(new Array(53).fill(null));
+    const weekCols = [];
+    const labels = [];
+    let active = 0;
+    let streak = 0;
+    let best = 0;
+    let lastMonth = -1;
 
-  let col = 0;
-  let row = startD.getDay() === 0 ? 6 : startD.getDay() - 1;
+    for (let w = 0; w < 53; w++) {
+      const col = [];
+      for (let r = 0; r < 7; r++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + w * 7 + r);
+        if (d > now) {
+          col.push(null);
+          continue;
+        }
+        const key = toLocalDateKey(d);
+        const count = data[key] || 0;
+        if (count > 0) {
+          active += 1;
+          streak += 1;
+          best = Math.max(best, streak);
+        } else {
+          streak = 0;
+        }
+        const pct = count / totalHabits;
+        let level = 0;
+        if (pct > 0) level = 1;
+        if (pct > 0.35) level = 2;
+        if (pct > 0.65) level = 3;
+        if (pct >= 0.95) level = 4;
+        col.push({ date: key, count, level, label: d.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' }) });
 
-  for (let i = 0; i < 365; i++) {
-    const d = new Date(startD);
-    d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
-
-    let count = data[dateStr] || 0;
-    let pct = count / totalHabits;
-    
-    let color = 'var(--color-surface)';
-    if (pct > 0) color = 'rgba(34, 197, 94, 0.3)';
-    if (pct > 0.4) color = 'rgba(34, 197, 94, 0.6)';
-    if (pct > 0.7) color = 'rgba(34, 197, 94, 0.8)';
-    if (pct >= 1.0) color = '#22C55E';
-    
-    if (pct === 0) color = 'var(--color-elevated)';
-
-    matrix[row][col] = { date: dateStr, pct, color, count };
-
-    row++;
-    if (row > 6) {
-      row = 0;
-      col++;
+        if (r === 0) {
+          const m = d.getMonth();
+          if (m !== lastMonth) {
+            labels.push({ week: w, text: d.toLocaleDateString('en-US', { month: 'short' }) });
+            lastMonth = m;
+          }
+        }
+      }
+      weekCols.push(col);
     }
-  }
+    return { weeks: weekCols, monthLabels: labels, activeDays: active, bestStreak: best };
+  }, [data, totalHabits]);
+
+  const LEVEL = [
+    'var(--color-elevated)',
+    'rgba(16, 185, 129, 0.28)',
+    'rgba(16, 185, 129, 0.5)',
+    'rgba(16, 185, 129, 0.75)',
+    '#10b981',
+  ];
 
   return (
-    <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '24px', padding: '24px', overflowX: 'auto', marginTop: '32px' }}>
-      <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-         <span style={{ fontSize: '14px' }}>🔥</span> Yearly Habit Heatmap
-      </div>
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', justifyContent: 'space-around', paddingRight: '4px', fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 700, textTransform: 'uppercase' }}>
-          <span style={{ height: '12px', lineHeight: '12px' }}>Mon</span>
-          <span style={{ height: '12px', lineHeight: '12px' }}></span>
-          <span style={{ height: '12px', lineHeight: '12px' }}>Wed</span>
-          <span style={{ height: '12px', lineHeight: '12px' }}></span>
-          <span style={{ height: '12px', lineHeight: '12px' }}>Fri</span>
-          <span style={{ height: '12px', lineHeight: '12px' }}></span>
-          <span style={{ height: '12px', lineHeight: '12px' }}>Sun</span>
+    <div style={{
+      background: 'var(--color-surface)',
+      border: '1px solid var(--color-border)',
+      borderRadius: 24,
+      padding: '28px 28px 22px',
+      overflowX: 'auto',
+      marginTop: 32,
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'var(--color-text-3)', marginBottom: 8 }}>
+            Yearly Habit Heatmap
+          </div>
+          <div style={{ fontSize: 14, color: 'var(--color-text-2)', fontWeight: 600 }}>
+            {loading ? 'Loading…' : `${activeDays} active days · best streak ${bestStreak}d · ${totalHabits} habits`}
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          {matrix[0].map((_, c) => (
-            <div key={c} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {matrix.map((r, ri) => {
-                const cell = matrix[ri][c];
-                return (
-                  <div key={ri} 
-                    title={cell ? `${cell.count} habits on ${cell.date}` : ''}
-                    style={{
-                      width: '14px', height: '14px', borderRadius: '4px',
-                      background: cell ? cell.color : 'transparent',
-                      border: cell && cell.count === 0 ? '1px solid var(--color-border)' : 'none',
-                      transition: 'transform 0.1s', cursor: cell ? 'pointer' : 'default'
-                  }} 
-                  onMouseEnter={e => { if (cell) e.target.style.transform = 'scale(1.2)' }}
-                  onMouseLeave={e => { if (cell) e.target.style.transform = 'scale(1)' }}
-                  />
-                );
-              })}
+        {hover && (
+          <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-1)', background: 'var(--color-elevated)', border: '1px solid var(--color-border)', borderRadius: 10, padding: '8px 12px' }}>
+            {hover.label} · {hover.count}/{totalHabits} done
+          </div>
+        )}
+      </div>
+
+      <div style={{ position: 'relative', minWidth: 720 }}>
+        <div style={{ display: 'flex', marginLeft: 36, marginBottom: 6, height: 16, position: 'relative' }}>
+          {monthLabels.map((m) => (
+            <div key={`${m.week}-${m.text}`} style={{
+              position: 'absolute',
+              left: m.week * 15,
+              fontSize: 10,
+              fontWeight: 700,
+              color: 'var(--color-text-3)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}>
+              {m.text}
             </div>
           ))}
         </div>
+
+        <div style={{ display: 'flex', gap: 3 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, width: 32, paddingTop: 0, justifyContent: 'space-between' }}>
+            {['Mon', '', 'Wed', '', 'Fri', '', 'Sun'].map((lab, i) => (
+              <div key={i} style={{ height: 12, fontSize: 9, fontWeight: 700, color: 'var(--color-text-3)', lineHeight: '12px' }}>{lab}</div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {weeks.map((col, ci) => (
+              <div key={ci} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {col.map((cell, ri) => (
+                  <div
+                    key={ri}
+                    onMouseEnter={() => cell && setHover(cell)}
+                    onMouseLeave={() => setHover(null)}
+                    title={cell ? `${cell.label}: ${cell.count} habits` : ''}
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 3,
+                      background: cell ? LEVEL[cell.level] : 'transparent',
+                      border: cell && cell.level === 0 ? '1px solid var(--color-border)' : 'none',
+                      cursor: cell ? 'pointer' : 'default',
+                      transition: 'transform 120ms ease',
+                    }}
+                    onMouseOver={(e) => { if (cell) e.currentTarget.style.transform = 'scale(1.25)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginTop: '16px', fontSize: '10px', color: 'var(--color-text-3)', fontWeight: 700 }}>
-         <span>Less</span>
-         <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--color-elevated)', border: '1px solid var(--color-border)' }} />
-         <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'rgba(34, 197, 94, 0.3)' }} />
-         <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'rgba(34, 197, 94, 0.6)' }} />
-         <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'rgba(34, 197, 94, 0.8)' }} />
-         <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: '#22C55E' }} />
-         <span>More</span>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6, marginTop: 18, fontSize: 10, color: 'var(--color-text-3)', fontWeight: 700 }}>
+        <span>Less</span>
+        {LEVEL.map((c, i) => (
+          <div key={i} style={{ width: 12, height: 12, borderRadius: 3, background: c, border: i === 0 ? '1px solid var(--color-border)' : 'none' }} />
+        ))}
+        <span>More</span>
       </div>
     </div>
   );

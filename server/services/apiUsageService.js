@@ -35,7 +35,7 @@ export const AI_PROVIDERS = new Set(['gemini', 'groq', 'openrouter', 'moonshot']
  * Override: AI_DAILY_LIMIT_EXPLORE / _CORE / _PRO / _ELITE
  *
  * Report generation uses a SEPARATE monthly pool (see REPORT_GEN_*).
- * Deep / Folio generation must not burn daily AI budget.
+ * Deep / Life OS Review generation must not burn daily AI budget.
  */
 const DEFAULT_TIER_AI_LIMITS = {
   explore: 1,
