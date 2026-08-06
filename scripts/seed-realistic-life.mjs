@@ -27,7 +27,14 @@ const WIPE_ONLY = process.argv.includes('--wipe-only');
 const DAYS = Number(process.env.SEED_DAYS || 180);
 const END = parseDate(process.env.SEED_END || '2026-07-17');
 const START = addDays(END, -(DAYS - 1));
-const USERNAME = process.env.SEED_USERNAME || 'AADI0837';
+/** Only these OS-IDs may be seeded/wiped. Blocks accidents via SEED_USERNAME. */
+const ALLOWED_SEED_USERNAMES = new Set(
+  String(process.env.SEED_ALLOWLIST || 'AADI0837')
+    .split(',')
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean),
+);
+const USERNAME = String(process.env.SEED_USERNAME || 'AADI0837').trim().toUpperCase();
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -83,6 +90,12 @@ async function del(label, q) {
 }
 
 async function resolveUser() {
+  if (!ALLOWED_SEED_USERNAMES.has(USERNAME)) {
+    throw new Error(
+      `Refusing seed/wipe for "${USERNAME}". Allowed: ${[...ALLOWED_SEED_USERNAMES].join(', ')}. `
+      + 'Other users are never touched. Override only via SEED_ALLOWLIST (comma OS-IDs) if you intentionally expand.',
+    );
+  }
   const { data, error } = await supabase
     .from('users')
     .select('id, email, username')
@@ -90,21 +103,26 @@ async function resolveUser() {
     .maybeSingle();
   if (error) throw error;
   if (!data) throw new Error(`No user ${USERNAME}`);
+  if (!data.id || typeof data.id !== 'string') throw new Error('Invalid user id — abort');
   return data;
 }
 
 /**
- * Remove demo seed for ONE user only (SEED_USERNAME).
+ * Remove demo seed for ONE user only (SEED_USERNAME ∈ allowlist).
+ * Every delete is `.eq('user_id', userId)` — never table-wide, never other users.
  * Does not delete the auth/user row — only life-data domains the seed owns.
  * full=true (wipe-only): ignore date windows; clear all rows for that user in those tables.
  */
 async function wipe(userId, { full = false } = {}) {
+  if (!userId || typeof userId !== 'string') {
+    throw new Error('wipe aborted: missing userId');
+  }
   const startStr = fmtDate(START);
   const endStr = fmtDate(END);
   const startIso = `${startStr}T00:00:00.000Z`;
   const endIso = `${endStr}T23:59:59.999Z`;
 
-  console.log(`  scope: user_id=${userId} full=${full}`);
+  console.log(`  scope: user_id=${userId} full=${full} (single-user only)`);
 
   // Habits — full tree (seed owns this account's habits during demo)
   await del('habit_logs', supabase.from('habit_logs').delete().eq('user_id', userId));
