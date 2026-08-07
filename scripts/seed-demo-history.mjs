@@ -31,6 +31,13 @@ const WIPE_ONLY = process.argv.includes('--wipe-only');
 const DAYS = Number(process.env.SEED_DAYS || 180);
 const END = parseDate(process.env.SEED_END || '2026-07-17');
 const START = addDays(END, -(DAYS - 1));
+/** Prefer scripts/seed-realistic-life.mjs. Same hard allowlist — other users never touched. */
+const ALLOWED_SEED_USERNAMES = new Set(
+  String(process.env.SEED_ALLOWLIST || 'AADI0837')
+    .split(',')
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean),
+);
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -135,9 +142,20 @@ async function resolveUser() {
       .maybeSingle();
     if (error) throw error;
     if (!data) throw new Error(`No user SEED_USER_ID=${process.env.SEED_USER_ID}`);
+    const uname = String(data.username || '').toUpperCase();
+    if (!ALLOWED_SEED_USERNAMES.has(uname)) {
+      throw new Error(
+        `Refusing seed/wipe for user ${data.username} (${data.id}). Allowed: ${[...ALLOWED_SEED_USERNAMES].join(', ')}.`,
+      );
+    }
     return data;
   }
-  const username = process.env.SEED_USERNAME || 'AADI0837';
+  const username = String(process.env.SEED_USERNAME || 'AADI0837').trim().toUpperCase();
+  if (!ALLOWED_SEED_USERNAMES.has(username)) {
+    throw new Error(
+      `Refusing seed/wipe for "${username}". Allowed: ${[...ALLOWED_SEED_USERNAMES].join(', ')}.`,
+    );
+  }
   const { data, error } = await supabase
     .from('users')
     .select('id, email, username, full_name')
