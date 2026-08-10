@@ -28,6 +28,13 @@ app.get('/re-engagement', async (c) => {
   return c.json({ streak_recovery: streak, idle, weekly_digest: digest, document_expiry: expiry, ts: Date.now() });
 });
 
+app.get('/correlations', async (c) => {
+  if (!authorizeCron(c)) return c.json({ error: 'Unauthorized' }, 401);
+  const { runCorrelationEngine } = await import('../services/correlationService.js');
+  const result = await runCorrelationEngine();
+  return c.json({ ok: true, ...result, ts: Date.now() });
+});
+
 app.get('/health', (c) => c.json({ ok: true }));
 
 export default app;

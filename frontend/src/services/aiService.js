@@ -436,9 +436,7 @@ export async function generateWeeklyInsight({ habits = {}, journal = {}, finance
   try {
     const raw = await askAI('weekly_insight', [{
       role: 'user',
-      content: `Create a weekly personal insight report for an Indian user. Speak directly to "you". Be specific, grounded, and calm.
-All money amounts are INR. Use ₹ only. Never use $ or USD.
-Do not apologize. Do not say "unfortunately". Do not invent causes. If data is missing, say what is missing plainly.
+      content: `Write ONLY the user-facing report. Never repeat these instructions.
 
 Data:
 - Habits: ${JSON.stringify(habits)}
@@ -447,16 +445,27 @@ Data:
 - Lab sessions: ${lab.sessions || 0}
 - Discipline streak: ${discipline.streak || 0} days
 
-Provide exactly 4 short bullet points, then one final line starting with "Next move:".
-Each bullet must reference one of the data categories above. Keep the whole answer under 110 words.`
+Output format (strict):
+- bullet one
+- bullet two
+- bullet three
+- bullet four
+Next move: one short concrete action
+
+Rules: speak to "you"; ₹ only; no $; no apology; no invented causes; ≤110 words total.`,
     }], {
       maxTokens: 450,
-      temperature: 0.6,
-      systemPrompt: 'You coach Indian users tracking their life. Currency is always ₹ (INR). Never write dollar signs. Be warm, practical, and evidence-led. No guilt, no vague motivation.',
+      temperature: 0.55,
+      systemPrompt: 'You return only the weekly report body for an Indian Life OS user. Never echo instructions, constraints, or meta commentary. Currency ₹ only.',
     });
-    return normalizeINRCurrency(raw);
+    const text = normalizeINRCurrency(raw || '');
+    // Bail if model echoed the prompt — caller builds local fallback
+    if (/under\s+\d+\s+words|passive voice|dollar signs|categories to reference|write\s+\d+\s+short|must\s+not\s+use/i.test(text)) {
+      return '';
+    }
+    return text;
   } catch (err) {
-    return "Insight report temporarily offline. Maintain your streak and focus on your daily targets.";
+    return '';
   }
 }
 

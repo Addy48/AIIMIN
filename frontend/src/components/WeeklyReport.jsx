@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import supabase from '../utils/supabase';
+import React, { useState, useMemo } from 'react';
+import { useDailyLogsRange } from '../hooks/useDailyLogsQuery';
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from '@react-pdf/renderer';
 import useFeatureFlag from '../hooks/useFeatureFlag';
 
@@ -50,87 +50,64 @@ const ReportPDF = ({ report }) => (
  * WeeklyReport — Auto-generated weekly intelligence summary
  */
 const WeeklyReport = ({ user }) => {
-    const [report, setReport] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { logsAsc: logs, loading } = useDailyLogsRange(7, {
+        enabled: Boolean(user),
+        fields: 'date,sleep_hours,gym_done,learning_done,mood,steps',
+    });
     const showPdfExport = useFeatureFlag('pdf_reports');
 
-    // PDF generation handled declaratively by PDFDownloadLink above.
+    const report = useMemo(() => {
+        if (!logs || logs.length < 3) return null;
 
-    useEffect(() => {
-        if (!user) return;
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const scored = logs.map((l) => {
+            let s = 0;
+            if (l.sleep_hours && l.sleep_hours >= 6) s += 2;
+            if (l.gym_done) s += 2;
+            if (l.learning_done) s += 1;
+            if (l.mood && l.mood >= 4) s += 1;
+            if (l.steps && l.steps >= 5000) s += 1;
+            const dt = new Date(l.date);
+            return { date: l.date, day: dayNames[dt.getDay()], score: s, ...l };
+        });
 
-        const generate = async () => {
-            setLoading(true);
-            const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+        const best = scored.reduce((a, b) => (a.score > b.score ? a : b));
+        const worst = scored.reduce((a, b) => (a.score < b.score ? a : b));
 
-            const { data: logs, error } = await supabase
-                .from('daily_logs')
-                .select('date, sleep_hours, gym_done, learning_done, mood, steps')
-                .eq('user_id', user.id)
-                .gte('date', sevenDaysAgo)
-                .order('date', { ascending: true });
+        const gymDays = logs.filter((l) => l.gym_done).length;
+        const learnDays = logs.filter((l) => l.learning_done).length;
+        const sleepDays = logs.filter((l) => l.sleep_hours >= 7).length;
+        const areas = [
+            { name: 'exercise', count: gymDays },
+            { name: 'learning', count: learnDays },
+            { name: 'sleep quality', count: sleepDays },
+        ];
+        const weakest = areas.reduce((a, b) => (a.count < b.count ? a : b));
 
-            if (error || !logs || logs.length < 3) {
-                setLoading(false);
-                return;
-            }
+        const suggestions = [
+            `Focus on ${weakest.name} — you only hit it ${weakest.count}/${logs.length} days this week.`,
+            `Try scheduling ${weakest.name} at a fixed time to build the habit.`,
+            `Your ${weakest.name} consistency is your biggest opportunity for growth.`,
+        ];
 
-            // Score each day
-            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const scored = logs.map(l => {
-                let s = 0;
-                if (l.sleep_hours && l.sleep_hours >= 6) s += 2;
-                if (l.gym_done) s += 2;
-                if (l.learning_done) s += 1;
-                if (l.mood && l.mood >= 4) s += 1;
-                if (l.steps && l.steps >= 5000) s += 1;
-                const dt = new Date(l.date);
-                return { date: l.date, day: dayNames[dt.getDay()], score: s, ...l };
-            });
+        const reinforcements = [
+            gymDays >= 5 && '🏋️ Crushed the gym this week — 5+ sessions!',
+            learnDays >= 5 && '📚 Learning streak — knowledge compounds!',
+            sleepDays >= 5 && '😴 Sleep discipline on point — brain fuel.',
+            logs.length >= 6 && '🔥 Logged 6+ days — you showed up consistently.',
+        ].filter(Boolean);
 
-            const best = scored.reduce((a, b) => a.score > b.score ? a : b);
-            const worst = scored.reduce((a, b) => a.score < b.score ? a : b);
-
-            // Identify weakest area
-            const gymDays = logs.filter(l => l.gym_done).length;
-            const learnDays = logs.filter(l => l.learning_done).length;
-            const sleepDays = logs.filter(l => l.sleep_hours >= 7).length;
-            const areas = [
-                { name: 'exercise', count: gymDays },
-                { name: 'learning', count: learnDays },
-                { name: 'sleep quality', count: sleepDays },
-            ];
-            const weakest = areas.reduce((a, b) => a.count < b.count ? a : b);
-
-            // Generate messages
-            const suggestions = [
-                `Focus on ${weakest.name} — you only hit it ${weakest.count}/${logs.length} days this week.`,
-                `Try scheduling ${weakest.name} at a fixed time to build the habit.`,
-                `Your ${weakest.name} consistency is your biggest opportunity for growth.`,
-            ];
-
-            const reinforcements = [
-                gymDays >= 5 && '🏋️ Crushed the gym this week — 5+ sessions!',
-                learnDays >= 5 && '📚 Learning streak — knowledge compounds!',
-                sleepDays >= 5 && '😴 Sleep discipline on point — brain fuel.',
-                logs.length >= 6 && '🔥 Logged 6+ days — you showed up consistently.',
-            ].filter(Boolean);
-
-            setReport({
-                daysLogged: logs.length,
-                bestDay: best,
-                worstDay: worst,
-                suggestion: suggestions[Math.floor(Math.random() * suggestions.length)],
-                reinforcement: reinforcements[0] || '🌱 Every log counts. Keep building momentum.',
-                avgMood: logs.filter(l => l.mood).length > 0
-                    ? (logs.filter(l => l.mood).reduce((s, l) => s + l.mood, 0) / logs.filter(l => l.mood).length).toFixed(1)
-                    : null,
-            });
-            setLoading(false);
+        return {
+            daysLogged: logs.length,
+            bestDay: best,
+            worstDay: worst,
+            suggestion: suggestions[Math.floor(Math.random() * suggestions.length)],
+            reinforcement: reinforcements[0] || '🌱 Every log counts. Keep building momentum.',
+            avgMood: logs.filter((l) => l.mood).length > 0
+                ? (logs.filter((l) => l.mood).reduce((s, l) => s + l.mood, 0) / logs.filter((l) => l.mood).length).toFixed(1)
+                : null,
         };
-
-        generate();
-    }, [user]);
+    }, [logs]);
 
     if (loading) {
         return (

@@ -74,8 +74,16 @@ export const authLimiter = createLimiter({
 
 export const aiLimiter = createLimiter({
   windowMs: 60_000,
-  max: 5,
+  // Burst cap — tier daily budgets still apply in trackExternalCall
+  max: 8,
   keyFn: (c) => `ai:${c.get('userId') || ip(c)}`,
+});
+
+/** Stricter burst for anonymous / unresolved sessions hitting AI-shaped paths */
+export const aiAnonymousLimiter = createLimiter({
+  windowMs: 60_000,
+  max: 2,
+  keyFn: (c) => `ai-anon:${ip(c)}`,
 });
 
 /** Per-user sports manual refresh — expensive upstream aggregation */

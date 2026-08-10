@@ -24,6 +24,30 @@ backend/.env.production
 # Build outputs
 frontend/build/
 
+# Capacitor / Android local secrets
+frontend/android/local.properties
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/capacitor-cordova-android-plugins/build/
+
+# Native Android V2 — never commit build cache or APK outputs
+native-android/.gradle/
+native-android/**/build/
+native-android/local.properties
+native-android/*.iml
+native-android/.idea/
+
+# Local audit artifacts
+laptop-disk-audit-*.html
+
+# Optional local agent skills (large third-party packs)
+.agents/skills/android-*/
+.agents/skills/claude-*/
+.agents/skills/marketing-skills/
+.agents/skills/planning/
+.agents/skills/codebase-architecture/
+
 # SSH keys (never commit)
 *.pem
 client_secret*.json

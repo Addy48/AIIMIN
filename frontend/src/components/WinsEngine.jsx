@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import supabase from '../utils/supabase';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useDailyLogsRange } from '../hooks/useDailyLogsQuery';
 import DumbbellIcon from './icons/DumbbellIcon';
 
 const StreakItem = ({ label, count, icon, color }) => (
@@ -34,68 +34,52 @@ const calcDayScore = (log) => {
 
 const WinsEngine = () => {
     const { user } = useAuth();
-    const [winsData, setWinsData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const { logs, loading } = useDailyLogsRange(30, {
+        fields: 'date,sleep_hours,gym_done,learning_done,journal_entry,steps,mood',
+    });
     const [isExpanded, setIsExpanded] = useState(false);
 
-    useEffect(() => {
-        if (!user) return;
-        const fetchData = async () => {
-            setLoading(true);
-            const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const winsData = useMemo(() => {
+        if (!logs?.length) return null;
 
-            const { data: logs } = await supabase
-                .from('daily_logs')
-                .select('date, sleep_hours, gym_done, learning_done, journal_entry, steps, mood, pomodoro_minutes')
-                .eq('user_id', user.id)
-                .gte('date', thirtyDaysAgo)
-                .order('date', { ascending: false });
+        const today = new Date().toISOString().split('T')[0];
+        const todayLog = logs.find((l) => l.date === today);
+        const momentumScore = todayLog ? calcDayScore(todayLog) : 0;
 
-            if (!logs || logs.length === 0) {
-                setWinsData(null);
-                setLoading(false);
-                return;
+        const sorted = [...logs].sort((a, b) => b.date.localeCompare(a.date));
+        let gymStreak = 0;
+        let focusStreak = 0;
+        let stabilityStreak = 0;
+        for (const log of sorted) { if (log.gym_done) gymStreak += 1; else break; }
+        for (const log of sorted) { if (log.learning_done) focusStreak += 1; else break; }
+        for (const log of sorted) { if (log.mood && log.mood >= 3) stabilityStreak += 1; else break; }
+
+        const weeklyScores = [];
+        for (let i = 0; i < 4; i += 1) {
+            const slice = sorted.slice(i * 7, (i + 1) * 7);
+            if (slice.length > 0) {
+                const avg = slice.reduce((s, l) => s + calcDayScore(l), 0) / slice.length;
+                weeklyScores.push(Math.round(avg));
             }
+        }
+        const bestWeek = weeklyScores.length > 0 ? Math.max(...weeklyScores) : 0;
 
-            const today = new Date().toISOString().split('T')[0];
-            const todayLog = logs.find(l => l.date === today);
-            const momentumScore = todayLog ? calcDayScore(todayLog) : 0;
+        const moodLogs = logs.filter((l) => l.mood);
+        const avgMood = moodLogs.length > 0
+            ? (moodLogs.reduce((s, l) => s + l.mood, 0) / moodLogs.length).toFixed(1)
+            : null;
 
-            const sorted = [...logs].sort((a, b) => b.date.localeCompare(a.date));
-            let gymStreak = 0, focusStreak = 0, stabilityStreak = 0;
-            for (const log of sorted) { if (log.gym_done) gymStreak++; else break; }
-            for (const log of sorted) { if (log.learning_done) focusStreak++; else break; }
-            for (const log of sorted) { if (log.mood && log.mood >= 3) stabilityStreak++; else break; }
+        const timeline = sorted.slice(0, 7).flatMap((log) => {
+            const wins = [];
+            const dateStr = new Date(`${log.date}T12:00:00`).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            if (log.gym_done) wins.push({ title: 'Gym session completed', meta: dateStr });
+            if (log.learning_done) wins.push({ title: 'Learning goal met', meta: dateStr });
+            if (log.mood && log.mood >= 4) wins.push({ title: `High mood day (${log.mood}/5)`, meta: dateStr });
+            return wins;
+        }).slice(0, 5);
 
-            const weeklyScores = [];
-            for (let i = 0; i < 4; i++) {
-                const slice = sorted.slice(i * 7, (i + 1) * 7);
-                if (slice.length > 0) {
-                    const avg = slice.reduce((s, l) => s + calcDayScore(l), 0) / slice.length;
-                    weeklyScores.push(Math.round(avg));
-                }
-            }
-            const bestWeek = weeklyScores.length > 0 ? Math.max(...weeklyScores) : 0;
-
-            const moodLogs = logs.filter(l => l.mood);
-            const avgMood = moodLogs.length > 0
-                ? (moodLogs.reduce((s, l) => s + l.mood, 0) / moodLogs.length).toFixed(1)
-                : null;
-
-            const timeline = sorted.slice(0, 7).flatMap(log => {
-                const wins = [];
-                const dateStr = new Date(log.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                if (log.gym_done) wins.push({ title: 'Gym session completed', meta: dateStr });
-                if (log.learning_done) wins.push({ title: 'Learning goal met', meta: dateStr });
-                if (log.mood && log.mood >= 4) wins.push({ title: `High mood day (${log.mood}/5)`, meta: dateStr });
-                return wins;
-            }).slice(0, 5);
-
-            setWinsData({ momentumScore, gymStreak, focusStreak, stabilityStreak, bestWeek, avgMood, timeline });
-            setLoading(false);
-        };
-        fetchData();
-    }, [user]);
+        return { momentumScore, gymStreak, focusStreak, stabilityStreak, bestWeek, avgMood, timeline };
+    }, [logs]);
 
     if (loading) {
         return (

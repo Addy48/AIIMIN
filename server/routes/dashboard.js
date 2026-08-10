@@ -80,4 +80,62 @@ app.get('/summary', requireAuth, async (c) => {
     }
 });
 
+/**
+ * GET /api/dashboard/widgets — 7-day rollup for Overview widgets
+ */
+app.get('/widgets', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+
+        const [logsRes, journalRes, spendRes, labRes] = await Promise.all([
+            pool.query(
+                `SELECT mood FROM daily_logs
+                 WHERE user_id = $1 AND date >= $2 AND mood IS NOT NULL`,
+                [userId, sevenDaysAgo]
+            ),
+            pool.query(
+                `SELECT COUNT(*)::int AS count FROM journal_entries
+                 WHERE user_id = $1 AND date >= $2`,
+                [userId, sevenDaysAgo]
+            ),
+            pool.query(
+                `SELECT
+                    COALESCE(SUM(CASE WHEN type IN ('expense', 'transfer_out', 'lend') THEN ABS(amount) ELSE 0 END), 0)::numeric AS expense_total,
+                    COALESCE(SUM(CASE WHEN type IN ('income', 'transfer_in', 'repayment') THEN amount ELSE 0 END), 0)::numeric AS income_total,
+                    COUNT(*)::int AS transaction_count
+                 FROM money_transactions
+                 WHERE user_id = $1 AND date >= $2`,
+                [userId, sevenDaysAgo]
+            ),
+            pool.query(
+                `SELECT COUNT(*)::int AS count FROM lab_mindset_logs
+                 WHERE user_id = $1 AND logged_at >= $2::timestamptz`,
+                [userId, `${sevenDaysAgo}T00:00:00.000Z`]
+            ),
+        ]);
+
+        const moods = logsRes.rows.map((r) => Number(r.mood)).filter((m) => !Number.isNaN(m));
+        const avgMood = moods.length
+            ? Number((moods.reduce((s, m) => s + m, 0) / moods.length).toFixed(1))
+            : null;
+
+        const spend = spendRes.rows[0] || {};
+
+        return c.json({
+            journal_entries: journalRes.rows[0]?.count || 0,
+            expense_total: Number(spend.expense_total || 0),
+            income_total: Number(spend.income_total || 0),
+            transaction_count: spend.transaction_count || 0,
+            avg_mood: avgMood,
+            lab_sessions: labRes.rows[0]?.count || 0,
+            period_days: 7,
+            since: sevenDaysAgo,
+        });
+    } catch (err) {
+        console.error('[dashboard/widgets] Fatal:', err);
+        return c.json({ error: err.message }, 500);
+    }
+});
+
 export default app;

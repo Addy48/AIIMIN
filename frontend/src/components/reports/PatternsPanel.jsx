@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import ErrorBoundary from '../system/ErrorBoundary';
 import WeeklyLifeReview from '../growth/WeeklyLifeReview';
 import SideQuests from '../growth/SideQuests';
 import InsightEngine from '../InsightEngine';
+import CausalNodeAnalysis from '../growth/CausalNodeAnalysis';
 import { useAuth } from '../../hooks/useAuth';
 import { useLHSData } from '../../hooks/useLHSData';
-import supabase from '../../utils/supabase';
+import { useDailyLogsRange } from '../../hooks/useDailyLogsQuery';
+import { useCorrelationsQuery } from '../../hooks/useCorrelationsQuery';
 
 /**
  * Patterns — former Insights tab, grounded in live logs + intelligence report.
@@ -14,24 +16,9 @@ import supabase from '../../utils/supabase';
 export default function PatternsPanel({ report }) {
   const { user, session } = useAuth();
   const { lhsData, reportData } = useLHSData(session);
-  const [recentLogs, setRecentLogs] = useState([]);
+  const { logsAsc: recentLogs } = useDailyLogsRange(60, { enabled: Boolean(user?.id && !user.isGuest) });
+  const { correlations } = useCorrelationsQuery({ enabled: Boolean(user?.id && !user.isGuest) });
   const [showReview, setShowReview] = useState(true);
-
-  useEffect(() => {
-    if (!user?.id || user.isGuest) return undefined;
-    let cancelled = false;
-    const sixtyDaysAgo = new Date(Date.now() - 60 * 86400000).toLocaleDateString('en-CA');
-    supabase
-      .from('daily_logs')
-      .select('*')
-      .eq('user_id', user.id)
-      .gte('date', sixtyDaysAgo)
-      .order('date', { ascending: false })
-      .then(({ data }) => {
-        if (!cancelled) setRecentLogs(data || []);
-      });
-    return () => { cancelled = true; };
-  }, [user]);
 
   const drivers = report?.behaviorDrivers || reportData?.behaviorDrivers || [];
   const actions = report?.actionPlan || reportData?.actionPlan || reportData?.executiveSummary?.recommendations || [];
@@ -88,6 +75,17 @@ export default function PatternsPanel({ report }) {
           </ul>
         </section>
       </div>
+
+      {user && !user.isGuest && (
+        <section style={{ padding: 8, borderRadius: 16, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <div style={{ padding: '12px 16px 0', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-3)' }}>
+            Signal correlations
+          </div>
+          <ErrorBoundary label="Causal correlations">
+            <CausalNodeAnalysis correlations={correlations} logs={recentLogs} />
+          </ErrorBoundary>
+        </section>
+      )}
 
       {user && !user.isGuest && (
         <section style={{ padding: 8, borderRadius: 16, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>

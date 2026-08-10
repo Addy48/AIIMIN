@@ -1,42 +1,100 @@
-# AIIMIN — Behavior-OS Frontend
+# AIIMIN Web Frontend
 
-This is the interface layer of the **AIIMIN Behavior-Shaping OS**. It is a React-based implementation focusing on high-fidelity visual feedback and spatial UI.
+React 19 SPA for the **full Life OS** — desktop, iPad, and phone browser (with `/m` capture tier).
 
-## 🎨 Visual Identity: The Ghost Interface
-The frontend leverages consistent design tokens defined in `src/index.css` and `tailwind.config.js`.
+> **Not the native Android app.** Kotlin client lives in `../native-android/`.  
+> **Capacitor** (`android/`) is a separate WebView shell — do not confuse with native V2.
 
-### Key Design Primitives:
-- **Obsidian Dark**: `#050505` (Deep space base)
-- **Fluid Gold**: `#D4AF37` (Accent/Momentum)
-- **Glassmorphism**: 
-  - `.glass-panel`: Standard depth with 8px blur.
-  - `.glass-panel-gold`: Premium depth with gold-tinted borders.
+---
 
-## 🏛️ Component Architecture
+## Stack
 
-### 1. Main Dashboard (`src/pages/Dashboard.jsx`)
-The central hub utilizing a tabbed layout system (Overview, Focus, Identity, Growth, habits, Money, Analytics, Settings). State is maintained via `activeTab` with local storage persistence.
+| Piece | Tech |
+|-------|------|
+| UI | React 19, React Router 6 |
+| Styling | Tailwind + CSS variables (`index.css`) |
+| Data | React Query hooks (`useDailyLogsQuery`, `useCorrelationsQuery`, …) |
+| Charts | Recharts |
+| Auth | Better Auth client → `api.aiimin.in` |
+| Build | CRACO (`craco.config.js`) |
 
-### 2. Analytical Tier (`src/components/growth/`)
-- `CausalNodeAnalysis.jsx`: Dynamic dependency mapping between habits and outcomes.
-- `PerformanceDeltaHub.jsx`: 30-day trailing vision gap analysis.
+---
 
-### 3. Reporting Suite (`src/components/Reports.jsx`)
-Modular PDF generation using `jsPDF`. Integrated with `jspdf-autotable` for high-fidelity data visualization and automated system recommendations.
+## Device tiers
 
-## 🛠️ Development
+```mermaid
+flowchart TD
+  D[DeviceGate] --> P{Phone?}
+  P -->|yes| M["/m MobileShell<br/>capture only"]
+  P -->|no| T{Tablet?}
+  T -->|yes| F["Full OS + TabRail"]
+  T -->|no| W["Full OS + Navbar"]
+```
 
-### Scripts
-- `npm start`: Runs the development server on `localhost:3000`.
-- `npm run build`: Generates the production bundle.
+| Tier | Width / UA | Experience |
+|------|------------|----------|
+| Phone | &lt;768px or mobile UA | `/m` — Today, Score, Account |
+| Tablet | 768–1099px or iPad | Full OS, touch masthead |
+| Desktop | ≥1100px | Full OS, wide layouts |
 
-### Design System Integration
-To maintain the "Ghost" look, always use the CSS variables:
-```css
-color: var(--text-1);
-background: var(--bg-card);
-border: 1px solid var(--border);
+Override: `?forceDesktop=1`
+
+---
+
+## Key directories
+
+```
+src/
+├── pages/           # Route-level views (Overview, Finance, Journal, …)
+├── components/      # Shared UI (not mobile/ for web-only work)
+├── components/mobile/   # ⚠ /m + Capacitor only
+├── hooks/           # React Query + domain hooks
+├── api/             # Thin fetch wrappers per domain
+├── context/         # Auth, theme
+└── styles/          # Global + feature CSS
 ```
 
 ---
-*Powered by the Obsidian Gold Design System*
+
+## Scripts
+
+```bash
+npm start          # dev server :3000
+npm run build      # production bundle → build/
+npm test           # Jest (if configured)
+
+# Capacitor (separate release train)
+npm run cap:build:android
+npm run cap:dev:phone    # LAN dev WebView
+```
+
+---
+
+## Environment
+
+Set in `frontend/.env.local` (never commit):
+
+- `REACT_APP_API_URL` — API base (prod: `https://api.aiimin.in`)
+- Supabase public keys if used client-side
+- Feature flags (`REACT_APP_WAITLIST_MODE`, etc.)
+
+---
+
+## Palette (locked)
+
+| Token | Value |
+|-------|-------|
+| `--color-base` dark | `#1a1a1a` |
+| `--color-surface` dark | `#2d2d2d` |
+| `--color-accent` | `#ff6b35` |
+| `--color-done` | `#10b981` |
+
+See `docs/knowledge/08_DESIGN/Palette.md`.
+
+---
+
+## Related docs
+
+- Monorepo boundaries: `../docs/knowledge/02_ARCHITECTURE/Monorepo.md`
+- Mobile `/m` shell: `src/components/mobile/README.md`
+- Capacitor: `../docs/knowledge/09_FEATURES/Mobile/Capacitor-Android.md`

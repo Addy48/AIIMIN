@@ -5,6 +5,7 @@ import { RefreshCw, Wifi, AlertTriangle, Calendar, Trophy, ChevronRight } from '
 import { useAuth } from '../context/AuthContext';
 import { sportsService } from '../services/sportsService';
 import PageHeader from '../components/layout/PageHeader';
+import { formatDate } from '../utils/formatDate';
 
 const MatchCard = ({ match, isF1 = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -36,7 +37,7 @@ const MatchCard = ({ match, isF1 = false }) => {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, background: match.isLive ? 'rgba(239,68,68,0.15)' : match.isFinished ? 'rgba(255,255,255,0.05)' : 'rgba(59,130,246,0.15)', color: match.isLive ? '#EF4444' : match.isFinished ? 'var(--color-text-3)' : '#3B82F6' }}>
+          <span style={{ padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, background: match.isLive ? 'rgba(239,68,68,0.15)' : match.isFinished ? 'rgba(255,255,255,0.05)' : 'rgba(255,107,53,0.15)', color: match.isLive ? '#EF4444' : match.isFinished ? 'var(--color-text-3)' : '#ff6b35' }}>
             {match.isLive ? 'LIVE' : match.isFinished ? 'FINISHED' : 'UPCOMING'}
           </span>
           <ChevronRight size={18} color="var(--color-text-4)" />
@@ -53,7 +54,7 @@ const MatchCard = ({ match, isF1 = false }) => {
         <div style={{ fontSize: '11px', color: 'var(--color-text-3)', fontWeight: 700, letterSpacing: '0.5px' }}>
           {match.statusShort}
         </div>
-        <span style={{ padding: '4px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: 800, background: match.isLive ? 'rgba(239,68,68,0.15)' : match.isFinished ? 'rgba(255,255,255,0.05)' : 'rgba(59,130,246,0.15)', color: match.isLive ? '#EF4444' : match.isFinished ? 'var(--color-text-3)' : '#3B82F6', letterSpacing: '0.5px' }}>
+        <span style={{ padding: '4px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: 800, background: match.isLive ? 'rgba(239,68,68,0.15)' : match.isFinished ? 'rgba(255,255,255,0.05)' : 'rgba(255,107,53,0.15)', color: match.isLive ? '#EF4444' : match.isFinished ? 'var(--color-text-3)' : '#ff6b35', letterSpacing: '0.5px' }}>
           {match.isLive ? 'LIVE' : match.isFinished ? 'FT' : 'UPCOMING'}
         </span>
       </div>
@@ -244,7 +245,7 @@ const Sports = () => {
               {feed?.cricket?.length > 0 ? (
                 feed.cricket.map(renderLeagueSection)
               ) : (
-                <EmptyState icon="🏏" message="No cricket matches found right now." refreshing={refreshing} />
+                <EmptyState icon="🏏" message="No cricket matches found right now." refreshing={refreshing} nextMoment={collectNextMoment(feed, 'Cricket')} />
               )}
             </motion.div>
           )}
@@ -254,7 +255,7 @@ const Sports = () => {
               {feed?.football?.length > 0 ? (
                 feed.football.map(renderLeagueSection)
               ) : (
-                <EmptyState icon="⚽" message="No football matches tracked right now." refreshing={refreshing} />
+                <EmptyState icon="⚽" message="No football matches tracked right now." refreshing={refreshing} nextMoment={collectNextMoment(feed, 'Football')} />
               )}
             </motion.div>
           )}
@@ -264,7 +265,12 @@ const Sports = () => {
               {feed?.basketball?.length > 0 ? (
                 feed.basketball.map(renderLeagueSection)
               ) : (
-                <EmptyState icon="🏀" message="No basketball games tracked right now." refreshing={refreshing} />
+                <EmptyState
+                  icon="🏀"
+                  message="No upcoming Basketball games. Your followed teams have no matches this week."
+                  refreshing={refreshing}
+                  nextMoment={collectNextMoment(feed, 'Basketball')}
+                />
               )}
             </motion.div>
           )}
@@ -278,7 +284,12 @@ const Sports = () => {
                   ))}
                 </div>
               ) : (
-                <EmptyState icon="🏎️" message="F1 data is currently unavailable." refreshing={refreshing} />
+                <EmptyState
+                  icon="🏎️"
+                  message="F1 race data isn't live right now. Check back during race weekends."
+                  refreshing={refreshing}
+                  nextMoment={collectNextMoment(feed, 'F1')}
+                />
               )}
             </motion.div>
           )}
@@ -294,13 +305,67 @@ const Sports = () => {
   );
 };
 
-const EmptyState = ({ icon, message, refreshing }) => (
-  <div style={{ padding: '60px 40px', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '24px', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-    <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>{icon}</div>
-    <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-2)' }}>
+const EmptyState = ({ icon, message, refreshing, nextMoment }) => (
+  <div style={{
+    padding: '40px 32px',
+    textAlign: 'center',
+    background: 'rgba(255,255,255,0.02)',
+    borderRadius: 24,
+    border: '1px dashed var(--border)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    minHeight: 200,
+    maxHeight: 320,
+    justifyContent: 'center',
+  }}>
+    <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.5 }}>{icon}</div>
+    <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-2)', margin: 0, lineHeight: 1.45, maxWidth: 440 }}>
       {refreshing ? 'Syncing global feeds...' : message}
     </h3>
+    {!refreshing && nextMoment && (
+      <p style={{ margin: '14px 0 0', fontSize: 13, color: 'var(--color-text-3)', lineHeight: 1.5, maxWidth: 420 }}>
+        Your next sports moment: <strong style={{ color: 'var(--color-text-1)' }}>{nextMoment.title}</strong>
+        {nextMoment.sport ? ` (${nextMoment.sport})` : ''}
+        {nextMoment.when ? ` · ${nextMoment.when}` : ''}
+      </p>
+    )}
   </div>
 );
+
+function collectNextMoment(feed, excludeTab) {
+  const out = [];
+  const pushEvents = (sport, leagues) => {
+    if (sport === excludeTab) return;
+    (leagues || []).forEach((league) => {
+      (league.events || []).forEach((m) => {
+        if (m.isFinished) return;
+        const title = m.home?.name && m.away?.name
+          ? `${m.home.name} vs ${m.away.name}`
+          : (m.name || 'Upcoming match');
+        let when = '';
+        if (m.date) {
+          try {
+            when = formatDate(m.date);
+          } catch { when = ''; }
+        } else if (m.statusShort) when = m.statusShort;
+        out.push({ sport, title, when });
+      });
+    });
+  };
+  pushEvents('Cricket', feed?.cricket);
+  pushEvents('Football', feed?.football);
+  pushEvents('Basketball', feed?.basketball);
+  if (excludeTab !== 'F1') {
+    (feed?.f1?.upcoming || []).forEach((race) => {
+      out.push({
+        sport: 'F1',
+        title: race.name || 'Race weekend',
+        when: race.statusShort || '',
+      });
+    });
+  }
+  return out[0] || null;
+}
 
 export default Sports;

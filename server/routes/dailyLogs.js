@@ -8,6 +8,44 @@ import { trackExternalCall } from '../services/apiUsageService.js';
 const app = new Hono();
 
 /**
+ * GET /api/daily-logs — list logs in date range (inclusive)
+ * Query: from=YYYY-MM-DD, to=YYYY-MM-DD (default to=today, from=30d ago)
+ *        fields=date,mood,sleep_hours (optional column subset)
+ */
+app.get('/', requireAuth, async (c) => {
+    try {
+        const userId = c.get('userId');
+        const to = c.req.query('to') || new Date().toISOString().split('T')[0];
+        const from = c.req.query('from')
+            || new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+        const fieldsParam = c.req.query('fields');
+        const allowedCols = new Set([
+            'date', 'sleep_start', 'sleep_end', 'sleep_hours', 'rc_count', 'gym_done',
+            'gym_duration', 'breakfast_done', 'steps', 'water_bottles', 'learning_done',
+            'learning_topic', 'journal_entry', 'mood', 'energy_level', 'focus_score',
+            'created_at', 'updated_at',
+        ]);
+        let selectCols = '*';
+        if (fieldsParam) {
+            const cols = fieldsParam.split(',').map((f) => f.trim()).filter((f) => allowedCols.has(f));
+            if (cols.length && !cols.includes('date')) cols.unshift('date');
+            if (cols.length) selectCols = cols.join(', ');
+        }
+
+        const { rows } = await pool.query(
+            `SELECT ${selectCols} FROM daily_logs
+             WHERE user_id = $1 AND date >= $2 AND date <= $3
+             ORDER BY date DESC`,
+            [userId, from, to]
+        );
+        return c.json(rows);
+    } catch (error) {
+        console.error('[daily-logs GET list]', error);
+        return c.json({ error: error.message || 'Internal server error' }, 500);
+    }
+});
+
+/**
  * POST /api/daily-logs — Create or update daily log
  */
 app.post('/', requireAuth, async (c) => {

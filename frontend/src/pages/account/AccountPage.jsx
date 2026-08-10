@@ -24,6 +24,9 @@ const SECTIONS = [
   { id: 'legal', label: 'Legal', helper: 'Policies and terms' },
 ];
 
+/** Guard against accidental duplicate nav entries */
+const UNIQUE_SECTIONS = Array.from(new Map(SECTIONS.map((s) => [s.id, s])).values());
+
 const SECTION_MAP = {
   profile: ProfileSection,
   personalization: PersonalizationSection,
@@ -95,7 +98,7 @@ export default function AccountPage() {
 
   const ActiveSection = SECTION_MAP[section] || ProfileSection;
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const activeMeta = SECTIONS.find((s) => s.id === section) || SECTIONS[0];
+  const activeMeta = UNIQUE_SECTIONS.find((s) => s.id === section) || UNIQUE_SECTIONS[0];
 
   return (
     <div
@@ -136,8 +139,8 @@ export default function AccountPage() {
         )}
 
         {isMobile ? (
-          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 8px' }}>
-            {SECTIONS.map((s) => (
+          <div className="account-mobile-tabs">
+            {UNIQUE_SECTIONS.filter((s) => s.id !== 'design').map((s) => (
               <button
                 key={s.id}
                 type="button"
@@ -160,7 +163,7 @@ export default function AccountPage() {
           </div>
         ) : (
           <nav style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {SECTIONS.map((s) => {
+            {UNIQUE_SECTIONS.map((s) => {
               const active = section === s.id;
               return (
                 <button
@@ -179,8 +182,9 @@ export default function AccountPage() {
                     borderRadius: 12,
                     background: active ? 'var(--color-surface-3)' : 'transparent',
                     color: active ? 'var(--color-text-1)' : 'var(--color-text-2)',
-                    fontSize: 14,
-                    fontWeight: active ? 750 : 600,
+                    fontSize: 13,
+                    fontWeight: active ? 500 : 400,
+                    fontFamily: 'var(--font-sans, Figtree, system-ui, sans-serif)',
                     cursor: 'pointer',
                     transition: 'background var(--dur-normal) var(--ease), border-color var(--dur-normal) var(--ease)',
                   }}

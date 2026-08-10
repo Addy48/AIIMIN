@@ -1,134 +1,135 @@
-import React, { useState, useEffect } from 'react';
-import supabase from '../utils/supabase';
+import React, { useMemo } from 'react';
 import DumbbellIcon from './icons/DumbbellIcon';
+import { useDailyLogsRange } from '../hooks/useDailyLogsQuery';
+import { useCorrelationsQuery } from '../hooks/useCorrelationsQuery';
+
+const FIELDS = 'date,sleep_hours,gym_done,learning_done,mood,steps,journal_entry';
 
 /**
- * InsightEngine — Behavioral pattern recognition
- *
- * Queries last 30 days of daily_logs and computes:
- * - Sleep vs mood correlation
- * - Gym days vs mood average
- * - Best day of week
- * - Weakest pattern
- *
- * No ML — just structured rule logic with plain-language summaries.
+ * InsightEngine — rule-based patterns + Spearman correlations from intelligence layer.
  */
-const InsightEngine = ({ user }) => {
-    const [insights, setInsights] = useState([]);
-    const [loading, setLoading] = useState(true);
+const InsightEngine = ({ user, logs: logsProp }) => {
+    const { logsAsc, loading: logsLoading } = useDailyLogsRange(30, {
+        fields: FIELDS,
+        enabled: Boolean(user && !logsProp),
+    });
+    const { correlations, insights: corrInsights, loading: corrLoading } = useCorrelationsQuery({
+        enabled: Boolean(user),
+    });
 
-    useEffect(() => {
-        if (!user) return;
+    const logs = logsProp || logsAsc;
+    const loading = logsProp ? false : logsLoading;
 
-        const analyze = async () => {
-            setLoading(true);
-            const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const insights = useMemo(() => {
+        if (!logs || logs.length < 3) return [];
 
-            const { data: logs, error } = await supabase
-                .from('daily_logs')
-                .select('date, sleep_hours, gym_done, learning_done, mood, steps, journal_entry')
-                .eq('user_id', user.id)
-                .gte('date', thirtyDaysAgo)
-                .order('date', { ascending: true });
+        const results = [];
 
-            if (error || !logs || logs.length < 3) {
-                setLoading(false);
-                return;
-            }
-
-            const results = [];
-
-            // 1. Sleep vs Mood
-            const withBoth = logs.filter(l => l.sleep_hours && l.mood);
-            if (withBoth.length >= 5) {
-                const highSleep = withBoth.filter(l => l.sleep_hours >= 7);
-                const lowSleep = withBoth.filter(l => l.sleep_hours < 6);
-                const avgHigh = highSleep.length > 0 ? highSleep.reduce((s, l) => s + l.mood, 0) / highSleep.length : 0;
-                const avgLow = lowSleep.length > 0 ? lowSleep.reduce((s, l) => s + l.mood, 0) / lowSleep.length : 0;
-                if (avgHigh - avgLow > 0.5) {
-                    results.push({
-                        icon: '😴',
-                        title: 'Sleep boosts your mood',
-                        body: `When you sleep 7+ hours, your mood averages ${avgHigh.toFixed(1)} vs ${avgLow.toFixed(1)} on low-sleep days.`,
-                        type: 'positive'
-                    });
-                }
-            }
-
-            // 2. Gym vs Mood
-            const gymDays = logs.filter(l => l.gym_done && l.mood);
-            const noGymDays = logs.filter(l => !l.gym_done && l.mood);
-            if (gymDays.length >= 3 && noGymDays.length >= 3) {
-                const gymMood = gymDays.reduce((s, l) => s + l.mood, 0) / gymDays.length;
-                const noGymMood = noGymDays.reduce((s, l) => s + l.mood, 0) / noGymDays.length;
-                if (gymMood - noGymMood > 0.3) {
-                    results.push({
-                        icon: <DumbbellIcon size={16} color="var(--text-2)" />,
-                        title: 'Exercise lifts your mood',
-                        body: `Gym days: mood ${gymMood.toFixed(1)} avg. Rest days: ${noGymMood.toFixed(1)}. Keep training.`,
-                        type: 'positive'
-                    });
-                }
-            }
-
-            // 3. Best day of week
-            const dayMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
-            const dayScores = {};
-            logs.forEach(l => {
-                const d = new Date(l.date).getDay();
-                if (!dayScores[d]) dayScores[d] = { total: 0, count: 0 };
-                let s = 0;
-                if (l.sleep_hours >= 7) s++;
-                if (l.gym_done) s++;
-                if (l.learning_done) s++;
-                if (l.mood && l.mood >= 4) s++;
-                dayScores[d].total += s;
-                dayScores[d].count++;
+        corrInsights.slice(0, 3).forEach((item) => {
+            results.push({
+                icon: '🔗',
+                title: 'Signal correlation',
+                body: item.headline,
+                type: 'positive',
             });
+        });
 
-            let bestDay = null, bestAvg = 0, worstDay = null, worstAvg = Infinity;
-            Object.entries(dayScores).forEach(([d, v]) => {
-                const avg = v.total / v.count;
-                if (avg > bestAvg) { bestAvg = avg; bestDay = d; }
-                if (avg < worstAvg) { worstAvg = avg; worstDay = d; }
+        correlations.slice(0, 2).forEach((c) => {
+            if (results.some((r) => r.body === c.headline)) return;
+            results.push({
+                icon: '📊',
+                title: `${c.signalALabel || c.signalA} ↔ ${c.signalBLabel || c.signalB}`,
+                body: c.headline || `ρ=${c.rho?.toFixed(2)} over ${c.n} days.`,
+                type: Math.abs(c.rho) >= 0.5 ? 'positive' : 'neutral',
             });
+        });
 
-            if (bestDay !== null) {
+        const withBoth = logs.filter((l) => l.sleep_hours && l.mood);
+        if (withBoth.length >= 5) {
+            const highSleep = withBoth.filter((l) => l.sleep_hours >= 7);
+            const lowSleep = withBoth.filter((l) => l.sleep_hours < 6);
+            const avgHigh = highSleep.length > 0 ? highSleep.reduce((s, l) => s + l.mood, 0) / highSleep.length : 0;
+            const avgLow = lowSleep.length > 0 ? lowSleep.reduce((s, l) => s + l.mood, 0) / lowSleep.length : 0;
+            if (avgHigh - avgLow > 0.5) {
                 results.push({
-                    icon: '📅',
-                    title: `${dayMap[bestDay]} is your power day`,
-                    body: `You score highest on ${dayMap[bestDay]}s. Your weakest day is ${dayMap[worstDay]} — consider adding structure there.`,
-                    type: 'neutral'
+                    icon: '😴',
+                    title: 'Sleep boosts your mood',
+                    body: `When you sleep 7+ hours, your mood averages ${avgHigh.toFixed(1)} vs ${avgLow.toFixed(1)} on low-sleep days.`,
+                    type: 'positive',
                 });
             }
+        }
 
-            // 4. Consistency check
-            const loggedDays = logs.length;
-            const pct = Math.round((loggedDays / 30) * 100);
-            if (pct < 50) {
+        const gymDays = logs.filter((l) => l.gym_done && l.mood);
+        const noGymDays = logs.filter((l) => !l.gym_done && l.mood);
+        if (gymDays.length >= 3 && noGymDays.length >= 3) {
+            const gymMood = gymDays.reduce((s, l) => s + l.mood, 0) / gymDays.length;
+            const noGymMood = noGymDays.reduce((s, l) => s + l.mood, 0) / noGymDays.length;
+            if (gymMood - noGymMood > 0.3) {
                 results.push({
-                    icon: '⚠️',
-                    title: 'Logging consistency is low',
-                    body: `You've logged ${loggedDays} of the last 30 days (${pct}%). Aim for 5+ days per week.`,
-                    type: 'warning'
-                });
-            } else if (pct >= 80) {
-                results.push({
-                    icon: '🏆',
-                    title: 'Elite consistency',
-                    body: `${loggedDays}/30 days logged (${pct}%). You're in the top tier of discipline.`,
-                    type: 'positive'
+                    icon: <DumbbellIcon size={16} color="var(--text-2)" />,
+                    title: 'Exercise lifts your mood',
+                    body: `Gym days: mood ${gymMood.toFixed(1)} avg. Rest days: ${noGymMood.toFixed(1)}. Keep training.`,
+                    type: 'positive',
                 });
             }
+        }
 
-            setInsights(results);
-            setLoading(false);
-        };
+        const dayMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+        const dayScores = {};
+        logs.forEach((l) => {
+            const d = new Date(l.date).getDay();
+            if (!dayScores[d]) dayScores[d] = { total: 0, count: 0 };
+            let s = 0;
+            if (l.sleep_hours >= 7) s += 1;
+            if (l.gym_done) s += 1;
+            if (l.learning_done) s += 1;
+            if (l.mood && l.mood >= 4) s += 1;
+            dayScores[d].total += s;
+            dayScores[d].count += 1;
+        });
 
-        analyze();
-    }, [user]);
+        let bestDay = null;
+        let bestAvg = 0;
+        let worstDay = null;
+        let worstAvg = Infinity;
+        Object.entries(dayScores).forEach(([d, v]) => {
+            const avg = v.total / v.count;
+            if (avg > bestAvg) { bestAvg = avg; bestDay = d; }
+            if (avg < worstAvg) { worstAvg = avg; worstDay = d; }
+        });
 
-    if (loading) {
+        if (bestDay !== null) {
+            results.push({
+                icon: '📅',
+                title: `${dayMap[bestDay]} is your power day`,
+                body: `You score highest on ${dayMap[bestDay]}s. Your weakest day is ${dayMap[worstDay]} — consider adding structure there.`,
+                type: 'neutral',
+            });
+        }
+
+        const loggedDays = logs.length;
+        const pct = Math.round((loggedDays / 30) * 100);
+        if (pct < 50) {
+            results.push({
+                icon: '⚠️',
+                title: 'Logging consistency is low',
+                body: `You've logged ${loggedDays} of the last 30 days (${pct}%). Aim for 5+ days per week.`,
+                type: 'warning',
+            });
+        } else if (pct >= 80) {
+            results.push({
+                icon: '🏆',
+                title: 'Elite consistency',
+                body: `${loggedDays}/30 days logged (${pct}%). You're in the top tier of discipline.`,
+                type: 'positive',
+            });
+        }
+
+        return results;
+    }, [logs, correlations, corrInsights]);
+
+    if (loading || corrLoading) {
         return (
             <div className="insight-card">
                 <div className="skeleton skeleton-text" style={{ width: '60%' }} />

@@ -39,7 +39,7 @@ function Toggle({ on, onChange, disabled }) {
         height: 24,
         borderRadius: 999,
         border: 'none',
-        background: on ? '#2563EB' : 'var(--color-border-lit)',
+        background: on ? '#ff6b35' : 'var(--color-border-lit)',
         position: 'relative',
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.6 : 1,

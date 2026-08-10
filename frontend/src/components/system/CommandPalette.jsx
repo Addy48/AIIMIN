@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../utils/supabase';
+import { createJournalEntry } from '../../api/journal';
 import { generateWithGemini } from '../../utils/serverAi';
 import {
   Search,
@@ -414,8 +415,13 @@ export default function CommandPalette() {
       }
       if (e.key === 'Escape' && isOpen) closePalette();
     };
+    const onOpenEvent = () => openPalette();
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+    window.addEventListener('aiimin:open-command-palette', onOpenEvent);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('aiimin:open-command-palette', onOpenEvent);
+    };
   }, [isOpen, openPalette, closePalette]);
 
   /* ── Focus management ─────────────────────── */
@@ -497,7 +503,12 @@ export default function CommandPalette() {
              } else if (parsed.type === 'task') {
                  await supabase.from('tasks').insert([{ user_id: user.id, text: parsed.content, is_completed: false, order_index: 0 }]);
              } else if (parsed.type === 'journal') {
-                 await supabase.from('journal_entries').insert([{ user_id: user.id, title: 'AI Log', content: parsed.content, created_at: new Date().toISOString() }]);
+                 await createJournalEntry({
+                   user_id: user.id,
+                   title: 'AI Log',
+                   encrypted_content: parsed.content,
+                   date: new Date().toISOString().split('T')[0],
+                 });
              } else {
                  await supabase.from('notes').insert([{ user_id: user.id, text: parsed.content, created_at: new Date().toISOString() }]);
              }

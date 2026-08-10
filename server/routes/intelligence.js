@@ -9,6 +9,8 @@ import { requireAuth } from '../middleware/auth.js';
 import { pool } from '../lib/db.js';
 import { getAnalyticsDataset } from '../services/analyticsData.js';
 import { summarizeLifeHealth } from '../services/lifeHealthEngine.js';
+import { buildIntelligenceReportSections } from '../services/intelligenceReportService.js';
+import { getCorrelationsForUser, processUserCorrelations } from '../services/correlationService.js';
 import { generateWeeklyReview } from '../services/weeklyReviewEngine.js';
 import { generateReportPayload } from '../services/reportGenerator.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
@@ -66,13 +68,13 @@ async function assertUserAiBudget(userId) {
 
 async function settleLiteUsage(userId, endpoint, result) {
   const provider = liteBudgetProvider(result);
-  const budget = await consumeProviderBudget(provider, 1);
-  if (!budget.allowed) {
-    const err = new Error(`${provider} daily budget exceeded`);
-    err.code = 'BUDGET_EXCEEDED';
-    throw err;
-  }
-  await logApiUsage({ userId, provider, endpoint, tokensOrHits: 1 });
+  // Must burn user-tier + global quota the same way as other AI routes
+  await trackExternalCall({
+    userId,
+    provider,
+    endpoint,
+    units: 1,
+  });
 }
 
 // ==========================================
@@ -127,36 +129,10 @@ app.get('/report', requireAuth, async (c) => {
         const dataset = await getAnalyticsDataset(userId, days, { start, end });
         const lhs = summarizeLifeHealth(dataset.dailyRecords);
 
-        const momentum = BehavioralEngine.calculateMomentum({
-            logs: dataset.windows.last7,
-            sessions: [],
-            commitments: [],
-            driftScore: 100
-        });
+        const sections = buildIntelligenceReportSections(dataset, lhs);
+        const { drivers, drift, forecast, clusters, archetypes, momentumInput, meta: reportMeta } = sections;
 
-        const drivers = {
-            rankedDrivers: [
-                { behaviorLabel: 'Consistent sleep schedule', label: 'Sleep Consistency → Global LHS', impact: 8.5 },
-                { behaviorLabel: 'Regular hydration', label: 'Water Bottles → Energy Level', impact: 5.2 }
-            ]
-        };
-
-        const drift = { alerts: [] };
-        const forecast = {
-            horizons: {
-                sevenDays: { physical: 'stable', cognitive: 'improving', discipline: 'stable', financial: 'stable', emotional: 'stable' }
-            }
-        };
-        const clusters = {
-            clusters: [
-                { label: 'High Focus days', deltas: { lhs: 12.4 } }
-            ]
-        };
-        const archetypes = {
-            archetypes: [
-                { name: 'Peak Performer', representation: 0.65, traits: ['consistent sleep', 'high gym completion'] }
-            ]
-        };
+        const momentum = BehavioralEngine.calculateMomentum(momentumInput);
 
         const weeklyReview = generateWeeklyReview({
             lhsTimeline: lhs.timeline,
@@ -177,14 +153,24 @@ app.get('/report', requireAuth, async (c) => {
             weeklyReview
         });
 
+        const signalCorrelations = await getCorrelationsForUser(userId).catch(() => ({
+            correlations: [],
+            insights: [],
+            insufficientData: true,
+        }));
+
         return c.json({
             ...report,
+            signalCorrelations: signalCorrelations.correlations?.slice(0, 8) || [],
+            correlationInsights: signalCorrelations.insights?.slice(0, 6) || [],
             lhs,
             meta: {
                 days,
                 start: start || dataset.sinceDate,
                 end: end || dataset.untilDate,
                 daysWithData: dataset.dailyRecords.length,
+                computedFromData: reportMeta.computedFromData,
+                insufficientData: reportMeta.insufficientData,
                 timeline: (lhs.timeline || []).map((t) => ({
                     date: t.date,
                     sleep_hours: t.sleep_hours,
@@ -453,18 +439,36 @@ app.post('/chat', requireAuth, aiLimiter, async (c) => {
 app.post('/usage-report', requireAuth, aiLimiter, async (c) => {
     const userId = c.get('userId');
     try {
+        // Client telemetry only — MUST NOT consume global provider budgets
+        // (old trackExternalCall path let attackers drain org free-key ceilings).
         const { provider, endpoint, units = 1 } = await c.req.json();
         const allowed = new Set(['groq', 'gemini', 'moonshot', 'openrouter']);
         if (!allowed.has(provider)) {
             return c.json({ error: 'Invalid provider' }, 400);
         }
-        await trackExternalCall({
+        const safeUnits = Math.min(3, Math.max(1, Number(units) || 1));
+        const ep = String(endpoint || '/client').slice(0, 120);
+        if (!ep.startsWith('/')) {
+            return c.json({ error: 'Invalid endpoint' }, 400);
+        }
+
+        // Counts against caller's daily AI tier only (no global key drain)
+        const status = await checkUserAiBudget(userId, safeUnits);
+        if (!status.allowed) {
+            const err = new Error(
+                `AI daily limit reached for ${status.tier} plan (${status.dailyLimit}/day). Upgrade for more.`,
+            );
+            err.code = 'USER_AI_BUDGET_EXCEEDED';
+            err.meta = status;
+            throw err;
+        }
+        await logApiUsage({
             userId,
             provider,
-            endpoint: endpoint || '/client',
-            units,
+            endpoint: `/client-telemetry${ep}`,
+            tokensOrHits: safeUnits,
         });
-        return c.json({ success: true });
+        return c.json({ success: true, counted: safeUnits });
     } catch (err) {
         const budget = budgetErrorResponse(c, err);
         if (budget) return budget;
@@ -668,7 +672,7 @@ async function handleArcSharpen(c) {
             const words = text.split(/\s+/);
             if (words.length > 25) text = `${words.slice(0, 25).join(' ')}.`;
             if (!text) text = sharpenLifeArcLocally(seed, goalIds);
-            else await settleLiteUsage(userId, '/intelligence/arc/sharpen', result).catch(() => {});
+            else await settleLiteUsage(userId, '/intelligence/arc/sharpen', result);
             return c.json({ text, provider: result.provider || 'gemini-lite', model: result.model });
         }
 
@@ -694,5 +698,31 @@ async function handleArcSharpen(c) {
 
 app.post('/arc/sharpen', requireAuth, aiLimiter, handleArcSharpen);
 app.post('/north-star/sharpen', requireAuth, aiLimiter, handleArcSharpen);
+
+// ==========================================
+// SIGNAL CORRELATIONS (Spearman + BH-FDR)
+// ==========================================
+app.get('/correlations', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const refresh = c.req.query('refresh') === '1';
+        const data = await getCorrelationsForUser(userId, { refresh });
+        return c.json(data);
+    } catch (err) {
+        console.error('[intelligence/correlations]', err);
+        return c.json({ error: 'Failed to load correlations', message: err.message }, 500);
+    }
+});
+
+app.post('/correlations/refresh', requireAuth, async (c) => {
+    const userId = c.get('userId');
+    try {
+        const data = await processUserCorrelations(userId);
+        return c.json({ ...data, refreshed: true });
+    } catch (err) {
+        console.error('[intelligence/correlations/refresh]', err);
+        return c.json({ error: 'Failed to refresh correlations', message: err.message }, 500);
+    }
+});
 
 export default app;

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, BookOpen, Briefcase, Heart, Brain, Trash2, Clock } from 'lucide-react';
+import { Plus, X, BookOpen, Briefcase, Heart, Brain, Trash2 } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 import GoalsVisionTitle from '../components/ui/GoalsVisionTitle';
 import Modal from '../components/ui/Modal';
+import DeadlinePicker from '../components/ui/DeadlinePicker';
 import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
 import toast from '../utils/toast';
 
@@ -14,10 +15,10 @@ const saveGoals = (g) => localStorage.setItem(GOALS_KEY, JSON.stringify(g));
 
 /* ── Constants ─────────────────────────────────────────────── */
 const PILLARS = [
-  { key: 'academic', label: 'Academic', icon: <BookOpen size={16} />, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', desc: 'Knowledge & Mastery' },
+  { key: 'academic', label: 'Academic', icon: <BookOpen size={16} />, color: '#E8B84B', bg: 'rgba(232,184,75,0.12)', desc: 'Knowledge & Mastery' },
   { key: 'career', label: 'Career', icon: <Briefcase size={16} />, color: '#10b981', bg: 'rgba(16,185,129,0.1)', desc: 'Professional Growth' },
-  { key: 'health', label: 'Health', icon: <Heart size={16} />, color: '#f43f5e', bg: 'rgba(244,63,94,0.1)', desc: 'Vitality & Balance' },
-  { key: 'personal', label: 'Personal', icon: <Brain size={16} />, color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)', desc: 'Mindset & Habits' },
+  { key: 'health', label: 'Health', icon: <Heart size={16} />, color: '#ff6b35', bg: 'rgba(255,107,53,0.12)', desc: 'Vitality & Balance' },
+  { key: 'personal', label: 'Personal', icon: <Brain size={16} />, color: '#6b7280', bg: 'rgba(107,114,128,0.12)', desc: 'Mindset & Habits' },
 ];
 
 const STATUS_OPTS = ['Active', 'On Track', 'At Risk', 'Achieved'];
@@ -28,20 +29,14 @@ const STATUS_COLORS = {
   'Active': '#6b7280',
   'On Track': '#10b981',
   'At Risk': '#ef4444',
-  'Achieved': '#f59e0b',
+  'Achieved': '#E8B84B',
 };
 
 const PRIORITIES = [
   { level: 'High', color: '#ef4444' },
-  { level: 'Medium', color: '#f59e0b' },
-  { level: 'Low', color: '#3b82f6' }
+  { level: 'Medium', color: '#E8B84B' },
+  { level: 'Low', color: '#6b7280' }
 ];
-
-const daysUntil = (dateStr) => {
-  if (!dateStr) return null;
-  const diff = new Date(dateStr) - new Date();
-  return Math.ceil(diff / 86400000);
-};
 
 const blankGoal = () => ({
   id: 'temp_' + Date.now().toString(),
@@ -59,7 +54,6 @@ const blankGoal = () => ({
 const GoalCard = ({ goal, onUpdate, onDelete }) => {
   const pillar = PILLARS.find(p => p.key === goal.pillar) || PILLARS[0];
   const progress = goal.milestones?.length ? Math.round((goal.milestones.filter(m => m.done).length / goal.milestones.length) * 100) : 0;
-  const days = daysUntil(goal.targetDate);
   const statusColor = STATUS_COLORS[goal.status] || '#6b7280';
 
   const toggleMilestone = (i) => {
@@ -74,18 +68,19 @@ const GoalCard = ({ goal, onUpdate, onDelete }) => {
       animate={{ opacity: 1, y: 0 }} 
       layout
       style={{ 
-        background: 'rgba(255,255,255,0.02)', 
-        border: '1px solid rgba(255,255,255,0.05)', 
-        borderRadius: '12px', 
+        background: 'var(--color-surface)', 
+        border: '1px solid var(--color-border)', 
+        borderRadius: '14px', 
         display: 'flex', 
         flexDirection: 'column', 
         transition: 'all 0.2s',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'visible',
+        boxShadow: '0 6px 18px rgba(20, 24, 28, 0.05)',
       }}
     >
-      <div style={{ height: '3px', background: pillar.color, width: `${progress}%`, transition: 'width 0.4s' }} />
-      <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ height: '3px', background: pillar.color, width: `${Math.max(progress, 8)}%`, transition: 'width 0.4s', borderRadius: '14px 14px 0 0' }} />
+      <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
@@ -106,17 +101,8 @@ const GoalCard = ({ goal, onUpdate, onDelete }) => {
           </div>
         </div>
 
-        {goal.targetDate && (
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center', fontSize: '10px', color: days !== null && days < 7 ? '#ef4444' : 'var(--color-text-3)', fontWeight: 600 }}>
-            <Clock size={10} /> 
-            {days !== null ? (days < 0 ? `Overdue by ${Math.abs(days)}d` : days === 0 ? 'Due Today' : `${days}d left`) : 'No date'}
-          </div>
-        )}
-
-
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {goal.milestones?.map((m, i) => m.text && (
+          {goal.milestones?.map((m, i) => m.text && !/^\d+\s*d\s+(left|overdue)$/i.test(m.text.trim()) && m.text.trim().toLowerCase() !== 'due today' && (
             <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '2px 4px', borderRadius: '4px', background: m.done ? 'transparent' : 'rgba(255,255,255,0.01)' }}>
               <input type="checkbox" checked={m.done} onChange={() => toggleMilestone(i)} style={{ accentColor: pillar.color, margin: 0, width: '12px', height: '12px' }} />
               <span style={{ fontSize: '11px', fontWeight: 500, color: m.done ? 'var(--color-text-3)' : 'var(--color-text-2)', textDecoration: m.done ? 'line-through' : 'none' }}>{m.text}</span>
@@ -124,12 +110,15 @@ const GoalCard = ({ goal, onUpdate, onDelete }) => {
           ))}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '6px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 600, color: days < 7 ? '#ef4444' : 'var(--color-text-3)' }}>
-            <Clock size={10} /> {days === null ? 'No date' : days < 0 ? `${Math.abs(days)}d overdue` : days === 0 ? 'Today' : `${days}d left`}
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--color-border)', gap: 8 }}>
+          <DeadlinePicker
+            value={goal.targetDate || ''}
+            accent="#ff6b35"
+            emptyLabel="Set deadline"
+            onChange={(next) => onUpdate({ ...goal, targetDate: next })}
+          />
           
-          <button onClick={() => onDelete(goal.id)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-3)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <button type="button" onClick={() => onDelete(goal.id)} style={{ background: 'var(--color-elevated)', border: '1px solid var(--color-border)', color: 'var(--color-text-3)', cursor: 'pointer', display: 'flex', alignItems: 'center', borderRadius: 8, padding: 6 }} aria-label="Delete goal">
             <Trash2 size={12} />
           </button>
         </div>
@@ -210,7 +199,13 @@ const GoalModal = ({ isOpen, onClose, onSave }) => {
 
           <div>
             <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Target Date</div>
-            <input type="date" style={inp} value={goal.targetDate} onChange={e => setGoal(g => ({ ...g, targetDate: e.target.value }))} />
+            <DeadlinePicker
+              value={goal.targetDate || ''}
+              accent={pillar.color || '#ff6b35'}
+              emptyLabel="Pick a deadline"
+              compact={false}
+              onChange={(next) => setGoal((g) => ({ ...g, targetDate: next }))}
+            />
           </div>
 
           <div>

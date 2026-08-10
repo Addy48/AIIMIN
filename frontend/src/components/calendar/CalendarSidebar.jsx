@@ -65,39 +65,74 @@ const CalendarSidebar = ({ currentDate, onDateChange, events, systemFilter, onSy
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '220px', flexShrink: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '240px', flexShrink: 0, minWidth: 0 }}>
 
-      {/* Mini-month navigator */}
-      <div style={panel}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', textAlign: 'center', marginBottom: '14px' }}>
-          {d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+      {/* Mini-month navigator — must fit 7 cols inside panel (no minWidth on cells) */}
+      <div style={{ ...panel, overflow: 'hidden', boxSizing: 'border-box' }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: text1, fontFamily: 'var(--font-sans)', textAlign: 'center', marginBottom: '12px' }}>
+          {d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+            gap: 2,
+            width: '100%',
+            boxSizing: 'border-box',
+          }}
+        >
           {MINI_DAYS.map((w, i) => (
-            <div key={i} style={{ fontSize: '10px', fontWeight: 700, color: text1, padding: '4px 0', fontFamily: 'var(--font-sans)' }}>{w}</div>
+            <div
+              key={i}
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                color: text2,
+                padding: '2px 0',
+                fontFamily: 'var(--font-sans)',
+                textAlign: 'center',
+                minWidth: 0,
+              }}
+            >
+              {w}
+            </div>
           ))}
-          {Array.from({ length: firstDayOffset }, (_, i) => <div key={`p-${i}`} />)}
+          {Array.from({ length: firstDayOffset }, (_, i) => (
+            <div key={`p-${i}`} style={{ minWidth: 0, aspectRatio: '1' }} />
+          ))}
           {Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
             const isToday = isCurrentMonth && day === now.getDate();
             const isSelected = d.getDate() === day && isCurrentMonth;
             return (
-              <div
+              <button
                 key={day}
-                role="button"
-                tabIndex={0}
+                type="button"
                 onClick={() => onDateChange(new Date(year, month, day).toISOString())}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDateChange(new Date(year, month, day).toISOString()); } }}
                 style={{
-                  minHeight: '36px', minWidth: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: '8px', cursor: 'pointer', fontSize: '12px',
-                  fontFamily: 'var(--font-sans)', textAlign: 'center',
+                  aspectRatio: '1',
+                  width: '100%',
+                  minWidth: 0,
+                  maxWidth: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 7,
+                  cursor: 'pointer',
+                  fontSize: 11,
+                  fontFamily: 'var(--font-sans)',
                   fontWeight: isToday || isSelected ? 700 : 500,
                   color: isSelected ? (isDark ? '#000' : '#fff') : isToday ? 'var(--color-accent)' : text1,
                   background: isSelected ? 'var(--color-accent)' : isToday ? 'color-mix(in srgb, var(--color-accent) 18%, transparent)' : 'transparent',
+                  border: 'none',
+                  padding: 0,
+                  margin: 0,
+                  boxSizing: 'border-box',
                   transition: 'all 200ms var(--ease)',
                 }}
-              >{day}</div>
+              >
+                {day}
+              </button>
             );
           })}
         </div>

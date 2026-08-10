@@ -1,6 +1,7 @@
 import React from 'react';
 import useThemeColors from '../../hooks/useThemeColors';
 import { MODE_LABELS, parseEntry } from './journalUtils';
+import { formatDateLong } from '../../utils/formatDate';
 
 function renderBody(parsed) {
   if (parsed.mode === 'cbt') {
@@ -42,7 +43,7 @@ export default function JournalReadView({ entry, onNewEntry }) {
         <div>
           <p className="text-label" style={{ margin: 0 }}>Past entry</p>
           <p style={{ margin: '6px 0 0', color: c.text2, fontSize: 14 }}>
-            {new Date(entry.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+            {formatDateLong(entry.date)}
           </p>
           <p style={{ margin: '6px 0 0', color: c.text3, fontSize: 12 }}>{label}</p>
         </div>

@@ -4,10 +4,10 @@
  * Fetches daily_logs for a given month and renders a MetricMonthGrid
  * heatmap. Supports all tracked metric types via the `type` prop.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import MetricMonthGrid from './MetricMonthGrid';
-import supabase from '../../utils/supabase';
+import { useDailyLogsQuery } from '../../hooks/useDailyLogsQuery';
 
 /** Extract the numeric value for a given metric from a daily_log row. */
 const valueForMetric = (log, type) => {
@@ -35,78 +35,63 @@ const valueForMetric = (log, type) => {
 
 const CalendarHeatmap = ({ year, month, type = 'focus' }) => {
     const { session } = useAuth();
-    const [data, setData] = useState({});
-    const [loading, setLoading] = useState(false);
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
 
-    useEffect(() => {
-        if (!session) return;
-        setLoading(true);
+    const { logs, loading } = useDailyLogsQuery({
+        from: startDate,
+        to: endDate,
+        fields: 'date,sleep_hours,gym_done,steps,learning_done,mood,journal_entry,water_bottles',
+        enabled: Boolean(session?.user?.id),
+    });
 
-        // Build date range for the requested month (month is 1-based)
-        const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-        const lastDay = new Date(year, month, 0).getDate();
-        const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    const data = useMemo(() => {
+        const map = {};
+        (logs || []).forEach((log) => {
+            const habitsCompleted = [
+                log.gym_done,
+                log.learning_done,
+                log.journal_entry?.trim()?.length > 5,
+                log.steps >= 5000,
+                log.mood >= 1,
+            ].filter(Boolean).length;
+            const focusSessions = Math.round((log.pomodoro_minutes || 0) / 25);
+            map[log.date] = {
+                value: valueForMetric(log, type),
+                habitsCompleted,
+                focusSessions,
+                mood: log.mood || 0,
+                focusMinutes: log.pomodoro_minutes || 0,
+                steps: log.steps || 0,
+            };
+        });
 
-        supabase
-            .from('daily_logs')
-            .select('date, sleep_hours, gym_done, steps, learning_done, mood, journal_entry, pomodoro_minutes, water_bottles')
-            .eq('user_id', session.user.id)
-            .gte('date', startDate)
-            .lte('date', endDate)
-            .then(({ data: logs }) => {
-                const logsArr = logs || [];
-                const map = {};
+        const dates = Object.keys(map).sort();
+        const streakLen = {};
+        let streak = 0;
+        let prevDate = null;
+        for (const d of dates) {
+            if (prevDate) {
+                const diff = (new Date(d) - new Date(prevDate)) / 86400000;
+                streak = diff === 1 ? streak + 1 : 1;
+            } else {
+                streak = 1;
+            }
+            streakLen[d] = streak;
+            prevDate = d;
+        }
 
-                // Build enriched map with behavior metadata
-                logsArr.forEach(log => {
-                    const habitsCompleted = [
-                        log.gym_done,
-                        log.learning_done,
-                        log.journal_entry?.trim()?.length > 5,
-                        log.steps >= 5000,
-                        log.mood >= 1,
-                    ].filter(Boolean).length;
-                    const focusSessions = Math.round((log.pomodoro_minutes || 0) / 25);
-                    map[log.date] = {
-                        value: valueForMetric(log, type),
-                        habitsCompleted,
-                        focusSessions,
-                        mood: log.mood || 0,
-                        focusMinutes: log.pomodoro_minutes || 0,
-                        steps: log.steps || 0,
-                    };
-                });
+        for (const [d, entry] of Object.entries(map)) {
+            const { habitsCompleted, focusSessions, mood } = entry;
+            if (habitsCompleted >= 5) entry.signal = '✓';
+            else if (focusSessions >= 3 && habitsCompleted >= 3) entry.signal = '★';
+            else if ((streakLen[d] || 0) >= 5 && focusSessions >= 1) entry.signal = '🔥';
+            else if (mood > 0 && mood <= 3) entry.signal = '●';
+        }
 
-                // Compute streak lengths (consecutive logged days)
-                const sortedDates = Object.keys(map).sort();
-                let streak = 0;
-                let prevDate = null;
-                const streakLen = {};
-                for (const d of sortedDates) {
-                    if (prevDate) {
-                        const diff = (new Date(d) - new Date(prevDate)) / 86400000;
-                        streak = diff === 1 ? streak + 1 : 1;
-                    } else {
-                        streak = 1;
-                    }
-                    streakLen[d] = streak;
-                    prevDate = d;
-                }
-
-                // Assign behavior signal (priority: Perfect > Peak > Streak > Mood Dip)
-                for (const [d, entry] of Object.entries(map)) {
-                    const { habitsCompleted, focusSessions, mood } = entry;
-                    if (habitsCompleted >= 5) entry.signal = '✓';
-                    else if (focusSessions >= 3 && habitsCompleted >= 3) entry.signal = '★';
-                    else if ((streakLen[d] || 0) >= 5 && focusSessions >= 1) entry.signal = '🔥';
-                    else if (mood > 0 && mood <= 3) entry.signal = '●';
-                }
-
-                setData(map);
-            })
-            .catch(() => { })
-            .finally(() => setLoading(false));
-    }, [session, year, month, type]);
+        return map;
+    }, [logs, type]);
 
     return (
         <div style={{ width: '100%', minHeight: '180px', opacity: loading ? 0.6 : 1, transition: 'opacity 0.2s' }}>

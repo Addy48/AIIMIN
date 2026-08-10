@@ -2,6 +2,7 @@ import React from 'react';
 import { useThemeContext } from '../../context/ThemeContext';
 import { redirectToGoogle } from '../../utils/authRedirect';
 import toast from '../../utils/toast';
+import { formatDateLong, formatMonthYear, formatWeekOf } from '../../utils/formatDate';
 
 const VIEWS = [
   { key: 'month', label: 'Month' },
@@ -31,10 +32,10 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
   };
 
   const title = view === 'month'
-    ? d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    ? formatMonthYear(d)
     : view === 'week'
-      ? `Week of ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-      : d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      ? formatWeekOf(d)
+      : formatDateLong(d);
 
   const btnBase = {
     background: 'var(--color-elevated)', border: `1px solid ${border}`, cursor: 'pointer',
@@ -119,7 +120,7 @@ const CalendarToolbar = ({ view, onViewChange, currentDate, onDateChange, onNewE
               background: 'var(--color-surface)', color: text1, fontSize: '12px', fontWeight: 600,
               fontFamily: 'var(--font-sans)'
             }}>
-              Push Tasks
+              Sync tasks to calendar
             </button>
           </div>
         )}

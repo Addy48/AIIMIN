@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Upload, Search,
@@ -7,6 +7,7 @@ import {
   FileSpreadsheet
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useFinanceQuery } from '../hooks/useFinanceQuery';
 import toast from '../utils/toast';
 import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
 import Modal from '../components/ui/Modal';
@@ -31,6 +32,16 @@ const ASSET_TYPE_LABELS = {
   bank: 'Bank & Cash',
 };
 
+const ASSET_COLORS = ['#F5C542', '#ff6b35', '#5FA85A', 'rgba(237,228,211,0.45)', '#6b7280'];
+const ASSET_COLOR_BY_TYPE = {
+  gold: '#F5C542',
+  stock: '#ff6b35',
+  mutual_fund: '#5FA85A',
+  bank: 'rgba(237,228,211,0.55)',
+  cash: 'rgba(237,228,211,0.55)',
+  crypto: '#6b7280',
+};
+
 const normalizeAsset = (row) => ({
   id: row.id,
   name: row.asset_name || row.name || 'Unnamed',
@@ -50,14 +61,20 @@ const toAssetPayload = (asset) => ({
 
 const Finance = () => {
   const { user } = useAuth();
+  const financeEnabled = Boolean(user && !user.isGuest);
+  const {
+    transactions,
+    assets: rawAssets,
+    accounts,
+    budgets,
+    loading,
+    aiSummary,
+    aiSummaryLoading,
+    invalidate: invalidateFinance,
+  } = useFinanceQuery(financeEnabled);
+  const assets = useMemo(() => (rawAssets || []).map(normalizeAsset), [rawAssets]);
+  const loadFinanceData = useCallback(() => { invalidateFinance(); }, [invalidateFinance]);
   const [activeTab, setActiveTab] = useState('OVERVIEW'); // OVERVIEW | ACCOUNTS | TRANSACTIONS | BUDGETS | WEALTH
-  const [transactions, setTransactions] = useState([]);
-  const [assets, setAssets] = useState([]);
-  const [accounts, setAccounts] = useState([]);
-  const [budgets, setBudgets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [aiSummary, setAiSummary] = useState(null);
-  const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
 
   // Import & Entry State
   const [importOpen, setImportOpen] = useState(false);
@@ -86,14 +103,12 @@ const Finance = () => {
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
   const [newBudget, setNewBudget] = useState({ category: '', amount: 0 });
 
-  // Asset colors for charts
-  const ASSET_COLORS = ['#10B981', '#F59E0B', '#8B5CF6', '#3B82F6', '#EC4899'];
-
+  // Asset colors for charts (module-level ASSET_COLORS / ASSET_COLOR_BY_TYPE)
   const handleDeleteAsset = async (id) => {
     if (!window.confirm("Delete asset?")) return;
     try {
       await apiDelete('/wealth/assets/' + id);
-      setAssets(prev => prev.filter(a => a.id !== id));
+      loadFinanceData();
       toast.success("Asset removed");
     } catch (err) {
       console.error(err);
@@ -224,45 +239,6 @@ const Finance = () => {
     }
   };
 
-  useEffect(() => {
-    if (user) {
-      loadFinanceData();
-      // Lazy-load AI summary after initial data
-      if (!user.isGuest) {
-        setAiSummaryLoading(true);
-        apiGet('/wealth/ai-summary').then(data => {
-          setAiSummary(data);
-        }).catch(() => {}).finally(() => setAiSummaryLoading(false));
-      }
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const loadFinanceData = async () => {
-    setLoading(true);
-    try {
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000));
-      const fetchPromise = Promise.all([
-        apiGet('/wealth/transactions'),
-        apiGet('/wealth/assets'),
-        apiGet('/wealth/accounts'),
-        apiGet('/wealth/budgets')
-      ]);
-
-      const [transData, assetsData, accountsData, budgetsData] = await Promise.race([fetchPromise, timeoutPromise]);
-
-      setTransactions(transData || []);
-      setAssets((assetsData || []).map(normalizeAsset));
-      setAccounts(accountsData || []);
-      setBudgets(budgetsData || []);
-    } catch (error) {
-      console.error("Finance data fetch error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Calculations
   const totalBalance = useMemo(() => accounts.reduce((sum, a) => sum + Number(a.balance), 0), [accounts]);
 
@@ -325,7 +301,11 @@ const Finance = () => {
     });
     return Object.entries(breakdown)
       .filter(([, value]) => value > 0)
-      .map(([key, value]) => ({ name: ASSET_TYPE_LABELS[key] || key, value }));
+      .map(([key, value]) => ({
+        name: ASSET_TYPE_LABELS[key] || key,
+        value,
+        color: ASSET_COLOR_BY_TYPE[key] || '#6b7280',
+      }));
   }, [assets, accounts]);
 
   // Analytics & Insights
@@ -431,7 +411,8 @@ const Finance = () => {
           type: newAccount.type,
           icon: newAccount.icon
         });
-        setAccounts(prev => prev.map(a => a.id === newAccount.id ? updated : a));
+        void updated;
+        loadFinanceData();
         toast.success("Account updated");
       } else {
         // Create new
@@ -441,7 +422,8 @@ const Finance = () => {
           type: newAccount.type,
           icon: newAccount.icon
         });
-        setAccounts(prev => [created, ...prev]);
+        void created;
+        loadFinanceData();
         toast.success("Account added successfully");
       }
       setAccountModalOpen(false);
@@ -456,7 +438,7 @@ const Finance = () => {
     if (!window.confirm("Are you sure you want to remove this account? This will not delete transactions.")) return;
     try {
       await apiDelete('/wealth/accounts/' + id);
-      setAccounts(prev => prev.filter(a => a.id !== id));
+      loadFinanceData();
       toast.success("Account removed");
     } catch (err) {
       console.error(err);

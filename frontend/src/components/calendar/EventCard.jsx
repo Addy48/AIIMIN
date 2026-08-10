@@ -5,12 +5,12 @@ import React from 'react';
  * Redesigned with Nordic Calm palette.
  */
 export const SYSTEM_COLORS = {
-    work:       { color: '#e2725b',  bg: 'rgba(226,114,91,0.12)',  border: 'rgba(226,114,91,0.28)',  icon: '⚡', label: 'Work' },
-    health:     { color: '#10b981',  bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.28)',  icon: '🧘', label: 'Health' },
-    finance:    { color: '#F59E0B',  bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.28)',  icon: '💰', label: 'Finance' },
-    social:     { color: '#3B82F6',  bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.28)',  icon: '🤝', label: 'Social' },
-    reflection: { color: '#8B5CF6',  bg: 'rgba(139,92,246,0.1)',   border: 'rgba(139,92,246,0.25)',  icon: '💭', label: 'Reflection' },
-    general:    { color: '#6b7280',  bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.25)', icon: '◎', label: 'General' },
+    work:       { color: '#ff6b35',  bg: 'rgba(255,107,53,0.14)',  border: 'rgba(255,107,53,0.35)',  icon: '⚡', label: 'Work' },
+    health:     { color: '#10b981',  bg: 'rgba(16,185,129,0.14)',  border: 'rgba(16,185,129,0.35)',  icon: '🧘', label: 'Health' },
+    finance:    { color: '#E8B84B',  bg: 'rgba(232,184,75,0.16)',  border: 'rgba(232,184,75,0.4)',   icon: '💰', label: 'Finance' },
+    social:     { color: '#5B8DEF',  bg: 'rgba(91,141,239,0.14)',  border: 'rgba(91,141,239,0.35)',  icon: '🤝', label: 'Social' },
+    reflection: { color: '#9A7B4F',  bg: 'rgba(154,123,79,0.14)',  border: 'rgba(154,123,79,0.35)',  icon: '💭', label: 'Reflection' },
+    general:    { color: '#6b7280',  bg: 'rgba(107,114,128,0.14)', border: 'rgba(107,114,128,0.3)',  icon: '◎', label: 'General' },
 };
 
 /**
@@ -25,18 +25,39 @@ export const EventCard = ({ event, onClick, compact = false }) => {
             <div
                 onClick={() => onClick?.(event)}
                 style={{
-                    display: 'flex', alignItems: 'center', gap: '4px',
-                    padding: '3px 8px', borderRadius: '6px', cursor: 'pointer',
-                    background: event.color || 'var(--color-elevated)', fontSize: '10px',
-                    fontWeight: 600, color: event.color ? '#fff' : sys.color,
-                    overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-                    fontFamily: 'var(--font-sans)', transition: 'transform 150ms var(--ease)',
-                    borderLeft: `2px solid ${sys.color}`,
+                    display: 'flex',
+                    alignItems: 'stretch',
+                    gap: 0,
+                    minHeight: 24,
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    boxShadow: '0 1px 2px rgba(20, 24, 28, 0.06)',
+                    overflow: 'hidden',
+                    fontFamily: 'var(--font-sans)',
+                    transition: 'transform 150ms var(--ease)',
+                    boxSizing: 'border-box',
                 }}
                 onMouseEnter={e => e.currentTarget.style.transform = 'translateX(2px)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'translateX(0)'}
             >
-                {event.title}
+                <span aria-hidden style={{ width: 4, flexShrink: 0, background: sys.color }} />
+                <span style={{
+                    flex: 1,
+                    minWidth: 0,
+                    padding: '5px 8px',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: 'var(--color-text-1)',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    background: `color-mix(in srgb, ${sys.color} 10%, var(--color-surface))`,
+                    lineHeight: 1.35,
+                }}>
+                    {event.title}
+                </span>
             </div>
         );
     }

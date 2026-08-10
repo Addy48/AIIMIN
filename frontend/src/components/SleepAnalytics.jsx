@@ -1,45 +1,34 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import supabase from '../utils/supabase';
+import { apiGet } from '../../utils/api';
+import { useDailyLogsQuery } from '../../hooks/useDailyLogsQuery';
 import { fmt, timeToMinutes, minutesToTime, circularMeanMinutes, circularDeviation } from './sleep/SleepHelpers';
 import { MiniBar } from './sleep/SleepCharts';
 import { RadialBarChart, RadialBar, LineChart, Line, XAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 /* ─── SleepAnalytics ─── */
 const SleepAnalytics = ({ user }) => {
-    const [logs, setLogs] = useState([]);
     const [sleepNeed, setSleepNeed] = useState(8.0);
-    const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState(7); // 7 or 30
+
+    const daysAgo = new Date(Date.now() - period * 86400000).toLocaleDateString('en-CA');
+    const today = new Date().toLocaleDateString('en-CA');
+    const { logsAsc: logs, loading: logsLoading } = useDailyLogsQuery({
+        from: daysAgo,
+        to: today,
+        fields: 'date,sleep_start,sleep_end,sleep_hours,mood,gym_done,steps',
+        enabled: Boolean(user?.id),
+    });
 
     useEffect(() => {
         if (!user?.id) return;
+        apiGet('/db/users', {
+            params: { eq: JSON.stringify({ id: user.id }), maybeSingle: 'true' },
+        }).then((row) => {
+            if (row?.sleep_need_hours) setSleepNeed(Number(row.sleep_need_hours));
+        }).catch(() => {});
+    }, [user?.id]);
 
-        const fetch = async () => {
-            setLoading(true);
-            const daysAgo = new Date(Date.now() - period * 86400000).toISOString().split('T')[0];
-
-            const [logsRes, userRes] = await Promise.all([
-                supabase
-                    .from('daily_logs')
-                    .select('date, sleep_start, sleep_end, sleep_hours, mood, gym_done, steps')
-                    .eq('user_id', user.id)
-                    .gte('date', daysAgo)
-                    .is('deleted_at', null)
-                    .order('date', { ascending: true }),
-                supabase
-                    .from('users')
-                    .select('sleep_need_hours')
-                    .eq('id', user.id)
-                    .single(),
-            ]);
-
-            if (logsRes.data) setLogs(logsRes.data);
-            if (userRes.data?.sleep_need_hours) setSleepNeed(Number(userRes.data.sleep_need_hours));
-            setLoading(false);
-        };
-
-        fetch();
-    }, [user, period]);
+    const loading = logsLoading;
 
     const analytics = useMemo(() => {
         const validLogs = logs.filter(l => l.sleep_hours && l.sleep_hours > 0);

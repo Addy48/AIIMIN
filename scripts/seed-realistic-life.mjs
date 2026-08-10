@@ -359,9 +359,9 @@ async function main() {
 
   // ── Career ──
   const resumes = [
-    { id: ids.resumeG, user_id: uid, title: 'General SWE Resume', target_role: 'Software Engineer', link_url: 'https://drive.google.com/file/d/demo-general/view' },
-    { id: ids.resumeB, user_id: uid, title: 'Backend Resume', target_role: 'Backend Engineer', link_url: 'https://drive.google.com/file/d/demo-backend/view' },
-    { id: ids.resumeF, user_id: uid, title: 'Frontend Resume', target_role: 'Frontend Engineer', link_url: 'https://drive.google.com/file/d/demo-frontend/view' },
+    { id: ids.resumeG, user_id: uid, title: 'General SWE Resume', target_role: 'Software Engineer', link_url: null },
+    { id: ids.resumeB, user_id: uid, title: 'Backend Resume', target_role: 'Backend Engineer', link_url: null },
+    { id: ids.resumeF, user_id: uid, title: 'Frontend Resume', target_role: 'Frontend Engineer', link_url: null },
   ];
   const companies = [['Stripe', 'Software Engineer'], ['Razorpay', 'Backend Engineer'], ['Google', 'SWE'], ['Atlassian', 'Full Stack'], ['Notion', 'Product Engineer'], ['Zerodha', 'Frontend Engineer'], ['Microsoft', 'SDE'], ['Flipkart', 'SDE-1'], ['Postman', 'DX Engineer'], ['Cred', 'Full Stack']];
   const jobApps = companies.map(([company, role], i) => ({

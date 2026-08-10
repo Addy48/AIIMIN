@@ -105,30 +105,63 @@ const MonthView = ({ events, currentDate, onDayClick, onEventClick }) => {
                 {day}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {dayEvents.slice(0, 3).map((ev) => {
                   const sys = SYSTEM_COLORS[ev.system_type] || SYSTEM_COLORS.general;
+                  const chipColor = (ev.color && /^#|rgb/.test(String(ev.color))) ? ev.color : sys.color;
                   return (
                     <div
                       key={ev.id}
+                      className="aiimin-cal-chip-v4"
                       onClick={(e) => { e.stopPropagation(); onEventClick(ev); }}
+                      title={ev.title}
                       style={{
-                        fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-sans)',
-                        padding: '3px 8px', borderRadius: '6px',
-                        background: sys.bg,
-                        color: sys.color,
-                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                        cursor: 'pointer', borderLeft: `3px solid ${sys.color}`,
-                        lineHeight: 1.4, maxWidth: '100%',
+                        display: 'flex',
+                        alignItems: 'stretch',
+                        gap: 0,
+                        minHeight: 26,
+                        borderRadius: 9,
+                        background: '#FFFFFF',
+                        border: '1.5px solid #C9BCA3',
+                        boxShadow: '0 2px 6px rgba(20, 24, 28, 0.10)',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                        maxWidth: '100%',
+                        boxSizing: 'border-box',
                       }}
                     >
-                      {ev.title}
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 5,
+                          flexShrink: 0,
+                          background: chipColor,
+                        }}
+                      />
+                      <span
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          padding: '5px 10px',
+                          fontSize: 11,
+                          fontWeight: 750,
+                          fontFamily: 'var(--font-sans)',
+                          color: '#14171A',
+                          lineHeight: 1.3,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          background: `color-mix(in srgb, ${chipColor} 14%, #FFFFFF)`,
+                        }}
+                      >
+                        {ev.title}
+                      </span>
                     </div>
                   );
                 })}
                 {dayEvents.length > 3 && (
-                  <div style={{ fontSize: '9px', fontWeight: 600, color: text2, fontFamily: 'var(--font-sans)', paddingLeft: '4px' }}>
-                    + {dayEvents.length - 3} more
+                  <div style={{ fontSize: '9px', fontWeight: 700, color: text2, fontFamily: 'var(--font-sans)', paddingLeft: '2px' }}>
+                    +{dayEvents.length - 3} more
                   </div>
                 )}
               </div>
