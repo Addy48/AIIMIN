@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import supabase from '../utils/supabase';
 import { upsertRow } from '../services/dbService';
+import { fetchDailyLog } from '../api/dailyLogs';
 import toast from '../utils/toast';
 
 const RC_MOOD_COLORS = { 1: '#ef4444', 2: '#f97316', 3: '#eab308', 4: '#22c55e', 5: '#6366f1' };
@@ -28,24 +28,16 @@ const ResetsTracker = ({ user }) => {
 
     useEffect(() => {
         if (!user) return;
-        const fetchTodayRC = async () => {
-            const today = new Date().toISOString().split('T')[0];
-            const { data } = await supabase
-                .from('daily_logs')
-                .select('rc_entries')
-                .eq('user_id', user.id)
-                .eq('date', today)
-                .single();
-
-            if (data && data.rc_entries) {
+        const today = new Date().toISOString().split('T')[0];
+        fetchDailyLog(user.id, today).then((data) => {
+            if (data?.rc_entries) {
                 try {
                     setEntries(typeof data.rc_entries === 'string' ? JSON.parse(data.rc_entries) : data.rc_entries);
                 } catch (e) {
                     console.error('Failed to parse rc_entries', e);
                 }
             }
-        };
-        fetchTodayRC();
+        });
     }, [user]);
 
     const handleLog = async () => {

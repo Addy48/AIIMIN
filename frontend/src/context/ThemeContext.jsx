@@ -7,6 +7,11 @@ import {
   normalizeThemeId,
   isLightTheme,
 } from '../constants/themes';
+import {
+  getSystemThemeId,
+  isCapacitorNative,
+  syncCapacitorChrome,
+} from '../utils/capacitorEnv';
 
 const ThemeContext = createContext(null);
 
@@ -16,35 +21,45 @@ const DEFAULT_PREFS = {
   defaultDarkTheme: THEME_DARK,
 };
 
-export function ThemeProvider({ children }) {
-  const [prefs, setPrefs] = useState(() => {
-    try {
-      const stored = localStorage.getItem('aiimin-theme-prefs');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        return {
-          ...DEFAULT_PREFS,
-          ...parsed,
-          currentTheme: normalizeThemeId(parsed.currentTheme),
-          defaultLightTheme: normalizeThemeId(parsed.defaultLightTheme || THEME_LIGHT),
-          defaultDarkTheme: normalizeThemeId(parsed.defaultDarkTheme || THEME_DARK),
-        };
-      }
-      const legacyTheme = localStorage.getItem('aiimin-theme');
-      if (legacyTheme) {
-        const mappedTheme = normalizeThemeId(legacyTheme);
-        const isLight = isLightTheme(mappedTheme);
-        return {
-          currentTheme: mappedTheme,
-          defaultLightTheme: isLight ? mappedTheme : THEME_LIGHT,
-          defaultDarkTheme: !isLight ? mappedTheme : THEME_DARK,
-        };
-      }
-      return DEFAULT_PREFS;
-    } catch {
-      return DEFAULT_PREFS;
+function readInitialPrefs() {
+  try {
+    const stored = localStorage.getItem('aiimin-theme-prefs');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return {
+        ...DEFAULT_PREFS,
+        ...parsed,
+        currentTheme: normalizeThemeId(parsed.currentTheme),
+        defaultLightTheme: normalizeThemeId(parsed.defaultLightTheme || THEME_LIGHT),
+        defaultDarkTheme: normalizeThemeId(parsed.defaultDarkTheme || THEME_DARK),
+      };
     }
-  });
+    const legacyTheme = localStorage.getItem('aiimin-theme');
+    if (legacyTheme) {
+      const mappedTheme = normalizeThemeId(legacyTheme);
+      const isLight = isLightTheme(mappedTheme);
+      return {
+        currentTheme: mappedTheme,
+        defaultLightTheme: isLight ? mappedTheme : THEME_LIGHT,
+        defaultDarkTheme: !isLight ? mappedTheme : THEME_DARK,
+      };
+    }
+    // Native shell: follow device light/dark on first launch
+    if (isCapacitorNative()) {
+      const systemTheme = getSystemThemeId();
+      return {
+        ...DEFAULT_PREFS,
+        currentTheme: systemTheme,
+      };
+    }
+    return DEFAULT_PREFS;
+  } catch {
+    return DEFAULT_PREFS;
+  }
+}
+
+export function ThemeProvider({ children }) {
+  const [prefs, setPrefs] = useState(readInitialPrefs);
 
   const [forcedTheme, setForcedTheme] = useState(null);
   const activeTheme = normalizeThemeId(forcedTheme || prefs.currentTheme);
@@ -59,6 +74,7 @@ export function ThemeProvider({ children }) {
     root.classList.add(activeTheme);
     root.style.removeProperty('background-color');
     document.body.style.removeProperty('background-color');
+    syncCapacitorChrome(activeTheme);
   }, [activeTheme]);
 
   useEffect(() => {

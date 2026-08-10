@@ -333,6 +333,7 @@ export async function getUserAiBudgetStatus(userId) {
 
 /**
  * Record usage: user-tier AI gate (if applicable) + global provider ceiling + log.
+ * Caps units per call to blunt abuse. Serializes per-user AI burns via advisory lock.
  */
 export async function trackExternalCall({
   userId = null,
@@ -341,30 +342,76 @@ export async function trackExternalCall({
   units = 1,
   enforceBudget = true,
 }) {
-  const need = Math.max(1, units || 1);
+  const need = Math.min(5, Math.max(1, Number(units) || 1));
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    if (userId) {
+      // Serialize concurrent AI burns for the same user (race: check then log)
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1::text))', [`ai-budget:${userId}`]);
+    }
 
-  if (enforceBudget && userId && AI_PROVIDERS.has(provider)) {
-    const userBudget = await checkUserAiBudget(userId, need);
-    if (!userBudget.allowed) {
-      const err = new Error(
-        `AI daily limit reached for ${userBudget.tier} plan (${userBudget.dailyLimit}/day). Upgrade for more.`,
+    if (enforceBudget && userId && AI_PROVIDERS.has(provider)) {
+      const tier = await getUserTier(userId);
+      const dailyLimit = resolveTierAiLimit(tier);
+      const { rows: usedRows } = await client.query(
+        `SELECT COALESCE(SUM(tokens_or_hits), 0)::int AS units
+         FROM api_usage_log
+         WHERE user_id = $1
+           AND created_at >= $2::timestamptz
+           AND provider = ANY($3::text[])
+           AND endpoint NOT LIKE $4`,
+        [userId, utcTodayStart(), [...AI_PROVIDERS], `${REPORT_GEN_ENDPOINT_PREFIX}%`],
       );
-      err.code = 'USER_AI_BUDGET_EXCEEDED';
-      err.meta = userBudget;
-      throw err;
+      const usedToday = usedRows[0]?.units || 0;
+      if (usedToday + need > dailyLimit) {
+        const err = new Error(
+          `AI daily limit reached for ${tier} plan (${dailyLimit}/day). Upgrade for more.`,
+        );
+        err.code = 'USER_AI_BUDGET_EXCEEDED';
+        err.meta = {
+          allowed: false,
+          remaining: Math.max(0, dailyLimit - usedToday),
+          dailyLimit,
+          tier,
+          usedToday,
+        };
+        throw err;
+      }
     }
-  }
 
-  if (enforceBudget) {
-    const budget = await consumeProviderBudget(provider, need);
-    if (!budget.allowed) {
-      const err = new Error(`${provider} daily budget exceeded`);
-      err.code = 'BUDGET_EXCEEDED';
-      throw err;
+    if (enforceBudget) {
+      await maybeResetBudget(provider);
+      const dailyLimit = resolveDailyLimit(provider);
+      const { rows } = await client.query(
+        `UPDATE api_provider_budgets
+         SET used_today = used_today + $2,
+             daily_limit = $3
+         WHERE provider = $1
+           AND used_today + $2 <= $3
+         RETURNING used_today, daily_limit`,
+        [provider, need, dailyLimit],
+      );
+      if (!rows.length) {
+        const err = new Error(`${provider} daily budget exceeded`);
+        err.code = 'BUDGET_EXCEEDED';
+        throw err;
+      }
     }
+
+    await client.query(
+      `INSERT INTO api_usage_log (user_id, provider, endpoint, tokens_or_hits)
+       VALUES ($1, $2, $3, $4)`,
+      [userId, provider, endpoint, need],
+    );
+    await client.query('COMMIT');
+    return true;
+  } catch (err) {
+    try { await client.query('ROLLBACK'); } catch (_) { /* ignore */ }
+    throw err;
+  } finally {
+    client.release();
   }
-  await logApiUsage({ userId, provider, endpoint, tokensOrHits: need });
-  return true;
 }
 
 export async function getProviderBudgetStatus(provider) {

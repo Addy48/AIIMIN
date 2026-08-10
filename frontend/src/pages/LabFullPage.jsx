@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useDeviceTier } from '../hooks/useDeviceTier';
 import { useThemeContext } from '../context/ThemeContext';
 import { apiGet, apiPost } from '../utils/api';
 import VocalMastery from '../components/lab/VocalMastery';
@@ -20,6 +21,7 @@ import { calculateLifeScore } from '../utils/lifeScoreEngine';
 import './lab/lab.css';
 
 import GrowthLoop from '../components/lab/GrowthLoop';
+import { formatDate } from '../utils/formatDate';
 
 /* LabFullPage — load via API (Better Auth); direct Supabase RLS auth.uid() is empty */
 
@@ -30,6 +32,7 @@ import GrowthLoop from '../components/lab/GrowthLoop';
 /* ── Main Lab Page ──────────────────────────────────────────── */
 export default function LabFullPage() {
   const { user } = useAuth();
+  const { isTablet } = useDeviceTier();
   const { theme } = useThemeContext();
   const isDark = theme === 'dark';
   const location = useLocation();
@@ -38,6 +41,33 @@ export default function LabFullPage() {
   const [todayMindset, setTodayMindset] = useState(null);
   const [lifeScore, setLifeScore] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('lab-sidebar-collapse') || 'null') || {
+        'Mental Models & Focus': false,
+        'Reflection & Growth': true,
+        'Cognitive Training': true,
+        'Interview Prep': true,
+        'Skill Forge': true,
+      };
+    } catch {
+      return {
+        'Mental Models & Focus': false,
+        'Reflection & Growth': true,
+        'Cognitive Training': true,
+        'Interview Prep': true,
+        'Skill Forge': true,
+      };
+    }
+  });
+
+  const toggleSection = (category) => {
+    setCollapsed((prev) => {
+      const next = { ...prev, [category]: !prev[category] };
+      localStorage.setItem('lab-sidebar-collapse', JSON.stringify(next));
+      return next;
+    });
+  };
 
   // Check URL parameters for active module
   useEffect(() => {
@@ -96,28 +126,28 @@ export default function LabFullPage() {
 
   const categorizedModules = {
     "Mental Models & Focus": [
-      { key: "decision", emoji: "🤔", label: "Decision Matrix", desc: "De-bias choices via mental models", color: "#3B82F6" },
-      { key: "dopamine", emoji: "📉", label: "Dopamine Detox", desc: "Stimulus tracking & baseline recovery", color: "#10B981" },
+      { key: "decision", emoji: "🤔", label: "Decision Matrix", desc: "De-bias choices via mental models", color: "#ff6b35" },
+      { key: "dopamine", emoji: "📉", label: "Dopamine Detox", desc: "Stimulus tracking & baseline recovery", color: "#10b981" },
       { key: "addiction", emoji: "🔒", label: "Addiction Tracker", desc: "Private craving & trigger logging", color: "#EF4444" },
-      { key: "personality", emoji: "🧬", label: "Personality AI", desc: "Behavioral swiping insights", color: "#F43F5E" }
+      { key: "personality", emoji: "🧬", label: "Personality AI", desc: "Behavioral swiping insights", color: "#E8B84B" }
     ],
     "Reflection & Growth": [
-      { key: "reading", emoji: "📚", label: "Reading Log", desc: "Books, articles, and takeaways", color: "#F59E0B" },
+      { key: "reading", emoji: "📚", label: "Reading Log", desc: "Books, articles, and takeaways", color: "#E8B84B" },
     ],
     "Cognitive Training": [
-      { key: "typing",     emoji: "⌨️",  label: "Typing Speed",   desc: "WPM & accuracy benchmark",       color: "#3B82F6" },
-      { key: "aptitude", emoji: "🧠", label: "Aptitude Tests", desc: "Logical reasoning & pattern recognition", color: "#F59E0B" },
-      { key: "quant", emoji: "📐", label: "Quantitative Maths", desc: "Speed math for screening rounds", color: "#F97316" }
+      { key: "typing",     emoji: "⌨️",  label: "Typing Speed",   desc: "WPM & accuracy benchmark",       color: "#ff6b35" },
+      { key: "aptitude", emoji: "🧠", label: "Aptitude Tests", desc: "Logical reasoning & pattern recognition", color: "#E8B84B" },
+      { key: "quant", emoji: "📐", label: "Quantitative Maths", desc: "Speed math for screening rounds", color: "#ff6b35" }
     ],
     "Interview Prep": [
-      { key: "speaking",   emoji: "🎙️", label: "Vocal Mastery", desc: "60-sec vocal response & review", color: "#8B5CF6" },
-      { key: "star", emoji: "⭐", label: "STAR Method", desc: "Behavioral interview storytelling", color: "#EAB308" },
-      { key: "resume", emoji: "📄", label: "Resume ATS Matcher", desc: "Match your resume against Job Descriptions", color: "#6366F1" }
+      { key: "speaking",   emoji: "🎙️", label: "Vocal Mastery", desc: "60-sec vocal response & review", color: "#ff6b35" },
+      { key: "star", emoji: "⭐", label: "STAR Method", desc: "Behavioral interview storytelling", color: "#E8B84B" },
+      { key: "resume", emoji: "📄", label: "Resume ATS Matcher", desc: "Match your resume against Job Descriptions", color: "#10b981" }
     ],
     "Skill Forge": [
-      { key: "techsim", emoji: "💻", label: "Tech Simulator", desc: "Code output prediction & tricky MCQs", color: "#06B6D4" },
-      { key: "flashcards", emoji: "🗂️", label: "Domain Flashcards", desc: "Spaced repetition for tech stacks", color: "#14B8A6" },
-      { key: "sysdesign", emoji: "🏗️", label: "System Design", desc: "Architecture whiteboard sandbox", color: "#8B5CF6" }
+      { key: "techsim", emoji: "💻", label: "Tech Simulator", desc: "Code output prediction & tricky MCQs", color: "#ff6b35" },
+      { key: "flashcards", emoji: "🗂️", label: "Domain Flashcards", desc: "Spaced repetition for tech stacks", color: "#10b981" },
+      { key: "sysdesign", emoji: "🏗️", label: "System Design", desc: "Architecture whiteboard sandbox", color: "#E8B84B" }
     ]
   };
 
@@ -161,17 +191,43 @@ export default function LabFullPage() {
               }} 
               emoji="📊" 
               label="Overview" 
-              color="#3B82F6"
+              color="#ff6b35"
             />
           </div>
 
-          {Object.entries(categorizedModules).map(([category, mods]) => (
+          {Object.entries(categorizedModules).map(([category, mods]) => {
+            const uniqueMods = Array.from(new Map(mods.map((m) => [m.key, m])).values());
+            const isCollapsed = !!collapsed[category];
+            return (
             <div key={category}>
-              <div style={{ marginBottom: "8px", fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '6px', height: '6px', background: 'var(--color-accent)', borderRadius: '50%' }} /> {category}
-              </div>
+              <button
+                type="button"
+                onClick={() => toggleSection(category)}
+                style={{
+                  width: '100%',
+                  marginBottom: 8,
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: text3,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontFamily: 'inherit',
+                }}
+              >
+                <span style={{ width: 6, height: 6, background: 'var(--color-accent)', borderRadius: '50%' }} />
+                <span style={{ flex: 1, textAlign: 'left' }}>{category}</span>
+                <span style={{ fontSize: 12, opacity: 0.7 }}>{isCollapsed ? '▸' : '▾'}</span>
+              </button>
+              {!isCollapsed && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {mods.map(m => (
+                {uniqueMods.map(m => (
                   <SidebarButton 
                     key={m.key} 
                     active={activeModule === m.key} 
@@ -187,8 +243,10 @@ export default function LabFullPage() {
                   />
                 ))}
               </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -231,6 +289,9 @@ export default function LabFullPage() {
                       <>
                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: modData.color, boxShadow: `0 0 10px ${modData.color}` }} />
                         <span style={{ fontSize: '16px', fontWeight: 700, color: text1, letterSpacing: '-0.01em' }}>{modData.label}</span>
+                        {activeModule === 'typing' && isTablet && (
+                          <span className="lab-typing-chip">Best with keyboard</span>
+                        )}
                       </>
                     ) : null;
                   })()}
@@ -263,12 +324,12 @@ export default function LabFullPage() {
             {!loading && typingStats && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
                 {[
-                  { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#3B82F6" },
-                  { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#22C55E" },
-                  { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#F59E0B" },
-                  { label: "Reaction (ms)", value: typingStats.reactionMs ?? "—", color: "#ff6b35" },
-                  { label: "Speaking score", value: typingStats.speakingScore ?? "—", color: "#8B5CF6" },
-                  { label: "Life Score", value: lifeScore?.score ?? "—", color: "#8B5CF6", desc: lifeScore?.delta >= 0 ? `+${lifeScore?.delta}` : lifeScore?.delta },
+                  { label: "Best WPM (7d)", value: typingStats.bestWpm ?? "—", color: "#5FA85A" },
+                  { label: "Avg Accuracy",  value: typingStats.avgAccuracy ? `${typingStats.avgAccuracy}%` : "—", color: "#5FA85A" },
+                  { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#5FA85A" },
+                  { label: "Reaction (ms)", value: typingStats.reactionMs ?? "—", color: "#E8B84B" },
+                  { label: "Speaking score", value: typingStats.speakingScore ?? "—", color: "#E8B84B" },
+                  { label: "Life Score", value: lifeScore?.score ?? "—", color: "#ff6b35", desc: lifeScore?.delta >= 0 ? `+${lifeScore?.delta}` : lifeScore?.delta },
                 ].map(stat => (
                   <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "12px", padding: "20px", borderTop: `4px solid ${stat.color}`, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
                     <div style={{ fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{stat.label}</div>
@@ -283,7 +344,6 @@ export default function LabFullPage() {
 
             {!loading && typingStats && typingStats.totalTests > 0 && (
               <div>
-                <div style={{ fontSize: "12px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>Recent Typing Tests</div>
                 <TypingHistory userId={user.id} isDark={isDark} cardBg={cardBg} border={border} text1={text1} text2={text2} text3={text3} />
               </div>
             )}
@@ -334,12 +394,15 @@ function TypingHistory({ userId, cardBg, border, text1, text2, text3 }) {
   }
   return (
     <div style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "12px", overflow: "hidden" }}>
+      <div style={{ fontSize: "12px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", padding: "12px 16px 8px" }}>
+        Recent Typing Tests
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 80px 80px", padding: "10px 16px", borderBottom: `1px solid ${border}` }}>
         {["Date","WPM","Accuracy","Status"].map(h => <div key={h} style={{ fontSize: "10px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</div>)}
       </div>
       {rows.map(r => (
         <div key={r.id} style={{ display: "grid", gridTemplateColumns: "1fr 80px 80px 80px", padding: "10px 16px", borderBottom: `1px solid ${border}` }}>
-          <div style={{ fontSize: "12px", color: text2 }}>{new Date(r.day_of).toLocaleDateString("en-IN",{month:"short",day:"numeric"})}</div>
+          <div style={{ fontSize: "12px", color: text2 }}>{formatDate(r.day_of)}</div>
           <div style={{ fontSize: "13px", fontWeight: 600, color: text1 }}>{r.wpm}</div>
           <div style={{ fontSize: "13px", fontWeight: 600, color: Number(r.accuracy_pct)>=95?"#22C55E":"#f59e0b" }}>{Number(r.accuracy_pct).toFixed(1)}%</div>
           <div style={{ fontSize: "11px", color: r.test_invalid?"#ef4444":"#22C55E", fontWeight: 500 }}>{r.test_invalid?"Invalid":"Valid"}</div>

@@ -60,7 +60,7 @@ export default function ProfileSection({
     { label: 'OS-ID', value: osId, done: hasOsId },
     { label: 'Name', value: profile?.full_name || user?.full_name, done: !!(profile?.full_name || user?.full_name) },
     { label: 'Life Arc', value: profile?.tagline, done: !!profile?.tagline?.trim() },
-    { label: 'Location', value: profile?.location, done: !!profile?.location },
+    { label: 'Location', value: profile?.location, done: !!(profile?.location && String(profile.location).trim()) },
     { label: 'Avatar', value: user?.avatar_url, done: !!user?.avatar_url },
   ];
   const strength = Math.round((fields.filter((f) => f.done).length / fields.length) * 100);
@@ -140,6 +140,7 @@ export default function ProfileSection({
                 </span>
               </div>
               <p
+                className="profile-life-arc-display"
                 style={{
                   margin: 0,
                   color: activeLifeArc?.trim() ? 'var(--color-text-1)' : 'var(--color-text-3)',

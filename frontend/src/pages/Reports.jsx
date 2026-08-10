@@ -66,6 +66,7 @@ function normalizeTab(raw) {
   const t = String(raw || 'report').toLowerCase();
   if (t === 'insights' || t === 'patterns') return 'patterns';
   if (t === 'skills' || t === 'skill') return 'skills';
+  if (t === 'snapshot') return 'report';
   return 'report';
 }
 
@@ -193,7 +194,7 @@ export default function Reports() {
   const pieData = [
     { name: 'Gym days', value: timeline.filter((t) => t.gym_done).length, color: 'var(--color-accent)' },
     { name: 'Learning', value: timeline.filter((t) => t.learning_done).length, color: '#10B981' },
-    { name: 'Journal', value: timeline.filter((t) => t.journal).length, color: '#3B82F6' },
+    { name: 'Journal', value: timeline.filter((t) => t.journal).length, color: '#E8B84B' },
   ].filter((d) => d.value > 0);
 
   const best = report?.bestVsWorstDay?.bestDay;
@@ -484,7 +485,7 @@ export default function Reports() {
                   { label: 'Avg mood', val: kpis.avgMood, desc: 'When logged' },
                   { label: 'Gym rate', val: `${kpis.gymPct}%`, desc: 'Of days in range' },
                   { label: 'Focus hours', val: kpis.focusHours, desc: 'Pomodoro sum' },
-                  { label: 'Spend', val: `₹${kpis.spend.toLocaleString()}`, desc: 'Money out' },
+                  { label: 'Money out', val: `₹${Math.abs(Number(kpis.spend) || 0).toLocaleString('en-IN')}`, desc: 'This period' },
                   { label: 'Journal rate', val: `${kpis.journalPct}%`, desc: 'Of days in range' },
                 ].map((stat, i) => (
                   <motion.div key={stat.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }} style={card}>

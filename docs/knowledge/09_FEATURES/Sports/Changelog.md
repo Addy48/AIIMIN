@@ -1,5 +1,17 @@
 # Sports Changelog
 
+### 2026-07-18 — Cross-sport smart empty
+- **What:** Empty states call `collectNextMoment(feed, excludeTab)` so empty sport still surfaces next moment from other sports.
+- **Why:** Screenshot audit P4
+- **Files:** `frontend/src/pages/Sports.jsx`
+- **Status:** local
+
+### 2026-07-18 — Empty-state copy + dead-space clamp
+- **What:** Basketball/F1 empty messages clarified. Empty card `minHeight: 200` / `maxHeight: 280` so pages do not stretch with blank space.
+- **Why:** Screenshot audit P1/P3
+- **Files:** `frontend/src/pages/Sports.jsx`
+- **Status:** local
+
 ### 2026-07-10 — Vault Brain OS path migrate
 - **What:** Sports docs moved to `docs/knowledge/09_FEATURES/Sports/`
 - **Why:** Project Brain OS cutover

@@ -2,21 +2,30 @@
 
 > Agents read after Home. Keep ≤400 lines.
 
-**Date:** 2026-07-18
+**Date:** 2026-07-19
 
-## Today
+## Repo structure (locked)
 
-- **Seed:** one allowlisted account only (`AADI0837`). Wipe: `--wipe-only --confirm`. Hard `SEED_ALLOWLIST` — other users never touched.
-- Shipped to GitHub + API redeploy this turn.
-- **Reports:** Life OS Review PDF; Lab/Focus/Discipline API; Finance polish; auth DB P0.
+**One repo · three clients · never mix commits**
+
+| Client | Path | Typical branch |
+|--------|------|----------------|
+| Web Life OS | `frontend/` | `main` |
+| Capacitor `/m` | `frontend/android/`, `components/mobile/` | `feat/mobile-capture-capacitor` |
+| Native Android V2 | `native-android/` | feature branch (on mobile branch until merge) |
+
+Docs: `docs/knowledge/02_ARCHITECTURE/Monorepo.md` · `CONTRIBUTING.md` · root `README.md` overhauled.
+
+## Git ship
+
+- `main` — website API + frontend polish (pushed)
+- `feat/mobile-capture-capacitor` — Capacitor + native V2 + repo docs (pushed `0d6cff87`)
 
 ## Next
 
-1. Confirm Vercel READY + `api.aiimin.in` health SHA
-2. Login AADI0837 on aiimin.in — verify seed; wipe anytime with script
-3. Do not expand `SEED_ALLOWLIST` unless intentional
+1. Merge `feat/mobile-capture-capacitor` when founder approves (brings native + `/m`)
+2. Play signed APK + Supabase mobile migration
 
-## Touch
+## Locks
 
-- `scripts/seed-realistic-life.mjs` · Seed-Demo-History.md
-- server routes + migrations 045–047 · frontend polish
+Palette · `/m` capture on phone web · no auth/schema without ask · no tool attribution in public docs

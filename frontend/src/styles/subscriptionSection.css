@@ -425,6 +425,26 @@
   color: var(--color-text-3);
 }
 
+.profile-life-arc-display {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.account-mobile-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 8px;
+  -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  mask-image: linear-gradient(to right, black 80%, transparent 100%);
+}
+
+.account-page label .text-label {
+  white-space: nowrap;
+}
+
 @media (max-width: 520px) {
   .profile-meta-row {
     flex-direction: column;

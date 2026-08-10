@@ -44,7 +44,7 @@ const FinanceWealth = ({
                 <PieChart>
                   <Pie data={breakdown} innerRadius={60} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
                     {breakdown.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={ASSET_COLORS[index % ASSET_COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={entry.color || ASSET_COLORS[index % ASSET_COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip 
@@ -63,7 +63,7 @@ const FinanceWealth = ({
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
             {breakdown.map((a, i) => (
               <div key={a.name || i} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 600 }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: ASSET_COLORS[i % ASSET_COLORS.length] }} />
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: a.color || ASSET_COLORS[i % ASSET_COLORS.length] }} />
                 {a.name}
               </div>
             ))}

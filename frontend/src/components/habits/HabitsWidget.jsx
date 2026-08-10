@@ -11,8 +11,7 @@
  *  - Run completion: marks run fully done
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import supabase from '../../utils/supabase';
-import { apiPost } from '../../utils/api';
+import { apiGet, apiPost } from '../../utils/api';
 
 // Returns current hour in IST (frontend-side timezone check)
 function getISTHour() {
@@ -40,12 +39,14 @@ export default function HabitsWidget({ user }) {
     // ─── Load routines ──────────────────────────────────────────────────────
     const fetchRoutines = useCallback(async () => {
         if (!user) return;
-        const { data } = await supabase
-            .from('routines')
-            .select('id, name, time_of_day, created_at')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: true });
-        setRoutines(data || []);
+        try {
+            const data = await apiGet('/db/routines', {
+                params: { orderCol: 'created_at', ascending: 'true' },
+            });
+            setRoutines(Array.isArray(data) ? data : []);
+        } catch {
+            setRoutines([]);
+        }
     }, [user]);
 
     // ─── Check if morning routine was started today (for reminder banner) ───
@@ -57,23 +58,20 @@ export default function HabitsWidget({ user }) {
         const todayIST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
 
         // Find any morning routine
-        const { data: morningRoutines } = await supabase
-            .from('routines')
-            .select('id')
-            .eq('user_id', user.id)
-            .eq('time_of_day', 'morning');
+        const morningRoutines = (await apiGet('/db/routines', {
+            params: { eq: JSON.stringify({ time_of_day: 'morning' }) },
+        }).catch(() => [])) || [];
 
-        if (!morningRoutines?.length) return;
+        if (!morningRoutines.length) return;
 
-        // Check if a run exists today for any morning routine
         const routineIds = morningRoutines.map(r => r.id);
-        const { data: runs } = await supabase
-            .from('routine_runs')
-            .select('id')
-            .eq('user_id', user.id)
-            .in('routine_id', routineIds)
-            .gte('started_at', `${todayIST}T00:00:00+05:30`)
-            .limit(1);
+        const runs = await apiGet('/db/routine_runs', {
+            params: {
+                in: JSON.stringify({ routine_id: routineIds }),
+                gte: JSON.stringify({ started_at: `${todayIST}T00:00:00+05:30` }),
+                limit: '1',
+            },
+        }).catch(() => []);
 
         setMorningMissed(!runs?.length);
     }, [user]);

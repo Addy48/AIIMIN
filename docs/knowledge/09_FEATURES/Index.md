@@ -2,6 +2,7 @@
 
 | Feature | MOC | Status |
 |---------|-----|--------|
+| **Product guide (canonical)** | [[../01_PRODUCT/AIIMIN-Product-Guide]] | canonical-shipped |
 | Waitlist | [[Waitlist/Waitlist]] | google-oauth-bearer-fix-shipped |
 | Sports | [[Sports/Sports]] | dual-cricket-failover-live |
 | Calendar | [[Calendar/Calendar]] | google-sync-tasks-auto-pull |

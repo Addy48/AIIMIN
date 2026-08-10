@@ -8,6 +8,9 @@ export default function WaitlistTestimonialsSection() {
     <section className="waitlist-section waitlist-testimonials waitlist-desktop-only">
       <p className="waitlist-section-label">Early voices</p>
       <h2>What testers are saying</h2>
+      <p className="waitlist-testimonials-honest">
+        Paraphrased feedback from closed beta interviews — not paid endorsements.
+      </p>
       <div className="waitlist-grid waitlist-grid-2 waitlist-testimonial-grid">
         {TESTIMONIALS.map((item, index) => (
           <motion.article
