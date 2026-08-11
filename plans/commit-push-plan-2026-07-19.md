@@ -204,5 +204,5 @@ curl -sSL https://aiimin.in/ | grep -o 'main\.[a-z0-9]*\.js' | head -1
 | `capacitor.config.json` restored to prod URL | done |
 | Phone USB install + smoke | **other chat** |
 | Play Store AAB | deferred |
-| Website commits W1–W4 | **execute when you say commit** |
-| Mobile commits M1–M2 | after website on main |
+| Website commits W1–W4 | **pushed to `main`** |
+| Mobile commits M1–M2 | **pushed to `feat/mobile-capture-capacitor`** |

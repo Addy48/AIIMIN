@@ -1,0 +1,55 @@
+.career-kanban-wrap {
+  position: relative;
+}
+
+.career-kanban-scroll {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 4px 4px 12px;
+  min-height: 60vh;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.career-kanban-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.career-kanban-column {
+  flex: 0 0 clamp(280px, 42vw, 380px);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+}
+
+.career-kanban-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-bottom: 8px;
+}
+
+.career-kanban-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: var(--color-border);
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.career-kanban-dot--active {
+  background: var(--color-accent);
+  transform: scale(1.15);
+}
+
+@media (min-width: 900px) {
+  .career-kanban-column {
+    flex-basis: clamp(300px, 36vw, 380px);
+  }
+}

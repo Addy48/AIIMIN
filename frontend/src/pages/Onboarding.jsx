@@ -11,6 +11,7 @@ import useNavPreferences from '../hooks/useNavPreferences';
 import ArcEditor from '../components/profile/ArcEditor';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
+import { getPostAuthPath } from '../utils/mobileEntry';
 
 /* ─── helpers ──────────────────────────────────────────────── */
 const PIN_DIGITS  = 6;
@@ -294,7 +295,7 @@ export default function Onboarding() {
                     tagline: stripQuotes(lifeArc),
                     onboarding_complete: true,
                 });
-                navigate('/overview', { replace: true });
+                navigate(getPostAuthPath(), { replace: true });
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -389,7 +390,7 @@ export default function Onboarding() {
             setDir(1);
             setStep(10);
             await new Promise(r => setTimeout(r, 2400));
-            navigate('/overview', { replace: true });
+            navigate(getPostAuthPath(), { replace: true });
         } catch (err) {
             setError(err.message);
         } finally {

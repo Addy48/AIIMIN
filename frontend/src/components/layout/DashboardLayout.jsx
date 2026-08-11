@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from '../Navbar';
+import TabRail from './TabRail';
 import BottomNav from './BottomNav';
 import CommandPalette from '../system/CommandPalette';
 import ArcGuard from '../system/ArcGuard';
@@ -12,11 +13,11 @@ import { useDeviceTier } from '../../hooks/useDeviceTier';
  */
 const DashboardLayout = ({ user }) => {
   const navigate = useNavigate();
-  useDeviceTier(); // keeps html[data-device-tier] in sync while shell mounted
+  const { isPhone, isTablet } = useDeviceTier();
 
   return (
     <div
-      className="dashboard-layout"
+      className={`dashboard-layout${isTablet ? ' dashboard-layout--rail' : ''}`}
       style={{
       minHeight: '100vh',
       background: 'var(--color-base)',
@@ -24,6 +25,7 @@ const DashboardLayout = ({ user }) => {
       color: 'var(--color-text-1)',
     }}>
       <Navbar user={user} />
+      {isTablet && <TabRail />}
       <CommandPalette />
 
       {/* ── Sleek Guest Mode Floating Banner ── */}
@@ -100,7 +102,7 @@ const DashboardLayout = ({ user }) => {
         </div>
       )}
 
-      <main style={{
+      <main className="dashboard-layout__main" style={{
         width: '100%',
         padding: 'var(--content-pad) var(--content-pad) 120px',
         display: 'flex',
@@ -112,7 +114,7 @@ const DashboardLayout = ({ user }) => {
         </ArcGuard>
       </main>
 
-      <BottomNav />
+      {!isPhone && <BottomNav />}
 
     </div>
   );

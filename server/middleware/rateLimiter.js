@@ -110,3 +110,17 @@ export const accountCreationLimiter = createLimiter({
   max: 3,
   keyFn: (c) => `account:${ip(c)}`,
 });
+
+/** Native mobile sync — per authenticated user */
+export const mobileSyncLimiter = createLimiter({
+  windowMs: 60_000,
+  max: 120,
+  keyFn: (c) => `mobile-sync:${c.get('userId') || ip(c)}`,
+});
+
+/** Native health probe — generous for monitors */
+export const mobileHealthLimiter = createLimiter({
+  windowMs: 60_000,
+  max: 300,
+  keyFn: (c) => `mobile-health:${ip(c)}`,
+});
