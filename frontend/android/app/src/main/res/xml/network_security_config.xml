@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Production: HTTPS only. Debug LAN cleartext lives in src/debug/. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">aiimin.in</domain>
+        <domain includeSubdomains="true">www.aiimin.in</domain>
+        <domain includeSubdomains="true">api.aiimin.in</domain>
+    </domain-config>
+</network-security-config>

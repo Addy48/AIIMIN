@@ -1,0 +1,163 @@
+.mobile-lite-account__identity {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 16px;
+  background: #2d2d2d;
+  border: 1px solid #3a3a3a;
+}
+
+.mobile-lite-account__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #ff6b35, #10b981);
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.mobile-lite-account__identity-body {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.mobile-lite-account__identity-body h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-lite-account__osid {
+  margin: 0;
+  font-family: var(--font-display, monospace);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: #a3a3a3;
+}
+
+.mobile-lite-account__arc {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #ff6b35 12%, #2d2d2d);
+  border: 1px solid color-mix(in srgb, #ff6b35 28%, #3a3a3a);
+}
+
+.mobile-lite-account__arc-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.mobile-lite-account__arc-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mobile-lite-account__rank {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #2d2d2d;
+  border: 1px solid #3a3a3a;
+  display: grid;
+  gap: 6px;
+}
+
+.mobile-lite-account__rank strong {
+  font-size: 16px;
+  color: #f4f4f4;
+}
+
+.mobile-lite-account__rank span {
+  font-size: 11px;
+  color: #a3a3a3;
+}
+
+.mobile-lite-account__rank-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: #3a3a3a;
+  overflow: hidden;
+}
+
+.mobile-lite-account__rank-bar > div {
+  height: 100%;
+  background: #ff6b35;
+}
+
+.mobile-lite-account__actions {
+  display: grid;
+  gap: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #3a3a3a;
+}
+
+.mobile-lite-account__action {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 16px;
+  background: #2d2d2d;
+  border: none;
+  border-bottom: 1px solid #3a3a3a;
+  color: #f4f4f4;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mobile-lite-account__action:last-child {
+  border-bottom: none;
+}
+
+.mobile-lite-account__legal {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.mobile-lite-account__legal a {
+  font-size: 12px;
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.mobile-lite-account__app-note {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.mobile-lite-account__app-note--muted {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #4b5563;
+}

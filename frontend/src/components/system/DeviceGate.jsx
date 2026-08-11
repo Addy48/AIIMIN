@@ -15,7 +15,6 @@ const PUBLIC_PREFIXES = [
   '/contact',
   '/brand',
   '/m',
-  '/account',
 ];
 
 function isPublicPath(pathname) {
@@ -38,6 +37,15 @@ export default function DeviceGate({ children, authed }) {
 
   const params = new URLSearchParams(location.search);
   const forceDesktop = params.get('forceDesktop') === '1';
+
+  if (
+    authed
+    && isPhone
+    && !forceDesktop
+    && location.pathname.startsWith('/account')
+  ) {
+    return <Navigate to={`/m/account${location.search || ''}`} replace />;
+  }
 
   if (
     authed

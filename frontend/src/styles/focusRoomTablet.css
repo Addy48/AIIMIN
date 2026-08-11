@@ -1,0 +1,10 @@
+html[data-device-tier='tablet'] .focus-room-page button,
+html[data-device-tier='tablet'] .focus-room-page [role='button'] {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+html[data-device-tier='tablet'] .focus-room-page .focus-preset-btn {
+  min-height: 48px;
+  padding-inline: 16px;
+}

@@ -5,6 +5,10 @@ import { HelmetProvider } from 'react-helmet-async';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { registerServiceWorker } from './registerServiceWorker';
+import { initCapacitorShell } from './utils/capacitorEnv';
+
+initCapacitorShell();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 document.documentElement.style.backgroundColor = '#0e100d';
@@ -14,4 +18,5 @@ root.render(
   </HelmetProvider>,
 );
 
+registerServiceWorker();
 reportWebVitals();

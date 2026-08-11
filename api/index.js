@@ -36,7 +36,7 @@ app.use('*', cors({
         return null;
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Idempotency-Key', 'X-App-Version', 'X-Platform'],
     exposeHeaders: ['set-auth-token', 'Set-Auth-Token'],
     credentials: true,
 }));
@@ -101,6 +101,7 @@ const routeMap = {
     'journal':       () => import('../server/routes/journal.js'),
     'db':            () => import('../server/routes/db.js'),
     'user':          () => import('../server/routes/user.js'),
+    'mobile':        () => import('../server/routes/mobile.js'),
 };
 
 async function loadRouter(name) {

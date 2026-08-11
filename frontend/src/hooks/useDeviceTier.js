@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Device tier for Life OS shell.
@@ -10,6 +10,8 @@ import { useEffect, useState } from 'react';
  */
 export function detectDeviceTier() {
   if (typeof window === 'undefined') return 'desktop';
+
+  if (Capacitor.isNativePlatform()) return 'phone';
 
   const ua = navigator.userAgent || '';
   const isIPad =

@@ -47,6 +47,23 @@ laptop-disk-audit-*.html
 .agents/skills/marketing-skills/
 .agents/skills/planning/
 .agents/skills/codebase-architecture/
+.agents/skills/compose/
+.agents/skills/coil-compose/
+.agents/skills/datastore/
+.agents/skills/gradle-build-performance/
+.agents/skills/kmp-*/
+.agents/skills/koin/
+.agents/skills/kotlin-*/
+.agents/skills/mobile-app-ui-design/
+.agents/skills/modularization/
+.agents/skills/paging/
+.agents/skills/pdf-annotations/
+.agents/skills/rxjava-migration/
+
+# Borghei / Codex skill installer state
+.claude-skills.json
+.codex/
+.codex/**
 
 # SSH keys (never commit)
 *.pem
@@ -69,6 +86,8 @@ deploy/EC2.env.paste
 .claude/
 .cursor/
 .cursor/**
+.codex/
+.codex/**
 .qwen/
 .qwen/**
 .superpowers/
