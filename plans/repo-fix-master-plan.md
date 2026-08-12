@@ -13,11 +13,12 @@ Skills index: `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md`
 |------|-------|------------|
 | Web build | ✅ Pass | Add CI workflow |
 | Native CI | ✅ Exists | Keystore secrets for signed APK |
-| Test coverage | 🔴 ~1% | Add hooks/API unit tests (P1) |
-| Docs | 🟡 75/100 | CHANGELOG + LICENSE note |
-| Git hygiene | 🟡 | Expand gitignore, verify script |
-| Security scan | 🟡 Noise | Exclude `.vercel/output` from scans; real audit on `server/` |
-| Skills | 🟡 | Registry + manifest + gitignore third-party packs |
+| Test coverage | 🔴 ~1% | correlation tests minimal; CRA audit dev-deps accepted |
+| Docs | 🟢 90/100 | CHANGELOG + Skills registry + Monorepo |
+| Git hygiene | 🟢 | verify script + gitignore |
+| Security scan | 🟢 | RLS on mobile tables; mobile rate limits |
+| Skills | 🟢 | Registry + manifest |
+| Native CI | 🟡 | Fixed gradle JDK — push pending |
 
 ---
 
@@ -50,10 +51,10 @@ Skills index: `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md`
 
 | Task | Skill |
 |------|-------|
-| RLS for `mobile_devices`, `mobile_idempotency` | supabase-postgres-best-practices |
-| Correlation cron monitoring | systematic-debugging |
-| `GET /dashboard/widgets` integration tests | senior-fullstack |
-| Rate limit audit on `/mobile/*` | harden |
+| RLS for `mobile_devices`, `mobile_idempotency` | supabase-postgres-best-practices | ✅ |
+| Correlation cron monitoring | systematic-debugging | |
+| `GET /dashboard/widgets` integration tests | senior-fullstack | |
+| Rate limit audit on `/mobile/*` | harden | ✅ |
 
 ### Native (`native-android/`)
 
