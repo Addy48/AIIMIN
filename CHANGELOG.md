@@ -12,11 +12,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Capacitor capture shell (`/m`) on `main`
 - Skills registry and `scripts/verify-repo.sh`
 - GitHub Actions: `verify-frontend.yml`, `native-android.yml`
+- RLS migration for `mobile_devices` / `mobile_idempotency`
+- PWA raster logo assets (`logo192.png`, `logo512.png`, etc.)
 
 ### Changed
 - Correlation engine and intelligence report services
 - Frontend data layer (React Query hooks)
 - Device tiers: phone web `/m` vs native companion clarified
+- Mobile API rate limits (`mobileSyncLimiter`, `mobileHealthLimiter`)
+- Native Android v2.2.1-native; CI-safe `gradle.properties` (JDK via `local.properties`)
 
 ## [2026-07-19] — Monorepo + native merge
 
