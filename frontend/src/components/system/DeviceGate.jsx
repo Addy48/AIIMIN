@@ -14,6 +14,7 @@ const PUBLIC_PREFIXES = [
   '/about',
   '/contact',
   '/brand',
+  '/app',
   '/m',
 ];
 

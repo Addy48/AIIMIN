@@ -38,7 +38,7 @@ export default function HeroPreviewMock() {
           </div>
         </div>
       </div>
-      <p className="preview-caption">Your daily command layer — web Life OS today, native app en route.</p>
+      <p className="preview-caption">Your daily command layer — web Life OS today, Android companion in closed testing.</p>
     </div>
   );
 }

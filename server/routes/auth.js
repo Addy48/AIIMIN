@@ -237,4 +237,52 @@ app.post('/logout', async (c) => {
     return c.json({ success: true });
 });
 
+/**
+ * GET /auth/osid-available?id=AADI2004
+ * Public live check — waitlist reservation + users + Better Auth user table.
+ * Shape errors return available:false with issues[]; never leaks who holds an id.
+ */
+app.get('/osid-available', async (c) => {
+    const raw = c.req.query('id') || c.req.query('username') || '';
+    const id = String(raw).trim().toUpperCase();
+    if (!id) return c.json({ error: 'id is required' }, 400);
+
+    const shapeErr = validateOsId(id);
+    if (shapeErr) {
+        return c.json({
+            id,
+            available: false,
+            reason: 'invalid',
+            message: shapeErr,
+        });
+    }
+
+    try {
+        const { rows } = await pool.query(
+            `SELECT 1 AS taken FROM (
+               SELECT 1 FROM waitlist_emails
+                WHERE lower(reserved_username) = lower($1)
+               UNION ALL
+               SELECT 1 FROM users
+                WHERE lower(username) = lower($1)
+               UNION ALL
+               SELECT 1 FROM public."user"
+                WHERE lower(username) = lower($1)
+             ) t
+             LIMIT 1`,
+            [id],
+        );
+        const taken = rows.length > 0;
+        return c.json({
+            id,
+            available: !taken,
+            reason: taken ? 'taken' : 'free',
+            message: taken ? 'Already claimed.' : 'Available.',
+        });
+    } catch (err) {
+        console.error('[auth/osid-available] error:', err.message);
+        return c.json({ error: 'Internal server error' }, 500);
+    }
+});
+
 export default app;

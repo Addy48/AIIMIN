@@ -199,10 +199,14 @@ export default function JournalPage() {
     };
 
     let saved;
-    if (existing?.id) {
-      saved = await updateJournalEntry(existing.id, row);
-    } else {
-      saved = await createJournalEntry(row);
+    try {
+      saved = existing?.id
+        ? await updateJournalEntry(existing.id, row)
+        : await createJournalEntry(row);
+    } catch (err) {
+      console.error('[Journal] save failed:', err);
+      toast.error(err?.message || 'Could not save entry');
+      return;
     }
 
     setEntries((prev) => {

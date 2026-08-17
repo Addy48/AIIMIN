@@ -153,11 +153,16 @@ app.post('/:id/logs', requireAuth, async (c) => {
         );
         if (owned.length === 0) return c.json({ error: 'Habit not found' }, 404);
 
+        // habit_logs_status_check allows only 'done' | 'skipped'. This inserted
+        // 'completed', so every call 500'd — and Habits.jsx swallows the error,
+        // so toggles looked fine while no history row was ever written.
+        const status = body?.status === 'skipped' ? 'skipped' : 'done';
+
         const { rows } = await pool.query(
             `INSERT INTO habit_logs (user_id, habit_id, completed_at, status, notes)
-             VALUES ($1, $2, NOW(), 'completed', $3)
+             VALUES ($1, $2, NOW(), $3, $4)
              RETURNING *`,
-            [userId, id, notes]
+            [userId, id, status, notes]
         );
         return c.json(rows[0], 201);
     } catch (err) {

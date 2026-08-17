@@ -265,6 +265,15 @@ const Finance = () => {
     .filter(t => isIncome(t) && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear())
     .reduce((sum, t) => sum + txAmt(t), 0), [transactions, isIncome, txAmt]);
 
+  // How many transactions fall in the current calendar month. The MTD tiles are
+  // calendar-month while the AI summary reads a rolling 30 days, so early in a
+  // month a real "₹0" sits next to a non-empty insight. Zero entries is an empty
+  // state, not a zero.
+  const monthTxCount = useMemo(() => transactions
+    .filter(t => new Date(t.date).getMonth() === new Date().getMonth()
+      && new Date(t.date).getFullYear() === new Date().getFullYear())
+    .length, [transactions]);
+
   // Budget calculations — normalize fields Budgets tab expects
   const budgetProgress = useMemo(() => (budgets || []).map(b => {
     const limit = Number(b.amount ?? b.limit ?? b.target ?? 0) || 0;
@@ -573,7 +582,7 @@ const Finance = () => {
           {activeTab === 'OVERVIEW' && (
             <FinanceOverview 
               totalNetWorth={totalNetWorth} returnPct={returnPct} 
-              monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} 
+              monthlyIncome={monthlyIncome} monthlyExpenses={monthlyExpenses} monthTxCount={monthTxCount}
               formatCurrency={formatCurrency} aiSummaryLoading={aiSummaryLoading} 
               aiSummary={aiSummary} savingsRate={savingsRate} fiYears={fiYears} fiProgressPct={fiProgressPct} 
               totalBalance={totalBalance} totalReturns={totalReturns} 

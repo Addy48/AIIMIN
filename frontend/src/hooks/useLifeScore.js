@@ -14,12 +14,13 @@ function mapLhsToDisplay(lhs) {
         localStorage.setItem(SCORE_PREV_KEY, String(score));
     } catch { /* ignore */ }
 
+    // Canonical taxonomy — ADR 2026-08-03-life-score-taxonomy.
     const contributors = {
-        behavioral: { score: Math.round(ss.discipline || 0), label: 'Behavioral' },
-        mental_clarity: { score: Math.round(ss.emotional || 0), label: 'Mental Clarity' },
-        goal_momentum: { score: Math.round(ss.cognitive || 0), label: 'Goal Momentum' },
-        financial: { score: Math.round(ss.financial || 0), label: 'Financial' },
-        recovery: { score: Math.round(ss.physical || 0), label: 'Recovery' },
+        physical: { score: Math.round(ss.physical || 0), label: 'BODY' },
+        cognitive: { score: Math.round(ss.cognitive || 0), label: 'MIND' },
+        discipline: { score: Math.round(ss.discipline || 0), label: 'DISCIPLINE' },
+        financial: { score: Math.round(ss.financial || 0), label: 'MONEY' },
+        emotional: { score: Math.round(ss.emotional || 0), label: 'MOOD' },
     };
 
     const dims = Object.values(contributors);

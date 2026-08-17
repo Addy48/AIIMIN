@@ -10,12 +10,13 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { scrollReveal, reducedMotionVariants } from '../../constants/animations';
 import useThemeColors from '../../hooks/useThemeColors';
 
+// Canonical Life Score keys — ADR 2026-08-03-life-score-taxonomy.
 const DOMAIN_COLORS = {
-  behavioral: '#2563EB',
-  mental_clarity: '#10B981',
-  goal_momentum: 'var(--color-accent)',
+  physical: '#6B7280',
+  cognitive: 'var(--color-accent)',
+  discipline: '#2563EB',
   financial: '#F59E0B',
-  recovery: '#6B7280',
+  emotional: '#10B981',
 };
 
 export default function LifeScoreRadar({ contributors = {}, compact = false }) {

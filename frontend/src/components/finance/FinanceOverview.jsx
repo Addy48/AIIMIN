@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 
 const FinanceOverview = ({ 
-  totalNetWorth, returnPct, monthlyIncome, monthlyExpenses, formatCurrency,
+  totalNetWorth, returnPct, monthlyIncome, monthlyExpenses, monthTxCount = 0, formatCurrency,
   aiSummaryLoading, aiSummary,
   savingsRate, fiYears, fiProgressPct = 0, totalBalance, totalReturns,
   financeChecks, velocityData, onReviewAnalytics
@@ -78,11 +78,15 @@ const FinanceOverview = ({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
                   <div>
                     <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.6, marginBottom: '8px' }}>Income (MTD)</div>
-                    <div style={{ fontSize: '20px', fontWeight: 500 }}>{formatCurrency(monthlyIncome)}</div>
+                    <div style={{ fontSize: monthTxCount === 0 ? '14px' : '20px', fontWeight: 500, opacity: monthTxCount === 0 ? 0.55 : 1 }}>
+                      {monthTxCount === 0 ? 'Nothing logged yet' : formatCurrency(monthlyIncome)}
+                    </div>
                   </div>
                   <div>
                     <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.15em', opacity: 0.6, marginBottom: '8px' }}>Expenses (MTD)</div>
-                    <div style={{ fontSize: '20px', fontWeight: 500, color: 'var(--color-rust)' }}>{formatCurrency(monthlyExpenses)}</div>
+                    <div style={{ fontSize: monthTxCount === 0 ? '14px' : '20px', fontWeight: 500, opacity: monthTxCount === 0 ? 0.55 : 1, color: monthTxCount === 0 ? 'inherit' : 'var(--color-rust)' }}>
+                      {monthTxCount === 0 ? 'Nothing logged yet' : formatCurrency(monthlyExpenses)}
+                    </div>
                   </div>
               </div>
           </div>

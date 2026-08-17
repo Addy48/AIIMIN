@@ -171,16 +171,16 @@ export default function CommandCenter({ user }) {
                 {lifeScore.explanation}
               </div>
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
-                <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Behav: {lifeScore.contributors.behavioral.score}</div>
-                <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Mental: {lifeScore.contributors.mental_clarity.score}</div>
-                {lifeScore.contributors.goal_momentum && (
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Goals: {lifeScore.contributors.goal_momentum.score}</div>
+                <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>DISCIPLINE: {lifeScore.contributors.discipline?.score ?? '—'}</div>
+                <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>MOOD: {lifeScore.contributors.emotional?.score ?? '—'}</div>
+                {lifeScore.contributors.cognitive && (
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>MIND: {lifeScore.contributors.cognitive.score}</div>
                 )}
                 {lifeScore.contributors.financial && (
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Money: {lifeScore.contributors.financial.score}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>MONEY: {lifeScore.contributors.financial.score}</div>
                 )}
-                {lifeScore.contributors.recovery && (
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>Sleep: {lifeScore.contributors.recovery.score}</div>
+                {lifeScore.contributors.physical && (
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>BODY: {lifeScore.contributors.physical.score}</div>
                 )}
               </div>
             </div>

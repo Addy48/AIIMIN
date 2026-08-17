@@ -4,6 +4,9 @@
 import { Hono } from 'hono';
 import { pool } from '../lib/db.js';
 import { requireAuth } from '../middleware/auth.js';
+// Shared with routes/mobile.js — both write journal_entries and must agree on
+// mode, or two same-day entries collide on the (user_id, date, mode) index.
+import { deriveJournalMode as deriveMode } from '../lib/journalMode.js';
 
 const app = new Hono();
 
@@ -57,14 +60,24 @@ app.post('/', requireAuth, async (c) => {
             mood = null,
             energy_level = null,
             sleep_hours = null,
-            title = null,
         } = body;
 
+        // Idempotent: re-saving the same day+mode updates in place instead of
+        // raising a duplicate-key 500 when the client's entry list is stale.
         const { rows } = await pool.query(
-            `INSERT INTO journal_entries (user_id, date, encrypted_content, mood, energy_level, sleep_hours, title)
+            `INSERT INTO journal_entries (user_id, date, encrypted_content, mood, energy_level, sleep_hours, mode)
              VALUES ($1, $2, $3, $4, $5, $6, $7)
+             -- The body destructures mood/energy_level/sleep_hours to null when
+             -- absent, so a partial payload would blank stored metadata. Keep the
+             -- existing value unless the caller actually sent one. The envelope
+             -- itself is always sent, so it overwrites unconditionally.
+             ON CONFLICT (user_id, date, mode) DO UPDATE SET
+                encrypted_content = EXCLUDED.encrypted_content,
+                mood = COALESCE(EXCLUDED.mood, journal_entries.mood),
+                energy_level = COALESCE(EXCLUDED.energy_level, journal_entries.energy_level),
+                sleep_hours = COALESCE(EXCLUDED.sleep_hours, journal_entries.sleep_hours)
              RETURNING *`,
-            [userId, date, encrypted_content, mood, energy_level, sleep_hours, title]
+            [userId, date, encrypted_content, mood, energy_level, sleep_hours, deriveMode(encrypted_content)]
         );
         return c.json(rows[0], 201);
     } catch (err) {
@@ -79,7 +92,7 @@ app.patch('/:id', requireAuth, async (c) => {
         const id = c.req.param('id');
         const body = await c.req.json();
 
-        const allowed = ['date', 'encrypted_content', 'mood', 'energy_level', 'sleep_hours', 'title'];
+        const allowed = ['date', 'encrypted_content', 'mood', 'energy_level', 'sleep_hours'];
         const sets = [];
         const params = [];
         allowed.forEach((col) => {
@@ -89,6 +102,12 @@ app.patch('/:id', requireAuth, async (c) => {
             }
         });
         if (!sets.length) return c.json({ error: 'No fields to update' }, 400);
+
+        // Keep mode in step with the envelope it is derived from.
+        if (body.encrypted_content !== undefined) {
+            params.push(deriveMode(body.encrypted_content));
+            sets.push(`mode = $${params.length}`);
+        }
 
         params.push(id, userId);
         const { rows } = await pool.query(

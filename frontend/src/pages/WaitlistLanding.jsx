@@ -8,6 +8,7 @@ import WaitlistHeroSection from '../components/waitlist/landing/WaitlistHeroSect
 import WaitlistPersonasSection from '../components/waitlist/landing/WaitlistPersonasSection';
 import WaitlistPricingSection from '../components/waitlist/landing/WaitlistPricingSection';
 import WaitlistLaunchJourney from '../components/waitlist/landing/WaitlistLaunchJourney';
+import WaitlistAndroidSection from '../components/waitlist/landing/WaitlistAndroidSection';
 import WaitlistPreviewScreensSection from '../components/waitlist/landing/WaitlistPreviewScreensSection';
 import WaitlistAccessTiersSection from '../components/waitlist/landing/WaitlistAccessTiersSection';
 import WaitlistTestimonialsSection from '../components/waitlist/landing/WaitlistTestimonialsSection';
@@ -31,7 +32,7 @@ function WaitlistLandingContent() {
     description: 'A data-dense personal Life OS for daily accountability, behavioral insights, money tracking, and habit building. Built for Indian students and early professionals.',
     url: 'https://aiimin.in',
     applicationCategory: 'ProductivityApplication',
-    operatingSystem: 'Desktop Web',
+    operatingSystem: 'Web, Android (companion — closed testing)',
     offers: {
       '@type': 'AggregateOffer',
       lowPrice: '0',
@@ -50,10 +51,13 @@ function WaitlistLandingContent() {
   const fetchCount = async () => {
     try {
       const response = await fetch(`${API_URL}/waitlist/count`);
+      if (!response.ok) throw new Error(`count failed (${response.status})`);
       const data = await response.json();
-      setCount(typeof data.count === 'number' ? data.count : 0);
+      // null means "unknown", not "zero" — the social-proof block hides itself
+      // rather than claiming nobody has signed up.
+      setCount(typeof data.count === 'number' ? data.count : null);
     } catch {
-      setCount(0);
+      setCount(null);
     }
   };
 
@@ -117,7 +121,7 @@ function WaitlistLandingContent() {
       <main className="waitlist-main">
         <section className="waitlist-mobile-only waitlist-mobile-essentials">
           <ul className="waitlist-mobile-perk-list">
-            <li>⏰ Tester cutoff: 31 July</li>
+            <li>⏰ Tester cutoff: 31 August</li>
             <li>📅 Go-live: end of September 2026</li>
           </ul>
         </section>
@@ -125,6 +129,7 @@ function WaitlistLandingContent() {
         <WaitlistPersonasSection />
         <WaitlistPricingSection />
         <WaitlistLaunchJourney />
+        <WaitlistAndroidSection />
         <WaitlistPreviewScreensSection />
         <WaitlistAccessTiersSection />
         <WaitlistTestimonialsSection />

@@ -6,6 +6,7 @@ import GoalsVisionTitle from '../components/ui/GoalsVisionTitle';
 import Modal from '../components/ui/Modal';
 import DeadlinePicker from '../components/ui/DeadlinePicker';
 import { apiGet, apiPost, apiPut, apiDelete } from '../utils/api';
+import { normalizeGoalFromApi, goalToApiPayload } from '../utils/goalsUtils';
 import toast from '../utils/toast';
 
 /* ── Local cache helpers ─────────────────────────────────────── */
@@ -259,7 +260,10 @@ const Goals = () => {
     const fetchGoals = async () => {
       try {
         const data = await apiGet('/goals');
-        setGoals(Array.isArray(data) ? data : []);
+        // The API stores in_progress / at_risk / completed; the board speaks
+        // Active / At Risk / Achieved. Without this map every goal read back as
+        // 'Active', so Won was always 0 and the counts disagreed.
+        setGoals(Array.isArray(data) ? data.map(normalizeGoalFromApi).filter(Boolean) : []);
       } catch (err) {
         console.error('Failed to fetch goals from API:', err);
         // Fallback to local cache
@@ -282,8 +286,8 @@ const Goals = () => {
     setGoals(p => [newGoal, ...p]);
     
     try {
-      const created = await apiPost('/goals', g);
-      setGoals(p => p.map(goal => goal.id === tempId ? created : goal));
+      const created = await apiPost('/goals', goalToApiPayload(g));
+      setGoals(p => p.map(goal => (goal.id === tempId ? (normalizeGoalFromApi(created) || goal) : goal)));
       toast.success('Goal added');
     } catch (err) {
       console.error('Add goal error:', err);
@@ -299,7 +303,7 @@ const Goals = () => {
     try {
       // Only PUT if it's a real ID from backend (not optimistic temp id)
       if (!String(updated.id).startsWith('temp_')) {
-        await apiPut(`/goals/${updated.id}`, updated);
+        await apiPut(`/goals/${updated.id}`, goalToApiPayload(updated));
       }
     } catch (err) {
       console.error('Update goal error:', err);

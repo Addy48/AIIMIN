@@ -19,7 +19,7 @@ app.get('/week-stats', requireAuth, async (c) => {
 
         const { rows } = await pool.query(
             `SELECT date::text AS date,
-                    COALESCE(total_focus_minutes, duration, 0)::int AS minutes,
+                    COALESCE(total_focus_minutes, 0)::int AS minutes,
                     COALESCE(cycles_completed, 0)::int AS cycles
              FROM pomodoro_sessions
              WHERE user_id = $1 AND date >= $2::date

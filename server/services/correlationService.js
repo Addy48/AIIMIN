@@ -295,7 +295,7 @@ export async function fetchStoredCorrelations(userId) {
     try {
         const [corrRes, insightRes] = await Promise.all([
             pool.query(
-                `SELECT signal_a, signal_b, rho, p_value, bh_passed, n_samples, created_at
+                `SELECT signal_a, signal_b, rho, p_value, bh_passed, n_samples, computed_at AS created_at
                  FROM lab_correlations WHERE user_id = $1
                  ORDER BY ABS(rho) DESC LIMIT 30`,
                 [userId],

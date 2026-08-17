@@ -1,0 +1,349 @@
+/* /app — Android companion status. AIIMIN palette locked. */
+
+.app-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(255, 107, 53, 0.12), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 0%, rgba(116, 157, 196, 0.08), transparent 50%),
+    #1a1a1a;
+  color: #f3f3f3;
+  font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+}
+
+.app-page__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(12px);
+  background: rgba(26, 26, 26, 0.82);
+  z-index: 5;
+}
+
+.app-page__brand {
+  color: #f9f9f9;
+  text-decoration: none;
+}
+
+.app-page__nav {
+  display: flex;
+  gap: 1.1rem;
+  font-size: 0.85rem;
+}
+
+.app-page__nav a {
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+.app-page__nav a:hover {
+  color: #ff6b35;
+}
+
+.app-page main {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 2.5rem 1.35rem 4rem;
+}
+
+.app-page__eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #749dc4;
+  margin: 0 0 0.75rem;
+}
+
+.app-page__hero h1 {
+  font-family: 'Bodoni Moda', 'Times New Roman', serif;
+  font-weight: 600;
+  font-size: clamp(2.1rem, 5vw, 3.4rem);
+  line-height: 1.08;
+  margin: 0 0 1rem;
+  letter-spacing: -0.02em;
+}
+
+.app-page__hero-em {
+  display: block;
+  color: #ff6b35;
+}
+
+.app-page__lede {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: #c4c4c4;
+  max-width: 38rem;
+  margin: 0 0 1.5rem;
+}
+
+.app-page__lede strong {
+  color: #f9f9f9;
+}
+
+.app-page__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.app-page__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.72rem 1.15rem;
+  border-radius: 2px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.app-page__btn--primary {
+  background: #ff6b35;
+  color: #1a1a1a;
+}
+
+.app-page__btn--primary:hover {
+  background: #ff8255;
+}
+
+.app-page__btn--ghost {
+  background: transparent;
+  color: #e5e7eb;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.app-page__btn--ghost:hover {
+  border-color: #749dc4;
+  color: #fff;
+}
+
+.app-page__status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid rgba(116, 157, 196, 0.45);
+  color: #b8c9da;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.app-page__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin: 2.75rem 0 2.5rem;
+}
+
+.app-page__card {
+  background: #2d2d2d;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.1rem 1rem 1.2rem;
+}
+
+.app-page__card-label {
+  margin: 0 0 0.45rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ff6b35;
+}
+
+.app-page__card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.app-page__card p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+.app-page__surfaces {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.app-page__surfaces-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+  color: #e5e7eb;
+}
+
+.app-page__surfaces-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.app-page__surfaces ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.app-page__surfaces li {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.92rem;
+}
+
+.app-page__surfaces strong {
+  color: #f9f9f9;
+}
+
+.app-page__surfaces span {
+  color: #9ca3af;
+}
+
+.app-page__split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.app-page__split article {
+  background: rgba(45, 45, 45, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.2rem;
+}
+
+.app-page__split h2 {
+  margin: 0.55rem 0 0.45rem;
+  font-size: 1rem;
+}
+
+.app-page__split p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.app-page__split a {
+  color: #ff6b35;
+}
+
+.app-page__bottom-cta {
+  margin-top: 2.5rem;
+  padding: 1.75rem 1.35rem;
+  border: 1px solid rgba(255, 107, 53, 0.35);
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), transparent 60%);
+  text-align: center;
+}
+
+.app-page__bottom-cta h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+}
+
+.app-page__bottom-cta p {
+  margin: 0 auto 1.1rem;
+  max-width: 28rem;
+  color: #b0b0b0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.app-page__foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.8rem;
+}
+
+.app-page__foot a {
+  color: #6b7280;
+  text-decoration: none;
+}
+
+.app-page__foot a:hover {
+  color: #ff6b35;
+}
+
+@media (max-width: 720px) {
+  .app-page__grid,
+  .app-page__split {
+    grid-template-columns: 1fr;
+  }
+
+  .app-page__surfaces li {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+
+  .app-page__nav {
+    gap: 0.75rem;
+    font-size: 0.78rem;
+  }
+}
+
+/* Light: follow document theme if waitlist light is active */
+html.theme-light .app-page,
+[data-theme='light'] .app-page {
+  background:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(255, 107, 53, 0.1), transparent 55%),
+    #f9f9f9;
+  color: #1a1a1a;
+}
+
+html.theme-light .app-page__top,
+[data-theme='light'] .app-page__top {
+  background: rgba(249, 249, 249, 0.9);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+html.theme-light .app-page__brand,
+[data-theme='light'] .app-page__brand {
+  color: #1a1a1a;
+}
+
+html.theme-light .app-page__card,
+[data-theme='light'] .app-page__card {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html.theme-light .app-page__card p,
+html.theme-light .app-page__surfaces span,
+html.theme-light .app-page__split p,
+html.theme-light .app-page__lede,
+[data-theme='light'] .app-page__card p,
+[data-theme='light'] .app-page__surfaces span,
+[data-theme='light'] .app-page__split p,
+[data-theme='light'] .app-page__lede {
+  color: #4b5563;
+}
+
+html.theme-light .app-page__surfaces li,
+[data-theme='light'] .app-page__surfaces li {
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+html.theme-light .app-page__split article,
+[data-theme='light'] .app-page__split article {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}

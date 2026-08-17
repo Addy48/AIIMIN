@@ -10,6 +10,7 @@ const WaitlistFooter = forwardRef(function WaitlistFooter(_props, ref) {
       </Link>
       <p>India-first life OS for students and early professionals.</p>
       <nav>
+        <Link to="/app">Android</Link>
         <Link to="/privacy">Privacy</Link>
         <Link to="/terms">Terms</Link>
         <Link to="/contact">Contact</Link>
