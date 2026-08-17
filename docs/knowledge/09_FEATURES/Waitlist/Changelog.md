@@ -1,3 +1,24 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
+### 2026-07-25 — Founding/tester window → 31 August
+- **What:** Priority 8 schedule: founding/tester registration close moved from 31 July to **31 August 2026**. Go-live remains end September 2026. Waitlist UI copy updated.
+- **Why:** Program 0 Product Readiness — Founder schedule update
+- **Files:** Waitlist.md, Product.md, Home, Business-Rules, deploy/LAUNCH-PLAN.md, Roadmap/Operational-Priorities.md, `frontend/src/components/waitlist/*`, `WaitlistLanding.jsx`
+- **Status:** shipped-docs + local UI
+
 ### 2026-07-17 — Brand colour blend polish
 - **What:** Softened ivory/peach atmosphere (ember mixed into parchment, multiply blooms, quieter grid/grain). Cursor spotlight warmer + slower ease. Roadmap spine removed (clean 2-up cards). Warm-tinted surfaces; softer close panel.
 - **Why:** User — blend colours; keep locked content looking fine
@@ -159,7 +180,7 @@
 
 - Deleted preview/prototype artifacts: `scripts/preview-waitlist-emails.mjs`, `deploy/email-preview/`.
 - Published Resend template `aiimin-waitlist-confirmation` (c6 Gradient Grove); sends via `RESEND_WAITLIST_TEMPLATE_ID` when set.
-- Member counter: **#123 of 300** (`WAITLIST_MEMBER_OFFSET=122`, `WAITLIST_DISPLAY_CAP=300`).
+- Member counter: **`#123` of 300** (`WAITLIST_MEMBER_OFFSET=122`, `WAITLIST_DISPLAY_CAP=300`).
 - Sync script: `node scripts/sync-resend-waitlist-template.mjs`
 - Test: `node scripts/test-email.mjs <email>`
 - Files: `server/lib/waitlistResendTemplate.js`, `server/lib/email.js`, `server/lib/waitlistEmailVariants.js`, `scripts/sync-resend-waitlist-template.mjs`, env examples
@@ -191,12 +212,12 @@
 - Subject: `#N — FirstName, it starts here`
 - Default env: `WAITLIST_EMAIL_THEME=c6`
 
-## 2026-07-07 (v8 final — website colors, Personal OS, count from #123)
+## 2026-07-07 (v8 final — website colors, Personal OS, count from `#123`)
 
 - Locked production template to **v8** only; removed v1–v7 variants.
 - **6 color themes** (c1–c6) preview gallery — website-native greens/parchment, no dark ink blocks.
 - Tagline: **Personal OS** (under AIIMIN). Headline: **It starts here.**
-- Member display: `position + 122` → first signup shows **#123 of 500** (`WAITLIST_MEMBER_OFFSET`, `WAITLIST_DISPLAY_CAP`).
+- Member display: `position + 122` → first signup shows **`#123` of 500** (`WAITLIST_MEMBER_OFFSET`, `WAITLIST_DISPLAY_CAP`).
 - Default theme: `WAITLIST_EMAIL_THEME=c1` (Forest Classic).
 - Preview: `node scripts/preview-waitlist-emails.mjs`
 
@@ -282,7 +303,7 @@
 ## 2026-07-07 (Waitlist email redesign — Nordic brand)
 
 - Rebuilt `waitlist_confirmation`, `waitlist_owner_notify`, and `waitlist_invite` in `server/lib/emailTemplates.js`.
-- Nordic palette (#F0EDE8 parchment, #1E5C3A forest accent), Familjen Grotesk + Figtree, hosted logo from `aiimin.in/AIIMIN_logo.svg`.
+- Nordic palette (`#F0EDE8` parchment, `#1E5C3A` forest accent), Familjen Grotesk + Figtree, hosted logo from `aiimin.in/AIIMIN_logo.svg`.
 - Confirmation: position badge, OS-ID block, founding perks list, referral link, founder note.
 - Owner notify: structured signup table + total count; feedback uses same branded layout.
 - Files: `server/lib/emailTemplates.js`, `server/routes/waitlist.js`
@@ -399,7 +420,7 @@
 - Restored: `/brand` now serves original **Human Momentum** brand page from git (`f443558e`) at `frontend/src/pages/Brand.jsx` with Logo + Wordmark; `App.js` import updated. OAuth compliance page remains at `legal/Brand.jsx` but is no longer the `/brand` route.
 - Fixed: desktop-notice banner moved inside mobile hero container (`.waitlist-desktop-notice`); hidden on desktop; no longer floats in left margin.
 - Fixed: pricing — Explore Free, Core ₹25, Pro ₹61, Elite ₹99; **only Elite** gets 16% waitlist discount (₹83/mo). Removed all 40% off / ₹15 Core / ₹37 Pro copy.
-- Changed: hero + mobile previews replaced dark dashboard screenshots with **light CSS mocks** matching waitlist nordic palette (#EDE4D3 tones, forest green accents).
+- Changed: hero + mobile previews replaced dark dashboard screenshots with **light CSS mocks** matching waitlist nordic palette (`#EDE4D3` tones, forest green accents).
 - Fixed: comparison chart minimum 8% bar width for AIIMIN rows; wider price column; updated caption with date disclaimer.
 - Changed: FAQ expanded — what AIIMIN is, website vs mobile app roadmap, desktop-first rationale; reordered logically.
 - Files: `frontend/src/pages/Brand.jsx`, `frontend/src/App.js`, `frontend/src/pages/WaitlistLanding.jsx`, `frontend/src/styles/waitlistLanding.css`, `frontend/src/components/waitlist/WaitlistForm.jsx`, `docs/knowledge/02-Features/Waitlist/Waitlist.md`, `docs/knowledge/00-Command-Center.md`

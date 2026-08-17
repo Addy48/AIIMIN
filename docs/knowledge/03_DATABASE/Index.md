@@ -6,6 +6,7 @@ One note per major table. Create/update when a change touches that table.
 |-------|------|
 | users / profiles | [[users]] |
 | daily_logs | [[daily_logs]] |
+| journal_entries | [[journal_entries]] |
 | calendar_events | [[calendar_events]] |
 | waitlist_emails | [[waitlist_emails]] |
 | user_oauth_tokens | [[user_oauth_tokens]] |

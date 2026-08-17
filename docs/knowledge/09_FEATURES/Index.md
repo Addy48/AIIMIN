@@ -1,10 +1,34 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
 # Features Index
+
+Constitutional parents: [[Maps of Content/Genesis]] · [[Maps of Content/Product]] · discovery [[Maps of Content/Research]] · behavior [[Maps of Content/Interaction-Architecture]]
+
+> [!important] Scope
+> [[Roadmap/AIIMIN-V1-Blueprint]] defines target V1. Feature notes record shipped, partial, and subsystem-specific state.
 
 | Feature | MOC | Status |
 |---------|-----|--------|
-| **Product guide (canonical)** | [[../01_PRODUCT/AIIMIN-Product-Guide]] | canonical-shipped |
+| **V1 Blueprint** | [[../Roadmap/AIIMIN-V1-Blueprint]] | v1.0-living |
+| Product guide (human overview) | [[../01_PRODUCT/AIIMIN-Product-Guide]] | overview |
 | Waitlist | [[Waitlist/Waitlist]] | google-oauth-bearer-fix-shipped |
+| Subscription (app ↔ web tiers) | [[Subscription/App-Web-Tiers]] | native-plan-sheet-gates-partial |
+| Subscription · Native Plan System (full design) | [[Subscription/Native-Plan-System]] | p0-p2-shipped |
 | Sports | [[Sports/Sports]] | dual-cricket-failover-live |
+| Mobile · Capacitor `/m` | [[Mobile/Capacitor-Android]] | capture-only |
+| Mobile · Native device insights | [[Mobile/Native-Device-Insights]] | steps-screen-deep-read-shipped |
 | Calendar | [[Calendar/Calendar]] | google-sync-tasks-auto-pull |
 | Account / Personalization | [[Account/Personalization]] | persona-presets-shipped |
 | Typography | [[Typography/Typography]] | token-rollout-phase1-complete |

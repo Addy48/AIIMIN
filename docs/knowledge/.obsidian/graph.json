@@ -1,0 +1,107 @@
+{
+  "collapse-filter": true,
+  "search": "-path:_templates -path:Archive -path:99_ARCHIVE",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": false,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:_templates",
+      "color": {
+        "a": 1,
+        "rgb": 3618615
+      }
+    },
+    {
+      "query": "path:99_ARCHIVE OR path:Archive",
+      "color": {
+        "a": 1,
+        "rgb": 3618615
+      }
+    },
+    {
+      "query": "path:Genesis",
+      "color": {
+        "a": 1,
+        "rgb": 16736821
+      }
+    },
+    {
+      "query": "path:Roadmap/UX-Architecture",
+      "color": {
+        "a": 1,
+        "rgb": 1098745
+      }
+    },
+    {
+      "query": "path:Roadmap/UX-Intelligence",
+      "color": {
+        "a": 1,
+        "rgb": 366953
+      }
+    },
+    {
+      "query": "path:Maps of Content",
+      "color": {
+        "a": 1,
+        "rgb": 3900150
+      }
+    },
+    {
+      "query": "path:Constitution OR path:Governance OR path:\"Interaction Architecture\" OR path:Glossary",
+      "color": {
+        "a": 1,
+        "rgb": 10986234
+      }
+    },
+    {
+      "query": "path:09_FEATURES OR path:01_PRODUCT",
+      "color": {
+        "a": 1,
+        "rgb": 16092171
+      }
+    },
+    {
+      "query": "path:17_NATIVE_APP_V2 OR path:02_ARCHITECTURE OR path:03_DATABASE OR path:04_API OR path:05_FRONTEND OR path:06_AI OR path:07_DEPLOYMENT",
+      "color": {
+        "a": 1,
+        "rgb": 9133046
+      }
+    },
+    {
+      "query": "path:08_DESIGN",
+      "color": {
+        "a": 1,
+        "rgb": 15485209
+      }
+    },
+    {
+      "query": "path:Roadmap",
+      "color": {
+        "a": 1,
+        "rgb": 1357990
+      }
+    },
+    {
+      "query": "path:15_MEMORY OR path:14_PROMPTS OR path:11_BUGS OR path:12_SPRINTS OR path:Founder OR path:16_DOCUMENTATION",
+      "color": {
+        "a": 1,
+        "rgb": 7041152
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": true,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.45,
+  "repelStrength": 10,
+  "linkStrength": 1,
+  "linkDistance": 250,
+  "scale": 1,
+  "close": false
+}

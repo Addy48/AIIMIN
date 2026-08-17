@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Small-icon: white silhouette only. Peak-A mark, spark as a node. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M4,20 L12,4 L20,20 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,8 m-1.6,0 a1.6,1.6 0 1,0 3.2,0 a1.6,1.6 0 1,0 -3.2,0" />
+</vector>

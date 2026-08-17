@@ -23,6 +23,7 @@ backend/.env.production
 
 # Build outputs
 frontend/build/
+.npm-cache/
 
 # Capacitor / Android local secrets
 frontend/android/local.properties
@@ -110,3 +111,15 @@ render.yaml
 !frontend/.env.production
 !frontend/.env.development
 !**/.env.production.example
+
+# Playwright gate deps
+.agents/skills/web-app-testing/node_modules/
+.agents/skills/web-app-testing/package-lock.json
+
+# Native Android V3 — local IDE / shot dumps
+native-android-v3/.kotlin/
+native-android-v3/.device-shots/
+native-android-v3/**/build/
+native-android-v3/.gradle/
+native-android/dist/
+deliverables/

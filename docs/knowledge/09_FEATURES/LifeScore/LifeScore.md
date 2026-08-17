@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-08-20
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Life Score
+
+## Parent
+
+- [[09_FEATURES/Index]]
 
 ## What it is
 
@@ -41,6 +60,12 @@ Seed/demo data in Supabase **does** move the dial when the user is logged in.
 
 ## Changelog
 
+### 2026-08-08 — Native v3 published score on Today + Score
+- **What:** When `PublishedLifeScoreStore.available`, Today shows server global + BODY/MIND/DISCIPLINE/MONEY/MOOD; Score shows "Published · server" above provisional rails. Local Composition UI remains fallback.
+- **Why:** ADR 2026-08-03 — clients never recompute the published figure; GraphSync hydrate must surface.
+- **Files:** `PublishedLifeScoreStore.kt`, `TodayScreen.kt`, `TodayViewModel.kt`, `ScoreScreen.kt`, `ScoreViewModel.kt`
+- **Status:** partial (compile verified; device QA pending)
+
 ### 2026-07-18 — API-backed score + wipe-life-data
 - **What:** Life Score reads habits/journals/goals/daily_logs/money from API so seed accounts show real mid/high scores. Added `POST /account/wipe-life-data` + Account Data UI to reset to empty while keeping login. Settings wipe now uses same API. Delta stored in localStorage.
 - **Why:** Seed account sat ~45–55 because engine ignored Supabase; user needed fresh-start without new account
@@ -52,3 +77,27 @@ Seed/demo data in Supabase **does** move the dial when the user is logged in.
 - **Why:** User saw 45–55 with heavy seed and suspected a bug
 - **Files:** this note
 - **Status:** superseded by API wiring above
+
+---
+
+## Structure (Phase V4)
+
+> Added 2026-08-20 so every living feature MOC shares the same skeleton. Fill stubs when next touching this feature.
+
+## Current state
+
+Status / scope / last meaningful change. Update when behavior changes.
+
+## Why this exists
+
+One job this feature serves for the user.
+
+## Contracts
+
+Routes, tables, env names (no secret values).
+
+## Related
+
+- [[09_FEATURES/Index|Features Index]]
+- [[15_MEMORY/Current-Context]]
+

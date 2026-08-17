@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AIIMIN — Mission Control</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F4EF;
+      --bg-card: #FFFFFF;
+      --green-deep: #1A3009;
+      --green-dark: #2D5016;
+      --green-mid: #4A7C2F;
+      --green-light: #8CC968;
+      --green-pale: #E8F0E0;
+      --text-primary: #1C1C1A;
+      --text-secondary: #6B6B62;
+      --text-muted: #9B9B92;
+      --border: #E8E7E1;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.05);
+      --radius: 12px;
+      --radius-lg: 16px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ─── NAVBAR ─────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(245, 244, 239, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 0;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--green-dark);
+      margin-right: 28px;
+      letter-spacing: -0.3px;
+    }
+
+    .nav-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--green-dark);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-logo-icon svg { width: 16px; height: 16px; fill: white; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+    }
+
+    .nav-link {
+      padding: 5px 10px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover { background: rgba(45, 80, 22, 0.08); color: var(--green-dark); }
+    .nav-link.active { background: var(--green-dark); color: white; font-weight: 600; }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    .nav-icon-btn {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+    }
+
+    .nav-icon-btn:hover { background: var(--border); color: var(--text-primary); }
+
+    .nav-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--green-dark);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ─── LAYOUT ─────────────────────────────────────────── */
+    .page-wrapper {
+      display: grid;
+      grid-template-columns: 1fr 296px;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+    }
+
+    .main-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+    /* ─── PAGE HEADER ─────────────────────────────────────── */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .page-header-left {}
+    .page-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      color: var(--text-primary);
+    }
+
+    .page-header-right {
+      text-align: right;
+    }
+
+    .page-date {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .page-week {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ─── DAILY INTELLIGENCE ROW ─────────────────────────── */
+    .intel-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .intel-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .intel-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+      border-color: var(--green-light);
+    }
+
+    .intel-card-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .intel-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    /* Mission card */
+    .mission-progress-ring {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+    }
+
+    .mission-progress-ring svg { width: 44px; height: 44px; }
+
+    .mission-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      margin-bottom: 10px;
+      max-width: 75%;
+    }
+
+    .mission-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      background: var(--green-pale);
+      color: var(--green-dark);
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* Pulse card */
+    .pulse-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .pulse-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 9px;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+
+    .pulse-stat-icon { font-size: 14px; }
+
+    .pulse-stat-info {}
+    .pulse-stat-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .pulse-stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Milestone card */
+    .milestone-days {
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--green-dark);
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .milestone-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .milestone-progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .milestone-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green-mid), var(--green-dark));
+      border-radius: 10px;
+      width: 65%;
+    }
+
+    .milestone-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* ─── EXECUTION WINDOW ───────────────────────────────── */
+    .exec-window {
+      background: linear-gradient(135deg, #1A3009 0%, #2D5016 50%, #3A6620 100%);
+      border-radius: var(--radius-lg);
+      padding: 22px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      min-height: 100px;
+    }
+
+    .exec-window::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .exec-window::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 20%;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, rgba(139,201,104,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .exec-left {}
+
+    .exec-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 6px;
+    }
+
+    .exec-countdown {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .exec-days {
+      font-size: 56px;
+      font-weight: 800;
+      color: white;
+      letter-spacing: -3px;
+      line-height: 1;
+      animation: pulse-num 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-num {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+
+    .exec-days-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.6);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .exec-target {
+      margin-top: 4px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .exec-target-name {
+      color: #8CC968;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .exec-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .exec-mini-stats {
+      display: flex;
+      gap: 20px;
+    }
+
+    .exec-mini-stat {
+      text-align: right;
+    }
+
+    .exec-mini-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .exec-mini-label {
+      font-size: 9px;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .exec-btn {
+      background: white;
+      color: var(--green-dark);
+      border: none;
+      border-radius: 10px;
+      padding: 9px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .exec-btn:hover {
+      background: var(--green-pale);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .exec-dots {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .exec-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+    }
+
+    .exec-dot.active {
+      width: 20px;
+      border-radius: 3px;
+      background: white;
+    }
+
+    /* ─── QUICK CAPTURE ──────────────────────────────────── */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .section-link {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green-mid);
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+
+    .section-link:hover { color: var(--green-dark); }
+
+    .quick-capture-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .quick-actions-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 8px;
+      border-radius: 10px;
+      border: 1.5px dashed var(--border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+    }
+
+    .quick-action:hover {
+      border-color: var(--green-light);
+      background: var(--green-pale);
+      transform: translateY(-1px);
+    }
+
+    .quick-action-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .quick-action-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .recent-wins-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .recent-wins-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .win-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .win-pill:hover {
+      border-color: var(--green-light);
+      background: var(--green-pale);
+      color: var(--green-dark);
+    }
+
+    .win-pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green-light);
+    }
+
+    /* ─── MASTER PLANNER ─────────────────────────────────── */
+    .planner-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .planner-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .planner-title-wrap {}
+    .planner-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .planner-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--green-mid);
+      background: var(--green-pale);
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+
+    .planner-week-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .planner-nav-btn {
+      width: 24px; height: 24px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+      font-size: 10px;
+    }
+
+    .planner-nav-btn:hover { background: var(--border); color: var(--text-primary); }
+
+    .planner-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .day-card {
+      border-radius: 10px;
+      padding: 10px 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      min-height: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .day-card:hover {
+      border-color: var(--green-light);
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .day-card.today {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+    }
+
+    .day-card.past {
+      opacity: 0.75;
+    }
+
+    .day-name {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .day-card.today .day-name { color: rgba(255,255,255,0.55); }
+
+    .day-num {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .day-card.today .day-num { color: white; }
+
+    .day-tasks { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+
+    .day-task {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 5px;
+      border-radius: 5px;
+      font-size: 9px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .day-task.habit { background: rgba(74, 124, 47, 0.12); color: var(--green-mid); }
+    .day-task.goal { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+    .day-task.focus { background: rgba(168, 85, 247, 0.1); color: #A855F7; }
+    .day-task.done { opacity: 0.6; }
+
+    .day-card.today .day-task { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+
+    .day-dot-row {
+      display: flex;
+      gap: 3px;
+      margin-top: auto;
+    }
+
+    .day-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--green-light);
+    }
+
+    .day-card.past .day-dot { background: var(--green-light); }
+
+    .day-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.6);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-top: auto;
+    }
+
+    .day-add:hover { background: rgba(255,255,255,0.25); color: white; }
+
+    /* ─── RIGHT SIDEBAR ──────────────────────────────────── */
+    .sidebar { display: flex; flex-direction: column; gap: 14px; }
+
+    .sidebar-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+    }
+
+    .sidebar-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-card-title {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sidebar-card-title .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green-light);
+    }
+
+    .sidebar-card-action {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--green-mid);
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .sidebar-card-action:hover { color: var(--green-dark); }
+
+    /* Life Score */
+    .life-score-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .life-score-donut { position: relative; flex-shrink: 0; }
+    .life-score-donut svg { width: 72px; height: 72px; }
+
+    .life-score-label {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .life-score-num {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--green-dark);
+      line-height: 1;
+    }
+
+    .life-score-pct {
+      font-size: 8px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .life-score-breakdown { flex: 1; }
+
+    .life-score-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .life-score-item-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .life-score-item-label .swatch {
+      width: 8px; height: 8px;
+      border-radius: 2px;
+    }
+
+    .life-score-item-val {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Priorities */
+    .priority-list { display: flex; flex-direction: column; gap: 7px; }
+
+    .priority-add {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border: 1.5px dashed var(--border);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .priority-add:hover { border-color: var(--green-light); color: var(--green-mid); }
+
+    .priority-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .priority-check {
+      width: 15px; height: 15px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      margin-top: 1px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .priority-check:hover { border-color: var(--green-mid); }
+    .priority-check.done { background: var(--green-mid); border-color: var(--green-mid); }
+
+    .priority-text {
+      font-size: 12px;
+      color: var(--text-primary);
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    /* Streak Monitor */
+    .streak-list { display: flex; flex-direction: column; gap: 7px; }
+
+    .streak-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .streak-item:last-child { border-bottom: none; }
+
+    .streak-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .streak-icon { font-size: 14px; }
+
+    .streak-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .streak-badge {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .streak-badge.new { color: var(--text-muted); }
+    .streak-badge.hot { color: #F97316; }
+
+    /* Trajectory */
+    .traj-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .traj-item {}
+
+    .traj-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .traj-item-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .traj-period {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .traj-remaining {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .traj-pct {
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .traj-bar {
+      height: 5px;
+      background: var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .traj-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1s ease;
+    }
+
+    /* One Liner */
+    .one-liner-wrap {
+      display: flex;
+      gap: 8px;
+    }
+
+    .one-liner-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .one-liner-input:focus { border-color: var(--green-mid); background: white; }
+    .one-liner-input::placeholder { color: var(--text-muted); }
+
+    .one-liner-btn {
+      padding: 8px 14px;
+      background: var(--green-dark);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .one-liner-btn:hover { background: var(--green-deep); }
+
+    /* ─── SCROLLBAR ──────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAVBAR ───────────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 16 16"><path d="M8 2L3 7h3v7h4V7h3L8 2z"/></svg>
+    </div>
+    AIIMIN
+  </div>
+
+  <div class="nav-links">
+    <a class="nav-link active">Today</a>
+    <a class="nav-link">Habits</a>
+    <a class="nav-link">Goals</a>
+    <a class="nav-link">Journal</a>
+    <a class="nav-link">Finance</a>
+    <a class="nav-link">Family</a>
+    <a class="nav-link">Calendar</a>
+    <a class="nav-link">Placement</a>
+    <a class="nav-link">Sports</a>
+    <a class="nav-link">Discipline</a>
+    <a class="nav-link">Focus</a>
+    <a class="nav-link">Lab</a>
+  </div>
+
+  <div class="nav-right">
+    <button class="nav-icon-btn" title="Toggle Theme">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+    </button>
+    <button class="nav-icon-btn" title="Notifications">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <div class="nav-avatar">J</div>
+  </div>
+</nav>
+
+<!-- ─── MAIN LAYOUT ──────────────────────────────────────── -->
+<div class="page-wrapper">
+
+  <!-- LEFT MAIN COLUMN -->
+  <div class="main-col">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="page-label">Operational Intelligence</div>
+        <div class="page-title">Day Control.</div>
+      </div>
+      <div class="page-header-right">
+        <div class="page-date">Friday, June 12</div>
+        <div class="page-week">Week 24 · AIIMIN v3</div>
+      </div>
+    </div>
+
+    <!-- Daily Intelligence Row (replaces the 7 icon cards) -->
+    <div class="intel-row">
+
+      <!-- Card 1: Today's Mission -->
+      <div class="intel-card">
+        <div class="intel-card-label">Today's Mission</div>
+
+        <!-- SVG Progress Ring -->
+        <div class="mission-progress-ring">
+          <svg viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="17" fill="none" stroke="#E8E7E1" stroke-width="4"/>
+            <circle cx="22" cy="22" r="17" fill="none" stroke="#4A7C2F" stroke-width="4"
+              stroke-dasharray="106.8" stroke-dashoffset="28.8"
+              stroke-linecap="round"
+              transform="rotate(-90 22 22)"/>
+            <text x="22" y="22" text-anchor="middle" dominant-baseline="middle"
+              font-size="9" font-weight="800" fill="#2D5016">73%</text>
+          </svg>
+        </div>
+
+        <div class="intel-card-title">Ship the sports section</div>
+        <div class="mission-desc">Fix API caching + redesign layout for multi-sport view</div>
+        <span class="mission-tag">Top Priority · Today</span>
+      </div>
+
+      <!-- Card 2: Life Pulse -->
+      <div class="intel-card">
+        <div class="intel-card-label">Life Pulse</div>
+        <div class="pulse-stats">
+          <div class="pulse-stat">
+            <span class="pulse-stat-icon">🔥</span>
+            <div class="pulse-stat-info">
+              <div class="pulse-stat-val">4 / 6</div>
+              <div class="pulse-stat-label">Habits</div>
+            </div>
+          </div>
+          <div class="pulse-stat">
+            <span class="pulse-stat-icon">⚡</span>
+            <div class="pulse-stat-info">
+              <div class="pulse-stat-val">7 days</div>
+              <div class="pulse-stat-label">Streak</div>
+            </div>
+          </div>
+          <div class="pulse-stat">
+            <span class="pulse-stat-icon">💰</span>
+            <div class="pulse-stat-info">
+              <div class="pulse-stat-val">+$42</div>
+              <div class="pulse-stat-label">Saved today</div>
+            </div>
+          </div>
+          <div class="pulse-stat">
+            <span class="pulse-stat-icon">😴</span>
+            <div class="pulse-stat-info">
+              <div class="pulse-stat-val">7.2 h</div>
+              <div class="pulse-stat-label">Sleep</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Next Milestone -->
+      <div class="intel-card">
+        <div class="intel-card-label">Next Milestone</div>
+        <div class="milestone-days">43</div>
+        <div class="milestone-desc">Days until Placements — July 26</div>
+        <div class="milestone-progress-bar">
+          <div class="milestone-progress-fill"></div>
+        </div>
+        <div class="milestone-sub">65% of prep window complete · 12 modules done</div>
+      </div>
+    </div>
+
+    <!-- Execution Window (Enhanced) -->
+    <div class="exec-window">
+      <div class="exec-left">
+        <div class="exec-label">Execution Window</div>
+        <div class="exec-countdown">
+          <div class="exec-days">43</div>
+          <div class="exec-days-label">Days</div>
+        </div>
+        <div class="exec-target">
+          Until July 26 ·
+          <span class="exec-target-name">Placements</span>
+        </div>
+      </div>
+
+      <div class="exec-right">
+        <div class="exec-mini-stats">
+          <div class="exec-mini-stat">
+            <div class="exec-mini-val">7</div>
+            <div class="exec-mini-label">Tasks done</div>
+          </div>
+          <div class="exec-mini-stat">
+            <div class="exec-mini-val">12</div>
+            <div class="exec-mini-label">Modules</div>
+          </div>
+          <div class="exec-mini-stat">
+            <div class="exec-mini-val">83%</div>
+            <div class="exec-mini-label">On track</div>
+          </div>
+        </div>
+        <button class="exec-btn">
+          Launch Portal →
+        </button>
+        <div class="exec-dots">
+          <div class="exec-dot active"></div>
+          <div class="exec-dot"></div>
+          <div class="exec-dot"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Capture (replaces Productivity Labs) -->
+    <div>
+      <div class="section-header">
+        <div class="section-title">Quick Capture</div>
+        <div class="section-link">Smart Log →</div>
+      </div>
+      <div class="quick-capture-card">
+        <div class="quick-actions-row">
+          <button class="quick-action">
+            <div class="quick-action-icon" style="background: #E8F5E0;">✅</div>
+            <div class="quick-action-label">Log a Habit</div>
+          </button>
+          <button class="quick-action">
+            <div class="quick-action-icon" style="background: #EEF2FF;">✏️</div>
+            <div class="quick-action-label">Journal Entry</div>
+          </button>
+          <button class="quick-action">
+            <div class="quick-action-icon" style="background: #FFF7ED;">💸</div>
+            <div class="quick-action-label">Track Expense</div>
+          </button>
+          <button class="quick-action">
+            <div class="quick-action-icon" style="background: #FDF2F8;">🎯</div>
+            <div class="quick-action-label">Add Goal</div>
+          </button>
+        </div>
+
+        <div class="recent-wins-label">Recent Wins</div>
+        <div class="recent-wins-row">
+          <div class="win-pill">
+            <div class="win-pill-dot"></div>
+            🔥 Morning Workout — 2h ago
+          </div>
+          <div class="win-pill">
+            <div class="win-pill-dot" style="background: #818CF8;"></div>
+            ✏️ Journal — yesterday
+          </div>
+          <div class="win-pill">
+            <div class="win-pill-dot" style="background: #FB923C;"></div>
+            💰 Saved ₹500 — 3h ago
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Master Planner (Redesigned) -->
+    <div>
+      <div class="section-header">
+        <div class="planner-title-wrap">
+          <div class="section-title">Master Planner</div>
+        </div>
+        <div class="planner-week-nav">
+          <button class="planner-nav-btn">‹</button>
+          Week 24
+          <button class="planner-nav-btn">›</button>
+        </div>
+      </div>
+
+      <div class="planner-card">
+        <div class="planner-header">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);">Command Timeline</div>
+            <span class="planner-badge">✦ AI Schedule</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);">3 tasks suggested for today</div>
+        </div>
+
+        <div class="planner-grid">
+
+          <!-- MON — past, done -->
+          <div class="day-card past">
+            <div class="day-name">Mon</div>
+            <div class="day-num">8</div>
+            <div class="day-tasks">
+              <div class="day-task habit done">✓ Workout</div>
+              <div class="day-task goal done">✓ DSA Ch.4</div>
+              <div class="day-task focus done">✓ Deep Work</div>
+            </div>
+            <div class="day-dot-row">
+              <div class="day-dot"></div>
+              <div class="day-dot"></div>
+              <div class="day-dot"></div>
+            </div>
+          </div>
+
+          <!-- TUE — past -->
+          <div class="day-card past">
+            <div class="day-name">Tue</div>
+            <div class="day-num">9</div>
+            <div class="day-tasks">
+              <div class="day-task habit done">✓ Read</div>
+              <div class="day-task habit done">✓ Journal</div>
+            </div>
+            <div class="day-dot-row">
+              <div class="day-dot"></div>
+              <div class="day-dot"></div>
+            </div>
+          </div>
+
+          <!-- WED — past -->
+          <div class="day-card past">
+            <div class="day-name">Wed</div>
+            <div class="day-num">10</div>
+            <div class="day-tasks">
+              <div class="day-task habit done">✓ Workout</div>
+              <div class="day-task goal done">✓ Mock test</div>
+              <div class="day-task goal done">✓ Resume</div>
+            </div>
+            <div class="day-dot-row">
+              <div class="day-dot"></div>
+              <div class="day-dot"></div>
+              <div class="day-dot"></div>
+            </div>
+          </div>
+
+          <!-- THU — past -->
+          <div class="day-card past">
+            <div class="day-name">Thu</div>
+            <div class="day-num">11</div>
+            <div class="day-tasks">
+              <div class="day-task habit done">✓ Water</div>
+              <div class="day-task focus done">✓ Pomodoro</div>
+            </div>
+            <div class="day-dot-row">
+              <div class="day-dot"></div>
+              <div class="day-dot"></div>
+            </div>
+          </div>
+
+          <!-- FRI — TODAY -->
+          <div class="day-card today">
+            <div class="day-name">Fri</div>
+            <div class="day-num">12</div>
+            <div class="day-tasks">
+              <div class="day-task">🏃 Workout</div>
+              <div class="day-task">🎯 Sports Fix</div>
+              <div class="day-task">📖 Read 30m</div>
+            </div>
+            <div class="day-add">+ Add</div>
+          </div>
+
+          <!-- SAT — future -->
+          <div class="day-card">
+            <div class="day-name">Sat</div>
+            <div class="day-num">13</div>
+            <div class="day-tasks">
+              <div class="day-task habit" style="opacity:0.5;">Rest Day</div>
+            </div>
+            <div class="day-add" style="color:var(--text-muted);background:rgba(0,0,0,0.04);margin-top:auto;">+ Plan</div>
+          </div>
+
+          <!-- SUN — future -->
+          <div class="day-card">
+            <div class="day-name">Sun</div>
+            <div class="day-num">14</div>
+            <div class="day-tasks">
+              <div class="day-task focus" style="opacity:0.5;">Week Review</div>
+            </div>
+            <div class="day-add" style="color:var(--text-muted);background:rgba(0,0,0,0.04);margin-top:auto;">+ Plan</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-col -->
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- Life Score (NEW) -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">
+        <div class="sidebar-card-title">
+          <span class="dot"></span>
+          Life Score
+        </div>
+        <div class="sidebar-card-action">Details →</div>
+      </div>
+
+      <div class="life-score-wrap">
+        <div class="life-score-donut">
+          <svg viewBox="0 0 72 72">
+            <!-- BG circle -->
+            <circle cx="36" cy="36" r="28" fill="none" stroke="#E8E7E1" stroke-width="6"/>
+            <!-- Habits (green) -->
+            <circle cx="36" cy="36" r="28" fill="none" stroke="#4A7C2F" stroke-width="6"
+              stroke-dasharray="175.9" stroke-dashoffset="79.2"
+              stroke-linecap="round" transform="rotate(-90 36 36)"/>
+            <!-- Finance (blue) -->
+            <circle cx="36" cy="36" r="28" fill="none" stroke="#60A5FA" stroke-width="6"
+              stroke-dasharray="175.9" stroke-dashoffset="123.1"
+              stroke-linecap="round" transform="rotate(-90 36 36)" opacity="0"/>
+          </svg>
+          <div class="life-score-label">
+            <div class="life-score-num">73</div>
+            <div class="life-score-pct">score</div>
+          </div>
+        </div>
+        <div class="life-score-breakdown">
+          <div class="life-score-item">
+            <div class="life-score-item-label">
+              <div class="swatch" style="background:#4A7C2F;"></div>
+              Habits
+            </div>
+            <div class="life-score-item-val">78%</div>
+          </div>
+          <div class="life-score-item">
+            <div class="life-score-item-label">
+              <div class="swatch" style="background:#60A5FA;"></div>
+              Goals
+            </div>
+            <div class="life-score-item-val">82%</div>
+          </div>
+          <div class="life-score-item">
+            <div class="life-score-item-label">
+              <div class="swatch" style="background:#FB923C;"></div>
+              Finance
+            </div>
+            <div class="life-score-item-val">65%</div>
+          </div>
+          <div class="life-score-item">
+            <div class="life-score-item-label">
+              <div class="swatch" style="background:#A855F7;"></div>
+              Learning
+            </div>
+            <div class="life-score-item-val">70%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Command Center / Priorities -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">
+        <div class="sidebar-card-title">
+          <span class="dot"></span>
+          Command Center
+        </div>
+        <div class="sidebar-card-action">Fri, 12 Jun</div>
+      </div>
+
+      <div style="font-size:9px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">Today's Priorities</div>
+
+      <div class="priority-list">
+        <div class="priority-item">
+          <div class="priority-check done"></div>
+          <div class="priority-text">Fix sports API caching layer</div>
+        </div>
+        <div class="priority-item">
+          <div class="priority-check"></div>
+          <div class="priority-text">Redesign sports page layout</div>
+        </div>
+        <div class="priority-item">
+          <div class="priority-check"></div>
+          <div class="priority-text">Build yearly habit matrix</div>
+        </div>
+        <div class="priority-add">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add priority
+        </div>
+      </div>
+    </div>
+
+    <!-- Streak Monitor -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">
+        <div class="sidebar-card-title">🔥 Streak Monitor</div>
+        <div class="sidebar-card-action">All →</div>
+      </div>
+      <div class="streak-list">
+        <div class="streak-item">
+          <div class="streak-left">
+            <span class="streak-icon">🏃</span>
+            <span class="streak-name">Morning Workout</span>
+          </div>
+          <div class="streak-badge new">new · 0</div>
+        </div>
+        <div class="streak-item">
+          <div class="streak-left">
+            <span class="streak-icon">📚</span>
+            <span class="streak-name">Read 30 mins</span>
+          </div>
+          <div class="streak-badge new">new · 0</div>
+        </div>
+        <div class="streak-item">
+          <div class="streak-left">
+            <span class="streak-icon">✍️</span>
+            <span class="streak-name">Journaling</span>
+          </div>
+          <div class="streak-badge hot">🔥 7</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- One Liner -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">
+        <div class="sidebar-card-title">✍️ One Liner</div>
+      </div>
+      <div class="one-liner-wrap">
+        <input class="one-liner-input" type="text" placeholder="What's on your mind right now?" />
+        <button class="one-liner-btn">Log +</button>
+      </div>
+    </div>
+
+    <!-- Trajectory Execution -->
+    <div class="sidebar-card">
+      <div class="sidebar-card-header">
+        <div class="sidebar-card-title">
+          <span class="dot"></span>
+          Trajectory Execution
+        </div>
+        <div class="sidebar-card-action" style="color:#F97316;font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">LIVE</div>
+      </div>
+      <div class="traj-list">
+        <div class="traj-item">
+          <div class="traj-item-header">
+            <div class="traj-item-left">
+              <span class="traj-period">DAY</span>
+              <span class="traj-remaining">9h 10m left</span>
+            </div>
+            <span class="traj-pct" style="color:#4A7C2F;">61.53%</span>
+          </div>
+          <div class="traj-bar">
+            <div class="traj-fill" style="width:61.53%;background:linear-gradient(90deg,#8CC968,#4A7C2F);"></div>
+          </div>
+        </div>
+        <div class="traj-item">
+          <div class="traj-item-header">
+            <div class="traj-item-left">
+              <span class="traj-period">WEEK</span>
+              <span class="traj-remaining">3d left</span>
+            </div>
+            <span class="traj-pct" style="color:#60A5FA;">65.93%</span>
+          </div>
+          <div class="traj-bar">
+            <div class="traj-fill" style="width:65.93%;background:linear-gradient(90deg,#93C5FD,#3B82F6);"></div>
+          </div>
+        </div>
+        <div class="traj-item">
+          <div class="traj-item-header">
+            <div class="traj-item-left">
+              <span class="traj-period">MONTH</span>
+              <span class="traj-remaining">19d left</span>
+            </div>
+            <span class="traj-pct" style="color:#EC4899;">38.72%</span>
+          </div>
+          <div class="traj-bar">
+            <div class="traj-fill" style="width:38.72%;background:linear-gradient(90deg,#F9A8D4,#EC4899);"></div>
+          </div>
+        </div>
+        <div class="traj-item">
+          <div class="traj-item-header">
+            <div class="traj-item-left">
+              <span class="traj-period">YEAR</span>
+              <span class="traj-remaining">203d left</span>
+            </div>
+            <span class="traj-pct" style="color:#F97316;">44.55%</span>
+          </div>
+          <div class="traj-bar">
+            <div class="traj-fill" style="width:44.55%;background:linear-gradient(90deg,#FED7AA,#F97316);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+</div><!-- /page-wrapper -->
+
+</body>
+</html>

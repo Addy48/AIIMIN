@@ -1,0 +1,42 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - 'file.inFolder("10_DECISIONS")'
+
+properties:
+  file.name:
+    displayName: "Decision"
+  status:
+    displayName: "Status"
+  owner:
+    displayName: "Owner"
+  last_reviewed:
+    displayName: "Reviewed"
+  derived_from:
+    displayName: "Derived from"
+
+views:
+  - type: table
+    name: "Open"
+    filters:
+      or:
+        - 'status == "open"'
+        - 'status == "proposed"'
+        - 'status == "draft"'
+    order:
+      - file.name
+      - status
+      - owner
+      - last_reviewed
+
+  - type: table
+    name: "Accepted"
+    filters:
+      or:
+        - 'status == "accepted"'
+        - 'status == "active"'
+    order:
+      - file.name
+      - status
+      - last_reviewed
+      - derived_from

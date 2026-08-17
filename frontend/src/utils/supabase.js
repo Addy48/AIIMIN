@@ -96,6 +96,21 @@ class QueryBuilder {
         return this;
     }
 
+    // supabase-js compat: accept an AbortSignal without breaking the chain.
+    // The API-backed executor is fire-and-forget; we honor the signal by
+    // dropping the result if it aborted (checked by callers via signal.aborted).
+    abortSignal(signal) {
+        this._abortSignal = signal;
+        return this;
+    }
+
+    // supabase-js compat: .range(from, to) → offset + limit for the API.
+    range(from, to) {
+        this._offset = from;
+        this._limit = (to - from) + 1;
+        return this;
+    }
+
     maybeSingle() {
         this._maybeSingle = true;
         return this;
@@ -158,6 +173,7 @@ class QueryBuilder {
         if (Object.keys(this._in).length) params.in = JSON.stringify(this._in);
         if (Object.keys(this._is).length) params.is = JSON.stringify(this._is);
         if (this._limit != null) params.limit = String(this._limit);
+        if (this._offset != null) params.offset = String(this._offset);
         if (this._maybeSingle || this._single) params.maybeSingle = 'true';
         if (this._countOnly) params.count = 'true';
 

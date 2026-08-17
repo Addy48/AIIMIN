@@ -1,0 +1,841 @@
+{
+  "meta": {
+    "document": "IA Principles Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+    "source_version": "3.0",
+    "source_status": "FROZEN",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-094…GOV-103",
+    "gov_id_range_referenced": "GOV-001…GOV-093 (prior; referenced only)",
+    "decision_count_new": 10,
+    "recommendation_count": 7,
+    "existing_gov_referenced_count": 19,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "constitution_untouched": true,
+    "non_negotiables_untouched": true,
+    "standard_untouched": true
+  },
+  "existing_gov_references": [
+    {
+      "ia": "IA-3",
+      "gov": [
+        "GOV-020",
+        "GOV-080"
+      ],
+      "note": "One primitive, many surfaces; anti-picker proliferation"
+    },
+    {
+      "ia": "IA-5",
+      "gov": [
+        "GOV-032"
+      ],
+      "note": "Progressive disclosure by stakes"
+    },
+    {
+      "ia": "IA-8",
+      "gov": [
+        "GOV-013",
+        "GOV-041",
+        "GOV-085",
+        "GOV-092"
+      ],
+      "note": "Device ceilings as product law (/m, native, marketing honesty)"
+    },
+    {
+      "ia": "IA-2 (intent core)",
+      "gov": [
+        "GOV-027",
+        "GOV-028"
+      ],
+      "note": "Intent over interface + capture-first; five named intents elevated in GOV-095"
+    },
+    {
+      "ia": "IA-1 (graph integrity)",
+      "gov": [
+        "GOV-019",
+        "GOV-043"
+      ],
+      "note": "One linking system; IA-1 elevates graph-over-folders presentation as GOV-094"
+    },
+    {
+      "ia": "IA-4 (derived calm)",
+      "gov": [
+        "GOV-029",
+        "GOV-052",
+        "GOV-009"
+      ],
+      "note": "Calm read / structure-after-capture / Life Score derived; layers elevated in GOV-096"
+    },
+    {
+      "ia": "IA-6 (forced taxonomy ban)",
+      "gov": [
+        "GOV-008",
+        "GOV-075"
+      ],
+      "note": "No form-builder/sidebar sermons; no duplicate nav; free-pin elevated in GOV-097"
+    },
+    {
+      "ia": "IA-7 (calm read)",
+      "gov": [
+        "GOV-029"
+      ],
+      "note": "Read surfaces stay calm; consolidation rule elevated in GOV-098"
+    },
+    {
+      "ia": "IA-11 (GoodNotes mush)",
+      "gov": [
+        "GOV-010"
+      ],
+      "note": "GoodNotes PWA refuse; concept split elevated in GOV-101"
+    },
+    {
+      "ia": "IA-12 (social refuse)",
+      "gov": [
+        "GOV-005",
+        "GOV-078"
+      ],
+      "note": "No social feed/auto-post; timeline chronology elevated in GOV-102"
+    },
+    {
+      "ia": "Purpose/Reasoning (free-pin + consolidated read locked)",
+      "gov": [
+        "GOV-075",
+        "GOV-029"
+      ],
+      "note": "Reasoning asserts free-pin + consolidated read already locked — elevated as GOV-097/GOV-098 this pass; cite GOV-075/GOV-029 as prior anchors"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-094",
+      "title": "Graph-over-folders IA — edges not table names",
+      "category": "IA — Graph Structure",
+      "domain": "ux",
+      "decision": "Life entities relate through edges. IA must express relationships (e.g. goal→habit→log→score) rather than forcing users to know table names or navigate as folders mirroring engineering schemas.",
+      "reason": "Principle IA-1 — Graph over folders. Protects connected life-graph claim.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-019",
+        "GOV-043",
+        "GOV-001",
+        "GOV-004"
+      ],
+      "blocks": [
+        "Information Architecture",
+        "Entity Model UX",
+        "Android Navigation",
+        "Master Product Specification"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "AI",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-1 — Graph over folders"
+          ],
+          "quote": "Life entities relate through edges. IA must express relationships (goal→habit→log→score) rather than forcing users to know table names."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Reasoning"
+          ],
+          "quote": "AIIMIN's core claim is a connected life graph. IA that mirrors engineering tables or vendor modules will recreate the fragmentation the product exists to solve."
+        }
+      ],
+      "implementation_impact": "Nav/labels/entity UIs show relationships; forbid folder-tree IA that mirrors DB table names.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-095",
+      "title": "Primary IA intents: capture, review, plan, prepare, configure",
+      "category": "IA — Intent Entry Points",
+      "domain": "ux",
+      "decision": "Primary entry points serve intents: capture, review, plan, prepare, configure. Domain nouns (Finance, Family) are valid destinations, not mandatory first gates for every utterance.",
+      "reason": "Principle IA-2 — Intent before taxonomy.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-027",
+        "GOV-028",
+        "GOV-002"
+      ],
+      "blocks": [
+        "Primary Navigation Map",
+        "Bottom Nav",
+        "Command Palette Routing",
+        "Android Navigation"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "AI",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-2 — Intent before taxonomy"
+          ],
+          "quote": "Primary entry points serve intents: capture, review, plan, prepare, configure. Domain nouns (Finance, Family) are valid destinations, not mandatory first gates for every utterance."
+        }
+      ],
+      "implementation_impact": "Needs destination map under each intent (closes M-001 / GOV-075 partially). Until then: reject taxonomy-first utterance gates.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-096",
+      "title": "Four IA node layers: Capture, Execution, Planning, Derived",
+      "category": "IA — Node Layers",
+      "domain": "ux",
+      "decision": "IA distinguishes four layers: Capture (fast write; minimal fields), Execution (direct action), Planning (direction first), Derived (calm read; no fake input). Do not force derived-node UI patterns onto capture nodes.",
+      "reason": "Principle IA-4 — Capture nodes vs derived nodes.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-028",
+        "GOV-029",
+        "GOV-052",
+        "GOV-032"
+      ],
+      "blocks": [
+        "Page Blueprints",
+        "Entity Intake",
+        "Life Score UX",
+        "Capture UX"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "AI",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-4 — Capture nodes vs derived nodes"
+          ],
+          "quote": "Do not force derived-node UI patterns onto capture nodes."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-4 — Capture nodes vs derived nodes — table"
+          ],
+          "quote": "Capture | Journal, notes, transactions, logs | Fast write; minimal fields"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-4 — Capture nodes vs derived nodes — table"
+          ],
+          "quote": "Derived | Life Score, insights, reports | Calm read; no fake input"
+        }
+      ],
+      "implementation_impact": "Every entity/page declares layer; capture UIs stay minimal; derived surfaces never fake write controls.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-097",
+      "title": "User-owned masthead free-pin navigation (bounded); honest More",
+      "category": "IA — Navigation Ownership",
+      "domain": "ux",
+      "decision": "Masthead free-pin (bounded) beats forced sidebar taxonomy sermons. Overflow is honest (\"More\") — do not hide essential capture behind personalization debt.",
+      "reason": "Principle IA-6 — User-owned navigation. Reasoning states free-pin already locked.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-008",
+        "GOV-075",
+        "GOV-066",
+        "GOV-028"
+      ],
+      "blocks": [
+        "Masthead Spec",
+        "Sidebar Spec",
+        "Android Navigation",
+        "Onboarding Defaults"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-6 — User-owned navigation"
+          ],
+          "quote": "Masthead free-pin (bounded) beats forced sidebar taxonomy sermons. Overflow is honest (\"More\") — do not hide essential capture behind personalization debt."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Reasoning"
+          ],
+          "quote": "Free-pin navigation and consolidated read surfaces are already locked decisions; principles must protect them."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "Free-pin chaos without sensible defaults for new users."
+        }
+      ],
+      "implementation_impact": "Implement bounded free-pin + More overflow. Needs founder defaults for new users (Known risks). Complements GOV-075; does not alone name primary destinations.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-098",
+      "title": "Consolidate read surfaces; new dashboard must kill an old one",
+      "category": "IA — Read Surface Consolidation",
+      "domain": "ux",
+      "decision": "When two pages answer the same \"how am I doing?\" question, merge. Insights redirecting into Reports is the template. New dashboard pages require killing an old one.",
+      "reason": "Principle IA-7 — Consolidate read surfaces.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-029",
+        "GOV-076",
+        "GOV-034"
+      ],
+      "blocks": [
+        "Dashboard Proposals",
+        "Insights/Reports IA",
+        "Page Blueprints"
+      ],
+      "referenced_by": [
+        "P8",
+        "Website",
+        "Android Build",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-7 — Consolidate read surfaces"
+          ],
+          "quote": "When two pages answer the same \"how am I doing?\" question, merge. Insights redirecting into Reports is the template. New dashboard pages require killing an old one."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "\"Everything page\" dumping grounds."
+        }
+      ],
+      "implementation_impact": "Feature intake for new dashboards must name the page killed or the merge target. Ban everything-page dumps.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-099",
+      "title": "Command Palette / universal search are first-class IA",
+      "category": "IA — Routing Spine",
+      "domain": "ux",
+      "decision": "Command Palette / universal search are not power-user Easter eggs; they are the routing spine for \"one utterance, many tables.\"",
+      "reason": "Principle IA-9 — Search and palette are first-class IA.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-027",
+        "GOV-047",
+        "GOV-094",
+        "GOV-095"
+      ],
+      "blocks": [
+        "Command Palette Spec",
+        "Universal Search",
+        "Android Search",
+        "AI Routing"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "AI",
+        "Backend"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-9 — Search and palette are first-class IA"
+          ],
+          "quote": "Command Palette / universal search are not power-user Easter eggs; they are the routing spine for \"one utterance, many tables.\""
+        }
+      ],
+      "implementation_impact": "Needs scope/spec (surfaces, actions, privacy). Treat palette/search as primary routing, not optional power feature.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-100",
+      "title": "Settings are a penalty box — no daily actions or junk drawer",
+      "category": "IA — Settings Policy",
+      "domain": "ux",
+      "decision": "Settings hold rare preference and account risk. Do not park daily actions in Settings. Do not use Settings as a junk drawer for unfinished features.",
+      "reason": "Principle IA-10 — Settings are a penalty box.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-032",
+        "GOV-095",
+        "GOV-066"
+      ],
+      "blocks": [
+        "Settings IA",
+        "Feature Placement Reviews",
+        "Android Settings"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-10 — Settings are a penalty box"
+          ],
+          "quote": "Settings hold rare preference and account risk. Do not park daily actions in Settings. Do not use Settings as a junk drawer for unfinished features."
+        }
+      ],
+      "implementation_impact": "Audit Settings for daily actions; relocate to intent surfaces. Unfinished features do not land in Settings.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-101",
+      "title": "Knowledge/Notes ≠ Journal ≠ Documents",
+      "category": "IA — Concept Separation",
+      "domain": "product",
+      "decision": "Knowledge/Notes (source-grounded reference library), Journal (reflection capture), and Documents (files/artifacts, often family/vault-linked) must remain distinct concepts in IA to prevent GoodNotes/Notion mush.",
+      "reason": "Principle IA-11 — Knowledge ≠ Journal ≠ Documents.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-010",
+        "GOV-020",
+        "GOV-096"
+      ],
+      "blocks": [
+        "Notes/Knowledge IA",
+        "Journal IA",
+        "Documents/Vault IA",
+        "Page Blueprints"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Backend",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-11 — Knowledge ≠ Journal ≠ Documents"
+          ],
+          "quote": "IA must keep these distinct to prevent GoodNotes/Notion mush."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-11 — Knowledge ≠ Journal ≠ Documents — table"
+          ],
+          "quote": "Knowledge / Notes | Source-grounded reference library"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-11 — Knowledge ≠ Journal ≠ Documents — table"
+          ],
+          "quote": "Journal | Reflection capture"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-11 — Knowledge ≠ Journal ≠ Documents — table"
+          ],
+          "quote": "Documents | Files/artifacts (often family/vault-linked)"
+        }
+      ],
+      "implementation_impact": "Separate nav/routes/primitives for Notes, Journal, Documents; no unified mush editor identity.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-102",
+      "title": "Timeline/Calendar is chronology, not a social feed",
+      "category": "IA — Timeline Role",
+      "domain": "ux",
+      "decision": "Timeline/Calendar surfaces organize by time for planning and memory. They must not become social feeds or infinite engagement scrolls.",
+      "reason": "Principle IA-12 — Timeline is chronology, not a feed.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-005",
+        "GOV-078",
+        "GOV-029"
+      ],
+      "blocks": [
+        "Timeline UX",
+        "Calendar UX",
+        "Engagement Metrics"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Principle IA-12 — Timeline is chronology, not a feed"
+          ],
+          "quote": "Timeline/Calendar surfaces organize by time for planning and memory. They must not become social feeds or infinite engagement scrolls."
+        }
+      ],
+      "implementation_impact": "Timeline/Calendar UX optimized for planning/memory; ban social-feed patterns and infinite engagement scroll goals.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-103",
+      "title": "New entities must declare IA contract (layer, write owner, edges, ceiling, blueprint)",
+      "category": "IA — Entity Intake Contract",
+      "domain": "governance",
+      "decision": "New entities must declare: capture vs derived (layer), write primitive owner, edges, device ceiling, and which page blueprint owns them.",
+      "reason": "Future impact section — operationalizes IA principles for entity intake.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-096",
+        "GOV-020",
+        "GOV-094",
+        "GOV-013",
+        "GOV-074"
+      ],
+      "blocks": [
+        "Entity Intake",
+        "Feature Intake",
+        "Schema Field Intake",
+        "Page Blueprints"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Backend",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Future impact"
+          ],
+          "quote": "New entities must declare: capture vs derived, write primitive owner, edges, device ceiling, and which page blueprint owns them."
+        }
+      ],
+      "implementation_impact": "Add entity IA declaration checklist to feature/schema intake; reject entities missing any field.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "canon_class": "canonical"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-027",
+      "title": "Publish free-pin sensible defaults for new users",
+      "reason": "GOV-097 Known risk: free-pin chaos without defaults.",
+      "impact": "Onboarding pins start coherent; personalization after.",
+      "risk": "High if skipped — navigation thrash for new users.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-097",
+        "GOV-075"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-028",
+      "title": "Publish primary destination map under five intents (capture/review/plan/prepare/configure)",
+      "reason": "GOV-095 Needs Discussion; closes M-001 / advances GOV-075.",
+      "impact": "Bottom nav / masthead destinations become citeable.",
+      "risk": "Extreme if delayed — duplicate nav returns.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-095",
+        "GOV-075",
+        "GOV-097",
+        "GOV-012"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-029",
+      "title": "Add entity IA declaration checklist to feature/schema intake",
+      "reason": "Operationalize GOV-103.",
+      "impact": "Every new entity ships with layer/owner/edges/ceiling/blueprint.",
+      "risk": "Low process friction.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-103",
+        "GOV-074"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-030",
+      "title": "Publish Command Palette / universal search scope spec",
+      "reason": "GOV-099 Needs Discussion — spine asserted, scope undefined.",
+      "impact": "Unblocks Android/web search routing.",
+      "risk": "High if vague — privacy or power-user-only drift.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-099",
+        "GOV-047"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-031",
+      "title": "Page Blueprint review gate against everything-page dumps",
+      "reason": "Known risk + GOV-098 consolidation law.",
+      "impact": "Stops dumping-ground dashboards.",
+      "risk": "Low.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-098",
+        "GOV-076"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-032",
+      "title": "Founder confirm GOV-075 primacy model = free-pin masthead (GOV-097); destinations still via REC-028",
+      "reason": "CF-IA-001 status hygiene between GOV-075 and GOV-097.",
+      "impact": "Clarifies what Needs Discussion remains (destinations only).",
+      "risk": "Low.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-075",
+        "GOV-097"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-033",
+      "title": "Next P7 artifact after founder OK: 15_PAGE_BLUEPRINTS or 13_NAMING_LANGUAGE",
+      "reason": "IA principles depend on blueprints + naming for destinations.",
+      "impact": "Continues build-without-reread completeness.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-095",
+        "GOV-098",
+        "GOV-103"
+      ],
+      "canon_class": "recommendation"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-IA-001",
+      "type": "Complementary Needs Discussion (not contradiction)",
+      "detail": "Non-Negotiables GOV-075 forbids duplicate navigation systems but lacks primacy model. IA-6 / GOV-097 names masthead free-pin as primacy model. Destinations still missing. Do not auto-close GOV-075.",
+      "related_gov": [
+        "GOV-075",
+        "GOV-097"
+      ],
+      "recommendation": "REC-032 + REC-028. Flag only."
+    },
+    {
+      "id": "CF-IA-002",
+      "type": "Incomplete vs Constitution route bind",
+      "detail": "GOV-095 names five intents; Constitution GOV-012 still Needs Discussion for Today≡/overview. Intents do not resolve route alias.",
+      "related_gov": [
+        "GOV-095",
+        "GOV-012",
+        "GOV-039"
+      ],
+      "recommendation": "Keep REC-003. Intent map separate from brand lockup route."
+    },
+    {
+      "id": "CF-IA-003",
+      "type": "Known risk — cross-client IA divergence",
+      "detail": "Known risks: Native and web IA diverging until brand feels like two products (tokens must still unify). Touches GOV-040/GOV-073. Not a source contradiction.",
+      "related_gov": [
+        "GOV-040",
+        "GOV-073",
+        "GOV-085"
+      ],
+      "recommendation": "Keep REC-020 token SoT; IA destination map must cover native+web."
+    },
+    {
+      "id": "CF-IA-004",
+      "type": "Known risk — free-pin without defaults",
+      "detail": "GOV-097 Approved intent but Known risks warn free-pin chaos without sensible defaults.",
+      "related_gov": [
+        "GOV-097"
+      ],
+      "recommendation": "REC-027. Status Needs Discussion until defaults named."
+    },
+    {
+      "id": "CF-IA-005",
+      "type": "Incomplete — linking system still unnamed",
+      "detail": "GOV-094 requires edge expression; GOV-043 linking system still unnamed (Constitution CF-009).",
+      "related_gov": [
+        "GOV-094",
+        "GOV-043",
+        "GOV-019"
+      ],
+      "recommendation": "Keep REC-005. Do not invent linking name here."
+    },
+    {
+      "id": "CF-IA-006",
+      "type": "Incomplete — Command Palette scope",
+      "detail": "GOV-099 asserts first-class palette/search without action inventory, privacy bounds, or client parity.",
+      "related_gov": [
+        "GOV-099"
+      ],
+      "recommendation": "REC-030."
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-IA-001",
+      "missing": "Primary destination map under five intents",
+      "why": "GOV-095 incomplete",
+      "next": "REC-028"
+    },
+    {
+      "id": "M-IA-002",
+      "missing": "Free-pin default pin set for new users",
+      "why": "GOV-097 Known risk",
+      "next": "REC-027"
+    },
+    {
+      "id": "M-IA-003",
+      "missing": "Command Palette / search action scope + privacy",
+      "why": "GOV-099 incomplete",
+      "next": "REC-030"
+    },
+    {
+      "id": "M-IA-004",
+      "missing": "Named linking system for graph edges",
+      "why": "GOV-094 depends on GOV-043",
+      "next": "REC-005"
+    },
+    {
+      "id": "M-IA-005",
+      "missing": "Page Blueprint catalog for layer ownership",
+      "why": "GOV-103 + GOV-098",
+      "next": "Govern 15_PAGE_BLUEPRINTS"
+    },
+    {
+      "id": "M-IA-006",
+      "missing": "Naming language for intent vs domain labels",
+      "why": "IA-2 domain nouns vs intents",
+      "next": "Govern 13_NAMING_LANGUAGE"
+    },
+    {
+      "id": "M-IA-007",
+      "missing": "Settings inventory audit (daily actions parked)",
+      "why": "GOV-100 enforcement",
+      "next": "Product audit + REC-029 process"
+    }
+  ],
+  "questions_for_founder": [
+    "Confirm free-pin primacy model (GOV-097) closes GOV-075 model gap — destinations still open (REC-032)?",
+    "Approve default free-pin set for new users (REC-027) — propose list?",
+    "Publish five-intent destination map now or after Page Blueprints (REC-028)?",
+    "Command Palette: desktop-first only, or Android parity required for GOV-099?",
+    "Is Insights→Reports redirect still the live template for GOV-098?",
+    "Confirm Knowledge/Notes vs Journal vs Documents route IDs for GOV-101?",
+    "Does prepare intent include Focus/pre-session only, or also packing/travel/rituals?",
+    "Next artifact: 15_PAGE_BLUEPRINTS or 13_NAMING_LANGUAGE (REC-033)?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 7,
+    "ai_readiness": 7,
+    "conflict_hygiene": 8,
+    "metric_rigor": 6,
+    "amendment_process": 8,
+    "completeness_build_without_reread": 7,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 78,
+    "interpretation": "IA Principles supply navigation/entity organization canon missing from Constitution. GOV-094…103 add graph IA, intents, layers, free-pin, consolidation, palette spine, settings penalty, concept splits, timeline role, entity contract. Still Needs Discussion on destination map, free-pin defaults, and Command Palette scope. No hard contradiction with Constitution or Non-Negotiables; conflicts flagged only."
+  },
+  "validation": {
+    "continuous_gov_ids": true,
+    "json_schema": true,
+    "duplicate_gov_detection": true,
+    "duplicate_decision_detection": true,
+    "broken_dependency_detection": true,
+    "broken_references": true,
+    "missing_evidence": true,
+    "status": "PASSED"
+  }
+}

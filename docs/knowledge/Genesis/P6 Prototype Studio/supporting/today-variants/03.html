@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AIIMIN Today — 03 FUTURO Orbit</title>
+<link rel="stylesheet" href="shared.css"/>
+<style>
+      .futuro { background:#fafafa; color:#111; min-height:calc(100vh - 48px); }
+      .futuro .app-bar { background:#fff; border-color:#eee; }
+      .futuro .layout { display:grid; grid-template-columns:280px 1fr 300px; gap:0; min-height:calc(100vh - 140px); }
+      .futuro .side { padding:24px; border-right:1px solid #eee; }
+      .futuro .side.right { border-right:none; border-left:1px solid #eee; }
+      .futuro .orbit-wrap { display:grid; place-items:center; padding:40px 20px; position:relative; }
+      .futuro .ring { position:absolute; border:2px dashed #ddd; border-radius:50%; }
+      .futuro .ring.r1{ width:min(480px,80vw); height:min(480px,80vw); }
+      .futuro .ring.r2{ width:min(360px,60vw); height:min(360px,60vw); }
+      .futuro .ring.r3{ width:min(240px,40vw); height:min(240px,40vw); }
+      .futuro .core { position:relative; z-index:2; width:160px; height:160px; background:#111; border-radius:50%; color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+      .futuro .core strong { font-size:2.5rem; font-weight:800; }
+      .futuro .sat { position:absolute; width:80px; height:80px; border-radius:50%; background:#fff; border:1px solid #e5e5e5; display:grid; place-items:center; font-size:10px; font-weight:700; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.06); z-index:3; padding:8px; line-height:1.2; }
+      .futuro .tagline { font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:16px; }
+      @media(max-width:1000px){ .futuro .layout{ grid-template-columns:1fr;} .futuro .side{ border:none; border-bottom:1px solid #eee;} }
+    </style>
+</head>
+<body>
+<nav class="proto-nav">
+  <strong>AIIMIN PROTOTYPE</strong>
+  <div class="links"><a href="/overview">Live Today</a><a href="index.html">Gallery</a><span>FUTURO</span></div>
+  <span class="badge">03 FUTURO Orbit</span>
+</nav>
+<div class="proto-shell">
+      <div class="futuro">
+        
+<header class="app-bar">
+  <div class="logo"><span class="logo-dot">A</span> AIIMIN</div>
+  <nav class="nav-pills">
+    <span class="on">Today</span><span class="">Insights</span><span class="">Calendar</span><span class="">Journal</span><span class="">Finance</span><span class="">Habits</span><span class="">Goals</span><span class="">Settings</span>
+  </nav>
+  <div class="status"><span class="online"></span> OS Online · Warrior · 2840/3200 XP</div>
+</header>
+<div class="status-strip">
+  <div class="cell"><span>Active target</span><strong>18d</strong><small>Placement sprint</small></div>
+  <div class="cell"><span>Week</span><strong>27</strong><small>Day 189 of 365</small></div>
+  <div class="cell"><span>Calendar</span><strong>1</strong><small>events today</small></div>
+  <div class="cell"><span>Execution</span><strong>63%</strong><small>Night reset</small></div>
+</div>
+        <div class="layout">
+          <aside class="side">
+            <p class="tagline">when everything aligns</p>
+            
+<div><div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-3);margin-bottom:10px">Today's micro-task</div>
+<div class="micro-task"><div class="circle"></div><span>Send 3 follow-up emails to recruiters</span></div></div>
+            <div style="margin-top:20px">
+<div class="insight-card"><div class="eyebrow">Weekly insight</div><h4>Mid-week dip pattern</h4><p>Your mood drops when sleep < 7h. You slept 6.8h last night — consider an earlier wind-down tonight.</p></div></div>
+            <div style="margin-top:16px"><div class="decent-note">Orbit modules are user-pinned. Hide any satellite in widget settings.</div></div>
+          </aside>
+          <main class="orbit-wrap">
+            <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
+            <div class="core"><strong>74</strong><span style="font-size:11px;opacity:0.7">life score</span><span style="font-size:10px;margin-top:4px;color:var(--success)">+3</span></div>
+            <div class="sat" style="top:8%;left:50%;transform:translateX(-50%)">🔥<br/>12d</div>
+            <div class="sat" style="bottom:12%;left:8%">🎯<br/>18d</div>
+            <div class="sat" style="bottom:12%;right:8%">📅<br/>1 ev</div>
+            <div class="sat" style="top:42%;right:2%">💰<br/>₹18k</div>
+            <div class="sat" style="top:42%;left:2%">😴<br/>6.8h</div>
+          </main>
+          <aside class="side right">
+            <div style="font-size:11px;font-weight:800;text-transform:uppercase;color:#888;margin-bottom:12px">Priorities</div>
+            <div class="priority-row" style="background:#f5f5f5;border-color:#e5e5e5"><div class="box"></div><span style="color:#111">Finish placement outreach batch (12 DMs)</span></div><div class="priority-row" style="background:#f5f5f5;border-color:#e5e5e5"><div class="box"></div><span style="color:#111">Log sleep + mood before midnight</span></div><div class="priority-row done" style="background:#f5f5f5;border-color:#e5e5e5"><div class="box"></div><span style="color:#111">Review weekly goals in journal</span></div>
+            <div style="margin-top:20px">
+<div class="metrics-row">
+  <div class="metric-card"><div class="ico">😴</div><div class="val">6.8h</div><div class="lbl">Sleep</div><div style="font-size:9px;color:var(--text-3);margin-top:2px">bed 12:40</div></div>
+  <div class="metric-card"><div class="ico">💪</div><div class="val">—</div><div class="lbl">Gym</div><div style="font-size:9px;color:var(--text-3);margin-top:2px">not yet</div></div>
+  <div class="metric-card"><div class="ico">😊</div><div class="val">7/10</div><div class="lbl">Mood</div><div style="font-size:9px;color:var(--text-3);margin-top:2px">stable</div></div>
+  <div class="metric-card"><div class="ico">👟</div><div class="val">6,240</div><div class="lbl">Steps</div><div style="font-size:9px;color:var(--text-3);margin-top:2px">goal 10k</div></div>
+  <div class="metric-card"><div class="ico">💧</div><div class="val">2/3</div><div class="lbl">Water</div><div style="font-size:9px;color:var(--text-3);margin-top:2px">bottles</div></div>
+  <div class="metric-card"><div class="ico">📖</div><div class="val">Graphs</div><div class="lbl">Learning</div><div style="font-size:9px;color:var(--text-3);margin-top:2px">45 min</div></div>
+  <div class="metric-card"><div class="ico">✍️</div><div class="val">—</div><div class="lbl">Journal</div><div style="font-size:9px;color:var(--text-3);margin-top:2px">pending</div></div>
+  <div class="metric-card"><div class="ico">🧠</div><div class="val">Okay</div><div class="lbl">Fog</div><div style="font-size:9px;color:var(--text-3);margin-top:2px">2/3</div></div>
+</div></div>
+          </aside>
+        </div>
+      </div></div>
+<div class="proto-footer">
+  <a href="index.html">Gallery</a>
+  <a href="02.html">← Prev</a>
+  <a href="04.html">Next →</a>
+</div>
+</body>
+</html>

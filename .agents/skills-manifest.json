@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-07-19",
+  "updated": "2026-07-31",
   "project_skills_committed": [
     "caveman",
     "caveman-commit",
@@ -21,7 +21,8 @@
     "impeccable",
     "animation-vocabulary",
     "obsidian-bases",
-    "organization-best-practices"
+    "organization-best-practices",
+    "web-app-testing"
   ],
   "local_only_gitignored": [
     "compose",

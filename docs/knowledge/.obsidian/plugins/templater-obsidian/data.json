@@ -1,0 +1,38 @@
+{
+  "command_timeout": 5,
+  "templates_folder": "_templates",
+  "templates_pairs": [["", ""]],
+  "trigger_on_file_creation": false,
+  "auto_jump_to_cursor": true,
+  "enable_system_commands": false,
+  "shell_path": "",
+  "user_scripts_folder": "Operations/Templater-Scripts",
+  "enable_folder_templates": true,
+  "folder_templates": [
+    {
+      "folder": "11_BUGS",
+      "template": "_templates/bug-template.md"
+    },
+    {
+      "folder": "10_DECISIONS",
+      "template": "_templates/decision-template.md"
+    },
+    {
+      "folder": "12_SPRINTS",
+      "template": "_templates/sprint-template.md"
+    },
+    {
+      "folder": "Operations/Inbox",
+      "template": "_templates/eng-leaf-template.md"
+    },
+    {
+      "folder": "Dashboards",
+      "template": "_templates/dashboard-template.md"
+    }
+  ],
+  "syntax_highlighting": true,
+  "syntax_highlighting_mobile": false,
+  "enabled_templates_hotkeys": [],
+  "startup_templates": [],
+  "enable_ribbon_icon": true
+}

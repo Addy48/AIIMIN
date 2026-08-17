@@ -25,5 +25,12 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/privacy.html",
+      "destination": "/privacy",
+      "permanent": true
+    }
   ]
 }

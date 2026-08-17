@@ -1,3 +1,17 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+---
 # AI Overview
 
 ## Purpose
@@ -9,6 +23,7 @@ Intelligence features, provider failover, usage budgets, sports/AI previews.
 - Architecture: [[02_ARCHITECTURE/AI-Pipeline]]
 - Provider map: [[09_FEATURES/Intelligence/AI-Provider-Map]]
 - Costs/usage UI: [[09_FEATURES/DevTools/ApiUsage]]
+- Proposed interaction taxonomy: [[06_AI/interaction-telemetry]]
 
 ## Topics to expand when touched
 

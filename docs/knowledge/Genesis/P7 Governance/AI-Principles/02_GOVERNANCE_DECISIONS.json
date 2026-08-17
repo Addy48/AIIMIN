@@ -1,0 +1,762 @@
+{
+  "meta": {
+    "document": "AI Principles Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P2 Knowledge Intelligence/supporting/product-bible/06_AI_MODEL.md",
+    "source_alias": "10_AI_PRINCIPLES.md \u2192 Product Bible 06_AI_MODEL.md (P5 10_ is Component Principles; no AI_PRINCIPLES file)",
+    "source_twin": "docs/AIIMIN_PRODUCT_BIBLE/06_AI_MODEL.md",
+    "source_status": "FROZEN (Discovery Product Bible)",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-136\u2026GOV-141",
+    "gov_id_range_referenced": "GOV-001\u2026GOV-135 (prior; referenced only)",
+    "decision_count_new": 6,
+    "recommendation_count": 7,
+    "existing_gov_referenced_count": 27,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "constitution_untouched": true,
+    "non_negotiables_untouched": true,
+    "ia_principles_untouched": true,
+    "design_system_principles_untouched": true,
+    "motion_principles_untouched": true,
+    "interaction_principles_untouched": true,
+    "standard_untouched": true,
+    "source_untouched": true
+  },
+  "existing_gov_references": [
+    {
+      "ai": "Philosophy \u2014 NL intent + derived structure",
+      "gov": [
+        "GOV-047",
+        "GOV-052",
+        "GOV-028"
+      ],
+      "note": "AI-first NL + structure-after-capture + capture-first \u2014 mixed-initiative layer elevated in GOV-136"
+    },
+    {
+      "ai": "Confidence bands gate action (principle without thresholds)",
+      "gov": [
+        "GOV-048"
+      ],
+      "note": "Constitution asserts bands; numeric thresholds elevated in GOV-137 (Needs Discussion / REC-004)"
+    },
+    {
+      "ai": "Correctable inference / chips",
+      "gov": [
+        "GOV-035",
+        "GOV-051",
+        "GOV-126",
+        "GOV-123"
+      ],
+      "note": "Silent-wrong forbid + infer-then-chip \u2014 one-tap correction in GOV-136"
+    },
+    {
+      "ai": "Sparring / anti-magic / anti-therapist",
+      "gov": [
+        "GOV-049",
+        "GOV-053",
+        "GOV-050",
+        "GOV-006"
+      ],
+      "note": "Sparring + no magic patronage + no clinical/therapist \u2014 reused"
+    },
+    {
+      "ai": "Must-not: clinical diagnose",
+      "gov": [
+        "GOV-006",
+        "GOV-050"
+      ],
+      "note": "Refuse clinical/therapist already Constitution/AI"
+    },
+    {
+      "ai": "Must-not: auto-share private life / journal",
+      "gov": [
+        "GOV-078",
+        "GOV-016",
+        "GOV-083"
+      ],
+      "note": "No auto-post + journal out of analytics/push"
+    },
+    {
+      "ai": "Must-not: invent finance",
+      "gov": [
+        "GOV-082"
+      ],
+      "note": "No invented finance without utterance"
+    },
+    {
+      "ai": "Must-not: block capture behind modes",
+      "gov": [
+        "GOV-008",
+        "GOV-066"
+      ],
+      "note": "Refuse form-builder/capture blockers + Enter-to-save"
+    },
+    {
+      "ai": "Safety never infer meds/allergies/PIN",
+      "gov": [
+        "GOV-070"
+      ],
+      "note": "NN already \u2014 Safety/legal row in bands table confirms"
+    },
+    {
+      "ai": "Interruptibility / no mid-Focus coaching",
+      "gov": [
+        "GOV-033",
+        "GOV-088"
+      ],
+      "note": "Core interruptibility; coaching-window stack step elevated in GOV-141"
+    },
+    {
+      "ai": "Kill List in AI path",
+      "gov": [
+        "GOV-074"
+      ],
+      "note": "Kill List consult \u2014 stack step 3 cites check Kill List"
+    },
+    {
+      "ai": "Auth/schema change control (adjacent)",
+      "gov": [
+        "GOV-018",
+        "GOV-042"
+      ],
+      "note": "Human ask for auth/schema; AI Model adds billing+auth never without explicit user action \u2192 GOV-140"
+    },
+    {
+      "ai": "Remembered context / vision",
+      "gov": [
+        "GOV-002",
+        "GOV-061"
+      ],
+      "note": "Capture once + tomorrow lighter \u2014 memory philosophy not detailed in AI Model"
+    },
+    {
+      "ai": "Dev agent memory hygiene (not product AI)",
+      "gov": [
+        "GOV-086"
+      ],
+      "note": "Cursor/agent vault hygiene \u2260 product AI roles \u2014 do not conflate"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-136",
+      "title": "AI is mixed-initiative layer \u2014 not chatbot-on-forms; one tap from correction",
+      "category": "AI \u2014 Philosophy",
+      "decision": "AIIMIN AI is a mixed-initiative layer that routes intent, infers structure, generates insight, and proposes action \u2014 not a chatbot bolted onto forms. The user is always one tap from correction.",
+      "reason": "AI Model opening law. Elevates product AI posture beyond GOV-047 NL-intent statement.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-047",
+        "GOV-048",
+        "GOV-051",
+        "GOV-053",
+        "GOV-126"
+      ],
+      "blocks": [
+        "AI Feature Intake",
+        "AI UX Spec",
+        "Command Palette AI",
+        "Universal Logger",
+        "Insights/Coach"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "How AI should behave in AIIMIN"
+          ],
+          "quote": "AIIMIN's AI is not a chatbot bolted onto forms. It is a **mixed-initiative layer** that routes intent, infers structure, generates insight, and proposes action \u2014 with the user always one tap from correction."
+        }
+      ],
+      "implementation_impact": "Reject chatbot-shell features without routing/inference/correction. Every AI write path exposes correction (chips/edit). Pair with GOV-126.",
+      "source_document": "AIIMIN GENESIS/P2 Knowledge Intelligence/supporting/product-bible/06_AI_MODEL.md",
+      "canon_class": "canonical",
+      "origin_artifact": "AI-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/AI-Principles/",
+      "domain": "ai"
+    },
+    {
+      "id": "GOV-137",
+      "title": "Confidence band thresholds \u2014 \u226570 auto; 40\u201370 confirm; <40 ask; safety never infer",
+      "category": "AI \u2014 Confidence Bands",
+      "decision": "AI action is gated by confidence bands: \u226570% auto-fill and save with small edit chip; 40\u201370% pre-fill requiring confirm via highlighted chip row; <40% ask a minimal question (single field or voice); safety/legal fields never infer \u2014 always ask (meds, allergies, PIN).",
+      "reason": "AI Model Confidence bands table. Supplies numeric thresholds Constitution GOV-048 deferred (REC-004).",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-048",
+        "GOV-035",
+        "GOV-051",
+        "GOV-070",
+        "GOV-126",
+        "GOV-136"
+      ],
+      "blocks": [
+        "AI Confidence Spec",
+        "Inferencer Implementation",
+        "Finance Category AI",
+        "Safety Field Gates"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Android Build",
+        "Desktop",
+        "Backend",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Confidence bands \u2014 table"
+          ],
+          "quote": "\u226570% | Auto-fill; save | Small \"edit\" chip"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Confidence bands \u2014 table"
+          ],
+          "quote": "40\u201370% | Pre-fill; require confirm | Highlighted chip row"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Confidence bands \u2014 table"
+          ],
+          "quote": "<40% | Ask minimal question | Single field or voice"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Confidence bands \u2014 table"
+          ],
+          "quote": "Safety/legal | Never infer | Always ask (meds, allergies, PIN)"
+        }
+      ],
+      "implementation_impact": "Implement band thresholds + UI states. Founder ratify vs GOV-048 (REC-004/REC-055). Safety row confirms GOV-070 \u2014 do not weaken.",
+      "source_document": "AIIMIN GENESIS/P2 Knowledge Intelligence/supporting/product-bible/06_AI_MODEL.md",
+      "canon_class": "canonical",
+      "origin_artifact": "AI-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/AI-Principles/",
+      "domain": "ai"
+    },
+    {
+      "id": "GOV-138",
+      "title": "Five AI roles \u2014 Router, Inferencer, Analyzer, Coach, Composer",
+      "category": "AI \u2014 Role Model",
+      "decision": "Product AI has five roles: Router (classify free text \u2192 entity), Inferencer (fill fields when confidence high), Analyzer (post-capture enrichment), Coach (narrative + recommendation), Composer (draft milestones, arc, summaries). Features must declare which role(s) they exercise.",
+      "reason": "AI Model Roles table. Role taxonomy missing from prior GOVs.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-136",
+        "GOV-047",
+        "GOV-048"
+      ],
+      "blocks": [
+        "AI Feature Intake",
+        "Provider Routing",
+        "Insights Architecture",
+        "Goals/Identity AI"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Backend",
+        "Desktop",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Roles \u2014 table"
+          ],
+          "quote": "Router | Classify free text \u2192 correct table/entity | Command Palette, Universal Logger"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Roles \u2014 table"
+          ],
+          "quote": "Inferencer | Fill fields silently when confidence high | Finance category, mood, pillar"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Roles \u2014 table"
+          ],
+          "quote": "Analyzer | Post-capture enrichment | Journal analyze, ATS, Vocal Mastery"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Roles \u2014 table"
+          ],
+          "quote": "Coach | Narrative + recommendation | Insights, Monday widget, morning briefing"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Roles \u2014 table"
+          ],
+          "quote": "Composer | Draft milestones, arc, summaries | Goals, Identity, Focus reflection"
+        }
+      ],
+      "implementation_impact": "AI PRs name role(s). Do not invent sixth brand role without founder. Coach role bound by GOV-141 interruptibility.",
+      "source_document": "AIIMIN GENESIS/P2 Knowledge Intelligence/supporting/product-bible/06_AI_MODEL.md",
+      "canon_class": "canonical",
+      "origin_artifact": "AI-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/AI-Principles/",
+      "domain": "ai"
+    },
+    {
+      "id": "GOV-139",
+      "title": "Capture AI input stack order \u2014 intent \u2192 entities \u2192 Kill List \u2192 write \u2192 telemetry \u2192 coaching window",
+      "category": "AI \u2014 Context / Pipeline",
+      "decision": "When AI processes a capture, ordered stack is: (1) Parse intent (Human Intent Graph), (2) Identify target entities (Information Graph), (3) Check Kill List \u2014 which fields can be skipped, (4) Write to table(s) with inferred fields, (5) Emit telemetry event, (6) Surface coaching only if interruptibility window open.",
+      "reason": "AI Model Input stack order. Canonical context-usage / pipeline law.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-047",
+        "GOV-074",
+        "GOV-033",
+        "GOV-136",
+        "GOV-138",
+        "GOV-094"
+      ],
+      "blocks": [
+        "Capture AI Pipeline",
+        "Telemetry Spec",
+        "Coach Delivery",
+        "Kill List Enforcement"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Backend",
+        "Desktop",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Input stack order"
+          ],
+          "quote": "1. Parse intent (Human Intent Graph)"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Input stack order"
+          ],
+          "quote": "2. Identify target entities (Information Graph)"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Input stack order"
+          ],
+          "quote": "3. Check Kill List \u2014 which fields can be skipped"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Input stack order"
+          ],
+          "quote": "4. Write to table(s) with inferred fields"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Input stack order"
+          ],
+          "quote": "5. Emit telemetry event"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Input stack order"
+          ],
+          "quote": "6. Surface coaching only if interruptibility window open"
+        }
+      ],
+      "implementation_impact": "Capture AI services follow this order. No coaching before write/telemetry path. Kill List checked before field asks.",
+      "source_document": "AIIMIN GENESIS/P2 Knowledge Intelligence/supporting/product-bible/06_AI_MODEL.md",
+      "canon_class": "canonical",
+      "origin_artifact": "AI-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/AI-Principles/",
+      "domain": "ai"
+    },
+    {
+      "id": "GOV-140",
+      "title": "AI must not change auth or billing without explicit user action",
+      "category": "AI \u2014 Automation Limits / Refusal",
+      "decision": "AI must not change authentication or billing state without explicit user action.",
+      "reason": "AI Model What AI must not do \u2014 auth/billing clause is new beside GOV-018 human ask for schema/auth changes.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-018",
+        "GOV-042",
+        "GOV-136"
+      ],
+      "blocks": [
+        "AI Tooling Permissions",
+        "Billing Automation",
+        "Auth Agent Actions"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Backend",
+        "Security",
+        "Desktop",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "What AI must not do"
+          ],
+          "quote": "Change auth or billing without explicit user action"
+        }
+      ],
+      "implementation_impact": "AI tools/agents cannot mutate auth/billing. Require explicit user gesture. Other must-nots reuse GOV-006/050/078/082/008 \u2014 not re-minted.",
+      "source_document": "AIIMIN GENESIS/P2 Knowledge Intelligence/supporting/product-bible/06_AI_MODEL.md",
+      "canon_class": "canonical",
+      "origin_artifact": "AI-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/AI-Principles/",
+      "domain": "ai"
+    },
+    {
+      "id": "GOV-141",
+      "title": "Coaching surfaces only when interruptibility window is open",
+      "category": "AI \u2014 Coaching Behavior",
+      "decision": "AI coaching and recommendation surfaces only when the interruptibility window is open. AI does not steal Focus or modal-interrupt protected states.",
+      "reason": "AI Model stack step 6 + Coach role bound by Constitution interruptibility (GOV-033/088).",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-033",
+        "GOV-088",
+        "GOV-138",
+        "GOV-139",
+        "GOV-030"
+      ],
+      "blocks": [
+        "Insights Delivery",
+        "Morning Briefing",
+        "Monday Widget Coach",
+        "Focus Protection"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Desktop",
+        "Android Build",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Input stack order"
+          ],
+          "quote": "6. Surface coaching only if interruptibility window open"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Roles \u2014 table"
+          ],
+          "quote": "Coach | Narrative + recommendation | Insights, Monday widget, morning briefing"
+        }
+      ],
+      "implementation_impact": "Coach/recommend delivery checks Focus/protected windows. Queue or defer coaching when closed. Aligns with GOV-088 no mid-Focus coaching modals.",
+      "source_document": "AIIMIN GENESIS/P2 Knowledge Intelligence/supporting/product-bible/06_AI_MODEL.md",
+      "canon_class": "canonical",
+      "origin_artifact": "AI-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/AI-Principles/",
+      "domain": "ai"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-055",
+      "title": "Ratify GOV-137 confidence thresholds and close REC-004 / GOV-048 gap",
+      "reason": "AI Model supplies \u226570 / 40\u201370 / <40 / safety-never-infer; Constitution GOV-048 still Needs Discussion.",
+      "impact": "Citeable band spec for Inferencer + UI chips.",
+      "risk": "Extreme if delayed \u2014 inconsistent automation.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-137",
+        "GOV-048",
+        "GOV-070",
+        "GOV-126"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "AI-Principles"
+    },
+    {
+      "id": "REC-056",
+      "title": "Ratify Approved AI GOVs (136, 138\u2013141) as citeable AI product canon",
+      "reason": "Role model + pipeline + coaching window + auth/billing refuse newly citeable.",
+      "impact": "AI PRs cite GOV-IDs.",
+      "risk": "Medium drift if delayed.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-136",
+        "GOV-138",
+        "GOV-139",
+        "GOV-140",
+        "GOV-141"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "AI-Principles"
+    },
+    {
+      "id": "REC-057",
+      "title": "Govern 07_AUTOMATION_RULES next for infer/ask/never matrices (field-level)",
+      "reason": "AI Model points Related \u2192 Automation Rules; field matrices not in this pass.",
+      "impact": "Field-level automation law without inventing here.",
+      "risk": "High if skipped \u2014 bands without field policy.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-137",
+        "GOV-070",
+        "GOV-074",
+        "GOV-123"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "AI-Principles"
+    },
+    {
+      "id": "REC-058",
+      "title": "Publish AI Provider Map operational companion (vault pointer already exists)",
+      "reason": "AI Model Provider map section is pointer-only \u2014 multi-model orchestration not specified.",
+      "impact": "Named providers/routing without inventing orchestration law.",
+      "risk": "Medium \u2014 provider sprawl.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-138",
+        "GOV-136"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "AI-Principles"
+    },
+    {
+      "id": "REC-059",
+      "title": "Add AI QA gates: role declaration, band compliance, stack order, coaching window, auth/billing refuse",
+      "reason": "Operationalize new AI GOVs.",
+      "impact": "PR checklist for AI features.",
+      "risk": "Low process; High if skipped.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-136",
+        "GOV-137",
+        "GOV-138",
+        "GOV-139",
+        "GOV-140",
+        "GOV-141"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "AI-Principles"
+    },
+    {
+      "id": "REC-060",
+      "title": "Define sparring vs shame bounds for Coach role (keep REC-015)",
+      "reason": "Coach recommendations must not violate GOV-031 emotional refuse; REC-015 still open.",
+      "impact": "Coach tone examples.",
+      "risk": "Medium \u2014 sparring becomes shame.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-049",
+        "GOV-031",
+        "GOV-141",
+        "GOV-138"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "AI-Principles"
+    },
+    {
+      "id": "REC-061",
+      "title": "Next P7 after founder OK: 07_AUTOMATION_RULES or 11_ACCESSIBILITY or 13_NAMING",
+      "reason": "AI Model Related cites Automation Rules; Interaction deferred a11y/naming still open.",
+      "impact": "Continues build-without-reread.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-137",
+        "GOV-133",
+        "GOV-131"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "AI-Principles"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-AI-001",
+      "type": "Complementary Needs Discussion \u2014 bands",
+      "detail": "GOV-048 asserts bands without thresholds; GOV-137 supplies numeric bands from AI Model. Not contradiction \u2014 founder must ratify (REC-055 / REC-004).",
+      "related_gov": [
+        "GOV-048",
+        "GOV-137"
+      ],
+      "recommendation": "REC-055"
+    },
+    {
+      "id": "CF-AI-002",
+      "type": "Source alias \u2014 no 10_AI_PRINCIPLES.md",
+      "detail": "Requested 10_AI_PRINCIPLES.md does not exist; P5 10_ is Component Principles. Governed Product Bible 06_AI_MODEL.md.",
+      "related_gov": [
+        "GOV-136"
+      ],
+      "recommendation": "Founder confirm source alias"
+    },
+    {
+      "id": "CF-AI-003",
+      "type": "Extract gap \u2014 memory / hallucination / explainability / personalization / learning / multi-model",
+      "detail": "Founder extract list exceeds AI Model source. Do not invent. Memory \u2192 GOV-002/061; hallucination general absent (finance invent = GOV-082 only); explainability/transparency/personalization/learning/multi-model absent.",
+      "related_gov": [
+        "GOV-082",
+        "GOV-061"
+      ],
+      "recommendation": "Missing M-AI-*; REC-058 for providers"
+    },
+    {
+      "id": "CF-AI-004",
+      "type": "Known adjacent \u2014 Automation Rules not governed this pass",
+      "detail": "Field-level infer/ask/never matrices live in 07_AUTOMATION_RULES. AI Model Related points there.",
+      "related_gov": [
+        "GOV-137",
+        "GOV-070"
+      ],
+      "recommendation": "REC-057"
+    },
+    {
+      "id": "CF-AI-005",
+      "type": "Tone tension \u2014 Coach sparring vs never shame",
+      "detail": "Coach recommendations (GOV-138/141) \u00d7 GOV-049 sparring \u00d7 GOV-031 never shame \u2014 REC-015 still open.",
+      "related_gov": [
+        "GOV-049",
+        "GOV-031",
+        "GOV-141"
+      ],
+      "recommendation": "REC-060"
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-AI-001",
+      "missing": "General hallucination / fabrication policy beyond finance+clinical",
+      "why": "Not stated in AI Model",
+      "next": "Do not invent; optional later ADR"
+    },
+    {
+      "id": "M-AI-002",
+      "missing": "Explainability / transparency requirements",
+      "why": "Not in source",
+      "next": "Future AI Principles amendment or Automation Rules"
+    },
+    {
+      "id": "M-AI-003",
+      "missing": "Personalization and learning behavior",
+      "why": "Not in source",
+      "next": "Do not invent"
+    },
+    {
+      "id": "M-AI-004",
+      "missing": "Multi-model orchestration law",
+      "why": "Provider map pointer only",
+      "next": "REC-058"
+    },
+    {
+      "id": "M-AI-005",
+      "missing": "Product AI memory model (what retained, retention, user control)",
+      "why": "Only vision-level remember in Constitution",
+      "next": "Separate memory/privacy spec"
+    },
+    {
+      "id": "M-AI-006",
+      "missing": "Field-level automation matrices",
+      "why": "Lives in Automation Rules",
+      "next": "REC-057"
+    },
+    {
+      "id": "M-AI-007",
+      "missing": "Future AI compatibility beyond Horvitz citation",
+      "why": "Related research pointer only",
+      "next": "Future Growth Rules / Framework"
+    }
+  ],
+  "questions_for_founder": [
+    "Confirm source alias: 10_AI_PRINCIPLES \u2192 Product Bible 06_AI_MODEL (CF-AI-002)?",
+    "Ratify confidence thresholds \u226570 / 40\u201370 / <40 / safety-never (GOV-137) and close GOV-048 (REC-055)?",
+    "Approve five-role taxonomy as sole product AI roles (GOV-138)?",
+    "Approve capture AI stack order as pipeline law (GOV-139)?",
+    "Approve AI must not change auth/billing without explicit action (GOV-140)?",
+    "Confirm coaching only when interruptibility window open (GOV-141)?",
+    "Next: Automation Rules vs Accessibility vs Naming (REC-061)?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 7,
+    "ai_readiness": 9,
+    "conflict_hygiene": 7,
+    "metric_rigor": 8,
+    "amendment_process": 8,
+    "completeness_build_without_reread": 6,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 80,
+    "interpretation": "AI Model supplies mixed-initiative philosophy, numeric confidence bands, five roles, capture stack order, auth/billing refuse, and coaching-window law. Heavy reuse of Constitution/NN AI GOVs. GOV-137 Needs Discussion to close GOV-048. Extract gaps (memory model, explainability, multi-model, learning) not invented. Automation Rules deferred (REC-057)."
+  },
+  "validation": {
+    "continuous_gov_ids": true,
+    "json_schema": true,
+    "duplicate_gov_detection": true,
+    "duplicate_decision_detection": true,
+    "broken_dependency_detection": true,
+    "broken_references": true,
+    "missing_evidence": true,
+    "status": "PASSED"
+  }
+}

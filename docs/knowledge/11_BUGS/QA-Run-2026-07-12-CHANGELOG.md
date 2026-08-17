@@ -1,3 +1,17 @@
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-BUG
+migration_batch: W4
+fm_source: script
+---
 ### 2026-07-12 — QA run fixes (batch 1)
 - **What:** P0 fixes from Selfloop QA (284 items). Tracker: `11_BUGS/QA-Run-2026-07-12.md`
 - **Why:** Automated QA regression pass before tester E2E

@@ -1,0 +1,17 @@
+{
+  "promptDelete": true,
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "Daily Notes",
+  "attachmentFolderPath": "Assets",
+  "showUnsupportedFiles": true,
+  "userIgnoreFilters": [
+    "Genesis/**/supporting/**",
+    "Archive/**",
+    "99_ARCHIVE/**",
+    "Roadmap/UX-Architecture/**",
+    "Roadmap/UX-Intelligence/**",
+    "_templates/**",
+    ".obsidian/**"
+  ]
+}

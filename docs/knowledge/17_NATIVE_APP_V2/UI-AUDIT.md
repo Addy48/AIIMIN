@@ -1,3 +1,17 @@
+---
+authority: engineering
+derived_from: Genesis/P8 · Genesis/P9
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+---
 # Native Android — UI Audit (2026-07-19)
 
 Full pass on `native-android/` screens. Fixes shipped in **v2.2.0-native**.
@@ -8,7 +22,7 @@ Full pass on `native-android/` screens. Fixes shipped in **v2.2.0-native**.
 |-------|-------|-----|
 | PIN numpad hardcoded white — broken in dark mode | `PinComponents.kt` | Theme-aware surfaces + text |
 | Auth headings hardcoded `Charcoal` — invisible/wrong in dark | `AuthScreen.kt` | `MaterialTheme.colorScheme` |
-| Light `primary` was `AccentCalm` — FAB/button color drift | `Theme.kt` | `primary = Accent` (#ff6b35) |
+| Light `primary` was `AccentCalm` — FAB/button color drift | `Theme.kt` | `primary = Accent` (`#ff6b35`) |
 | Journal `LazyColumn` brace bug — past entries nested wrong | `JournalScreen.kt` | Restructured items |
 | Notes `SyncBanner` / grid indentation broken | `NotesScreen.kt` | Rewrite layout |
 | Status bar / nav bar cutouts on sub-screens | Focus, Settings, Goals, Discipline | `ScreenChrome` insets |

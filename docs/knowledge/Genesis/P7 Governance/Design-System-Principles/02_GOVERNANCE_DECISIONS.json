@@ -1,0 +1,906 @@
+{
+  "meta": {
+    "document": "Design System Principles Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+    "source_alias": "07_DESIGN_SYSTEM_PRINCIPLES.md → 07_VISUAL_LANGUAGE_PRINCIPLES.md (canonical filename in P5)",
+    "source_version": "3.0",
+    "source_status": "FROZEN",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-104…GOV-111",
+    "gov_id_range_referenced": "GOV-001…GOV-103 (prior; referenced only)",
+    "decision_count_new": 8,
+    "recommendation_count": 7,
+    "existing_gov_referenced_count": 17,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "constitution_untouched": true,
+    "non_negotiables_untouched": true,
+    "ia_principles_untouched": true,
+    "standard_untouched": true
+  },
+  "existing_gov_references": [
+    {
+      "vl": "VL-1 (palette lock + anti-clone + drift + dead accents)",
+      "gov": [
+        "GOV-036",
+        "GOV-037",
+        "GOV-073",
+        "GOV-081"
+      ],
+      "note": "Palette identity / forbidden looks / token drift debt / dead accent bans — semantic orange/green elevated in GOV-104"
+    },
+    {
+      "vl": "VL-2 (contrast requirement core)",
+      "gov": [
+        "GOV-071"
+      ],
+      "note": "Critical-path contrast asserted; numeric floors elevated in GOV-107"
+    },
+    {
+      "vl": "VL-3 (Inter/buffet ban)",
+      "gov": [
+        "GOV-090"
+      ],
+      "note": "Ban Inter-as-identity + unemployed buffet; named role matrix elevated in GOV-105"
+    },
+    {
+      "vl": "VL-4 (Today anti-clutter + anti glass-grid)",
+      "gov": [
+        "GOV-076",
+        "GOV-091"
+      ],
+      "note": "Today anti-widget + no glass-grid-only personality; one-composition/cards-for-interaction elevated in GOV-106"
+    },
+    {
+      "vl": "VL-5 (atmosphere / anti trend costumes)",
+      "gov": [
+        "GOV-037",
+        "GOV-038"
+      ],
+      "note": "Forbidden aesthetics + decoration-must-not-confuse cover purple mesh / glassmorphism / cream-terracotta costumes"
+    },
+    {
+      "vl": "VL-6 (emoji/color-only)",
+      "gov": [
+        "GOV-087"
+      ],
+      "note": "Emoji not IA + no color-only critical status; icons-keep-words elevated in GOV-111"
+    },
+    {
+      "vl": "VL-7 (split lockup)",
+      "gov": [
+        "GOV-012",
+        "GOV-039"
+      ],
+      "note": "Split mark→/brand wordmark→Today already constitution+visual law — no new ID"
+    },
+    {
+      "vl": "VL-8 (token identity / Palette authority)",
+      "gov": [
+        "GOV-036",
+        "GOV-073"
+      ],
+      "note": "Palette non-negotiable + drift-is-debt; one-system light/dark elevated in GOV-108"
+    },
+    {
+      "vl": "VL-9 (capture/review calm anchors)",
+      "gov": [
+        "GOV-028",
+        "GOV-029",
+        "GOV-032"
+      ],
+      "note": "Capture-first / calm read / progressive disclosure; density-by-mode matrix elevated in GOV-109"
+    },
+    {
+      "vl": "VL-10 (shared primitives + ceilings)",
+      "gov": [
+        "GOV-040",
+        "GOV-073",
+        "GOV-085"
+      ],
+      "note": "Shared primitives / token alignment / native≠/m ceiling; M3 cousin-brand ban elevated in GOV-110"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-104",
+      "title": "Semantic color roles — orange acts; green completes; neutrals dominate",
+      "category": "Visual — Color Semantics",
+      "domain": "visual",
+      "decision": "Color roles are identity law, not decoration: Action/accent `#ff6b35` acts; Done `#10b981` completes — never invert. Neutrals dominate the majority of pixels. Decorative purple/cyan/rainbow is identity leak. No new brand colors without founder approval. Accent never means shame.",
+      "reason": "Principle VL-1 — Color is identity, not decoration. Elevates semantic role law beyond GOV-036 lock statement.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-036",
+        "GOV-037",
+        "GOV-081",
+        "GOV-003"
+      ],
+      "blocks": [
+        "Design System",
+        "Visual QA Checklist",
+        "Android Theme",
+        "Website Brand",
+        "Component Tokens"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website",
+        "Desktop",
+        "Accessibility"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "VL-1 — Color is identity, not decoration"
+          ],
+          "quote": "Orange acts; green completes — never invert."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-1 — Color is identity, not decoration"
+          ],
+          "quote": "Neutrals should dominate the majority of pixels. Decorative purple/cyan/rainbow = identity leak."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-1 — Color is identity, not decoration"
+          ],
+          "quote": "No new brand colors without founder approval. Accent never means shame."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-1 — Color is identity, not decoration — table"
+          ],
+          "quote": "Action | `#ff6b35` | Primary action / Human Momentum ember"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-1 — Color is identity, not decoration — table"
+          ],
+          "quote": "Done | `#10b981` | Completion truth"
+        }
+      ],
+      "implementation_impact": "Token maps and components must preserve orange=action / green=done semantics across web, native, brand. No shame-coded accent usage. Founder gate for any new brand hue.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Design-System-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Design-System-Principles/"
+    },
+    {
+      "id": "GOV-105",
+      "title": "Typography role matrix — Bodoni / Familjen / Figtree / JetBrains",
+      "category": "Visual — Typography Roles",
+      "domain": "visual",
+      "decision": "Typography has jobs, not a font buffet: Bodoni Moda = wordmark/manifesto display (brand lockup & `/brand` only); Familjen Grotesk = ritual/display headlines; Figtree = product body/UI; JetBrains Mono = measure (scores, money, timers, OS IDs). Platform defaults may appear in native system chrome; controlled product surfaces prefer declared jobs.",
+      "reason": "Principle VL-3 — Typography has jobs. Elevates positive role matrix beyond GOV-090 ban list.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-090",
+        "GOV-003",
+        "GOV-037"
+      ],
+      "blocks": [
+        "Typography Spec",
+        "Design System",
+        "Brand Surfaces",
+        "Android Typography",
+        "Website"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "VL-3 — Typography has jobs (not a font buffet) — table"
+          ],
+          "quote": "Wordmark / manifesto display | Bodoni Moda | Brand lockup & `/brand` only"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-3 — Typography has jobs (not a font buffet) — table"
+          ],
+          "quote": "Ritual / display headlines | Familjen Grotesk | Brand moments, key OS headlines"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-3 — Typography has jobs (not a font buffet) — table"
+          ],
+          "quote": "Product body / UI | Figtree | Nav, buttons, page titles, body"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-3 — Typography has jobs (not a font buffet) — table"
+          ],
+          "quote": "Measure | JetBrains Mono | Scores, money, timers, OS IDs"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-3 — Typography has jobs (not a font buffet)"
+          ],
+          "quote": "Platform defaults may appear in native system chrome; controlled product surfaces prefer declared jobs."
+        }
+      ],
+      "implementation_impact": "Ship type tokens with these four jobs. Do not invent fifth brand identity face without founder. Keep Bodoni off daily product chrome except brand lockup.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Design-System-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Design-System-Principles/"
+    },
+    {
+      "id": "GOV-106",
+      "title": "Composition over collage — one story; cards for interaction only",
+      "category": "Visual — Composition",
+      "domain": "visual",
+      "decision": "First viewport of branded/marketing surfaces must read as one composition. Product Today: one primary capture story, not a widget flea market. Cards exist for interaction containers, not for looking “designed.”",
+      "reason": "Principle VL-4 — Composition over dashboard collage.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-076",
+        "GOV-091",
+        "GOV-038",
+        "GOV-029"
+      ],
+      "blocks": [
+        "Today Layout",
+        "Landing/Brand Pages",
+        "Page Blueprints",
+        "Visual QA"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Website",
+        "Desktop",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "VL-4 — Composition over dashboard collage"
+          ],
+          "quote": "First viewport of branded/marketing surfaces: one composition."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-4 — Composition over dashboard collage"
+          ],
+          "quote": "Product Today: one primary capture story, not a widget flea market."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-4 — Composition over dashboard collage"
+          ],
+          "quote": "Cards exist for interaction containers, not for looking “designed.”"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "Over-carding product UI under dashboard habit."
+        }
+      ],
+      "implementation_impact": "Layout reviews reject collage first-viewports and decorative card grids. Today keeps one primary capture story.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Design-System-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Design-System-Principles/"
+    },
+    {
+      "id": "GOV-107",
+      "title": "Contrast floors — body on ivory ≥4.5:1; dark without neon glow",
+      "category": "Visual — Contrast",
+      "domain": "accessibility",
+      "decision": "Light mode body `#14171A` on ivory must remain ≥4.5:1. Dark mode must preserve readable hierarchy without neon glow crutches. Conflicting light canvas values (`#EDE4D3` ivory vs cool `#f9f9f9`) are debt — Palette.md arbitrates; not parallel options.",
+      "reason": "Principle VL-2 — Contrast is non-negotiable; VL-1 canvas debt note. Elevates numeric floors beyond GOV-071 generic critical-path contrast.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-071",
+        "GOV-036",
+        "GOV-073",
+        "GOV-056"
+      ],
+      "blocks": [
+        "Accessibility Spec",
+        "Light Mode Ship",
+        "Visual QA",
+        "Token SoT"
+      ],
+      "referenced_by": [
+        "P8",
+        "Accessibility",
+        "Design System",
+        "Android Build",
+        "Website",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "VL-2 — Contrast is non-negotiable"
+          ],
+          "quote": "Light mode body `#14171A` on ivory must remain ≥4.5:1."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-2 — Contrast is non-negotiable"
+          ],
+          "quote": "Dark mode must preserve readable hierarchy without neon glow crutches."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-1 — Color is identity, not decoration — table"
+          ],
+          "quote": "Canvas | Dark `#1a1a1a` / Light ivory `#EDE4D3` (Palette authority) | Place"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-1 — Color is identity, not decoration"
+          ],
+          "quote": "Conflicting token sources (`:root` forest green, cool `#f9f9f9`, void black) are **debt**, not options — Palette.md arbitrates."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "Document drift between `#f9f9f9` and ivory — Palette.md wins."
+        }
+      ],
+      "implementation_impact": "Founder must ratify light canvas authority (ivory vs `#f9f9f9`) and contrast QA gates. Until then treat ≥4.5:1 body contrast as provisional canon with open canvas conflict.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Design-System-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Design-System-Principles/"
+    },
+    {
+      "id": "GOV-108",
+      "title": "Light and dark are one identity system",
+      "category": "Visual — Dual Appearance",
+      "domain": "visual",
+      "decision": "Light and dark are two appearances of one identity. Brand manifesto may be always-light. Product dark tokens must not be casually rewritten during light-mode craft. Resolve conflicts via Palette.md authority.",
+      "reason": "Principle VL-8 — Light and dark are one system.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-036",
+        "GOV-073",
+        "GOV-104"
+      ],
+      "blocks": [
+        "Light Mode Craft",
+        "Theme Architecture",
+        "Brand Manifesto Surfaces"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Website",
+        "Desktop",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "VL-8 — Light and dark are one system"
+          ],
+          "quote": "Two appearances; one identity."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-8 — Light and dark are one system"
+          ],
+          "quote": "Brand manifesto may be always-light."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-8 — Light and dark are one system"
+          ],
+          "quote": "Product dark tokens are not to be casually rewritten during light craft."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-8 — Light and dark are one system"
+          ],
+          "quote": "Resolve conflicts via Palette.md authority."
+        }
+      ],
+      "implementation_impact": "Theme PRs must prove both appearances keep role meaning. Brand always-light is allowed; product dark rewrite during light craft requires founder/Palette ADR.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Design-System-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Design-System-Principles/"
+    },
+    {
+      "id": "GOV-109",
+      "title": "Density matches cognitive mode — Capture / Command / Review / Brand",
+      "category": "Visual — Density Modes",
+      "domain": "ux",
+      "decision": "Visual density must match cognitive mode: Capture = low chrome, high focus; Command/power = higher density allowed; Review = calm, scannable; Brand = expressive, sparse hero.",
+      "reason": "Principle VL-9 — Density matches cognitive mode.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-028",
+        "GOV-029",
+        "GOV-032",
+        "GOV-095"
+      ],
+      "blocks": [
+        "Page Blueprints",
+        "Component Density Tokens",
+        "Today Layout",
+        "Command Surfaces",
+        "Brand Pages"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Desktop",
+        "Android Build",
+        "Website",
+        "IA"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "VL-9 — Density matches cognitive mode — table"
+          ],
+          "quote": "Capture | Low chrome, high focus"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-9 — Density matches cognitive mode — table"
+          ],
+          "quote": "Command / power | Higher density allowed"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-9 — Density matches cognitive mode — table"
+          ],
+          "quote": "Review | Calm, scannable"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-9 — Density matches cognitive mode — table"
+          ],
+          "quote": "Brand | Expressive, sparse hero"
+        }
+      ],
+      "implementation_impact": "Blueprints and components declare density mode. Do not apply Brand sparse-hero density to Capture, or Command density to Review by default.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Design-System-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Design-System-Principles/"
+    },
+    {
+      "id": "GOV-110",
+      "title": "Native extends tokens — Material 3 maps meaning; no cousin brand",
+      "category": "Visual — Native Token Extension",
+      "domain": "visual",
+      "decision": "Native extends AIIMIN tokens; it does not invent a cousin brand. Material 3 roles map from AIIMIN tokens. Platform behaviors may differ; color meaning must not. New platforms (watch, car, AR) inherit token meaning first, pixel recipes second.",
+      "reason": "Principle VL-10 — Native extends tokens, does not invent a cousin brand; Future impact.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-040",
+        "GOV-073",
+        "GOV-085",
+        "GOV-104"
+      ],
+      "blocks": [
+        "Android Theme Mapping",
+        "Cross-Client Visual Parity",
+        "Future Platforms"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Design System",
+        "Website",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "VL-10 — Native extends tokens, does not invent a cousin brand"
+          ],
+          "quote": "Material 3 roles map from AIIMIN tokens."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-10 — Native extends tokens, does not invent a cousin brand"
+          ],
+          "quote": "Platform behaviors may differ; color meaning must not."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Future impact"
+          ],
+          "quote": "New platforms (watch, car, AR) inherit token meaning first, pixel recipes second."
+        }
+      ],
+      "implementation_impact": "Android M3 mapping audit required. Reject native-only brand palettes that break Action/Done/Muted meaning.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Design-System-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Design-System-Principles/"
+    },
+    {
+      "id": "GOV-111",
+      "title": "Iconography supports wayfinding — critical actions keep words",
+      "category": "Visual — Iconography",
+      "domain": "visual",
+      "decision": "Icons support wayfinding; they do not replace words for critical actions. Emoji is not IA (already GOV-087).",
+      "reason": "Principle VL-6 — Iconography serves recognition.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-087",
+        "GOV-071",
+        "GOV-056"
+      ],
+      "blocks": [
+        "Icon System",
+        "Critical Action UX",
+        "Accessibility Labels"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Accessibility"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "VL-6 — Iconography serves recognition"
+          ],
+          "quote": "Icons support wayfinding; they do not replace words for critical actions."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "VL-6 — Iconography serves recognition"
+          ],
+          "quote": "Emoji is not IA."
+        }
+      ],
+      "implementation_impact": "Destructive/save/capture critical controls retain visible text (or accessible name equivalent). Icons alone insufficient for critical actions.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/07_VISUAL_LANGUAGE_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Design-System-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Design-System-Principles/"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-034",
+      "title": "Ratify Approved VL GOVs (104–106, 108–111) as citeable visual canon",
+      "reason": "Design System Principles pass extracts durable visual law; Approved items need founder cite authority.",
+      "impact": "Agents/PRs cite GOV-IDs for palette semantics, type jobs, composition, density, native mapping, icons.",
+      "risk": "Medium if delayed — visual drift continues as taste debate.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-104",
+        "GOV-105",
+        "GOV-106",
+        "GOV-108",
+        "GOV-109",
+        "GOV-110",
+        "GOV-111"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Design-System-Principles"
+    },
+    {
+      "id": "REC-035",
+      "title": "Founder ADR: light canvas ivory `#EDE4D3` vs cool `#f9f9f9` — Palette.md wins; sync product-locks",
+      "reason": "CF-VL-001 / GOV-107 — VL and product always-on locks disagree on light bg.",
+      "impact": "Closes token debt; unblocks light-mode ship + GOV-107.",
+      "risk": "High if skipped — dual light canvases ship as “options.”",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-107",
+        "GOV-036",
+        "GOV-073",
+        "GOV-104"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Design-System-Principles"
+    },
+    {
+      "id": "REC-036",
+      "title": "Publish type-role token companion under design-token SoT (with REC-020)",
+      "reason": "GOV-105 names families/jobs; SoT still unnamed (GOV-073 / REC-020).",
+      "impact": "One file owns Bodoni/Familjen/Figtree/JetBrains mapping across clients.",
+      "risk": "Medium — unemployed fonts return without SoT.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-105",
+        "GOV-090",
+        "GOV-073"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Design-System-Principles"
+    },
+    {
+      "id": "REC-037",
+      "title": "Add Visual QA gates: one-composition, cards-for-interaction, orange/green semantics, density-by-mode",
+      "reason": "Operationalize GOV-104/106/109 + Known risks (marketing freelancers / over-carding).",
+      "impact": "PR/visual review checklist blocks collage Today and banned looks on landing.",
+      "risk": "Low process cost; High drift if skipped.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-104",
+        "GOV-106",
+        "GOV-109",
+        "GOV-037"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Design-System-Principles"
+    },
+    {
+      "id": "REC-038",
+      "title": "Run Android Material 3 ↔ AIIMIN token meaning audit",
+      "reason": "GOV-110 requires M3 map without cousin brand.",
+      "impact": "Native theme parity proof; catches cousin palettes early.",
+      "risk": "High if delayed — two-product feel (also CF-IA-003).",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-110",
+        "GOV-073",
+        "GOV-040",
+        "GOV-104"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Design-System-Principles"
+    },
+    {
+      "id": "REC-039",
+      "title": "Founder confirm GOV-107 contrast floors close GOV-071 specificity gap",
+      "reason": "GOV-071 Needs Discussion; VL-2 supplies ≥4.5:1 + anti-neon — complementary not contradiction.",
+      "impact": "Accessibility bar becomes citeable numbers.",
+      "risk": "Medium — a11y stays vague without confirmation.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-107",
+        "GOV-071"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Design-System-Principles"
+    },
+    {
+      "id": "REC-040",
+      "title": "Next P7 artifact: 14_DESIGN_SYSTEM_SPECIFICATION (tokens/contracts) or 09_MOTION_PRINCIPLES",
+      "reason": "VL principles depend on Design System Spec for token contracts; motion next in visual stack. Page Blueprints still open from IA.",
+      "impact": "Continues build-without-reread completeness for visual stack.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-104",
+        "GOV-105",
+        "GOV-110",
+        "GOV-073"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Design-System-Principles"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-VL-001",
+      "type": "Token conflict — light canvas",
+      "detail": "VL-1 locks light canvas ivory `#EDE4D3` (Palette authority) while product always-on locks and some docs still cite cool `#f9f9f9`. Source itself calls this debt. Not auto-resolved.",
+      "related_gov": [
+        "GOV-107",
+        "GOV-036",
+        "GOV-073",
+        "GOV-104"
+      ],
+      "recommendation": "REC-035. Palette.md ADR; update product-locks if ivory wins."
+    },
+    {
+      "id": "CF-VL-002",
+      "type": "Complementary Needs Discussion (not contradiction)",
+      "detail": "VL-7 restates split lockup as sacred; Constitution GOV-012 still Needs Discussion (route bind Today≡/overview). GOV-039 already Approved visual+IA law. No new lockup GOV minted.",
+      "related_gov": [
+        "GOV-012",
+        "GOV-039"
+      ],
+      "recommendation": "Keep REC-003. Do not re-open lockup geometry."
+    },
+    {
+      "id": "CF-VL-003",
+      "type": "Complementary Needs Discussion (not contradiction)",
+      "detail": "GOV-071 asserts critical-path contrast without numbers; GOV-107 supplies ≥4.5:1 and anti-neon. Do not auto-close GOV-071.",
+      "related_gov": [
+        "GOV-071",
+        "GOV-107"
+      ],
+      "recommendation": "REC-039."
+    },
+    {
+      "id": "CF-VL-004",
+      "type": "Incomplete — token SoT unnamed",
+      "detail": "VL-1/8/10 require Palette.md arbitration and cross-client meaning; GOV-073 still Needs Discussion and REC-020 SoT unnamed.",
+      "related_gov": [
+        "GOV-073",
+        "GOV-108",
+        "GOV-110",
+        "GOV-105"
+      ],
+      "recommendation": "Keep REC-020 + REC-036."
+    },
+    {
+      "id": "CF-VL-005",
+      "type": "Known risk — marketing banned looks",
+      "detail": "Known risks: Marketing freelancers introducing banned looks “just for landing.” Touches GOV-037/010; composition law GOV-106.",
+      "related_gov": [
+        "GOV-037",
+        "GOV-010",
+        "GOV-106"
+      ],
+      "recommendation": "REC-037 Visual QA on landing/brand."
+    },
+    {
+      "id": "CF-VL-006",
+      "type": "Known risk — over-carding",
+      "detail": "Known risks: Over-carding product UI under dashboard habit. GOV-106 + GOV-091 address; enforcement still process-gap.",
+      "related_gov": [
+        "GOV-106",
+        "GOV-091",
+        "GOV-076"
+      ],
+      "recommendation": "REC-037."
+    },
+    {
+      "id": "CF-VL-007",
+      "type": "Dependency on open IA intent",
+      "detail": "GOV-109 density modes map to Capture/Command/Review/Brand; Command/Review alignment with five IA intents (GOV-095 Needs Discussion) is incomplete.",
+      "related_gov": [
+        "GOV-109",
+        "GOV-095"
+      ],
+      "recommendation": "Keep REC-028; density modes stay valid even if intent names shift."
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-VL-001",
+      "missing": "Founder ADR light canvas ivory vs `#f9f9f9`",
+      "why": "GOV-107 / CF-VL-001",
+      "next": "REC-035"
+    },
+    {
+      "id": "M-VL-002",
+      "missing": "Named design-token SoT + type-role companion",
+      "why": "GOV-073 / GOV-105",
+      "next": "REC-020 + REC-036"
+    },
+    {
+      "id": "M-VL-003",
+      "missing": "Visual QA checklist operationalization",
+      "why": "GOV-104/106/109 Known risks",
+      "next": "REC-037"
+    },
+    {
+      "id": "M-VL-004",
+      "missing": "Android M3 token mapping audit",
+      "why": "GOV-110",
+      "next": "REC-038"
+    },
+    {
+      "id": "M-VL-005",
+      "missing": "Design System Specification contracts (space scale values, elevation, motion bands)",
+      "why": "VL Dependencies cite 14_DESIGN_SYSTEM_SPECIFICATION",
+      "next": "Govern 14_DESIGN_SYSTEM_SPECIFICATION"
+    },
+    {
+      "id": "M-VL-006",
+      "missing": "Motion principles for atmosphere vs decoration boundary",
+      "why": "VL Related sections cite 09_MOTION",
+      "next": "Govern 09_MOTION_PRINCIPLES"
+    }
+  ],
+  "questions_for_founder": [
+    "Approve light canvas as ivory `#EDE4D3` (Palette) and retire cool `#f9f9f9` as Life OS light bg (REC-035)?",
+    "Confirm GOV-107 ≥4.5:1 + anti-neon closes GOV-071 numeric gap (REC-039)?",
+    "Ratify type role matrix Bodoni/Familjen/Figtree/JetBrains as sole brand jobs (GOV-105)?",
+    "Brand manifesto always-light: keep as exception under GOV-108?",
+    "Density mode labels: keep Capture/Command/Review/Brand or rename to match five IA intents after GOV-095?",
+    "Native M3: audit now before Play Console scale (REC-038)?",
+    "Next artifact: 14_DESIGN_SYSTEM_SPECIFICATION, 09_MOTION_PRINCIPLES, or Page Blueprints (REC-040)?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 8,
+    "ai_readiness": 5,
+    "conflict_hygiene": 8,
+    "metric_rigor": 8,
+    "amendment_process": 8,
+    "completeness_build_without_reread": 7,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 79,
+    "interpretation": "Visual Language / Design System Principles supply semantic color, type jobs, composition, dual-appearance, density modes, native token extension, and icon-word rules missing as citeable canon. GOV-107 Needs Discussion until ivory vs `#f9f9f9` ADR. No hard contradiction with Constitution/NN/IA; conflicts flagged only. AI readiness low — visual stack not AI law."
+  },
+  "validation": {
+    "continuous_gov_ids": true,
+    "json_schema": true,
+    "duplicate_gov_detection": true,
+    "duplicate_decision_detection": true,
+    "broken_dependency_detection": true,
+    "broken_references": true,
+    "missing_evidence": true,
+    "status": "PASSED"
+  }
+}

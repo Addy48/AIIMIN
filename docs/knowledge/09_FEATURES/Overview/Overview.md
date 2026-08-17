@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-08-20
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Today / Overview
+
+## Parent
+
+- [[09_FEATURES/Index]]
 
 ## Current state
 
@@ -39,3 +58,23 @@
 - **Why:** Adi chose option A for retention / one clear job
 - **Files:** UniversalLogger.jsx, todayCapture.css, Overview.jsx, OverviewWidgetGrid.jsx, navItems BASE_WIDGETS, DashboardSections.jsx
 - **Status:** local (not commit/push unless asked)
+
+---
+
+## Structure (Phase V4)
+
+> Added 2026-08-20 so every living feature MOC shares the same skeleton. Fill stubs when next touching this feature.
+
+## Why this exists
+
+One job this feature serves for the user.
+
+## Contracts
+
+Routes, tables, env names (no secret values).
+
+## Related
+
+- [[09_FEATURES/Index|Features Index]]
+- [[15_MEMORY/Current-Context]]
+

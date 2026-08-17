@@ -1,0 +1,1073 @@
+{
+  "meta": {
+    "document": "Interaction Principles Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+    "source_version": "3.0",
+    "source_status": "FROZEN",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-122\u2026GOV-135",
+    "gov_id_range_referenced": "GOV-001\u2026GOV-121 (prior; referenced only)",
+    "decision_count_new": 14,
+    "recommendation_count": 7,
+    "existing_gov_referenced_count": 32,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "constitution_untouched": true,
+    "non_negotiables_untouched": true,
+    "ia_principles_untouched": true,
+    "design_system_principles_untouched": true,
+    "motion_principles_untouched": true,
+    "standard_untouched": true,
+    "source_untouched": true
+  },
+  "existing_gov_references": [
+    {
+      "ix": "IX-2 (never surprise \u2014 silent wrong / confirm / feedback)",
+      "gov": [
+        "GOV-035",
+        "GOV-051",
+        "GOV-015",
+        "GOV-065",
+        "GOV-046",
+        "GOV-077"
+      ],
+      "note": "Correctable inference + destructive confirm + mandatory feedback already canon \u2014 no re-mint for ambush core"
+    },
+    {
+      "ix": "IX-4 (progressive disclosure)",
+      "gov": [
+        "GOV-032"
+      ],
+      "note": "Progressive disclosure by stakes already Constitution canon"
+    },
+    {
+      "ix": "IX-6 (intelligence without interruption)",
+      "gov": [
+        "GOV-033",
+        "GOV-088",
+        "GOV-048"
+      ],
+      "note": "Interruptibility + no mid-Focus coaching + confidence bands \u2014 bands still Needs Discussion"
+    },
+    {
+      "ix": "IX-7 (justify fidelity/speed/trust/clarity)",
+      "gov": [
+        "GOV-062"
+      ],
+      "note": "Identical Non-Negotiable \u2014 no re-mint"
+    },
+    {
+      "ix": "IX-8 (animation communicates)",
+      "gov": [
+        "GOV-063",
+        "GOV-112"
+      ],
+      "note": "Motion meaning + purpose allowlist already governed"
+    },
+    {
+      "ix": "IX-9 (notification deserve attention)",
+      "gov": [
+        "GOV-064"
+      ],
+      "note": "Already NN; still Needs Discussion \u2014 no re-mint"
+    },
+    {
+      "ix": "IX-10 (purpose / anti-clutter widgets)",
+      "gov": [
+        "GOV-076",
+        "GOV-062"
+      ],
+      "note": "Today anti-clutter + justify interaction cover decorative/placeholder debt"
+    },
+    {
+      "ix": "IX-11 (Enter to save)",
+      "gov": [
+        "GOV-066"
+      ],
+      "note": "Ceremony-free Enter/primary save already NN"
+    },
+    {
+      "ix": "IX-15 (feedback mandatory)",
+      "gov": [
+        "GOV-077",
+        "GOV-089"
+      ],
+      "note": "No interaction without feedback + sync honesty"
+    },
+    {
+      "ix": "IX-19 (empty states teach)",
+      "gov": [
+        "GOV-067"
+      ],
+      "note": "Every empty state must teach already NN"
+    },
+    {
+      "ix": "IX-24 (no duplicate navigation)",
+      "gov": [
+        "GOV-075",
+        "GOV-097"
+      ],
+      "note": "Already NN Needs Discussion; free-pin model in IA \u2014 no re-mint"
+    },
+    {
+      "ix": "IX-3 Kill List clause",
+      "gov": [
+        "GOV-074"
+      ],
+      "note": "Kill List consult already NN \u2014 reduce-decisions elevated separately"
+    },
+    {
+      "ix": "IX-25 compression craft anchor",
+      "gov": [
+        "GOV-034",
+        "GOV-060"
+      ],
+      "note": "~5 interactions craft + economy as performance \u2014 continuous delta elevated separately"
+    },
+    {
+      "ix": "Capture / AI structure anchors",
+      "gov": [
+        "GOV-028",
+        "GOV-047",
+        "GOV-052",
+        "GOV-059",
+        "GOV-008"
+      ],
+      "note": "Capture-first / NL intent / structure later / speed / anti-form-builder"
+    },
+    {
+      "ix": "Command palette / intents",
+      "gov": [
+        "GOV-099",
+        "GOV-095",
+        "GOV-027"
+      ],
+      "note": "Palette first-class IA + intents + intent-over-interface \u2014 still open ND on 099/095"
+    },
+    {
+      "ix": "Settings / context",
+      "gov": [
+        "GOV-100"
+      ],
+      "note": "Settings penalty box supports context-before-controls"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-122",
+      "title": "One obvious primary action per view",
+      "category": "UX \u2014 Primary Action",
+      "decision": "Every view declares one primary action. Secondary actions stay visually and cognitively quieter. If everything is primary, nothing is.",
+      "reason": "Principle IX-1 \u2014 One obvious primary action. Interaction hierarchy law not previously citeable as GOV.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-062",
+        "GOV-029",
+        "GOV-106"
+      ],
+      "blocks": [
+        "Page Blueprints",
+        "Component Blueprints",
+        "Visual QA",
+        "Android Screens"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-1 \u2014 One obvious primary action"
+          ],
+          "quote": "Every view declares one primary action. Secondary actions stay visually and cognitively quieter. If everything is primary, nothing is."
+        }
+      ],
+      "implementation_impact": "Each screen/sheet names one primary CTA. Demote competing accents. Motion hierarchy (GOV-112) may support but not invent a second primary.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-123",
+      "title": "Reduce decisions \u2014 defer choice; infer with correction before asking",
+      "category": "UX \u2014 Decision Reduction",
+      "decision": "If a choice can wait, it waits. If AI can infer with a correction path, do not ask upfront. Kill List fields stay dead.",
+      "reason": "Principle IX-3 \u2014 Reduce decisions. Elevates deferral/inference order beyond GOV-032 disclosure and GOV-074 Kill List.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-032",
+        "GOV-074",
+        "GOV-035",
+        "GOV-051",
+        "GOV-080"
+      ],
+      "blocks": [
+        "Onboarding Flows",
+        "Capture Forms",
+        "AI Intake",
+        "Feature Field Intake"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Android Build",
+        "Desktop",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-3 \u2014 Reduce decisions"
+          ],
+          "quote": "If a choice can wait, it waits. If AI can infer with correction, do not ask upfront. Kill List fields stay dead."
+        }
+      ],
+      "implementation_impact": "Default to fewer asks. Prefer infer+correct over upfront pickers. Consult Kill List before new fields. Watch chip fatigue (Known risks).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-124",
+      "title": "Context before controls \u2014 orient before toolbars",
+      "category": "UX \u2014 Orientation",
+      "decision": "Orient the user (what is this moment for?) before presenting a toolbar of possibilities. Capture bar before settings. Briefing before widget garage.",
+      "reason": "Principle IX-5 \u2014 Context before controls. Reading/capture orientation law.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-028",
+        "GOV-100",
+        "GOV-029",
+        "GOV-109"
+      ],
+      "blocks": [
+        "Today Layout",
+        "Capture Surfaces",
+        "Settings Entry Points",
+        "Page Blueprints"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-5 \u2014 Context before controls"
+          ],
+          "quote": "Orient the user (what is this moment for?) before presenting a toolbar of possibilities. Capture bar before settings. Briefing before widget garage."
+        }
+      ],
+      "implementation_impact": "Lead with moment purpose + capture path. Do not open on settings/widget garages. Density modes (GOV-109) must still orient first.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-125",
+      "title": "Optimistic where safe; branded confirm where destructive",
+      "category": "UX \u2014 Commit Strategy",
+      "decision": "Habit toggles and other low-stakes recoverable writes may be optimistic. Account delete, vault wipe, irreversible money, and privacy-affecting shares confirm \u2014 branded dialog, typed confirm when stakes peak.",
+      "reason": "Principle IX-12 \u2014 Optimistic where safe; confirm where destructive. Elevates optimistic path beside existing confirm canon (GOV-015/065).",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-015",
+        "GOV-065",
+        "GOV-046",
+        "GOV-077",
+        "GOV-089"
+      ],
+      "blocks": [
+        "Habit Toggle UX",
+        "Destructive Confirm Spec",
+        "Finance Irreversible Flows",
+        "Privacy Share Flows"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Desktop",
+        "Website",
+        "Backend"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-12 \u2014 Optimistic where safe; confirm where destructive"
+          ],
+          "quote": "Habit toggles may be optimistic. Account delete, vault wipe, irreversible money, and privacy-affecting shares confirm \u2014 branded dialog, typed confirm when stakes peak."
+        }
+      ],
+      "implementation_impact": "Classify writes: optimistic vs confirm-required. Keep branded ConfirmDialog; ban window.confirm. Pair optimistic UI with honest sync states.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-126",
+      "title": "Infer then chip \u2014 correction chips are first-class UI",
+      "category": "UX \u2014 AI Correction",
+      "decision": "Pre-filled structure shows chips for correction. Chips are first-class UI, not afterthoughts.",
+      "reason": "Principle IX-13 \u2014 Infer, then chip. Operationalizes correctable inference as visible chip affordances.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-035",
+        "GOV-051",
+        "GOV-047",
+        "GOV-052",
+        "GOV-123"
+      ],
+      "blocks": [
+        "AI Capture UI",
+        "Chip Component Spec",
+        "Finance NL Intake",
+        "Onboarding Inference"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Design System",
+        "Android Build",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-13 \u2014 Infer, then chip"
+          ],
+          "quote": "Pre-filled structure shows chips for correction. Chips are first-class UI, not afterthoughts."
+        }
+      ],
+      "implementation_impact": "Ship chip patterns for inferred fields. Do not hide correction in buried edit menus. Mitigate chip fatigue (REC + Known risks).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-127",
+      "title": "Capture beats navigation \u2014 Palette/Logger outrank deep-link tourism",
+      "category": "UX \u2014 Capture Priority",
+      "decision": "Getting data in beats touring the information architecture. Command Palette / Logger outrank deep-link tourism for daily intents.",
+      "reason": "Principle IX-14 \u2014 Capture beats navigation. Elevates daily capture primacy beyond GOV-028/059.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-028",
+        "GOV-059",
+        "GOV-066",
+        "GOV-099",
+        "GOV-095"
+      ],
+      "blocks": [
+        "Desktop IA Chrome",
+        "Command Palette Spec",
+        "Logger Placement",
+        "Onboarding Tours"
+      ],
+      "referenced_by": [
+        "P8",
+        "Desktop",
+        "Android Build",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-14 \u2014 Capture beats navigation"
+          ],
+          "quote": "Getting data in beats touring the information architecture. Palette/Logger outrank deep-link tourism for daily intents."
+        }
+      ],
+      "implementation_impact": "Prioritize capture entry points over nav tourism. Depends on GOV-099 palette scope still Needs Discussion \u2014 founder align via REC.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-128",
+      "title": "Undo over fear \u2014 recoverable mistakes get undo; unrecoverable get confirm",
+      "category": "UX \u2014 Error Recovery",
+      "decision": "Prefer undo windows for recoverable mistakes; prefer confirm for unrecoverable ones. Do not use fear copy for recoverable acts.",
+      "reason": "Principle IX-16 \u2014 Undo over fear. Error-recovery / editing law missing from prior GOVs.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-125",
+        "GOV-015",
+        "GOV-065",
+        "GOV-030"
+      ],
+      "blocks": [
+        "Undo Spec",
+        "Toast/Undo Windows",
+        "Destructive Copy",
+        "Component Blueprints"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-16 \u2014 Undo over fear"
+          ],
+          "quote": "Prefer undo windows for recoverable mistakes; prefer confirm for unrecoverable ones. Do not use fear copy for recoverable acts."
+        }
+      ],
+      "implementation_impact": "Add undo windows for recoverable deletes/edits where feasible. Keep confirm for irreversible. Tone: calm agency, not fear.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-129",
+      "title": "Shortcuts are progressive enhancement \u2014 never the only essential path",
+      "category": "UX \u2014 Keyboard / Shortcuts",
+      "decision": "Keyboard chords (e.g. \u2318K, Space\u2192L, Esc) accelerate; they never become the only path for essential capture on desktop. Mobile provides equivalent one-thumb primary paths.",
+      "reason": "Principle IX-17 \u2014 Shortcuts are progressive enhancement. Keyboard + cross-platform path law.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-066",
+        "GOV-127",
+        "GOV-056",
+        "GOV-099"
+      ],
+      "blocks": [
+        "Keyboard Shortcut Map",
+        "Desktop Capture",
+        "Mobile One-Thumb Paths",
+        "Command Palette"
+      ],
+      "referenced_by": [
+        "P8",
+        "Desktop",
+        "Android Build",
+        "Accessibility",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-17 \u2014 Shortcuts are progressive enhancement"
+          ],
+          "quote": "Chords (`\u2318K`, `Space\u2192L`, `Esc`) accelerate; they never become the only path for essential capture on desktop. Mobile has equivalent one-thumb primary paths."
+        }
+      ],
+      "implementation_impact": "Every essential capture has visible primary control. Shortcuts documented/taught (Known risks). Mobile: one-thumb primary, not chord-dependent.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-130",
+      "title": "Forms are a last resort \u2014 NL + chips + progressive fields default",
+      "category": "UX \u2014 Capture Forms",
+      "decision": "Natural language + chips + progressive fields beat multi-field forms as the default personality. Forms remain for high-stakes accuracy when needed \u2014 not as default.",
+      "reason": "Principle IX-18 \u2014 Forms are a last resort. Elevates positive default beyond GOV-008 refuse form-builder.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-008",
+        "GOV-047",
+        "GOV-126",
+        "GOV-123",
+        "GOV-032"
+      ],
+      "blocks": [
+        "Finance Capture",
+        "Onboarding",
+        "Form Component Policy",
+        "AI Intake"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Desktop",
+        "Android Build",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-18 \u2014 Forms are a last resort"
+          ],
+          "quote": "NL + chips + progressive fields beat six-field finance as the only path. Forms remain for high-stakes accuracy when needed \u2014 not as default personality."
+        }
+      ],
+      "implementation_impact": "Default capture = NL/chips/progressive. Multi-field forms only when stakes demand accuracy. Do not revive form-builder personality.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-131",
+      "title": "Consistency of verbs \u2014 same action, same verb across surfaces",
+      "category": "UX \u2014 Verb Consistency",
+      "decision": "The same action uses the same verb across surfaces (e.g. Save, Log, Complete, Delete). Verb drift is interaction debt.",
+      "reason": "Principle IX-20 \u2014 Consistency of verbs. Interaction naming law pending Naming Language artifact.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-040",
+        "GOV-062"
+      ],
+      "blocks": [
+        "Naming Language Governance",
+        "Copy QA",
+        "Cross-Client Labels"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website",
+        "Content"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-20 \u2014 Consistency of verbs"
+          ],
+          "quote": "Same action uses same verb across surfaces (Save, Log, Complete, Delete). See Naming Language."
+        }
+      ],
+      "implementation_impact": "Align button/menu verbs across web/native. Govern full lexicon in Naming Language (next). No synonym salad for same act.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-132",
+      "title": "Latency honesty \u2014 skeleton for waits; never fake instant if pending",
+      "category": "UX \u2014 Latency Honesty",
+      "decision": "Use skeleton/progress for known waits. Do not fake instant success if sync is pending \u2014 especially on native outbox.",
+      "reason": "Principle IX-21 \u2014 Latency honesty. Elevates interaction-level honesty beyond GOV-089/121.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-089",
+        "GOV-121",
+        "GOV-077",
+        "GOV-125"
+      ],
+      "blocks": [
+        "Sync Honesty UX",
+        "Native Outbox UI",
+        "Skeleton Patterns"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Desktop",
+        "Website",
+        "Backend"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-21 \u2014 Latency honesty"
+          ],
+          "quote": "Skeleton/progress for known waits. Do not fake instant if sync is pending \u2014 especially on native outbox."
+        }
+      ],
+      "implementation_impact": "Pending/outbox states visible. No success chrome while sync pending. Skeletons for known waits; loading motion not mask (GOV-121).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-133",
+      "title": "Accessibility is interaction quality \u2014 not a later audit",
+      "category": "Accessibility \u2014 Interaction Quality",
+      "domain": "accessibility",
+      "decision": "Keyboard access, focus order, hit targets, and announcements are part of interaction design \u2014 not a later audit.",
+      "reason": "Principle IX-22 \u2014 Accessibility is interaction quality. Elevates a11y into interaction law (details still in Accessibility Principles).",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-056",
+        "GOV-071",
+        "GOV-129",
+        "GOV-072"
+      ],
+      "blocks": [
+        "Accessibility Principles Governance",
+        "Focus Order Spec",
+        "Hit Target Spec",
+        "Component Blueprints"
+      ],
+      "referenced_by": [
+        "P8",
+        "Accessibility",
+        "Android Build",
+        "Desktop",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-22 \u2014 Accessibility is interaction quality"
+          ],
+          "quote": "Keyboard, focus order, hit targets, and announcements are part of interaction design \u2014 not a later audit (see Accessibility Principles)."
+        }
+      ],
+      "implementation_impact": "Interaction PRs include focus order, keyboard path, hit targets, announcements. Defer numeric a11y floors to Accessibility Principles + GOV-071/107.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/"
+    },
+    {
+      "id": "GOV-134",
+      "title": "Device-appropriate gestures \u2014 platform conventions win",
+      "category": "UX \u2014 Gestures",
+      "decision": "Platform conventions (back, share sheets, system biometrics) win over reinvented gestures \u2014 unless Constitution requires otherwise (e.g. capture ceiling).",
+      "reason": "Principle IX-23 \u2014 Device-appropriate gestures. Fills gesture gap left open in Motion pass.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-040",
+        "GOV-085",
+        "GOV-013",
+        "GOV-041",
+        "GOV-118"
+      ],
+      "blocks": [
+        "Android Gesture Map",
+        "iOS/Web Gesture Policy",
+        "Capture Ceiling Enforcement"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Desktop",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-23 \u2014 Device-appropriate gestures"
+          ],
+          "quote": "Platform conventions (back, share sheets, system biometrics) win over reinvented gestures \u2014 unless Constitution requires otherwise (e.g., capture ceiling)."
+        }
+      ],
+      "implementation_impact": "Prefer system back/share/biometrics. Do not invent cousin gestures. /m capture ceiling and native\u2260/m still bind.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    },
+    {
+      "id": "GOV-135",
+      "title": "Compression is continuous \u2014 estimate interaction delta; net-positive count fails",
+      "category": "UX \u2014 Interaction Compression",
+      "decision": "New features must estimate interaction delta. A net-positive interaction count for the same outcome is a fail unless stakes demand it.",
+      "reason": "Principle IX-25 \u2014 Compression is continuous. Elevates continuous delta accounting beyond GOV-034 craft target.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-034",
+        "GOV-060",
+        "GOV-062",
+        "GOV-093"
+      ],
+      "blocks": [
+        "Feature Intake",
+        "Interaction Audit Gate",
+        "Compression QA"
+      ],
+      "referenced_by": [
+        "P8",
+        "Product",
+        "Design System",
+        "Android Build",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "IX-25 \u2014 Compression is continuous"
+          ],
+          "quote": "New features must estimate interaction delta. Net-positive interaction count for the same outcome is a fail unless stakes demand it."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Reasoning"
+          ],
+          "quote": "Compression is not a slogan; it is interaction law."
+        }
+      ],
+      "implementation_impact": "Feature proposals include interaction-delta estimate. Ties to GOV-060 Needs Discussion (economy as performance) and eight-gate (GOV-093).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/08_INTERACTION_PRINCIPLES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Interaction-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Interaction-Principles/",
+      "domain": "ux"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-048",
+      "title": "Ratify Approved Interaction GOVs (122\u2013126, 128\u2013134) as citeable interaction canon",
+      "reason": "IX pass extracts operational Article V rules not previously GOV-cited.",
+      "impact": "PRs cite GOV-IDs for capture, chips, undo, shortcuts, forms, gestures.",
+      "risk": "Medium if delayed \u2014 friction returns as taste.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-122",
+        "GOV-123",
+        "GOV-124",
+        "GOV-125",
+        "GOV-126",
+        "GOV-128",
+        "GOV-129",
+        "GOV-130",
+        "GOV-131",
+        "GOV-132",
+        "GOV-133",
+        "GOV-134"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Interaction-Principles"
+    },
+    {
+      "id": "REC-049",
+      "title": "Publish Chip UX Spec \u2014 correction patterns + anti-fatigue limits",
+      "reason": "GOV-126 + Known risks chip fatigue if everything inferred.",
+      "impact": "Caps chip density; defines correction UX.",
+      "risk": "High \u2014 chip spam destroys trust.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-126",
+        "GOV-123",
+        "GOV-035"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Interaction-Principles"
+    },
+    {
+      "id": "REC-050",
+      "title": "Teach desktop shortcuts; document chord map; keep visible primary paths",
+      "reason": "Known risks: Desktop shortcuts never taught \u2192 power features rot. GOV-129.",
+      "impact": "Shortcuts discovered; essentials remain clickable.",
+      "risk": "Medium \u2014 power features rot.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-129",
+        "GOV-099",
+        "GOV-066"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Interaction-Principles"
+    },
+    {
+      "id": "REC-051",
+      "title": "Founder align GOV-127 capture-beats-nav with GOV-099 palette scope + GOV-095 intents",
+      "reason": "GOV-127 Needs Discussion depends on open IA ND items.",
+      "impact": "Unblocks Palette/Logger primacy vs deep-link tourism.",
+      "risk": "High thrash if nav and capture fight.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-127",
+        "GOV-099",
+        "GOV-095",
+        "GOV-075"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Interaction-Principles"
+    },
+    {
+      "id": "REC-052",
+      "title": "Add Interaction QA gates: primary action, context-before-controls, undo/confirm class, latency honesty, gesture platform-fit",
+      "reason": "Operationalize new IX GOVs + Known risks over-compression.",
+      "impact": "PR checklist for interaction debt.",
+      "risk": "Low process; High drift if skipped.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-122",
+        "GOV-124",
+        "GOV-125",
+        "GOV-128",
+        "GOV-132",
+        "GOV-134",
+        "GOV-135"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Interaction-Principles"
+    },
+    {
+      "id": "REC-053",
+      "title": "Founder resolve GOV-135 \u00d7 GOV-060 \u2014 interaction delta accounting as performance/economy",
+      "reason": "Both Needs Discussion; IX-25 supplies delta fail rule Constitution deferred.",
+      "impact": "Feature intake gets numeric interaction delta gate.",
+      "risk": "Medium \u2014 compression theater or ignored economy.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-135",
+        "GOV-060",
+        "GOV-034"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Interaction-Principles"
+    },
+    {
+      "id": "REC-054",
+      "title": "Next P7 artifact: 11_ACCESSIBILITY_PRINCIPLES or 13_NAMING_LANGUAGE or 10_COMPONENT_PRINCIPLES",
+      "reason": "IX-20/22 defer details; Motion/VL still need token contracts. Page Blueprints open.",
+      "impact": "Continues build-without-reread.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-131",
+        "GOV-133",
+        "GOV-134",
+        "GOV-073"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Interaction-Principles"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-IX-001",
+      "type": "Known risk \u2014 chip fatigue",
+      "detail": "Known risks: Chip fatigue if everything is inferred. GOV-126/123 create pressure toward chips.",
+      "related_gov": [
+        "GOV-126",
+        "GOV-123"
+      ],
+      "recommendation": "REC-049"
+    },
+    {
+      "id": "CF-IX-002",
+      "type": "Known risk \u2014 over-compression removes safety asks",
+      "detail": "Known risks: Over-compression removing necessary safety asks. Tension with GOV-135/125 confirm rules.",
+      "related_gov": [
+        "GOV-135",
+        "GOV-125",
+        "GOV-128"
+      ],
+      "recommendation": "REC-052; stakes override compression"
+    },
+    {
+      "id": "CF-IX-003",
+      "type": "Known risk \u2014 shortcuts never taught",
+      "detail": "Desktop shortcuts never taught \u2192 power features rot. GOV-129 progressive enhancement.",
+      "related_gov": [
+        "GOV-129",
+        "GOV-099"
+      ],
+      "recommendation": "REC-050"
+    },
+    {
+      "id": "CF-IX-004",
+      "type": "Dependency on open ND \u2014 navigation primacy",
+      "detail": "IX-24 reuses GOV-075 Needs Discussion; GOV-127 also ND on palette/intents.",
+      "related_gov": [
+        "GOV-075",
+        "GOV-097",
+        "GOV-127",
+        "GOV-099"
+      ],
+      "recommendation": "REC-051 + keep REC-032"
+    },
+    {
+      "id": "CF-IX-005",
+      "type": "Complementary ND \u2014 notifications",
+      "detail": "IX-9 reuses GOV-064 still Needs Discussion; no new notification GOV minted.",
+      "related_gov": [
+        "GOV-064"
+      ],
+      "recommendation": "Keep REC-017"
+    },
+    {
+      "id": "CF-IX-006",
+      "type": "Extract gap \u2014 selection / multi-select / search detail / focus management",
+      "detail": "Founder extract asked selection, multi-select, search behavior, focus management. Source IX has no dedicated selection/multi-select; search only via Palette (GOV-099); focus only via IX-22 bundle. Do not invent.",
+      "related_gov": [
+        "GOV-099",
+        "GOV-133"
+      ],
+      "recommendation": "REC-054 Accessibility/Component; Missing M-IX-*"
+    },
+    {
+      "id": "CF-IX-007",
+      "type": "Complementary ND \u2014 compression economy",
+      "detail": "GOV-135 continuous delta vs GOV-060 interaction economy as performance both Needs Discussion.",
+      "related_gov": [
+        "GOV-135",
+        "GOV-060",
+        "GOV-034"
+      ],
+      "recommendation": "REC-053"
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-IX-001",
+      "missing": "Selection and multi-select behavior",
+      "why": "Not in 08_INTERACTION source",
+      "next": "Component Principles / blueprints \u2014 do not invent"
+    },
+    {
+      "id": "M-IX-002",
+      "missing": "Search behavior beyond Command Palette primacy",
+      "why": "Only Palette/Logger in IX-14/17; GOV-099 ND",
+      "next": "REC-030 + REC-051"
+    },
+    {
+      "id": "M-IX-003",
+      "missing": "Focus management detail (order, trap, restore)",
+      "why": "IX-22 names focus order only",
+      "next": "Govern 11_ACCESSIBILITY_PRINCIPLES"
+    },
+    {
+      "id": "M-IX-004",
+      "missing": "Chip anti-fatigue numeric limits",
+      "why": "Known risk; GOV-126",
+      "next": "REC-049"
+    },
+    {
+      "id": "M-IX-005",
+      "missing": "Undo window duration / scope matrix",
+      "why": "GOV-128 states preference not timings",
+      "next": "Component Blueprints / Undo Spec"
+    },
+    {
+      "id": "M-IX-006",
+      "missing": "Full verb lexicon",
+      "why": "GOV-131 points to Naming Language",
+      "next": "Govern 13_NAMING_LANGUAGE"
+    }
+  ],
+  "questions_for_founder": [
+    "Approve one-primary-action law (GOV-122) on every view including sheets?",
+    "Confirm GOV-127: Palette/Logger outrank deep-link tourism \u2014 with GOV-099 scope (REC-051)?",
+    "Approve optimistic habit toggles + branded confirm peak stakes (GOV-125)?",
+    "Confirm undo windows for recoverable acts; no fear copy (GOV-128)?",
+    "Resolve GOV-135 \u00d7 GOV-060 interaction delta as intake gate (REC-053)?",
+    "Chip fatigue: publish limits now (REC-049)?",
+    "Selection/multi-select: confirm defer \u2014 no invent (CF-IX-006)?",
+    "Next artifact: Accessibility / Naming / Component Principles (REC-054)?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 8,
+    "ai_readiness": 8,
+    "conflict_hygiene": 7,
+    "metric_rigor": 7,
+    "amendment_process": 8,
+    "completeness_build_without_reread": 7,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 80,
+    "interpretation": "Interaction Principles operationalize Article V: primary action, decision reduction, context-before-controls, optimistic/confirm, chips, capture-over-nav, undo, shortcuts, forms-last, verbs, latency honesty, a11y-as-interaction, gestures, continuous compression. Heavy reuse of NN/Constitution/Motion. GOV-127 and GOV-135 Needs Discussion. Selection/multi-select absent \u2014 not invented."
+  },
+  "validation": {
+    "continuous_gov_ids": true,
+    "json_schema": true,
+    "duplicate_gov_detection": true,
+    "duplicate_decision_detection": true,
+    "broken_dependency_detection": true,
+    "broken_references": true,
+    "missing_evidence": true,
+    "status": "PASSED"
+  }
+}

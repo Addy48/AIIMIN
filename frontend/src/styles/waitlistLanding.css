@@ -4588,3 +4588,64 @@ html {
     grid-template-columns: 1fr;
   }
 }
+
+/* Android companion status — mobile + desktop (not desktop-only) */
+.waitlist-android-section {
+  padding-top: 8px;
+}
+
+.waitlist-android-panel {
+  margin-top: 18px;
+  padding: 20px 18px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 90%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+}
+
+.waitlist-android-status {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  color: var(--color-accent);
+}
+
+.waitlist-android-badge {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.waitlist-android-detail {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-text-1);
+}
+
+.waitlist-android-points {
+  margin: 0 0 16px;
+  padding-left: 1.1rem;
+  color: var(--color-text-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.waitlist-android-points li + li {
+  margin-top: 6px;
+}
+
+.waitlist-android-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.waitlist-desktop-notice-copy a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+

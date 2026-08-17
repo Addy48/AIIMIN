@@ -1,0 +1,104 @@
+{
+  "nodes": [
+    {
+      "id": "t1",
+      "type": "text",
+      "text": "Founder Cockpit \u00b7 Derived",
+      "x": -200,
+      "y": -350,
+      "width": 280,
+      "height": 60
+    },
+    {
+      "id": "ctx",
+      "type": "file",
+      "file": "15_MEMORY/Current-Context.md",
+      "x": 0,
+      "y": -150,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "home",
+      "type": "file",
+      "file": "00_HOME.md",
+      "x": -300,
+      "y": 50,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "exec",
+      "type": "file",
+      "file": "Dashboards/01_Executive-Dashboard.md",
+      "x": 0,
+      "y": 50,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "ops",
+      "type": "file",
+      "file": "Dashboards/10_Daily-Operations-Dashboard.md",
+      "x": 300,
+      "y": 50,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "idx",
+      "type": "file",
+      "file": "Dashboards/00_Founder-Workspace-Index.md",
+      "x": 0,
+      "y": 220,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "kg",
+      "type": "file",
+      "file": "Maps of Content/00_Knowledge-Graph.md",
+      "x": -300,
+      "y": 220,
+      "width": 400,
+      "height": 80
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "ctx",
+      "fromSide": "right",
+      "toNode": "exec",
+      "toSide": "left"
+    },
+    {
+      "id": "e2",
+      "fromNode": "ctx",
+      "fromSide": "right",
+      "toNode": "ops",
+      "toSide": "left"
+    },
+    {
+      "id": "e3",
+      "fromNode": "home",
+      "fromSide": "right",
+      "toNode": "ctx",
+      "toSide": "left"
+    },
+    {
+      "id": "e4",
+      "fromNode": "exec",
+      "fromSide": "right",
+      "toNode": "idx",
+      "toSide": "left"
+    },
+    {
+      "id": "e5",
+      "fromNode": "idx",
+      "fromSide": "right",
+      "toNode": "kg",
+      "toSide": "left"
+    }
+  ]
+}

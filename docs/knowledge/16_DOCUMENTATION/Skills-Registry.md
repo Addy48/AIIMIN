@@ -1,8 +1,22 @@
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-DOC
+migration_batch: W4
+fm_source: script
+---
 # Skills registry — AIIMIN repo
 
 > **Agents:** read this when choosing a skill. **Humans:** install global skills via `~/AGENTS.md`.
 
-**Last updated:** 2026-07-19
+**Last updated:** 2026-07-30
 
 ---
 
@@ -42,6 +56,15 @@
 | **better-auth-best-practices** | `.agents/skills/` | Auth flows — read-only unless founder asks |
 | **supabase-postgres-best-practices** | `.agents/skills/` | RLS, indexes, mobile tables |
 | **database-schema-designer** | `.agents/skills/` | Migration design (founder approval) |
+
+### P1 — Design research (MCP)
+
+| Tool | Server | Repo use |
+|------|--------|----------|
+| **VP0 `search_vp0_designs`** | `vp0` (`npx -y vp0-mcp`) | Search free AI-readable designs by intent |
+| **VP0 `get_vp0_design`** | `vp0` | Fetch slug manifest — source, deps, `aiInstructions` |
+
+Rule: `.cursor/rules/aiimin-vp0-mcp.mdc` — mandatory on design, prototyping, brainstorming. Mobbin MCP retired (2026-08-06). Adapt VP0 Expo/RN sources to Compose / web; never copy brand.
 
 ### P1 — Web Life OS (`frontend/`)
 
@@ -131,3 +154,6 @@ bash scripts/verify-repo.sh
 ```
 
 See `plans/repo-fix-master-plan.md` for prioritized fix backlog.
+
+### web-app-testing
+Playwright structural signature gate for v7 tab roots. Run: `node .agents/skills/web-app-testing/scripts/tab-skeleton-gate.mjs`. Fail if pairwise Jaccard > 0.42 or duplicate skeletons.

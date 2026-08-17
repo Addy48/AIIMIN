@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Sports Changelog
+
+## Parent
+
+- [[09_FEATURES/Sports/Sports|Sports]] · [[09_FEATURES/Index]]
 
 ### 2026-07-18 — Cross-sport smart empty
 - **What:** Empty states call `collectNextMoment(feed, excludeTab)` so empty sport still surfaces next moment from other sports.

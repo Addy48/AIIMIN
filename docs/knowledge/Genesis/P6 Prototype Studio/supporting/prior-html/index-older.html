@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AIIMIN — Personal OS Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font-family:'Figtree',system-ui,sans-serif}
+body{background:#0e0e10;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:24px 16px 32px}
+
+/* preview chrome */
+.preview-bar{width:min(393px,100%);display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
+.preview-brand{font-family:'Familjen Grotesk',sans-serif;font-weight:700;font-size:14px;color:#a1a1aa;letter-spacing:.04em}
+.theme-pill{display:flex;background:#1c1c1f;border-radius:999px;padding:3px;border:1px solid #2a2a2e}
+.theme-pill button{border:0;background:transparent;color:#71717a;font:600 11px/1 'Figtree',sans-serif;padding:8px 14px;border-radius:999px;cursor:pointer;transition:.2s}
+.theme-pill button.active{background:#ff6b35;color:#fff}
+
+/* phone */
+.phone{width:393px;max-width:100%;height:852px;border-radius:48px;background:#000;padding:10px;box-shadow:0 40px 100px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.08);position:relative}
+.phone-notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:126px;height:34px;background:#000;border-radius:0 0 20px 20px;z-index:30}
+.app{--bg:#1a1a1a;--bg-elevated:#222;--card:#2d2d2d;--card-hover:#353535;--text:#f4f4f5;--text-2:#a1a1aa;--text-3:#71717a;--line:rgba(255,255,255,.08);--accent:#ff6b35;--accent-soft:rgba(255,107,53,.15);--done:#10b981;--muted:#6b7280;--danger:#ef4444;--radius-sm:10px;--radius-md:16px;--radius-lg:22px;--shadow:0 8px 32px rgba(0,0,0,.35);--font-d:'Familjen Grotesk',sans-serif;--safe-top:54px;--safe-bottom:34px;--nav-h:72px;
+  width:100%;height:100%;border-radius:40px;overflow:hidden;position:relative;background:var(--bg);color:var(--text);transition:background .35s,color .35s}
+.app.light{--bg:#EDE4D3;--bg-elevated:#F7F1E6;--card:#ffffff;--card-hover:#faf7f2;--text:#14171A;--text-2:#5c5348;--text-3:#8a8074;--line:rgba(20,23,26,.08);--accent:#ff6b35;--accent-soft:rgba(255,107,53,.12);--shadow:0 8px 28px rgba(20,23,26,.08)}
+
+.status{position:absolute;top:0;left:0;right:0;height:var(--safe-top);padding:14px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;font-size:15px;font-weight:600;z-index:20;pointer-events:none}
+.status-icons{display:flex;gap:6px;align-items:center}
+.status-icons svg{width:18px;height:18px;fill:currentColor;opacity:.9}
+
+.shell{display:flex;flex-direction:column;height:100%;padding-top:var(--safe-top)}
+.header{display:flex;align-items:center;gap:10px;padding:4px 16px 12px}
+.icon-btn{width:40px;height:40px;border:0;border-radius:12px;background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer;transition:.2s;position:relative;flex-shrink:0}
+.icon-btn:hover{background:var(--card-hover)}
+.icon-btn .dot{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--accent);border:2px solid var(--card)}
+.brand{flex:1;text-align:center}
+.brand-kicker{font:600 9px/1 var(--font-d);letter-spacing:.22em;color:var(--text-3);text-transform:uppercase}
+.brand-name{font:700 15px/1.1 var(--font-d);letter-spacing:-.02em}
+
+.main{flex:1;overflow:auto;scroll-behavior:smooth;padding-bottom:calc(var(--nav-h) + 8px)}
+.main::-webkit-scrollbar{display:none}
+.screen{display:none;padding-bottom:8px;animation:fadeUp .32s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.greeting{padding:0 16px 14px}
+.greeting-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.greeting-hi{font:600 13px/1.2 var(--font-d);color:var(--text-2)}
+.greeting-name{font:700 28px/1.05 var(--font-d);letter-spacing:-.03em;margin-top:4px}
+.greeting-sub{font-size:13px;color:var(--text-3);margin-top:6px;max-width:220px}
+
+.focus-card{margin:0 16px 14px;padding:14px 16px;border-radius:var(--radius-lg);background:linear-gradient(145deg,var(--card) 0%,var(--bg-elevated) 100%);border:1px solid var(--line);box-shadow:var(--shadow)}
+.focus-label{font:600 11px/1 var(--font-d);letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)}
+.focus-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:8px}
+.focus-val{font:700 26px/1 var(--font-d);letter-spacing:-.03em}
+.focus-val span{font-size:14px;font-weight:600;color:var(--text-2)}
+.focus-chart{width:140px;height:48px}
+
+.section-head{display:flex;justify-content:space-between;align-items:center;padding:8px 16px 10px}
+.section-title{font:700 17px/1.2 var(--font-d);letter-spacing:-.02em}
+.link-btn{border:0;background:none;color:var(--accent);font:600 12px/1 'Figtree',sans-serif;cursor:pointer;padding:4px 0}
+
+.card{margin:0 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow)}
+.task{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer;transition:.15s}
+.task:last-child{border-bottom:0}
+.task:hover{background:var(--card-hover)}
+.check{width:22px;height:22px;border-radius:7px;border:2px solid var(--muted);display:grid;place-items:center;flex-shrink:0;transition:.2s}
+.task.done .check{background:var(--done);border-color:var(--done)}
+.task.done .check::after{content:'';width:6px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-1px)}
+.task.done .task-title{text-decoration:line-through;color:var(--text-3)}
+.task-body{flex:1;min-width:0}
+.task-title{font:600 14px/1.3 'Figtree',sans-serif}
+.task-meta{font-size:12px;color:var(--text-3);margin-top:2px}
+.task-chev{color:var(--text-3);opacity:.5}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 14px}
+.stat-card{padding:14px;border-radius:var(--radius-md);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.stat-label{font:600 10px/1 var(--font-d);letter-spacing:.1em;text-transform:uppercase;color:var(--text-3)}
+.stat-ring-wrap{display:flex;align-items:center;gap:10px;margin-top:10px}
+.stat-val{font:700 22px/1 var(--font-d)}
+.stat-sub{font-size:11px;color:var(--text-3);margin-top:4px}
+.ring{width:44px;height:44px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:4}
+.ring .track{stroke:var(--line)}
+.ring .fill{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .6s ease}
+.streak-icon{font-size:22px}
+
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px 14px}
+.qa{border:1px solid var(--line);background:var(--card);border-radius:var(--radius-md);padding:12px 6px;text-align:center;cursor:pointer;transition:.2s;box-shadow:var(--shadow)}
+.qa:hover{transform:translateY(-2px);background:var(--card-hover)}
+.qa-ico{font-size:20px;margin-bottom:6px}
+.qa-label{font:600 11px/1.2 'Figtree',sans-serif;color:var(--text-2)}
+
+.activity-item{display:flex;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.activity-item:last-child{border-bottom:0}
+.act-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.act-title{font:600 13px/1.3 'Figtree',sans-serif}
+.act-time{font-size:11px;color:var(--text-3);margin-top:2px}
+
+/* notes */
+.search-wrap{margin:0 16px 12px;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+.search-wrap input{flex:1;border:0;background:transparent;color:var(--text);font:500 14px/1 'Figtree',sans-serif;outline:none}
+.search-wrap input::placeholder{color:var(--text-3)}
+.pills{display:flex;gap:8px;padding:0 16px 12px;overflow:auto}
+.pills::-webkit-scrollbar{display:none}
+.pill{border:1px solid var(--line);background:var(--card);color:var(--text-2);font:600 12px/1 'Figtree',sans-serif;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:.2s}
+.pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.note-row{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer;transition:.15s}
+.note-row:hover{background:var(--card-hover)}
+.note-ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+.note-title{font:600 14px/1.3 'Figtree',sans-serif}
+.note-preview{font-size:12px;color:var(--text-3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.note-time{font-size:11px;color:var(--text-3);margin-left:auto;white-space:nowrap}
+
+/* documents */
+.doc-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);cursor:pointer}
+.doc-row:last-child{border-bottom:0}
+.file-ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font:700 11px/1 var(--font-d);color:#fff;flex-shrink:0}
+.file-ico.pdf{background:#e74c3c}.file-ico.doc{background:#3498db}.file-ico.xls{background:#27ae60}.file-ico.zip{background:#9b59b6}
+.doc-meta{font-size:11px;color:var(--text-3);margin-top:2px}
+.vault-band{margin:0 16px 12px;padding:12px 14px;border-radius:14px;background:var(--accent-soft);border:1px solid rgba(255,107,53,.25);display:flex;align-items:center;gap:10px;font:600 13px/1 'Figtree',sans-serif;color:var(--accent)}
+
+/* family */
+.avatar-row{display:flex;gap:14px;padding:4px 16px 16px;overflow:auto}
+.avatar-col{text-align:center;min-width:64px;cursor:pointer}
+.avatar{width:56px;height:56px;border-radius:18px;background:var(--card-hover);border:2px solid var(--line);display:grid;place-items:center;font:700 16px/1 var(--font-d);margin:0 auto}
+.avatar.admin{border-color:var(--accent)}
+.avatar-name{font:600 12px/1.2 'Figtree',sans-serif;margin-top:6px}
+.avatar-role{font-size:10px;color:var(--text-3);margin-top:2px}
+
+/* settings */
+.profile-card{margin:0 16px 16px;padding:18px;border-radius:var(--radius-lg);background:linear-gradient(135deg,var(--card),var(--bg-elevated));border:1px solid var(--line);display:flex;gap:14px;align-items:center;box-shadow:var(--shadow)}
+.profile-av{width:56px;height:56px;border-radius:18px;background:var(--accent);color:#fff;display:grid;place-items:center;font:700 18px/1 var(--font-d)}
+.profile-name{font:700 17px/1.2 var(--font-d)}
+.profile-email{font-size:13px;color:var(--text-3);margin-top:3px}
+.settings-group{margin:0 16px 14px}
+.group-label{font:600 10px/1 var(--font-d);letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);padding:0 4px 8px}
+.set-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);border:1px solid var(--line);cursor:pointer;transition:.15s}
+.set-row:first-of-type{border-radius:var(--radius-md) var(--radius-md) 0 0}
+.set-row:last-of-type{border-radius:0 0 var(--radius-md) var(--radius-md)}
+.set-row:only-child{border-radius:var(--radius-md)}
+.set-row+.set-row{border-top:0;margin-top:-1px}
+.set-row:hover{background:var(--card-hover)}
+.set-ico{width:32px;height:32px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center;font-size:15px}
+.set-label{flex:1;font:600 14px/1 'Figtree',sans-serif}
+.set-val{font-size:12px;color:var(--text-3);margin-right:4px}
+.set-chev{color:var(--text-3);opacity:.45}
+
+/* note editor */
+.editor-head{display:flex;align-items:center;gap:8px;padding:0 16px 10px}
+.editor-title{width:calc(100% - 32px);margin:0 16px 8px;border:0;background:transparent;font:700 24px/1.15 var(--font-d);color:var(--text);outline:none}
+.editor-title::placeholder{color:var(--text-3)}
+.editor-body{width:calc(100% - 32px);min-height:220px;margin:0 16px;border:0;background:transparent;resize:none;font:400 15px/1.6 'Figtree',sans-serif;color:var(--text);outline:none}
+.editor-body::placeholder{color:var(--text-3)}
+.editor-bar{padding:12px 16px 20px}
+.btn-primary{width:100%;border:0;border-radius:14px;padding:14px;background:var(--accent);color:#fff;font:700 14px/1 'Figtree',sans-serif;cursor:pointer;transition:.2s}
+.btn-primary:hover{filter:brightness(1.06)}
+
+/* bottom nav */
+.nav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--nav-h) + var(--safe-bottom));padding:8px 12px calc(8px + var(--safe-bottom));display:flex;align-items:flex-start;justify-content:space-around;background:linear-gradient(180deg,transparent 0%,var(--bg) 28%);border-top:1px solid var(--line);backdrop-filter:blur(12px);z-index:15}
+.nav-btn{flex:1;border:0;background:transparent;color:var(--text-3);display:flex;flex-direction:column;align-items:center;gap:4px;font:600 10px/1 'Figtree',sans-serif;cursor:pointer;padding:6px 0;transition:.2s}
+.nav-btn.active{color:var(--accent)}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.nav-fab{position:relative;top:-18px;width:54px;height:54px;border-radius:18px;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 10px 28px rgba(255,107,53,.4);transition:.2s}
+.nav-fab:hover{transform:scale(1.04)}
+
+/* drawer */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:.3s;z-index:40}
+.overlay.open{opacity:1;pointer-events:auto}
+.drawer{position:absolute;top:0;left:0;bottom:0;width:min(300px,86%);background:var(--card);border-right:1px solid var(--line);transform:translateX(-100%);transition:.35s cubic-bezier(.4,0,.2,1);z-index:50;padding:calc(var(--safe-top) + 8px) 0 24px;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer-profile{padding:16px 20px 20px;border-bottom:1px solid var(--line)}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:14px 20px;border:0;background:transparent;color:var(--text);font:600 14px/1 'Figtree',sans-serif;text-align:left;cursor:pointer;width:100%}
+.drawer-item:hover{background:var(--card-hover)}
+.drawer-item.active{color:var(--accent)}
+
+/* search modal */
+.modal{position:absolute;inset:0;background:var(--bg);z-index:60;transform:translateY(100%);transition:.35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;padding-top:var(--safe-top)}
+.modal.open{transform:none}
+.modal-head{display:flex;gap:10px;padding:8px 16px 12px;align-items:center}
+.modal-input{flex:1;border:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--text);font:500 15px/1 'Figtree',sans-serif;outline:none}
+.modal-results{flex:1;overflow:auto;padding:0 16px 24px}
+.result{padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.result-type{font:600 10px/1 var(--font-d);letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.result-title{font:600 15px/1.3 'Figtree',sans-serif;margin-top:4px}
+
+@media(max-width:420px){body{padding:0}.preview-bar{display:none}.phone{width:100%;height:100dvh;border-radius:0;padding:0;box-shadow:none}.phone-notch{display:none}.app{border-radius:0}}
+</style>
+</head>
+<body>
+
+<div class="preview-bar">
+  <div class="preview-brand">AIIMIN PROTOTYPE · iPhone 16 Pro</div>
+  <div class="theme-pill">
+    <button type="button" data-theme-set="dark" class="active">Dark</button>
+    <button type="button" data-theme-set="light">Light</button>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="phone-notch" aria-hidden="true"></div>
+  <div class="app" id="app" data-theme="dark">
+
+    <div class="status">
+      <span id="clock">9:41</span>
+      <div class="status-icons">
+        <svg viewBox="0 0 24 24"><path d="M2 20h2V10H2v10zm5 0h2V6H7v14zm5 0h2V2h-2v18zm5 0h2V14h-2v6z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="2" height="4" rx="1"/></svg>
+      </div>
+    </div>
+
+    <div class="shell">
+      <header class="header">
+        <button class="icon-btn" id="btnMenu" aria-label="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <div class="brand"><div class="brand-kicker">AIIMIN</div><div class="brand-name">Personal OS</div></div>
+        <button class="icon-btn" id="btnSearch" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg></button>
+        <button class="icon-btn" id="btnBell" aria-label="Notifications"><span class="dot"></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17H9l1 2h4l1-2z"/><path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"/></svg></button>
+      </header>
+
+      <main class="main" id="main">
+
+        <section class="screen active" data-screen="today">
+          <div class="greeting">
+            <div class="greeting-top">
+              <div>
+                <div class="greeting-hi" id="greetHi">Good morning</div>
+                <div class="greeting-name">Aaditya <span id="greetEmoji">☀️</span></div>
+                <div class="greeting-sub">Discipline today, momentum tomorrow.</div>
+              </div>
+            </div>
+          </div>
+          <div class="focus-card">
+            <div class="focus-label">Focus time</div>
+            <div class="focus-row">
+              <div class="focus-val">4<span>h</span> 32<span>m</span></div>
+              <svg class="focus-chart" viewBox="0 0 140 48" aria-hidden="true"><defs><linearGradient id="fg" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ff6b35"/><stop offset="1" stop-color="#10b981"/></linearGradient></defs><path d="M0,40 C20,38 30,28 50,24 S90,8 140,12" fill="none" stroke="url(#fg)" stroke-width="3" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+          <div class="section-head"><span class="section-title">Today's plan</span><button class="link-btn" data-go="notes">View all</button></div>
+          <div class="card" id="taskList"></div>
+          <div class="stats">
+            <div class="stat-card">
+              <div class="stat-label">Progress</div>
+              <div class="stat-ring-wrap">
+                <svg class="ring" viewBox="0 0 44 44"><circle class="track" cx="22" cy="22" r="18"/><circle class="fill" cx="22" cy="22" r="18" stroke-dasharray="113" stroke-dashoffset="47"/></svg>
+                <div><div class="stat-val">7/12</div><div class="stat-sub">Tasks done</div></div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Day streak</div>
+              <div class="stat-ring-wrap"><span class="streak-icon">🔥</span><div><div class="stat-val">12</div><div class="stat-sub">days strong</div></div></div>
+            </div>
+          </div>
+          <div class="section-head"><span class="section-title">Quick actions</span></div>
+          <div class="quick-actions">
+            <button class="qa" data-go="notes"><div class="qa-ico">📝</div><div class="qa-label">Notes</div></button>
+            <button class="qa" data-go="documents"><div class="qa-ico">📄</div><div class="qa-label">Docs</div></button>
+            <button class="qa" data-go="family"><div class="qa-ico">👨‍👩‍👧</div><div class="qa-label">Family</div></button>
+            <button class="qa" data-go="settings"><div class="qa-ico">⚙️</div><div class="qa-label">Settings</div></button>
+          </div>
+          <div class="section-head"><span class="section-title">Recent activity</span></div>
+          <div class="card" id="activityList"></div>
+        </section>
+
+        <section class="screen" data-screen="notes">
+          <div class="section-head" style="padding-top:4px"><span class="section-title">Notes</span><button class="icon-btn" id="btnNewNote" aria-label="New note" style="width:36px;height:36px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+          <div class="search-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg><input id="noteFilter" placeholder="Search notes" type="search"></div>
+          <div class="pills" id="notePills"></div>
+          <div class="card" id="notesList" style="margin-top:4px"></div>
+        </section>
+
+        <section class="screen" data-screen="note-detail">
+          <div class="editor-head">
+            <button class="icon-btn" id="btnNoteBack" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <span class="section-title" style="flex:1">Edit note</span>
+          </div>
+          <input class="editor-title" id="noteTitle" placeholder="Note title">
+          <textarea class="editor-body" id="noteBody" placeholder="Start writing…"></textarea>
+          <div class="editor-bar"><button class="btn-primary" id="btnSaveNote">Save note</button></div>
+        </section>
+
+        <section class="screen" data-screen="documents">
+          <div class="section-head" style="padding-top:4px"><span class="section-title">Documents</span></div>
+          <div class="pills" id="docPills"></div>
+          <div class="vault-band">🔒 Vault — 2 secured files</div>
+          <div class="card" id="docList"></div>
+        </section>
+
+        <section class="screen" data-screen="family">
+          <div class="section-head" style="padding-top:4px"><span class="section-title">Family</span></div>
+          <div class="avatar-row" id="familyAvatars"></div>
+          <div class="section-head"><span class="section-title">Family tasks</span></div>
+          <div class="card" id="familyTasks"></div>
+        </section>
+
+        <section class="screen" data-screen="settings">
+          <div class="section-head" style="padding-top:4px"><span class="section-title">Settings</span></div>
+          <p style="margin:0 16px 14px;font-size:13px;color:var(--text-3)">Manage your account and preferences</p>
+          <div class="profile-card">
+            <div class="profile-av">AU</div>
+            <div><div class="profile-name">Aaditya Upadhyay</div><div class="profile-email">aaditya@aiimin.in</div></div>
+          </div>
+          <div id="settingsGroups"></div>
+        </section>
+
+      </main>
+
+      <nav class="nav" aria-label="Main">
+        <button class="nav-btn active" data-nav="today"><svg viewBox="0 0 24 24"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z"/></svg>Today</button>
+        <button class="nav-btn" data-nav="notes"><svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 012 2v16l-5-3-5 3V5a2 2 0 012-2z"/></svg>Notes</button>
+        <button class="nav-fab" id="btnFab" aria-label="Quick create"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="nav-btn" data-nav="documents"><svg viewBox="0 0 24 24"><path d="M4 4h10l6 6v10a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M14 4v6h6"/></svg>Docs</button>
+        <button class="nav-btn" data-nav="family"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>Family</button>
+      </nav>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    <aside class="drawer" id="drawer" aria-label="Navigation drawer">
+      <div class="drawer-profile">
+        <div class="profile-name">Aaditya Upadhyay</div>
+        <div class="profile-email" style="margin-top:4px">aaditya@aiimin.in</div>
+      </div>
+      <button class="drawer-item active" data-go="today">Today</button>
+      <button class="drawer-item" data-go="notes">Notes</button>
+      <button class="drawer-item" data-go="documents">Documents</button>
+      <button class="drawer-item" data-go="family">Family</button>
+      <button class="drawer-item" data-go="settings">Settings</button>
+      <button class="drawer-item" data-go="settings">Profile</button>
+      <button class="drawer-item" data-go="settings">AI Assistant</button>
+    </aside>
+
+    <div class="modal" id="searchModal" role="dialog" aria-label="Search">
+      <div class="modal-head">
+        <input class="modal-input" id="globalSearch" placeholder="Search tasks, notes, docs…" autofocus>
+        <button class="icon-btn" id="btnCloseSearch" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-results" id="searchResults"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  tasks: [
+    { id:1, title:'Deep work — AIIMIN prototype', meta:'9:00 AM · Focus', done:false },
+    { id:2, title:'Review native app flows', meta:'11:30 AM · Product', done:true },
+    { id:3, title:'Gym — push day', meta:'6:00 PM · Health', done:false },
+    { id:4, title:'Family dinner planning', meta:'7:30 PM · Family', done:false },
+  ],
+  activity: [
+    { title:'Project roadmap updated', time:'2h ago' },
+    { title:'Note pinned: Sprint goals', time:'4h ago' },
+    { title:'Document uploaded: Q3 budget', time:'Yesterday' },
+  ],
+  notes: [
+    { id:1, title:'Sprint goals — Native V2', preview:'Navigation rebuild, Today as home, vault flows…', cat:'Work', color:'#6366f1', time:'2h', pinned:true },
+    { id:2, title:'Design tokens draft', preview:'Dark #1a1a1a, accent #ff6b35, card elevation…', cat:'Work', color:'#ff6b35', time:'5h', pinned:false },
+    { id:3, title:'Grocery list', preview:'Oats, eggs, chicken, greek yogurt…', cat:'Personal', color:'#10b981', time:'1d', pinned:false },
+    { id:4, title:'Meeting — product sync', preview:'Discuss mobile capture vs native analytics ceiling…', cat:'Work', color:'#3b82f6', time:'2d', pinned:false },
+  ],
+  docs: [
+    { name:'AIIMIN Product Roadmap.pdf', type:'pdf', size:'2.4 MB', time:'Today' },
+    { name:'Q3 Budget.xlsx', type:'xls', size:'840 KB', time:'Yesterday' },
+    { name:'Brand Guidelines.docx', type:'doc', size:'1.1 MB', time:'Mon' },
+    { name:'Family Archive.zip', type:'zip', size:'12 MB', time:'Last week' },
+  ],
+  family: [
+    { name:'Aaditya', role:'Admin', init:'AU', admin:true },
+    { name:'Priya', role:'Member', init:'PU', admin:false },
+    { name:'Arjun', role:'Member', init:'AR', admin:false },
+    { name:'Buddy', role:'Pet', init:'🐕', admin:false },
+  ],
+  familyTasks: [
+    { title:'Buy groceries', meta:'Assigned to Priya', done:false },
+    { title:'School pickup 3:30', meta:'Assigned to Aaditya', done:true },
+    { title:'Pay electricity bill', meta:'Due Friday', done:false },
+  ],
+  settings: [
+    { group:'Account', items:[
+      { label:'Profile information', icon:'👤' },
+      { label:'Account & security', icon:'🔐' },
+      { label:'Subscription', icon:'⭐', val:'Pro' },
+    ]},
+    { group:'Preferences', items:[
+      { label:'Appearance', icon:'🎨', val:'Dark' },
+      { label:'Notifications', icon:'🔔' },
+      { label:'Language', icon:'🌐', val:'English' },
+      { label:'Focus reminders', icon:'⏱️' },
+    ]},
+    { group:'Data & sync', items:[
+      { label:'Backup & restore', icon:'☁️' },
+      { label:'Data sync', icon:'🔄', val:'On' },
+      { label:'Export data', icon:'📤' },
+    ]},
+    { group:'Support', items:[
+      { label:'Help & support', icon:'❓' },
+      { label:'Send feedback', icon:'💬' },
+      { label:'About AIIMIN', icon:'ℹ️', val:'v2.4.1' },
+    ]},
+  ],
+};
+
+const app = document.getElementById('app');
+let currentScreen = 'today';
+let noteFilter = 'All';
+let activeNoteId = null;
+
+function setTheme(t) {
+  app.classList.toggle('light', t === 'light');
+  app.dataset.theme = t;
+  document.querySelectorAll('[data-theme-set]').forEach(b => b.classList.toggle('active', b.dataset.themeSet === t));
+  const appearance = DATA.settings[1].items[0];
+  if (appearance) appearance.val = t === 'light' ? 'Light' : 'Dark';
+  renderSettings();
+}
+
+function go(screen, pushHistory = true) {
+  if (screen === currentScreen) return;
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.dataset.screen === screen));
+  document.querySelectorAll('[data-nav]').forEach(b => b.classList.toggle('active', b.dataset.nav === screen && ['today','notes','documents','family'].includes(screen)));
+  document.querySelectorAll('.drawer-item').forEach(b => b.classList.toggle('active', b.dataset.go === screen));
+  currentScreen = screen;
+  closeDrawer();
+  document.getElementById('main').scrollTop = 0;
+}
+
+function openDrawer() { document.getElementById('overlay').classList.add('open'); document.getElementById('drawer').classList.add('open'); }
+function closeDrawer() { document.getElementById('overlay').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); }
+function openSearch() { document.getElementById('searchModal').classList.add('open'); document.getElementById('globalSearch').focus(); renderSearch(''); }
+function closeSearch() { document.getElementById('searchModal').classList.remove('open'); }
+
+function renderTasks() {
+  document.getElementById('taskList').innerHTML = DATA.tasks.map(t => `
+    <div class="task ${t.done ? 'done' : ''}" data-task="${t.id}">
+      <div class="check"></div>
+      <div class="task-body"><div class="task-title">${t.title}</div><div class="task-meta">${t.meta}</div></div>
+      <span class="task-chev">›</span>
+    </div>`).join('');
+  document.querySelectorAll('[data-task]').forEach(el => el.addEventListener('click', () => {
+    const id = +el.dataset.task;
+    const task = DATA.tasks.find(x => x.id === id);
+    if (task) { task.done = !task.done; renderTasks(); }
+  }));
+}
+
+function renderActivity() {
+  document.getElementById('activityList').innerHTML = DATA.activity.map(a => `
+    <div class="activity-item"><span class="act-dot"></span><div><div class="act-title">${a.title}</div><div class="act-time">${a.time}</div></div></div>`).join('');
+}
+
+function renderNotePills() {
+  const cats = ['All','Pinned','Work','Personal'];
+  document.getElementById('notePills').innerHTML = cats.map(c => `<button class="pill ${noteFilter===c?'active':''}" data-cat="${c}">${c}</button>`).join('');
+  document.querySelectorAll('#notePills .pill').forEach(p => p.addEventListener('click', () => { noteFilter = p.dataset.cat; renderNotes(); }));
+}
+
+function renderNotes() {
+  renderNotePills();
+  const q = (document.getElementById('noteFilter').value || '').toLowerCase();
+  let list = DATA.notes.filter(n => {
+    if (noteFilter === 'Pinned' && !n.pinned) return false;
+    if (['Work','Personal'].includes(noteFilter) && n.cat !== noteFilter) return false;
+    if (q && !(`${n.title} ${n.preview}`.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  document.getElementById('notesList').innerHTML = list.map(n => `
+    <div class="note-row" data-note="${n.id}">
+      <div class="note-ico" style="background:${n.color}22;color:${n.color}">📝</div>
+      <div style="flex:1;min-width:0"><div class="note-title">${n.title}</div><div class="note-preview">${n.preview}</div></div>
+      <div class="note-time">${n.time}</div>
+    </div>`).join('');
+  document.querySelectorAll('[data-note]').forEach(el => el.addEventListener('click', () => openNote(+el.dataset.note)));
+}
+
+function openNote(id) {
+  const n = DATA.notes.find(x => x.id === id) || { title:'', body:'' };
+  activeNoteId = id;
+  document.getElementById('noteTitle').value = n.title;
+  document.getElementById('noteBody').value = n.body || n.preview || '';
+  go('note-detail');
+}
+
+function renderDocs() {
+  const cats = ['All','Recent','Shared','Vault'];
+  document.getElementById('docPills').innerHTML = cats.map((c,i) => `<button class="pill ${i===0?'active':''}">${c}</button>`).join('');
+  document.getElementById('docList').innerHTML = DATA.docs.map(d => `
+    <div class="doc-row"><div class="file-ico ${d.type}">${d.type.toUpperCase()}</div><div style="flex:1"><div class="task-title">${d.name}</div><div class="doc-meta">${d.time} · ${d.size}</div></div><span class="task-chev">›</span></div>`).join('');
+}
+
+function renderFamily() {
+  document.getElementById('familyAvatars').innerHTML = DATA.family.map(f => `
+    <div class="avatar-col"><div class="avatar ${f.admin?'admin':''}">${f.init}</div><div class="avatar-name">${f.name}</div><div class="avatar-role">${f.role}</div></div>`).join('');
+  document.getElementById('familyTasks').innerHTML = DATA.familyTasks.map((t,i) => `
+    <div class="task ${t.done?'done':''}" data-ftask="${i}"><div class="check"></div><div class="task-body"><div class="task-title">${t.title}</div><div class="task-meta">${t.meta}</div></div></div>`).join('');
+  document.querySelectorAll('[data-ftask]').forEach(el => el.addEventListener('click', () => {
+    const t = DATA.familyTasks[+el.dataset.ftask]; t.done = !t.done; renderFamily();
+  }));
+}
+
+function renderSettings() {
+  document.getElementById('settingsGroups').innerHTML = DATA.settings.map(g => `
+    <div class="settings-group"><div class="group-label">${g.group}</div>
+      ${g.items.map(it => `<div class="set-row"><div class="set-ico">${it.icon}</div><div class="set-label">${it.label}</div>${it.val?`<span class="set-val">${it.val}</span>`:''}<span class="set-chev">›</span></div>`).join('')}
+    </div>`).join('');
+}
+
+function renderSearch(q) {
+  q = q.toLowerCase();
+  const hits = [];
+  DATA.tasks.forEach(t => { if (!q || t.title.toLowerCase().includes(q)) hits.push({ type:'Task', title:t.title }); });
+  DATA.notes.forEach(n => { if (!q || n.title.toLowerCase().includes(q)) hits.push({ type:'Note', title:n.title }); });
+  DATA.docs.forEach(d => { if (!q || d.name.toLowerCase().includes(q)) hits.push({ type:'Document', title:d.name }); });
+  document.getElementById('searchResults').innerHTML = (hits.slice(0,8).length ? hits.slice(0,8) : [{type:'Tip', title:'Try "roadmap", "grocery", or "budget"'}]).map(h => `
+    <div class="result"><div class="result-type">${h.type}</div><div class="result-title">${h.title}</div></div>`).join('');
+}
+
+function updateGreeting() {
+  const h = new Date().getHours();
+  const hi = document.getElementById('greetHi');
+  const em = document.getElementById('greetEmoji');
+  if (h < 12) { hi.textContent = 'Good morning'; em.textContent = '☀️'; }
+  else if (h < 17) { hi.textContent = 'Good afternoon'; em.textContent = '🌤️'; }
+  else { hi.textContent = 'Good evening'; em.textContent = '🌙'; }
+}
+
+document.querySelectorAll('[data-theme-set]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
+document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => go(b.dataset.nav)));
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => go(b.dataset.go)));
+document.getElementById('btnMenu').addEventListener('click', openDrawer);
+document.getElementById('overlay').addEventListener('click', closeDrawer);
+document.getElementById('btnSearch').addEventListener('click', openSearch);
+document.getElementById('btnCloseSearch').addEventListener('click', closeSearch);
+document.getElementById('globalSearch').addEventListener('input', e => renderSearch(e.target.value));
+document.getElementById('btnFab').addEventListener('click', () => { go('notes'); setTimeout(() => document.getElementById('btnNewNote').click(), 200); });
+document.getElementById('btnNewNote').addEventListener('click', () => {
+  const id = Math.max(0,...DATA.notes.map(n=>n.id))+1;
+  DATA.notes.unshift({ id, title:'Untitled note', preview:'', cat:'Personal', color:'#ff6b35', time:'Now', pinned:false, body:'' });
+  openNote(id);
+});
+document.getElementById('btnNoteBack').addEventListener('click', () => go('notes'));
+document.getElementById('btnSaveNote').addEventListener('click', () => {
+  const n = DATA.notes.find(x => x.id === activeNoteId);
+  if (n) { n.title = document.getElementById('noteTitle').value || 'Untitled note'; n.body = document.getElementById('noteBody').value; n.preview = n.body.slice(0,60); }
+  go('notes'); renderNotes();
+});
+document.getElementById('noteFilter').addEventListener('input', renderNotes);
+
+updateGreeting();
+renderTasks();
+renderActivity();
+renderNotes();
+renderDocs();
+renderFamily();
+renderSettings();
+</script>
+</body>
+</html>

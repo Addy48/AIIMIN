@@ -1,0 +1,51 @@
+filters:
+  and:
+    - 'file.ext == "md"'
+    - not:
+        - 'file.inFolder("Genesis")'
+        - 'file.inFolder("Archive")'
+        - 'file.inFolder("99_ARCHIVE")'
+        - 'file.inFolder("_templates")'
+
+formulas:
+  review_age_days: 'if(last_reviewed, (today() - date(last_reviewed)).days, "")'
+
+properties:
+  file.name:
+    displayName: "Note"
+  status:
+    displayName: "Status"
+  lifecycle:
+    displayName: "Lifecycle"
+  note_type:
+    displayName: "Type"
+  last_reviewed:
+    displayName: "Reviewed"
+  formula.review_age_days:
+    displayName: "Review age"
+
+views:
+  - type: table
+    name: "Needs review"
+    filters:
+      or:
+        - 'formula.review_age_days > 30'
+        - 'last_reviewed == null'
+    order:
+      - file.name
+      - status
+      - lifecycle
+      - note_type
+      - last_reviewed
+      - formula.review_age_days
+
+  - type: table
+    name: "Living inventory"
+    filters:
+      and:
+        - 'lifecycle == "living"'
+    order:
+      - file.name
+      - status
+      - note_type
+      - last_reviewed

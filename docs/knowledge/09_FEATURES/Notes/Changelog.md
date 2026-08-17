@@ -1,4 +1,25 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
 # Notes Changelog
+
+### 2026-08-14 — Native `note.delete` on sync/batch
+- **What:** `POST /mobile/sync/batch` type `note.delete` hard-deletes `notes` row for the session user (same SQL as web `DELETE /notes/:id`). V3 Notes delete enqueues that mutation; bootstrap will not resurrect ids still in the outbox.
+- **Why:** Phone was hiding notes only (`HIDDEN ON PHONE · NOT WIPED`).
+- **Files:** `server/routes/mobile.js`, `native-android-v3/core/data/.../GraphSyncRepository.kt`, `NoteStore.kt`, `NotesViewModel.kt`
+- **Status:** partial — local assembleDebug green; **EC2 patched 2026-08-14 via scp (not in git)**
+- **Notes:** No schema change.
 
 ### 2026-07-18 — Hide ADMIN_SIMULATED + human source badges
 - **What:** Filter out `source_type=admin_simulated` outside development. Badges show Text/Voice/PDF labels only — never raw `admin_simulated`. Empty-state copy clarified.

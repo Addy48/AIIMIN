@@ -14,7 +14,7 @@ export default function WaitlistHeroAside({ count }) {
           Go-live target · Sept 2026
         </span>
         <span className="hero-form-timeline-item hero-form-timeline-item--accent">
-          Tester invites close · 31 July
+          Tester invites close · 31 August
         </span>
       </div>
     </div>

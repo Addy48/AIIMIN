@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>AIIMIN — Living Momentum OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/shell.css" />
+<link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/pages.css" />
+</head>
+<body data-viewer="dark">
+<div class="viewer-bar">
+  <div class="viewer-brand"><div class="logo">A</div><b>AIIMIN Studio</b></div>
+  <button class="viewer-toggle" type="button" onclick="toggleTheme()"><span id="themeLabel">Dark</span><span class="sw"></span></button>
+  <span class="viewer-hint">Living Momentum OS · Android-first · Phase 6</span>
+</div>
+
+<div class="device" aria-label="AIIMIN prototype phone">
+  <div class="screen-frame">
+    <div class="island" aria-hidden="true"></div>
+    <div class="statusbar"><span>9:41</span><div class="sb-icons">
+      <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="3" width="3" height="9" rx="1" fill="currentColor"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="currentColor"/><rect x="9" y="0" width="3" height="12" rx="1" fill="currentColor"/><rect x="13.5" y="1" width="3" height="11" rx="1" fill="currentColor" opacity=".35"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 2.5c2.2 0 4.1 1 5.4 2.6l-1.3 1.3A5.5 5.5 0 0 0 8 4.5 5.5 5.5 0 0 0 3.9 6.4L2.6 5.1A7.7 7.7 0 0 1 8 2.5zm0 3a4 4 0 0 1 2.8 1.2L9.5 8A2.2 2.2 0 0 0 8 7.4 2.2 2.2 0 0 0 6.5 8L5.2 6.7A4 4 0 0 1 8 5.5zM8 11l-1.2-1.2A1.7 1.7 0 0 1 8 9.4c.5 0 .9.2 1.2.4L8 11z" fill="currentColor"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="currentColor" fill="none" opacity=".4"/><rect x="2" y="2" width="17" height="9" rx="2" fill="currentColor"/><rect x="23.5" y="4" width="2.5" height="5" rx="1" fill="currentColor" opacity=".4"/></svg>
+    </div></div>
+
+    <!-- SPLASH -->
+    <section class="flow active" id="splash">
+      <div class="splash-inner">
+        <div class="splash-mark">A</div>
+        <h1>AIIMIN</h1>
+        <p>Personal Life OS</p>
+        <div class="splash-bar"><i></i></div>
+      </div>
+    </section>
+
+    <!-- ONBOARDING -->
+    <section class="flow" id="onboarding">
+      <div class="ob-top"><button type="button" class="text-btn" onclick="goAuth()">Skip</button></div>
+      <div class="ob-slides" id="obSlides">
+        <article class="ob-slide active">
+          <div class="ob-icon ic-orange">✦</div>
+          <h2>Capture once</h2>
+          <p>Type or speak your day. AIIMIN structures habits, money, and memory — you correct with chips, never forms first.</p>
+        </article>
+        <article class="ob-slide">
+          <div class="ob-icon ic-green">◎</div>
+          <h2>One living graph</h2>
+          <p>Today, Knowledge, and Timeline share one private graph. No twelve apps. No second brain clone.</p>
+        </article>
+        <article class="ob-slide">
+          <div class="ob-icon ic-amber">◇</div>
+          <h2>Honest momentum</h2>
+          <p>Life Score mirrors reality. Coaching language only — never clinical labels, never streak shame.</p>
+        </article>
+      </div>
+      <div class="ob-dots" id="obDots"><i class="active"></i><i></i><i></i></div>
+      <button type="button" class="btn btn-primary" id="obNext" onclick="obAdvance()">Continue</button>
+    </section>
+
+    <!-- AUTH -->
+    <section class="flow" id="auth">
+      <div class="auth-inner">
+        <div class="brand-lock"><div class="mark">A</div><div><b>AIIMIN</b><span>Human Momentum</span></div></div>
+        <h2>Enter your Life OS</h2>
+        <p class="auth-trust">Encrypted journal · Export anytime · No social feed</p>
+        <button type="button" class="btn btn-primary" onclick="enterApp()">Continue with Google</button>
+        <button type="button" class="btn btn-soft" onclick="enterApp()">Email & OS-ID</button>
+        <p class="auth-foot">By continuing you agree to privacy terms. Prototype only — no real auth.</p>
+      </div>
+    </section>
+
+    <!-- APP -->
+    <section class="flow app" id="app">
+      <header class="topbar">
+        <button type="button" class="icon-btn" onclick="openDrawer()" aria-label="Menu">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h12"/></svg>
+        </button>
+        <div class="brand" onclick="go('today')">
+          <div class="mark">A</div>
+          <div class="brand-text"><b>AIIMIN</b><span id="topSub">Today</span></div>
+        </div>
+        <button type="button" class="icon-btn" onclick="openSub('sub-search')" aria-label="Search">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3-3"/></svg>
+        </button>
+        <button type="button" class="icon-btn bell" onclick="openSub('sub-notifications')" aria-label="Notifications"><span class="dot"></span>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+        </button>
+      </header>
+
+      <div class="screens" id="screens">
+
+        <!-- TODAY -->
+        <div class="screen active" id="screen-today">
+          <div class="greet">
+            <div>
+              <div class="eyebrow">Wednesday · 22 Jul</div>
+              <h1>Good morning, Aaditya</h1>
+            </div>
+            <button type="button" class="pulse-ring" onclick="go('timeline')" aria-label="Life Score 78">
+              <svg viewBox="0 0 72 72"><circle cx="36" cy="36" r="30" class="track"/><circle cx="36" cy="36" r="30" class="val" style="stroke-dasharray:188;stroke-dashoffset:41"/></svg>
+              <span>78</span>
+            </button>
+          </div>
+          <div class="card focus-card">
+            <div class="eyebrow">Next focus</div>
+            <h3>Ship Prototype Studio polish</h3>
+            <p>45 min · Deep work · after coffee</p>
+            <button type="button" class="btn btn-primary sm" onclick="toast('Focus started — notifications quiet')">Start focus</button>
+          </div>
+          <div class="sec-head"><span>Habits today</span><button type="button" class="sec-link" onclick="openSheet('habit')">Add</button></div>
+          <div class="card list" id="habitList">
+            <button type="button" class="row habit" onclick="toggleHabit(this)"><span class="check"></span><span class="row-body"><span class="row-title">Morning pages</span><span class="row-meta">Journal · 12 day rhythm</span></span></button>
+            <button type="button" class="row habit done" onclick="toggleHabit(this)"><span class="check"></span><span class="row-body"><span class="row-title">Protein breakfast</span><span class="row-meta">Done · 8:10</span></span></button>
+            <button type="button" class="row habit" onclick="toggleHabit(this)"><span class="check"></span><span class="row-body"><span class="row-title">No doomscroll after 22:00</span><span class="row-meta">Discipline · evening</span></span></button>
+            <button type="button" class="row habit" onclick="toggleHabit(this)"><span class="check"></span><span class="row-body"><span class="row-title">Walk 6k steps</span><span class="row-meta">3.2k so far</span></span></button>
+          </div>
+          <div class="sec-head"><span>Money pulse</span><button type="button" class="sec-link" onclick="go('finance')">Finance</button></div>
+          <div class="card money-pulse" onclick="go('finance')">
+            <div><div class="eyebrow">Spent today</div><div class="money-val">₹420</div></div>
+            <div class="spark" id="spark"></div>
+          </div>
+          <div class="card ai-nudge">
+            <div class="eyebrow">AI nudge</div>
+            <p>You complete morning pages 80% of days you start focus before 10. Protect the next hour?</p>
+            <div class="chips">
+              <button type="button" class="chip active" onclick="go('ai')">Block hour</button>
+              <button type="button" class="chip" onclick="toast('Reminder set for 10:00')">Remind later</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KNOWLEDGE -->
+        <div class="screen" id="screen-knowledge">
+          <div class="page-head"><div class="page-title">Knowledge</div><div class="page-sub">Memory layer · journal + notes</div></div>
+          <div class="tabs" role="tablist">
+            <button type="button" class="tab active" data-tab="journal" onclick="setKnowTab('journal')">Journal</button>
+            <button type="button" class="tab" data-tab="notes" onclick="setKnowTab('notes')">Notes</button>
+          </div>
+          <div id="pane-journal" class="know-pane active">
+            <div class="mood-row">
+              <span class="eyebrow">Mood</span>
+              <div class="chips">
+                <button type="button" class="chip" onclick="setChip(this)">Low</button>
+                <button type="button" class="chip active" onclick="setChip(this)">Steady</button>
+                <button type="button" class="chip" onclick="setChip(this)">High</button>
+              </div>
+            </div>
+            <textarea class="journal-box" id="journalInput" placeholder="What is true right now? Capture first — tags later."></textarea>
+            <button type="button" class="btn btn-primary" onclick="saveJournal()">Save entry</button>
+            <div class="sec-head"><span>Recent</span></div>
+            <div class="card list">
+              <div class="row"><div class="thumb ic-orange">J</div><div class="row-body"><div class="row-title">Shipping pressure, clear head</div><div class="row-meta">Yesterday · Steady</div></div></div>
+              <div class="row"><div class="thumb ic-blue">J</div><div class="row-body"><div class="row-title">Family call grounded me</div><div class="row-meta">Mon · High</div></div></div>
+            </div>
+          </div>
+          <div id="pane-notes" class="know-pane">
+            <input class="search-input" type="search" placeholder="Search notes" oninput="filterNotes(this.value)" />
+            <div class="notes-grid" id="notesGrid">
+              <button type="button" class="note-card" data-title="Prototype Studio IA"><b>Prototype Studio IA</b><span>Living Momentum · kill Tasks/Projects as primary</span><time>Today</time></button>
+              <button type="button" class="note-card" data-title="EC2 deploy checklist"><b>EC2 deploy checklist</b><span>health SHA match after server push</span><time>Mon</time></button>
+              <button type="button" class="note-card" data-title="Interview stories"><b>Interview stories</b><span>STAR · Life OS compression thesis</span><time>Sun</time></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIMELINE -->
+        <div class="screen" id="screen-timeline">
+          <div class="page-head"><div class="page-title">Timeline</div><div class="page-sub">Your life graph, in order</div></div>
+          <div class="chips wrap">
+            <button type="button" class="chip active" onclick="setChip(this)">All</button>
+            <button type="button" class="chip" onclick="setChip(this)">Habits</button>
+            <button type="button" class="chip" onclick="setChip(this)">Money</button>
+            <button type="button" class="chip" onclick="setChip(this)">Memory</button>
+          </div>
+          <div class="timeline">
+            <div class="tl-day">Today</div>
+            <div class="tl-item"><span class="tl-dot accent"></span><div><b>Protein breakfast</b><p>Habit completed · 8:10</p></div></div>
+            <div class="tl-item"><span class="tl-dot money"></span><div><b>₹180 · South Indian filter coffee</b><p>Finance · inferred Food</p></div></div>
+            <div class="tl-item"><span class="tl-dot mem"></span><div><b>Note · Prototype Studio IA</b><p>Knowledge · 9:02</p></div></div>
+            <div class="tl-day">Yesterday</div>
+            <div class="tl-item"><span class="tl-dot mem"></span><div><b>Journal · Shipping pressure</b><p>Steady · evening</p></div></div>
+            <div class="tl-item"><span class="tl-dot accent"></span><div><b>Walk 6.4k steps</b><p>Habit · evening</p></div></div>
+            <div class="tl-item"><span class="tl-dot money"></span><div><b>₹1,240 · Groceries</b><p>Finance</p></div></div>
+          </div>
+        </div>
+
+        <!-- FAMILY -->
+        <div class="screen" id="screen-family">
+          <div class="page-head"><div class="page-title">Family</div><div class="page-sub">Shared care · private by default</div></div>
+          <div class="card trust-banner">Not a social feed. Shared tasks and vault only.</div>
+          <div class="sec-head"><span>Members</span></div>
+          <div class="card list">
+            <div class="row"><div class="av">M</div><div class="row-body"><div class="row-title">Mom</div><div class="row-meta">Health folder · 2 docs</div></div></div>
+            <div class="row"><div class="av">D</div><div class="row-body"><div class="row-title">Dad</div><div class="row-meta">Completed “Pay electricity”</div></div></div>
+            <div class="row"><div class="av">S</div><div class="row-body"><div class="row-title">Sister</div><div class="row-meta">Shared exam calendar</div></div></div>
+          </div>
+          <div class="sec-head"><span>Care queue</span></div>
+          <div class="card list">
+            <button type="button" class="row habit" onclick="toggleHabit(this)"><span class="check"></span><span class="row-body"><span class="row-title">Book dentist for Mom</span><span class="row-meta">Due Fri</span></span></button>
+            <button type="button" class="row habit done" onclick="toggleHabit(this)"><span class="check"></span><span class="row-body"><span class="row-title">Pay electricity</span><span class="row-meta">Dad · done</span></span></button>
+          </div>
+          <button type="button" class="btn btn-soft" onclick="openSub('sub-vault')">Open private vault</button>
+        </div>
+
+        <!-- FINANCE -->
+        <div class="screen" id="screen-finance">
+          <div class="page-head"><div class="page-title">Finance</div><div class="page-sub">Truth over budgets theater</div></div>
+          <div class="card money-hero">
+            <div class="eyebrow">Today</div>
+            <div class="money-val lg">₹420</div>
+            <div class="row-meta">Week ₹4,860 · under soft cap</div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="openSheet('spend')">Log spend</button>
+          <div class="sec-head"><span>Recent</span></div>
+          <div class="card list">
+            <div class="row"><div class="thumb ic-amber">₹</div><div class="row-body"><div class="row-title">Filter coffee</div><div class="row-meta">Food · 8:24</div></div><div class="row-right">₹180</div></div>
+            <div class="row"><div class="thumb ic-blue">₹</div><div class="row-body"><div class="row-title">Auto rickshaw</div><div class="row-meta">Transit · yesterday</div></div><div class="row-right">₹120</div></div>
+            <div class="row"><div class="thumb ic-green">₹</div><div class="row-body"><div class="row-title">Groceries</div><div class="row-meta">Home · yesterday</div></div><div class="row-right">₹1,240</div></div>
+          </div>
+        </div>
+
+        <!-- DOCUMENTS -->
+        <div class="screen" id="screen-documents">
+          <div class="page-head"><div class="page-title">Documents</div><div class="page-sub">18 files · 340 MB</div></div>
+          <div class="card list">
+            <div class="row"><div class="thumb ic-rose"><b class="tiny">PDF</b></div><div class="row-body"><div class="row-title">Aadhaar scan</div><div class="row-meta">Vault · encrypted</div></div></div>
+            <div class="row"><div class="thumb ic-blue"><b class="tiny">PDF</b></div><div class="row-body"><div class="row-title">Resume 2026</div><div class="row-meta">Career · 240 KB</div></div></div>
+            <div class="row"><div class="thumb ic-orange"><b class="tiny">IMG</b></div><div class="row-body"><div class="row-title">Lab report Mom</div><div class="row-meta">Family · Jul 12</div></div></div>
+            <div class="row"><div class="thumb ic-violet"><b class="tiny">DOC</b></div><div class="row-body"><div class="row-title">Rental agreement</div><div class="row-meta">Home · 1.1 MB</div></div></div>
+          </div>
+          <button type="button" class="btn btn-soft" onclick="openSheet('doc')">Upload</button>
+        </div>
+
+        <!-- AI -->
+        <div class="screen" id="screen-ai">
+          <div class="page-head"><div class="page-title">AI</div><div class="page-sub">Coach · mixed initiative · not clinical</div></div>
+          <div class="ai-thread" id="aiThread">
+            <div class="ai-msg sys"><p>I can suggest blocks, categorize spends, and summarize memory. I will not diagnose.</p></div>
+            <div class="ai-msg bot"><p>Your focus blocks stick when they follow a completed morning habit. Want a 45-minute block after breakfast tomorrow?</p>
+              <div class="chips"><button type="button" class="chip active" onclick="aiChip('Yes, schedule it')">Yes, schedule it</button><button type="button" class="chip" onclick="aiChip('Not tomorrow')">Not tomorrow</button></div>
+            </div>
+          </div>
+          <form class="ai-compose" onsubmit="return sendAI(event)">
+            <input id="aiInput" placeholder="Ask AIIMIN…" autocomplete="off" />
+            <button type="submit" class="icon-btn accent" aria-label="Send">↑</button>
+          </form>
+        </div>
+
+      </div><!-- /screens -->
+
+      <nav class="bottomnav" aria-label="Primary">
+        <button type="button" class="navitem active" data-screen="today" onclick="go('today')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Today</span></button>
+        <button type="button" class="navitem" data-screen="knowledge" onclick="go('knowledge')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg><span>Knowledge</span></button>
+        <button type="button" class="fab" onclick="openSheet('capture')" aria-label="Capture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button type="button" class="navitem" data-screen="timeline" onclick="go('timeline')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Timeline</span></button>
+        <button type="button" class="navitem" data-screen="more" onclick="openMore()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg><span>More</span></button>
+      </nav>
+
+      <!-- SUB: Search -->
+      <div class="subscreen" id="sub-search">
+        <button type="button" class="back-btn" onclick="closeSub('sub-search')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Back</button>
+        <div class="sub-head"><h2>Search</h2><p>Recall across your graph</p></div>
+        <input class="search-input" type="search" id="globalSearch" placeholder="Habits, money, notes, files…" oninput="filterSearch(this.value)" />
+        <div class="card list" id="searchResults">
+          <div class="row" data-q="roadmap prototype"><div class="thumb ic-orange">N</div><div class="row-body"><div class="row-title">Prototype Studio IA</div><div class="row-meta">Note · today</div></div></div>
+          <div class="row" data-q="coffee finance"><div class="thumb ic-amber">₹</div><div class="row-body"><div class="row-title">Filter coffee ₹180</div><div class="row-meta">Finance · today</div></div></div>
+          <div class="row" data-q="mom family dentist"><div class="thumb ic-violet">F</div><div class="row-body"><div class="row-title">Book dentist for Mom</div><div class="row-meta">Family · care</div></div></div>
+          <div class="row" data-q="resume document"><div class="thumb ic-blue">P</div><div class="row-body"><div class="row-title">Resume 2026</div><div class="row-meta">Documents</div></div></div>
+        </div>
+      </div>
+
+      <!-- SUB: Settings -->
+      <div class="subscreen" id="sub-settings">
+        <button type="button" class="back-btn" onclick="closeSub('sub-settings')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Back</button>
+        <div class="sub-head"><h2>Settings</h2><p>Control without dark patterns</p></div>
+        <div class="settings-group">
+          <button type="button" class="settings-row" onclick="openSub('sub-profile')"><div class="av sm">A</div><div class="grow"><div class="t">Aaditya Upadhyay</div><div class="v">aaditya@aiimin.in</div></div><span class="chev">›</span></button>
+        </div>
+        <div class="dgroup">Preferences</div>
+        <div class="settings-group">
+          <div class="settings-row"><div class="t">Appearance</div><span class="v" id="apVal">Dark</span><button type="button" class="toggle on" id="apToggle" onclick="toggleTheme(event)" aria-label="Toggle theme"></button></div>
+          <div class="settings-row"><div class="t">Notifications</div><span class="toggle on"></span></div>
+          <div class="settings-row"><div class="t">Focus silence</div><span class="toggle on"></span></div>
+        </div>
+        <div class="dgroup">Trust</div>
+        <div class="settings-group">
+          <div class="settings-row"><div class="t">Export data</div><span class="chev">›</span></div>
+          <div class="settings-row"><div class="t">Delete account</div><span class="v danger">Careful</span></div>
+          <div class="settings-row"><div class="t">Sync</div><span class="v ok">On</span></div>
+        </div>
+        <button type="button" class="btn btn-soft danger-text" onclick="signOut()">Sign out</button>
+      </div>
+
+      <!-- SUB: Profile -->
+      <div class="subscreen" id="sub-profile">
+        <button type="button" class="back-btn" onclick="closeSub('sub-profile')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Back</button>
+        <div class="profile-hero"><div class="av lg">A</div><h2>Aaditya Upadhyay</h2><p>OS-ID · aaditya · Pro</p></div>
+        <div class="profile-stats">
+          <div class="ps"><div class="v">78</div><div class="l">Life Score</div></div>
+          <div class="ps"><div class="v">92%</div><div class="l">Consistency</div></div>
+          <div class="ps"><div class="v">14</div><div class="l">Day rhythm</div></div>
+        </div>
+        <div class="card"><div class="eyebrow">This month</div><div class="metric-line"><span>Capture days</span><b>18/22</b></div><div class="pbar"><i style="width:82%"></i></div></div>
+      </div>
+
+      <!-- SUB: Notifications -->
+      <div class="subscreen" id="sub-notifications">
+        <button type="button" class="back-btn" onclick="closeSub('sub-notifications')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Back</button>
+        <div class="sub-head row-between"><div><h2>Notifications</h2><p>3 unread</p></div><button type="button" class="sec-link" onclick="markAllRead()">Mark all read</button></div>
+        <div class="card list" id="notifList">
+          <div class="notif unread"><div class="thumb ic-orange">F</div><div class="row-body"><div class="row-title">Focus block in 30 min</div><div class="row-meta">10 min ago</div></div></div>
+          <div class="notif unread"><div class="thumb ic-violet">A</div><div class="row-body"><div class="row-title">Summary ready for Cloud notes</div><div class="row-meta">1h ago</div></div></div>
+          <div class="notif unread"><div class="thumb ic-blue">F</div><div class="row-body"><div class="row-title">Dad completed electricity bill</div><div class="row-meta">2h ago</div></div></div>
+        </div>
+      </div>
+
+      <!-- SUB: Vault -->
+      <div class="subscreen" id="sub-vault">
+        <button type="button" class="back-btn" onclick="closeSub('sub-vault')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>Back</button>
+        <div id="vaultLocked">
+          <div class="vault-lock">
+            <div class="thumb ic-orange lg" aria-hidden="true"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+            <h2>Private Vault</h2>
+            <p>Enter PIN to unlock</p>
+            <div class="dots-pin" id="pinDots"><i></i><i></i><i></i><i></i></div>
+            <div class="keypad">
+              <button type="button" class="key" onclick="pinPress('1')">1</button><button type="button" class="key" onclick="pinPress('2')">2</button><button type="button" class="key" onclick="pinPress('3')">3</button>
+              <button type="button" class="key" onclick="pinPress('4')">4</button><button type="button" class="key" onclick="pinPress('5')">5</button><button type="button" class="key" onclick="pinPress('6')">6</button>
+              <button type="button" class="key" onclick="pinPress('7')">7</button><button type="button" class="key" onclick="pinPress('8')">8</button><button type="button" class="key" onclick="pinPress('9')">9</button>
+              <span></span><button type="button" class="key" onclick="pinPress('0')">0</button><button type="button" class="key" onclick="pinDelete()">⌫</button>
+            </div>
+            <p class="hint">Any 4 digits work in prototype</p>
+          </div>
+        </div>
+        <div id="vaultUnlocked" hidden>
+          <div class="sub-head"><h2>Private Vault</h2><p>End-to-end encrypted</p></div>
+          <div class="card list">
+            <div class="row"><div class="row-body"><div class="row-title">Passwords</div><div class="row-meta">18 items</div></div></div>
+            <div class="row"><div class="row-body"><div class="row-title">IDs & documents</div><div class="row-meta">6 items</div></div></div>
+            <div class="row"><div class="row-body"><div class="row-title">Secure notes</div><div class="row-meta">4 items</div></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Drawer -->
+    <div class="scrim" id="scrim" onclick="closeAll()"></div>
+    <aside class="drawer" id="drawer" aria-label="More navigation">
+      <div class="drawer-head"><div class="av">A</div><div><div class="nm">Aaditya Upadhyay</div><div class="em">Living Momentum</div></div></div>
+      <nav class="drawer-nav">
+        <div class="dgroup">Day</div>
+        <button type="button" class="ditem" onclick="drawerGo('today')">Today</button>
+        <button type="button" class="ditem" onclick="drawerGo('knowledge')">Knowledge</button>
+        <button type="button" class="ditem" onclick="drawerGo('timeline')">Timeline</button>
+        <div class="dgroup">Pillars</div>
+        <button type="button" class="ditem" onclick="drawerGo('family')">Family</button>
+        <button type="button" class="ditem" onclick="drawerGo('finance')">Finance</button>
+        <button type="button" class="ditem" onclick="drawerGo('documents')">Documents</button>
+        <button type="button" class="ditem" onclick="drawerGo('ai')">AI</button>
+        <div class="dgroup">System</div>
+        <button type="button" class="ditem" onclick="drawerSub('sub-search')">Search</button>
+        <button type="button" class="ditem" onclick="drawerSub('sub-profile')">Profile</button>
+        <button type="button" class="ditem" onclick="drawerSub('sub-settings')">Settings</button>
+      </nav>
+    </aside>
+
+    <!-- More sheet (primary for More tab) -->
+    <div class="sheet" id="sheet">
+      <div class="grabber"></div>
+      <h3 id="sheetTitle">Capture</h3>
+      <p class="sub" id="sheetSub">One utterance. System structures.</p>
+      <div class="sheet-grid" id="sheetGrid"></div>
+      <button type="button" class="btn btn-soft" onclick="closeAll()">Cancel</button>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -7,12 +7,15 @@ alwaysApply: true
 
 Vault path: `docs/knowledge/`. This is the Project Brain. Prefer it over scanning the repo.
 
+**Genesis nucleus:** `docs/knowledge/Genesis/` — immutable constitutional corpus (P1–P9). Single source. Do not edit Genesis content. Vault notes cannot override Genesis. Start constitutional work at `Maps of Content/Genesis.md`.
+
 ## Mandatory load order
 
 1. `docs/knowledge/00_HOME.md`
 2. `docs/knowledge/15_MEMORY/Current-Context.md`
-3. Only architecture / feature / DB / API notes relevant to the task
-4. Only source files directly involved in the change
+3. Constitutional work → `Maps of Content/Genesis.md` then `Genesis/` (read-only)
+4. Only architecture / feature / DB / API notes relevant to the task
+5. Only source files directly involved in the change
 
 ## Hard limits
 

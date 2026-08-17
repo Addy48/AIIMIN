@@ -1,15 +1,32 @@
 ---
-aliases:
-  - Native Build Tracker
-  - Android V2 Tracker
-  - WORKFLOW PLAN
+
+authority: engineering
+derived_from: Genesis/P8 Master Specification/13_Platform_Specifications.md
+status: frozen
+owner: eng
+lifecycle: frozen
+last_reviewed: 2026-08-20
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
 tags:
   - pin
   - native-android
   - build-tracker
+migration_batch: W4
+fm_source: script
+aliases:
+  - Native Build Tracker
+  - Android V2 Tracker
+  - WORKFLOW PLAN
 ---
 
 # Native Android V2 — Build Tracker
+
+> [!warning] Cold native pack
+> V2 task board. Living V3 lists: [[V3-LEFTOVER-CHECKLIST]] · [[Maps of Content/Native-App]].
+
 
 > **📌 Pin this file in Obsidian sidebar** (right-click tab → Pin, or drag into Bookmarks).  
 > Living task board — edit every session.  
@@ -24,7 +41,7 @@ tags:
 | **Overall progress** | **~92%** (P0–P2 done · P3 nearly done) |
 | **Current APK** | `native-android/` → `2.1.8-native` |
 | **Build** | `./gradlew :app:assembleDebug` |
-| **Install** | `adb install -r app/build/outputs/apk/debug/app-debug.apk` |
+| **Install** | rebuild then `adb install -r` the debug APK, or `native-android-v3/dist/aiimin-v3-current.apk` after `bash scripts/promote-v3-apk.sh` |
 | **Vault pack** | [[00_INDEX]] · **Changelog:** [[CHANGELOG]] |
 
 ### Progress bar

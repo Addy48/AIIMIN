@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIIMIN · Today — Prototypes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#F5F4EF;--card:#fff;--g:#2D5016;--gm:#4A7C2F;--gl:#8CC968;--gp:#E8F0E0;--t1:#1C1C1A;--t2:#6B6B62;--tm:#9B9B92;--br:#E8E7E1;--r:12px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-size:14px}
+
+/* VERSION SWITCHER */
+.vsw{position:fixed;top:12px;right:16px;z-index:999;display:flex;gap:6px;background:rgba(245,244,239,.95);backdrop-filter:blur(8px);padding:6px;border-radius:10px;border:1px solid var(--br)}
+.vbtn{padding:5px 12px;border-radius:7px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--t2);transition:.15s}
+.vbtn.on{background:var(--g);color:#fff}
+
+/* NAV */
+nav{height:50px;display:flex;align-items:center;padding:0 22px;gap:2px;border-bottom:1px solid var(--br);background:rgba(245,244,239,.93);backdrop-filter:blur(10px);position:sticky;top:0;z-index:100}
+.logo{font-weight:800;font-size:15px;color:var(--g);margin-right:24px;display:flex;align-items:center;gap:7px}
+.logo-box{width:26px;height:26px;background:var(--g);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800}
+.nl{padding:4px 9px;border-radius:6px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;transition:.15s}
+.nl:hover{background:var(--gp);color:var(--g)}
+.nl.a{background:var(--g);color:#fff;font-weight:600}
+.nr{margin-left:auto;display:flex;align-items:center;gap:8px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* LAYOUT */
+.wrap{display:grid;grid-template-columns:1fr 284px;gap:18px;max-width:1180px;margin:0 auto;padding:24px 20px 40px}
+.main{display:flex;flex-direction:column;gap:16px}
+.side{display:flex;flex-direction:column;gap:12px}
+
+/* SHARED */
+.ph{display:flex;justify-content:space-between;align-items:flex-start}
+.plbl{font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--tm);margin-bottom:3px}
+.ptitle{font-size:26px;font-weight:800;letter-spacing:-.7px}
+.pdate{font-size:12px;font-weight:600;text-align:right}
+.pwk{font-size:10px;color:var(--tm);margin-top:2px}
+.sc{background:var(--card);border-radius:var(--r);border:1px solid var(--br);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.sc:hover{box-shadow:0 4px 14px rgba(0,0,0,.09);transform:translateY(-1px);transition:.2s}
+.slbl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tm)}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sla{font-size:10px;font-weight:600;color:var(--gm);cursor:pointer}
+
+/* EXEC WINDOW */
+.ew{background:linear-gradient(135deg,#1A3009,#2D5016,#3A6620);border-radius:16px;padding:20px 26px;display:flex;align-items:center;justify-content:space-between;overflow:hidden;position:relative}
+.ew::after{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,255,255,.05),transparent 70%);border-radius:50%}
+.ew-lbl{font-size:9px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:4px}
+.ew-num{font-size:52px;font-weight:800;color:#fff;letter-spacing:-3px;line-height:1}
+.ew-unit{font-size:13px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-left:6px}
+.ew-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px}
+.ew-sub span{color:#8CC968;font-weight:600}
+.ew-btn{background:#fff;color:var(--g);border:none;border-radius:9px;padding:9px 17px;font-size:12px;font-weight:700;cursor:pointer;position:relative;z-index:1;transition:.2s}
+.ew-btn:hover{background:var(--gp)}
+.ew-minis{display:flex;gap:18px;margin-bottom:10px}
+.ew-mini{text-align:right}
+.ew-mv{font-size:17px;font-weight:800;color:#fff}
+.ew-ml{font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.7px}
+
+/* QUICK CAPTURE */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.qa-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 6px;border-radius:10px;border:1.5px dashed var(--br);background:transparent;cursor:pointer;transition:.2s}
+.qa-btn:hover{border-color:var(--gl);background:var(--gp)}
+.qa-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.qa-lbl{font-size:10px;font-weight:600;color:var(--t2);text-align:center}
+.wins{display:flex;gap:7px;flex-wrap:wrap}
+.wp{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg);border:1px solid var(--br);border-radius:20px;font-size:11px;color:var(--t2);cursor:pointer;transition:.15s}
+.wp:hover{border-color:var(--gl);color:var(--g)}
+.wdot{width:5px;height:5px;border-radius:50%}
+
+/* PLANNER */
+.pg{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.dc{border-radius:9px;padding:9px 7px;border:1px solid var(--br);background:var(--bg);min-height:114px;display:flex;flex-direction:column;gap:4px;cursor:pointer;transition:.2s}
+.dc:hover{border-color:var(--gl);background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.dc.td{background:var(--g);border-color:var(--g)}
+.dc.ps{opacity:.72}
+.dn{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--tm)}
+.dc.td .dn{color:rgba(255,255,255,.5)}
+.dd{font-size:17px;font-weight:800;color:var(--t1);letter-spacing:-.4px}
+.dc.td .dd{color:#fff}
+.dtask{font-size:9px;font-weight:600;padding:2px 4px;border-radius:4px;line-height:1.3}
+.dtask.h{background:rgba(74,124,47,.12);color:var(--gm)}
+.dtask.g{background:rgba(59,130,246,.1);color:#3B82F6}
+.dtask.f{background:rgba(168,85,247,.1);color:#A855F7}
+.dc.td .dtask{background:rgba(255,255,255,.13);color:rgba(255,255,255,.8)}
+.dadd{font-size:10px;color:rgba(255,255,255,.55);background:rgba(255,255,255,.12);border-radius:5px;padding:3px 6px;text-align:center;cursor:pointer;margin-top:auto}
+.dadd-g{font-size:10px;color:var(--tm);background:rgba(0,0,0,.04);border-radius:5px;padding:3px 6px;text-align:center;cursor:pointer;margin-top:auto}
+.wknav{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;color:var(--t2)}
+.wnb{width:22px;height:22px;border-radius:5px;border:1px solid var(--br);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;transition:.15s}
+.wnb:hover{background:var(--br)}
+.aibadge{font-size:9px;font-weight:700;letter-spacing:.6px;color:var(--gm);background:var(--gp);padding:2px 7px;border-radius:20px}
+
+/* SIDEBAR */
+.scard{background:var(--card);border-radius:var(--r);border:1px solid var(--br);padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.sct{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tm);display:flex;align-items:center;gap:5px}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--gl)}
+.sca{font-size:10px;font-weight:600;color:var(--gm);cursor:pointer}
+.pri-item{display:flex;align-items:flex-start;gap:7px;padding:7px 8px;background:var(--bg);border-radius:7px;border:1px solid var(--br);margin-bottom:5px}
+.pck{width:14px;height:14px;border-radius:50%;border:2px solid var(--br);flex-shrink:0;margin-top:1px;cursor:pointer}
+.pck.done{background:var(--gm);border-color:var(--gm)}
+.ptxt{font-size:11px;color:var(--t1);line-height:1.3}
+.padd{display:flex;align-items:center;gap:5px;padding:6px 8px;border:1.5px dashed var(--br);border-radius:7px;font-size:11px;color:var(--tm);cursor:pointer;transition:.15s}
+.padd:hover{border-color:var(--gl);color:var(--gm)}
+.str-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--br)}
+.str-item:last-child{border:none}
+.strl{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500}
+.strb{font-size:10px;font-weight:700}
+.strb.hot{color:#F97316}
+.strb.new{color:var(--tm)}
+.ol-wrap{display:flex;gap:7px}
+.ol-inp{flex:1;padding:8px 11px;border:1px solid var(--br);border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;background:var(--bg);outline:none;transition:.15s}
+.ol-inp:focus{border-color:var(--gm);background:#fff}
+.ol-btn{padding:8px 12px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+.ol-btn:hover{background:#1A3009}
+.tj-item{margin-bottom:9px}
+.tj-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.tj-p{font-size:11px;font-weight:700}
+.tj-r{font-size:10px;color:var(--tm)}
+.tj-pct{font-size:11px;font-weight:800}
+.tj-bar{height:5px;background:var(--br);border-radius:10px;overflow:hidden}
+.tj-fill{height:100%;border-radius:10px}
+
+/* LIFE SCORE (V2 feature) */
+.ls-wrap{display:flex;align-items:center;gap:14px}
+.ls-donut{position:relative;width:68px;height:68px;flex-shrink:0}
+.ls-donut svg{width:68px;height:68px}
+.ls-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ls-num{font-size:18px;font-weight:800;color:var(--g);line-height:1}
+.ls-tag{font-size:8px;color:var(--tm);font-weight:600}
+.ls-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.ls-name{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:4px}
+.ls-sw{width:7px;height:7px;border-radius:2px}
+.ls-val{font-size:10px;font-weight:700}
+
+/* V1 INTEL ROW */
+.ir{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+.ic{padding:14px;transition:.2s}
+.ic-lbl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--tm);margin-bottom:7px}
+.ic-title{font-size:13px;font-weight:700;margin-bottom:5px}
+.ic-desc{font-size:11px;color:var(--t2);line-height:1.4;margin-bottom:8px}
+.itag{display:inline-block;padding:2px 8px;background:var(--gp);color:var(--g);border-radius:20px;font-size:9px;font-weight:700}
+.pstat{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ps-box{display:flex;align-items:center;gap:5px;padding:6px 8px;background:var(--bg);border-radius:7px}
+.ps-val{font-size:12px;font-weight:700}
+.ps-lbl{font-size:9px;color:var(--tm)}
+.ms-num{font-size:36px;font-weight:800;color:var(--g);letter-spacing:-2px;line-height:1}
+.ms-bar{height:4px;background:var(--br);border-radius:10px;margin:7px 0 4px;overflow:hidden}
+.ms-fill{height:100%;background:linear-gradient(90deg,var(--gm),var(--g));border-radius:10px}
+.ms-sub{font-size:10px;color:var(--tm)}
+
+/* VERSION PANEL */
+.version-panel{display:none}
+.version-panel.show{display:contents}
+
+/* V2 */
+.hero-v2{background:linear-gradient(135deg,#1A3009,#2D5016);border-radius:16px;padding:22px 24px;color:#fff;position:relative;overflow:hidden}
+.hero-v2::after{content:'';position:absolute;right:-30px;top:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,.06),transparent 70%);border-radius:50%}
+.hero-v2-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.hero-v2-greeting{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.hero-v2-date{font-size:12px;color:rgba(255,255,255,.5);text-align:right}
+.hero-v2-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.hv2s{background:rgba(255,255,255,.08);border-radius:10px;padding:10px}
+.hv2s-val{font-size:18px;font-weight:800;color:#fff}
+.hv2s-lbl{font-size:9px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.7px;margin-top:2px}
+
+.v2-mid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.focus-card{padding:16px}
+.fc-mission{font-size:13px;font-weight:700;margin-bottom:4px}
+.fc-desc{font-size:11px;color:var(--t2);margin-bottom:10px}
+.fc-prog{height:5px;background:var(--br);border-radius:10px;overflow:hidden;margin-bottom:4px}
+.fc-pfill{height:100%;background:linear-gradient(90deg,var(--gl),var(--g));width:73%}
+.fc-pct{font-size:10px;color:var(--tm)}
+
+/* V3 */
+.v3-header{padding:20px 24px;background:var(--card);border-radius:16px;border:1px solid var(--br);margin-bottom:0}
+.v3-name{font-size:28px;font-weight:800;letter-spacing:-.7px;margin-bottom:4px}
+.v3-quote{font-size:13px;color:var(--t2);font-style:italic;border-left:3px solid var(--gl);padding-left:10px;margin-bottom:14px}
+.v3-tags{display:flex;gap:7px;flex-wrap:wrap}
+.v3tag{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid}
+</style>
+</head>
+<body>
+
+<!-- VERSION SWITCHER -->
+<div class="vsw">
+  <button class="vbtn on" onclick="show(1)">V1 · Intel Row</button>
+  <button class="vbtn" onclick="show(2)">V2 · Hero Stats</button>
+  <button class="vbtn" onclick="show(3)">V3 · Focus Mode</button>
+</div>
+
+<!-- NAV (shared) -->
+<nav>
+  <div class="logo"><div class="logo-box">A</div>AIIMIN</div>
+  <span class="nl a">Today</span><span class="nl">Habits</span><span class="nl">Goals</span>
+  <span class="nl">Journal</span><span class="nl">Finance</span><span class="nl">Family</span>
+  <span class="nl">Calendar</span><span class="nl">Placement</span><span class="nl">Sports</span>
+  <span class="nl">Discipline</span><span class="nl">Focus</span><span class="nl">Lab</span>
+  <div class="nr"><div class="av">J</div></div>
+</nav>
+
+<!-- ══════════ V1 : Intelligence Row ══════════ -->
+<div id="v1" class="version-panel show">
+<div class="wrap">
+  <div class="main">
+    <div class="ph">
+      <div><div class="plbl">Operational Intelligence</div><div class="ptitle">Day Control.</div></div>
+      <div><div class="pdate">Friday, June 12</div><div class="pwk">Week 24 · AIIMIN v3</div></div>
+    </div>
+
+    <!-- Intel Row — NO repeated placement number -->
+    <div class="ir">
+      <div class="sc ic">
+        <div class="ic-lbl">Today's Focus</div>
+        <div class="ic-title">Ship the sports section</div>
+        <div class="ic-desc">Fix API caching · redesign multi-sport view</div>
+        <span class="itag">Top Priority · Today</span>
+      </div>
+      <div class="sc ic">
+        <div class="ic-lbl">Life Pulse</div>
+        <div class="pstat">
+          <div class="ps-box"><span>🔥</span><div><div class="ps-val">4/6</div><div class="ps-lbl">Habits</div></div></div>
+          <div class="ps-box"><span>⚡</span><div><div class="ps-val">7d</div><div class="ps-lbl">Streak</div></div></div>
+          <div class="ps-box"><span>💰</span><div><div class="ps-val">+$42</div><div class="ps-lbl">Saved</div></div></div>
+          <div class="ps-box"><span>😴</span><div><div class="ps-val">7.2h</div><div class="ps-lbl">Sleep</div></div></div>
+        </div>
+      </div>
+      <div class="sc ic">
+        <div class="ic-lbl">Next Milestone</div>
+        <!-- No number here — already shown in execution window below -->
+        <div style="font-size:11px;color:var(--t2);margin-bottom:6px">Your goal countdown</div>
+        <div style="font-size:16px;font-weight:800;color:var(--g);">Placements · Jul 26</div>
+        <div class="ms-bar"><div class="ms-fill"></div></div>
+        <div class="ms-sub">65% of prep window · 12 modules done</div>
+      </div>
+    </div>
+
+    <!-- Execution Window (user-customizable label) -->
+    <div class="ew">
+      <div>
+        <div class="ew-lbl">Execution Window — <span style="color:rgba(255,255,255,.7)">Edit in Settings ⚙</span></div>
+        <div style="display:flex;align-items:baseline;gap:6px"><div class="ew-num">43</div><div class="ew-unit">Days</div></div>
+        <div class="ew-sub">Until July 26 · <span>Placements</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;position:relative;z-index:1">
+        <div class="ew-minis">
+          <div class="ew-mini"><div class="ew-mv">7</div><div class="ew-ml">Tasks done</div></div>
+          <div class="ew-mini"><div class="ew-mv">83%</div><div class="ew-ml">On track</div></div>
+        </div>
+        <button class="ew-btn">Launch Portal →</button>
+      </div>
+    </div>
+
+    <!-- Quick Capture -->
+    <div>
+      <div class="sh"><span class="slbl">Quick Capture</span><span class="sla">Smart Log →</span></div>
+      <div class="sc" style="padding:14px">
+        <div class="qa-grid">
+          <button class="qa-btn"><div class="qa-ico" style="background:#E8F5E0">✅</div><div class="qa-lbl">Log Habit</div></button>
+          <button class="qa-btn"><div class="qa-ico" style="background:#EEF2FF">✏️</div><div class="qa-lbl">Journal</div></button>
+          <button class="qa-btn"><div class="qa-ico" style="background:#FFF7ED">💸</div><div class="qa-lbl">Expense</div></button>
+          <button class="qa-btn"><div class="qa-ico" style="background:#FDF2F8">🎯</div><div class="qa-lbl">Add Goal</div></button>
+        </div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--tm);margin-bottom:6px">Recent Wins</div>
+        <div class="wins">
+          <div class="wp"><div class="wdot" style="background:var(--gl)"></div>🔥 Morning Workout — 2h ago</div>
+          <div class="wp"><div class="wdot" style="background:#818CF8"></div>✏️ Journal — yesterday</div>
+          <div class="wp"><div class="wdot" style="background:#FB923C"></div>💰 Saved ₹500 — 3h ago</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Master Planner -->
+    <div>
+      <div class="sh">
+        <div>
+          <div class="slbl">Master Planner</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="aibadge">✦ Synced with Calendar</span>
+          <div class="wknav"><div class="wnb">‹</div>Week 24<div class="wnb">›</div></div>
+        </div>
+      </div>
+      <div class="sc" style="padding:16px">
+        <div class="pg">
+          <div class="dc ps"><div class="dn">Mon</div><div class="dd">8</div><div class="dtask h">✓ Workout</div><div class="dtask g">✓ DSA Ch.4</div></div>
+          <div class="dc ps"><div class="dn">Tue</div><div class="dd">9</div><div class="dtask h">✓ Read</div><div class="dtask h">✓ Journal</div></div>
+          <div class="dc ps"><div class="dn">Wed</div><div class="dd">10</div><div class="dtask g">✓ Mock test</div><div class="dtask h">✓ Water</div></div>
+          <div class="dc ps"><div class="dn">Thu</div><div class="dd">11</div><div class="dtask f">✓ Pomodoro</div><div class="dtask h">✓ Water</div></div>
+          <div class="dc td">
+            <div class="dn">Fri</div><div class="dd">12</div>
+            <div class="dtask">🏃 Workout</div><div class="dtask">🎯 Sports fix</div><div class="dtask">📖 Read</div>
+            <div class="dadd">+ Add</div>
+          </div>
+          <div class="dc"><div class="dn">Sat</div><div class="dd">13</div><div class="dadd-g">+ Plan</div></div>
+          <div class="dc"><div class="dn">Sun</div><div class="dd">14</div><div class="dadd-g">+ Plan</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="side">
+    <div class="scard">
+      <div class="sh"><div class="sct"><div class="sdot"></div>Command Center</div><div class="sca">Fri, Jun 12</div></div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--tm);margin-bottom:7px">Today's Priorities</div>
+      <div class="pri-item"><div class="pck done"></div><div class="ptxt">Fix sports API caching</div></div>
+      <div class="pri-item"><div class="pck"></div><div class="ptxt">Redesign sports layout</div></div>
+      <div class="pri-item"><div class="pck"></div><div class="ptxt">Build yearly habit matrix</div></div>
+      <div class="padd">＋ Add priority</div>
+    </div>
+
+    <div class="scard">
+      <div class="sh"><div class="sct">🔥 Streak Monitor</div><div class="sca">All →</div></div>
+      <div class="str-item"><div class="strl"><span>🏃</span>Morning Workout</div><div class="strb new">Day 1</div></div>
+      <div class="str-item"><div class="strl"><span>📚</span>Read 30 mins</div><div class="strb new">Day 1</div></div>
+      <div class="str-item"><div class="strl"><span>✍️</span>Journaling</div><div class="strb hot">🔥 7 days</div></div>
+      <div class="str-item"><div class="strl"><span>💧</span>Drink 3L Water</div><div class="strb new">Day 3</div></div>
+    </div>
+
+    <div class="scard">
+      <div class="sh"><div class="sct">✍️ One Liner</div></div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px;font-style:italic">"What's your one sentence for today?"</div>
+      <div class="ol-wrap">
+        <input class="ol-inp" placeholder="Today I will…" />
+        <button class="ol-btn">Log</button>
+      </div>
+      <div style="margin-top:10px;font-size:10px;color:var(--tm)">Yesterday: <span style="color:var(--t2);font-style:italic">"Focused on deep work, shipped 3 tasks."</span></div>
+    </div>
+
+    <div class="scard">
+      <div class="sh"><div class="sct"><div class="sdot"></div>Trajectory Execution</div><div style="font-size:9px;font-weight:700;color:#F97316;letter-spacing:.5px">LIVE</div></div>
+      <div class="tj-item">
+        <div class="tj-row"><div><span class="tj-p">DAY</span> <span class="tj-r">9h left</span></div><span class="tj-pct" style="color:#4A7C2F">61.53%</span></div>
+        <div class="tj-bar"><div class="tj-fill" style="width:61.53%;background:linear-gradient(90deg,#8CC968,#4A7C2F)"></div></div>
+      </div>
+      <div class="tj-item">
+        <div class="tj-row"><div><span class="tj-p">WEEK</span> <span class="tj-r">3d left</span></div><span class="tj-pct" style="color:#3B82F6">65.93%</span></div>
+        <div class="tj-bar"><div class="tj-fill" style="width:65.93%;background:linear-gradient(90deg,#93C5FD,#3B82F6)"></div></div>
+      </div>
+      <div class="tj-item">
+        <div class="tj-row"><div><span class="tj-p">MONTH</span> <span class="tj-r">19d left</span></div><span class="tj-pct" style="color:#EC4899">38.72%</span></div>
+        <div class="tj-bar"><div class="tj-fill" style="width:38.72%;background:linear-gradient(90deg,#F9A8D4,#EC4899)"></div></div>
+      </div>
+      <div class="tj-item">
+        <div class="tj-row"><div><span class="tj-p">YEAR</span> <span class="tj-r">203d left</span></div><span class="tj-pct" style="color:#F97316">44.55%</span></div>
+        <div class="tj-bar"><div class="tj-fill" style="width:44.55%;background:linear-gradient(90deg,#FED7AA,#F97316)"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ V2 : Hero Stats Banner ══════════ -->
+<div id="v2" class="version-panel">
+<div class="wrap">
+  <div class="main">
+    <!-- Dark hero banner with key stats -->
+    <div class="hero-v2">
+      <div class="hero-v2-top">
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px">Good Afternoon, Aaditya</div>
+          <div class="hero-v2-greeting">Day Control.</div>
+        </div>
+        <div class="hero-v2-date">Friday, June 12<br><span style="font-size:9px">Week 24</span></div>
+      </div>
+      <div class="hero-v2-stats">
+        <div class="hv2s"><div class="hv2s-val">4/6</div><div class="hv2s-lbl">Habits done</div></div>
+        <div class="hv2s"><div class="hv2s-val">🔥 7d</div><div class="hv2s-lbl">Streak</div></div>
+        <div class="hv2s"><div class="hv2s-val">43d</div><div class="hv2s-lbl">To Placements</div></div>
+        <div class="hv2s"><div class="hv2s-val">73</div><div class="hv2s-lbl">Life Score</div></div>
+      </div>
+    </div>
+
+    <!-- Life Score breakdown (replaces intel row) -->
+    <div style="display:grid;grid-template-columns:200px 1fr;gap:12px">
+      <div class="sc" style="padding:14px">
+        <div class="slbl" style="margin-bottom:10px">Life Score</div>
+        <div class="ls-wrap">
+          <div class="ls-donut">
+            <svg viewBox="0 0 68 68"><circle cx="34" cy="34" r="27" fill="none" stroke="#E8E7E1" stroke-width="5"/>
+            <circle cx="34" cy="34" r="27" fill="none" stroke="#4A7C2F" stroke-width="5" stroke-dasharray="169.6" stroke-dashoffset="45.8" stroke-linecap="round" transform="rotate(-90 34 34)"/></svg>
+            <div class="ls-center"><div class="ls-num">73</div><div class="ls-tag">score</div></div>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="ls-row"><div class="ls-name"><div class="ls-sw" style="background:#4A7C2F"></div>Habits</div><div class="ls-val">78%</div></div>
+          <div class="ls-row"><div class="ls-name"><div class="ls-sw" style="background:#3B82F6"></div>Goals</div><div class="ls-val">82%</div></div>
+          <div class="ls-row"><div class="ls-name"><div class="ls-sw" style="background:#FB923C"></div>Finance</div><div class="ls-val">65%</div></div>
+          <div class="ls-row"><div class="ls-name"><div class="ls-sw" style="background:#A855F7"></div>Discipline</div><div class="ls-val">88%</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="sc focus-card">
+          <div class="slbl" style="margin-bottom:8px">Today's Mission</div>
+          <div class="fc-mission">Ship the sports section</div>
+          <div class="fc-desc">Fix API caching + redesign multi-sport layout for all 5 sports</div>
+          <div class="fc-prog"><div class="fc-pfill"></div></div>
+          <div class="fc-pct">73% complete</div>
+        </div>
+        <div class="sc" style="padding:14px">
+          <div class="slbl" style="margin-bottom:8px">Quick Capture</div>
+          <div class="qa-grid">
+            <button class="qa-btn"><div class="qa-ico" style="background:#E8F5E0">✅</div><div class="qa-lbl">Log Habit</div></button>
+            <button class="qa-btn"><div class="qa-ico" style="background:#EEF2FF">✏️</div><div class="qa-lbl">Journal</div></button>
+            <button class="qa-btn"><div class="qa-ico" style="background:#FFF7ED">💸</div><div class="qa-lbl">Expense</div></button>
+            <button class="qa-btn"><div class="qa-ico" style="background:#FDF2F8">🎯</div><div class="qa-lbl">Goal</div></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Planner (same) -->
+    <div>
+      <div class="sh"><div class="slbl">Master Planner</div><div style="display:flex;align-items:center;gap:10px"><span class="aibadge">✦ Calendar Sync</span><div class="wknav"><div class="wnb">‹</div>Week 24<div class="wnb">›</div></div></div></div>
+      <div class="sc" style="padding:16px"><div class="pg">
+        <div class="dc ps"><div class="dn">Mon</div><div class="dd">8</div><div class="dtask h">✓ Workout</div></div>
+        <div class="dc ps"><div class="dn">Tue</div><div class="dd">9</div><div class="dtask h">✓ Read</div></div>
+        <div class="dc ps"><div class="dn">Wed</div><div class="dd">10</div><div class="dtask g">✓ Mock</div></div>
+        <div class="dc ps"><div class="dn">Thu</div><div class="dd">11</div><div class="dtask f">✓ Deep Work</div></div>
+        <div class="dc td"><div class="dn">Fri</div><div class="dd">12</div><div class="dtask">🎯 Sports fix</div><div class="dtask">📖 Read</div><div class="dadd">+ Add</div></div>
+        <div class="dc"><div class="dn">Sat</div><div class="dd">13</div><div class="dadd-g">+ Plan</div></div>
+        <div class="dc"><div class="dn">Sun</div><div class="dd">14</div><div class="dadd-g">+ Plan</div></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- SAME SIDEBAR -->
+  <div class="side">
+    <div class="scard">
+      <div class="sh"><div class="sct"><div class="sdot"></div>Command Center</div><div class="sca">Jun 12</div></div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--tm);margin-bottom:7px">Priorities</div>
+      <div class="pri-item"><div class="pck done"></div><div class="ptxt">Fix sports API caching</div></div>
+      <div class="pri-item"><div class="pck"></div><div class="ptxt">Redesign sports layout</div></div>
+      <div class="padd">＋ Add priority</div>
+    </div>
+    <div class="scard">
+      <div class="sh"><div class="sct">🔥 Streak Monitor</div><div class="sca">All →</div></div>
+      <div class="str-item"><div class="strl"><span>✍️</span>Journaling</div><div class="strb hot">🔥 7 days</div></div>
+      <div class="str-item"><div class="strl"><span>🏃</span>Morning Workout</div><div class="strb new">Day 1</div></div>
+      <div class="str-item"><div class="strl"><span>💧</span>Water</div><div class="strb new">Day 3</div></div>
+    </div>
+    <div class="scard">
+      <div class="sh"><div class="sct">✍️ One Liner</div></div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px;font-style:italic">"Capture your day in one sentence."</div>
+      <div class="ol-wrap"><input class="ol-inp" placeholder="Today I will…"/><button class="ol-btn">Log</button></div>
+      <div style="margin-top:8px;font-size:10px;color:var(--tm)">Yesterday: <span style="color:var(--t2);font-style:italic">"Focused, shipped 3 tasks."</span></div>
+    </div>
+    <div class="scard">
+      <div class="sh"><div class="sct"><div class="sdot"></div>Trajectory</div><div style="font-size:9px;font-weight:700;color:#F97316">LIVE</div></div>
+      <div class="tj-item"><div class="tj-row"><div><span class="tj-p">DAY</span> <span class="tj-r">9h left</span></div><span class="tj-pct" style="color:#4A7C2F">61%</span></div><div class="tj-bar"><div class="tj-fill" style="width:61%;background:linear-gradient(90deg,#8CC968,#4A7C2F)"></div></div></div>
+      <div class="tj-item"><div class="tj-row"><div><span class="tj-p">WEEK</span> <span class="tj-r">3d left</span></div><span class="tj-pct" style="color:#3B82F6">66%</span></div><div class="tj-bar"><div class="tj-fill" style="width:66%;background:linear-gradient(90deg,#93C5FD,#3B82F6)"></div></div></div>
+      <div class="tj-item"><div class="tj-row"><div><span class="tj-p">MONTH</span> <span class="tj-r">19d left</span></div><span class="tj-pct" style="color:#EC4899">39%</span></div><div class="tj-bar"><div class="tj-fill" style="width:39%;background:linear-gradient(90deg,#F9A8D4,#EC4899)"></div></div></div>
+      <div class="tj-item"><div class="tj-row"><div><span class="tj-p">YEAR</span> <span class="tj-r">203d left</span></div><span class="tj-pct" style="color:#F97316">45%</span></div><div class="tj-bar"><div class="tj-fill" style="width:45%;background:linear-gradient(90deg,#FED7AA,#F97316)"></div></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ V3 : Focus Mode (single column feel) ══════════ -->
+<div id="v3" class="version-panel">
+<div class="wrap" style="grid-template-columns:1fr 284px">
+  <div class="main">
+    <div class="v3-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div><div class="plbl">Friday, June 12 · Week 24</div><div class="v3-name">Day Control.</div></div>
+        <div style="text-align:right"><div style="font-size:28px;font-weight:800;color:var(--g)">73</div><div style="font-size:9px;font-weight:700;color:var(--tm);text-transform:uppercase;letter-spacing:.8px">Life Score</div></div>
+      </div>
+      <div class="v3-quote">"Win the morning, win the day. 3 tasks. Ship them."</div>
+      <div class="v3-tags">
+        <div class="v3tag" style="color:var(--g);border-color:var(--gp);background:var(--gp)">🔥 7d Journal Streak</div>
+        <div class="v3tag" style="color:#3B82F6;border-color:#DBEAFE;background:#EFF6FF">4/6 Habits</div>
+        <div class="v3tag" style="color:#A855F7;border-color:#F3E8FF;background:#FAF5FF">43d · Placements</div>
+        <div class="v3tag" style="color:#F97316;border-color:#FFEDD5;background:#FFF7ED">Sleep 7.2h ⚠️</div>
+      </div>
+    </div>
+
+    <!-- Execution Window -->
+    <div class="ew">
+      <div>
+        <div class="ew-lbl">Your Execution Window <span style="color:rgba(255,255,255,.6)">· Customizable in Settings</span></div>
+        <div style="display:flex;align-items:baseline;gap:6px"><div class="ew-num">43</div><div class="ew-unit">Days</div></div>
+        <div class="ew-sub">Until July 26 · <span>Placements</span></div>
+      </div>
+      <div style="position:relative;z-index:1"><button class="ew-btn">Launch Portal →</button></div>
+    </div>
+
+    <!-- Quick Capture -->
+    <div class="sc" style="padding:14px">
+      <div class="sh"><span class="slbl">Quick Capture</span><span class="sla">History →</span></div>
+      <div class="qa-grid">
+        <button class="qa-btn"><div class="qa-ico" style="background:#E8F5E0">✅</div><div class="qa-lbl">Log Habit</div></button>
+        <button class="qa-btn"><div class="qa-ico" style="background:#EEF2FF">✏️</div><div class="qa-lbl">Journal</div></button>
+        <button class="qa-btn"><div class="qa-ico" style="background:#FFF7ED">💸</div><div class="qa-lbl">Expense</div></button>
+        <button class="qa-btn"><div class="qa-ico" style="background:#FDF2F8">🎯</div><div class="qa-lbl">Goal</div></button>
+      </div>
+      <div class="wins" style="margin-top:8px">
+        <div class="wp"><div class="wdot" style="background:var(--gl)"></div>🔥 Workout — 2h ago</div>
+        <div class="wp"><div class="wdot" style="background:#818CF8"></div>✏️ Journal — yesterday</div>
+      </div>
+    </div>
+
+    <!-- Planner -->
+    <div>
+      <div class="sh"><div class="slbl">Master Planner</div><div style="display:flex;align-items:center;gap:10px"><span class="aibadge">✦ Calendar Sync</span><div class="wknav"><div class="wnb">‹</div>Week 24<div class="wnb">›</div></div></div></div>
+      <div class="sc" style="padding:16px"><div class="pg">
+        <div class="dc ps"><div class="dn">Mon</div><div class="dd">8</div><div class="dtask h">✓ Workout</div><div class="dtask g">✓ DSA</div></div>
+        <div class="dc ps"><div class="dn">Tue</div><div class="dd">9</div><div class="dtask h">✓ Read</div><div class="dtask h">✓ Journal</div></div>
+        <div class="dc ps"><div class="dn">Wed</div><div class="dd">10</div><div class="dtask g">✓ Mock</div><div class="dtask h">✓ Water</div></div>
+        <div class="dc ps"><div class="dn">Thu</div><div class="dd">11</div><div class="dtask f">✓ Deep Work</div></div>
+        <div class="dc td"><div class="dn">Fri</div><div class="dd">12</div><div class="dtask">🎯 Sports</div><div class="dtask">📖 Read</div><div class="dadd">+ Add</div></div>
+        <div class="dc"><div class="dn">Sat</div><div class="dd">13</div><div class="dadd-g">+ Plan</div></div>
+        <div class="dc"><div class="dn">Sun</div><div class="dd">14</div><div class="dadd-g">Review</div></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="scard">
+      <div class="sh"><div class="sct"><div class="sdot"></div>Command Center</div><div class="sca">Jun 12</div></div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--tm);margin-bottom:7px">Priorities</div>
+      <div class="pri-item"><div class="pck done"></div><div class="ptxt">Fix sports API caching</div></div>
+      <div class="pri-item"><div class="pck"></div><div class="ptxt">Redesign sports layout</div></div>
+      <div class="pri-item"><div class="pck"></div><div class="ptxt">Yearly habit matrix</div></div>
+      <div class="padd">＋ Add priority</div>
+    </div>
+    <div class="scard">
+      <div class="sh"><div class="sct">🔥 Streaks</div><div class="sca">All →</div></div>
+      <div class="str-item"><div class="strl"><span>✍️</span>Journaling</div><div class="strb hot">🔥 7 days</div></div>
+      <div class="str-item"><div class="strl"><span>🏃</span>Workout</div><div class="strb new">Day 1</div></div>
+      <div class="str-item"><div class="strl"><span>💧</span>Water</div><div class="strb new">Day 3</div></div>
+      <div style="margin-top:8px;padding:7px 8px;background:var(--gp);border-radius:7px;font-size:10px;color:var(--g);font-weight:600">
+        💡 Tip: Logging at the same time daily doubles your streak retention
+      </div>
+    </div>
+    <div class="scard">
+      <div class="sh"><div class="sct">✍️ One Liner</div></div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:6px;font-style:italic">"Yesterday: <span style='color:var(--t1)'>Focused, shipped 3 tasks.</span>"</div>
+      <div class="ol-wrap"><input class="ol-inp" placeholder="Today I will…"/><button class="ol-btn">Log</button></div>
+    </div>
+    <div class="scard">
+      <div class="sh"><div class="sct"><div class="sdot"></div>Trajectory</div><div style="font-size:9px;font-weight:700;color:#F97316">LIVE</div></div>
+      <div class="tj-item"><div class="tj-row"><div><span class="tj-p">DAY</span> <span class="tj-r">9h left</span></div><span class="tj-pct" style="color:#4A7C2F">61%</span></div><div class="tj-bar"><div class="tj-fill" style="width:61%;background:linear-gradient(90deg,#8CC968,#4A7C2F)"></div></div></div>
+      <div class="tj-item"><div class="tj-row"><div><span class="tj-p">WEEK</span> <span class="tj-r">3d left</span></div><span class="tj-pct" style="color:#3B82F6">66%</span></div><div class="tj-bar"><div class="tj-fill" style="width:66%;background:linear-gradient(90deg,#93C5FD,#3B82F6)"></div></div></div>
+      <div class="tj-item"><div class="tj-row"><div><span class="tj-p">MONTH</span> <span class="tj-r">19d left</span></div><span class="tj-pct" style="color:#EC4899">39%</span></div><div class="tj-bar"><div class="tj-fill" style="width:39%;background:linear-gradient(90deg,#F9A8D4,#EC4899)"></div></div></div>
+      <div class="tj-item"><div class="tj-row"><div><span class="tj-p">YEAR</span> <span class="tj-r">203d left</span></div><span class="tj-pct" style="color:#F97316">45%</span></div><div class="tj-bar"><div class="tj-fill" style="width:45%;background:linear-gradient(90deg,#FED7AA,#F97316)"></div></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function show(n){
+  document.querySelectorAll('.version-panel').forEach(p=>p.classList.remove('show'));
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('v'+n).classList.add('show');
+  document.querySelectorAll('.vbtn')[n-1].classList.add('on');
+}
+</script>
+</body>
+</html>

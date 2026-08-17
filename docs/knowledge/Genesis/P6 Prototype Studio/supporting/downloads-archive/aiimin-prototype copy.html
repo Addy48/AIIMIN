@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AIIMIN — Personal OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700;800&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+button,input,textarea{font-family:inherit;cursor:pointer;border:none;background:none;outline:none;}
+:root{
+  --brand:#FF6B35;--bw:#FF8A5C;--bd:#E85520;--glow:rgba(255,107,53,.28);--soft:rgba(255,107,53,.1);
+  --BG:linear-gradient(135deg,#FF8A5C,#E85520);
+  --green:#10B981;--blue:#3B82F6;--yellow:#F59E0B;--red:#EF4444;--purple:#8B5CF6;
+  --FD:'Familjen Grotesk',sans-serif;--FB:'Figtree',sans-serif;--FM:'JetBrains Mono',monospace;
+}
+.TL{
+  --bg:#EDE8DF;--sf:#FFFFFF;--el:#F3EDE4;
+  --br:rgba(15,12,8,.09);--brs:rgba(15,12,8,.05);--hl:rgba(255,255,255,.78);
+  --t1:#0F0C08;--t2:#4B4540;--t3:#908880;
+  --cs:inset 0 1px 0 rgba(255,255,255,.9),0 1px 3px rgba(15,12,8,.05),0 8px 22px -12px rgba(15,12,8,.18);
+}
+.TD{
+  --bg:#131110;--sf:#1E1C1A;--el:#262422;
+  --br:rgba(240,235,225,.07);--brs:rgba(240,235,225,.04);--hl:rgba(255,255,255,.05);
+  --t1:#F0EAE0;--t2:#A09488;--t3:#6B6358;
+  --cs:inset 0 1px 0 rgba(255,255,255,.05),0 1px 2px rgba(0,0,0,.4),0 16px 32px -16px rgba(0,0,0,.6);
+}
+body{background:#1A1814;font-family:var(--FB);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px 60px;}
+.vbar{width:390px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.vlogo{font-family:var(--FD);font-size:18px;font-weight:800;letter-spacing:-.025em;color:#FF6B35;}
+.vlogo small{display:block;font-size:9.5px;font-weight:600;color:#6B6358;letter-spacing:.06em;font-family:var(--FB);margin-top:1px;}
+.tpill{display:flex;background:#1E1C1A;border:1px solid rgba(255,255,255,.08);border-radius:40px;padding:3px;gap:2px;}
+.topt{font-size:11px;font-weight:700;font-family:var(--FB);padding:5px 13px;border-radius:40px;color:#6B6358;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.topt.on{background:var(--brand);color:#fff;}
+.snav{display:flex;gap:5px;width:390px;overflow-x:auto;scrollbar-width:none;margin-bottom:12px;}
+.snav::-webkit-scrollbar{display:none;}
+.snb{font-size:10px;font-weight:700;padding:5px 11px;border-radius:40px;background:#1E1C1A;border:1px solid rgba(255,255,255,.06);color:#6B6358;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+.snb:hover{color:#A09488;background:#262422;}
+.pf{width:390px;height:844px;border-radius:52px;background:#0A0908;padding:14px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 50px 100px -20px rgba(0,0,0,.95),inset 0 0 0 1px rgba(255,255,255,.04);position:relative;flex-shrink:0;}
+.island{position:absolute;top:20px;left:50%;transform:translateX(-50%);width:120px;height:34px;background:#000;border-radius:22px;z-index:200;display:flex;align-items:center;justify-content:center;gap:7px;}
+.is-bar{width:30px;height:11px;border-radius:5px;background:#111;}
+.is-cam{width:11px;height:11px;border-radius:50%;background:#111;border:1px solid #1a1a1a;}
+.pi{width:100%;height:100%;border-radius:40px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--bg);color:var(--t1);font-family:var(--FB);transition:background .35s;}
+.TD.pi{background:radial-gradient(120% 55% at 50% -5%,#242220 0%,#131110 100%);}
+.sb{height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 10px;flex-shrink:0;z-index:10;position:relative;}
+.sbt{font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--t1);}
+.sbi{display:flex;align-items:center;gap:6px;}
+.sig{display:flex;align-items:flex-end;gap:1.5px;}
+.sig span{border-radius:1px;background:var(--t1);}
+.sig span:nth-child(1){width:3px;height:5px;}
+.sig span:nth-child(2){width:3px;height:8px;}
+.sig span:nth-child(3){width:3px;height:11px;}
+.bat{width:22px;height:12px;border:1.5px solid var(--t1);border-radius:3px;padding:2px;position:relative;opacity:.9;}
+.bat::after{content:'';position:absolute;top:50%;right:-4px;transform:translateY(-50%);width:2.5px;height:6px;background:var(--t1);border-radius:0 2px 2px 0;}
+.batf{height:100%;width:75%;background:var(--t1);border-radius:1px;}
+.sw{flex:1;position:relative;overflow:hidden;}
+.sc{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;-webkit-overflow-scrolling:touch;}
+.sc::-webkit-scrollbar{display:none;}
+#sc-ai{flex-direction:column;}
+.sc.anim{animation:sin .22s cubic-bezier(.4,0,.2,1) both;}
+@keyframes sin{from{opacity:.3;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.bn{height:72px;flex-shrink:0;display:flex;align-items:center;padding:0 2px 8px;background:color-mix(in srgb,var(--sf) 88%,transparent);backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);border-top:1px solid var(--brs);position:relative;z-index:50;}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:5px 0 2px;}
+.niw{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;transition:background .2s;}
+.ni svg{width:21px;height:21px;stroke:var(--t3);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s;}
+.ni>span{font-size:9px;font-weight:700;color:var(--t3);letter-spacing:.3px;transition:color .2s;}
+.ni.on .niw{background:var(--soft);}
+.ni.on svg{stroke:var(--brand);}
+.ni.on>span{color:var(--brand);}
+.nf{flex:1;display:flex;align-items:center;justify-content:center;padding-bottom:4px;}
+.fab{width:50px;height:50px;border-radius:15px;background:var(--BG);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 22px -6px var(--glow),inset 0 1px 0 rgba(255,255,255,.25);cursor:pointer;transition:transform .15s;position:relative;top:-5px;}
+.fab:active{transform:scale(.9);}
+.fab svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.3;stroke-linecap:round;transition:transform .25s;}
+.fab.open svg{transform:rotate(45deg);}
+.c{background:var(--sf);border:1px solid var(--br);border-radius:14px;box-shadow:var(--cs);position:relative;}
+.c::before{content:'';position:absolute;top:0;left:10px;right:10px;height:1px;background:var(--hl);border-radius:14px 14px 0 0;}
+.cr{border-radius:18px;}
+.ph{padding:12px 16px 4px;display:flex;align-items:flex-start;justify-content:space-between;}
+.pht{font-family:var(--FD);font-size:25px;font-weight:800;letter-spacing:-.025em;color:var(--t1);line-height:1.1;}
+.phs{font-size:13px;color:var(--t3);margin-top:2px;}
+.pha{display:flex;gap:7px;align-items:center;padding-top:2px;}
+.ib{width:36px;height:36px;border-radius:10px;background:var(--el);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+.ib svg{width:17px;height:17px;stroke:var(--t2);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.bk{display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;color:var(--brand);cursor:pointer;padding:12px 16px 4px;}
+.bk svg{width:18px;height:18px;stroke:var(--brand);fill:none;stroke-width:2.2;stroke-linecap:round;}
+.sh{display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin-bottom:8px;}
+.sl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--t3);display:flex;align-items:center;gap:5px;}
+.sl::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--brand);flex-shrink:0;}
+.sla{font-size:12px;font-weight:700;color:var(--brand);cursor:pointer;}
+.b{display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.3px;padding:2px 8px;border-radius:40px;}
+.bo{background:var(--soft);color:var(--brand);border:1px solid rgba(255,107,53,.2);}
+.bg{background:rgba(16,185,129,.1);color:#10B981;border:1px solid rgba(16,185,129,.2);}
+.bb{background:rgba(59,130,246,.1);color:#60A5FA;border:1px solid rgba(59,130,246,.2);}
+.bn2{background:var(--el);color:var(--t3);border:1px solid var(--br);}
+.bp{background:rgba(139,92,246,.1);color:#8B5CF6;border:1px solid rgba(139,92,246,.2);}
+.bred{background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.2);}
+.pt{height:4px;background:var(--el);border-radius:2px;overflow:hidden;}
+.pf2{height:100%;background:var(--BG);border-radius:2px;width:0%;transition:width .7s cubic-bezier(.22,1,.36,1);}
+.chips{display:flex;gap:6px;padding:4px 16px 14px;overflow-x:auto;scrollbar-width:none;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{font-size:12px;font-weight:700;padding:7px 14px;border-radius:40px;border:1px solid var(--br);background:var(--el);color:var(--t2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .18s;}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;}
+.tg{width:44px;height:26px;border-radius:40px;position:relative;cursor:pointer;flex-shrink:0;transition:background .2s;}
+.tg.on{background:var(--brand);}
+.tg.off{background:var(--el);border:1px solid var(--br);}
+.tgk{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:transform .2s;}
+.tg.on .tgk{transform:translateX(18px);}
+.ck{width:22px;height:22px;border-radius:50%;border:2px solid var(--br);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .18s;background:transparent;}
+.ck.on{background:var(--brand);border-color:var(--brand);}
+.ck svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;opacity:0;transition:opacity .15s;}
+.ck.on svg{opacity:1;}
+.srb{margin:8px 16px 4px;height:44px;border-radius:12px;background:var(--el);border:1px solid var(--br);display:flex;align-items:center;padding:0 14px;gap:8px;}
+.srb svg{width:16px;height:16px;stroke:var(--t3);fill:none;stroke-width:2;flex-shrink:0;}
+.srb span{font-size:14px;color:var(--t3);}
+.ov{position:absolute;inset:0;background:rgba(0,0,0,0);z-index:100;display:none;align-items:flex-end;transition:background .3s;}
+.ov.on{display:flex;background:rgba(0,0,0,.55);}
+.sheet{width:100%;background:var(--sf);border-radius:28px 28px 0 0;border-top:1px solid var(--br);padding:0 20px 36px;animation:sup .28s cubic-bezier(.32,.72,0,1);}
+@keyframes sup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.shdl{width:36px;height:4px;border-radius:2px;background:var(--br);margin:13px auto 18px;}
+.shtit{font-family:var(--FD);font-size:17px;font-weight:800;color:var(--t1);margin-bottom:14px;}
+.shr{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--brs);cursor:pointer;}
+.shr:last-child{border-bottom:none;}
+.shri{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.shri svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;}
+.shr .sn{font-size:15px;font-weight:700;color:var(--t1);}
+.shr .sd{font-size:12px;color:var(--t3);margin-top:1px;}
+.spl{position:absolute;inset:0;background:#0F0C08;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;transition:opacity .5s,transform .5s;}
+.spl.out{opacity:0;transform:scale(1.06);pointer-events:none;}
+.splo{font-family:var(--FD);font-size:50px;font-weight:800;letter-spacing:-.04em;background:var(--BG);-webkit-background-clip:text;background-clip:text;color:transparent;animation:pi2 .5s .15s both;}
+@keyframes pi2{from{opacity:0;transform:scale(.7);}to{opacity:1;transform:scale(1);}}
+.splt{font-size:13px;color:rgba(240,234,224,.4);margin-top:6px;letter-spacing:.08em;animation:fu .4s .5s both;}
+@keyframes fu{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.spls{width:36px;height:36px;border-radius:50%;border:2px solid rgba(255,107,53,.2);border-top-color:var(--brand);animation:sp .9s linear infinite;margin-top:46px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.greet-row{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 16px 14px;gap:10px;}
+.greet-l{flex:1;}
+.gline{font-size:13px;color:var(--t3);font-weight:500;margin-bottom:1px;}
+.gname{font-family:var(--FD);font-size:26px;font-weight:800;letter-spacing:-.025em;color:var(--t1);line-height:1.05;}
+.gmot{font-size:13px;color:var(--t2);margin-top:3px;line-height:1.4;}
+.fc{flex-shrink:0;width:120px;}
+.fci{padding:12px 14px;border-radius:14px;}
+.fcl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);margin-bottom:4px;}
+.fcv{font-family:var(--FD);font-size:21px;font-weight:800;color:var(--t1);letter-spacing:-.02em;line-height:1;}
+.fcs{font-size:11px;color:var(--t3);margin-top:2px;}
+.scard{margin:0 16px 14px;padding:16px 18px 18px;cursor:pointer;}
+.scard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.scard-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:var(--t3);}
+.sbody{display:flex;align-items:center;gap:14px;}
+.srw{position:relative;flex-shrink:0;}
+.srt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.srnum{font-family:var(--FD);font-size:26px;font-weight:800;background:var(--BG);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.02em;line-height:1;}
+.srband{font-size:9px;font-weight:700;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.sdets{flex:1;display:flex;flex-direction:column;gap:8px;}
+.sdet{display:flex;align-items:center;justify-content:space-between;}
+.sdetl{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:5px;}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sdetv{font-family:var(--FM);font-size:12.5px;font-weight:700;color:var(--t1);}
+.sqt{font-size:12px;color:var(--t3);margin-top:12px;padding-top:12px;border-top:1px solid var(--brs);font-style:italic;line-height:1.45;}
+.hscr{display:flex;gap:8px;padding:0 16px 4px;overflow-x:auto;scrollbar-width:none;}
+.hscr::-webkit-scrollbar{display:none;}
+.ht{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;width:58px;cursor:pointer;}
+.hr{width:46px;height:46px;border-radius:50%;border:2px solid var(--br);background:var(--el);display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;transition:transform .15s,border-color .2s,background .2s;}
+.hr.on{border-color:var(--brand);background:var(--soft);}
+.hr.on::after{content:'\2713';position:absolute;top:-3px;right:-3px;width:15px;height:15px;background:var(--brand);border-radius:50%;font-size:8px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center;border:1.5px solid var(--bg);}
+.ht:active .hr{transform:scale(.88);}
+.hn{font-size:9.5px;font-weight:600;color:var(--t2);text-align:center;line-height:1.2;}
+.tr{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.tr:last-child{border-bottom:none;}
+.tri{flex:1;}
+.trn{font-size:14px;font-weight:600;color:var(--t1);transition:color .2s;}
+.trn.on{text-decoration:line-through;color:var(--t3);}
+.trm{display:flex;align-items:center;gap:5px;margin-top:2px;}
+.trt{font-size:11px;color:var(--t3);font-weight:500;}
+.trc{font-size:9.5px;font-weight:700;padding:1.5px 6px;border-radius:5px;background:var(--el);color:var(--t3);}
+.tra{width:14px;height:14px;stroke:var(--t3);fill:none;stroke-width:2;flex-shrink:0;}
+.strow{display:flex;gap:10px;padding:0 16px;margin-bottom:14px;}
+.stm{flex:1;padding:14px;}
+.stml{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);}
+.stmv{font-family:var(--FD);font-size:24px;font-weight:800;color:var(--t1);letter-spacing:-.02em;margin-top:4px;line-height:1;}
+.stms{font-size:11px;color:var(--t2);margin-top:2px;}
+.qg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 16px;margin-bottom:14px;}
+.qi{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;}
+.qib{width:48px;height:48px;border-radius:14px;background:var(--el);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;box-shadow:var(--cs);transition:transform .15s;}
+.qi:active .qib{transform:scale(.88);}
+.qib svg{width:20px;height:20px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.ql{font-size:9.5px;font-weight:600;color:var(--t2);text-align:center;}
+.aitem{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.aitem:last-child{border-bottom:none;}
+.aico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.aico svg{width:16px;height:16px;fill:none;stroke-width:2;stroke-linecap:round;}
+.ainf{flex:1;}
+.ainam{font-size:13.5px;font-weight:600;color:var(--t1);}
+.aitm{font-size:11px;color:var(--t3);margin-top:1px;}
+.tblk{margin:0 16px 14px;}
+.tbh{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);margin-bottom:7px;display:flex;align-items:center;gap:6px;}
+.tbc{background:var(--el);border:1px solid var(--br);padding:1px 7px;border-radius:40px;font-size:9.5px;font-weight:700;color:var(--t3);}
+.ti{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.ti:first-child{border-radius:14px 14px 0 0;}
+.ti:last-child{border-bottom:none;border-radius:0 0 14px 14px;}
+.ti:only-child{border-radius:14px;}
+.tib{flex:1;}
+.titn{font-size:14px;font-weight:600;color:var(--t1);transition:color .2s;}
+.titn.on{text-decoration:line-through;color:var(--t3);}
+.tgs{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
+.tg2{font-size:9.5px;font-weight:700;letter-spacing:.3px;padding:1.5px 6px;border-radius:5px;background:var(--el);color:var(--t3);}
+.tir{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.tit{font-size:11px;font-weight:600;color:var(--t3);font-family:var(--FM);}
+.tpr{width:6px;height:6px;border-radius:50%;}
+.ng{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 16px 90px;}
+.nc{padding:14px;min-height:130px;display:flex;flex-direction:column;cursor:pointer;transition:transform .15s;}
+.nc:active{transform:scale(.97);}
+.nem{font-size:20px;margin-bottom:7px;}
+.ntt{font-size:14px;font-weight:700;color:var(--t1);line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.npv{font-size:12px;color:var(--t2);line-height:1.4;margin-top:4px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1;}
+.nft{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+.ndt{font-size:10px;color:var(--t3);}
+.ndot{width:6px;height:6px;border-radius:50%;}
+.jmodes{display:flex;gap:6px;padding:6px 16px 14px;overflow-x:auto;scrollbar-width:none;}
+.jmodes::-webkit-scrollbar{display:none;}
+.jmb{font-size:12.5px;font-weight:700;padding:7px 15px;border-radius:40px;border:1px solid var(--br);background:var(--el);color:var(--t2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .18s;}
+.jmb.on{background:var(--BG);color:#fff;border-color:transparent;box-shadow:0 6px 16px -6px var(--glow);}
+.jprompt{margin:0 16px 12px;padding:11px 14px;background:var(--el);border-radius:12px;border:1px solid var(--br);}
+.jprl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--brand);margin-bottom:4px;}
+.jprt{font-size:13px;color:var(--t2);line-height:1.4;}
+.wa{margin:0 16px;background:var(--el);border:1.5px solid var(--br);border-radius:14px;padding:14px;min-height:110px;position:relative;transition:border-color .2s,box-shadow .2s;}
+.waph{color:var(--t3);font-size:15px;line-height:1.5;}
+.wacnt{position:absolute;bottom:9px;right:13px;font-size:10.5px;color:var(--t3);font-family:var(--FM);}
+.jtb{display:flex;align-items:center;gap:8px;padding:10px 16px;}
+.jtbn{width:42px;height:42px;border-radius:11px;background:var(--el);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.jtbn svg{width:18px;height:18px;stroke:var(--t2);fill:none;stroke-width:2;}
+.svb{flex:1;height:46px;border-radius:40px;background:var(--BG);color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;box-shadow:0 10px 24px -8px var(--glow),inset 0 1px 0 rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:6px;transition:transform .15s;}
+.svb:active{transform:scale(.97);}
+.jec{margin:0 16px 10px;padding:14px;cursor:pointer;}
+.ject{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.jecd{font-size:12px;font-weight:700;color:var(--brand);}
+.jecb{font-size:13.5px;color:var(--t2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.jecf{font-size:11px;color:var(--t3);margin-top:7px;}
+.phe{padding:4px 16px 14px;display:flex;align-items:center;gap:14px;}
+.phav{width:62px;height:62px;border-radius:18px;background:var(--BG);display:flex;align-items:center;justify-content:center;font-family:var(--FD);font-size:22px;font-weight:800;color:#fff;box-shadow:0 10px 24px -8px var(--glow);flex-shrink:0;}
+.phif{flex:1;}
+.phn{font-family:var(--FD);font-size:19px;font-weight:800;color:var(--t1);letter-spacing:-.015em;}
+.phe2{font-size:12px;color:var(--t3);margin-top:1px;}
+.sgg{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px;margin-bottom:14px;}
+.sgc{padding:14px 16px;}
+.sgcl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);}
+.sgcv{font-family:var(--FD);font-size:26px;font-weight:800;color:var(--t1);letter-spacing:-.025em;margin-top:4px;line-height:1;}
+.sgcs{font-size:11px;color:var(--t2);margin-top:2px;}
+.goi{padding:14px;margin:0 16px 10px;cursor:pointer;}
+.goit{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:9px;}
+.goem{font-size:20px;margin-bottom:5px;}
+.gon{font-size:14px;font-weight:700;color:var(--t1);line-height:1.25;flex:1;padding-right:8px;}
+.gop{font-family:var(--FD);font-size:18px;font-weight:800;color:var(--brand);}
+.god{font-size:11px;color:var(--t3);margin-top:6px;}
+.seu{display:flex;align-items:center;gap:12px;padding:4px 16px 16px;cursor:pointer;}
+.seun{font-size:15px;font-weight:700;color:var(--t1);}
+.seue{font-size:12px;color:var(--t3);margin-top:1px;}
+.ses{margin:0 16px 14px;}
+.sesl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:var(--t3);margin-bottom:7px;padding-left:3px;}
+.si{display:flex;align-items:center;gap:11px;padding:12px 14px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.si:first-child{border-radius:14px 14px 0 0;}
+.si:last-child{border-bottom:none;border-radius:0 0 14px 14px;}
+.si:only-child{border-radius:14px;}
+.sii{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sii svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;}
+.sil{flex:1;font-size:14px;font-weight:600;color:var(--t1);}
+.siv{font-size:12.5px;color:var(--t3);margin-right:3px;}
+.sch{width:14px;height:14px;stroke:var(--t3);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0;}
+.aih{padding:12px 16px 0;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.aiav{width:38px;height:38px;border-radius:12px;background:var(--BG);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 6px 16px -6px var(--glow);flex-shrink:0;}
+.ain2{font-size:15px;font-weight:700;color:var(--t1);}
+.aist{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--t3);}
+.aistd{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.aisugg{display:flex;gap:6px;padding:8px 16px 10px;overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+.aisugg::-webkit-scrollbar{display:none;}
+.aisg{font-size:12px;font-weight:600;padding:6px 12px;border-radius:40px;border:1px solid var(--br);background:var(--el);color:var(--t2);white-space:nowrap;flex-shrink:0;cursor:pointer;}
+.ai-msgs{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 16px 12px;display:flex;flex-direction:column;gap:12px;}
+.ai-msgs::-webkit-scrollbar{display:none;}
+.msg{max-width:86%;}
+.msgai{align-self:flex-start;}
+.msgme{align-self:flex-end;}
+.mbu{padding:10px 14px;border-radius:16px;font-size:13.5px;line-height:1.5;}
+.msgai .mbu{background:var(--el);border:1px solid var(--br);color:var(--t1);border-radius:4px 16px 16px 16px;}
+.msgme .mbu{background:var(--BG);color:#fff;border-radius:16px 16px 4px 16px;}
+.mtime{font-size:10px;color:var(--t3);margin-top:3px;padding:0 3px;}
+.msgme .mtime{text-align:right;}
+.aiin{display:flex;align-items:center;gap:8px;padding:10px 16px 14px;background:color-mix(in srgb,var(--sf) 92%,transparent);backdrop-filter:blur(20px);border-top:1px solid var(--brs);flex-shrink:0;}
+.aiib{flex:1;height:44px;border-radius:40px;background:var(--el);border:1px solid var(--br);padding:0 14px;display:flex;align-items:center;cursor:text;}
+.aiiph{font-size:14px;color:var(--t3);}
+.aisdBtn{width:44px;height:44px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px -6px var(--glow);flex-shrink:0;cursor:pointer;}
+.aisdBtn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;transform:translateX(1px);}
+.cmn{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 12px;}
+.cmnt{font-family:var(--FD);font-size:17px;font-weight:800;color:var(--t1);letter-spacing:-.01em;}
+.cnb{width:34px;height:34px;border-radius:10px;background:var(--el);border:1px solid var(--br);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.cnb svg{width:16px;height:16px;stroke:var(--t2);fill:none;stroke-width:2;stroke-linecap:round;}
+.cgw{padding:0 16px;}
+.cwd{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+.cwdl{text-align:center;font-size:10px;font-weight:700;letter-spacing:.3px;color:var(--t3);padding:4px 0;}
+.cds{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cd{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--t2);border-radius:50%;cursor:pointer;position:relative;transition:background .15s;}
+.cd:hover{background:var(--el);}
+.cd.td{background:var(--brand);color:#fff;font-weight:700;}
+.cd.hev::after{content:'';position:absolute;bottom:3px;width:4px;height:4px;background:var(--brand);border-radius:50%;}
+.cd.td.hev::after{background:rgba(255,255,255,.8);}
+.cd.dm{opacity:.35;}
+.evi{display:flex;align-items:stretch;gap:10px;padding:11px 16px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.evi:last-child{border-bottom:none;}
+.etc{display:flex;flex-direction:column;align-items:flex-end;width:48px;flex-shrink:0;padding-top:1px;}
+.ett{font-family:var(--FM);font-size:11.5px;font-weight:600;color:var(--t2);}
+.ettsub{font-family:var(--FM);font-size:9.5px;color:var(--t3);}
+.eb{width:3px;border-radius:2px;flex-shrink:0;min-height:28px;align-self:stretch;margin:0 4px;}
+.evif{flex:1;}
+.evn{font-size:14px;font-weight:600;color:var(--t1);}
+.evd{font-size:11px;color:var(--t3);margin-top:1px;}
+.fh{margin:0 16px 14px;padding:20px;}
+.fbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);}
+.fb{font-family:var(--FD);font-size:34px;font-weight:800;color:var(--t1);letter-spacing:-.03em;margin-top:4px;line-height:1;}
+.fp{font-size:12px;color:var(--t3);margin-top:2px;}
+.fr{display:flex;gap:8px;margin-top:14px;}
+.fs{flex:1;padding:10px 12px;border-radius:10px;background:var(--el);border:1px solid var(--br);}
+.fsl{font-size:9px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.8px;}
+.fsv{font-family:var(--FD);font-size:17px;font-weight:800;color:var(--t1);margin-top:3px;letter-spacing:-.015em;}
+.ci{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--brs);}
+.ci:last-child{border-bottom:none;}
+.cic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.cii{flex:1;}
+.cin{font-size:14px;font-weight:600;color:var(--t1);}
+.cbr{display:flex;align-items:center;gap:6px;margin-top:4px;}
+.cba{flex:1;height:3px;background:var(--el);border-radius:2px;overflow:hidden;}
+.cbf{height:100%;border-radius:2px;}
+.cpct{font-size:10px;font-weight:700;color:var(--t3);flex-shrink:0;min-width:26px;text-align:right;}
+.cam{font-family:var(--FD);font-size:14px;font-weight:700;color:var(--t1);flex-shrink:0;}
+.txn{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--brs);}
+.txn:last-child{border-bottom:none;}
+.txnamt{font-family:var(--FD);font-size:15px;font-weight:700;color:var(--t1);flex-shrink:0;}
+.goh{margin:0 16px 14px;padding:20px;}
+.gob{font-family:var(--FD);font-size:44px;font-weight:800;background:var(--BG);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.03em;line-height:1;}
+.gos{font-size:13px;color:var(--t2);margin-top:4px;}
+.gc{margin:0 16px 10px;padding:16px;cursor:pointer;}
+.gct{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.gem2{font-size:22px;margin-bottom:6px;}
+.gtit{font-size:15px;font-weight:700;color:var(--t1);line-height:1.25;flex:1;padding-right:8px;}
+.gpct{font-family:var(--FD);font-size:20px;font-weight:800;color:var(--brand);}
+.gdr{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
+.gdl{font-size:11px;color:var(--t3);}
+.fms{display:flex;gap:12px;padding:6px 16px 16px;overflow-x:auto;scrollbar-width:none;}
+.fms::-webkit-scrollbar{display:none;}
+.fm{display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;cursor:pointer;}
+.fmav{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;}
+.fmrd{position:absolute;bottom:0;right:0;width:14px;height:14px;border-radius:50%;border:2px solid var(--bg);background:var(--green);}
+.fmn{font-size:11px;font-weight:600;color:var(--t2);}
+.fmr{font-size:9.5px;color:var(--t3);}
+.fti{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.fti:last-child{border-bottom:none;}
+.ftif{flex:1;}
+.ftin{font-size:14px;font-weight:600;color:var(--t1);}
+.ftia{font-size:11px;color:var(--t3);margin-top:2px;}
+.vtr{display:flex;padding:0 16px;border-bottom:1px solid var(--brs);margin-bottom:4px;}
+.vt{flex:1;text-align:center;font-size:12px;font-weight:700;padding:10px 0;border-bottom:2px solid transparent;color:var(--t3);cursor:pointer;transition:all .2s;}
+.vt.on{color:var(--brand);border-bottom-color:var(--brand);}
+.di{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.di:last-child{border-bottom:none;}
+.dib{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dib svg{width:19px;height:19px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;}
+.dii{flex:1;}
+.din{font-size:14px;font-weight:600;color:var(--t1);}
+.dim{font-size:11px;color:var(--t3);margin-top:1px;}
+.dim2{width:18px;height:18px;stroke:var(--t3);fill:none;stroke-width:1.8;flex-shrink:0;}
+.srtop{display:flex;align-items:center;gap:8px;padding:8px 16px 8px;}
+.sra{flex:1;height:46px;border-radius:14px;background:var(--el);border:1.5px solid var(--brand);display:flex;align-items:center;padding:0 14px;gap:8px;box-shadow:0 0 0 3px var(--soft);}
+.sra svg{width:17px;height:17px;stroke:var(--brand);fill:none;stroke-width:2;flex-shrink:0;}
+.srq{font-size:15px;color:var(--t1);}
+.srcanc{font-size:14px;font-weight:700;color:var(--brand);padding:0 4px;cursor:pointer;white-space:nowrap;}
+.sri{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.sri:last-child{border-bottom:none;}
+.sric{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sric svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;}
+.srif{flex:1;}
+.srit{font-size:14px;font-weight:600;color:var(--t1);}
+.srim{font-size:11px;color:var(--t3);margin-top:1px;}
+.nfi{display:flex;align-items:flex-start;gap:10px;padding:13px 16px;border-bottom:1px solid var(--brs);cursor:pointer;}
+.nfi:last-child{border-bottom:none;}
+.nfi.ur{background:var(--soft);}
+.nfic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.nfib{flex:1;}
+.nfit{font-size:14px;font-weight:700;color:var(--t1);line-height:1.3;}
+.nfitx{font-size:12.5px;color:var(--t2);margin-top:2px;line-height:1.4;}
+.nftm{font-size:11px;color:var(--t3);margin-top:4px;}
+.nfdot{width:8px;height:8px;border-radius:50%;background:var(--brand);flex-shrink:0;margin-top:6px;}
+.nfdot.r{background:transparent;}
+.chv{width:14px;height:14px;stroke:var(--t3);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0;}
+.mt14{margin-top:14px;}.mt12{margin-top:12px;}.mt10{margin-top:10px;}.mt8{margin-top:8px;}.mb14{margin-bottom:14px;}
+@media(max-width:440px){body{padding:0;}.vbar,.snav{display:none;}.pf{border-radius:0;width:100vw;height:100vh;padding:0;}.island{top:14px;}.pi{border-radius:0;}}
+</style></head><body>
+
+<div class="vbar">
+  <div class="vlogo">AIIMIN <small>PERSONAL OS &mdash; PROTOTYPE v2.0</small></div>
+  <div class="tpill">
+    <div class="topt on" onclick="setTheme('light')">&#9728; Light</div>
+    <div class="topt" onclick="setTheme('dark')">&#9790; Dark</div>
+  </div>
+</div>
+<div class="snav">
+  <div class="snb" onclick="goto('home')">Today</div><div class="snb" onclick="goto('tasks')">Tasks</div>
+  <div class="snb" onclick="goto('notes')">Notes</div><div class="snb" onclick="goto('journal')">Journal</div>
+  <div class="snb" onclick="goto('goals')">Goals</div><div class="snb" onclick="goto('finance')">Finance</div>
+  <div class="snb" onclick="goto('ai')">AI Chat</div><div class="snb" onclick="goto('calendar')">Calendar</div>
+  <div class="snb" onclick="goto('me')">Profile</div><div class="snb" onclick="goto('settings')">Settings</div>
+  <div class="snb" onclick="goto('family')">Family</div><div class="snb" onclick="goto('vault')">Vault</div>
+  <div class="snb" onclick="goto('search')">Search</div><div class="snb" onclick="goto('notifs')">Notifs</div>
+</div>
+<div class="pf">
+  <div class="island"><div class="is-bar"></div><div class="is-cam"></div></div>
+  <div class="pi TL" id="pi">
+    <div class="sb">
+      <div class="sbt">9:41</div>
+      <div class="sbi">
+        <div class="sig"><span></span><span></span><span></span></div>
+        <svg width="16" height="12" viewBox="0 0 24 14"><path d="M1 5Q6 0 12 0Q18 0 23 5" stroke="var(--t1)" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M4.5 8.5Q8 5 12 5Q16 5 19.5 8.5" stroke="var(--t1)" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="var(--t1)"/></svg>
+        <div class="bat"><div class="batf"></div></div>
+      </div>
+    </div>
+    <div class="sw">
+
+<div class="sc" id="sc-home" style="display:block;">
+  <div class="greet-row">
+    <div class="greet-l">
+      <div class="gline" id="gline">Good morning &#x1F44B;</div>
+      <div class="gname">Aaditya,</div>
+      <div class="gmot">Discipline today,<br>results tomorrow.</div>
+    </div>
+    <div class="fc">
+      <div class="c fci">
+        <div class="fcl">FOCUS TIME</div>
+        <div class="fcv">3h 45m</div>
+        <div class="fcs">Today</div>
+        <svg width="88" height="22" viewBox="0 0 88 22" style="margin-top:7px;display:block;">
+          <polyline points="0,19 17,14 34,17 52,7 70,11 88,4" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="c cr scard" onclick="goto('me')">
+    <div class="scard-top"><div class="scard-lbl">LIFE SCORE</div><div class="b bo">19 Jul &middot; Week 29</div></div>
+    <div class="sbody">
+      <div class="srw" style="width:88px;height:88px;">
+        <svg width="88" height="88" viewBox="0 0 90 90">
+          <defs><linearGradient id="sg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8A5C"/><stop offset="100%" stop-color="#E85520"/></linearGradient></defs>
+          <circle cx="45" cy="45" r="36" fill="none" stroke="var(--br)" stroke-width="7"/>
+          <circle id="scr" cx="45" cy="45" r="36" fill="none" stroke="url(#sg)" stroke-width="7" stroke-linecap="round" stroke-dasharray="226.19" stroke-dashoffset="226.19" transform="rotate(-90 45 45)" style="filter:drop-shadow(0 0 8px rgba(255,90,31,.45));transition:stroke-dashoffset 1.1s cubic-bezier(.22,1,.36,1);"/>
+        </svg>
+        <div class="srt"><div class="srnum" id="srnum">0</div><div class="srband">GOOD</div></div>
+      </div>
+      <div class="sdets">
+        <div class="sdet"><div class="sdetl"><span class="sdot" style="background:#10B981;"></span>Habits</div><div class="sdetv">5 / 8</div></div>
+        <div class="sdet"><div class="sdetl"><span class="sdot" style="background:#3B82F6;"></span>Focus</div><div class="sdetv">3h 45m</div></div>
+        <div class="sdet"><div class="sdetl"><span class="sdot" style="background:#F59E0B;"></span>Tasks</div><div class="sdetv">5 / 8</div></div>
+        <div class="sdet"><div class="sdetl"><span class="sdot" style="background:#FF6B35;"></span>Streak</div><div class="sdetv">14 days &#x1F525;</div></div>
+      </div>
+    </div>
+    <div class="sqt">&ldquo;Be consistent. Show up every day. That is the whole secret.&rdquo;</div>
+  </div>
+
+  <div class="sh mt14"><div class="sl">HABITS <span style="color:var(--t2);text-transform:none;letter-spacing:0;font-size:11px;font-family:var(--FB);margin-left:2px;font-weight:600;">5/8</span></div><div class="sla">Manage</div></div>
+  <div class="hscr mb14">
+    <div class="ht" onclick="toggleHabit(this)"><div class="hr on">&#9728;&#65039;</div><div class="hn">Morning</div></div>
+    <div class="ht" onclick="toggleHabit(this)"><div class="hr on">&#x1F4A7;</div><div class="hn">Water</div></div>
+    <div class="ht" onclick="toggleHabit(this)"><div class="hr on">&#x1F3C3;</div><div class="hn">Run</div></div>
+    <div class="ht" onclick="toggleHabit(this)"><div class="hr on">&#x1F4AA;</div><div class="hn">Gym</div></div>
+    <div class="ht" onclick="toggleHabit(this)"><div class="hr on">&#x1F4DA;</div><div class="hn">Read</div></div>
+    <div class="ht" onclick="toggleHabit(this)"><div class="hr">&#x1F4BB;</div><div class="hn">Code 2h</div></div>
+    <div class="ht" onclick="toggleHabit(this)"><div class="hr">&#x1F9D8;</div><div class="hn">Meditate</div></div>
+    <div class="ht" onclick="toggleHabit(this)"><div class="hr">&#x270D;&#65039;</div><div class="hn">Journal</div></div>
+  </div>
+
+  <div class="sh"><div class="sl">TODAY&rsquo;S PLAN</div><div class="sla" onclick="goto('tasks')">View all</div></div>
+  <div class="c" style="margin:0 16px;">
+    <div class="tr"><div class="ck on" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tri"><div class="trn on">AIIMIN auth flow review</div><div class="trm"><span class="trt">9:00 AM</span><span class="trc">Deep Work</span></div></div><svg class="tra" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="tr"><div class="ck on" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tri"><div class="trn on">Review Cursor agent PR</div><div class="trm"><span class="trt">11:00 AM</span><span class="trc">Dev</span></div></div><svg class="tra" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="tr"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tri"><div class="trn">Call with Sam &mdash; Reports</div><div class="trm"><span class="trt">2:00 PM</span><span class="trc">Meeting</span></div></div><svg class="tra" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="tr"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tri"><div class="trn">DSA &mdash; Trees &amp; Graphs</div><div class="trm"><span class="trt">4:00 PM</span><span class="trc">Learning</span></div></div><svg class="tra" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="tr"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tri"><div class="trn">Evening run &mdash; 5K</div><div class="trm"><span class="trt">6:00 PM</span><span class="trc">Health</span></div></div><svg class="tra" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+  </div>
+
+  <div class="strow mt14">
+    <div class="c stm"><div class="stml">TASKS DONE</div><div class="stmv">5<span style="font-size:15px;color:var(--t3);">/8</span></div><div class="stms">63% complete</div><div class="pt mt8"><div class="pf2" data-w="63"></div></div></div>
+    <div class="c stm"><div class="stml">DAY STREAK</div><div class="stmv">14 &#x1F525;</div><div class="stms">Best: 21 days</div></div>
+  </div>
+
+  <div class="sh"><div class="sl">QUICK ACTIONS</div></div>
+  <div class="qg mb14">
+    <div class="qi" onclick="goto('journal')"><div class="qib"><svg stroke="var(--brand)" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg></div><div class="ql">Journal</div></div>
+    <div class="qi" onclick="goto('goals')"><div class="qib"><svg stroke="var(--brand)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div class="ql">Goals</div></div>
+    <div class="qi" onclick="goto('ai')"><div class="qib"><svg stroke="var(--brand)" viewBox="0 0 24 24"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg></div><div class="ql">AI Chat</div></div>
+    <div class="qi" onclick="goto('calendar')"><div class="qib"><svg stroke="var(--brand)" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="ql">Calendar</div></div>
+    <div class="qi" onclick="goto('finance')"><div class="qib"><svg stroke="var(--brand)" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div class="ql">Finance</div></div>
+    <div class="qi" onclick="goto('family')"><div class="qib"><svg stroke="var(--brand)" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div><div class="ql">Family</div></div>
+    <div class="qi" onclick="goto('vault')"><div class="qib"><svg stroke="var(--brand)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="ql">Vault</div></div>
+    <div class="qi" onclick="goto('notifs')"><div class="qib"><svg stroke="var(--brand)" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="ql">Alerts</div></div>
+  </div>
+
+  <div class="sh"><div class="sl">RECENT ACTIVITY</div><div class="sla">See all</div></div>
+  <div class="c" style="margin:0 16px 24px;">
+    <div class="aitem"><div class="aico" style="background:rgba(255,107,53,.12);"><svg stroke="var(--brand)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="ainf"><div class="ainam">AIIMIN Roadmap updated</div><div class="aitm">Note &middot; 2 hours ago</div></div><svg width="18" height="18" viewBox="0 0 24 24" stroke="var(--t3)" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+    <div class="aitem"><div class="aico" style="background:rgba(59,130,246,.12);"><svg stroke="#3B82F6" viewBox="0 0 24 24"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg></div><div class="ainf"><div class="ainam">Auth flow refactored</div><div class="aitm">Task completed &middot; Today 9 AM</div></div><svg width="18" height="18" viewBox="0 0 24 24" stroke="var(--t3)" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+    <div class="aitem"><div class="aico" style="background:rgba(16,185,129,.12);"><svg stroke="#10B981" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div class="ainf"><div class="ainam">Budget Tracker.xlsx updated</div><div class="aitm">Document &middot; Yesterday</div></div><svg width="18" height="18" viewBox="0 0 24 24" stroke="var(--t3)" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+    <div class="aitem"><div class="aico" style="background:rgba(139,92,246,.12);"><svg stroke="#8B5CF6" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg></div><div class="ainf"><div class="ainam">Daily journal entry</div><div class="aitm">Journal &middot; Yesterday 10 PM</div></div><svg width="18" height="18" viewBox="0 0 24 24" stroke="var(--t3)" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+  </div>
+</div>
+
+<div class="sc" id="sc-tasks">
+  <div class="ph"><div><div class="pht">Tasks</div><div class="phs">Sunday, 19 July 2026</div></div><div class="pha"><div class="ib" onclick="goto('search')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="ib" onclick="openSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div></div>
+  <div class="chips"><div class="chip on" onclick="setChip(this)">All</div><div class="chip" onclick="setChip(this)">Today</div><div class="chip" onclick="setChip(this)">Upcoming</div><div class="chip" onclick="setChip(this)">Done</div><div class="chip" onclick="setChip(this)">AIIMIN</div><div class="chip" onclick="setChip(this)">Learning</div></div>
+  <div class="tblk"><div class="tbh">MORNING <span class="tbc">2 done</span></div><div class="c">
+    <div class="ti"><div class="ck on" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn on">AIIMIN auth flow review</div><div class="tgs"><span class="tg2">Deep Work</span><span class="tg2">AIIMIN</span></div></div><div class="tir"><div class="tit">9:00 AM</div><div class="tpr" style="background:#EF4444;"></div></div></div>
+    <div class="ti"><div class="ck on" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn on">Review Cursor agent PR</div><div class="tgs"><span class="tg2">Dev</span><span class="tg2">AIIMIN</span></div></div><div class="tir"><div class="tit">11:00 AM</div><div class="tpr" style="background:#F59E0B;"></div></div></div>
+  </div></div>
+  <div class="tblk"><div class="tbh">AFTERNOON <span class="tbc">0 / 2</span></div><div class="c">
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">Call with Sam &mdash; Reports</div><div class="tgs"><span class="tg2">Meeting</span><span class="tg2">AIIMIN</span></div></div><div class="tir"><div class="tit">2:00 PM</div><div class="tpr" style="background:#EF4444;"></div></div></div>
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">DSA &mdash; Trees &amp; Graphs</div><div class="tgs"><span class="tg2">Learning</span><span class="tg2">Placement</span></div></div><div class="tir"><div class="tit">4:00 PM</div><div class="tpr" style="background:#F59E0B;"></div></div></div>
+  </div></div>
+  <div class="tblk"><div class="tbh">EVENING <span class="tbc">0 / 3</span></div><div class="c">
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">Evening run &mdash; 5K</div><div class="tgs"><span class="tg2">Health</span></div></div><div class="tir"><div class="tit">6:00 PM</div><div class="tpr" style="background:#10B981;"></div></div></div>
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">Plan next week&rsquo;s roadmap</div><div class="tgs"><span class="tg2">Planning</span><span class="tg2">AIIMIN</span></div></div><div class="tir"><div class="tit">8:00 PM</div><div class="tpr" style="background:#F59E0B;"></div></div></div>
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">Journal entry + reflection</div><div class="tgs"><span class="tg2">Personal</span></div></div><div class="tir"><div class="tit">9:30 PM</div><div class="tpr" style="background:#10B981;"></div></div></div>
+  </div></div>
+  <div class="tblk"><div class="tbh">UPCOMING <span class="tbc">4</span></div><div class="c">
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">IEEE INCIP response</div><div class="tgs"><span class="tg2">Research</span><span class="tg2">Paper</span></div></div><div class="tir"><div class="tit">Mon 20</div><div class="tpr" style="background:#EF4444;"></div></div></div>
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">Submit MUJ assignment</div><div class="tgs"><span class="tg2">Academic</span></div></div><div class="tir"><div class="tit">Tue 21</div><div class="tpr" style="background:#F59E0B;"></div></div></div>
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">AIIMIN beta launch prep</div><div class="tgs"><span class="tg2">AIIMIN</span><span class="tg2">Launch</span></div></div><div class="tir"><div class="tit">Thu 23</div><div class="tpr" style="background:#EF4444;"></div></div></div>
+    <div class="ti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="tib"><div class="titn">Placement prep &mdash; Arrays</div><div class="tgs"><span class="tg2">DSA</span><span class="tg2">Placement</span></div></div><div class="tir"><div class="tit">Fri 24</div><div class="tpr" style="background:#F59E0B;"></div></div></div>
+  </div></div>
+  <div style="height:80px;"></div>
+</div>
+
+<div class="sc" id="sc-notes">
+  <div class="ph"><div><div class="pht">Notes</div></div><div class="pha"><div class="ib" onclick="goto('search')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="ib" onclick="openSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div></div>
+  <div class="srb"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search notes...</span></div>
+  <div class="chips"><div class="chip on" onclick="setChip(this)">All Notes</div><div class="chip" onclick="setChip(this)">Pinned</div><div class="chip" onclick="setChip(this)">Work</div><div class="chip" onclick="setChip(this)">Study</div><div class="chip" onclick="setChip(this)">Personal</div><div class="chip" onclick="setChip(this)">Research</div></div>
+  <div class="ng">
+    <div class="c nc" style="min-height:175px;"><div class="nem">&#x1F4CB;</div><div class="ntt">AIIMIN Product Roadmap</div><div class="npv">v2: auth, reports, subscription tiers, Android native. P0 bugs before beta launch Aug 2026.</div><div class="nft"><div class="ndt">2h ago</div><div class="ndot" style="background:#FF6B35;"></div></div></div>
+    <div class="c nc" style="min-height:175px;"><div class="nem">&#x2601;&#65039;</div><div class="ntt">Cloud Computing Notes</div><div class="npv">VPC architecture, NAT Gateway cost, EC2 ap-south-1, S3 lifecycle, CDN patterns. CLF-C02.</div><div class="nft"><div class="ndt">Yesterday</div><div class="ndot" style="background:#3B82F6;"></div></div></div>
+    <div class="c nc"><div class="nem">&#x1F4D6;</div><div class="ntt">Atomic Habits Summary</div><div class="npv">1% better everyday. Systems over goals. Identity-based habits. Habit stacking.</div><div class="nft"><div class="ndt">3 days ago</div><div class="ndot" style="background:#10B981;"></div></div></div>
+    <div class="c nc"><div class="nem">&#x1F3D7;&#65039;</div><div class="ntt">AWS Architecture</div><div class="npv">Serverless: Lambda + API GW + DynamoDB. CLF-C02 key services.</div><div class="nft"><div class="ndt">1 week ago</div><div class="ndot" style="background:#3B82F6;"></div></div></div>
+    <div class="c nc" style="min-height:160px;"><div class="nem">&#x1F4AD;</div><div class="ntt">Daily Reflections</div><div class="npv">Patterns noticed. Things that worked. Peak performance windows and energy cycles.</div><div class="nft"><div class="ndt">2 wks ago</div><div class="ndot" style="background:#8B5CF6;"></div></div></div>
+    <div class="c nc" style="min-height:160px;"><div class="nem">&#x1F52C;</div><div class="ntt">EEG Paper Notes</div><div class="npv">SAM-40. GroupKFold n=5. KNN 97.39% SD. AdaBoost 55.29% SI. 42pp gap.</div><div class="nft"><div class="ndt">3 wks ago</div><div class="ndot" style="background:#F59E0B;"></div></div></div>
+  </div>
+</div>
+
+<div class="sc" id="sc-journal">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="ph"><div><div class="pht">Journal</div><div class="phs">Sunday, 19 July 2026</div></div><div class="pha"><div class="ib"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div></div></div>
+  <div class="jmodes">
+    <div class="jmb on" onclick="setJMode(this,'What moved you today? What slowed you down?')">Reflect</div>
+    <div class="jmb" onclick="setJMode(this,'Name 3 things you are grateful for right now.')">Gratitude</div>
+    <div class="jmb" onclick="setJMode(this,'What is your single most important task today?')">Morning</div>
+    <div class="jmb" onclick="setJMode(this,'Let it all out. No filter, no structure, no rules.')">Free Write</div>
+    <div class="jmb" onclick="setJMode(this,'What problem is taking the most mental space right now?')">Problem</div>
+  </div>
+  <div class="jprompt"><div class="jprl">TODAY&rsquo;S PROMPT</div><div class="jprt" id="jprompttext">What moved you today? What slowed you down?</div></div>
+  <div class="wa mt10"><div class="waph">Start writing. This is just for you...</div><div class="wacnt">0 words</div></div>
+  <div class="jtb mt10">
+    <div class="jtbn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 013 3v8a3 3 0 01-6 0V4a3 3 0 013-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg></div>
+    <div class="jtbn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+    <div class="svb" onclick="doSave(this)"><svg width="16" height="16" viewBox="0 0 24 24" stroke="#fff" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg><span>Save Entry</span></div>
+  </div>
+  <div class="sh mt12"><div class="sl">PAST ENTRIES</div><div class="sla">All entries</div></div>
+  <div class="c jec"><div class="ject"><div class="jecd">Sat &middot; Jul 18</div><div class="b bo">Reflect</div></div><div class="jecb">Today went better than expected. The nav bug was a sidebar mapping issue &mdash; items 7&ndash;8 rendering multiple times. Fixed with proper key indexing. Small win, cleared the path forward.</div><div class="jecf">234 words &middot; 8:45 PM</div></div>
+  <div class="c jec"><div class="ject"><div class="jecd">Fri &middot; Jul 17</div><div class="b bg">Gratitude</div></div><div class="jecb">Grateful for the clear morning, the 3-hour uninterrupted focus block, and the fact that code sometimes just clicks. Also the AWS cert &mdash; hard work paid off.</div><div class="jecf">187 words &middot; 9:12 PM</div></div>
+  <div class="c jec"><div class="ject"><div class="jecd">Wed &middot; Jul 15</div><div class="b bn2">Morning</div></div><div class="jecb">Planning to finish auth module, review Sam&rsquo;s feedback on Reports, and squeeze in DSA. Energy feels good. Coffee working. Let&rsquo;s build.</div><div class="jecf">143 words &middot; 7:30 AM</div></div>
+  <div class="c jec" style="margin-bottom:80px;"><div class="ject"><div class="jecd">Mon &middot; Jul 14</div><div class="b bp">Free Write</div></div><div class="jecb">The difference between shipping and perfecting is just a decision. Real feedback only comes from real users seeing real product. Waiting for perfect is choosing invisibility.</div><div class="jecf">312 words &middot; 10:55 PM</div></div>
+</div>
+
+<div class="sc" id="sc-me">
+  <div class="ph" style="padding-bottom:10px;"><div><div class="pht">Me</div></div><div class="pha"><div class="ib" onclick="goto('notifs')"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="ib" onclick="goto('settings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div></div></div>
+  <div class="phe">
+    <div class="phav">AU</div>
+    <div class="phif"><div class="phn">Aaditya Upadhyay</div><div class="phe2">aaditya@aiimin.in</div><div style="margin-top:5px;"><span class="b bo">PRO FOUNDING</span></div></div>
+    <svg class="chv" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg>
+  </div>
+  <div class="c cr" style="margin:0 16px 14px;padding:16px 18px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="srw" style="width:74px;height:74px;">
+        <svg width="74" height="74" viewBox="0 0 90 90"><defs><linearGradient id="sg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF8A5C"/><stop offset="100%" stop-color="#E85520"/></linearGradient></defs><circle cx="45" cy="45" r="36" fill="none" stroke="var(--br)" stroke-width="7"/><circle cx="45" cy="45" r="36" fill="none" stroke="url(#sg2)" stroke-width="7" stroke-linecap="round" stroke-dasharray="226.19" stroke-dashoffset="58.8" transform="rotate(-90 45 45)" style="filter:drop-shadow(0 0 8px rgba(255,90,31,.4));"/></svg>
+        <div class="srt"><div class="srnum" style="font-size:21px;">74</div></div>
+      </div>
+      <div style="flex:1;"><div style="font-family:var(--FD);font-size:18px;font-weight:800;color:var(--t1);">Good Standing</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">+2 from yesterday &middot; Rank #1 this week</div><div class="pt mt8"><div class="pf2" data-w="74"></div></div><div style="display:flex;justify-content:space-between;margin-top:4px;"><span style="font-size:10px;color:var(--t3);">Current: 74</span><span style="font-size:10px;color:var(--t3);">Target: 90</span></div></div>
+    </div>
+  </div>
+  <div class="sgg">
+    <div class="c sgc"><div class="sgcl">STREAK</div><div class="sgcv">14 &#x1F525;</div><div class="sgcs">Days in a row</div></div>
+    <div class="c sgc"><div class="sgcl">THIS WEEK</div><div class="sgcv">23</div><div class="sgcs">Tasks completed</div></div>
+    <div class="c sgc"><div class="sgcl">FOCUS HRS</div><div class="sgcv">48h</div><div class="sgcs">This month</div></div>
+    <div class="c sgc"><div class="sgcl">JOURNAL</div><div class="sgcv">18</div><div class="sgcs">Entries total</div></div>
+  </div>
+  <div class="sh"><div class="sl">ACTIVE GOALS</div><div class="sla" onclick="goto('goals')">All goals</div></div>
+  <div class="c goi"><div class="goit"><div><div class="goem">&#x1F680;</div><div class="gon">Launch AIIMIN v1.0</div></div><div class="gop">78%</div></div><div class="pt"><div class="pf2" data-w="78"></div></div><div class="god">Due Aug 15, 2026 &middot; 27 days left</div></div>
+  <div class="c goi"><div class="goit"><div><div class="goem">&#x1F4BC;</div><div class="gon">Placement @ 10 LPA+</div></div><div class="gop">45%</div></div><div class="pt"><div class="pf2" data-w="45"></div></div><div class="god">Due Nov 30, 2026 &middot; 134 days left</div></div>
+  <div class="c goi"><div class="goit"><div><div class="goem">&#x1F4DA;</div><div class="gon">Read 24 books in 2026</div></div><div class="gop">38%</div></div><div class="pt"><div class="pf2" data-w="38"></div></div><div class="god">Due Dec 31 &middot; 9 of 24 complete</div></div>
+  <div class="c goi" style="margin-bottom:80px;"><div class="goit"><div><div class="goem">&#x1F4BB;</div><div class="gon">DSA 200 Problems</div></div><div class="gop">34%</div></div><div class="pt"><div class="pf2" data-w="34"></div></div><div class="god">Due Oct 31 &middot; 67 / 200 solved</div></div>
+</div>
+
+<div class="sc" id="sc-settings">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="ph" style="padding-top:4px;"><div><div class="pht">Settings</div><div class="phs">Manage account &amp; preferences.</div></div></div>
+  <div class="seu"><div class="phav" style="width:46px;height:46px;border-radius:14px;font-size:17px;">AU</div><div style="flex:1;"><div class="seun">Aaditya Upadhyay</div><div class="seue">aaditya@aiimin.in</div></div><svg class="chv" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+  <div class="ses"><div class="sesl">ACCOUNT</div><div class="c">
+    <div class="si"><div class="sii" style="background:#3B82F6;"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="sil">Profile Information</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="si"><div class="sii" style="background:#8B5CF6;"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><div class="sil">Account &amp; Security</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="si"><div class="sii" style="background:#FF6B35;"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="sil">Subscription</div><div class="siv">Pro Founding</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+  </div></div>
+  <div class="ses"><div class="sesl">PREFERENCES</div><div class="c">
+    <div class="si"><div class="sii" style="background:#F59E0B;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg></div><div class="sil">Appearance</div><div class="siv" id="appval">Light</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="si"><div class="sii" style="background:#10B981;"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div><div class="sil">Notifications</div><div class="tg on" onclick="this.classList.toggle('on');this.classList.toggle('off');"><div class="tgk"></div></div></div>
+    <div class="si"><div class="sii" style="background:#3B82F6;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20 15.3 15.3 0 010-20z"/></svg></div><div class="sil">Language</div><div class="siv">English</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="si"><div class="sii" style="background:#EF4444;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div><div class="sil">Focus Reminders</div><div class="tg on" onclick="this.classList.toggle('on');this.classList.toggle('off');"><div class="tgk"></div></div></div>
+  </div></div>
+  <div class="ses"><div class="sesl">DATA &amp; SYNC</div><div class="c">
+    <div class="si"><div class="sii" style="background:#8B5CF6;"><svg viewBox="0 0 24 24"><polyline points="1,4 1,10 7,10"/><polyline points="23,20 23,14 17,14"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg></div><div class="sil">Backup &amp; Restore</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="si"><div class="sii" style="background:#10B981;"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><div class="sil">Data Sync</div><div class="tg on" onclick="this.classList.toggle('on');this.classList.toggle('off');"><div class="tgk"></div></div></div>
+    <div class="si"><div class="sii" style="background:#F59E0B;"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div><div class="sil">Export Data</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+  </div></div>
+  <div class="ses"><div class="sesl">SUPPORT</div><div class="c">
+    <div class="si"><div class="sii" style="background:#3B82F6;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg></div><div class="sil">Help &amp; Support</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="si"><div class="sii" style="background:#10B981;"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div class="sil">Send Feedback</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="si"><div class="sii" style="background:#6B6358;"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="sil">About AIIMIN</div><div class="siv">v2.1.0</div><svg class="sch" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+  </div></div>
+  <div style="text-align:center;font-size:11px;color:var(--t3);padding:8px 16px 80px;">AIIMIN Personal OS &middot; Built with love in India &middot; MUJ Batch 2026</div>
+</div>
+
+<div class="sc" id="sc-ai">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="aih">
+    <div class="aiav">&#x2726;</div>
+    <div style="flex:1;"><div class="ain2">AIIMIN AI</div><div class="aist"><div class="aistd"></div>Online &middot; Thinking fast</div></div>
+    <div class="ib"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+  </div>
+  <div class="aisugg"><div class="aisg">Plan my day</div><div class="aisg">Summarize week</div><div class="aisg">Suggest a goal</div><div class="aisg">Review progress</div><div class="aisg">Focus mode</div></div>
+  <div class="ai-msgs">
+    <div class="msg msgai"><div class="mbu">Good morning, Aaditya. 5 tasks scheduled today, 5 habits already done. Life Score is 74 &mdash; up 2 from yesterday. What are we focusing on?</div><div class="mtime">9:41 AM</div></div>
+    <div class="msg msgme"><div class="mbu">Walk me through today&rsquo;s priorities.</div><div class="mtime">9:42 AM</div></div>
+    <div class="msg msgai"><div class="mbu">Based on your patterns, deep work peaks before noon. Start with Sam call prep &mdash; you have notes from Jul 12. Then DSA block at 4 PM. You skip it 60% of Sundays. Not today.</div><div class="mtime">9:42 AM</div></div>
+    <div class="msg msgme"><div class="mbu">Set a reminder for the Sam call at 1:45.</div><div class="mtime">9:43 AM</div></div>
+    <div class="msg msgai"><div class="mbu">Done. Reminder set for 1:45 PM &mdash; &ldquo;Sam call in 15 min. Pull up Reports notes.&rdquo; Anything else?</div><div class="mtime">9:43 AM</div></div>
+  </div>
+  <div class="aiin"><div class="aiib"><div class="aiiph">Ask AIIMIN anything...</div></div><div class="aisdBtn"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg></div></div>
+</div>
+
+<div class="sc" id="sc-calendar">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="ph"><div><div class="pht">Calendar</div></div><div class="pha"><div class="ib" onclick="openSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div></div>
+  <div class="cmn"><div class="cnb"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg></div><div class="cmnt">July 2026</div><div class="cnb"><svg viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div></div>
+  <div class="cgw">
+    <div class="cwd"><div class="cwdl">Su</div><div class="cwdl">Mo</div><div class="cwdl">Tu</div><div class="cwdl">We</div><div class="cwdl">Th</div><div class="cwdl">Fr</div><div class="cwdl">Sa</div></div>
+    <div class="cds">
+      <div class="cd dm"></div><div class="cd dm"></div><div class="cd dm"></div><div class="cd hev">1</div><div class="cd hev">2</div><div class="cd hev">3</div><div class="cd hev">4</div>
+      <div class="cd hev">5</div><div class="cd hev">6</div><div class="cd hev">7</div><div class="cd hev">8</div><div class="cd">9</div><div class="cd hev">10</div><div class="cd">11</div>
+      <div class="cd">12</div><div class="cd hev">13</div><div class="cd">14</div><div class="cd">15</div><div class="cd">16</div><div class="cd hev">17</div><div class="cd hev">18</div>
+      <div class="cd td hev">19</div><div class="cd">20</div><div class="cd">21</div><div class="cd">22</div><div class="cd hev">23</div><div class="cd">24</div><div class="cd hev">25</div>
+      <div class="cd">26</div><div class="cd">27</div><div class="cd">28</div><div class="cd">29</div><div class="cd">30</div><div class="cd">31</div><div class="cd dm"></div>
+    </div>
+  </div>
+  <div class="sh mt14"><div class="sl">SUNDAY &middot; 19 JUL</div><div class="b bo">5 events</div></div>
+  <div class="c" style="margin:0 16px 80px;">
+    <div class="evi"><div class="etc"><div class="ett">9:00</div><div class="ettsub">AM</div></div><div class="eb" style="background:#FF6B35;"></div><div class="evif"><div class="evn">AIIMIN Auth Review</div><div class="evd">Deep Work &middot; 2 hours</div></div></div>
+    <div class="evi"><div class="etc"><div class="ett">11:00</div><div class="ettsub">AM</div></div><div class="eb" style="background:#3B82F6;"></div><div class="evif"><div class="evn">Cursor PR Review</div><div class="evd">Dev &middot; 1 hour</div></div></div>
+    <div class="evi"><div class="etc"><div class="ett">2:00</div><div class="ettsub">PM</div></div><div class="eb" style="background:#8B5CF6;"></div><div class="evif"><div class="evn">Call with Sam</div><div class="evd">Reports module &middot; 30 min &middot; Meet</div></div></div>
+    <div class="evi"><div class="etc"><div class="ett">4:00</div><div class="ettsub">PM</div></div><div class="eb" style="background:#10B981;"></div><div class="evif"><div class="evn">DSA Study Block</div><div class="evd">Trees &amp; Graphs &middot; 1.5 hours</div></div></div>
+    <div class="evi"><div class="etc"><div class="ett">6:00</div><div class="ettsub">PM</div></div><div class="eb" style="background:#F59E0B;"></div><div class="evif"><div class="evn">Evening Run &mdash; 5K</div><div class="evd">Health &middot; 45 min &middot; Joggers Park</div></div></div>
+  </div>
+</div>
+
+<div class="sc" id="sc-finance">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="ph"><div><div class="pht">Finance</div><div class="phs">July 2026</div></div><div class="pha"><div class="ib" onclick="openSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div></div>
+  <div class="c cr fh"><div class="fbl">MONTHLY BUDGET</div><div class="fb">&#x20B9;25,000</div><div class="fp">July 2026 &middot; 19 days in &middot; 12 remaining</div>
+    <div class="fr"><div class="fs"><div class="fsl">SPENT</div><div class="fsv">&#x20B9;18,400</div></div><div class="fs"><div class="fsl">SAVED</div><div class="fsv" style="color:var(--green);">&#x20B9;6,600</div></div><div class="fs"><div class="fsl">DAILY AVG</div><div class="fsv">&#x20B9;968</div></div></div>
+    <div style="margin-top:14px;"><div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span style="font-size:11px;color:var(--t3);">Budget used</span><span style="font-size:11px;font-weight:700;color:var(--t1);">73.6%</span></div><div class="pt"><div class="pf2" data-w="73.6"></div></div></div>
+  </div>
+  <div class="sh"><div class="sl">SPENDING BREAKDOWN</div></div>
+  <div class="c" style="margin:0 16px 14px;">
+    <div class="ci"><div class="cic" style="background:rgba(239,68,68,.12);">&#x1F354;</div><div class="cii"><div class="cin">Food &amp; Dining</div><div class="cbr"><div class="cba"><div class="cbf" style="background:#EF4444;width:42%;"></div></div><div class="cpct">17%</div></div></div><div class="cam">&#x20B9;4,200</div></div>
+    <div class="ci"><div class="cic" style="background:rgba(59,130,246,.12);">&#x1F697;</div><div class="cii"><div class="cin">Transport</div><div class="cbr"><div class="cba"><div class="cbf" style="background:#3B82F6;width:18%;"></div></div><div class="cpct">7%</div></div></div><div class="cam">&#x20B9;1,800</div></div>
+    <div class="ci"><div class="cic" style="background:rgba(139,92,246,.12);">&#x1F3AE;</div><div class="cii"><div class="cin">Entertainment</div><div class="cbr"><div class="cba"><div class="cbf" style="background:#8B5CF6;width:24%;"></div></div><div class="cpct">10%</div></div></div><div class="cam">&#x20B9;2,400</div></div>
+    <div class="ci"><div class="cic" style="background:rgba(245,158,11,.12);">&#x1F4D7;</div><div class="cii"><div class="cin">Education &amp; Courses</div><div class="cbr"><div class="cba"><div class="cbf" style="background:#F59E0B;width:29%;"></div></div><div class="cpct">12%</div></div></div><div class="cam">&#x20B9;3,000</div></div>
+    <div class="ci"><div class="cic" style="background:rgba(16,185,129,.12);">&#x1F48A;</div><div class="cii"><div class="cin">Health</div><div class="cbr"><div class="cba"><div class="cbf" style="background:#10B981;width:12%;"></div></div><div class="cpct">5%</div></div></div><div class="cam">&#x20B9;1,200</div></div>
+    <div class="ci"><div class="cic" style="background:rgba(107,99,88,.12);">&#x1F6D2;</div><div class="cii"><div class="cin">Other</div><div class="cbr"><div class="cba"><div class="cbf" style="background:var(--t3);width:56%;"></div></div><div class="cpct">23%</div></div></div><div class="cam">&#x20B9;5,800</div></div>
+  </div>
+  <div class="sh"><div class="sl">RECENT TRANSACTIONS</div></div>
+  <div class="c" style="margin:0 16px 80px;">
+    <div class="txn"><div class="cic" style="background:rgba(255,107,53,.12);">&#x1F355;</div><div class="cii"><div class="cin">Swiggy order</div><div style="font-size:11px;color:var(--t3);margin-top:1px;">Yesterday &middot; Food</div></div><div class="txnamt">-&#x20B9;340</div></div>
+    <div class="txn"><div class="cic" style="background:rgba(16,185,129,.12);">&#x1F6D2;</div><div class="cii"><div class="cin">DMart groceries</div><div style="font-size:11px;color:var(--t3);margin-top:1px;">Jul 17 &middot; Grocery</div></div><div class="txnamt">-&#x20B9;1,240</div></div>
+    <div class="txn"><div class="cic" style="background:rgba(245,158,11,.12);">&#x1F4D7;</div><div class="cii"><div class="cin">Udemy &mdash; System Design</div><div style="font-size:11px;color:var(--t3);margin-top:1px;">Jul 16 &middot; Education</div></div><div class="txnamt">-&#x20B9;799</div></div>
+    <div class="txn"><div class="cic" style="background:rgba(59,130,246,.12);">&#x1F695;</div><div class="cii"><div class="cin">Ola cab &middot; MUJ campus</div><div style="font-size:11px;color:var(--t3);margin-top:1px;">Jul 15 &middot; Transport</div></div><div class="txnamt">-&#x20B9;180</div></div>
+  </div>
+</div>
+
+<div class="sc" id="sc-goals">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="ph"><div><div class="pht">Goals</div></div><div class="pha"><div class="ib" onclick="openSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div></div>
+  <div class="c cr goh"><div style="display:flex;align-items:flex-start;justify-content:space-between;"><div><div class="gob">4</div><div class="gos">Active goals in 2026</div></div><div style="text-align:right;"><div style="font-family:var(--FD);font-size:28px;font-weight:800;color:var(--t1);">51%</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">Avg progress</div></div></div><div class="pt mt14"><div class="pf2" data-w="51"></div></div></div>
+  <div class="c gc"><div class="gct"><div><div class="gem2">&#x1F680;</div><div class="gtit">Launch AIIMIN v1.0</div></div><div class="gpct">78%</div></div><div class="pt"><div class="pf2" data-w="78"></div></div><div class="gdr"><div class="gdl">Aug 15, 2026 &middot; 27 days</div><div class="b bo">On Track</div></div></div>
+  <div class="c gc"><div class="gct"><div><div class="gem2">&#x1F4BC;</div><div class="gtit">Placement at 10 LPA+</div></div><div class="gpct">45%</div></div><div class="pt"><div class="pf2" data-w="45"></div></div><div class="gdr"><div class="gdl">Nov 30, 2026 &middot; 134 days</div><div class="b bg">On Track</div></div></div>
+  <div class="c gc"><div class="gct"><div><div class="gem2">&#x1F4DA;</div><div class="gtit">Read 24 books in 2026</div></div><div class="gpct">38%</div></div><div class="pt"><div class="pf2" data-w="38"></div></div><div class="gdr"><div class="gdl">9 of 24 &middot; Dec 31, 2026</div><div class="b bp">Behind</div></div></div>
+  <div class="c gc" style="margin-bottom:80px;"><div class="gct"><div><div class="gem2">&#x1F4BB;</div><div class="gtit">Solve 200 DSA Problems</div></div><div class="gpct">34%</div></div><div class="pt"><div class="pf2" data-w="34"></div></div><div class="gdr"><div class="gdl">67 of 200 &middot; Oct 31, 2026</div><div class="b bp">Behind</div></div></div>
+</div>
+
+<div class="sc" id="sc-family">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="ph"><div><div class="pht">Family</div><div class="phs">4 members &middot; 2 admins</div></div><div class="pha"><div class="ib" onclick="openSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div></div>
+  <div class="fms">
+    <div class="fm"><div class="fmav" style="background:#FEE2E2;">&#x1F60A;<div class="fmrd"></div></div><div class="fmn">Mom</div><div class="fmr">Admin</div></div>
+    <div class="fm"><div class="fmav" style="background:#DBEAFE;">&#x1F468;<div class="fmrd"></div></div><div class="fmn">Dad</div><div class="fmr">Member</div></div>
+    <div class="fm"><div class="fmav" style="background:#F3E8FF;">&#x1F467;<div class="fmrd"></div></div><div class="fmn">Riya</div><div class="fmr">Member</div></div>
+    <div class="fm"><div class="fmav" style="background:rgba(255,107,53,.12);">&#x1F466;<div class="fmrd"></div></div><div class="fmn">You</div><div class="fmr">Admin</div></div>
+    <div class="fm"><div class="fmav" style="background:var(--el);border:2px dashed var(--br);font-size:16px;color:var(--t3);">+</div><div class="fmn">Add</div><div class="fmr">Invite</div></div>
+  </div>
+  <div class="sh"><div class="sl">FAMILY TASKS</div><div class="sla">View all</div></div>
+  <div class="c" style="margin:0 16px 14px;">
+    <div class="fti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="ftif"><div class="ftin">Grocery shopping &mdash; BigBazaar</div><div class="ftia">Assigned to Mom &middot; Tomorrow</div></div></div>
+    <div class="fti"><div class="ck on" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="ftif"><div class="ftin" style="text-decoration:line-through;color:var(--t3);">Pay electricity bill</div><div class="ftia">Dad &middot; Done &#x2713;</div></div></div>
+    <div class="fti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="ftif"><div class="ftin">Book Riya&rsquo;s flight tickets</div><div class="ftia">Assigned to You &middot; Jul 25</div></div></div>
+    <div class="fti"><div class="ck" onclick="toggleCk(this)"><svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2.5"/></svg></div><div class="ftif"><div class="ftin">Plan Sunday family dinner</div><div class="ftia">Assigned to Riya &middot; Today</div></div></div>
+  </div>
+  <div class="sh"><div class="sl">SHARED DOCUMENTS</div><div class="sla" onclick="goto('vault')">View vault</div></div>
+  <div class="c" style="margin:0 16px 80px;">
+    <div class="fti"><div class="dib" style="width:40px;height:40px;background:rgba(59,130,246,.15);border-radius:10px;flex-shrink:0;"><svg stroke="#3B82F6" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="ftif"><div class="ftin">Aaditya &mdash; Aadhar Card</div><div class="ftia">Valid &middot; Added May 2025</div></div><div class="b bg">Valid</div></div>
+    <div class="fti"><div class="dib" style="width:40px;height:40px;background:rgba(59,130,246,.15);border-radius:10px;flex-shrink:0;"><svg stroke="#3B82F6" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="ftif"><div class="ftin">Riya &mdash; Passport</div><div class="ftia">Expires Jan 2028</div></div><div class="b bo">Exp Soon</div></div>
+    <div class="fti"><div class="dib" style="width:40px;height:40px;background:rgba(245,158,11,.15);border-radius:10px;flex-shrink:0;"><svg stroke="#F59E0B" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div class="ftif"><div class="ftin">Family Insurance &mdash; LIC</div><div class="ftia">Valid till 2030</div></div><div class="b bg">Valid</div></div>
+  </div>
+</div>
+
+<div class="sc" id="sc-vault">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="ph"><div><div class="pht">Vault</div></div><div class="pha"><div class="ib" onclick="goto('search')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="ib"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div></div></div>
+  <div class="vtr"><div class="vt on" onclick="setVTab(this,'vt-my')">My Docs</div><div class="vt" onclick="setVTab(this,'vt-fam')">Family</div><div class="vt" onclick="setVTab(this,'vt-res')">Resumes</div></div>
+  <div id="vt-my"><div class="c" style="margin:8px 16px 80px;">
+    <div class="di"><div class="dib" style="background:#EF4444;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="dii"><div class="din">AIIMIN Product Roadmap.pdf</div><div class="dim">2.4 MB &middot; 2 hours ago</div></div><svg class="dim2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+    <div class="di"><div class="dib" style="background:#3B82F6;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="dii"><div class="din">Semester Notes.docx</div><div class="dim">1.3 MB &middot; Yesterday</div></div><svg class="dim2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+    <div class="di"><div class="dib" style="background:#10B981;"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><div class="dii"><div class="din">Budget Tracker.xlsx</div><div class="dim">520 KB &middot; 2 days ago</div></div><svg class="dim2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+    <div class="di"><div class="dib" style="background:#8B5CF6;"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="dii"><div class="din">Design Inspirations.zip</div><div class="dim">12.6 MB &middot; 3 days ago</div></div><svg class="dim2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+    <div class="di"><div class="dib" style="background:#F59E0B;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="dii"><div class="din">EEG Research Paper.pdf</div><div class="dim">880 KB &middot; 1 week ago</div></div><svg class="dim2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>
+  </div></div>
+  <div id="vt-fam" style="display:none;"><div class="c" style="margin:8px 16px 80px;">
+    <div class="di"><div class="dib" style="background:#3B82F6;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="dii"><div class="din">Aaditya &mdash; Aadhar Card</div><div class="dim">Valid &middot; Verified</div></div><div class="b bg">Valid</div></div>
+    <div class="di"><div class="dib" style="background:#3B82F6;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="dii"><div class="din">Mom &mdash; Aadhar Card</div><div class="dim">Valid &middot; Verified</div></div><div class="b bg">Valid</div></div>
+    <div class="di"><div class="dib" style="background:#3B82F6;"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="dii"><div class="din">Dad &mdash; PAN Card</div><div class="dim">Valid</div></div><div class="b bg">Valid</div></div>
+    <div class="di"><div class="dib" style="background:#8B5CF6;"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div class="dii"><div class="din">Riya &mdash; Passport</div><div class="dim">Expires January 2028</div></div><div class="b bo">Exp Soon</div></div>
+    <div class="di"><div class="dib" style="background:#F59E0B;"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="dii"><div class="din">Family Insurance &mdash; LIC</div><div class="dim">Valid till 2030</div></div><div class="b bg">Valid</div></div>
+  </div></div>
+  <div id="vt-res" style="display:none;"><div class="c" style="margin:8px 16px 80px;">
+    <div class="di"><div class="dib" style="background:#FF6B35;"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="dii"><div class="din">Frontend Dev Resume v2.1</div><div class="dim">Updated Jul 15 &middot; 680 KB</div></div><div class="b bo">Active</div></div>
+    <div class="di"><div class="dib" style="background:#3B82F6;"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="dii"><div class="din">DS/ML Resume v1.4</div><div class="dim">Updated Jun 20 &middot; 540 KB</div></div><div class="b bb">Ready</div></div>
+    <div class="di"><div class="dib" style="background:#10B981;"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="dii"><div class="din">General Resume v3.0</div><div class="dim">Updated Jun 5 &middot; 710 KB</div></div><div class="b bg">Ready</div></div>
+  </div></div>
+</div>
+
+<div class="sc" id="sc-search">
+  <div class="srtop"><div class="sra"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><div class="srq">AIIMIN</div></div><div class="srcanc" onclick="goBack()">Cancel</div></div>
+  <div class="chips"><div class="chip on" onclick="setChip(this)">All</div><div class="chip" onclick="setChip(this)">Notes</div><div class="chip" onclick="setChip(this)">Tasks</div><div class="chip" onclick="setChip(this)">Journal</div><div class="chip" onclick="setChip(this)">Files</div></div>
+  <div class="sh"><div class="sl">RESULTS FOR &ldquo;AIIMIN&rdquo;</div><div class="b bn2">4 found</div></div>
+  <div class="c" style="margin:0 16px 80px;">
+    <div class="sri"><div class="sric" style="background:rgba(255,107,53,.15);"><svg stroke="var(--brand)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="srif"><div class="srit">AIIMIN Product Roadmap</div><div class="srim">Note &middot; Updated 2h ago</div></div><svg class="chv" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="sri"><div class="sric" style="background:rgba(59,130,246,.15);"><svg stroke="#3B82F6" viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><div class="srif"><div class="srit">AIIMIN auth flow review</div><div class="srim">Task &middot; Completed today</div></div><svg class="chv" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="sri"><div class="sric" style="background:rgba(59,130,246,.15);"><svg stroke="#3B82F6" viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><div class="srif"><div class="srit">AIIMIN beta launch prep</div><div class="srim">Task &middot; Scheduled Jul 23</div></div><svg class="chv" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+    <div class="sri"><div class="sric" style="background:rgba(239,68,68,.15);"><svg stroke="#EF4444" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="srif"><div class="srit">AIIMIN Roadmap.pdf</div><div class="srim">Document &middot; 2.4 MB &middot; 2h ago</div></div><svg class="chv" viewBox="0 0 24 24"><polyline points="9,18 15,12 9,6"/></svg></div>
+  </div>
+</div>
+
+<div class="sc" id="sc-notifs">
+  <div class="bk" onclick="goBack()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back</div>
+  <div class="ph"><div><div class="pht">Notifications</div></div><div class="pha"><div class="ib"><span style="font-size:11px;font-weight:700;color:var(--brand);">Mark all</span></div></div></div>
+  <div class="sh mt8"><div class="sl">NEW</div><div class="b bred">2 unread</div></div>
+  <div class="c" style="margin:0 16px 14px;">
+    <div class="nfi ur"><div class="nfic" style="background:rgba(255,107,53,.12);">&#x1F525;</div><div class="nfib"><div class="nfit">14-Day Streak! You&rsquo;re on fire.</div><div class="nfitx">Logged in every day for 14 days. Personal best: 21. Keep going.</div><div class="nftm">Just now</div></div><div class="nfdot"></div></div>
+    <div class="nfi ur"><div class="nfic" style="background:rgba(139,92,246,.12);">&#x1F4CB;</div><div class="nfib"><div class="nfit">Sam call in 15 minutes</div><div class="nfitx">Prep: Open Reports module notes. Last synced Jul 12.</div><div class="nftm">45 min ago</div></div><div class="nfdot"></div></div>
+  </div>
+  <div class="sh"><div class="sl">EARLIER</div></div>
+  <div class="c" style="margin:0 16px 80px;">
+    <div class="nfi"><div class="nfic" style="background:rgba(16,185,129,.12);">&#x2705;</div><div class="nfib"><div class="nfit">Task completed</div><div class="nfitx">AIIMIN auth flow review marked done. Good start to the morning.</div><div class="nftm">2h ago</div></div><div class="nfdot r"></div></div>
+    <div class="nfi"><div class="nfic" style="background:rgba(245,158,11,.12);">&#x1F4D6;</div><div class="nfib"><div class="nfit">Journal prompt ready</div><div class="nfitx">Today&rsquo;s prompt: &ldquo;What moved you today? What slowed you down?&rdquo;</div><div class="nftm">8h ago</div></div><div class="nfdot r"></div></div>
+    <div class="nfi"><div class="nfic" style="background:rgba(255,107,53,.12);">&#x1F3AF;</div><div class="nfib"><div class="nfit">Life Score: 74 (+2)</div><div class="nfitx">Up 2 points from yesterday. Strong habits &mdash; 5/8 done before noon.</div><div class="nftm">10h ago</div></div><div class="nfdot r"></div></div>
+    <div class="nfi"><div class="nfic" style="background:rgba(59,130,246,.12);">&#x1F4B0;</div><div class="nfib"><div class="nfit">Budget check: 73.6% used</div><div class="nfitx">&#x20B9;18,400 spent. 12 days left. Slightly over pace on entertainment.</div><div class="nftm">Yesterday</div></div><div class="nfdot r"></div></div>
+  </div>
+</div>
+
+    </div>
+    <div class="bn">
+      <div class="ni on" id="ni-home" onclick="goto('home')"><div class="niw"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><span>Today</span></div>
+      <div class="ni" id="ni-notes" onclick="goto('notes')"><div class="niw"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg></div><span>Think</span></div>
+      <div class="nf"><div class="fab" id="fabBtn" onclick="openSheet()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div>
+      <div class="ni" id="ni-tasks" onclick="goto('tasks')"><div class="niw"><svg viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><span>Plan</span></div>
+      <div class="ni" id="ni-me" onclick="goto('me')"><div class="niw"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><span>Me</span></div>
+    </div>
+    <div class="ov" id="fabov" onclick="closeSheet(event)">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="shdl"></div><div class="shtit">Create new</div>
+        <div class="shr" onclick="goto('tasks');closeSheet()"><div class="shri" style="background:rgba(59,130,246,.15);"><svg stroke="#3B82F6" viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><div><div class="sn">New Task</div><div class="sd">Add to today&rsquo;s plan</div></div></div>
+        <div class="shr" onclick="goto('notes');closeSheet()"><div class="shri" style="background:rgba(255,107,53,.15);"><svg stroke="var(--brand)" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><div class="sn">New Note</div><div class="sd">Quick capture</div></div></div>
+        <div class="shr" onclick="goto('journal');closeSheet()"><div class="shri" style="background:rgba(139,92,246,.15);"><svg stroke="#8B5CF6" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg></div><div><div class="sn">Journal Entry</div><div class="sd">Reflect on the day</div></div></div>
+        <div class="shr" onclick="goto('goals');closeSheet()"><div class="shri" style="background:rgba(16,185,129,.15);"><svg stroke="#10B981" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><div><div class="sn">New Goal</div><div class="sd">Set something to aim for</div></div></div>
+        <div class="shr" onclick="goto('finance');closeSheet()"><div class="shri" style="background:rgba(245,158,11,.15);"><svg stroke="#F59E0B" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div><div><div class="sn">Log Expense</div><div class="sd">Track spending</div></div></div>
+      </div>
+    </div>
+    <div class="spl" id="spl"><div class="splo">AIIMIN</div><div class="splt">PERSONAL OS</div><div class="spls"></div></div>
+  </div>
+</div>
+
+<script>
+const TABS=['home','notes','tasks','me'];
+const NM={home:'ni-home',notes:'ni-notes',tasks:'ni-tasks',me:'ni-me'};
+let stack=['home'];
+
+function showScreen(id){
+  document.querySelectorAll('.sc').forEach(s=>{ s.style.display='none'; s.classList.remove('anim'); });
+  const sc=document.getElementById('sc-'+id);
+  if(!sc)return;
+  sc.style.display=(id==='ai'?'flex':'block');
+  if(id==='ai')sc.style.flexDirection='column';
+  sc.classList.add('anim');
+  sc.scrollTop=0;
+  setTimeout(()=>sc.classList.remove('anim'),300);
+  sc.querySelectorAll('.pf2[data-w]').forEach(el=>{ el.style.width='0%'; setTimeout(()=>{ el.style.width=el.dataset.w+'%'; },80); });
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  if(NM[id]) document.getElementById(NM[id]).classList.add('on');
+}
+
+function goto(id){
+  if(TABS.includes(id)){ stack=[id]; }
+  else { const i=stack.indexOf(id); if(i>-1)stack.splice(i,1); stack.push(id); }
+  showScreen(id); closeSheetQ();
+}
+
+function goBack(){
+  if(stack.length>1){ stack.pop(); showScreen(stack[stack.length-1]); }
+}
+
+function setTheme(t){
+  const pi=document.getElementById('pi');
+  pi.classList.remove('TL','TD');
+  pi.classList.add(t==='dark'?'TD':'TL');
+  document.querySelectorAll('.topt').forEach((o,i)=>o.classList.toggle('on',(t==='dark'&&i===1)||(t==='light'&&i===0)));
+  const av=document.getElementById('appval'); if(av)av.textContent=t==='dark'?'Dark':'Light';
+}
+
+function toggleHabit(el){ el.querySelector('.hr').classList.toggle('on'); }
+
+function toggleCk(el){
+  el.classList.toggle('on');
+  const row=el.closest('.tr,.ti,.fti');
+  if(row){ const n=row.querySelector('.trn,.titn,.ftin'); if(n)n.classList.toggle('on',el.classList.contains('on')); }
+}
+
+function setChip(el){ el.closest('.chips').querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); }
+
+function setJMode(el,p){
+  el.closest('.jmodes').querySelectorAll('.jmb').forEach(b=>b.classList.remove('on')); el.classList.add('on');
+  const pt=document.getElementById('jprompttext'); if(pt&&p)pt.textContent=p;
+}
+
+function setVTab(el,id){
+  el.closest('.vtr').querySelectorAll('.vt').forEach(t=>t.classList.remove('on')); el.classList.add('on');
+  ['vt-my','vt-fam','vt-res'].forEach(v=>{ const e=document.getElementById(v); if(e)e.style.display=v===id?'block':'none'; });
+}
+
+function doSave(btn){
+  const sp=btn.querySelector('span'); const orig=sp.textContent;
+  sp.textContent='Saving...';
+  setTimeout(()=>{ sp.textContent='\u2713 Saved'; btn.style.background='linear-gradient(135deg,#10B981,#059669)';
+    setTimeout(()=>{ sp.textContent=orig; btn.style.background=''; },1500); },700);
+}
+
+function openSheet(){ document.getElementById('fabov').classList.add('on'); document.getElementById('fabBtn').classList.add('open'); }
+function closeSheet(e){ if(!e||e.target===document.getElementById('fabov'))closeSheetQ(); }
+function closeSheetQ(){ document.getElementById('fabov').classList.remove('on'); document.getElementById('fabBtn').classList.remove('open'); }
+
+window.addEventListener('load',()=>{
+  document.getElementById('sc-home').style.display='block';
+  setTimeout(()=>{
+    const cr=document.getElementById('scr'),rn=document.getElementById('srnum');
+    if(cr)cr.style.strokeDashoffset='58.8';
+    if(rn){ let n=0; const iv=setInterval(()=>{ n+=3; if(n>=74){rn.textContent=74;clearInterval(iv);}else rn.textContent=n; },16); }
+  },200);
+  setTimeout(()=>{ document.querySelectorAll('#sc-home .pf2[data-w]').forEach(el=>{ el.style.width=el.dataset.w+'%'; }); },300);
+  const h=new Date().getHours();
+  const gl=document.getElementById('gline');
+  if(gl){ if(h<12)gl.textContent='Good morning \u{1F44B}'; else if(h<17)gl.textContent='Good afternoon \u{1F31E}'; else gl.textContent='Good evening \u{1F319}'; }
+  setTimeout(()=>document.getElementById('spl').classList.add('out'),1800);
+});
+</script>
+</body></html>

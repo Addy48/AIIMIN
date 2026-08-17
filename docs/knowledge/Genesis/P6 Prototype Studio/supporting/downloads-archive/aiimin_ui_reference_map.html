@@ -1,0 +1,330 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.w { padding: 14px 12px 40px; font-family: var(--font-sans); }
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 5px 11px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); background: transparent; }
+.tab.active { background: #c4943a; color: #1a0f00; border-color: #c4943a; }
+.pane { display: none; }
+.pane.on { display: block; }
+
+.ref-card { border: 1px solid var(--color-border-tertiary); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; }
+.ref-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ref-num { width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; flex-shrink: 0; background: var(--color-background-secondary); color: var(--color-text-secondary); }
+.ref-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.ref-app { font-size: 11px; color: var(--color-text-tertiary); margin-left: auto; }
+.steal-row { display: flex; align-items: flex-start; gap: 6px; padding: 5px 0; border-bottom: 1px solid var(--color-border-tertiary); }
+.steal-row:last-child { border-bottom: none; }
+.steal-label { font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 6px; flex-shrink: 0; margin-top: 1px; }
+.sl-app { background: rgba(78,205,196,0.12); color: #4ecdc4; }
+.sl-web { background: rgba(124,140,248,0.12); color: #7c8cf8; }
+.sl-both { background: rgba(196,148,58,0.12); color: #c4943a; }
+.steal-text { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.steal-text b { color: var(--color-text-primary); font-weight: 500; }
+
+.el-section { margin-bottom: 16px; }
+.el-title { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 10px; }
+.el-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.el-card { border: 1px solid var(--color-border-tertiary); border-radius: 9px; padding: 11px 12px; }
+.el-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 3px; }
+.el-desc { font-size: 11px; color: var(--color-text-secondary); line-height: 1.4; }
+.el-from { font-size: 10px; color: #c4943a; margin-top: 5px; }
+.platform { font-size: 10px; padding: 1px 6px; border-radius: 6px; margin-left: 5px; }
+.p-app { background: rgba(78,205,196,0.12); color: #4ecdc4; }
+.p-web { background: rgba(124,140,248,0.12); color: #7c8cf8; }
+.p-both { background: rgba(196,148,58,0.12); color: #c4943a; }
+
+.note { border-left: 2px solid #c4943a; border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; background: var(--color-background-secondary); margin: 10px 0; }
+.note b { color: var(--color-text-primary); }
+
+.more-apps { border: 1px solid var(--color-border-tertiary); border-radius: 9px; padding: 11px 12px; margin-bottom: 6px; }
+.app-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+.app-why { font-size: 11px; color: var(--color-text-secondary); line-height: 1.4; }
+.app-steal { font-size: 11px; color: #c4943a; margin-top: 4px; }
+</style>
+
+<div class="w">
+<div class="tabs">
+  <button class="tab active" onclick="sw('refs')">Reference Map</button>
+  <button class="tab" onclick="sw('elements')">UI Elements List</button>
+  <button class="tab" onclick="sw('more')">More Apps to See</button>
+</div>
+
+<!-- REFERENCE MAP -->
+<div id="refs" class="pane on">
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">1–3</div><div class="ref-title">Withings onboarding flow</div><span class="ref-app">App only</span></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: onboarding step pattern.</b> Progress bar at top (dashes, not numbers). One question per screen. Clean bottom primary button. Use this exact pattern for AIIMIN's first-run setup: sem dates → timetable → identity statements → done. No overwhelming multi-field forms.</div></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: "Fill with Apple Health" concept</b> → adapt as "Import from Health Connect" for steps auto-setup. Same button style, same placement.</div></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: bottom sheet for sub-selections</b> (the assigned sex picker). Use this pattern for: habit category picker, transaction category picker, trigger picker in Recovery tab.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">4</div><div class="ref-title">CARROT weather card</div><span class="ref-app">App — Today tab</span></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: data-dense card with large number + supporting info + small chart.</b> This is exactly the template for AIIMIN's metric tiles — large value top-left, label below, mini visualization right side. Temperature = daily score. Weather icon = mood icon.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">5</div><div class="ref-title">Stakent crypto dashboard</div><span class="ref-app">Web — Money + Insights</span></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: three equal metric cards in a row,</b> each with label (small, muted, top) + large number + delta badge + mini sparkline. This is AIIMIN's top row on web dashboard: Daily Score / Placement Days / Net Worth.</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: left sidebar density.</b> Active item has subtle bg tint + left border. Icon + text. No badges. Clean. Exactly what we spec'd.</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: large number as hero in expanded section.</b> The "31.39686" style — when you open Money → account details, the balance should be that dominant.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">6</div><div class="ref-title">Minecloud — three column layout</div><span class="ref-app">Web — layout structure</span></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: sidebar + content + right detail panel.</b> When you tap a transaction in Money tab, right panel slides in with transaction detail — don't navigate away, show inline. Same for task detail, placement application detail.</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: breadcrumb navigation.</b> "Money → ICICI → March 2026" — small, muted, shows where you are. Important for the Money deep dive view.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">7</div><div class="ref-title">Mondays task app</div><span class="ref-app">Web — Today + Work</span></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: "Good evening, Adi" greeting with date.</b> Not a logo. Not a dashboard header. A human greeting tied to time of day. Makes the system feel alive.</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: task table with status badges.</b> Work tab's placement applications CRM uses this exact pattern: company name + role + status pill (Applied/OA/Interview/Offer/Rejected).</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: schedule strip.</b> 7-day horizontal strip, today highlighted — use in Today tab header to show today's classes at a glance.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">8</div><div class="ref-title">Sequence finance dashboard</div><span class="ref-app">Web — Money tab (best reference)</span></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: hero balance card full-width at top.</b> "Total Balance ₹24,500" with delta arrow. Then action buttons (Add / Send / Request). AIIMIN version: "Net Worth ₹24,500 ↑₹2,100 this month" + "Add transaction" button right.</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: cashflow chart — bars above zero line (income) + bars below (spend).</b> This exact chart for AIIMIN's Money monthly view: income bars up (Airtel credits, parents' money) + spend bars down.</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: account cards row below chart.</b> ICICI card + Airtel card, same size, balance + period label + delta. Clean.</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: Weekly / Daily toggle on chart.</b> Apply to AIIMIN Money: Weekly / Monthly / All time selector on cashflow chart.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">9</div><div class="ref-title">Analytics dashboard (Kristin)</div><span class="ref-app">Web — Insights</span></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: skill/area progress bars with %.</b> AIIMIN's DSA roadmap on web — each topic (Arrays, Trees etc.) as a progress bar with % complete. Same clean row layout.</div></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: Range selector pill (Last month ▼).</b> Use for all Insights charts: "Last 7D / 30D / 90D / All" as a dropdown pill, top right of each chart.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">10</div><div class="ref-title">Project management + calendar</div><span class="ref-app">Web — Work tab</span></div>
+  <div class="steal-row"><span class="steal-label sl-web">Web</span><div class="steal-text"><b>Steal: right panel time calendar.</b> In Work tab, a right panel shows your classes timetable for the week — time slots, color-coded by subject. Alongside the task list on left.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">13</div><div class="ref-title">Productivity slider check-in</div><span class="ref-app">App + Web — Today tab (critical steal)</span></div>
+  <div class="steal-row"><span class="steal-label sl-both">Both</span><div class="steal-text"><b>Steal: sentence format mood logging.</b> Instead of "Mood: 7/10", show: "Today I feel <b>good</b>" — where the word changes as you drag a slider or tap options. Makes it human, not clinical. Apply to daily mood check-in in Today tab.</div></div>
+  <div class="steal-row"><span class="steal-label sl-both">Both</span><div class="steal-text"><b>Steal: single-question card format for evening check-in.</b> "How productive did you feel today?" as a night ritual card. Slider. 1 question. Done. Feeds daily score.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">14</div><div class="ref-title">Zero fasting app</div><span class="ref-app">App — card proportions + nav</span></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: 3-tab bottom nav simplicity.</b> Today / Explore / Me. For AIIMIN: Today / Work+Money+Notes (middle "+" FAB) / Insights. Minimal, not cluttered with 5 icons.</div></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: challenge card proportions.</b> Title + subtitle + date/duration + subtle border. Use for Habits tab — each habit as a card with streak + last done date.</div></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: HOME / LEARN / CHALLENGES tab strip inside a screen.</b> Use inside Work tab: Tasks / Placement / Notes as an in-screen tab strip, not full bottom nav tabs.</div></div>
+</div>
+
+<div class="ref-card">
+  <div class="ref-header"><div class="ref-num">15</div><div class="ref-title">Health score + data timeline (rightmost)</div><span class="ref-app">App — Today + Insights</span></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: score "out of 100" with dot ring.</b> The circular dot ring around the score (not a progress ring — a constellation of dots). Subtle, premium. For AIIMIN daily score on Today tab hero.</div></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: "All Health Data — Past 7 days" timeline list.</b> Each metric as a row with colored dot + name + today's value + mini indicator. Exactly the compact secondary metrics section in Today tab.</div></div>
+  <div class="steal-row"><span class="steal-label sl-app">App</span><div class="steal-text"><b>Steal: tag chips for log entries.</b> "Good · No vaginal discharge · Had sex · Back pain" — the chip pattern. Use in Recovery urge log: "Boredom · Late night · Alone" as chips when logging a trigger.</div></div>
+</div>
+
+</div>
+
+<!-- UI ELEMENTS LIST -->
+<div id="elements" class="pane">
+<div class="note"><b>This is your checklist.</b> Find visual references for each element below and send them here. I'll integrate them into the final Stitch prompt.</div>
+
+<div class="el-section">
+<div class="el-title">App — elements to find references for</div>
+<div class="el-grid">
+  <div class="el-card">
+    <div class="el-name">Daily score hero <span class="platform p-app">App</span></div>
+    <div class="el-desc">Large number with dot-ring or circular element around it. Not a standard progress ring.</div>
+    <div class="el-from">Reference: Image 15 (rightmost score)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Metric tile grid <span class="platform p-app">App</span></div>
+    <div class="el-desc">2-column tile layout. Each tile: colored left border + metric name + value. Compact, dense.</div>
+    <div class="el-from">Reference: Image 4 (CARROT), Image 15</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Mood sentence slider <span class="platform p-both">Both</span></div>
+    <div class="el-desc">"Today I feel ___" with sliding word. Human, not numerical.</div>
+    <div class="el-from">Reference: Image 13 — directly steal this</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Habit circles <span class="platform p-app">App</span></div>
+    <div class="el-desc">48px circles. Thin ring = pending. Filled ring = done. The ring draws on tap.</div>
+    <div class="el-from">Look up: Streaks app screenshots</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Bottom sheet picker <span class="platform p-app">App</span></div>
+    <div class="el-desc">Slide up from bottom. Title + list of options with radio circles. Done button.</div>
+    <div class="el-from">Reference: Image 1–3 (Withings)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Trigger chip row <span class="platform p-app">App</span></div>
+    <div class="el-desc">Horizontal scrollable chips. Tap to select. Used in Recovery urge log.</div>
+    <div class="el-from">Reference: Image 15 (health log tags)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">In-screen tab strip <span class="platform p-app">App</span></div>
+    <div class="el-desc">HOME / WORK / NOTES style tabs inside a screen, not bottom nav.</div>
+    <div class="el-from">Reference: Image 14 (HOME/LEARN/CHALLENGES)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Streak calendar strip <span class="platform p-app">App</span></div>
+    <div class="el-desc">Horizontal 30-day strip. Colored dots per day. Swipeable.</div>
+    <div class="el-from">Look up: Streaks app, Gentler Streak app</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Onboarding step flow <span class="platform p-app">App</span></div>
+    <div class="el-desc">Progress dashes at top. One screen per question. Back/forward.</div>
+    <div class="el-from">Reference: Image 1–3 (Withings) — directly steal</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Pull to refresh <span class="platform p-app">App</span></div>
+    <div class="el-desc">Custom refresh indicator. Subtle, branded. Shows AIIMIN wordmark spinning or a simple bronze ring.</div>
+    <div class="el-from">Look up: Things 3 pull to refresh animation</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Completion ritual <span class="platform p-app">App</span></div>
+    <div class="el-desc">Full-screen warm flash + text when routine complete. 400ms. Auto-dismisses.</div>
+    <div class="el-from">Look up: Streaks app completion screen</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Quick add FAB <span class="platform p-app">App</span></div>
+    <div class="el-desc">Floating ₹ button fixed above tab bar. Tap → bottom sheet for transaction add.</div>
+    <div class="el-from">Reference: Image 14 (Zero's center FAB)</div>
+  </div>
+</div>
+</div>
+
+<div class="el-section">
+<div class="el-title">Web — elements to find references for</div>
+<div class="el-grid">
+  <div class="el-card">
+    <div class="el-name">3-card top row <span class="platform p-web">Web</span></div>
+    <div class="el-desc">Equal-width cards. Label (muted, small) + large number + delta badge + sparkline.</div>
+    <div class="el-from">Reference: Image 5 (Stakent), Image 8 (Sequence)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Hero balance card <span class="platform p-web">Web</span></div>
+    <div class="el-desc">Full-width card. "Net Worth ₹X" very large. Delta. Action buttons right.</div>
+    <div class="el-from">Reference: Image 8 (Sequence total balance)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Cashflow chart <span class="platform p-web">Web</span></div>
+    <div class="el-desc">Bars above/below zero line. Income up, spend down. Weekly/Monthly toggle.</div>
+    <div class="el-from">Reference: Image 8 (Sequence) — directly steal</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Right detail panel <span class="platform p-web">Web</span></div>
+    <div class="el-desc">Slides in from right on item click. Shows detail without full navigation.</div>
+    <div class="el-from">Reference: Image 6 (Minecloud right panel)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">DSA skill tree progress <span class="platform p-web">Web</span></div>
+    <div class="el-desc">Topic rows with % progress bar. Color fills left-to-right as you complete.</div>
+    <div class="el-from">Reference: Image 9 (Kristin skills bars)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Status badge pills <span class="platform p-web">Web</span></div>
+    <div class="el-desc">Applied / OA / Interview / Offer / Rejected. Color-coded. In applications table.</div>
+    <div class="el-from">Reference: Image 7 (Mondays status badges)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Time greeting <span class="platform p-web">Web</span></div>
+    <div class="el-desc">"Good morning, Adi." Large. Human. Time-aware. Top of dashboard view.</div>
+    <div class="el-from">Reference: Image 7 (Mondays greeting)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Sidebar active state <span class="platform p-web">Web</span></div>
+    <div class="el-desc">2px left border bronze + subtle bg tint + cream text. Inactive = gray, no border.</div>
+    <div class="el-from">Reference: Image 5 (Stakent sidebar), Image 8 (Sequence)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Week strip header <span class="platform p-web">Web</span></div>
+    <div class="el-desc">7-day strip, today highlighted. Shows class schedule inline under each day.</div>
+    <div class="el-from">Reference: Image 10 (right calendar panel)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Breadcrumb nav <span class="platform p-web">Web</span></div>
+    <div class="el-desc">Money → ICICI → March 2026. Small, muted. Shows depth.</div>
+    <div class="el-from">Reference: Image 6 (Minecloud breadcrumb)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Range selector pill <span class="platform p-web">Web</span></div>
+    <div class="el-desc">7D · 30D · 90D · All — pill tabs, right-aligned above charts.</div>
+    <div class="el-from">Reference: Image 9 (range selector)</div>
+  </div>
+  <div class="el-card">
+    <div class="el-name">Mood year calendar <span class="platform p-web">Web</span></div>
+    <div class="el-desc">GitHub contribution grid. Each day = colored square by mood. Full year.</div>
+    <div class="el-from">Look up: GitHub profile contribution graph</div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- MORE APPS -->
+<div id="more" class="pane">
+<div class="note"><b>Apps to look up specifically for AIIMIN references:</b></div>
+
+<div class="more-apps">
+  <div class="app-name">Streaks (iOS)</div>
+  <div class="app-why">Best habit circle design ever built. Completion animation. Streak calendar. Exactly what Habits tab needs.</div>
+  <div class="app-steal">Steal: circle animation, calendar strip, completion screen</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">Things 3 (iOS/Mac)</div>
+  <div class="app-why">Best task list UI. Today / Upcoming / Anytime sections. Cream light theme. Clean completion animation.</div>
+  <div class="app-steal">Steal: task row design, completion animation, section headers</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">Gentler Streak (iOS)</div>
+  <div class="app-why">Anti-guilt habit design. Rest day as a feature. Soft palette. Good for recovery mode inspiration.</div>
+  <div class="app-steal">Steal: rest day state design, gentle empty states</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">Bear (iOS)</div>
+  <div class="app-why">Best notes app UI. Warm amber on dark. Tag sidebar. Editor feel. Perfect Notes tab reference.</div>
+  <div class="app-steal">Steal: note list layout, editor typography, tag design</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">Daylio (Android/iOS)</div>
+  <div class="app-why">Mood + activity logging. Monthly heatmap calendar. The best mood tracking UI for quick logging.</div>
+  <div class="app-steal">Steal: mood calendar heatmap, activity chip log</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">Revolut (Android)</div>
+  <div class="app-why">Best mobile finance UI. Transaction list, category pie, account cards, spending insights.</div>
+  <div class="app-steal">Steal: transaction row design, category breakdown, account card</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">Linear (Web)</div>
+  <div class="app-why">The sidebar, density, dark theme. Keyboard shortcuts feel. Exactly our web dashboard structure.</div>
+  <div class="app-steal">Steal: sidebar density, issue/task row design, dark theme tokens</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">Halide (iOS camera)</div>
+  <div class="app-why">Gold accent on warm dark. Shows how to use gold without it looking cheap. Premium feel.</div>
+  <div class="app-steal">Steal: gold usage pattern, button design, dark bg warmth</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">Oura Ring app (Android)</div>
+  <div class="app-why">Best health data visualization. Score rings, vitals tab, Today summary card. Direct competitor to our Insights tab.</div>
+  <div class="app-steal">Steal: score ring, vitals list, day timeline</div>
+</div>
+<div class="more-apps">
+  <div class="app-name">1Money (Android)</div>
+  <div class="app-why">India-friendly finance app. UPI, ₹ symbol, transaction categories relevant to India. Good mobile finance UX.</div>
+  <div class="app-steal">Steal: India-specific category icons, transaction add flow</div>
+</div>
+</div>
+</div>
+
+<script>
+function sw(p) {
+  document.querySelectorAll('.pane').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(p).classList.add('on');
+  event.target.classList.add('active');
+}
+</script>

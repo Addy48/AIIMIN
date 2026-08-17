@@ -227,7 +227,7 @@ export function WaitlistPendingScreen() {
         We're letting in testers in small waves before end-of-September launch.
       </p>
       <p className="waitlist-pending-note">
-        Got an invite? Register by 31 July for the VIP tester package — Elite free for a year plus full beta access. Waitlist members get the founding kit, Core subscription, and Elite discount at launch.
+        Got an invite? Register by 31 August for the VIP tester package — Elite free for a year plus full beta access. Waitlist members get the founding kit, Core subscription, and Elite discount at launch.
       </p>
       <div className="waitlist-pending-feedback">
         <WaitlistQuickFeedback compact />

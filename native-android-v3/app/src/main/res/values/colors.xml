@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Drafting Table ground. Mirrors AiiminColors.bg (dark) — the window
+         background before Compose takes over, so launch never flashes white. -->
+    <color name="drafting_bg">#15171A</color>
+    <color name="industry_bg">#F2F2F3</color>
+    <color name="launcher_bg">#1C1F23</color>
+</resources>

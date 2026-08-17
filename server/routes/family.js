@@ -23,12 +23,12 @@ app.get('/members', requireAuth, async (c) => {
 
 app.post('/members', requireAuth, async (c) => {
   const uid = c.get('userId');
-  const { name, relation, dob, phone, email, blood_group, profile_note, avatar_color } = await c.req.json();
+  const { name, relation, dob, phone, blood_group } = await c.req.json();
   if (!name?.trim()) return c.json({ error: 'name required' }, 400);
   const { rows } = await pool.query(
-    `INSERT INTO family_members (user_id,name,relation,dob,phone,email,blood_group,profile_note,avatar_color)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
-    [uid, name.trim(), relation||null, dob||null, phone||null, email||null, blood_group||null, profile_note||null, avatar_color||'#3B82F6']
+    `INSERT INTO family_members (user_id,name,relation,dob,phone,blood_group)
+     VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+    [uid, name.trim(), relation||null, dob||null, phone||null, blood_group||null]
   );
   return c.json(rows[0], 201);
 });
@@ -36,7 +36,7 @@ app.post('/members', requireAuth, async (c) => {
 app.put('/members/:id', requireAuth, async (c) => {
   const uid = c.get('userId'); const id = c.req.param('id');
   const fields = await c.req.json();
-  const cols = ['name','relation','dob','phone','email','blood_group','profile_note','avatar_color'];
+  const cols = ['name','relation','dob','phone','blood_group'];
   const sets = []; const params = [];
   cols.forEach(col => { if (fields[col] !== undefined) { params.push(fields[col]); sets.push(`${col}=$${params.length}`); } });
   if (!sets.length) return c.json({ error: 'Nothing to update' }, 400);
@@ -82,10 +82,15 @@ app.post('/documents', requireAuth, async (c) => {
     const daysUntil = Math.ceil((new Date(expiry_date) - new Date()) / 86400000);
     if (daysUntil > 0 && daysUntil <= 365) {
       await pool.query(
-        `INSERT INTO family_reminders (user_id,title,reminder_type,due_date,linked_member_id,linked_doc_id,notes)
-         VALUES ($1,$2,'doc_expiry',$3,$4,$5,$6)
-         ON CONFLICT DO NOTHING`,
-        [uid, `${doc_type.toUpperCase()} expiry`, expiry_date, member_id, rows[0].id, `Document expires on ${expiry_date}`]
+        // source_type/source_id are this table's generic link columns.
+        // Deduplicated by family_reminders_auto_key (migration 052) rather than
+        // a WHERE NOT EXISTS, so two concurrent edits cannot both insert.
+        `INSERT INTO family_reminders (user_id,title,source_type,due_date,source_id,description,is_auto_generated)
+         VALUES ($1,$2,'doc_expiry',$3,$4,$5,true)
+         ON CONFLICT (user_id, source_type, source_id, due_date)
+           WHERE is_auto_generated AND source_id IS NOT NULL
+         DO NOTHING`,
+        [uid, `${doc_type.toUpperCase()} expiry`, expiry_date, rows[0].id, `Document expires on ${expiry_date}`]
       );
     }
   }
@@ -118,9 +123,9 @@ app.delete('/documents/:id', requireAuth, async (c) => {
 app.get('/insurance', requireAuth, async (c) => {
   const uid = c.get('userId');
   const { rows } = await pool.query(
-    `SELECT i.*, m.name as nominee_name
+    // nominee is stored as free text on this table, not a member reference.
+    `SELECT i.*, i.nominee AS nominee_name
      FROM family_insurance i
-     LEFT JOIN family_members m ON m.id = i.nominee_member_id
      WHERE i.user_id=$1 ORDER BY i.created_at DESC`, [uid]
   );
   return c.json(rows);
@@ -128,26 +133,30 @@ app.get('/insurance', requireAuth, async (c) => {
 
 app.post('/insurance', requireAuth, async (c) => {
   const uid = c.get('userId');
-  const { policy_name, insurer, policy_type, policy_number, sum_insured, premium_amount,
-          premium_freq, next_premium_date, maturity_date, nominee_member_id, agent_name, agent_phone, notes } = await c.req.json();
+  // Accept the legacy field names too, so existing callers keep working.
+  const body = await c.req.json();
+  const { policy_name, member_id, policy_number, premium_amount, nominee } = body;
+  const provider = body.provider ?? body.insurer;
+  const next_premium_date = body.renewal_date ?? body.next_premium_date;
   if (!policy_name?.trim()) return c.json({ error: 'policy_name required' }, 400);
   const { rows } = await pool.query(
     `INSERT INTO family_insurance
-       (user_id,policy_name,insurer,policy_type,policy_number,sum_insured,premium_amount,
-        premium_freq,next_premium_date,maturity_date,nominee_member_id,agent_name,agent_phone,notes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
-    [uid, policy_name.trim(), insurer||null, policy_type||'life', policy_number||null,
-     sum_insured||null, premium_amount||null, premium_freq||'annual', next_premium_date||null,
-     maturity_date||null, nominee_member_id||null, agent_name||null, agent_phone||null, notes||null]
+       (user_id,member_id,policy_name,provider,policy_number,premium_amount,renewal_date,nominee)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+    [uid, member_id||null, policy_name.trim(), provider||null, policy_number||null,
+     premium_amount||null, next_premium_date||null, nominee||null]
   );
   // Auto-reminder for premium
   if (next_premium_date) {
     const daysUntil = Math.ceil((new Date(next_premium_date) - new Date()) / 86400000);
     if (daysUntil > 0 && daysUntil <= 60) {
       await pool.query(
-        `INSERT INTO family_reminders (user_id,title,reminder_type,due_date,linked_policy_id,notes)
-         VALUES ($1,$2,'premium_due',$3,$4,$5)
-         ON CONFLICT DO NOTHING`,
+        // Same dedup index as doc_expiry above.
+        `INSERT INTO family_reminders (user_id,title,source_type,due_date,source_id,description,is_auto_generated)
+         VALUES ($1,$2,'premium_due',$3,$4,$5,true)
+         ON CONFLICT (user_id, source_type, source_id, due_date)
+           WHERE is_auto_generated AND source_id IS NOT NULL
+         DO NOTHING`,
         [uid, `${policy_name} premium due`, next_premium_date, rows[0].id, `Premium of ₹${premium_amount || '?'} due`]
       );
     }
@@ -158,10 +167,10 @@ app.post('/insurance', requireAuth, async (c) => {
 app.put('/insurance/:id', requireAuth, async (c) => {
   const uid = c.get('userId'); const id = c.req.param('id');
   const fields = await c.req.json();
-  const cols = ['policy_name','insurer','policy_type','policy_number','sum_insured','premium_amount',
-                'premium_freq','next_premium_date','maturity_date','nominee_member_id','agent_name','agent_phone','notes'];
-  const sets = ['updated_at=NOW()']; const params = [];
+  const cols = ['member_id','policy_name','provider','policy_number','premium_amount','renewal_date','nominee'];
+  const sets = []; const params = [];
   cols.forEach(col => { if (fields[col] !== undefined) { params.push(fields[col]); sets.push(`${col}=$${params.length}`); } });
+  if (!sets.length) return c.json({ error: 'Nothing to update' }, 400);
   params.push(id, uid);
   const { rows } = await pool.query(
     `UPDATE family_insurance SET ${sets.join(',')} WHERE id=$${params.length-1} AND user_id=$${params.length} RETURNING *`, params
@@ -191,17 +200,29 @@ app.get('/health-records', requireAuth, async (c) => {
 
 app.post('/health-records', requireAuth, async (c) => {
   const uid = c.get('userId');
-  const { member_id, allergies, chronic_conditions, medications, blood_group, doctor_name, doctor_phone, hospital_name, health_notes } = await c.req.json();
+  const body = await c.req.json();
+  const { member_id, allergies, medications, doctor_name, doctor_phone } = body;
+  // Legacy field name accepted; the column is `conditions`.
+  const conditions = body.conditions ?? body.chronic_conditions;
   if (!member_id) return c.json({ error: 'member_id required' }, 400);
+
+  // These columns are TEXT, not arrays. Migration 051 adds
+  // UNIQUE (user_id, member_id) so this is a single atomic upsert — a
+  // read-then-write pair would let two concurrent saves both insert.
+  const asText = (v) => (Array.isArray(v) ? v.filter(Boolean).join(', ') : v) || null;
+
   const { rows } = await pool.query(
-    `INSERT INTO family_health (user_id,member_id,allergies,chronic_conditions,medications,blood_group,doctor_name,doctor_phone,hospital_name,health_notes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-     ON CONFLICT (user_id, member_id) DO UPDATE
-       SET allergies=$3,chronic_conditions=$4,medications=$5,blood_group=$6,
-           doctor_name=$7,doctor_phone=$8,hospital_name=$9,health_notes=$10,updated_at=NOW()
+    `INSERT INTO family_health (user_id,member_id,allergies,conditions,medications,doctor_name,doctor_phone)
+     VALUES ($1,$2,$3,$4,$5,$6,$7)
+     ON CONFLICT (user_id, member_id) DO UPDATE SET
+       allergies   = EXCLUDED.allergies,
+       conditions  = EXCLUDED.conditions,
+       medications = EXCLUDED.medications,
+       doctor_name = EXCLUDED.doctor_name,
+       doctor_phone = EXCLUDED.doctor_phone
      RETURNING *`,
-    [uid, member_id, allergies||[], chronic_conditions||[], medications||[], blood_group||null,
-     doctor_name||null, doctor_phone||null, hospital_name||null, health_notes||null]
+    [uid, member_id, asText(allergies), asText(conditions), asText(medications),
+     doctor_name || null, doctor_phone || null]
   );
   return c.json(rows[0], 201);
 });
@@ -213,10 +234,14 @@ app.get('/reminders', requireAuth, async (c) => {
   const uid = c.get('userId');
   const { done = 'false' } = c.req.query();
   const { rows } = await pool.query(
+    // source_id is generic (member / document / policy); the join only resolves
+    // when it happens to point at a member. It is client-supplied on
+    // POST /reminders, so scope the join to the same owner — otherwise another
+    // user's member id would leak their name back through member_name.
     `SELECT r.*, m.name as member_name
      FROM family_reminders r
-     LEFT JOIN family_members m ON m.id = r.linked_member_id
-     WHERE r.user_id=$1 AND r.is_done=$2
+     LEFT JOIN family_members m ON m.id = r.source_id AND m.user_id = r.user_id
+     WHERE r.user_id=$1 AND r.completed=$2
      ORDER BY r.due_date ASC`,
     [uid, done === 'true']
   );
@@ -225,22 +250,27 @@ app.get('/reminders', requireAuth, async (c) => {
 
 app.post('/reminders', requireAuth, async (c) => {
   const uid = c.get('userId');
-  const { title, reminder_type, due_date, linked_member_id, notes } = await c.req.json();
+  const body = await c.req.json();
+  const { title, due_date } = body;
+  const source_type = body.source_type ?? body.reminder_type;
+  const source_id = body.source_id ?? body.linked_member_id;
+  const description = body.description ?? body.notes;
   if (!title?.trim() || !due_date) return c.json({ error: 'title and due_date required' }, 400);
   const { rows } = await pool.query(
-    `INSERT INTO family_reminders (user_id,title,reminder_type,due_date,linked_member_id,notes)
+    `INSERT INTO family_reminders (user_id,title,source_type,due_date,source_id,description)
      VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-    [uid, title.trim(), reminder_type||'custom', due_date, linked_member_id||null, notes||null]
+    [uid, title.trim(), source_type||'custom', due_date, source_id||null, description||null]
   );
   return c.json(rows[0], 201);
 });
 
 app.patch('/reminders/:id/done', requireAuth, async (c) => {
   const uid = c.get('userId'); const id = c.req.param('id');
-  const { is_done } = await c.req.json();
+  const body = await c.req.json();
+  const done = body.completed ?? body.is_done;
   const { rows } = await pool.query(
-    `UPDATE family_reminders SET is_done=$1 WHERE id=$2 AND user_id=$3 RETURNING *`,
-    [!!is_done, id, uid]
+    `UPDATE family_reminders SET completed=$1 WHERE id=$2 AND user_id=$3 RETURNING *`,
+    [!!done, id, uid]
   );
   if (!rows.length) return c.json({ error: 'Not found' }, 404);
   return c.json(rows[0]);
@@ -265,12 +295,14 @@ app.get('/emergency', requireAuth, async (c) => {
 
 app.post('/emergency', requireAuth, async (c) => {
   const uid = c.get('userId');
-  const { name, relation, phone, alt_phone, is_pinned, notes } = await c.req.json();
+  const body = await c.req.json();
+  const { name, phone, is_pinned, notes } = body;
+  const relationOrRole = body.relation_or_role ?? body.relation;
   if (!name?.trim() || !phone?.trim()) return c.json({ error: 'name and phone required' }, 400);
   const { rows } = await pool.query(
-    `INSERT INTO family_emergency_contacts (user_id,name,relation,phone,alt_phone,is_pinned,notes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-    [uid, name.trim(), relation||null, phone.trim(), alt_phone||null, !!is_pinned, notes||null]
+    `INSERT INTO family_emergency_contacts (user_id,name,relation_or_role,phone,is_pinned,notes)
+     VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+    [uid, name.trim(), relationOrRole||null, phone.trim(), !!is_pinned, notes||null]
   );
   return c.json(rows[0], 201);
 });

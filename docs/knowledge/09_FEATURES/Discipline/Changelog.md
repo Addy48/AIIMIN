@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Discipline Changelog
+
+## Parent
+
+- [[09_FEATURES/Discipline/Discipline|Discipline]] · [[09_FEATURES/Index]]
 
 ### 2026-07-18 — Urge Surfing 3-step modal + milestone SVG
 - **What:** Urge flow extracted to `DisciplineUrgeModal` — 10s breath → 5min observe → log surfed/gave_in. Milestone labels use lucide SVG icons (not emoji).

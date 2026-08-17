@@ -1,3 +1,17 @@
+---
+authority: engineering
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-DEC
+graph_role: leaf
+note_type: NT-ADR
+migration_batch: W4
+fm_source: script
+---
 # ADR — Notes Source-Grounded
 
 **Date:** 2026-07-13  

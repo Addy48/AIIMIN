@@ -1,3 +1,17 @@
+---
+authority: historical
+derived_from: Genesis
+status: archived
+owner: founder
+lifecycle: archive
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-COLD
+graph_role: cold
+note_type: NT-COLD
+migration_batch: W4
+fm_source: script
+---
 # AI Provider Map (AIIMIN)
 
 Keys live only in **gitignored** files: root `.env` (local) and `deploy/EC2.env.paste` (production paste).

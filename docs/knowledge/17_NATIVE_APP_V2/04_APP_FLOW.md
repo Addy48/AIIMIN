@@ -1,3 +1,17 @@
+---
+authority: engineering
+derived_from: Genesis/P8 · Genesis/P9
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+---
 # 04 — App Flow (states, transitions, loading)
 
 > **Depends:** [[02_USER_JOURNEYS]] [[03_INFORMATION_ARCHITECTURE]] [[07_MOTION]]  

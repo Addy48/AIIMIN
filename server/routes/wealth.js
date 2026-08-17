@@ -6,6 +6,7 @@ import { trackExternalCall } from '../services/apiUsageService.js';
 import { runAiTextImport } from '../services/wealthAiImportService.js';
 import { processSpreadsheetImport } from '../services/wealthSpreadsheetImportService.js';
 import { parseExcelDate, cleanCategoryName } from '../services/wealthImportHelpers.js';
+import { loadIdempotency, rememberIdempotency } from '../lib/mobileIdempotency.js';
 
 const wealthRoutes = new Hono();
 
@@ -198,13 +199,21 @@ wealthRoutes.get('/transactions', requireAuth, async (c) => {
 
 wealthRoutes.post('/transactions', requireAuth, async (c) => {
     const userId = c.get('userId');
+    const idemKey = c.req.header('Idempotency-Key');
     try {
-        const { date, category, category_id, description, amount, currency, source, account_id, type } = await c.req.json();
+        const cached = await loadIdempotency(userId, idemKey);
+        if (cached) return c.json(cached);
+
+        const { date, category, category_id, description, amount, currency, source, account_id, type, notes } = await c.req.json();
         
         let mappedType = type || 'expense';
         if (mappedType === 'transfer') {
             mappedType = amount < 0 ? 'transfer_out' : 'transfer_in';
         }
+
+        // Mobile payment drafts send notes=mobile:<clientKey> — tag source for ledger clarity.
+        const resolvedSource = source
+            || (typeof notes === 'string' && notes.startsWith('mobile:') ? 'mobile' : 'manual');
 
         await pool.query('BEGIN');
         
@@ -213,7 +222,7 @@ wealthRoutes.post('/transactions', requireAuth, async (c) => {
             (user_id, date, category, category_id, description, amount, currency, source, account_id, type) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
             RETURNING *`,
-            [userId, date, category, category_id || null, description || null, amount || 0, currency || 'INR', source || 'manual', account_id || null, mappedType]
+            [userId, date, category, category_id || null, description || null, amount || 0, currency || 'INR', resolvedSource, account_id || null, mappedType]
         );
 
         if (account_id) {
@@ -229,6 +238,7 @@ wealthRoutes.post('/transactions', requireAuth, async (c) => {
         if (tx.type === 'transfer_out' || tx.type === 'transfer_in') {
             tx.type = 'transfer';
         }
+        await rememberIdempotency(userId, idemKey, tx);
         return c.json(tx);
     } catch (err) {
         await pool.query('ROLLBACK');
@@ -597,9 +607,12 @@ Do not include markdown formatting like \`\`\`json.`;
         // Fallback summary if no NVIDIA key, API call failed, or limit reached
         if (!aiSummary) {
             aiSummary = {
+                // This endpoint reads a rolling 30-day window, not the calendar
+                // month. Saying "this month" here contradicted the MTD tiles on
+                // the same screen, which are calendar-month.
                 headline: netFlow >= 0
-                    ? `You're saving ₹${netFlow.toFixed(0)} this month — great work!`
-                    : `You've spent ₹${Math.abs(netFlow).toFixed(0)} more than you earned this month.`,
+                    ? `You're saving ₹${netFlow.toFixed(0)} over the last 30 days — great work!`
+                    : `You've spent ₹${Math.abs(netFlow).toFixed(0)} more than you earned in the last 30 days.`,
                 summary: `Over the last 30 days, you recorded ${transactions.length} transactions with ₹${totalIncome.toFixed(0)} income and ₹${totalExpense.toFixed(0)} in expenses.`,
                 insights: [
                     `Your top spending category is ${categoryBreakdown[0]?.category || 'Other'} at ₹${(categoryBreakdown[0]?.amount || 0).toFixed(0)}.`,

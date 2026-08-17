@@ -1,0 +1,416 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.w { padding: 14px 12px 40px; font-family: var(--font-sans); }
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 5px 11px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); background: transparent; transition: all 0.15s; white-space: nowrap; }
+.tab.active { background: #5e6ad2; color: #fff; border-color: #5e6ad2; }
+.pane { display: none; }
+.pane.on { display: block; }
+
+.timeline-card { border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; border: 1px solid var(--color-border-tertiary); }
+.tl-phase { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+.tl-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+.tl-sub { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+.tl-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.tl-chip { font-size: 10px; padding: 2px 7px; border-radius: 7px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 1px solid var(--color-border-tertiary); }
+
+.module { border: 1px solid var(--color-border-tertiary); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+.mod-h { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--color-background-secondary); cursor: pointer; }
+.mod-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.mod-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+.mod-meta { font-size: 10px; color: var(--color-text-tertiary); }
+.chev { font-size: 10px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+.mod-body { display: none; padding: 0 14px 12px; }
+.mod-body.open { display: block; }
+.module.exp .chev { transform: rotate(90deg); }
+
+.feat { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--color-border-tertiary); }
+.feat:last-child { border-bottom: none; }
+.dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.fn { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+.fd { font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; margin-top: 2px; }
+.tag { font-size: 10px; padding: 1px 6px; border-radius: 7px; font-weight: 500; margin-left: 5px; }
+.v1 { background: rgba(78,205,196,0.15); color: #4ecdc4; }
+.v2 { background: rgba(124,140,248,0.12); color: #7c8cf8; }
+.ai { background: rgba(245,166,35,0.15); color: #f5a623; }
+.priv { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+
+.note { border-left: 2px solid #5e6ad2; border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; background: var(--color-background-secondary); margin: 10px 0; }
+.note b { color: var(--color-text-primary); }
+.note.gold { border-left-color: #f5a623; }
+.note.red { border-left-color: #ff6b6b; }
+.note.teal { border-left-color: #4ecdc4; }
+
+.sl { font-size: 10px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--color-text-tertiary); margin: 14px 0 8px; }
+
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.stat { background: var(--color-background-secondary); border-radius: 8px; padding: 10px; text-align: center; border: 1px solid var(--color-border-tertiary); }
+.stat-n { font-size: 22px; font-weight: 500; color: #5e6ad2; }
+.stat-l { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+
+.badge { font-size: 10px; padding: 2px 7px; border-radius: 8px; font-weight: 500; margin-left: auto; }
+.b-core { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+.b-imp { background: rgba(94,106,210,0.12); color: #5e6ad2; }
+.b-hol { background: rgba(78,205,196,0.12); color: #4ecdc4; }
+
+.chip-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { font-size: 11px; padding: 3px 8px; border-radius: 8px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 1px solid var(--color-border-tertiary); }
+.chip.dead { opacity: 0.35; text-decoration: line-through; }
+
+.int-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.int { border: 1px solid var(--color-border-tertiary); border-radius: 9px; padding: 11px 12px; }
+.in { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 3px; }
+.ir { font-size: 11px; color: var(--color-text-secondary); line-height: 1.4; }
+.is { font-size: 10px; font-weight: 500; margin-top: 6px; padding: 2px 7px; border-radius: 7px; display: inline-block; }
+.live { background: rgba(78,205,196,0.15); color: #4ecdc4; }
+.add { background: rgba(245,166,35,0.15); color: #f5a623; }
+.plan { background: rgba(124,140,248,0.12); color: #7c8cf8; }
+</style>
+
+<div class="w">
+<div class="tabs">
+  <button class="tab active" onclick="sw('timeline')">Your Timeline</button>
+  <button class="tab" onclick="sw('app')">App (Android)</button>
+  <button class="tab" onclick="sw('web')">Web Dashboard</button>
+  <button class="tab" onclick="sw('int')">Integrations</button>
+  <button class="tab" onclick="sw('final')">Final Lock</button>
+</div>
+
+<!-- TIMELINE -->
+<div id="timeline" class="pane on">
+<div class="note red"><b>Key correction:</b> Placements don't start in 1 month. They start in 7th/8th sem. You have 1 month of sem left, then 2.5 months holidays — that's your real opportunity window. Use it right and you go into 7th sem prepared.</div>
+
+<div class="sl">Your 3 phases — AIIMIN is built around these</div>
+
+<div class="timeline-card" style="border-color:rgba(255,107,107,0.3);background:rgba(255,107,107,0.04)">
+  <div class="tl-phase" style="color:#ff6b6b">Phase 1 — Now → 1 month · 6th Sem finish</div>
+  <div class="tl-title">Survive + start the system</div>
+  <div class="tl-sub">Exams, submissions, whatever is pending. AIIMIN's job: daily task list, money tracking, keep the recovery streak alive. Don't expect habit formation yet — just get to sem end without chaos.</div>
+  <div class="tl-chips">
+    <span class="tl-chip">Today tab daily</span>
+    <span class="tl-chip">Money log</span>
+    <span class="tl-chip">Recovery streak</span>
+    <span class="tl-chip">Notes dump</span>
+  </div>
+</div>
+
+<div class="timeline-card" style="border-color:rgba(78,205,196,0.3);background:rgba(78,205,196,0.04)">
+  <div class="tl-phase" style="color:#4ecdc4">Phase 2 — 2.5 months holidays · The real build period</div>
+  <div class="tl-title">This is where you actually transform</div>
+  <div class="tl-sub">No classes. Time is yours. This is where DSA starts seriously (3–4 hours daily), gym becomes consistent, sleep fixes, spending monitored, SIP started, net worth baseline set. AIIMIN becomes your full operating system during this period. If you use these 2.5 months right, you go into 7th sem as a different person.</div>
+  <div class="tl-chips">
+    <span class="tl-chip">DSA daily (roadmap active)</span>
+    <span class="tl-chip">Gym 4–5x/week</span>
+    <span class="tl-chip">Sleep fixed</span>
+    <span class="tl-chip">SIP started</span>
+    <span class="tl-chip">Recovery 60-day target</span>
+    <span class="tl-chip">Habits locked in</span>
+    <span class="tl-chip">Net worth baseline</span>
+  </div>
+</div>
+
+<div class="timeline-card" style="border-color:rgba(94,106,210,0.3);background:rgba(94,106,210,0.04)">
+  <div class="tl-phase" style="color:#5e6ad2">Phase 3 — 7th + 8th sem · Placement window</div>
+  <div class="tl-title">Execute — system runs on autopilot</div>
+  <div class="tl-sub">DSA done, habits formed, money tracked, body built. AIIMIN in this phase tracks placement applications, interview prep, daily targets. The system you built in Phase 2 carries you here.</div>
+  <div class="tl-chips">
+    <span class="tl-chip">Placement war room active</span>
+    <span class="tl-chip">Applications CRM</span>
+    <span class="tl-chip">Interview prep notes</span>
+    <span class="tl-chip">Habits on autopilot</span>
+    <span class="tl-chip">AI weekly reports (V2)</span>
+  </div>
+</div>
+
+<div class="note gold"><b>Why this matters for the build:</b> The holiday period is the most important thing to design for. The system needs to be ready BEFORE sem ends so you hit Day 1 of holidays with a working app. That's your real deadline — not placements.</div>
+</div>
+
+<!-- APP -->
+<div id="app" class="pane">
+<div class="note"><b>Platform:</b> Android (Nothing Phone 2). Bottom nav: 5 visible tabs + 1 hidden locked tab. App = daily input and quick checks. Web = deep review and planning.</div>
+
+<div class="module" onclick="tog(this)">
+  <div class="mod-h">
+    <div class="mod-icon" style="background:rgba(255,107,107,0.12)">🌅</div>
+    <div class="mod-title">Tab 1 — Today</div>
+    <span class="mod-meta">Opens first, every day</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Identity anchor line <span class="tag v1">V1</span></div><div class="fd">Top of screen. One "I am" statement rotating daily. You write these once in Identity section of web dashboard. Reminds you who you're becoming before the day starts.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Daily score — hero number <span class="tag v1">V1</span></div><div class="fd">0–100. Gold. Computed: tasks done (35%) + mood (20%) + sleep (15%) + steps (15%) + gym (10%) + meals eaten (5%). Visible on home screen widget too.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Placement countdown <span class="tag v1">V1</span></div><div class="fd">"X days of holidays remaining" during break. "X days to placement season" during 7th sem. Always visible below score. Contextual based on which phase you're in.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Today's classes <span class="tag v1">V1</span></div><div class="fd">Auto-loaded from timetable (enter once per sem). Shows time + subject. During holidays: shows "Holiday — free day" with suggested focus area (DSA / gym / rest based on your streak).</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Mess menu <span class="tag v1">V1</span></div><div class="fd">Photo card. You upload weekly. Shows breakfast / lunch / high tea / dinner for today. Tap to expand full image. During holidays: shows blank with "Cook or order" placeholder.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Top 3 tasks <span class="tag v1">V1</span></div><div class="fd">Pulled from Work tab. If not set, shows "Plan your day →" tap prompt. Checkbox to complete inline. Completing all 3 triggers a subtle animation.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">Mood — 1 tap <span class="tag v1">V1</span></div><div class="fd">5 options with face icons: Struggling / Low / Okay / Good / Thriving. Tap once, done. Background of card shifts color. No text input required.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Sleep logged <span class="tag v1">V1</span></div><div class="fd">Hours + optional quality (1–5). Pre-fills if you set bedtime last night. During holidays: no alarm pressure, but still log to track drift.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5aad5a"></div><div><div class="fn">Gym toggle + Steps <span class="tag v1">V1</span></div><div class="fd">Gym: binary yes/no. Steps: synced from Health Connect, shows ring vs 10k. Both in same compact row.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Meals eaten today <span class="tag v1">V1</span></div><div class="fd">Breakfast / Lunch / Dinner toggles. Tracks your skipping pattern. During sem: shows mess meal reference. During holidays: just log what you ate (one word).</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Quick money add <span class="tag v1">V1</span></div><div class="fd">Floating ₹ button always visible on Today. Tap → amount → category → account (ICICI/Airtel) → done. 3 taps. Most used interaction after habit tick.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Night planning ritual <span class="tag v1">V1</span></div><div class="fd">10pm notification → "Set up tomorrow" → pick 3 tasks from backlog → done. 2 minutes. Next morning Today tab is pre-loaded.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Recovery mode toggle <span class="tag v1">V1</span></div><div class="fd">Moon icon top-right. Strips Today to bare minimum: 3 habits + mood only + identity line. For low-energy or bad days. No scores visible.</div></div></div>
+  </div>
+</div>
+
+<div class="module" onclick="tog(this)">
+  <div class="mod-h">
+    <div class="mod-icon" style="background:rgba(94,106,210,0.12)">💼</div>
+    <div class="mod-title">Tab 2 — Work</div>
+    <span class="mod-meta">Tasks + DSA + Placements</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Daily task list — max 3 active <span class="tag v1">V1</span></div><div class="fd">Checkbox to complete. Swipe left → backlog. Swipe right → delete. Add task: title + optional due date. That's it. No priority tags, no labels — just do it.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Backlog <span class="tag v1">V1</span></div><div class="fd">Everything else. Tap any item to pull into active. Sorted by date added. During holidays: your DSA topics and learning goals live here.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">DSA Roadmap — built in <span class="tag v1">V1</span></div><div class="fd">Full roadmap pre-loaded: Arrays → Strings → Hashing → Two Pointers → Sliding Window → Binary Search → LinkedList → Stack → Queue → Trees → BST → Heap → Graphs → DP Basics → DP Advanced. Each has 6–12 subtopics as checkboxes. Problems solved counter per topic. % complete shown.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Daily DSA target <span class="tag v1">V1</span></div><div class="fd">You set "X problems today." Checkmark when done. Feeds daily score. During holidays: this is the main work metric. During sem: secondary.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Applications CRM <span class="tag v1">V1</span></div><div class="fd">Company, role, date applied, status (applied / OA / OA done / interview / offer / rejected). Add in 4 taps. Color-coded status badges.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Interview log <span class="tag v1">V1</span></div><div class="fd">Company, round (HR/tech/coding), date, outcome, notes. Reference before each interview.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Resume tracker <span class="tag v1">V1</span></div><div class="fd">Version number, last updated date, link. Simple. Know which version you sent where.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Holiday mode flag <span class="tag v1">V1</span></div><div class="fd">When sem ends, system switches to holiday mode. Placement countdown becomes "days of holiday left." DSA daily target becomes primary metric. Gym target becomes secondary.</div></div></div>
+  </div>
+</div>
+
+<div class="module" onclick="tog(this)">
+  <div class="mod-h">
+    <div class="mod-icon" style="background:rgba(78,205,196,0.12)">🔁</div>
+    <div class="mod-title">Tab 3 — Habits</div>
+    <span class="mod-meta">Execution first, always</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Execution-first view <span class="tag v1">V1</span></div><div class="fd">Opens to today's habits. Not settings. Circular 48px tap targets. Thin ring on incomplete, gold ring fills on complete (300ms spring animation). Haptic on complete.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Three routine blocks <span class="tag v1">V1</span></div><div class="fd">Morning / Afternoon / Evening. Collapsible. Each habit belongs to a block. Completion ritual: when full block done, brief warm shimmer + text "Morning done ✓".</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Your starter habits (pre-loaded for you) <span class="tag v1">V1</span></div><div class="fd">Morning: Wake before 8am, Skincare, 10 mins DSA warm-up. Afternoon: 10k steps check, Eat lunch. Evening: Gym, Journal 2 lines, Plan tomorrow. You edit/add from here.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Habit creation <span class="tag v1">V1</span></div><div class="fd">Name, routine assignment (morning/afternoon/evening), frequency (daily / weekdays / custom). Identity link optional (which "I am" statement does this serve).</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Streak calendar <span class="tag v1">V1</span></div><div class="fd">Per-habit monthly grid. Gold = done, empty circle = missed. No shame colors. Pattern is the insight.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Skip reason (optional) <span class="tag v1">V1</span></div><div class="fd">On skip: "why?" — Tired / Busy / Forgot / Rest day / Other. Optional, 1 tap. Feeds holiday analysis: "you skip gym most on rainy days."</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Chain Reaction Score <span class="tag v1">V1</span></div><div class="fd">When you complete your "domino habit" (set in Identity), all subsequent habit completions that day get a chain bonus to daily score. Visible in Insights.</div></div></div>
+  </div>
+</div>
+
+<div class="module" onclick="tog(this)">
+  <div class="mod-h">
+    <div class="mod-icon" style="background:rgba(78,205,196,0.12)">💰</div>
+    <div class="mod-title">Tab 4 — Money</div>
+    <span class="mod-meta">Both accounts + net worth</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Net balance top card <span class="tag v1">V1</span></div><div class="fd">ICICI balance + Airtel balance = total. Large number. Green if up from last month, red if down. One tap to toggle hide (privacy in public).</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Two account tabs: ICICI / Airtel <span class="tag v1">V1</span></div><div class="fd">Each account has its own transaction list, current balance (manual update), and this-month spend. Airtel = your earned money. ICICI = parents' money. Treated differently in insights.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Transaction add — 3 taps <span class="tag v1">V1</span></div><div class="fd">Amount → category (Food/Travel/Shopping/Mess/Entertainment/Sent to person/Fees/Other) → account. Optional note, optional photo. Done. Also accessible from floating ₹ button on Today tab.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Monthly spend summary <span class="tag v1">V1</span></div><div class="fd">Total spent this month. Category breakdown as horizontal bars. Delta vs last month. "You've spent ₹X more on food this month."</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">NET WORTH tracker <span class="tag v1">V1</span></div><div class="fd">Monthly snapshot. You enter: cash, ICICI balance, Airtel balance, MF/stocks value (manual), gold holdings (grams — auto-priced via live API), other. Total computed. Chart shows month-by-month growth. This is the most motivating financial visual — watching your number go up over time.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">SIP tracker <span class="tag v1">V1</span></div><div class="fd">Fund name, ₹ per month, start date. Running total invested. Simple projection at 12% XIRR. First SIP: ₹500/month anywhere. The habit is more important than the amount.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Gold + silver holdings <span class="tag v1">V1</span></div><div class="fd">Grams entered manually. Live gold/silver price fetched. Current value shown. Feeds net worth auto.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Money lent log <span class="tag v1">V1</span></div><div class="fd">Name, amount, date. Tap to mark returned. No reminders (your call). Just the record so your brain can let it go.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Upcoming expenses <span class="tag v1">V1</span></div><div class="fd">Known future spends. Date + amount. Shows on Today tab if due within 3 days. Prevents surprise stress.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Subscription tracker <span class="tag v1">V1</span></div><div class="fd">List of recurring payments. Monthly/yearly. Next renewal date. Annual total. 3-day alert. "You're paying ₹X/year total on subscriptions."</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Profit First buckets <span class="tag v1">V1</span></div><div class="fd">When income comes in (Airtel variable), allocate: Needs 50% / Savings 20% / Investments 10% / Wants 20%. Simple split shown visually. Not forced — just visible.</div></div></div>
+  </div>
+</div>
+
+<div class="module" onclick="tog(this)">
+  <div class="mod-h">
+    <div class="mod-icon" style="background:rgba(245,166,35,0.12)">📝</div>
+    <div class="mod-title">Tab 5 — Notes</div>
+    <span class="mod-meta">Brain dump + voice + journal</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Quick dump <span class="tag v1">V1</span></div><div class="fd">One running document. Tap → type. Autocorrect fully on. Saves every keystroke. Timestamped entries. No title. Pure stream of consciousness. This is your mental inbox — empty your head here.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Voice note → transcription <span class="tag v1">V1</span></div><div class="fd">Hold mic → speak → Gemini transcribes → saved with timestamp. Handles spelling issues by speaking instead of typing. For when you have a thought while walking or lying in bed.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Titled notes <span class="tag v1">V1</span></div><div class="fd">Google Keep style. Title + body. 6 colors. Pin important. Search across all. Attach images. For structured notes: project ideas, research, things to remember.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Journal section <span class="tag v1">V1</span></div><div class="fd">Separate from dump. Dated entries. 3 prompts (optional): "What happened today? / What did I learn? / Tomorrow I will —". Voice or text. 2 lines minimum habit. Streak tracked.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Mess menu storage <span class="tag v1">V1</span></div><div class="fd">Upload WhatsApp screenshots here tagged "Mess." Today tab pulls the correct day's image auto.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Global search <span class="tag v1">V1</span></div><div class="fd">Search across dump, titled notes, journal, all in real time. Find anything you wrote.</div></div></div>
+  </div>
+</div>
+
+<div class="module" onclick="tog(this)">
+  <div class="mod-h">
+    <div class="mod-icon" style="background:rgba(94,106,210,0.08)">📊</div>
+    <div class="mod-title">Tab 6 — Insights</div>
+    <span class="mod-meta">Your data made visible</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Daily score history <span class="tag v1">V1</span></div><div class="fd">30-day bar chart. See which weeks were good, which crashed. During holidays: the rising trend over 75 days is your transformation visible.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Mood calendar <span class="tag v1">V1</span></div><div class="fd">Monthly grid, colored by mood. GitHub contribution graph style. See your emotional pattern at a glance.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Sleep chart <span class="tag v1">V1</span></div><div class="fd">14-day line chart. Average hours. Bedtime drift visible — you'll see yourself sliding later during holidays without a schedule. System will.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5aad5a"></div><div><div class="fn">Steps + Gym consistency <span class="tag v1">V1</span></div><div class="fd">7/30 day step chart. Gym streak calendar. Gym days per week average.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">NET WORTH chart — most important <span class="tag v1">V1</span></div><div class="fd">Month-by-month line. Watch the number grow. This single chart is the most powerful motivator for financial discipline. Even going from ₹0 to ₹2k to ₹5k is visible progress.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Placement velocity <span class="tag v1">V1</span></div><div class="fd">DSA % complete. Problems solved per week chart. Applications sent. Topics remaining count.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">Recovery — public streak only <span class="tag v1">V1</span></div><div class="fd">Streak number visible here (no detail). Current clean days. History visible as green/red dots — no one else knows what this means.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Journal streak <span class="tag v1">V1</span></div><div class="fd">Days journaled in a row. Calendar. Simple metric to keep the habit alive.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Burnout score — simple version <span class="tag v1">V1</span></div><div class="fd">Mood trend (40%) + sleep consistency (30%) + habit rate (20%) + score trend (10%). 1–10. Warning card if ≤4. "You might need a rest day."</div></div></div>
+  </div>
+</div>
+
+<div class="module" onclick="tog(this)">
+  <div class="mod-h">
+    <div class="mod-icon" style="background:rgba(30,30,30,0.2)">🔒</div>
+    <div class="mod-title">Hidden Tab — Recovery</div>
+    <span class="mod-meta">Biometric only · lock icon in nav</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">Current streak <span class="tag v1">V1</span></div><div class="fd">Large number. Days and hours. Personal best shown below. Your 17-day record is in here — beat it.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">Log urge — 1 tap <span class="tag v1">V1</span></div><div class="fd">Trigger: Boredom / Stress / Loneliness / Content encountered / Late night / Physical / Multiple. Time auto-logged. Optional note (text or voice). Patterns emerge after 2 weeks of logging.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">Log reset <span class="tag v1">V1</span></div><div class="fd">Shows current streak before allowing reset ("You're resetting a 23-day streak"). Asks trigger. Saves to history. Streak resets. Data never lost.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">Hourly urge heatmap <span class="tag v1">V1</span></div><div class="fd">7-day grid, urges by hour. You will see a pattern — probably late night 11pm–1am. Knowing your peak risk windows is the first step to avoiding them.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">Trigger breakdown <span class="tag v1">V1</span></div><div class="fd">Which type appears most. After 30 days of logging: "Boredom is your primary trigger (60%)." Actionable. Fix the boredom, fix the problem.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">30-day history calendar <span class="tag v1">V1</span></div><div class="fd">Green = clean, red dot = reset, orange = urge logged but resisted. Resisting and logging is celebrated — it means the system is working.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#ff6b6b"></div><div><div class="fn">Silent milestones <span class="tag v1">V1</span></div><div class="fd">At 7, 14, 21, 30, 60, 90 days: a single line of text appears when you open the tab. No notification. No external signal. Just: "21 days. You're building a new pattern."</div></div></div>
+    <div class="note" style="margin-top:10px">No motivational quotes. No fire streaks. No emoji. Clinical and private. This is the most important tab in the app for you right now.</div>
+  </div>
+</div>
+
+<div class="module" onclick="tog(this)">
+  <div class="mod-h">
+    <div class="mod-icon" style="background:rgba(150,150,150,0.1)">👤</div>
+    <div class="mod-title">You / Settings + Identity</div>
+    <span class="mod-meta">Profile + who you're becoming</span>
+    <span class="chev">▶</span>
+  </div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Google profile (fixed) <span class="tag v1">V1</span></div><div class="fd">Avatar + name from user_metadata.full_name. OAuth status via onAuthStateChange. The bugs from existing dashboard are fixed here natively.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Identity statements <span class="tag v1">V1</span></div><div class="fd">3–5 "I am" statements. You write them. Status: Aspirational → Developing → Integrated. One rotates into Today tab header daily. Edit any time. These are your anchor — who you're building toward.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Primary goal <span class="tag v1">V1</span></div><div class="fd">One active goal. Problem + Solution + Measure. Progress bar. Links to your daily tasks. Examples: "Get placed at 6LPA+" or "Be clean for 90 days" or "Build ₹50k net worth."</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Domino habit <span class="tag v1">V1</span></div><div class="fd">The one habit that starts your chain. For you this is probably: "Wake by 7:30am" — everything else follows from being awake on time. Highlighted in Habits tab.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Sem / phase settings <span class="tag v1">V1</span></div><div class="fd">Sem end date, holiday start/end, 7th sem start. Drives the countdown and mode switching throughout the app.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Theme toggle, notifications, biometric, export <span class="tag v1">V1</span></div><div class="fd">Dark/light. 3 notifications (8am, 10pm, custom DSA time). Biometric for Recovery tab. Download all data as JSON.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- WEB -->
+<div id="web" class="pane">
+<div class="note"><b>Web role:</b> Deep review, long-form planning, full data view. You open this before sleep or during study blocks on laptop. Same data as app, different depth.</div>
+
+<div class="sl">View 1 — Dashboard (default)</div>
+<div class="module" onclick="tog(this)">
+  <div class="mod-h"><div class="mod-title">Today overview + planning</div><span class="chev">▶</span></div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Command center cards</div><div class="fd">Phase indicator (Sem / Holiday / Placement season), countdown, today's score, tasks with edit. Everything from app's Today tab, editable on desktop.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Placement war room preview</div><div class="fd">DSA % complete, topic in progress, applications pipeline (applied/OA/interview/offer counts).</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Money snapshot</div><div class="fd">Net balance, this week's spend, biggest category, next upcoming expense.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Net worth mini chart</div><div class="fd">Last 6 months. Current value prominent. The wealth line going up is the most important visual on this screen.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5aad5a"></div><div><div class="fn">Gym log (web only)</div><div class="fd">Gym toggle here + weekly view (7-day grid). Not on app to keep Today tab clean. Web is where you review gym consistency.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Tomorrow's plan editor</div><div class="fd">Pick 3 tasks for tomorrow from backlog. Syncs to app's Today tab by morning.</div></div></div>
+  </div>
+</div>
+
+<div class="sl">View 2 — Placement War Room</div>
+<div class="module" onclick="tog(this)">
+  <div class="mod-h"><div class="mod-title">Full DSA + applications depth</div><span class="chev">▶</span></div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">DSA skill tree</div><div class="fd">Visual tree. Each topic = node with % complete. Lines connecting prerequisites. Tap node → expand all subtopics → check off. Current topic highlighted. "Next recommended topic" shown.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Problem log</div><div class="fd">Date, platform, problem name, difficulty, link, status. Running count. Weekly problems-solved bar chart.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Applications table (full CRM)</div><div class="fd">All applications. Filter by status. Company, role, JD link, date, status, next action, interview notes.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Interview prep notes (rich text per company)</div><div class="fd">Store questions asked, your answers, topics to review before next round. Referenced before each interview.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Weekly targets + timeline</div><div class="fd">Set "X problems this week" — progress bar. Milestone dates: "Finish arrays by May 10." Working backwards from your 7th sem start.</div></div></div>
+  </div>
+</div>
+
+<div class="sl">View 3 — Money + Net Worth Deep Dive</div>
+<div class="module" onclick="tog(this)">
+  <div class="mod-h"><div class="mod-title">Full financial picture</div><span class="chev">▶</span></div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Net worth builder</div><div class="fd">Monthly snapshot input. All assets entered. Chart shows curve over time. This is your wealth story. Even ₹5k growing to ₹20k over 6 months is a real line going up.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Full transaction history</div><div class="fd">Both accounts. Search, filter by category/date/account/amount. See patterns.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Monthly deep dive</div><div class="fd">Income vs spend waterfall. Category pie. Top 5 transactions. Day-by-day spend bar. Compare vs last month.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">SIP projection</div><div class="fd">₹500/month at 12% XIRR → what's the value in 1yr, 3yr, 5yr. Simple table. Shows why starting now matters even at small amounts.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Export</div><div class="fd">CSV any date range. PDF monthly summary (simple, branded).</div></div></div>
+  </div>
+</div>
+
+<div class="sl">View 4 — Insights (web depth)</div>
+<div class="module" onclick="tog(this)">
+  <div class="mod-h"><div class="mod-title">Full analytics — all time ranges</div><span class="chev">▶</span></div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Daily score — 90 day chart</div><div class="fd">See your transformation arc over holidays. The line going up is the whole point.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Mood year calendar</div><div class="fd">Full year GitHub-style. Every day colored. See seasonal patterns. See how holidays affect mood.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#4ecdc4"></div><div><div class="fn">Sleep bedtime drift chart</div><div class="fd">Bedtime plotted over time. You'll see yourself sliding later. The data doesn't lie.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Habit correlation table</div><div class="fd">Gym × Mood, Sleep × Score, DSA done × mood. Plain language: "On gym days your score is 12pts higher on average."</div></div></div>
+    <div class="feat"><div class="dot" style="background:#5e6ad2"></div><div><div class="fn">Wins log</div><div class="fd">Auto-generated: 7-day streak hit, best sleep week, most problems solved in a week, net worth milestone. Manual wins addable. A record of proof that you're improving.</div></div></div>
+  </div>
+</div>
+
+<div class="sl">View 5 — Identity (web only, full version)</div>
+<div class="module" onclick="tog(this)">
+  <div class="mod-h"><div class="mod-title">Who you're becoming</div><span class="chev">▶</span></div>
+  <div class="mod-body">
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">I Am statements (write + manage)</div><div class="fd">Full editor. Status per statement. These feed Today tab anchor line. Examples for you: "I am disciplined with my time" / "I am financially aware" / "I am someone who shows up to the gym" / "I am in control of my urges."</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Primary goal (GPS)</div><div class="fd">One active goal. Problem / Solution / Measure. Progress bar. Linked habits shown.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Anti-vision</div><div class="fd">"What I refuse to become." 1–3 lines. Provides contrast. Seeing where you don't want to be is as motivating as where you do.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#f5a623"></div><div><div class="fn">Domino habit picker</div><div class="fd">Select from your habits which one triggers everything else. For you: probably "Wake by 7:30am." Chain Reaction Score references this.</div></div></div>
+    <div class="feat"><div class="dot" style="background:#7c8cf8"></div><div><div class="fn">Vision AI setup — Gemini <span class="tag ai">AI</span> <span class="tag v2">V2</span></div><div class="fd">8-question flow → Gemini synthesizes your I Am statements and primary goal. One-time onboarding. Needs data from V1 first.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- INTEGRATIONS -->
+<div id="int" class="pane">
+<div class="sl">Already live (existing AIIMIN)</div>
+<div class="int-grid">
+  <div class="int"><div class="in">Supabase</div><div class="ir">PostgreSQL + Google OAuth + RLS + Realtime. All new tables added to existing db.</div><span class="is live">Live</span></div>
+  <div class="int"><div class="in">Vercel</div><div class="ir">Web frontend deployment. Auto-deploy. Edge functions for cron jobs.</div><span class="is live">Live</span></div>
+  <div class="int"><div class="in">Railway (Express)</div><div class="ir">Backend API. New routes added for all V1 features.</div><span class="is live">Live</span></div>
+  <div class="int"><div class="in">Google OAuth</div><div class="ir">Auth only. Fix: read from user_metadata.full_name for display name.</div><span class="is live">Live</span></div>
+</div>
+
+<div class="sl">Adding in V1</div>
+<div class="int-grid">
+  <div class="int"><div class="in">Gemini 1.5 Flash</div><div class="ir">Free: 15 RPM, 1M TPM. Voice transcription (Notes tab). Weekly reports (Insights, V1 basic). Vision setup agent (V2). ~2–5k tokens per weekly report — won't hit limits for years.</div><span class="is add">Add V1</span></div>
+  <div class="int"><div class="in">Android Health Connect</div><div class="ir">Steps auto-sync from Nothing Phone 2. Free, no API key needed. Background sync every 15 min.</div><span class="is add">Add V1</span></div>
+  <div class="int"><div class="in">Firebase Cloud Messaging</div><div class="ir">Free push notifications on Android. 3 notifications: 8am daily brief, 10pm plan tomorrow, custom DSA reminder time.</div><span class="is add">Add V1</span></div>
+  <div class="int"><div class="in">Metals API (gold/silver)</div><div class="ir">Free tier: 250 requests/month. Fetch gold + silver price daily. Cache it. Feeds net worth calculator.</div><span class="is add">Add V1</span></div>
+</div>
+
+<div class="sl">Adding in V2 (after 60 days of use)</div>
+<div class="int-grid">
+  <div class="int"><div class="in">Zerodha Kite API</div><div class="ir">Portfolio auto-sync. Holdings, P&L, XIRR. Free for personal. Needs Zerodha account first.</div><span class="is plan">V2</span></div>
+  <div class="int"><div class="in">Google Calendar API</div><div class="ir">Read-only. Pull exam dates, events. Auto-populate upcoming expenses and task deadlines.</div><span class="is plan">V2</span></div>
+  <div class="int"><div class="in">India AA Framework</div><div class="ir">Bank auto-import. Eliminates manual transaction entry. RBI regulated, complex compliance.</div><span class="is plan">V2</span></div>
+  <div class="int"><div class="in">Gemini AI Weekly Reports</div><div class="ir">Full cascade reports. Needs 60+ days of data to be meaningful. V1 basic version uses simple computed insights.</div><span class="is plan">V2</span></div>
+</div>
+
+<div class="note gold"><b>Total new DB tables for V1:</b> daily_logs, tasks, timetable, transactions, accounts, net_worth_snapshots, sip_logs, money_lent, upcoming_expenses, subscriptions, placement_topics, placement_apps, placement_interviews, recovery_logs (encrypted), notes, mess_menu, habits, habit_logs, routines, identity_statements, gym_logs. All with RLS policies. All timezone-anchored to Asia/Kolkata.</div>
+</div>
+
+<!-- FINAL LOCK -->
+<div id="final" class="pane">
+<div class="note red"><b>This is the final locked spec. Nothing changes from here. Next step: color system → Stitch prompts → build.</b></div>
+
+<div class="sl">Everything in V1</div>
+<div class="chip-wrap">
+  <span class="chip">Today tab (full)</span><span class="chip">Identity anchor</span><span class="chip">Daily score</span><span class="chip">Placement countdown</span><span class="chip">Phase-aware UI</span><span class="chip">Class timetable</span><span class="chip">Mess menu photo</span><span class="chip">Top 3 tasks</span><span class="chip">Mood 1-tap</span><span class="chip">Sleep log</span><span class="chip">Steps sync</span><span class="chip">Gym toggle</span><span class="chip">Meals eaten</span><span class="chip">Quick money add</span><span class="chip">Night planning ritual</span><span class="chip">Recovery mode</span><span class="chip">Work tab</span><span class="chip">Task list (3 max)</span><span class="chip">Backlog</span><span class="chip">DSA roadmap built-in</span><span class="chip">Daily DSA target</span><span class="chip">Applications CRM</span><span class="chip">Interview log</span><span class="chip">Resume tracker</span><span class="chip">Holiday mode</span><span class="chip">Habits tab</span><span class="chip">Execution-first view</span><span class="chip">Morning/Afternoon/Evening routines</span><span class="chip">Starter habits pre-loaded</span><span class="chip">Streak calendar</span><span class="chip">Chain Reaction Score</span><span class="chip">Money tab</span><span class="chip">ICICI + Airtel accounts</span><span class="chip">Net worth tracker</span><span class="chip">Net worth chart</span><span class="chip">SIP tracker</span><span class="chip">Gold + silver holdings</span><span class="chip">Money lent log</span><span class="chip">Upcoming expenses</span><span class="chip">Subscription tracker</span><span class="chip">Profit First buckets</span><span class="chip">Notes tab</span><span class="chip">Quick dump</span><span class="chip">Voice → transcription</span><span class="chip">Titled notes</span><span class="chip">Journal section</span><span class="chip">Mess menu storage</span><span class="chip">Insights tab</span><span class="chip">Mood calendar</span><span class="chip">Sleep chart</span><span class="chip">Burnout score</span><span class="chip">Placement velocity</span><span class="chip">Wins log</span><span class="chip">Recovery tab (locked)</span><span class="chip">Streak + urge log</span><span class="chip">Trigger heatmap</span><span class="chip">Silent milestones</span><span class="chip">You/Settings</span><span class="chip">Identity statements</span><span class="chip">Primary goal</span><span class="chip">Domino habit</span><span class="chip">Web dashboard (all 5 views)</span><span class="chip">DSA skill tree</span><span class="chip">Gym log (web only)</span><span class="chip">Full money analytics</span><span class="chip">SIP projection</span><span class="chip">Habit correlation table</span><span class="chip">Year mood calendar</span><span class="chip">Anti-vision</span><span class="chip">Health Connect (steps)</span><span class="chip">FCM notifications (3)</span><span class="chip">Gold/silver API</span><span class="chip">Gemini voice transcription</span><span class="chip">Biometric lock</span><span class="chip">Data export</span><span class="chip">Dark + light theme</span>
+</div>
+
+<div class="sl">Not in V1 (V2 after 60 days)</div>
+<div class="chip-wrap">
+  <span class="chip dead">AI weekly reports</span><span class="chip dead">Vision AI agent</span><span class="chip dead">Zerodha sync</span><span class="chip dead">Google Calendar sync</span><span class="chip dead">AA bank auto-import</span><span class="chip dead">Gamification</span><span class="chip dead">Social features</span><span class="chip dead">iPad support</span><span class="chip dead">Meal calorie tracking</span><span class="chip dead">Workout plan builder</span><span class="chip dead">Complex ML correlations</span>
+</div>
+
+<div class="note teal" style="margin-top:14px">
+  <b>The holiday period is your real opportunity.</b> If AIIMIN is live before sem ends, you start Day 1 of 2.5 months holidays with a working system. 75 days of consistent data = the V2 AI reports actually mean something. That's the real deadline: app live before sem ends.
+</div>
+</div>
+</div>
+
+<script>
+function sw(p) {
+  document.querySelectorAll('.pane').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(p).classList.add('on');
+  event.target.classList.add('active');
+}
+function tog(el) {
+  el.classList.toggle('exp');
+  el.querySelector('.mod-body').classList.toggle('open');
+}
+</script>

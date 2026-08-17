@@ -1,37 +1,38 @@
-# API Endpoint Template
+---
+authority: engineering
+derived_from: 02_ARCHITECTURE/Overview
+status: draft
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-26
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+nav_role: leaf
+note_type: NT-ENG-LEAF
+tags:
+  - type/runbook
+  - domain/engineering
+  - status/draft
+migration_batch: W4
+fm_source: script
+---
+# API — {{title}}
 
-## Endpoint
+> **Denylist:** Never create under `Genesis/` · `Roadmap/UX-Architecture/` · `Roadmap/UX-Intelligence/`.
 
-`METHOD /path`
+## Parent
 
-## Purpose
+- [[Maps of Content/Engineering]]
 
--
-
-## Authentication
-
--
-
-## Input
-
--
-
-## Output
-
--
-
-## Errors
-
--
-
-## Example
-
--
-
-## Rate limits
+## Endpoints
 
 -
 
-## Files
+## Auth
+
+-
+
+## Related features
 
 -

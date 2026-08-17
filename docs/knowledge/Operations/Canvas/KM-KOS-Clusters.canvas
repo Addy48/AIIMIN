@@ -1,0 +1,121 @@
+{
+  "nodes": [
+    {
+      "id": "t1",
+      "type": "text",
+      "text": "Derived \u00b7 not SoT\\nKOS Clusters",
+      "x": -200,
+      "y": -400,
+      "width": 280,
+      "height": 60
+    },
+    {
+      "id": "home",
+      "type": "file",
+      "file": "00_HOME.md",
+      "x": -100,
+      "y": -200,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "kg",
+      "type": "file",
+      "file": "Maps of Content/00_Knowledge-Graph.md",
+      "x": 200,
+      "y": -200,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "gen",
+      "type": "file",
+      "file": "Maps of Content/Genesis.md",
+      "x": 500,
+      "y": -350,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "road",
+      "type": "file",
+      "file": "Maps of Content/Roadmap.md",
+      "x": 500,
+      "y": -100,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "eng",
+      "type": "file",
+      "file": "Maps of Content/Engineering.md",
+      "x": 500,
+      "y": 100,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "prod",
+      "type": "file",
+      "file": "Maps of Content/Product.md",
+      "x": 200,
+      "y": 150,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "ctx",
+      "type": "file",
+      "file": "15_MEMORY/Current-Context.md",
+      "x": -100,
+      "y": 50,
+      "width": 400,
+      "height": 80
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "home",
+      "fromSide": "right",
+      "toNode": "kg",
+      "toSide": "left"
+    },
+    {
+      "id": "e2",
+      "fromNode": "kg",
+      "fromSide": "right",
+      "toNode": "gen",
+      "toSide": "left",
+      "label": "envelope"
+    },
+    {
+      "id": "e3",
+      "fromNode": "kg",
+      "fromSide": "right",
+      "toNode": "road",
+      "toSide": "left"
+    },
+    {
+      "id": "e4",
+      "fromNode": "kg",
+      "fromSide": "right",
+      "toNode": "eng",
+      "toSide": "left"
+    },
+    {
+      "id": "e5",
+      "fromNode": "kg",
+      "fromSide": "right",
+      "toNode": "prod",
+      "toSide": "left"
+    },
+    {
+      "id": "e6",
+      "fromNode": "home",
+      "fromSide": "right",
+      "toNode": "ctx",
+      "toSide": "left"
+    }
+  ]
+}

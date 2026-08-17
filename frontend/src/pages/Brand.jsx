@@ -659,7 +659,10 @@ export default function Brand() {
                   <h3>Behavioral aggregation</h3>
                   <p>
                     A high-performance behaviour-tracking OS: focus, streaks, mood, money, calendar, and YouTube context —
-                    powered by a commitment engine and weekly intelligence.
+                    powered by a commitment engine and weekly intelligence. Desktop web is the command surface;
+                    native Android companion is in closed device testing (
+                    <Link to="/app">/app</Link>
+                    ).
                   </p>
                 </article>
                 <article className="brand-timeline__phase brand-timeline__phase--future">
@@ -670,7 +673,8 @@ export default function Brand() {
                   <h3>Proactive intelligence</h3>
                   <p>
                     Drift detection before setbacks compound. Contextual interventions from your unique activity signatures —
-                    with cross-device ritual sync and offline-first architecture.
+                    with cross-device ritual sync and offline-first architecture. Public Play listing follows closed testing —
+                    no APK hosted on this site.
                   </p>
                 </article>
               </div>
