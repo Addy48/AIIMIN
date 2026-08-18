@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   X, ChevronRight, ChevronLeft, UserPlus, LogIn,
-  BarChart2, Target, BookOpen, Zap, Briefcase,
+  BarChart2, Target, BookOpen, Zap,
   DollarSign, Calendar, FlaskConical,
   User, Minus, Sparkles
 } from 'lucide-react';
@@ -18,7 +18,7 @@ const STEPS = [
     bg: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
     tag: 'YOUR LIFE OS',
     title: 'Welcome to AIIMIN 👋',
-    description: 'AIIMIN is your personal life operating system — a private dashboard that centralises your daily habits, goals, journal, finance, focus sessions, and career planning in one calm, intelligent space.',
+    description: 'AIIMIN is your personal life operating system — a private dashboard that centralises your daily habits, goals, journal, finance, and focus sessions in one calm, intelligent space.',
     features: ['100% private & personal', 'AI-powered insights', 'No subscriptions — free to explore'],
   },
   {
@@ -80,16 +80,6 @@ const STEPS = [
     title: 'Wealth & Finance Ledger',
     description: 'Take full control of your money. Log transactions, build budgets, track live Gold/Silver/Mutual Fund prices, visualise spending patterns, and get AI-powered financial summaries.',
     features: ['Income & expense tracking', 'Live market asset prices', 'Monthly budget planning'],
-  },
-  {
-    route: '/placements',
-    icon: Briefcase,
-    color: '#8b5cf6',
-    bg: 'linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%)',
-    tag: 'CAREER',
-    title: 'Placement & ATS Analyzer',
-    description: 'Supercharge your career prep. Kanban board for job applications, interview stage tracking, ATS resume scanner with match scoring, keyword gap analysis, and company research.',
-    features: ['Kanban job tracker', 'ATS resume match score', 'Interview stage pipeline'],
   },
   {
     route: '/calendar',

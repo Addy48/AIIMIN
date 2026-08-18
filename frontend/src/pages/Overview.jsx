@@ -648,7 +648,7 @@ const Overview = () => {
                 <div style={{ fontSize:'84px', fontWeight:900, lineHeight:0.8, letterSpacing:'-0.05em', color: '#fff' }}>{daysLeft}</div>
                 <div style={{ fontSize:'18px', fontWeight:800, opacity: 0.6 }}>DAYS</div>
               </div>
-              <div style={{ fontSize:'14px', fontWeight:700, marginTop:'16px', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.02em' }}>UNTIL JULY 26 · <span style={{ color: '#10B981' }}>PLACEMENTS</span></div>
+              <div style={{ fontSize:'14px', fontWeight:700, marginTop:'16px', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.02em' }}>UNTIL YOUR TARGET · <span style={{ color: '#10B981' }}>GOALS</span></div>
             </div>
             <div style={{ display:'flex', flexDirection:'column', gap:'16px', alignItems:'flex-end', position: 'relative', zIndex: 2 }}>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -656,11 +656,11 @@ const Overview = () => {
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', opacity: 0.3 }} />
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', opacity: 0.1 }} />
               </div>
-              <Link to="/placements" style={{ textDecoration:'none', padding:'12px 24px', background:'#fff', borderRadius:'14px', fontSize:'13px', fontWeight:900, color:'#064e3b', display:'flex', alignItems:'center', gap:'8px', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}
+              <Link to="/goals" style={{ textDecoration:'none', padding:'12px 24px', background:'#fff', borderRadius:'14px', fontSize:'13px', fontWeight:900, color:'#064e3b', display:'flex', alignItems:'center', gap:'8px', transition: 'all 0.2s', boxShadow: '0 10px 20px rgba(0,0,0,0.2)' }}
                 onMouseEnter={e => e.currentTarget.style.transform='translateY(-2px)'}
                 onMouseLeave={e => e.currentTarget.style.transform='translateY(0)'}
               >
-                Launch Portal <ChevronRight size={16} />
+                Open Goals <ChevronRight size={16} />
               </Link>
             </div>
           </div>

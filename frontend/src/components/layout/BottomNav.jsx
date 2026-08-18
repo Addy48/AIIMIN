@@ -11,7 +11,6 @@ import {
   Users,
   FlaskConical,
   Focus,
-  GraduationCap,
   Shield,
   LayoutGrid,
 } from 'lucide-react';
@@ -27,7 +26,6 @@ const BOTTOM_NAV_ICONS = {
   finance: Wallet,
   family: Users,
   calendar: Calendar,
-  placements: GraduationCap,
   sports: Trophy,
   discipline: Shield,
   focus: Focus,

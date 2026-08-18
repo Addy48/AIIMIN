@@ -2,10 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Wordmark from '../../brand/Wordmark';
 import { ArchBracketMark, pickMarkColors } from '../../brand/archBracketMark';
-import useWaitlistSurfaceTheme from '../../../hooks/useWaitlistSurfaceTheme';
+import useTheme from '../../../hooks/useTheme';
+import { isLightTheme } from '../../../constants/themes';
 
+/** Reads active theme from ThemeContext — never mount a second waitlist theme state. */
 export default function HeroBrandLockup({ markSize = 32, wordmarkSize = 28 }) {
-  const { isLight } = useWaitlistSurfaceTheme();
+  const { theme } = useTheme();
+  const isLight = isLightTheme(theme);
   const colors = pickMarkColors(isLight, { variant: 'light' });
 
   return (
