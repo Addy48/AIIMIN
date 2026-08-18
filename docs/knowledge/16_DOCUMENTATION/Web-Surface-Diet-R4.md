@@ -17,24 +17,37 @@ tags:
 
 # Web surface diet (R4) — ship / park / kill
 
-> Source: `frontend/src/App.js` routes (2026-08-20). Labels are **proposed** until Founder edits.
+> Source: `frontend/src/App.js` + `constants/navItems.js`. Labels **executed** 2026-08-20 (not inventory-only).
 
-| Route | Label | Why |
-|-------|-------|-----|
-| `/` waitlist | **ship** | Public gate |
-| `/login/*` · `/auth/callback` · `/verify-email` · `/onboarding` | **ship** | Auth |
-| `/m/*` | **park** | Capture-only · Capacitor sunset path |
-| `/overview` · `/journal` · `/notes` · `/finance` · `/habits` · `/goals` · `/calendar` · `/account` · `/reports` · `/focus` · `/discipline` · `/family` · `/lab` · `/identity` · `/insights` · `/settings` | **ship** | Core Life OS |
-| `/sports` | **ship** | Tier-gated product |
-| `/brand` · `/legal` · privacy/terms/… legal set | **ship** | Trust / compliance |
-| `/app` | **ship** | Android landing (new) |
-| `/proto/draft` | **park** | Design lock only — not product |
-| `/design-lab` | **kill** | redirect already → `/account?section=design` (verified in `App.js`) |
-| `/placements` | **park** | Personal/career — not core Life OS |
-| `/seed-data` | **park** | Dev/seed · gate harder or remove from prod nav |
-| ATS / Placements-adjacent pages if orphaned | **park** | Confirm nav links |
+| Route | Label | Execution |
+|-------|-------|-----------|
+| `/` waitlist | **ship** | unchanged |
+| `/login/*` · `/auth/callback` · `/verify-email` · `/onboarding` | **ship** | unchanged |
+| `/m/*` | **park** | Capacitor capture shell — no feature growth (DeviceGate) |
+| Core Life OS routes (`/overview` … `/settings`) | **ship** | masthead + shell |
+| `/sports` | **ship** | tier-gated |
+| `/brand` · `/legal` · legal set · `/app` | **ship** | public |
+| `/proto/draft` | **park** | craft lock URL kept; not in product nav |
+| `/design-lab` | **kill** | `Navigate` → `/account?section=design` |
+| `/placements` | **park** | **out of** `NAV_REGISTRY`, personas, Command Palette, GuestTour, Overview CTA · route deep-link only |
+| `/seed-data` | **park** | prod → `/overview`; tool only when `NODE_ENV === 'development'` |
+| ATS in Lab | **ship** | stays inside Lab module (not a top-level Career surface) |
 
-## Next
+## Files touched (execution)
 
-- Founder mark any row **kill** → remove from nav + Route in a later slice.
-- Do not delete code in R4 — inventory only.
+- `frontend/src/constants/navItems.js`
+- `frontend/src/App.js`
+- `frontend/src/pages/Overview.jsx`
+- `frontend/src/components/system/CommandPalette.jsx`
+- `frontend/src/components/onboarding/GuestTour.jsx`
+- `frontend/src/components/layout/TabRail.jsx`
+- `frontend/src/components/layout/BottomNav.jsx`
+
+## Changelog
+
+### 2026-08-20 — Execute R4 diet
+- **What:** Park Career/placements chrome; harden seed-data; keep kill redirect for design-lab; retarget Overview countdown to Goals
+- **Why:** Founder asked to do web diet properly (not leave as taste inventory)
+- **Files:** listed above
+- **Status:** shipped
+- **Notes:** `/placements` page code kept for deep links / possible later revive; ATS remains under Lab

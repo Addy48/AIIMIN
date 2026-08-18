@@ -24,5 +24,9 @@ Nucleus: [[Maps of Content/Genesis]] · Research discovery: [[Maps of Content/Re
 | Philosophy (law) | [[Genesis/P8 Master Specification/02_Core_Product_Philosophy]] |
 | Ops product snapshot | [[01_PRODUCT/Product]] |
 | Product guide (human overview) | [[01_PRODUCT/AIIMIN-Product-Guide]] |
+| **Massive upgrade research (2026-08-20)** | [[01_PRODUCT/Massive-Upgrade-Research-Pack]] |
+| Dual-market pricing (INR + USD) | [[01_PRODUCT/Dual-Market-Pricing]] |
+| AI preference map | [[01_PRODUCT/AI-Preference-Map]] |
+| Marketing / GTM | [[01_PRODUCT/Marketing-And-Go-To-Market]] |
 | Features | [[09_FEATURES/Index]] |
 | Waitlist / launch | [[09_FEATURES/Waitlist/Waitlist]] |

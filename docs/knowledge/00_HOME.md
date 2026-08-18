@@ -50,16 +50,17 @@ Personal Life OS — daily metrics, money, calendar, focus, discipline, sports c
 
 ## Current stage (2026-08-20)
 
-Branch `feat/native-android-v3`. **Native V3 is the active product app** at `native-android-v3/` (built in-repo with Cursor). Manus = **prototype help only** — not app owner.
+Branch **`main`**. Native V3 = active companion app (`native-android-v3/`). Manus = prototype help only.
 
-Drafting Table (`frontend/prototypes/AIIMIN-Drafting-Table.html`) = **design lock**, not a third product.
+Drafting Table = **design lock**, not a third product.
 
-**Now:** vault + repo simplification — [[16_DOCUMENTATION/Vault-And-Repo-Simplification-Plan]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+**Now:** massive upgrade planning — [[01_PRODUCT/Massive-Upgrade-Research-Pack]] (Link · Depth · Personalization). Simplification tracker closed: [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
 
 - **Living leftover list** → [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
 - **Guardrails G1–G10** → [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]] §0
 - **Master status (dated — verify vs Context)** → [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]]
 - **Single vault** — `~/Documents/AIIMIN VAULT/Reference` symlinks here → [[16_DOCUMENTATION/VAULT-CONSOLIDATION-2026-08-03]]
+- **Web diet R4** → [[16_DOCUMENTATION/Web-Surface-Diet-R4]]
 
 ## Current version / lens
 

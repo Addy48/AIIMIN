@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-14",
+  "lastUpdated": "2026-08-20",
   "entrypoint": "docs/knowledge/00_HOME.md",
   "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
   "v1Blueprint": "docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md",
@@ -289,6 +289,11 @@
     "native_notification_voice": {
       "moc": "docs/knowledge/09_FEATURES/Notifications/Native-Notification-Voice.md",
       "status": "draft-plan"
+    },
+    "massive_upgrade_research": {
+      "moc": "docs/knowledge/01_PRODUCT/Massive-Upgrade-Research-Pack.md",
+      "status": "active",
+      "note": "Link\u00b7Depth\u00b7Personalization research pack 2026-08-20"
     }
   }
 }

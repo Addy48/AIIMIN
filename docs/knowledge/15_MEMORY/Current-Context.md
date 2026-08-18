@@ -20,28 +20,33 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch **`main`** @ `0a698e87` · PR [#5](https://github.com/Addy48/AIIMIN/pull/5) **merged** + `/app` public-path fix
+**Date:** 2026-08-20 · Branch **`main`** · Focus: waitlist fixes + dual-market research
 
 ## Stage
 
-Simplification closed. Feat shipped to **`main`**. Vercel prod READY on `0a698e87` (`/app` public-path). Deploy API Action success on merge. EC2 on **`main`** @ `5c6a86d0` (API unchanged by web-only follow-up). Migrations 049–052 on Supabase.
+Deep Life OS research expanded. Waitlist landing bugs fixed in code (sync + theme).
 
 | Gate | Status |
 |------|--------|
-| PR #5 merge → `main` | Verified — `5c6a86d0` |
-| Deploy API Action | Verified success |
-| Verify Frontend Action | Verified success (`0a698e87`) |
-| Vercel production | Verified READY · SHA `0a698e87` · aliases aiimin.in |
-| EC2 branch/SHA | Verified `main` @ `5c6a86d0` · health ok |
-| `/app` public path | Verified in `App.js` + prod deploy READY |
+| Waitlist multi-form reset / storage sync | **Code fixed** this turn — verify in browser |
+| Waitlist theme dual-hook desync | **Code fixed** — HeroBrandLockup uses ThemeContext |
+| Dual-market pricing note | Written — [[01_PRODUCT/Dual-Market-Pricing]] |
+| AI preference map | Written — [[01_PRODUCT/AI-Preference-Map]] |
+| Marketing GTM | Written — [[01_PRODUCT/Marketing-And-Go-To-Market]] |
+| USD live checkout | **Not performed** — plan only |
 
 ## P0 next
 
-1. Web diet kill rows — founder taste ([[16_DOCUMENTATION/Web-Surface-Diet-R4]]) — say which routes to kill
-2. V3 leftover physical/emu — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]] (needs AVD/AIN065)
+1. Browser-verify waitlist: refresh + “Use a different email” on hero **and** footer forms; theme toggle icon vs page
+2. Founder accept USD founding numbers ($6 / $13) or adjust
+3. Phase B graph work after decisions
 
 ## Touch
 
-- `frontend/src/App.js` (`/app` public prefix)
-- `docs/knowledge/16_DOCUMENTATION/Simplification-Phase-Tracker.md`
-- `docs/knowledge/17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST.md` (A6 EC2 via git)
+- `frontend/src/utils/waitlistSignupStorage.js`
+- `frontend/src/components/waitlist/WaitlistForm.jsx`
+- `frontend/src/components/waitlist/landing/HeroBrandLockup.jsx`
+- `frontend/src/hooks/useWaitlistSurfaceTheme.js`
+- `docs/knowledge/01_PRODUCT/Dual-Market-Pricing.md`
+- `docs/knowledge/01_PRODUCT/AI-Preference-Map.md`
+- `docs/knowledge/01_PRODUCT/Marketing-And-Go-To-Market.md`
