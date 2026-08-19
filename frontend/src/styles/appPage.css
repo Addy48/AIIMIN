@@ -144,9 +144,21 @@
 }
 
 .app-page__card {
-  background: #2d2d2d;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 1.1rem 1rem 1.2rem;
+  background:
+    linear-gradient(165deg, rgba(255, 107, 53, 0.06) 0%, transparent 42%),
+    #2d2d2d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.2rem 1.05rem 1.3rem;
+  border-radius: 2px;
+  box-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.7);
+  min-width: 0;
+}
+
+.app-page__card:first-child {
+  border-color: rgba(16, 185, 129, 0.35);
+  background:
+    linear-gradient(165deg, rgba(16, 185, 129, 0.1) 0%, transparent 48%),
+    #2d2d2d;
 }
 
 .app-page__card-label {
@@ -157,17 +169,22 @@
   color: #ff6b35;
 }
 
+.app-page__card:first-child .app-page__card-label {
+  color: #10b981;
+}
+
 .app-page__card h2 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
   font-weight: 600;
+  color: #f9f9f9;
 }
 
 .app-page__card p {
   margin: 0;
   font-size: 0.88rem;
   line-height: 1.45;
-  color: #9ca3af;
+  color: #b0b6bf;
 }
 
 .app-page__surfaces {
@@ -222,9 +239,12 @@
 }
 
 .app-page__split article {
-  background: rgba(45, 45, 45, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 1.2rem;
+  background:
+    linear-gradient(160deg, rgba(116, 157, 196, 0.08) 0%, transparent 50%),
+    #2d2d2d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.25rem;
+  box-shadow: 0 16px 36px -28px rgba(0, 0, 0, 0.65);
 }
 
 .app-page__split h2 {

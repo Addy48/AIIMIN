@@ -243,12 +243,17 @@ export default function Brand() {
       root.style.setProperty('--bm-progress', String(Math.min(1, Math.max(0, p))));
     };
 
+    let spotRaf = 0;
     const onMove = (e) => {
       if (reduce) return;
       const x = (e.clientX / window.innerWidth) * 100;
       const y = (e.clientY / window.innerHeight) * 100;
-      root.style.setProperty('--bm-spot-x', `${x.toFixed(2)}%`);
-      root.style.setProperty('--bm-spot-y', `${y.toFixed(2)}%`);
+      if (spotRaf) cancelAnimationFrame(spotRaf);
+      spotRaf = requestAnimationFrame(() => {
+        root.style.setProperty('--bm-spot-x', `${x.toFixed(2)}%`);
+        root.style.setProperty('--bm-spot-y', `${y.toFixed(2)}%`);
+        spotRaf = 0;
+      });
     };
 
     onScroll();
@@ -258,6 +263,7 @@ export default function Brand() {
     return () => {
       if (io) io.disconnect();
       sectionIo.disconnect();
+      if (spotRaf) cancelAnimationFrame(spotRaf);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('pointermove', onMove);
     };
@@ -269,6 +275,7 @@ export default function Brand() {
 
       <div className="brand-manifesto__atmosphere" aria-hidden="true">
         <div className="brand-manifesto__veil" />
+        <div className="brand-manifesto__spot" />
         <div className="brand-manifesto__grid" />
         <div className="brand-manifesto__bloom" />
         <div className="brand-manifesto__bloom brand-manifesto__bloom--mid" />
