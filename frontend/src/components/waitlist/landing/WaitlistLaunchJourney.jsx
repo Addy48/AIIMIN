@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { fadeUp, LAUNCH_PHASE_LEGEND, LAUNCH_PHASES } from './waitlistLandingData';
 
 function UnlockChip({ item }) {
@@ -71,6 +72,17 @@ export default function WaitlistLaunchJourney() {
                   <div className="launch-phase-col">
                     <p className="launch-phase-kicker">Your move</p>
                     <p className="launch-phase-copy">{stage.userAction}</p>
+                    {stage.phase === 0 && (
+                      <p className="launch-phase-cta-row">
+                        <a href="#waitlist-join" className="launch-phase-cta">Join waitlist</a>
+                        <Link to="/login" className="launch-phase-cta launch-phase-cta--ghost">Sign in</Link>
+                      </p>
+                    )}
+                    {stage.phase === 3 && (
+                      <p className="launch-phase-cta-row">
+                        <Link to="/app" className="launch-phase-cta launch-phase-cta--ghost">Android status</Link>
+                      </p>
+                    )}
                   </div>
                   <div className="launch-phase-col">
                     <p className="launch-phase-kicker">What unlocks</p>

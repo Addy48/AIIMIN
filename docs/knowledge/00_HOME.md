@@ -54,7 +54,7 @@ Branch **`main`**. Native V3 = active companion app (`native-android-v3/`). Manu
 
 Drafting Table = **design lock**, not a third product.
 
-**Now:** massive upgrade planning — [[01_PRODUCT/Massive-Upgrade-Research-Pack]] (Link · Depth · Personalization). Simplification tracker closed: [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+**Now:** public marketing overhaul + date shift — [[01_PRODUCT/Complete-Overhaul-Pack]]. Research spine: [[01_PRODUCT/Massive-Upgrade-Research-Pack]]. Simplification tracker closed: [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
 
 - **Living leftover list** → [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
 - **Guardrails G1–G10** → [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]] §0
@@ -65,7 +65,7 @@ Drafting Table = **design lock**, not a third product.
 ## Current version / lens
 
 - Waitlist gate when `REACT_APP_WAITLIST_MODE=true`
-- Go-live target: end Sep 2026; founding/tester registration closes **31 Aug 2026**
+- Go-live target: end Oct 2026; founding/tester registration closes **30 Sep 2026**
 - **Genesis v1.0 (P1–P9) COMPLETE** · immutable at `Genesis/`
 - **Obsidian Vault Stage A FROZEN** · SoT `docs/knowledge/` · [[Founder/01_VAULT_FREEZE_CERTIFICATE]]
 - **AIIMIN V1 Blueprint v1.0** · current implementation contract · [[Roadmap/AIIMIN-V1-Blueprint]]

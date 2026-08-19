@@ -294,6 +294,11 @@
       "moc": "docs/knowledge/01_PRODUCT/Massive-Upgrade-Research-Pack.md",
       "status": "active",
       "note": "Link\u00b7Depth\u00b7Personalization research pack 2026-08-20"
+    },
+    "complete_overhaul_pack": {
+      "moc": "docs/knowledge/01_PRODUCT/Complete-Overhaul-Pack.md",
+      "status": "partial",
+      "note": "Single file: date shift + waitlist/brand/app UI + research pointers 2026-08-20"
     }
   }
 }

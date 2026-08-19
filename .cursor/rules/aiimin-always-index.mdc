@@ -20,6 +20,7 @@ All of these are `alwaysApply: true`. Follow them every turn.
 | `aiimin-chat-handoff.mdc` | Loud 🚨 SWITCH CHAT; Current-Context = handoff |
 | `aiimin-proof-or-stop.mdc` | No done/fixed/shipped without same-turn evidence |
 | `aiimin-anti-lie.mdc` | 7× Anti-Lie — truth labels, receipts, independent verify, discrepancy→guardrail |
+| `aiimin-pre-ship-10x.mdc` | **Mandatory** 5× inspect + 5× anti-lie before push/deploy claims |
 | `aiimin-vp0-mcp.mdc` | VP0 MCP (`vp0`) for design, flows, prototyping, UI research |
 
 Entrypoint: `docs/knowledge/00_HOME.md`  

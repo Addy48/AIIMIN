@@ -20,33 +20,37 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch **`main`** · Focus: waitlist fixes + dual-market research
+**Date:** 2026-08-20 · Branch **`main`** · Focus: **Stage-1 marketing / PR / GTM** + waitlist polish
 
 ## Stage
 
-Deep Life OS research expanded. Waitlist landing bugs fixed in code (sync + theme).
+Marketing skill packs installed for Stage-1 GTM. Product GTM note exists. Dual-market pricing + AI preference map written. Waitlist bugs fixed in code (browser verify still open).
 
 | Gate | Status |
 |------|--------|
-| Waitlist multi-form reset / storage sync | **Code fixed** this turn — verify in browser |
-| Waitlist theme dual-hook desync | **Code fixed** — HeroBrandLockup uses ThemeContext |
+| Corey `marketingskills` (all) → `.agents/skills/` | **Installed** — `skills-lock.json` |
+| Infrasity GEO/SEO/blog (curated ~70) | **Installed** — clone at `dev-gtm-claude-skills/` (gitignored) |
+| `.agents/product-marketing.md` | **Missing** — run `product-marketing` skill first |
+| Full marketing plan (AARRR) | **Not performed** — next |
+| Waitlist multi-form / theme | Code fixed — browser verify open |
 | Dual-market pricing note | Written — [[01_PRODUCT/Dual-Market-Pricing]] |
-| AI preference map | Written — [[01_PRODUCT/AI-Preference-Map]] |
-| Marketing GTM | Written — [[01_PRODUCT/Marketing-And-Go-To-Market]] |
-| USD live checkout | **Not performed** — plan only |
+| Marketing GTM note | Written — [[01_PRODUCT/Marketing-And-Go-To-Market]] |
+| Skills registry | Updated — [[16_DOCUMENTATION/Skills-Registry]] |
+| `brandkit` (Collective Brain) | **Installed** — Claude + Cursor + project `.agents/skills/brandkit/` |
 
 ## P0 next
 
-1. Browser-verify waitlist: refresh + “Use a different email” on hero **and** footer forms; theme toggle icon vs page
-2. Founder accept USD founding numbers ($6 / $13) or adjust
-3. Phase B graph work after decisions
+1. Run **`product-marketing`** → create `.agents/product-marketing.md` from vault GTM + Dual-Market-Pricing
+2. Run **`marketing-plan`** → 90-day India-first + US founding plan (founding close **31 Aug**, go-live end Sep)
+3. Parallel tracks: **`public-relations`** (press kit) · **`launch`** (waitlist close) · **`copywriting`/`cro`** (landing) · **`brandkit`** only for boards that **reuse locked palette** (Drafting Table steel + peak `#ff6b35`)
+4. Browser-verify waitlist forms + theme
+5. Founder accept USD founding numbers ($6 / $13) or adjust
 
 ## Touch
 
-- `frontend/src/utils/waitlistSignupStorage.js`
-- `frontend/src/components/waitlist/WaitlistForm.jsx`
-- `frontend/src/components/waitlist/landing/HeroBrandLockup.jsx`
-- `frontend/src/hooks/useWaitlistSurfaceTheme.js`
-- `docs/knowledge/01_PRODUCT/Dual-Market-Pricing.md`
-- `docs/knowledge/01_PRODUCT/AI-Preference-Map.md`
+- `.agents/skills/` (marketing/GTM — gitignored; lock in `skills-lock.json`)
+- `dev-gtm-claude-skills/` (local clone — gitignored)
+- `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md`
 - `docs/knowledge/01_PRODUCT/Marketing-And-Go-To-Market.md`
+- `docs/knowledge/01_PRODUCT/Dual-Market-Pricing.md`
+- `frontend/src/components/waitlist/` (verify only until marketing copy work)

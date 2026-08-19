@@ -1,0 +1,55 @@
+---
+description: Proof-or-stop — no done/fixed/shipped without same-turn evidence
+alwaysApply: true
+---
+
+# Proof-or-Stop (Always)
+
+Agent output = **claim**. Lifecycle state (`done` / `fixed` / `shipped` / `tests pass`) admits only with **same-turn evidence**. No evidence → do not claim success.
+
+**Also follow:** `aiimin-anti-lie.mdc` (truth labels, receipts, independent verification, discrepancy → guardrail).
+
+## Statuses (only these)
+
+| Status | Meaning |
+|--------|---------|
+| `passed` | Required checks ran this turn and succeeded |
+| `failed` | Checks ran; did not meet bar |
+| `blocked` | Could not verify / ambiguous / need human — say why |
+| `in progress` | Still working; no completion language |
+
+Never: “done”, “fixed”, “all good”, “should work”, “LGTM” without evidence.
+
+## Claim → required evidence (same turn)
+
+| Claim | Must have this turn |
+|-------|---------------------|
+| Edited / added file | `Read` (or Grep) of that path showing the change |
+| Bug fixed | Repro check or targeted test/command exit 0 + short result |
+| Tests / build / lint pass | Command ran; exit 0 cited (no inventing) |
+| Deployed / live / health OK | Real HTTP/health or deploy output this turn |
+| “Not found” / “doesn’t exist” | Search/Grep/Glob ran; empty result cited |
+| Vault / docs updated | Path named; change actually written |
+| Commit / push / PR | Only after user ask + real git/`gh` result |
+
+Skipped check ≠ pass. Missing tool result ≠ pass. **Fail closed** → `blocked` or `failed`.
+
+## Closeout shape (when task ends)
+
+1. What changed (paths only)
+2. Evidence (command + exit, or confirming read/grep hit)
+3. Status: `passed` | `failed` | `blocked`
+4. If `blocked`/`failed`: next concrete step
+
+No evidence block → cannot use completion language.
+
+## Do not
+
+- Grade own homework from memory of an earlier turn
+- Say tests/deploy passed without running them this closeout
+- Treat plan / intent / “I will” as done
+- Hide uncertainty behind confident tone
+
+## Token note
+
+Keep evidence short: exit code + 1 decisive line, or 3–8 confirming source lines. No full log dumps unless user asks.

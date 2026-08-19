@@ -98,14 +98,34 @@
       ellipse 90% 60% at 50% 0%,
       transparent 35%,
       color-mix(in srgb, var(--bm-base-deep) 28%, transparent) 100%
-    ),
-    radial-gradient(
-      circle 48vmax at var(--bm-spot-x) var(--bm-spot-y),
-      color-mix(in srgb, var(--bm-peach) 42%, transparent) 0%,
-      color-mix(in srgb, var(--bm-accent-hot) 8%, transparent) 32%,
-      transparent 62%
     );
-  transition: background 0.4s ease-out;
+}
+
+/* Cursor spot — separate layer, no background transition (was causing multi-frame lag). */
+.brand-manifesto__spot {
+  position: absolute;
+  width: min(72vmax, 920px);
+  height: min(72vmax, 920px);
+  left: var(--bm-spot-x);
+  top: var(--bm-spot-y);
+  translate: -50% -50%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle closest-side,
+    color-mix(in srgb, var(--bm-peach) 48%, transparent) 0%,
+    color-mix(in srgb, var(--bm-accent-hot) 14%, transparent) 42%,
+    transparent 72%
+  );
+  will-change: left, top;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-manifesto__spot {
+    left: 50%;
+    top: 22%;
+    opacity: 0.55;
+  }
 }
 
 .brand-manifesto__grid {
