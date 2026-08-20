@@ -1,10 +1,25 @@
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-PROMPT
+migration_batch: W4
+fm_source: script
+---
 # Proof-or-Stop
 
 > Always-on anti–false-completion discipline for Cursor agents.
 
 **Status:** shipped  
 **Always-on rule:** `.cursor/rules/aiimin-proof-or-stop.mdc`  
-**Stop hook:** `.cursor/hooks/proof-or-stop.py` (via `.cursor/hooks.json`)
+**Stop hook:** `.cursor/hooks/proof-or-stop.py` (via `.cursor/hooks.json`)  
+**Extended by:** [[Anti-Lie-Strategy]] · `.cursor/rules/aiimin-anti-lie.mdc` (truth labels, receipts, independent verification, reliability log)
 
 ## Purpose
 
@@ -18,7 +33,7 @@ Agents often claim `done` / `fixed` / `tests pass` from pattern completion, not 
 | Session inject | `sessionStart` hook → short PROOF-OR-STOP context | New chats get reminder even if rules flaky |
 | Capture + Stop | `afterAgentResponse` saves text; `stop` nudges once if claim lacks evidence | Machine enforcement |
 | User hooks | `~/.cursor/hooks.json` (optional Terminal install) | All projects on this Mac |
-| Optional User Rules paste | [[Proof-or-Stop-USER-RULES]] → Cursor Settings → Rules → User Rules | Global soft rule in UI |
+| Optional User Rules paste | [[Proof-or-Stop-USER-RULES]] (`14_PROMPTS/Proof-or-Stop-USER-RULES.md`) → Cursor Settings → Rules → User Rules | Global soft rule in UI |
 
 ## Agent contract (summary)
 

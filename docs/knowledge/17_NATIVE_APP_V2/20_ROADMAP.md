@@ -1,4 +1,22 @@
+---
+authority: roadmap
+derived_from: Genesis
+status: superseded
+owner: founder
+lifecycle: frozen
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+superseded_by: Roadmap/AIIMIN-V1-Blueprint.md
+---
 # 20 — Implementation Roadmap
+
+> [!warning] Superseded for V1 sequencing
+> Use [[Roadmap/AIIMIN-V1-Blueprint#20. Implementation roadmap]] for wave order. This note remains as native-pack history.
 
 > **Depends:** entire pack 01–19  
 > **Status:** Complete draft · 2026-07-19  
@@ -70,6 +88,8 @@ iOS decision · Performance · Conflict UX · Public launch
 ## Phase 5 — Launch
 
 Store listing · Data safety · Legal URLs live · LC checklist aligned · Monitoring · Staged rollout  
+
+**Living ledger (evidence rows, not aspirational prose):** [[Play-Store-Launch]]  
 
 ---
 

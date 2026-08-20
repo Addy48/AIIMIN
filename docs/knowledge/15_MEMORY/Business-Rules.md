@@ -1,3 +1,17 @@
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-DOC
+migration_batch: W4
+fm_source: script
+---
 # Business Rules
 
 > Caveman pack. Non-negotiable product rules.
@@ -28,5 +42,6 @@
 ## Launch
 
 - Go-live target end Sep 2026
-- Tester registration closes 31 July
+- Founding / tester registration closes **31 August 2026**
 - LC checklist in Product / Home blockers
+- Priorities: [[Roadmap/Operational-Priorities]]

@@ -1,6 +1,21 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: product
+lifecycle: living
+last_reviewed: 2026-07-30
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
 # AIIMIN Product Guide
 
-> **Canonical product document.** What AIIMIN is, why it exists, what it does, where it runs, and how the pieces fit together.  
+> **Role:** Human-readable product overview for founders, testers, and collaborators.
+> **V1 implementation contract:** [[Roadmap/AIIMIN-V1-Blueprint]] — builders use it for target scope and sequencing.
 > **Audience:** founders, testers, agents, collaborators.  
 > **Last updated:** 2026-07-18
 
@@ -443,7 +458,7 @@ Canonical themes: `aiimin-dark`, `aiimin-light` (`frontend/src/constants/themes.
 
 | Role | Dark | Light |
 |------|------|-------|
-| Background | `#1a1a1a` | `#EDE4D3` (ivory) |
+| Background | `#1a1a1a` | `#f9f9f9` (P8 Visual constitutional light canvas) |
 | Cards | `#2d2d2d` | `#ffffff` |
 | Accent | `#ff6b35` | `#ff6b35` (CSS may use `#E85A24` in light) |
 | Done / success | `#10b981` | `#10b981` |
@@ -499,7 +514,7 @@ Access, correction, export, wipe life data, full account deletion, Google revoke
 ## 12. Launch & access (current lens)
 
 - Waitlist gate when `REACT_APP_WAITLIST_MODE=true`
-- Go-live target: end Sep 2026; tester close 31 Jul 2026
+- Go-live target: end Sep 2026; founding/tester registration closes **31 Aug 2026**
 - Dev/tester emails: elite tier + full access
 - Launch checklist LC-01..LC-14 — see [[01_PRODUCT/Product]]
 

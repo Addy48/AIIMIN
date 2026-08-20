@@ -1,0 +1,108 @@
+{
+  "nodes": [
+    {
+      "id": "t1",
+      "type": "text",
+      "text": "Roadmap Spine \u00b7 Derived",
+      "x": -400,
+      "y": -300,
+      "width": 280,
+      "height": 60
+    },
+    {
+      "id": "p0",
+      "type": "file",
+      "file": "Roadmap/Program-0-Product-Readiness/00_INDEX.md",
+      "x": -400,
+      "y": -100,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "uxi",
+      "type": "file",
+      "file": "Roadmap/UX-Intelligence/00_INDEX.md",
+      "x": -100,
+      "y": -100,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "uxa",
+      "type": "file",
+      "file": "Roadmap/UX-Architecture/00_INDEX.md",
+      "x": 200,
+      "y": -100,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "uxap",
+      "type": "file",
+      "file": "Roadmap/UX-Architecture/95_Publication_Record.md",
+      "x": 200,
+      "y": 50,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "v1",
+      "type": "file",
+      "file": "Roadmap/Program-V1-Obsidian-Knowledge-OS/00_INDEX.md",
+      "x": 500,
+      "y": -100,
+      "width": 400,
+      "height": 80
+    },
+    {
+      "id": "bos",
+      "type": "file",
+      "file": "Roadmap/Brain-OS-Implementation/00_INDEX.md",
+      "x": 800,
+      "y": -100,
+      "width": 400,
+      "height": 80
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "fromNode": "p0",
+      "fromSide": "right",
+      "toNode": "uxi",
+      "toSide": "left",
+      "label": "sequence"
+    },
+    {
+      "id": "e2",
+      "fromNode": "uxi",
+      "fromSide": "right",
+      "toNode": "uxa",
+      "toSide": "left",
+      "label": "sequence"
+    },
+    {
+      "id": "e3",
+      "fromNode": "uxa",
+      "fromSide": "right",
+      "toNode": "v1",
+      "toSide": "left",
+      "label": "sequence"
+    },
+    {
+      "id": "e4",
+      "fromNode": "v1",
+      "fromSide": "right",
+      "toNode": "bos",
+      "toSide": "left",
+      "label": "execute"
+    },
+    {
+      "id": "e5",
+      "fromNode": "uxa",
+      "fromSide": "right",
+      "toNode": "uxap",
+      "toSide": "left"
+    }
+  ]
+}

@@ -1,0 +1,900 @@
+{
+  "meta": {
+    "document": "Prototype Studio Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P6 Prototype Studio/",
+    "source_primary": [
+      "00_EXECUTIVE_SUMMARY.md",
+      "01_CONCEPTS_AND_CRITIQUE.md",
+      "02_DESIGN_DECISIONS.md",
+      "03_SYSTEM_DESIGN.md",
+      "04_PAGE_DESIGNS.md",
+      "07_INTERACTION_DOCUMENTATION.md",
+      "09_ANDROID_MAPPING.md",
+      "10_WEB_TABLET_MAPPING.md",
+      "MANIFEST.md"
+    ],
+    "source_status": "FROZEN (Genesis Phase 6 canonical-prototype)",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-162…GOV-170",
+    "gov_id_range_referenced": "GOV-001…GOV-161 (prior; referenced only)",
+    "decision_count_new": 9,
+    "recommendation_count": 8,
+    "existing_gov_referenced_count": 50,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "scope_note": "Govern reusable product decisions only — behaviors, navigation, interaction patterns, layouts, hierarchy. Do NOT judge visual quality. Ignore unfinished styling.",
+    "id_note": "IDs assigned after Component (142–152) and Platform (153–161); continuous append GOV-162…170 / REC-077…084",
+    "prior_artifacts_untouched": true,
+    "standard_untouched": true,
+    "source_untouched": true
+  },
+  "existing_gov_references": [
+    {
+      "studio": "Personal Life OS / Human Momentum identity",
+      "gov": [
+        "GOV-001",
+        "GOV-003"
+      ],
+      "note": "Category + brand frame — Studio Living Momentum sits inside"
+    },
+    {
+      "studio": "Capture once / capture-first",
+      "gov": [
+        "GOV-002",
+        "GOV-028",
+        "GOV-059",
+        "GOV-066"
+      ],
+      "note": "Vision + capture-first + speed + Enter/primary save — FAB sheet elevates in GOV-170"
+    },
+    {
+      "studio": "Refuse social / clinical / form-builder / casino Life Score",
+      "gov": [
+        "GOV-005",
+        "GOV-006",
+        "GOV-008",
+        "GOV-009"
+      ],
+      "note": "Studio anti-decisions + Family not social + no clinical copy"
+    },
+    {
+      "studio": "Split brand lockup (web mapping)",
+      "gov": [
+        "GOV-012",
+        "GOV-039"
+      ],
+      "note": "10_WEB_TABLET_MAPPING preserves mark→/brand wordmark→Today — not re-minted"
+    },
+    {
+      "studio": "Phone web /m capture-only; native ≠ /m",
+      "gov": [
+        "GOV-013",
+        "GOV-041",
+        "GOV-085"
+      ],
+      "note": "Studio Android prototype ≠ /m ceiling — reused"
+    },
+    {
+      "studio": "Calm read / anti-clutter Today / empty teach",
+      "gov": [
+        "GOV-029",
+        "GOV-076",
+        "GOV-067"
+      ],
+      "note": "Calm Contextual Today + no widget marketplace + teach empty"
+    },
+    {
+      "studio": "Emotional refuse / no shame streaks",
+      "gov": [
+        "GOV-031",
+        "GOV-068"
+      ],
+      "note": "Honest Life Score; Profile no shame carnival — XP roles still ND"
+    },
+    {
+      "studio": "Destructive confirm / optimistic safe",
+      "gov": [
+        "GOV-015",
+        "GOV-065",
+        "GOV-125"
+      ],
+      "note": "Confirm sheet + optimistic habit toggles — reused"
+    },
+    {
+      "studio": "Shared primitives / graph IA / Timeline chronology",
+      "gov": [
+        "GOV-040",
+        "GOV-094",
+        "GOV-102"
+      ],
+      "note": "Cross-surface primitives; Timeline primary in shell elevates GOV-102 placement"
+    },
+    {
+      "studio": "Nav primacy / free-pin / intents / palette / settings",
+      "gov": [
+        "GOV-075",
+        "GOV-095",
+        "GOV-097",
+        "GOV-099",
+        "GOV-100"
+      ],
+      "note": "Studio fixed shell (GOV-163/148) conflicts/complements open IA ND items"
+    },
+    {
+      "studio": "Knowledge ≠ Journal ≠ Documents entity law",
+      "gov": [
+        "GOV-101"
+      ],
+      "note": "Studio Knowledge tabs unify Journal|Notes — CF-PS-002 / GOV-167 ND"
+    },
+    {
+      "studio": "Compression / capture beats nav / infer chips / forms last / one primary",
+      "gov": [
+        "GOV-034",
+        "GOV-122",
+        "GOV-126",
+        "GOV-127",
+        "GOV-130",
+        "GOV-135"
+      ],
+      "note": "Median ~5 via capture sheet; chips; NL capture"
+    },
+    {
+      "studio": "AI never home shell / mixed-initiative coach",
+      "gov": [
+        "GOV-136"
+      ],
+      "note": "Studio kill AI-Native Home; AI under More + coach surface"
+    },
+    {
+      "studio": "Palette lock (identity only — not visual craft judgment)",
+      "gov": [
+        "GOV-036"
+      ],
+      "note": "Product lock honored; visual quality out of scope this pass"
+    },
+    {
+      "studio": "Family not auto-post social",
+      "gov": [
+        "GOV-078"
+      ],
+      "note": "Family trust vault framing"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-162",
+      "title": "Living Momentum OS v1 product concept lock",
+      "category": "Product — Concept",
+      "domain": "product",
+      "decision": "AIIMIN v1 product concept is Living Momentum OS: Intent Capture + Calm Contextual Today + Memory/Timeline compound, with Family/Finance/Documents as trusted pillars and AI as mixed-initiative coach — never the home shell.",
+      "reason": "Studio merge of three surviving concepts; one-year memory test; rejects Notion/Linear/widget/chat-home shapes.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-001",
+        "GOV-002",
+        "GOV-028",
+        "GOV-136"
+      ],
+      "blocks": [
+        "Android Navigation",
+        "Master Product Specification",
+        "Native Shell Migration",
+        "Page Blueprints"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Desktop",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Step 4 — Merge → AIIMIN v1: Living Momentum OS — Definition"
+          ],
+          "quote": "Living Momentum OS = Intent Capture + Calm Contextual Today + Memory/Timeline compound, with Family/Finance/Documents as trusted pillars and AI as mixed-initiative coach — never the home shell."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "00 — Executive Summary — Verdict"
+          ],
+          "quote": "AIIMIN v1 (this studio) is Living Momentum OS"
+        }
+      ],
+      "implementation_impact": "Feature intake must justify fit inside Living Momentum OS. Chat-as-home, Tasks/Projects primary, and widget-dashboard homes are out of canon.",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/01_CONCEPTS_AND_CRITIQUE.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    },
+    {
+      "id": "GOV-163",
+      "title": "Phone primary shell — Today | Knowledge | Capture FAB | Timeline | More",
+      "category": "UX — Navigation",
+      "domain": "ux",
+      "decision": "Android-first phone primary shell is a bottom bar with four destinations plus center Capture FAB: Today, Knowledge, Timeline, More. Drawer may exist as optional power jump list; it must not create a second competing primary nav system.",
+      "reason": "Studio IA lock and Android mapping migration target. Closes nav-primacy ambiguity for phone companion.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-162",
+        "GOV-075",
+        "GOV-097",
+        "GOV-095"
+      ],
+      "blocks": [
+        "Android Navigation",
+        "Native Compose Bottom Bar",
+        "IA Destination Map",
+        "Tablet Rail"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Desktop",
+        "WORKFLOW-PLAN"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Information architecture lock — table"
+          ],
+          "quote": "Today | Knowledge | Capture FAB | Timeline | More"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "03 — System Design — Navigation"
+          ],
+          "quote": "Android bottom bar: 4 destinations + center FAB."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "09 — Android Mapping — Bottom nav proposal"
+          ],
+          "quote": "Studio: Today / Knowledge / FAB / Timeline / More."
+        }
+      ],
+      "implementation_impact": "Replace native Home/Journal/Notes/Vault/More with Studio shell (or equivalent destinations). Founder must ratify against GOV-097 free-pin masthead (REC-077).",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/02_DESIGN_DECISIONS.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    },
+    {
+      "id": "GOV-164",
+      "title": "Surface one-job law — every surface declares exactly one job",
+      "category": "UX — Hierarchy / Layout",
+      "domain": "ux",
+      "decision": "Every primary and secondary surface declares exactly one job. Canonical Studio jobs: Today=Act on this day; Knowledge=Capture and revise personal memory; Documents=Store and retrieve files/vault docs; Family=Shared care + private vault trust; Finance=Log and see money truth; Timeline=Remember what happened; AI=Ask/review/act with confidence chips; Search=Recall across the graph; Settings=Control system safely; Profile=Identity + honest progress; Onboarding=Three beats to first capture; Auth=Trust entry.",
+      "reason": "Prevents everything-pages and competing personalities per screen.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-162",
+        "GOV-098",
+        "GOV-100",
+        "GOV-122"
+      ],
+      "blocks": [
+        "Page Blueprints",
+        "Feature Intake",
+        "Screen Design Reviews"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Desktop",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Surface jobs (one job each) — table"
+          ],
+          "quote": "Today | Act on this day"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Surface jobs (one job each) — table"
+          ],
+          "quote": "Settings | Control system safely"
+        }
+      ],
+      "implementation_impact": "Page Blueprint / PR reviews reject multi-job dumps. New surfaces must publish one-job sentence before ship.",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/02_DESIGN_DECISIONS.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    },
+    {
+      "id": "GOV-165",
+      "title": "Refuse Tasks tab, Projects board, and widget dashboard as primary IA",
+      "category": "Product — IA Refuse",
+      "domain": "product",
+      "decision": "AIIMIN must not ship Tasks as a primary tab, Projects board as primary navigation, or a Living Dashboard of random widgets as the home. Goals may exist as labeled entities (Search/Goals) without a Projects-board primary world.",
+      "reason": "Studio kill list + CPO critique — productivity-category death path.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-007",
+        "GOV-074",
+        "GOV-076",
+        "GOV-162"
+      ],
+      "blocks": [
+        "Android Navigation",
+        "Feature Intake",
+        "Website Marketing Claims"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Desktop",
+        "Kill List"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Explicit anti-decisions"
+          ],
+          "quote": "No Tasks tab as primary"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Explicit anti-decisions"
+          ],
+          "quote": "No Projects board as primary"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Explicit anti-decisions"
+          ],
+          "quote": "No Dashboard of random widgets"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "09 — Android Mapping — Do not"
+          ],
+          "quote": "Ship Tasks/Projects primary tabs on Android — violates Living Momentum."
+        }
+      ],
+      "implementation_impact": "Deny primary-nav proposals for Tasks/Projects/widget home. Goals labeling OK under Search/recall (see REC-084).",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/02_DESIGN_DECISIONS.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    },
+    {
+      "id": "GOV-166",
+      "title": "First-run flow — Splash → Onboarding ≤3 beats → Auth → App Shell",
+      "category": "UX — Onboarding / Navigation",
+      "domain": "ux",
+      "decision": "Canonical first-run sequence is Splash → Onboarding (exactly three beats: Capture once, One graph, Honest mirror) → Auth → App Shell. Skip may exist on the last beat into Auth. Onboarding must not become infinite customization.",
+      "reason": "Principal UX critique: ≤3 beats to first capture; NN bans infinite customization onboarding.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-002",
+        "GOV-009",
+        "GOV-079",
+        "GOV-162"
+      ],
+      "blocks": [
+        "Auth UX",
+        "Android WelcomeGate",
+        "Website Onboarding"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Prototype promise"
+          ],
+          "quote": "Splash → Onboarding (3 beats) → Auth → App"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "04 — Page Designs — Onboarding (3 beats)"
+          ],
+          "quote": "1. Capture once — speak or type; system structures."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Step 3 — Critique — Role critiques"
+          ],
+          "quote": "Onboarding must be ≤3 beats to first capture."
+        }
+      ],
+      "implementation_impact": "Cut Welcome/onboarding to three doctrinal beats. No multi-screen preference buffet before first capture path.",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/04_PAGE_DESIGNS.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    },
+    {
+      "id": "GOV-167",
+      "title": "Knowledge surface unifies Journal | Notes as one memory layer",
+      "category": "UX — Information Architecture",
+      "domain": "ux",
+      "decision": "Phone primary Knowledge destination presents Journal and Notes as tabs of one memory capture/revise layer. Separate routes under the hood remain allowed; primary IA must not present Journal and Notes as competing peer bottom-nav destinations.",
+      "reason": "Studio IA lock + Android migration (Journal+Notes → Knowledge). Tensions with GOV-101 entity separation.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-101",
+        "GOV-163",
+        "GOV-164",
+        "GOV-096"
+      ],
+      "blocks": [
+        "Android Navigation",
+        "Knowledge Routes",
+        "Entity IA Contracts"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Desktop",
+        "IA Spec"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Information architecture lock — table"
+          ],
+          "quote": "Knowledge | Memory capture — journal + notes as one layer (tabs, not apps)"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "04 — Page Designs — Knowledge"
+          ],
+          "quote": "Tabs: Journal | Notes."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "09 — Android Mapping — Native today → Studio IA"
+          ],
+          "quote": "Unify under Knowledge tabs in IA; keep separate routes OK"
+        }
+      ],
+      "implementation_impact": "Collapse Journal/Notes bottom peers into Knowledge. Founder must reconcile with GOV-101 (REC-078) — surface unify vs entity distinct.",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/02_DESIGN_DECISIONS.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    },
+    {
+      "id": "GOV-168",
+      "title": "More is honest overflow — pillars and meta under More on phone",
+      "category": "UX — Navigation",
+      "domain": "ux",
+      "decision": "On phone, More is the honest overflow destination containing Family, Finance, Documents, AI, Search, Settings, and Profile. Family/Finance/Documents are trusted pillars of Living Momentum OS but are not phone bottom-bar peers. Settings remains penalty-box; no daily capture actions live only in Settings.",
+      "reason": "Studio More bag + GOV-100 Settings law + Living Momentum pillars.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-163",
+        "GOV-100",
+        "GOV-162",
+        "GOV-097"
+      ],
+      "blocks": [
+        "Android More Menu",
+        "IA Destination Map",
+        "Tablet Density ADR"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Information architecture lock — table"
+          ],
+          "quote": "More | Family, Finance, Documents, AI, Search, Settings, Profile"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "03 — System Design — Navigation"
+          ],
+          "quote": "More → Family | Finance | Documents | AI | Search | Settings | Profile"
+        }
+      ],
+      "implementation_impact": "Phone More must list the seven overflow surfaces. Tablet Finance elevation is separate ADR (REC-080) — does not silently rewrite phone More.",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/02_DESIGN_DECISIONS.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    },
+    {
+      "id": "GOV-169",
+      "title": "Six page hierarchy layers — System / Day / Memory / Pillars / Intelligence / Account",
+      "category": "UX — Hierarchy",
+      "domain": "ux",
+      "decision": "Product page hierarchy is ordered in six layers: (1) System — Splash, Onboarding, Auth; (2) Day — Today; (3) Memory — Knowledge, Timeline, Search; (4) Pillars — Family, Finance, Documents; (5) Intelligence — AI; (6) Account — Profile, Settings. New screens must declare which layer they belong to.",
+      "reason": "Studio system design hierarchy — prevents orphan screens and wrong-layer chrome.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-096",
+        "GOV-103",
+        "GOV-162",
+        "GOV-164"
+      ],
+      "blocks": [
+        "Page Blueprints",
+        "Entity IA Contracts",
+        "Screen Inventory"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Design System",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "03 — System Design — Page hierarchy"
+          ],
+          "quote": "1. System — Splash, Onboarding, Auth"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "03 — System Design — Page hierarchy"
+          ],
+          "quote": "2. Day — Today"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "03 — System Design — Page hierarchy"
+          ],
+          "quote": "3. Memory — Knowledge, Timeline, Search"
+        }
+      ],
+      "implementation_impact": "Screen inventory and blueprints must tag layer 1–6. Mis-layered proposals fail intake (with GOV-103).",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/03_SYSTEM_DESIGN.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    },
+    {
+      "id": "GOV-170",
+      "title": "Global Capture FAB sheet is primary capture path",
+      "category": "UX — Interaction / Capture",
+      "domain": "ux",
+      "decision": "A global Capture FAB opens a capture sheet that is the primary daily capture path. One utterance routes to habit / journal / finance / note / event with inference confirmation chips. Median daily interaction compression targets the capture sheet as the taught primary path — not deep-link tourism through every pillar.",
+      "reason": "Studio interaction law + compression doctrine + Intent Capture OS survivor.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-028",
+        "GOV-066",
+        "GOV-126",
+        "GOV-127",
+        "GOV-130",
+        "GOV-163"
+      ],
+      "blocks": [
+        "Android Capture FAB",
+        "Capture UX",
+        "Outbox Routing",
+        "Chip UX Spec"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Desktop",
+        "AI",
+        "Backend"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Interaction decisions — table"
+          ],
+          "quote": "Capture | FAB → sheet → chips confirm inference"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "07 — Interaction Documentation — Compression target"
+          ],
+          "quote": "Median daily interactions toward 5 — prototype teaches capture sheet as primary path."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Information architecture lock — table"
+          ],
+          "quote": "Capture FAB | Intent utterance — routes to habit / journal / finance / note / event"
+        }
+      ],
+      "implementation_impact": "Native must ship global FAB + sheet routing. Capture must not require opening each pillar first. Aligns with GOV-127 Needs Discussion — Studio supplies concrete shell answer.",
+      "source_document": "AIIMIN GENESIS/P6 Prototype Studio/02_DESIGN_DECISIONS.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Prototype-Studio",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Prototype-Studio/"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-077",
+      "title": "Ratify GOV-163 phone shell as nav primacy — close GOV-075 / GOV-097 / REC-022 gap",
+      "reason": "Studio locks fixed bottom destinations; IA Principles left free-pin masthead Needs Discussion.",
+      "impact": "Unblocks Android bottom-bar migration and REC-028 destination map.",
+      "risk": "High — wrong call forks phone vs desktop nav forever.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-163",
+        "GOV-075",
+        "GOV-097",
+        "GOV-095"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Prototype-Studio"
+    },
+    {
+      "id": "REC-078",
+      "title": "Resolve GOV-167 Knowledge tabs vs GOV-101 entity separation",
+      "reason": "Surface unify (tabs) can coexist with entity distinct — or founder rejects unify.",
+      "impact": "Clears Journal/Notes Compose route strategy.",
+      "risk": "Medium — entity bleed if tabs erase contracts.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-167",
+        "GOV-101"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Prototype-Studio"
+    },
+    {
+      "id": "REC-079",
+      "title": "Ratify Approved Prototype Studio GOVs (162, 164–166, 168–170) as citeable shell canon",
+      "reason": "Approved items ready as law after founder ACK; ND items stay open.",
+      "impact": "PRs cite GOV-IDs for shell/IA work.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-162",
+        "GOV-164",
+        "GOV-165",
+        "GOV-166",
+        "GOV-168",
+        "GOV-169",
+        "GOV-170"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Prototype-Studio"
+    },
+    {
+      "id": "REC-080",
+      "title": "Founder ADR — tablet/desktop Finance elevation vs phone Finance-in-More",
+      "reason": "10_WEB_TABLET_MAPPING elevates Finance on tablet rail; phone keeps Finance in More; Android mapping also wants Finance first-class.",
+      "impact": "Density-by-device without forking primitives.",
+      "risk": "High — silent elevation creates duplicate primacy (GOV-075).",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-168",
+        "GOV-163",
+        "GOV-075",
+        "GOV-109"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Prototype-Studio"
+    },
+    {
+      "id": "REC-081",
+      "title": "Map Studio shell → native WORKFLOW-PLAN / Compose bottom-nav migration",
+      "reason": "09_ANDROID_MAPPING already proposes Journal+Notes→Knowledge, add Timeline, Vault under More.",
+      "impact": "Executable native epic from governed IA.",
+      "risk": "Medium — migration churn without epic owner.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-163",
+        "GOV-167",
+        "GOV-168",
+        "GOV-170"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Prototype-Studio"
+    },
+    {
+      "id": "REC-082",
+      "title": "Publish Search page + Command Palette coexistence note under GOV-099",
+      "reason": "Studio puts Search in More; web mapping keeps ⌘K power path + Search browse page.",
+      "impact": "Closes CF-PS-004 without killing palette.",
+      "risk": "Low.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-099",
+        "GOV-168",
+        "GOV-164"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Prototype-Studio"
+    },
+    {
+      "id": "REC-083",
+      "title": "Next P7 after founder OK — Page Blueprints or Automation Rules or Accessibility",
+      "reason": "Studio shell now governed; blueprints inherit one-job + hierarchy; Automation still open from AI pass.",
+      "impact": "Continues build-without-reread.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-164",
+        "GOV-169",
+        "GOV-137"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Prototype-Studio"
+    },
+    {
+      "id": "REC-084",
+      "title": "Govern Goals (not Projects board) naming in Naming Language pass",
+      "reason": "Studio Search labels Goals not Projects board — naming law belongs in 13_NAMING_LANGUAGE.",
+      "impact": "Prevents Projects-board language creep.",
+      "risk": "Low.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-165",
+        "GOV-131"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Prototype-Studio"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-PS-001",
+      "type": "Nav primacy tension",
+      "detail": "GOV-163 fixed phone bottom destinations vs GOV-097 user-owned free-pin masthead (Needs Discussion) and GOV-075 no duplicate nav systems.",
+      "action": "REC-077"
+    },
+    {
+      "id": "CF-PS-002",
+      "type": "Knowledge surface vs entity law",
+      "detail": "GOV-167 Knowledge tabs unify Journal|Notes vs GOV-101 Knowledge/Notes ≠ Journal ≠ Documents.",
+      "action": "REC-078 — likely resolve as surface unify + entity distinct"
+    },
+    {
+      "id": "CF-PS-003",
+      "type": "Finance density by device",
+      "detail": "Phone Finance in More (GOV-168) vs tablet rail Finance primary (10_WEB_TABLET_MAPPING) vs Android mapping elevate Finance.",
+      "action": "REC-080"
+    },
+    {
+      "id": "CF-PS-004",
+      "type": "Search placement vs Palette first-class",
+      "detail": "Studio Search under More vs GOV-099 Command Palette / universal search first-class IA — complementary if both kept (web mapping).",
+      "action": "REC-082"
+    },
+    {
+      "id": "CF-PS-005",
+      "type": "Capture beats nav concrete answer",
+      "detail": "GOV-170 FAB sheet primary path supplies concrete shell answer for open GOV-127 Needs Discussion — not contradiction; founder align.",
+      "action": "Align with REC-051 / GOV-127"
+    },
+    {
+      "id": "CF-PS-006",
+      "type": "Queue order — AI next vs Studio now",
+      "detail": "REC-061 named Automation/Accessibility/Naming next; this pass governed Prototype Studio per founder request — queue updated via REC-083.",
+      "action": "REC-083"
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-PS-001",
+      "missing": "Auth method ranking beyond Google primary / email secondary (biometric timing)",
+      "why": "Studio mentions biometric later; not full auth law",
+      "next": "Auth UX ADR — do not invent"
+    },
+    {
+      "id": "M-PS-002",
+      "missing": "Exact typed-confirm rules for account delete vs other destructives",
+      "why": "Mapped, not fully prototyped",
+      "next": "Keep GOV-065; detail in component spec"
+    },
+    {
+      "id": "M-PS-003",
+      "missing": "Desktop masthead free-pin defaults if GOV-097 survives beside phone shell",
+      "why": "Studio phone-first; desktop free-pin unresolved",
+      "next": "REC-077 + REC-027"
+    },
+    {
+      "id": "M-PS-004",
+      "missing": "Notification grouping surface contract (Today/Earlier)",
+      "why": "Supporting page only; NN notification taxonomy still open",
+      "next": "REC-017"
+    },
+    {
+      "id": "M-PS-005",
+      "missing": "Visual token craft quality / polish bar",
+      "why": "Explicitly out of scope this pass",
+      "next": "Design System Spec / craft review — not governance invent"
+    }
+  ],
+  "validation": {
+    "duplicate_new_gov_ids": false,
+    "dependency_graph_acyclic": true,
+    "all_depends_on_resolve": true,
+    "schema_fields_complete": true,
+    "evidence_min_one_per_gov": true,
+    "visual_quality_judgments_excluded": true
+  },
+  "governance_score": {
+    "Identity Clarity": 9,
+    "Enforceability": 8,
+    "Cross Platform Readiness": 7,
+    "Ai Readiness": 7,
+    "Conflict Hygiene": 6,
+    "Metric Rigor": 7,
+    "Amendment Process": 8,
+    "Completeness Build Without Reread": 8,
+    "Traceability Evidence": 9,
+    "Machine Readability": 9,
+    "total": 78
+  }
+}

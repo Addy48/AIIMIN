@@ -1,0 +1,859 @@
+{
+  "meta": {
+    "document": "Platform Principles Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+    "source_alias": "11_PLATFORM_PRINCIPLES.md → 17_FUTURE_GROWTH_RULES.md (P5 11_ is Accessibility Principles; no PLATFORM_PRINCIPLES file)",
+    "source_adjacent": [
+      "docs/knowledge/02_ARCHITECTURE/Device-Tiers.md (living ceilings — not redesigned this pass)",
+      "AIIMIN GENESIS/P3 UX Intelligence/12_PLATFORM_CONTINUITY.md (audit evidence — not law source)"
+    ],
+    "source_status": "FROZEN (P5 Constitution Future Growth Rules)",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-153…GOV-161",
+    "gov_id_range_referenced": "GOV-001…GOV-152 (prior; referenced only)",
+    "decision_count_new": 9,
+    "recommendation_count": 7,
+    "existing_gov_referenced_count": 31,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "constitution_untouched": true,
+    "non_negotiables_untouched": true,
+    "ia_principles_untouched": true,
+    "design_system_principles_untouched": true,
+    "motion_principles_untouched": true,
+    "interaction_principles_untouched": true,
+    "ai_principles_untouched": true,
+    "standard_untouched": true,
+    "source_untouched": true,
+    "device_tiers_untouched": true,
+    "recommendation_ids": [
+      "REC-070",
+      "REC-071",
+      "REC-072",
+      "REC-073",
+      "REC-074",
+      "REC-075",
+      "REC-076"
+    ]
+  },
+  "existing_gov_references": [
+    {
+      "platform": "OS shared primitives across surfaces",
+      "gov": [
+        "GOV-001",
+        "GOV-020",
+        "GOV-040"
+      ],
+      "note": "Personal Life OS + one primitive many surfaces + shared primitives — growth axiom builds on these"
+    },
+    {
+      "platform": "Phone web /m capture-only ceiling",
+      "gov": [
+        "GOV-013",
+        "GOV-041"
+      ],
+      "note": "Future Growth phone web section — reuse; do not re-mint"
+    },
+    {
+      "platform": "Native rich companion ≠ /m destiny; Capacitor not primary",
+      "gov": [
+        "GOV-085",
+        "GOV-092"
+      ],
+      "note": "Native section + anti bait-and-switch — reuse"
+    },
+    {
+      "platform": "Sync honesty / outbox on native",
+      "gov": [
+        "GOV-089"
+      ],
+      "note": "Future Growth native outbox/sync honesty — reuse"
+    },
+    {
+      "platform": "Cross-client token meaning / native token extension",
+      "gov": [
+        "GOV-073",
+        "GOV-110"
+      ],
+      "note": "Design evolution arbitration elevates with GOV-160; GOV-073 still ND"
+    },
+    {
+      "platform": "Article supremacy; no fork Constitutions per device",
+      "gov": [
+        "GOV-025"
+      ],
+      "note": "Design system evolution rule 2 — Constitution travels"
+    },
+    {
+      "platform": "Kill List on new modalities",
+      "gov": [
+        "GOV-074"
+      ],
+      "note": "Evolution rule 4 — reuse"
+    },
+    {
+      "platform": "Voice = Palette intent router; Command Palette first-class",
+      "gov": [
+        "GOV-099",
+        "GOV-047",
+        "GOV-136"
+      ],
+      "note": "Voice section — elevate modality in GOV-157; roles/bands already AI"
+    },
+    {
+      "platform": "Infer-then-chip; correctable inference",
+      "gov": [
+        "GOV-126",
+        "GOV-035",
+        "GOV-051"
+      ],
+      "note": "Wearables section cites infer-then-chip"
+    },
+    {
+      "platform": "Notifications deserve attention",
+      "gov": [
+        "GOV-064"
+      ],
+      "note": "Voice speech notifications — GOV-064 still ND"
+    },
+    {
+      "platform": "No clinical/therapist; no auto-post; no invented money; safety never infer",
+      "gov": [
+        "GOV-050",
+        "GOV-006",
+        "GOV-078",
+        "GOV-082",
+        "GOV-070",
+        "GOV-140"
+      ],
+      "note": "Future AI + wearable clinical refuse — reuse"
+    },
+    {
+      "platform": "Future AI roles + bands + coaching window",
+      "gov": [
+        "GOV-138",
+        "GOV-137",
+        "GOV-141"
+      ],
+      "note": "Future Growth Future AI section — reuse; no re-mint"
+    },
+    {
+      "platform": "Platform vernacular / device gestures",
+      "gov": [
+        "GOV-118",
+        "GOV-134"
+      ],
+      "note": "Motion/Interaction already allow platform-native behaviors under shared tempo/identity"
+    },
+    {
+      "platform": "Entity IA contract includes ceiling",
+      "gov": [
+        "GOV-103"
+      ],
+      "note": "Surface declaration in GOV-153 aligns with entity ceiling field"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-153",
+      "title": "Growth axiom — identity invariant; modality variable; ceiling intentional",
+      "category": "Platform — Growth Axiom",
+      "domain": "product",
+      "decision": "Identity is invariant. Modality is variable. Ceiling is intentional. Every new surface must declare: (1) which Constitutional articles it upholds, (2) its capture vs command vs review ceiling, (3) which component contracts it reuses, (4) what it will never do (surface-specific non-negotiables).",
+      "reason": "Future Growth opening law. Prevents app fragmentation inside one brand.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-001",
+        "GOV-020",
+        "GOV-025",
+        "GOV-040",
+        "GOV-103"
+      ],
+      "blocks": [
+        "New Surface Intake",
+        "Watch Spec",
+        "Car Spec",
+        "Wearables Spec",
+        "AR Spec",
+        "Voice Surface Spec"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Desktop",
+        "Website",
+        "Design System",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Growth axiom"
+          ],
+          "quote": "Identity is invariant. Modality is variable. Ceiling is intentional."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Growth axiom"
+          ],
+          "quote": "Every new surface must declare: 1. Which Constitutional articles it upholds. 2. Its capture vs command vs review ceiling. 3. Which component contracts it reuses. 4. What it will never do (surface-specific non-negotiables)."
+        }
+      ],
+      "implementation_impact": "Surface proposals without the four declarations fail intake. Pair with GOV-161 expansion gate.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    },
+    {
+      "id": "GOV-154",
+      "title": "Desktop and tablet shipped ceilings — full OS; tablet TabRail-class; no hover-only essentials",
+      "category": "Platform — Shipped Tiers",
+      "domain": "technical",
+      "decision": "Desktop (web ≥1100 / large windows) is the full Life OS command surface: Palette and keyboard mastery thrive; density may rise; calm review must remain available; do not assume hover-only essential actions. Tablet (768–1099 class) is full OS with TabRail-class navigation and touch/density balance — not a blown-up phone capture shell and not a cramped desktop.",
+      "reason": "Future Growth Desktop + Tablet platform rules. Complements /m and native already governed.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-001",
+        "GOV-013",
+        "GOV-040",
+        "GOV-085",
+        "GOV-153"
+      ],
+      "blocks": [
+        "Desktop Layout Spec",
+        "Tablet Nav Spec",
+        "Responsive QA",
+        "Device-Tiers Companion"
+      ],
+      "referenced_by": [
+        "P8",
+        "Desktop",
+        "Website",
+        "Design System",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Platform rules — Desktop"
+          ],
+          "quote": "Full Life OS command surface. Palette and keyboard mastery thrive. Density may rise; calm review must remain available. Do not assume hover-only essential actions."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Platform rules — Tablet"
+          ],
+          "quote": "Full OS with TabRail-class navigation. Touch targets and density balance. Not a blown-up phone capture shell; not a cramped desktop."
+        }
+      ],
+      "implementation_impact": "Founder confirm breakpoint classes (≥1100 / 768–1099) as governance companion to living Device-Tiers — no redesign of Device-Tiers this pass (REC-073).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    },
+    {
+      "id": "GOV-155",
+      "title": "Watch ceiling — pulses and glances only; no multi-step finance; phone handoff for high stakes",
+      "category": "Platform — Watch",
+      "domain": "product",
+      "decision": "Watch surfaces capture pulses and glances only: toggle, quick log, timer status, score glance. No multi-step finance forms. Complications show truth, not vanity spam. Confirm destructive only if truly necessary; prefer phone handoff for high stakes.",
+      "reason": "Future Growth Watch platform rules. Explicit modality ceiling.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-153",
+        "GOV-015",
+        "GOV-046",
+        "GOV-082"
+      ],
+      "blocks": [
+        "Watch Spec",
+        "Watch Complications",
+        "Wear OS Intake"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Platform rules — Watch"
+          ],
+          "quote": "Capture pulses and glances only: toggle, quick log, timer status, score glance. No multi-step finance forms. Complications show truth, not vanity spam. Confirm destructive only if truly necessary; prefer phone handoff for high stakes."
+        }
+      ],
+      "implementation_impact": "Reject full-OS-on-watch proposals. Finance capture on watch = quick utterance or handoff only.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    },
+    {
+      "id": "GOV-156",
+      "title": "Car ceiling — eyes-free / glance-safe; safety over completeness",
+      "category": "Platform — Car",
+      "domain": "product",
+      "decision": "Car surfaces are eyes-free / glance-safe: voice capture, read-backs, next calendar block. No dense dashboards while driving. Safety > completeness; delay complex review until parked (system/OS rules first).",
+      "reason": "Future Growth Car platform rules.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-153",
+        "GOV-157",
+        "GOV-033"
+      ],
+      "blocks": [
+        "Car Spec",
+        "Android Auto / CarPlay Intake"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Platform rules — Car"
+          ],
+          "quote": "Eyes-free / glance-safe: voice capture, read-backs, next calendar block. No dense dashboards while driving. Safety > completeness; delay complex review until parked (system/OS rules first)."
+        }
+      ],
+      "implementation_impact": "Driving mode forbids dense review UI. Defer complex tasks until parked.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    },
+    {
+      "id": "GOV-157",
+      "title": "Voice modality — Palette intent-router philosophy; correction path; coaching sparingly",
+      "category": "Platform — Voice",
+      "domain": "ux",
+      "decision": "Voice uses the same intent-router philosophy as Command Palette. Always provide typed/visual correction path when a screen exists. Speak coaching sparingly; never clinical. Notifications-as-speech must still deserve attention.",
+      "reason": "Future Growth Voice platform rules. Elevates modality without re-minting AI roles.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-099",
+        "GOV-047",
+        "GOV-136",
+        "GOV-050",
+        "GOV-064",
+        "GOV-126",
+        "GOV-153"
+      ],
+      "blocks": [
+        "Voice Capture Spec",
+        "STT UX",
+        "Speech Notification Taxonomy"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Android Build",
+        "Desktop",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Platform rules — Voice"
+          ],
+          "quote": "Same intent router philosophy as Palette. Always provide typed/visual correction path when screen exists. Speak coaching sparingly; never clinical. Notifications-as-speech must still \"deserve attention.\""
+        }
+      ],
+      "implementation_impact": "Voice features declare Router role (GOV-138). No voice-only correction when screen available. Speech nags obey GOV-064.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    },
+    {
+      "id": "GOV-158",
+      "title": "Wearables / passive sensing — opt-in; on-device preference; no silent clinical; not fitness-app takeover",
+      "category": "Platform — Wearables",
+      "domain": "product",
+      "decision": "Wearables and passive sensing are opt-in only. Prefer on-device processing where possible. Infer-then-chip remains law. Never silent clinical labeling from sensors. Health data is context for Life OS, not a fitness-app identity takeover.",
+      "reason": "Future Growth Wearables / passive sensing rules.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-153",
+        "GOV-126",
+        "GOV-050",
+        "GOV-006",
+        "GOV-070",
+        "GOV-058"
+      ],
+      "blocks": [
+        "Wearables Spec",
+        "HealthKit/Health Connect Intake",
+        "Passive Sensing Pipeline"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "AI",
+        "Backend"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Platform rules — Wearables / passive sensing"
+          ],
+          "quote": "Opt-in only. On-device preference where possible. Infer-then-chip remains law. Never silent clinical labeling from sensors. Health data is context for Life OS, not a fitness-app identity takeover."
+        }
+      ],
+      "implementation_impact": "No silent disease/diagnosis labels. Opt-in gate before sensor pipelines. Chip correction mandatory on inferences.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    },
+    {
+      "id": "GOV-159",
+      "title": "AR ceiling — capture/memory overlays only; not social AR; no AR-inferred medical",
+      "category": "Platform — AR",
+      "domain": "product",
+      "decision": "AR provides context overlays for capture and memory retrieval — not a social AR network. Minimal chrome; real-world attention wins. Identity tokens as subtle recognition, not neon mesh cosplay. High-stakes family/medical never AR-inferred.",
+      "reason": "Future Growth AR platform rules.",
+      "status": "Approved",
+      "priority": "P2",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-153",
+        "GOV-005",
+        "GOV-010",
+        "GOV-050",
+        "GOV-070"
+      ],
+      "blocks": [
+        "AR Spec",
+        "AR Prototype Gate"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Design System",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Platform rules — AR"
+          ],
+          "quote": "Context overlays for capture and memory retrieval — not social AR network. Minimal chrome; real-world attention wins. Identity tokens as subtle recognition, not neon mesh cosplay. High-stakes family/medical never AR-inferred."
+        }
+      ],
+      "implementation_impact": "Reject social/feed AR. Medical/family fields never AR-inferred. Anti-look bans still bind.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    },
+    {
+      "id": "GOV-160",
+      "title": "Multi-device design evolution — extend tokens by role; no per-device Constitution forks; Constitution arbitrates drift",
+      "category": "Platform — Design Evolution",
+      "domain": "visual",
+      "decision": "Extend tokens by role, not by trend palette. Add modality blueprints; do not fork Constitutions per device. Prefer responsive contracts over separate product lines unless founder creates a new product. Kill List applies to new modalities. Marketing may innovate within anti-look bans; OS surfaces stay restrained. When two clients disagree, tokens + blueprints + Constitution arbitrate — not whichever shipped last.",
+      "reason": "Future Growth Design system evolution rules (1–6).",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-025",
+        "GOV-073",
+        "GOV-074",
+        "GOV-110",
+        "GOV-037",
+        "GOV-153"
+      ],
+      "blocks": [
+        "Token SoT",
+        "Modality Blueprints",
+        "Cross-Client Drift Audit"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Desktop",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Design system evolution rules"
+          ],
+          "quote": "Extend tokens by role, not by trend palette."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Design system evolution rules"
+          ],
+          "quote": "Add modality blueprints; do not fork Constitutions per device."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Design system evolution rules"
+          ],
+          "quote": "When two clients disagree, tokens + blueprints + Constitution arbitrate — not whichever shipped last."
+        }
+      ],
+      "implementation_impact": "Founder align with GOV-073 / REC-020 token SoT. Three monorepo clients remain intentional products under shared Constitution — not trend forks.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    },
+    {
+      "id": "GOV-161",
+      "title": "Expansion decision gate — five questions before new platform surface; fail stays Design Lab",
+      "category": "Platform — Expansion Gate",
+      "domain": "governance",
+      "decision": "Before building a new platform surface, answer: (1) What human problem is modality-unique here? (2) Which page blueprint roles transfer? (3) What is explicitly out of ceiling? (4) How is trust preserved (privacy, confirm, export)? (5) Will this still be true in ten years, or is it a gadget demo? If the gate fails → prototype in Design Lab only; do not ship identity risk.",
+      "reason": "Future Growth Expansion decision gate. Operationalizes GOV-153 declarations.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-153",
+        "GOV-023",
+        "GOV-014",
+        "GOV-015",
+        "GOV-093"
+      ],
+      "blocks": [
+        "New Surface Intake",
+        "Watch Spec",
+        "Car Spec",
+        "AR Spec",
+        "Wearables Spec"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Feature Intake",
+        "Design Lab"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Expansion decision gate"
+          ],
+          "quote": "Before building a new platform surface, answer: 1. What human problem is modality-unique here? 2. Which page blueprint roles transfer? 3. What is explicitly out of ceiling? 4. How is trust preserved (privacy, confirm, export)? 5. Will this still be true in ten years, or is it a gadget demo?"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Expansion decision gate"
+          ],
+          "quote": "If gate fails → prototype in Design Lab only; do not ship identity risk."
+        }
+      ],
+      "implementation_impact": "Add five-question gate beside GOV-093 eight-gate and GOV-153 declarations on surface proposals.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/17_FUTURE_GROWTH_RULES.md",
+      "canon_class": "canonical",
+      "origin_artifact": "Platform-Principles",
+      "origin_path": "AIIMIN GENESIS/P7 Governance/Platform-Principles/"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-070",
+      "title": "Ratify Approved Platform GOVs (153, 155–159, 161) as citeable platform canon",
+      "reason": "Growth axiom, modality ceilings, voice, expansion gate newly citeable.",
+      "impact": "Surface/PRs cite GOV-IDs.",
+      "risk": "Medium drift if delayed.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-153",
+        "GOV-155",
+        "GOV-156",
+        "GOV-157",
+        "GOV-158",
+        "GOV-159",
+        "GOV-161"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Platform-Principles"
+    },
+    {
+      "id": "REC-071",
+      "title": "Confirm source alias: 11_PLATFORM_PRINCIPLES → 17_FUTURE_GROWTH_RULES",
+      "reason": "No 11_PLATFORM_PRINCIPLES.md; P5 11_ is Accessibility. Frozen platform laws live in Future Growth Rules.",
+      "impact": "Alias locked for later agents.",
+      "risk": "Low if confirmed; High confusion if wrong source reused.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-153"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Platform-Principles"
+    },
+    {
+      "id": "REC-072",
+      "title": "Publish surface declaration checklist from GOV-153 four fields + GOV-161 five questions",
+      "reason": "Operationalize growth axiom + expansion gate for intake.",
+      "impact": "One checklist for new modalities.",
+      "risk": "Medium if skipped — ad-hoc surface sprawl.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-153",
+        "GOV-161",
+        "GOV-093",
+        "GOV-103"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Platform-Principles"
+    },
+    {
+      "id": "REC-073",
+      "title": "Founder confirm desktop/tablet breakpoint classes as Device-Tiers companion (no redesign)",
+      "reason": "GOV-154 Needs Discussion — Future Growth states ≥1100 and 768–1099 class; Device-Tiers already matches; do not rewrite architecture.",
+      "impact": "Citeable tier bands without touching Device-Tiers structure.",
+      "risk": "Medium — silent drift between vault and governance.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-154",
+        "GOV-013",
+        "GOV-085"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Platform-Principles"
+    },
+    {
+      "id": "REC-074",
+      "title": "Align GOV-160 client-dispute arbitration with GOV-073 / REC-020 token SoT",
+      "reason": "Both assert cross-client meaning; GOV-073 still Needs Discussion.",
+      "impact": "Named SoT + arbitration order.",
+      "risk": "Extreme if clients keep shipping last-wins.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-160",
+        "GOV-073",
+        "GOV-110"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Platform-Principles"
+    },
+    {
+      "id": "REC-075",
+      "title": "Add Platform QA gates: surface declaration, shipped ceilings, watch/car/voice/wearable/AR refuses, expansion gate",
+      "reason": "Operationalize new platform GOVs.",
+      "impact": "PR checklist for multi-device work.",
+      "risk": "Low process; High if skipped.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-153",
+        "GOV-154",
+        "GOV-155",
+        "GOV-156",
+        "GOV-157",
+        "GOV-158",
+        "GOV-159",
+        "GOV-161"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Platform-Principles"
+    },
+    {
+      "id": "REC-076",
+      "title": "Next P7 after founder OK: 11_ACCESSIBILITY_PRINCIPLES or 07_AUTOMATION_RULES or 13_NAMING_LANGUAGE",
+      "reason": "Platform pass complete; prior REC-061 still lists Automation/Accessibility/Naming. Do not confuse P5 11_ Accessibility with this platform alias.",
+      "impact": "Continues build-without-reread.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-133",
+        "GOV-137",
+        "GOV-071",
+        "GOV-160"
+      ],
+      "canon_class": "recommendation",
+      "origin_artifact": "Platform-Principles"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-PL-001",
+      "type": "Source alias — no 11_PLATFORM_PRINCIPLES.md",
+      "detail": "Requested 11_PLATFORM_PRINCIPLES.md does not exist. P5 11_ is Accessibility Principles. Governed frozen 17_FUTURE_GROWTH_RULES.md. Adjacent: Device-Tiers (living), 12_PLATFORM_CONTINUITY (P3 audit).",
+      "related_gov": [
+        "GOV-153"
+      ],
+      "recommendation": "REC-071"
+    },
+    {
+      "id": "CF-PL-002",
+      "type": "Complementary Needs Discussion — desktop/tablet breakpoints",
+      "detail": "GOV-154 freezes Future Growth tier classes; Device-Tiers already documents same bands. Not redesign — founder confirm companion lock (REC-073).",
+      "related_gov": [
+        "GOV-154",
+        "GOV-013",
+        "GOV-085"
+      ],
+      "recommendation": "REC-073"
+    },
+    {
+      "id": "CF-PL-003",
+      "type": "Complementary Needs Discussion — client arbitration × token SoT",
+      "detail": "GOV-160 says tokens+blueprints+Constitution arbitrate; GOV-073 still Needs Discussion on cross-client token meaning.",
+      "related_gov": [
+        "GOV-160",
+        "GOV-073",
+        "GOV-110"
+      ],
+      "recommendation": "REC-074"
+    },
+    {
+      "id": "CF-PL-004",
+      "type": "Audit vs law — Platform Continuity not-yet-one-ecosystem",
+      "detail": "P3 12_PLATFORM_CONTINUITY verdict: multiple related products, not yet one ecosystem. Future Growth is the passport law. Not contradiction — audit describes gap; GOV-153/149/150 define how to close without redesign.",
+      "related_gov": [
+        "GOV-153",
+        "GOV-160",
+        "GOV-092"
+      ],
+      "recommendation": "Treat Continuity as evidence only"
+    },
+    {
+      "id": "CF-PL-005",
+      "type": "Known risk — native envy breaking /m",
+      "detail": "Source Known risks: native feature envy breaking /m via web ports. Already resolved in law by GOV-013/041/085 — reaffirm only.",
+      "related_gov": [
+        "GOV-013",
+        "GOV-041",
+        "GOV-085"
+      ],
+      "recommendation": "Reuse; no new GOV"
+    },
+    {
+      "id": "CF-PL-006",
+      "type": "Tone/safety tension — voice coach × clinical refuse × speech notifications",
+      "detail": "GOV-157 coaching sparingly/never clinical × GOV-050/141 × GOV-064 (still ND) for speech notifications.",
+      "related_gov": [
+        "GOV-157",
+        "GOV-050",
+        "GOV-141",
+        "GOV-064"
+      ],
+      "recommendation": "REC-017 remains; keep REC-060 for coach tone"
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-PL-001",
+      "missing": "iOS native surface declaration (known unknown from Platform Continuity)",
+      "why": "Future Growth states rules; iOS not shipped",
+      "next": "Apply GOV-153/150 when iOS opens"
+    },
+    {
+      "id": "M-PL-002",
+      "missing": "Desktop installer / Electron ceiling detail",
+      "why": "Continuity says inherit web IA; Future Growth desktop rules apply",
+      "next": "GOV-154 + GOV-161 when installer starts"
+    },
+    {
+      "id": "M-PL-003",
+      "missing": "Account capability matrix (“Your devices”)",
+      "why": "Named in Platform Continuity UX wish-list, not in Future Growth",
+      "next": "Do not invent as canon; optional REC later"
+    },
+    {
+      "id": "M-PL-004",
+      "missing": "Page Blueprint role transfer map per modality",
+      "why": "Gate question 2 references blueprints; 15_PAGE_BLUEPRINTS not governed this pass",
+      "next": "Govern Page Blueprints later"
+    },
+    {
+      "id": "M-PL-005",
+      "missing": "Biometrics-as-security-UX detail beyond native note",
+      "why": "Future Growth one line; no new GOV minted",
+      "next": "Security/UX companion if needed"
+    }
+  ],
+  "questions_for_founder": [
+    "Confirm source alias: 11_PLATFORM_PRINCIPLES → 17_FUTURE_GROWTH_RULES (CF-PL-001 / REC-071)?",
+    "Confirm desktop/tablet breakpoint classes ≥1100 and 768–1099 as Device-Tiers companion without redesign (GOV-154 / REC-073)?",
+    "Approve growth axiom + four declarations (GOV-153)?",
+    "Approve watch / car / voice / wearables / AR ceilings (GOV-155…148)?",
+    "Approve expansion five-question gate (GOV-161)?",
+    "Resolve GOV-160 arbitration with GOV-073 token SoT (REC-074)?",
+    "Next after founder OK: Accessibility vs Automation vs Naming (REC-076)?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 9,
+    "ai_readiness": 8,
+    "conflict_hygiene": 7,
+    "metric_rigor": 7,
+    "amendment_process": 8,
+    "completeness_build_without_reread": 7,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 81,
+    "interpretation": "Future Growth Rules supply growth axiom, shipped desktop/tablet ceilings, watch/car/voice/wearable/AR laws, design-evolution arbitration, and expansion gate. Heavy reuse of /m + native + AI + token GOVs. GOV-154 and GOV-160 Needs Discussion (breakpoints companion; token SoT arbitration). Device-Tiers and Continuity not redesigned. P5 11_ Accessibility deferred (REC-076)."
+  },
+  "validation": {
+    "continuous_gov_ids": true,
+    "json_schema": true,
+    "duplicate_gov_detection": true,
+    "duplicate_decision_detection": true,
+    "broken_dependency_detection": true,
+    "broken_references": true,
+    "missing_evidence": true,
+    "id_range_note": "GOV-153…161 / REC-070…076 (Component owns 142…152 / 062…068)",
+    "status": "PASSED"
+  }
+}

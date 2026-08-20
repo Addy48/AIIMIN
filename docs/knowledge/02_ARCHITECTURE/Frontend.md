@@ -1,3 +1,17 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-08-20
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+---
 # Frontend Architecture
 
 ## Stack
@@ -30,3 +44,18 @@ Overview, Habits, Goals, FocusRoom, Journal, Finance, CalendarPage, Sports, Acco
 - [[Overview]]
 - [[05_FRONTEND/Frontend-Map]]
 - [[08_DESIGN/Palette]]
+
+---
+
+## Structure (Phase V4)
+
+> Skeleton pass 2026-08-20.
+
+## Current state
+
+Living summary. Keep short.
+
+## Files
+
+Key paths for this concern.
+

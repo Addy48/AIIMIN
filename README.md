@@ -29,7 +29,7 @@ flowchart LR
   subgraph cap["Capacitor (legacy)"]
     C[WebView → /m<br/>capture shell]
   end
-  subgraph nat["Native Android V2"]
+  subgraph nat["Native Android V3"]
     N[Kotlin Compose<br/>companion app]
   end
   API[api.aiimin.in]
@@ -43,8 +43,8 @@ flowchart LR
 | Surface | URL / package | For |
 |---------|---------------|-----|
 | **Desktop & iPad** | [aiimin.in/overview](https://aiimin.in/overview) | Full analytics, Lab, Finance, Placements |
-| **Phone browser** | [aiimin.in/m](https://aiimin.in/m) | Quick daily capture (web) |
-| **Android app** | `in.aiimin.app` | Native companion — journal, notes, habits, sync |
+| **Phone browser** | [aiimin.in/m](https://aiimin.in/m) | Quick daily capture (web · Capacitor sunset path) |
+| **Android app** | `native-android-v3/` · `in.aiimin.app` | Current companion — journal, notes, habits, sync |
 
 Do **not** mix web, Capacitor, and native changes in one commit. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -83,6 +83,7 @@ AIIMIN/
 ├── native-android/        # ⚠ Native V2 — Kotlin + Compose (separate app)
 ├── server/                # Express API (EC2 deploy)
 ├── api/                   # Vercel serverless entry
+├── scripts/               # Maintained automation + manual diagnostics
 ├── docs/knowledge/        # Project brain (Obsidian vault)
 ├── plans/                 # Commit splits, sprint plans
 └── CONTRIBUTING.md        # Client boundaries + commit rules

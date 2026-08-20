@@ -1,36 +1,49 @@
+---
+authority: operations
+derived_from: Genesis · Roadmap/AIIMIN-V1-Blueprint
+status: active
+owner: founder
+lifecycle: living
+last_reviewed: 2026-08-20
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: context
+note_type: NT-CONTEXT
+tags:
+  - type/hub
+  - domain/ops
+  - status/living
+---
+
 # Current Context
 
-> **Handoff ready.** New chat: read Home → this file → [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
+> [!tip] Agent boot
+> [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-07-19 · **APK:** `2.2.1-native` · **Branch:** `main`
+**Date:** 2026-08-20 · Branch `feat/native-android-v3` @ `6b097614` · **pushed** · `origin/main` merged in
 
-## Device
+## Stage
 
-- Phone: OnePlus AIN065 (`9597fdea`) — signed release installed
-- APK: `native-android/dist/app-release-2.2.1-native.apk`
+Simplification program **closed** (V0–X). Feat has API ghosts, migrations applied, EC2 on earlier feat tip, vault diet. `origin/main` (`fc9e2a76`) is **in** feat. Next gate = **merge feat → main** for Vercel.
 
-## Functional status
+| Gate | Status |
+|------|--------|
+| Simplification phases V0–X | Verified — [[16_DOCUMENTATION/Simplification-Phase-Tracker]] |
+| Push + EC2 + migrations 049–052 | Verified |
+| `origin/main` into feat | Verified — tip `6b097614`, ahead of main by 40, behind 0 |
+| Vercel production | Still needs merge **to** `main` |
+| R3 slices S1–S6 | Shipped on feat — inventory updated |
+| API health | Verified `{"status":"ok"}` this turn |
 
-- **Web prod:** P0 `useDeviceTier` React import fixed — live on Vercel
-- **Family `/family`:** card ⋯ menu (view/edit/duplicate/archive/delete) on all 9 tabs — push pending
-- Native app: auth, bootstrap, journal/notes/habits outbox, WorkManager sync, biometric gate
-- **Prod API:** `GET /api/mobile/health` OK · `POST /api/mobile/sync/batch` → 401 without auth
-- Supabase: `mobile_sync` + RLS deny-all on mobile tables (server-only via service role)
-- Launcher: official Editor Pick mark (`ic_aiimin_mark`)
+## P0 next
 
-## Next
-
-1. Play Console internal track upload
-2. Founder smoke: offline journal → sync → desktop verify
-3. Optional: `bash scripts/setup-git-hooks.sh` (strip tool Co-authored-by from future commits)
-
-## Session stop (2026-07-19)
-
-Repo on `main` · web hotfix live · CI green · native APK on device. Resume from WORKFLOW-PLAN.
+1. **Founder:** merge/PR feat → `main` (Vercel picks web/legal)
+2. Web diet kill rows — founder taste ([[16_DOCUMENTATION/Web-Surface-Diet-R4]])
+3. PARK product: [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
 
 ## Touch
 
-- `native-android/dist/app-release-2.2.1-native.apk`
-- `docs/knowledge/17_NATIVE_APP_V2/WORKFLOW-PLAN.md`
-
-Palette · `/m` capture on phone web · no auth/schema without ask · no tool attribution in docs
+- `README.md` (V3 surface truth + merge resolve)
+- `docs/knowledge/16_DOCUMENTATION/Commit-Slice-Inventory-R3.md`
+- `docs/knowledge/16_DOCUMENTATION/Simplification-Backlog-X.md`
+- `docs/knowledge/16_DOCUMENTATION/Simplification-Phase-Tracker.md`

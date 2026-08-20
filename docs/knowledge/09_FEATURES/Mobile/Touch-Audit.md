@@ -1,4 +1,27 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Mobile touch audit (capture shell)
+
+> [!abstract] Satellite note
+> Not the primary feature MOC. Primary contracts live in the folder’s main feature note + [[09_FEATURES/Index]].
+
+
+## Parent
+
+- [[09_FEATURES/Mobile/Capacitor-Android|Mobile]] · [[09_FEATURES/Index]]
 
 **Standard:** 44px minimum tap targets (WCAG 2.5.5). Capacitor native: 48px for primary nav + actions.
 

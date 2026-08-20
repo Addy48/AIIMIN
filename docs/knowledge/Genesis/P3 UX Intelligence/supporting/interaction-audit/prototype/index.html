@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="aiimin-dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AIIMIN — Interaction Audit Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- First-visit guide -->
+  <div class="guide-overlay" id="guide-overlay">
+    <div class="guide-card">
+      <p class="guide-eyebrow">Interaction Audit Prototype</p>
+      <h2>How to explore this</h2>
+      <ul class="guide-list">
+        <li><kbd>⌘K</kbd> or <strong>Capture</strong> — live command palette with AI confirm chips</li>
+        <li><strong>Sidebar</strong> — 9 flows from the audit doc, ranked by build priority</li>
+        <li><strong>Show today / target</strong> — side-by-side before vs after on Finance, Journal, Onboarding, Life Score</li>
+        <li><strong>Swipe drafts</strong> — drag the receipt card left (discard) or right (accept)</li>
+      </ul>
+      <button type="button" class="btn btn-primary btn-block" id="guide-dismiss">Start exploring</button>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Product chrome — mirrors real AIIMIN nav -->
+    <header class="product-nav">
+      <div class="product-nav-left">
+        <div class="logo-mark">A</div>
+        <nav class="product-tabs" aria-label="Product sections">
+          <span class="product-tab">Overview</span>
+          <span class="product-tab">Habits</span>
+          <span class="product-tab active">Capture</span>
+          <span class="product-tab">Journal</span>
+          <span class="product-tab">Finance</span>
+          <span class="product-tab">Goals</span>
+        </nav>
+      </div>
+      <div class="product-nav-right">
+        <span class="proto-pill">PROTOTYPE</span>
+        <button type="button" class="kbd-hint" id="open-palette-top">
+          <kbd>⌘</kbd><kbd>K</kbd>
+        </button>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <aside class="sidebar" id="sidebar">
+        <p class="sidebar-heading">Audit flows</p>
+        <nav class="sidebar-nav" id="sidebar-nav"></nav>
+        <div class="sidebar-footer">
+          <button type="button" class="btn btn-ghost btn-block" id="theme-toggle">Toggle light / dark</button>
+        </div>
+      </aside>
+
+      <div class="main">
+        <header class="view-header">
+          <button type="button" class="btn-icon mobile-menu" id="menu-toggle" aria-label="Menu">☰</button>
+          <div class="view-header-text">
+            <p class="eyebrow" id="view-eyebrow">Audit §16</p>
+            <h1 class="view-title" id="view-title">The shift</h1>
+          </div>
+          <button type="button" class="btn btn-ghost" id="compare-toggle" hidden>
+            <span id="compare-label">Hide today</span>
+          </button>
+        </header>
+
+        <main class="content" id="content"></main>
+
+        <!-- Persistent capture strip — target interaction model -->
+        <footer class="capture-strip">
+          <div class="capture-strip-inner">
+            <span class="capture-strip-label">Universal capture</span>
+            <input type="text" class="capture-strip-input" id="strip-input" placeholder="spent 450 on groceries · skipped gym · feeling tired…" readonly />
+            <button type="button" class="btn btn-primary" id="strip-open">Open ⌘K</button>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <!-- Command palette -->
+  <div class="overlay" id="palette-overlay" hidden>
+    <div class="palette-backdrop" data-close-palette></div>
+    <div class="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+      <div class="palette-search">
+        <span class="palette-icon">⌕</span>
+        <input type="text" id="palette-input" placeholder="Capture anything…" autocomplete="off" />
+        <span class="palette-badge">AI route</span>
+      </div>
+      <div class="palette-section" id="palette-predictive">
+        <p class="section-label">Likely next — before you type</p>
+        <div id="predictive-list"></div>
+      </div>
+      <div class="palette-section" id="palette-results" hidden>
+        <p class="section-label">Generated confirmation</p>
+        <div class="gen-confirm" id="gen-confirm"></div>
+      </div>
+      <p class="palette-foot">Enter confirm · Esc close · Tab edit chips</p>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

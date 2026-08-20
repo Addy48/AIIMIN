@@ -1,7 +1,7 @@
 # AIIMIN Launch Plan — July 2026
 
 Last updated: 2026-07-07  
-Status: Waitlist live · Tester window closes **31 July** · Go-live target **September 2026**
+Status: Waitlist live · Founding/tester window closes **31 August 2026** · Go-live target **September 2026**
 
 ---
 
@@ -21,7 +21,7 @@ See `deploy/RESEND-SETUP.md`.
 
 ---
 
-## Phase 1 — Tester access (by 31 July)
+## Phase 1 — Tester access (by 31 August 2026)
 
 | # | Task | Notes |
 |---|------|-------|

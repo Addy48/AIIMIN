@@ -1,0 +1,469 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.w { padding: 14px 12px 40px; font-family: var(--font-sans); }
+.tabs { display: flex; gap: 5px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); background: transparent; transition: all 0.15s; white-space: nowrap; }
+.tab.active { background: #5e6ad2; color: #fff; border-color: #5e6ad2; }
+.pane { display: none; }
+.pane.on { display: block; }
+
+.hero-card { border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+.hc-red { background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.2); }
+.hc-blue { background: rgba(94,106,210,0.08); border: 1px solid rgba(94,106,210,0.2); }
+.hc-gold { background: rgba(245,166,35,0.08); border: 1px solid rgba(245,166,35,0.2); }
+.hc-teal { background: rgba(78,205,196,0.08); border: 1px solid rgba(78,205,196,0.2); }
+.hc-gray { background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); }
+.hc-green { background: rgba(90,173,90,0.08); border: 1px solid rgba(90,173,90,0.2); }
+
+.label { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+.lr { color: #ff6b6b; } .lb { color: #5e6ad2; } .lg { color: #f5a623; } .lt { color: #4ecdc4; } .lgr { color: #5aad5a; }
+.card-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+.card-sub { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+
+.feature-block { margin-bottom: 14px; }
+.fb-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; display: flex; align-items: center; gap: 7px; }
+.fb-num { width: 20px; height: 20px; border-radius: 5px; font-size: 10px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.feature-list { list-style: none; padding: 0; }
+.feature-list li { font-size: 12px; color: var(--color-text-secondary); padding: 5px 0 5px 14px; border-bottom: 1px solid var(--color-border-tertiary); position: relative; line-height: 1.5; }
+.feature-list li:last-child { border-bottom: none; }
+.feature-list li::before { content: '→'; position: absolute; left: 0; color: var(--color-text-tertiary); font-size: 10px; top: 7px; }
+.feature-list li b { color: var(--color-text-primary); font-weight: 500; }
+
+.section-divider { height: 1px; background: var(--color-border-tertiary); margin: 16px 0; }
+.sl { font-size: 10px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--color-text-tertiary); margin: 14px 0 10px; }
+
+.note { border-left: 2px solid #5e6ad2; border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; background: var(--color-background-secondary); margin: 10px 0; }
+.note b { color: var(--color-text-primary); }
+.note.gold { border-left-color: #f5a623; }
+.note.red { border-left-color: #ff6b6b; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.stat { background: var(--color-background-secondary); border-radius: 8px; padding: 10px; text-align: center; }
+.stat-n { font-size: 20px; font-weight: 500; }
+.stat-l { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.chip { font-size: 11px; padding: 3px 8px; border-radius: 8px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 1px solid var(--color-border-tertiary); }
+.chip.kill { opacity: 0.4; text-decoration: line-through; }
+
+.tab-block { border: 1px solid var(--color-border-tertiary); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+.tab-header { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--color-background-secondary); }
+.tab-icon { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.tab-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.tab-desc { font-size: 11px; color: var(--color-text-tertiary); }
+.tab-body { padding: 10px 14px 12px; }
+
+.priority-badge { font-size: 10px; padding: 2px 7px; border-radius: 8px; margin-left: auto; font-weight: 500; }
+.p-core { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+.p-imp { background: rgba(94,106,210,0.12); color: #5e6ad2; }
+.p-nice { background: rgba(150,150,150,0.1); color: var(--color-text-tertiary); }
+</style>
+
+<div class="w">
+<div class="tabs">
+  <button class="tab active" onclick="sw('overview')">Overview</button>
+  <button class="tab" onclick="sw('app')">App (Android)</button>
+  <button class="tab" onclick="sw('web')">Web (Laptop)</button>
+  <button class="tab" onclick="sw('data')">Data & Sync</button>
+  <button class="tab" onclick="sw('locked')">What's Locked</button>
+</div>
+
+<!-- OVERVIEW -->
+<div id="overview" class="pane on">
+  <div class="hero-card hc-red">
+    <div class="label lr">Your reality right now</div>
+    <div class="card-title">Final year. 1 month. No placements yet.</div>
+    <div class="card-sub">This is the #1 context every screen of AIIMIN must respect. The system exists to clear your head and give you a clear next step — whether that's a DSA topic, a transaction to log, or just knowing today is sorted.</div>
+  </div>
+
+  <div class="two-col">
+    <div class="stat"><div class="stat-n" style="color:#5e6ad2">6</div><div class="stat-l">App tabs</div></div>
+    <div class="stat"><div class="stat-n" style="color:#4ecdc4">3</div><div class="stat-l">Web views</div></div>
+  </div>
+  <div class="two-col">
+    <div class="stat"><div class="stat-n" style="color:#f5a623">Android</div><div class="stat-l">Nothing Phone 2</div></div>
+    <div class="stat"><div class="stat-n" style="color:#ff6b6b">React</div><div class="stat-l">Web on laptop</div></div>
+  </div>
+
+  <div class="note red"><b>V1 philosophy:</b> First build is the best build. We're putting everything in V1 that matters to your actual life. No feature is held back "for later" unless it genuinely needs data first or adds complexity that hurts the core. V2 is for bugs and polish, not features.</div>
+
+  <div class="sl">6 modules, in priority order for your life</div>
+
+  <div class="hero-card hc-red" style="margin-bottom:7px">
+    <div class="label lr">01 — Most urgent</div>
+    <div class="card-title">Work + Placement war room</div>
+    <div class="card-sub">DSA roadmap, applications, resume, interviews. 1 month window. This screen tells you exactly what to do today.</div>
+  </div>
+  <div class="hero-card hc-gray" style="margin-bottom:7px">
+    <div class="label" style="color:var(--color-text-tertiary)">02</div>
+    <div class="card-title">Today — daily command center</div>
+    <div class="card-sub">Classes, tasks, mood, steps, meals. What your morning looks like in one screen.</div>
+  </div>
+  <div class="hero-card hc-teal" style="margin-bottom:7px">
+    <div class="label lt">03</div>
+    <div class="card-title">Money — both accounts + net worth</div>
+    <div class="card-sub">ICICI + Airtel. Spend log. Net worth built over time. SIP start. The money anxiety killer.</div>
+  </div>
+  <div class="hero-card hc-gray" style="margin-bottom:7px">
+    <div class="label" style="color:var(--color-text-tertiary)">04</div>
+    <div class="card-title">Notes + Brain dump</div>
+    <div class="card-sub">Quick dump, voice to text, titled notes. Your head empties here.</div>
+  </div>
+  <div class="hero-card hc-blue" style="margin-bottom:7px">
+    <div class="label lb">05</div>
+    <div class="card-title">Recovery — private + locked</div>
+    <div class="card-sub">Streak, urge log, trigger patterns. Clinical. No judgment. Biometric locked.</div>
+  </div>
+  <div class="hero-card hc-gold">
+    <div class="label lg">06</div>
+    <div class="card-title">Insights — basic, data-driven</div>
+    <div class="card-sub">Mood trends, money patterns, streak history, daily score. Simple. No AI yet — pure your data.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="pane">
+  <div class="note"><b>Platform:</b> Android app. Nothing Phone 2. Bottom nav bar with 5 tabs + 1 hidden (Recovery). App is where you live — input, quick checks, daily flow.</div>
+
+  <div class="tab-block">
+    <div class="tab-header">
+      <div class="tab-icon" style="background:rgba(255,107,107,0.12)">📋</div>
+      <div><div class="tab-name">Today <span class="priority-badge p-core">Opens first</span></div><div class="tab-desc">Your daily ground truth</div></div>
+    </div>
+    <div class="tab-body">
+      <ul class="feature-list">
+        <li><b>Date + day + sem week number</b> at top (e.g. "Thursday · Week 14 of Sem 6")</li>
+        <li><b>Placement countdown:</b> "26 days left" — always visible, can't ignore</li>
+        <li><b>Today's classes:</b> auto-loaded from your timetable (enter once per sem). Shows time + subject + room. Greyed out as they pass.</li>
+        <li><b>Mess menu:</b> you upload a photo (weekly or daily). Today's meals shown as image card. Tap to expand.</li>
+        <li><b>Top 3 tasks:</b> pulled from Work tab. If not set, shows "Tap to plan today" — guilt prompt.</li>
+        <li><b>Did you eat breakfast?</b> Single toggle. Tracks your skip pattern passively.</li>
+        <li><b>Steps:</b> live sync from Nothing Phone health. Progress ring vs 10k goal.</li>
+        <li><b>Mood check-in:</b> 1 tap. 5 icons (terrible / low / okay / good / great). Takes 1 second.</li>
+        <li><b>Sleep last night:</b> tap to enter hours. Pre-filled if you logged bedtime.</li>
+        <li><b>Gym today?</b> Binary toggle. Yes = +1 to gym streak. No = nothing, no guilt.</li>
+        <li><b>Quick money add:</b> floating ₹ button → amount → category → done in 3 taps.</li>
+        <li><b>Night mode (10pm trigger):</b> "Plan tomorrow" card appears. Tap → pick 3 tasks for tomorrow from backlog. 2 min ritual.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tab-block">
+    <div class="tab-header">
+      <div class="tab-icon" style="background:rgba(94,106,210,0.12)">💼</div>
+      <div><div class="tab-name">Work <span class="priority-badge p-core">Core</span></div><div class="tab-desc">Tasks + Placement — your engine</div></div>
+    </div>
+    <div class="tab-body">
+      <ul class="feature-list">
+        <li><b>Two sections on same screen:</b> Today's Tasks (top) and Placement War Room (bottom, expandable)</li>
+        <li><b>Today's tasks:</b> 3 max active. Checkbox to complete. Swipe left to push to backlog. Swipe right to delete.</li>
+        <li><b>Add task:</b> title, optional due date, optional note. That's it. No tags, no priorities, no complexity.</li>
+        <li><b>Backlog:</b> all other tasks. Sorted by date added. Pull to active by tapping.</li>
+        <li><b>Placement — DSA roadmap (built-in, not generic):</b> Arrays, Strings, Hashing, Two Pointers, Sliding Window, Binary Search, LinkedList, Stack, Queue, Trees, BST, Heap, Graphs, DP Basics, DP Advanced. Each has 5–10 subtopics with checkboxes. Problems solved counter per topic.</li>
+        <li><b>Placement — Applications table:</b> Company name, role, date applied, status (applied / OA received / OA done / interview / offer / rejected). Add new in 4 taps.</li>
+        <li><b>Placement — Resume tracker:</b> last updated date, version note, link or file reference.</li>
+        <li><b>Placement — Interview log:</b> company, round type (HR/tech/coding), date, outcome, 1-line note.</li>
+        <li><b>Placement — Daily target:</b> you set "solve X problems today" — checkmark when done.</li>
+        <li><b>Sem end date set once:</b> countdown visible on Today tab.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tab-block">
+    <div class="tab-header">
+      <div class="tab-icon" style="background:rgba(78,205,196,0.12)">💰</div>
+      <div><div class="tab-name">Money <span class="priority-badge p-core">Core</span></div><div class="tab-desc">Both accounts, full picture</div></div>
+    </div>
+    <div class="tab-body">
+      <ul class="feature-list">
+        <li><b>Top card — Net Balance:</b> ICICI balance (manual update) + Airtel balance (manual update) = total shown large. Green if positive, red if negative.</li>
+        <li><b>Two account tabs:</b> ICICI (parents' money) and Airtel (your earnings). Each has its own transaction list.</li>
+        <li><b>Transaction add (3 taps):</b> amount → category → account → done. Optional note and photo.</li>
+        <li><b>Categories (India-relevant):</b> Food, Mess, Canteen, Travel (Uber/auto), Shopping, Entertainment, Subscriptions, Fees, Sent to person, Received from person, Other.</li>
+        <li><b>Monthly spend summary:</b> total this month, category breakdown as horizontal bars, vs last month delta.</li>
+        <li><b>Weekly cashflow chart:</b> 7-day spend line chart. Today highlighted.</li>
+        <li><b>Money lent log:</b> Name, amount, date given. Tap to mark returned. No reminders — just your record.</li>
+        <li><b>NET WORTH tracker:</b> separate section. You enter: cash in hand, ICICI balance, Airtel balance, MF value (Groww/Zerodha — manual), gold value (grams × live price), any other asset. System computes total. Logged monthly — you see your net worth grow over time as a chart. This is the wealth-building visual.</li>
+        <li><b>SIP log:</b> Fund name, amount per month, start date. Running total invested shown. Simple tracker to make the habit real.</li>
+        <li><b>Upcoming expenses:</b> list of known future spends (exam fees, subscriptions, EMIs). Date + amount. Shows in Today tab if due within 3 days.</li>
+        <li><b>Gold/Silver price reference:</b> live price shown (API). Your holdings × price = current value. Feeds into net worth.</li>
+        <li><b>Export to CSV:</b> any account, any date range.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tab-block">
+    <div class="tab-header">
+      <div class="tab-icon" style="background:rgba(245,166,35,0.12)">📝</div>
+      <div><div class="tab-name">Notes <span class="priority-badge p-imp">Important</span></div><div class="tab-desc">Brain dump, voice, titled notes</div></div>
+    </div>
+    <div class="tab-body">
+      <ul class="feature-list">
+        <li><b>Three types in one tab, toggled at top:</b> Quick Dump / Voice / Notes</li>
+        <li><b>Quick Dump:</b> single running document. Tap anywhere → type. Autocorrect fully on. Saves every keystroke. Timestamped entries separated by line. No title needed. Just dump and go.</li>
+        <li><b>Voice:</b> hold mic button → speak → transcribed via Gemini API → saved with timestamp. Handles your spelling issues by speaking instead.</li>
+        <li><b>Titled Notes:</b> Google Keep style. Title + body. Color coding (6 colors). Pin important. Search across all. Images attachable.</li>
+        <li><b>Search:</b> global search across all three types in real time.</li>
+        <li><b>Mess menu storage:</b> upload images here tagged as "Mess Menu" — Today tab pulls from here.</li>
+        <li><b>Class timetable:</b> editable here (text form) — Today tab reads from this.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tab-block">
+    <div class="tab-header">
+      <div class="tab-icon" style="background:rgba(94,106,210,0.12)">📊</div>
+      <div><div class="tab-name">Insights <span class="priority-badge p-imp">V1 basic</span></div><div class="tab-desc">Your data, made readable</div></div>
+    </div>
+    <div class="tab-body">
+      <ul class="feature-list">
+        <li><b>Daily score (0–100):</b> computed from: tasks completed (40%) + mood (20%) + steps (15%) + sleep (15%) + gym (10%). Big number. Gold colored. History chart — last 30 days.</li>
+        <li><b>Mood history:</b> last 30 days calendar. Color per mood rating. See your pattern.</li>
+        <li><b>Sleep chart:</b> hours per night, last 14 days. Average shown.</li>
+        <li><b>Steps history:</b> 7-day and 30-day. Days you hit 10k highlighted.</li>
+        <li><b>Gym streak:</b> current + longest. Calendar showing gym days.</li>
+        <li><b>Money insight:</b> this month vs last month spend. Top spending category. Biggest single spend.</li>
+        <li><b>Net worth chart:</b> monthly snapshots over time. The wealth line going up is the most motivating visual in the app.</li>
+        <li><b>Placement progress:</b> DSA % complete, applications sent count, this week's problems solved.</li>
+        <li><b>Recovery streak:</b> visible here (not just in the locked tab) — current streak shown as a number with a simple line graph. No detail — detail is in the locked tab.</li>
+        <li><b>Screen time note:</b> manual entry only (Nothing Phone doesn't expose this to third-party apps easily). You enter it yourself if you want to track.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tab-block">
+    <div class="tab-header">
+      <div class="tab-icon" style="background:rgba(30,30,30,0.3)">🔒</div>
+      <div><div class="tab-name">Recovery <span class="priority-badge p-core">Biometric locked</span></div><div class="tab-desc">Hidden tab — lock icon only in nav</div></div>
+    </div>
+    <div class="tab-body">
+      <ul class="feature-list">
+        <li><b>Opens only after biometric/PIN.</b> Shows nothing until authenticated. Nav shows only a lock icon — no label.</li>
+        <li><b>Current streak:</b> large, prominent. Days and hours.</li>
+        <li><b>Last reset:</b> exact date and time.</li>
+        <li><b>Longest streak:</b> shown as "personal best" — gives you something to beat.</li>
+        <li><b>Log urge:</b> one tap. Then: trigger type (Boredom / Stress / Loneliness / Content encountered / Physical / Late night / Multiple). Time auto-logged. Optional note (text or voice).</li>
+        <li><b>Log reset:</b> tapping this resets streak. Before resetting, shows current streak ("You're about to reset a X-day streak"). Asks trigger. Saves everything — no data is lost.</li>
+        <li><b>Weekly heatmap:</b> urges by hour of day across 7 days. Shows your peak risk windows clearly. E.g. "11pm–1am is your highest risk window."</li>
+        <li><b>Trigger breakdown:</b> which type appears most. Pie breakdown. Updated as you log.</li>
+        <li><b>30-day history:</b> days clean shown as green, resets as red dots. Not a calendar of shame — a calendar of data.</li>
+        <li><b>Streak milestones:</b> silent internal milestones. At 7, 14, 21, 30, 60, 90 days — a simple text message appears. No notification, no external signal. Just there when you open the tab.</li>
+        <li><b>No quotes. No motivational content. No emoji. Pure data.</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="tab-block">
+    <div class="tab-header">
+      <div class="tab-icon" style="background:rgba(150,150,150,0.1)">👤</div>
+      <div><div class="tab-name">You / Settings</div><div class="tab-desc">Profile, theme, timetable, preferences</div></div>
+    </div>
+    <div class="tab-body">
+      <ul class="feature-list">
+        <li>Google avatar + name (fixed, no bug)</li>
+        <li>Theme toggle: dark (Linear-style warm black) / light (cream)</li>
+        <li>Class timetable editor: day × period grid, enter subject + room</li>
+        <li>Sem end date: set once, drives countdown everywhere</li>
+        <li>Notification settings: 10pm planning reminder, morning glance, placement reminder</li>
+        <li>Account lock: biometric for Recovery tab</li>
+        <li>Data export: all data as JSON or CSV</li>
+        <li>Privacy Policy + Terms (Google compliance)</li>
+        <li>App version</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- WEB -->
+<div id="web" class="pane">
+  <div class="note"><b>Role of web:</b> Deeper review, longer-form work, planning sessions. You open it before sleep or during study. Not for quick input — that's the app. Web = think and plan. App = do and log.</div>
+
+  <div class="sl">View 1 — Dashboard (default)</div>
+  <ul class="feature-list" style="border:1px solid var(--color-border-tertiary);border-radius:10px;padding:10px 14px;margin-bottom:10px">
+    <li><b>Left sidebar (240px):</b> AIIMIN logo, nav links, theme toggle, user avatar at bottom</li>
+    <li><b>Today overview card:</b> classes remaining today, top 3 tasks with checkboxes, mood logged or not, steps live</li>
+    <li><b>Placement countdown card:</b> large days remaining, today's DSA target, applications pipeline (applied/OA/interview/offer)</li>
+    <li><b>Money snapshot:</b> net balance (both accounts combined), this week's spend, biggest category</li>
+    <li><b>Net worth mini chart:</b> last 6 months line, current value prominent</li>
+    <li><b>Recovery streak:</b> clean number, no detail — detail is in dedicated view</li>
+    <li><b>Tonight's plan:</b> tomorrow's 3 tasks, editable here</li>
+    <li><b>Gym log toggle:</b> "Did you gym today?" — only here on web, not cluttering app</li>
+  </ul>
+
+  <div class="sl">View 2 — Placement War Room</div>
+  <ul class="feature-list" style="border:1px solid var(--color-border-tertiary);border-radius:10px;padding:10px 14px;margin-bottom:10px">
+    <li><b>DSA progress:</b> full roadmap tree. Each topic = progress bar (subtopics completed / total). Visual like a skill tree. Tap topic → expand subtopics → check each off.</li>
+    <li><b>Problems solved log:</b> date, platform (LeetCode/GFG), problem name, difficulty, link. Running count.</li>
+    <li><b>Applications table:</b> full CRM for your job hunt. Company, role, JD link, date, status, next action, notes. Filter by status.</li>
+    <li><b>Interview prep notes:</b> free-form rich text per company. Store common questions, your answers, things to revise.</li>
+    <li><b>Resume tracker:</b> version history, what changed, link to file.</li>
+    <li><b>Weekly targets:</b> set "X problems this week" — progress bar shows how you're doing.</li>
+    <li><b>Timeline view:</b> sem end date working backwards. Milestones you set (e.g. "finish arrays by April 15").</li>
+    <li><b>Gym log weekly view:</b> 7-day grid, which days you went, streak count. Only on web.</li>
+  </ul>
+
+  <div class="sl">View 3 — Money + Net Worth</div>
+  <ul class="feature-list" style="border:1px solid var(--color-border-tertiary);border-radius:10px;padding:10px 14px;margin-bottom:10px">
+    <li><b>Net worth builder (main feature here):</b> monthly snapshot input. Cash, ICICI balance, Airtel balance, MF value, gold grams (auto-priced), other assets. System plots the curve over time. This is your wealth journey visualized.</li>
+    <li><b>Full transaction history:</b> both accounts, searchable, filterable by category, date, account, amount range.</li>
+    <li><b>Monthly deep dive:</b> income vs spend waterfall, category breakdown pie, top transactions, day-by-day spend bar chart.</li>
+    <li><b>SIP tracker:</b> each SIP entry, total invested so far, projected value at 12% XIRR (simple estimate), graph.</li>
+    <li><b>Gold/silver holdings:</b> grams entered, live price fetched, current value. History of buys.</li>
+    <li><b>Money lent full ledger:</b> all entries, returned vs outstanding, total you're owed.</li>
+    <li><b>Upcoming expenses calendar:</b> month view showing known future spends.</li>
+    <li><b>Export:</b> any date range, any account, CSV or PDF monthly report.</li>
+  </ul>
+
+  <div class="sl">View 4 — Insights (web-only depth)</div>
+  <ul class="feature-list" style="border:1px solid var(--color-border-tertiary);border-radius:10px;padding:10px 14px;margin-bottom:10px">
+    <li><b>Daily score history:</b> 30/90/all-time chart. See which weeks were productive.</li>
+    <li><b>Mood calendar:</b> full year view like GitHub contribution graph but for mood.</li>
+    <li><b>Sleep pattern:</b> bedtime + wake time trend. Shows drift over time (your late night issue visible here).</li>
+    <li><b>Money patterns:</b> which day of week you spend most, which category grew this month, spend vs last 3 months.</li>
+    <li><b>Placement velocity:</b> problems solved per week chart. Applications per week. Interview conversion rate.</li>
+    <li><b>Recovery pattern:</b> streak history, average streak length, which month was best. Urge frequency over time.</li>
+    <li><b>Gym consistency:</b> weekly gym count over last 12 weeks. Your actual attendance pattern.</li>
+  </ul>
+</div>
+
+<!-- DATA & SYNC -->
+<div id="data" class="pane">
+  <div class="note"><b>Architecture:</b> App and web are the same system. You log on app, see it on web instantly. You plan on web, it shows on app in morning. Everything lives in Supabase.</div>
+
+  <div class="sl">Tech stack confirmed</div>
+  <ul class="feature-list" style="border:1px solid var(--color-border-tertiary);border-radius:10px;padding:10px 14px;margin-bottom:10px">
+    <li><b>App:</b> React Native (Expo) — Android first. Nothing Phone 2 compatible.</li>
+    <li><b>Web:</b> existing React app on Vercel. Extend existing codebase.</li>
+    <li><b>Backend:</b> existing Express on Railway. Add new API routes.</li>
+    <li><b>Database:</b> existing Supabase PostgreSQL. New tables added.</li>
+    <li><b>Auth:</b> existing Google OAuth. App uses same auth, deep-linked.</li>
+    <li><b>AI/voice:</b> Gemini 1.5 Flash (free tier) — voice transcription + (V2) weekly reports.</li>
+    <li><b>Gold/silver price:</b> metals-api.com free tier or scrape RBI reference rate.</li>
+    <li><b>Steps:</b> Android Health Connect API — read steps passively.</li>
+    <li><b>Notifications:</b> Firebase Cloud Messaging (FCM) — free, Android native.</li>
+  </ul>
+
+  <div class="sl">New database tables needed</div>
+  <ul class="feature-list" style="border:1px solid var(--color-border-tertiary);border-radius:10px;padding:10px 14px;margin-bottom:10px">
+    <li><b>daily_logs:</b> date, mood, sleep_hours, breakfast, gym, steps, daily_score</li>
+    <li><b>tasks:</b> id, title, status (active/backlog/done), due_date, created_at</li>
+    <li><b>timetable:</b> day_of_week, period, subject, room, sem_id</li>
+    <li><b>transactions:</b> amount, type (debit/credit), category, account (icici/airtel), note, date, photo_url</li>
+    <li><b>accounts:</b> name, current_balance, last_updated</li>
+    <li><b>net_worth_snapshots:</b> month, cash, icici_balance, airtel_balance, mf_value, gold_grams, gold_price, other, total — logged monthly</li>
+    <li><b>sip_logs:</b> fund_name, amount, start_date, active</li>
+    <li><b>money_lent:</b> person_name, amount, date_given, returned, date_returned</li>
+    <li><b>placement_topics:</b> topic_name, subtopics JSON, problems_solved, completed</li>
+    <li><b>placement_apps:</b> company, role, date, status, notes, jd_link</li>
+    <li><b>placement_interviews:</b> company, round_type, date, outcome, notes</li>
+    <li><b>recovery_logs:</b> streak_start, resets JSON, urges JSON — encrypted at rest</li>
+    <li><b>notes:</b> type (dump/titled), title, body, voice_url, color, pinned, created_at</li>
+    <li><b>mess_menu:</b> date, meal_type (breakfast/lunch/hightea/dinner), photo_url</li>
+    <li><b>upcoming_expenses:</b> title, amount, due_date, paid</li>
+    <li><b>gym_logs:</b> date, went (boolean)</li>
+  </ul>
+
+  <div class="sl">3 notifications. That's all.</div>
+  <ul class="feature-list" style="border:1px solid var(--color-border-tertiary);border-radius:10px;padding:10px 14px;margin-bottom:10px">
+    <li><b>8:00 AM:</b> "Good morning. [X] classes today. Top task: [first task]. [Y] days to placement."</li>
+    <li><b>10:00 PM:</b> "Plan tomorrow. What are your 3 tasks?" — deep links to night planning screen.</li>
+    <li><b>Custom (you set time):</b> "DSA time." — your daily coding reminder. You pick the time.</li>
+  </ul>
+
+  <div class="note gold"><b>Recovery data security:</b> recovery_logs table has RLS policy — only your user_id can read/write. Supabase encryption at rest. On device, Recovery tab requires biometric before rendering any data. If auth fails, blank screen.</div>
+</div>
+
+<!-- LOCKED -->
+<div id="locked" class="pane">
+  <div class="note red"><b>What's IN V1 — every feature, no holdbacks:</b></div>
+
+  <div class="sl">App — confirmed in</div>
+  <div class="chip-row">
+    <span class="chip">Today tab (full)</span>
+    <span class="chip">Class timetable (sem-based)</span>
+    <span class="chip">Mess menu photos</span>
+    <span class="chip">Top 3 daily tasks</span>
+    <span class="chip">Placement countdown</span>
+    <span class="chip">Work tab (tasks + placement)</span>
+    <span class="chip">DSA roadmap built-in</span>
+    <span class="chip">Applications tracker</span>
+    <span class="chip">Interview log</span>
+    <span class="chip">Resume tracker</span>
+    <span class="chip">Money tab</span>
+    <span class="chip">ICICI + Airtel accounts</span>
+    <span class="chip">Transaction log</span>
+    <span class="chip">Net worth snapshots</span>
+    <span class="chip">SIP tracker</span>
+    <span class="chip">Gold/silver holdings</span>
+    <span class="chip">Money lent log</span>
+    <span class="chip">Upcoming expenses</span>
+    <span class="chip">Notes tab</span>
+    <span class="chip">Quick dump</span>
+    <span class="chip">Voice to text</span>
+    <span class="chip">Titled notes</span>
+    <span class="chip">Insights tab (basic)</span>
+    <span class="chip">Daily score</span>
+    <span class="chip">Mood history</span>
+    <span class="chip">Net worth chart</span>
+    <span class="chip">Placement progress</span>
+    <span class="chip">Recovery tab (locked)</span>
+    <span class="chip">Streak + urge log</span>
+    <span class="chip">Trigger heatmap</span>
+    <span class="chip">You/Settings tab</span>
+    <span class="chip">Theme toggle</span>
+    <span class="chip">FCM notifications (3)</span>
+    <span class="chip">Steps sync (Health Connect)</span>
+    <span class="chip">Google OAuth</span>
+    <span class="chip">Biometric lock (Recovery)</span>
+  </div>
+
+  <div class="sl">Web — confirmed in</div>
+  <div class="chip-row">
+    <span class="chip">Dashboard view</span>
+    <span class="chip">Placement war room (full)</span>
+    <span class="chip">DSA skill tree</span>
+    <span class="chip">Gym log (web only)</span>
+    <span class="chip">Money + net worth deep dive</span>
+    <span class="chip">Full transaction history</span>
+    <span class="chip">Monthly report</span>
+    <span class="chip">Insights (full depth)</span>
+    <span class="chip">Mood year calendar</span>
+    <span class="chip">Sleep pattern chart</span>
+    <span class="chip">Money pattern analysis</span>
+    <span class="chip">CSV/PDF export</span>
+  </div>
+
+  <div class="sl">Confirmed NOT in V1 (V2+)</div>
+  <div class="chip-row">
+    <span class="chip kill">AI weekly reports</span>
+    <span class="chip kill">Gemini analysis</span>
+    <span class="chip kill">Identity page</span>
+    <span class="chip kill">Vision board</span>
+    <span class="chip kill">Habit stacking</span>
+    <span class="chip kill">Burnout score</span>
+    <span class="chip kill">Correlation engine</span>
+    <span class="chip kill">Wins log</span>
+    <span class="chip kill">FI number calculator</span>
+    <span class="chip kill">Tax calendar</span>
+    <span class="chip kill">Social features</span>
+    <span class="chip kill">iPad support</span>
+    <span class="chip kill">Gamification</span>
+    <span class="chip kill">Meal calorie tracking</span>
+    <span class="chip kill">Workout plan builder</span>
+  </div>
+
+  <div class="note" style="margin-top:14px"><b>V2 trigger condition:</b> Use V1 consistently for 60 days. Then V2 adds AI reports (Gemini), habit stacking, identity page, and deeper correlation analysis. V2 only makes sense once you have real data. Right now you have none.</div>
+
+  <div class="note gold" style="margin-top:8px"><b>This spec is locked.</b> Next step: color system finalization → Stitch prompt (web) → Stitch prompt (app) → build Phase 0 (bug fixes on existing dashboard) → build app.</div>
+</div>
+</div>
+
+<script>
+function sw(p) {
+  document.querySelectorAll('.pane').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(p).classList.add('on');
+  event.target.classList.add('active');
+}
+</script>

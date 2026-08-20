@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Aiimin" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/industry_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- Ground only — no logo. Compose AiiminSplash is the sole mark. -->
+    <style name="Theme.Aiimin.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/industry_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_silent</item>
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.Aiimin</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

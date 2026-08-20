@@ -15,5 +15,5 @@ export function accountAppNote() {
   if (isCapacitorNative()) {
     return 'You are in the AIIMIN Android app. Billing changes open in desktop account for now.';
   }
-  return 'Install the Android app from Play Store when listed. Full OS on iPad or desktop.';
+  return 'Native Android companion is in closed testing — see /app. Full OS on iPad or desktop. Phone web stays capture-only.';
 }

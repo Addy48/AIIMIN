@@ -1,0 +1,154 @@
+{
+  "choices": [
+    {
+      "id": "60690c98-a63e-4b24-97f7-b5e36b800c5b",
+      "name": "qa-bug",
+      "type": "Template",
+      "command": true,
+      "templatePath": "_templates/bug-template.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{VALUE}}"
+      },
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "11_BUGS"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "openFile": true,
+      "fileExistsMode": "Increment the file name",
+      "setFileExistsBehavior": false
+    },
+    {
+      "id": "0907f764-7f83-4720-a7a4-45ac151f5e03",
+      "name": "qa-adr",
+      "type": "Template",
+      "command": true,
+      "templatePath": "_templates/decision-template.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{VALUE}}"
+      },
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "10_DECISIONS"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "openFile": true,
+      "fileExistsMode": "Increment the file name",
+      "setFileExistsBehavior": false
+    },
+    {
+      "id": "46a1af6b-2ea2-4523-90f1-7e4199864f00",
+      "name": "qa-feature",
+      "type": "Template",
+      "command": true,
+      "templatePath": "_templates/feature-template.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{VALUE}}"
+      },
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "09_FEATURES"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "openFile": true,
+      "fileExistsMode": "Increment the file name",
+      "setFileExistsBehavior": false
+    },
+    {
+      "id": "41c30c20-deeb-4838-b52f-81a45212bad4",
+      "name": "qa-eng",
+      "type": "Template",
+      "command": true,
+      "templatePath": "_templates/eng-leaf-template.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{VALUE}}"
+      },
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "02_ARCHITECTURE"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "openFile": true,
+      "fileExistsMode": "Increment the file name",
+      "setFileExistsBehavior": false
+    },
+    {
+      "id": "5d038f00-6c5e-4d67-8426-b518d8bee9fd",
+      "name": "qa-inbox",
+      "type": "Template",
+      "command": true,
+      "templatePath": "_templates/eng-leaf-template.md",
+      "fileNameFormat": {
+        "enabled": true,
+        "format": "{{VALUE}}"
+      },
+      "folder": {
+        "enabled": true,
+        "folders": [
+          "Operations/Inbox"
+        ],
+        "chooseWhenCreatingNote": false,
+        "createInSameFolderAsActiveFile": false,
+        "chooseFromSubfolders": false
+      },
+      "appendLink": false,
+      "openFile": true,
+      "fileExistsMode": "Increment the file name",
+      "setFileExistsBehavior": false
+    },
+    {
+      "id": "ce9ee9fd-76c2-4ef4-87c6-816b84cb08fc",
+      "name": "qa-touch",
+      "type": "Capture",
+      "command": true,
+      "captureTo": "15_MEMORY/Current-Context.md",
+      "createFileIfItDoesntExist": {
+        "enabled": false,
+        "createWithTemplate": false,
+        "template": ""
+      },
+      "format": {
+        "enabled": true,
+        "format": "- {{VALUE}}"
+      },
+      "insertAfter": {
+        "enabled": true,
+        "after": "## Touch",
+        "insertAtEnd": true,
+        "createIfNotFound": false,
+        "createIfNotFoundLocation": "top"
+      },
+      "prepend": false,
+      "task": false,
+      "openFile": false
+    }
+  ],
+  "inputPrompt": "multi-line",
+  "useDateInFilename": false,
+  "dateFormat": "YYYY-MM-DD",
+  "disableDefaultTemplate": false
+}

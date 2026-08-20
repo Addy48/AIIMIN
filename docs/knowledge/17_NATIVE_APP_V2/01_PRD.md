@@ -1,10 +1,29 @@
+---
+
+authority: engineering
+derived_from: Genesis/P8 · Genesis/P9
+status: frozen
+owner: eng
+lifecycle: frozen
+last_reviewed: 2026-08-20
+can_override_genesis: false
+knowledge_layer: KL-BUILD
+graph_role: leaf
+note_type: NT-ENG-LEAF
+migration_batch: W4
+fm_source: script
+---
 # AIIMIN Native Application — Master Product Requirements Document (PRD)
+
+> [!warning] Cold native pack
+> V2-era PRD. Living contracts: [[V3-COMPLETE-BUILD-SPEC]] · [[Maps of Content/Native-App]].
+
 
 > **Document:** 01 · **Pack:** [[17_NATIVE_APP_V2/00_INDEX]]  
 > **Status:** Draft v0.2 — rich mobile thesis (capture-only rejected)  
 > **Date:** 2026-07-19  
 > **Owners:** VP Product (draft) · Founder sign-off required  
-> **Related:** [[00_MASTER_PLAN]] · [[00_SKILLS_SYNTHESIS]] · [[01_PRODUCT/AIIMIN-Product-Guide]] (website V1)
+> **Related:** [[V3-COMPLETE-BUILD-SPEC]] · [[01_PRODUCT/AIIMIN-Product-Guide]] (website V1) · closed V2 plans: [[16_DOCUMENTATION/Completed-Work-Ledger]]
 
 ---
 

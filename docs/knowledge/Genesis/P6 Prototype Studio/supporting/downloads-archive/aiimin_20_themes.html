@@ -1,0 +1,248 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);}
+.root{padding:1rem 0;display:flex;flex-direction:column;gap:16px;}
+.tabs{display:flex;gap:6px;}
+.tab{padding:6px 18px;font-size:13px;border-radius:20px;border:0.5px solid rgba(128,128,128,0.25);cursor:pointer;font-family:var(--font-sans);transition:all 0.12s;background:transparent;color:var(--color-text-secondary);}
+.tab.active{background:var(--color-text-primary);color:var(--color-background-primary);}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.card{border-radius:10px;overflow:hidden;cursor:pointer;border:1.5px solid transparent;transition:border-color 0.12s;}
+.card.sel{border-color:var(--color-text-primary);}
+.card-top{padding:14px;display:flex;flex-direction:column;gap:10px;}
+.card-name{font-size:12px;font-weight:500;}
+.card-sub{font-size:10px;opacity:0.5;}
+.swatch-row{display:flex;gap:5px;}
+.swatch{width:18px;height:18px;border-radius:4px;}
+.mini-ui{display:flex;gap:6px;align-items:center;}
+.mini-pill{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:500;}
+.mini-stat{font-size:16px;font-weight:600;}
+.mini-muted{font-size:9px;opacity:0.45;}
+.card-bottom{padding:8px 14px;font-size:10px;opacity:0.45;border-top:0.5px solid rgba(128,128,128,0.12);}
+.preview-wrap{border-radius:10px;overflow:hidden;border:0.5px solid rgba(128,128,128,0.15);}
+.pv-top{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;border-bottom:0.5px solid rgba(128,128,128,0.1);}
+.pv-logo{font-size:14px;font-weight:600;letter-spacing:0.04em;}
+.pv-body{display:flex;min-height:160px;}
+.pv-sidebar{width:130px;flex-shrink:0;padding:12px 8px;border-right:0.5px solid rgba(128,128,128,0.1);display:flex;flex-direction:column;gap:3px;}
+.pv-nav{padding:6px 8px;border-radius:5px;font-size:11px;display:flex;align-items:center;gap:6px;}
+.pv-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.pv-main{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.pv-statrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.pv-stat{border-radius:6px;padding:10px;border:0.5px solid rgba(128,128,128,0.1);}
+.pv-sl{font-size:9px;opacity:0.4;margin-bottom:4px;}
+.pv-sv{font-size:16px;font-weight:600;}
+.pv-ss{font-size:9px;margin-top:2px;}
+.pv-table{border-radius:6px;border:0.5px solid rgba(128,128,128,0.1);overflow:hidden;}
+.pv-th{display:grid;grid-template-columns:2fr 1fr 1fr;padding:5px 10px;font-size:9px;opacity:0.3;letter-spacing:0.06em;text-transform:uppercase;border-bottom:0.5px solid rgba(128,128,128,0.08);}
+.pv-tr{display:grid;grid-template-columns:2fr 1fr 1fr;padding:6px 10px;font-size:10px;border-bottom:0.5px solid rgba(128,128,128,0.07);}
+.pv-tr:last-child{border-bottom:none;}
+.pv-badge{font-size:8px;padding:2px 6px;border-radius:8px;font-weight:500;}
+.css-box{border-radius:8px;padding:12px 14px;font-family:var(--font-mono);font-size:10px;line-height:1.9;white-space:pre;border:0.5px solid rgba(128,128,128,0.12);}
+.copy-btn{padding:6px 16px;font-size:12px;border-radius:6px;border:0.5px solid rgba(128,128,128,0.2);cursor:pointer;font-family:var(--font-sans);transition:opacity 0.1s;}
+</style>
+
+<div class="root">
+<div style="display:flex;align-items:center;justify-content:space-between;">
+  <div class="tabs">
+    <button class="tab active" id="tDark" onclick="switchMode('dark')">Dark</button>
+    <button class="tab" id="tLight" onclick="switchMode('light')">Light</button>
+  </div>
+  <span style="font-size:11px;color:var(--color-text-secondary);opacity:0.5">Click a theme to preview</span>
+</div>
+
+<div class="grid" id="themeGrid"></div>
+
+<div id="previewSection" style="display:none;flex-direction:column;gap:10px;">
+  <div class="preview-wrap" id="pvWrap">
+    <div class="pv-top" id="pvTop">
+      <span class="pv-logo" id="pvLogo">AIIMIN</span>
+      <span style="font-size:10px;opacity:0.4" id="pvDate">April 2026</span>
+    </div>
+    <div class="pv-body">
+      <div class="pv-sidebar" id="pvSidebar">
+        <div class="pv-nav" id="pvNavActive" style="font-weight:500">
+          <div class="pv-dot" id="pvDot"></div>Overview
+        </div>
+        <div class="pv-nav" id="pvNavMuted">
+          <div class="pv-dot" style="opacity:0.2;border:1px solid currentColor;background:transparent"></div>Finance
+        </div>
+        <div class="pv-nav" id="pvNavMuted2">
+          <div class="pv-dot" style="opacity:0.2;border:1px solid currentColor;background:transparent"></div>Health
+        </div>
+        <div class="pv-nav" id="pvNavMuted3">
+          <div class="pv-dot" style="opacity:0.2;border:1px solid currentColor;background:transparent"></div>Tasks
+        </div>
+      </div>
+      <div class="pv-main" id="pvMain">
+        <div class="pv-statrow">
+          <div class="pv-stat" id="pvStat1">
+            <div class="pv-sl" id="pvSl1">Net Worth</div>
+            <div class="pv-sv" id="pvSv1">₹2.4L</div>
+            <div class="pv-ss" id="pvSsPos">+3.2%</div>
+          </div>
+          <div class="pv-stat" id="pvStat2">
+            <div class="pv-sl" id="pvSl2">Tasks</div>
+            <div class="pv-sv" id="pvSv2">7/12</div>
+            <div class="pv-ss" id="pvSsMut">58% done</div>
+          </div>
+          <div class="pv-stat" id="pvStat3">
+            <div class="pv-sl" id="pvSl3">Sleep</div>
+            <div class="pv-sv" id="pvSv3">6.8h</div>
+            <div class="pv-ss" id="pvSsNeg">-0.4h</div>
+          </div>
+        </div>
+        <div class="pv-table" id="pvTable">
+          <div class="pv-th"><span>Transaction</span><span>Amount</span><span>Status</span></div>
+          <div class="pv-tr" id="pvTr1"><span>Zomato</span><span>-₹420</span><span><span class="pv-badge" id="pvB1">Food</span></span></div>
+          <div class="pv-tr" id="pvTr2"><span>Salary</span><span>+₹18k</span><span><span class="pv-badge" id="pvB2">Income</span></span></div>
+          <div class="pv-tr" id="pvTr3" style="border-bottom:none"><span>Netflix</span><span>-₹649</span><span><span class="pv-badge" id="pvB3">Subs</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:11px;color:var(--color-text-secondary);opacity:0.45" id="cssLabel">CSS variables</span>
+    <button class="copy-btn" id="copyBtn" onclick="copyCSS()" style="color:var(--color-text-primary);background:var(--color-background-secondary)">Copy</button>
+  </div>
+  <div class="css-box" id="cssBox" style="color:var(--color-text-secondary);background:var(--color-background-secondary)"></div>
+</div>
+</div>
+
+<script>
+const dark = [
+  {name:"Void",sub:"Near-black, warm white text, sage accent",bg:"#0c0c0d",sb:"#0f0f10",card:"#141415",bdr:"rgba(255,255,255,0.06)",text:"#f0ede8",muted:"#4a4845",accent:"#7eb89a",accentM:"rgba(126,184,154,0.12)",pos:"#7eb89a",neg:"#d4756b",b1bg:"rgba(212,117,107,0.13)",b1c:"#d4756b",b2bg:"rgba(126,184,154,0.13)",b2c:"#7eb89a",b3bg:"rgba(126,184,154,0.13)",b3c:"#7eb89a",bars:["#7eb89a","#6aaa86","#579c73","#448e60","#32804e"]},
+  {name:"Carbon",sub:"Graphite base, electric cyan, sharp contrast",bg:"#0a0a0a",sb:"#0d0d0d",card:"#111111",bdr:"rgba(255,255,255,0.07)",text:"#e8e8e8",muted:"#444444",accent:"#00d4ff",accentM:"rgba(0,212,255,0.08)",pos:"#00d4ff",neg:"#ff6b6b",b1bg:"rgba(255,107,107,0.12)",b1c:"#ff6b6b",b2bg:"rgba(0,212,255,0.12)",b2c:"#00d4ff",b3bg:"rgba(0,212,255,0.12)",b3c:"#00d4ff",bars:["#00d4ff","#00b8e0","#009cc0","#0080a0","#006480"]},
+  {name:"Charcoal",sub:"Warm gray, amber glow, paper-like text",bg:"#141210",sb:"#171410",card:"#1c1a17",bdr:"rgba(255,220,150,0.06)",text:"#ede8df",muted:"#52504a",accent:"#e8a44a",accentM:"rgba(232,164,74,0.1)",pos:"#7dbb7d",neg:"#d47070",b1bg:"rgba(232,164,74,0.13)",b1c:"#e8a44a",b2bg:"rgba(125,187,125,0.13)",b2c:"#7dbb7d",b3bg:"rgba(232,164,74,0.13)",b3c:"#e8a44a",bars:["#e8a44a","#d09040","#b87c36","#a0682c","#885422"]},
+  {name:"Obsidian Moss",sub:"Black base, muted green, no blue anywhere",bg:"#0b0d0b",sb:"#0e100e",card:"#131513",bdr:"rgba(150,200,150,0.07)",text:"#dde8dd",muted:"#445544",accent:"#6db86d",accentM:"rgba(109,184,109,0.1)",pos:"#6db86d",neg:"#c47a7a",b1bg:"rgba(196,122,122,0.12)",b1c:"#c47a7a",b2bg:"rgba(109,184,109,0.12)",b2c:"#6db86d",b3bg:"rgba(109,184,109,0.12)",b3c:"#6db86d",bars:["#6db86d","#5da45d","#4d904d","#3d7c3d","#2d682d"]},
+  {name:"Iron",sub:"Cold dark, no warmth, steel blue only",bg:"#0d0f12",sb:"#101318",card:"#151820",bdr:"rgba(100,130,180,0.08)",text:"#cdd4e0",muted:"#3d4555",accent:"#6b8fd4",accentM:"rgba(107,143,212,0.1)",pos:"#5aab7a",neg:"#c96060",b1bg:"rgba(201,96,96,0.12)",b1c:"#c96060",b2bg:"rgba(90,171,122,0.12)",b2c:"#5aab7a",b3bg:"rgba(107,143,212,0.12)",b3c:"#6b8fd4",bars:["#6b8fd4","#5a7ebf","#496daa","#385c95","#274b80"]},
+  {name:"Pitch",sub:"Maximum dark, rose accent, almost no UI chrome",bg:"#080808",sb:"#0a0a0a",card:"#0f0f0f",bdr:"rgba(255,255,255,0.05)",text:"#f5f5f5",muted:"#383838",accent:"#e8607a",accentM:"rgba(232,96,122,0.1)",pos:"#60c88a",neg:"#e8607a",b1bg:"rgba(232,164,74,0.12)",b1c:"#e8a44a",b2bg:"rgba(96,200,138,0.12)",b2c:"#60c88a",b3bg:"rgba(232,96,122,0.12)",b3c:"#e8607a",bars:["#e8607a","#d04e68","#b83c56","#a02a44","#881832"]},
+  {name:"Cinder",sub:"Dark brown-black, dusty lavender highlight",bg:"#100e10",sb:"#131013",card:"#181518",bdr:"rgba(180,160,200,0.07)",text:"#e5dff0",muted:"#504858",accent:"#a888d4",accentM:"rgba(168,136,212,0.1)",pos:"#78b878",neg:"#c87878",b1bg:"rgba(200,120,120,0.12)",b1c:"#c87878",b2bg:"rgba(120,184,120,0.12)",b2c:"#78b878",b3bg:"rgba(168,136,212,0.12)",b3c:"#a888d4",bars:["#a888d4","#9474bf","#8060aa","#6c4c95","#583880"]},
+  {name:"Onyx Sand",sub:"Near-black, sandy beige accent, zero blue",bg:"#0e0c0a",sb:"#121008",card:"#171410",bdr:"rgba(200,180,140,0.07)",text:"#ede5d8",muted:"#504840",accent:"#c8a87a",accentM:"rgba(200,168,122,0.1)",pos:"#80b880",neg:"#c87070",b1bg:"rgba(200,168,122,0.13)",b1c:"#c8a87a",b2bg:"rgba(128,184,128,0.12)",b2c:"#80b880",b3bg:"rgba(200,168,122,0.12)",b3c:"#c8a87a",bars:["#c8a87a","#b49468","#a08056","#8c6c44","#785832"]},
+  {name:"Abyss",sub:"Deep navy-black, soft coral, ocean feel",bg:"#090c12",sb:"#0c1018",card:"#111620",bdr:"rgba(100,130,200,0.08)",text:"#dde4f0",muted:"#3a4258",accent:"#f08070",accentM:"rgba(240,128,112,0.1)",pos:"#60b890",neg:"#f08070",b1bg:"rgba(240,128,112,0.12)",b1c:"#f08070",b2bg:"rgba(96,184,144,0.12)",b2c:"#60b890",b3bg:"rgba(240,128,112,0.12)",b3c:"#f08070",bars:["#f08070","#d86858","#c05040","#a83828","#902010"]},
+  {name:"Smoked",sub:"Smoky neutral, muted teal, low saturation everything",bg:"#0e1010",sb:"#111414",card:"#161a1a",bdr:"rgba(120,160,160,0.07)",text:"#d8e0e0",muted:"#3c4848",accent:"#5aa8a8",accentM:"rgba(90,168,168,0.1)",pos:"#5aa8a8",neg:"#c88080",b1bg:"rgba(200,128,128,0.12)",b1c:"#c88080",b2bg:"rgba(90,168,168,0.12)",b2c:"#5aa8a8",b3bg:"rgba(90,168,168,0.12)",b3c:"#5aa8a8",bars:["#5aa8a8","#489090","#367878","#246060","#124848"]}
+];
+
+const light = [
+  {name:"Rice Paper",sub:"Off-white base, ink black text, minimal ink accent",bg:"#f8f6f1",sb:"#f2f0ea",card:"#ffffff",bdr:"rgba(0,0,0,0.07)",text:"#1a1814",muted:"#9a9890",accent:"#3d6b4a",accentM:"rgba(61,107,74,0.08)",pos:"#3d6b4a",neg:"#b84040",b1bg:"rgba(184,64,64,0.09)",b1c:"#b84040",b2bg:"rgba(61,107,74,0.09)",b2c:"#3d6b4a",b3bg:"rgba(61,107,74,0.09)",b3c:"#3d6b4a",bars:["#3d6b4a","#4a7f58","#579366","#64a774","#71bb82"]},
+  {name:"Studio",sub:"Pure white, graphite text, cobalt accent",bg:"#ffffff",sb:"#f5f5f5",card:"#fafafa",bdr:"rgba(0,0,0,0.06)",text:"#111111",muted:"#888888",accent:"#1a56db",accentM:"rgba(26,86,219,0.07)",pos:"#1a7a3a",neg:"#c42b2b",b1bg:"rgba(196,43,43,0.08)",b1c:"#c42b2b",b2bg:"rgba(26,122,58,0.08)",b2c:"#1a7a3a",b3bg:"rgba(26,86,219,0.08)",b3c:"#1a56db",bars:["#1a56db","#2266e8","#2a76f5","#3286ff","#3a96ff"]},
+  {name:"Milk",sub:"Warm white, soft black, terracotta touch",bg:"#faf7f4",sb:"#f5f2ee",card:"#ffffff",bdr:"rgba(60,40,20,0.07)",text:"#1e1814",muted:"#a09080",accent:"#c05a3a",accentM:"rgba(192,90,58,0.08)",pos:"#4a8a4a",neg:"#c05a3a",b1bg:"rgba(192,90,58,0.09)",b1c:"#c05a3a",b2bg:"rgba(74,138,74,0.09)",b2c:"#4a8a4a",b3bg:"rgba(192,90,58,0.09)",b3c:"#c05a3a",bars:["#c05a3a","#d06848","#e07656","#f08464","#ff9272"]},
+  {name:"Linen",sub:"Cream surface, deep navy text, gold accent",bg:"#f9f6ee",sb:"#f3f0e6",card:"#ffffff",bdr:"rgba(40,30,0,0.07)",text:"#1a1c28",muted:"#8888a0",accent:"#c8962a",accentM:"rgba(200,150,42,0.09)",pos:"#3a7a5a",neg:"#b84040",b1bg:"rgba(200,150,42,0.1)",b1c:"#c8962a",b2bg:"rgba(58,122,90,0.09)",b2c:"#3a7a5a",b3bg:"rgba(200,150,42,0.09)",b3c:"#c8962a",bars:["#c8962a","#d8a638","#e8b646","#f8c654","#ffd662"]},
+  {name:"Chalk",sub:"Gray-white, near-black, muted violet pop",bg:"#f4f4f6",sb:"#eeeef2",card:"#ffffff",bdr:"rgba(0,0,0,0.06)",text:"#141418",muted:"#7a7a88",accent:"#7060d0",accentM:"rgba(112,96,208,0.08)",pos:"#3a8a5a",neg:"#c04040",b1bg:"rgba(192,64,64,0.08)",b1c:"#c04040",b2bg:"rgba(58,138,90,0.08)",b2c:"#3a8a5a",b3bg:"rgba(112,96,208,0.08)",b3c:"#7060d0",bars:["#7060d0","#8070d8","#9080e0","#a090e8","#b0a0f0"]},
+  {name:"Morning",sub:"Very light blue-gray, dark slate, fresh teal",bg:"#f0f4f8",sb:"#eaf0f6",card:"#ffffff",bdr:"rgba(0,40,80,0.07)",text:"#0f1e30",muted:"#6a8090",accent:"#0a8080",accentM:"rgba(10,128,128,0.08)",pos:"#0a8060",neg:"#c04040",b1bg:"rgba(192,64,64,0.08)",b1c:"#c04040",b2bg:"rgba(10,128,96,0.08)",b2c:"#0a8060",b3bg:"rgba(10,128,128,0.08)",b3c:"#0a8080",bars:["#0a8080","#149090","#1ea0a0","#28b0b0","#32c0c0"]},
+  {name:"Fog",sub:"Cool gray surface, charcoal, muted rose",bg:"#f2f2f4",sb:"#ebebed",card:"#fafafa",bdr:"rgba(0,0,0,0.06)",text:"#1c1c20",muted:"#828288",accent:"#c06070",accentM:"rgba(192,96,112,0.08)",pos:"#4a8a6a",neg:"#c06070",b1bg:"rgba(192,96,112,0.09)",b1c:"#c06070",b2bg:"rgba(74,138,106,0.09)",b2c:"#4a8a6a",b3bg:"rgba(192,96,112,0.09)",b3c:"#c06070",bars:["#c06070","#c87080","#d08090","#d890a0","#e0a0b0"]},
+  {name:"Ecru",sub:"Antique white, deep brown, forest green",bg:"#f6f3ec",sb:"#f0ece3",card:"#fdfcf8",bdr:"rgba(80,50,10,0.07)",text:"#201808",muted:"#907858",accent:"#3a6838",accentM:"rgba(58,104,56,0.08)",pos:"#3a6838",neg:"#a84040",b1bg:"rgba(168,64,64,0.08)",b1c:"#a84040",b2bg:"rgba(58,104,56,0.09)",b2c:"#3a6838",b3bg:"rgba(58,104,56,0.08)",b3c:"#3a6838",bars:["#3a6838","#4a7848","#5a8858","#6a9868","#7aa878"]},
+  {name:"Bone",sub:"Warm white, ink, copper highlight",bg:"#f8f5f0",sb:"#f2ede6",card:"#ffffff",bdr:"rgba(60,40,20,0.06)",text:"#1e1a14",muted:"#9a8870",accent:"#a06030",accentM:"rgba(160,96,48,0.09)",pos:"#4a7850",neg:"#b04040",b1bg:"rgba(160,96,48,0.1)",b1c:"#a06030",b2bg:"rgba(74,120,80,0.09)",b2c:"#4a7850",b3bg:"rgba(160,96,48,0.09)",b3c:"#a06030",bars:["#a06030","#b07040","#c08050","#d09060","#e0a070"]},
+  {name:"Glass",sub:"Almost white, light border only, sky blue sole accent",bg:"#f7f9fc",sb:"#f0f4f9",card:"#ffffff",bdr:"rgba(0,60,120,0.06)",text:"#0c1828",muted:"#6a7a90",accent:"#2060c0",accentM:"rgba(32,96,192,0.07)",pos:"#206040",neg:"#c03040",b1bg:"rgba(192,48,64,0.08)",b1c:"#c03040",b2bg:"rgba(32,96,64,0.08)",b2c:"#206040",b3bg:"rgba(32,96,192,0.08)",b3c:"#2060c0",bars:["#2060c0","#3070d0","#4080e0","#5090f0","#60a0ff"]}
+];
+
+let mode = 'dark';
+let selIdx = 0;
+
+function switchMode(m) {
+  mode = m;
+  selIdx = 0;
+  document.getElementById('tDark').classList.toggle('active', m==='dark');
+  document.getElementById('tLight').classList.toggle('active', m==='light');
+  renderGrid();
+  renderPreview(0);
+}
+
+function renderGrid() {
+  const themes = mode==='dark' ? dark : light;
+  const grid = document.getElementById('themeGrid');
+  grid.innerHTML = '';
+  themes.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'card' + (i===selIdx?' sel':'');
+    card.style.background = t.card;
+    card.style.borderColor = i===selIdx ? t.accent : 'transparent';
+    card.onclick = () => { selIdx=i; renderGrid(); renderPreview(i); };
+
+    card.innerHTML = `
+      <div class="card-top" style="background:${t.bg}">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div class="card-name" style="color:${t.text}">${t.name}</div>
+            <div class="card-sub" style="color:${t.muted}">${t.sub}</div>
+          </div>
+          <div style="width:10px;height:10px;border-radius:50%;background:${t.accent}"></div>
+        </div>
+        <div class="swatch-row">
+          <div class="swatch" style="background:${t.bg};border:0.5px solid rgba(128,128,128,0.15)"></div>
+          <div class="swatch" style="background:${t.card};border:0.5px solid rgba(128,128,128,0.15)"></div>
+          <div class="swatch" style="background:${t.text}"></div>
+          <div class="swatch" style="background:${t.accent}"></div>
+          <div class="swatch" style="background:${t.pos}"></div>
+          <div class="swatch" style="background:${t.neg}"></div>
+        </div>
+        <div class="mini-ui" style="color:${t.text}">
+          <span class="mini-stat" style="color:${t.accent}">₹2.4L</span>
+          <span class="mini-muted" style="color:${t.muted}">net worth</span>
+          <span class="mini-pill" style="background:${t.accentM};color:${t.accent}">+3.2%</span>
+        </div>
+      </div>
+      <div class="card-bottom" style="background:${t.bg};color:${t.muted}">${t.name} — click to preview</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderPreview(i) {
+  const themes = mode==='dark' ? dark : light;
+  const t = themes[i];
+  const pv = document.getElementById('previewSection');
+  pv.style.display = 'flex';
+
+  document.getElementById('pvWrap').style.background = t.bg;
+  document.getElementById('pvWrap').style.color = t.text;
+  document.getElementById('pvTop').style.background = t.bg;
+  document.getElementById('pvTop').style.borderBottomColor = t.bdr;
+  document.getElementById('pvLogo').style.color = t.text;
+  document.getElementById('pvDate').style.color = t.muted;
+  document.getElementById('pvSidebar').style.background = t.sb;
+  document.getElementById('pvSidebar').style.borderRightColor = t.bdr;
+  document.getElementById('pvNavActive').style.background = t.accentM;
+  document.getElementById('pvNavActive').style.color = t.accent;
+  document.getElementById('pvDot').style.background = t.accent;
+  ['pvNavMuted','pvNavMuted2','pvNavMuted3'].forEach(id=>{
+    document.getElementById(id).style.color = t.muted;
+  });
+  document.getElementById('pvMain').style.background = t.bg;
+  ['pvStat1','pvStat2','pvStat3'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.style.background = t.card;
+    el.style.borderColor = t.bdr;
+  });
+  ['pvSl1','pvSl2','pvSl3'].forEach(id=>{ document.getElementById(id).style.color = t.muted; });
+  ['pvSv1','pvSv2','pvSv3'].forEach(id=>{ document.getElementById(id).style.color = t.text; });
+  document.getElementById('pvSsPos').style.color = t.pos;
+  document.getElementById('pvSsMut').style.color = t.muted;
+  document.getElementById('pvSsNeg').style.color = t.neg;
+  document.getElementById('pvTable').style.background = t.card;
+  document.getElementById('pvTable').style.borderColor = t.bdr;
+  ['pvTr1','pvTr2','pvTr3'].forEach(id=>{ document.getElementById(id).style.color = t.text; });
+  document.getElementById('pvB1').style.background = t.b1bg;
+  document.getElementById('pvB1').style.color = t.b1c;
+  document.getElementById('pvB2').style.background = t.b2bg;
+  document.getElementById('pvB2').style.color = t.b2c;
+  document.getElementById('pvB3').style.background = t.b3bg;
+  document.getElementById('pvB3').style.color = t.b3c;
+
+  const vars = `--bg-primary:   ${t.bg};\n--bg-secondary: ${t.sb};\n--bg-card:      ${t.card};\n--border:       ${t.bdr};\n--text:         ${t.text};\n--muted:        ${t.muted};\n--accent:       ${t.accent};\n--accent-muted: ${t.accentM};\n--positive:     ${t.pos};\n--negative:     ${t.neg};`;
+  document.getElementById('cssBox').textContent = vars;
+  document.getElementById('cssBox').setAttribute('data-vars', vars);
+}
+
+function copyCSS() {
+  const text = document.getElementById('cssBox').getAttribute('data-vars');
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied';
+    setTimeout(()=>{ btn.textContent = 'Copy'; }, 1500);
+  });
+}
+
+renderGrid();
+renderPreview(0);
+</script>

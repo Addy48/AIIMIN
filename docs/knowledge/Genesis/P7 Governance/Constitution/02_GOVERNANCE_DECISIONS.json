@@ -1,0 +1,3388 @@
+{
+  "meta": {
+    "document": "Constitution Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+    "source_version": "3.0",
+    "source_status": "FROZEN",
+    "baseline": "AIIMIN GENESIS/P7 Governance/_baseline/01_CONSTITUTION_GOVERNANCE.v1-baseline.md",
+    "governance_date": "2026-07-22",
+    "upgrade": "v2 — evidence, confidence, cost, dependency graph, canon/recommendation split",
+    "gov_id_range": "GOV-001…GOV-061",
+    "decision_count": 61,
+    "recommendation_count": 15,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)"
+  },
+  "decisions": [
+    {
+      "id": "GOV-001",
+      "title": "Personal Life OS category lock",
+      "category": "Product Identity",
+      "domain": "product",
+      "decision": "AIIMIN is officially a Personal Life OS — Personal (one human's life graph, not a network) + Life (whole person: execution, money, health, reflection, family, career) + OS (shared primitives, shared memory, shared intelligence across surfaces).",
+      "reason": "Category lock prevents single-domain drift and social-network drift.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [],
+      "blocks": [
+        "Master Product Specification",
+        "Feature Intake",
+        "All Clients Domain Model"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "Desktop",
+        "Backend",
+        "AI",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article II"
+          ],
+          "sections": [
+            "What AIIMIN is"
+          ],
+          "quote": "AIIMIN is a **Personal Life OS**."
+        },
+        {
+          "articles": [
+            "Article II"
+          ],
+          "sections": [
+            "What AIIMIN is — table"
+          ],
+          "quote": "Personal | One human's life graph; not a network"
+        },
+        {
+          "articles": [
+            "Article II"
+          ],
+          "sections": [
+            "What AIIMIN is — table"
+          ],
+          "quote": "OS | Shared primitives, shared memory, shared intelligence across surfaces"
+        }
+      ],
+      "implementation_impact": "Feature proposals that are single-domain-only without Life OS linkage are out of canon. Cross-surface entity model required.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-002",
+      "title": "Vision lock — Capture once",
+      "category": "Product Vision",
+      "domain": "product",
+      "decision": "Vision lock is mandatory copy/strategy north star: Capture once. AIIMIN remembers, connects, and coaches — without turning life into data entry.",
+      "reason": "Survived multiple redesigns; protects coherent purpose.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-001"
+      ],
+      "blocks": [
+        "Capture UX",
+        "Marketing Copy",
+        "Onboarding"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "AI",
+        "Content System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article I"
+          ],
+          "sections": [
+            "Why AIIMIN exists"
+          ],
+          "quote": "Vision lock: *Capture once. AIIMIN remembers, connects, and coaches — without turning life into data entry.*"
+        }
+      ],
+      "implementation_impact": "Any flow that forces taxonomy-first capture violates vision. Marketing and in-product copy must not contradict.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-003",
+      "title": "Brand frame — Human Momentum",
+      "category": "Brand Frame",
+      "domain": "product",
+      "decision": "Brand frame is Human Momentum — precision, feedback loops, behavioral intelligence, data sovereignty, momentum engineering. Explicitly never shame theater.",
+      "reason": "Emotional and ethical identity of the brand.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-001"
+      ],
+      "blocks": [
+        "Life Score UX",
+        "Gamification",
+        "Coaching Tone",
+        "Brand Book"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Motion",
+        "AI",
+        "Content System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article I"
+          ],
+          "sections": [
+            "Why AIIMIN exists"
+          ],
+          "quote": "Brand frame: **Human Momentum** — precision, feedback loops, behavioral intelligence, data sovereignty, momentum engineering — never shame theater."
+        }
+      ],
+      "implementation_impact": "Streak/shame UX, guilt copy, punitive empty states are non-canon. Brand book and product UI must share this frame.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-004",
+      "title": "Three existence outcomes",
+      "category": "Product Mission",
+      "domain": "product",
+      "decision": "Product must enable three outcomes under cognitive load: (1) capture life as it happens without data-entry clerking; (2) show one connected graph of goals, habits, money, calendar, body, mind, family, work; (3) act tomorrow with less friction via memory, connection, honest coaching.",
+      "reason": "Defines existence criteria — features must serve at least one of these.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-001",
+        "GOV-002"
+      ],
+      "blocks": [
+        "Feature Intake",
+        "Roadmap",
+        "Life Graph"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article I"
+          ],
+          "sections": [
+            "Why AIIMIN exists"
+          ],
+          "quote": "AIIMIN exists so a person under cognitive load can:"
+        },
+        {
+          "articles": [
+            "Article I"
+          ],
+          "sections": [
+            "Why AIIMIN exists §1–3"
+          ],
+          "quote": "Capture life as it happens… See one connected graph… Act tomorrow with less friction…"
+        }
+      ],
+      "implementation_impact": "Feature intake filter: map to capture / connect / coach. Orphan features fail governance.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-005",
+      "title": "Refuse social network / public feed / leaderboard",
+      "category": "Hard Refuse — Social",
+      "domain": "product",
+      "decision": "AIIMIN will never become a social network, public feed, or public leaderboard.",
+      "reason": "Personal Life OS is not a network product.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-001"
+      ],
+      "blocks": [
+        "Growth Strategy",
+        "Sharing Features",
+        "Gamification Leaderboards"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "Backend"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "What AIIMIN will never become §1"
+          ],
+          "quote": "A social network, public feed, or public leaderboard."
+        }
+      ],
+      "implementation_impact": "No public feeds, no public rankings. Private sharing (if ever) requires separate founder decision and must not create social graph product.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-006",
+      "title": "Refuse clinical / therapist claims",
+      "category": "Hard Refuse — Clinical",
+      "domain": "product",
+      "decision": "AIIMIN will never become a clinical mental health device, diagnostic tool, or AI therapist. No clinical claims.",
+      "reason": "Ethics and liability.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-001"
+      ],
+      "blocks": [
+        "AI Prompt Policy",
+        "Health Module Copy",
+        "Store Listings"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Android Build",
+        "Website",
+        "Marketing"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§2"
+          ],
+          "quote": "A clinical mental health device, diagnostic tool, or AI therapist."
+        },
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "No clinical claims"
+          ],
+          "quote": "No clinical claims | Ethics and liability"
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Clinical or therapist framing."
+        }
+      ],
+      "implementation_impact": "Ban diagnostic language, therapy framing, clinical claims in UI/docs/store. Health data may exist as life context, not clinical product.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-007",
+      "title": "Refuse single-domain Life OS clothing",
+      "category": "Hard Refuse — Single-domain",
+      "domain": "product",
+      "decision": "AIIMIN will never become a single-domain app (finance-only, fitness-only, notes-only) wearing Life OS clothing.",
+      "reason": "Protects Life OS category integrity.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-001"
+      ],
+      "blocks": [
+        "Module Packaging",
+        "Marketing Positioning"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Roadmap"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§3"
+          ],
+          "quote": "A single-domain app (finance-only, fitness-only, notes-only) wearing Life OS clothing."
+        }
+      ],
+      "implementation_impact": "Vertical modules allowed as surfaces of the OS, not as the product identity.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-008",
+      "title": "Refuse form-builder / capture blockers",
+      "category": "Hard Refuse — Forms",
+      "domain": "product",
+      "decision": "AIIMIN will never become a form builder disguised as productivity, nor block capture behind mode pickers, category interrogations, or vanity configuration.",
+      "reason": "Capture-first identity; cognitive load honesty.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-002",
+        "GOV-028"
+      ],
+      "blocks": [
+        "Capture UX",
+        "Onboarding",
+        "Entity Creation Flows"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Desktop",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§4"
+          ],
+          "quote": "A form builder disguised as productivity."
+        },
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§8"
+          ],
+          "quote": "A product that blocks capture behind mode pickers, category interrogations, or vanity configuration."
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize / Avoid"
+          ],
+          "quote": "Capture speed | Configuration theater"
+        }
+      ],
+      "implementation_impact": "Capture path must allow primary save without ceremony. Structure/categories deferred or inferred.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-009",
+      "title": "Refuse gamification casino; honest Life Score",
+      "category": "Hard Refuse — Gamification",
+      "domain": "product",
+      "decision": "AIIMIN will never become a gamification casino that optimizes for streaks and shame. Life Score must remain honest composite truth, not vanity XP.",
+      "reason": "Human Momentum is not an engagement hack; honesty over vanity.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-003"
+      ],
+      "blocks": [
+        "Life Score Model",
+        "XP System",
+        "Streak UI"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§5"
+          ],
+          "quote": "A gamification casino that optimizes for streaks and shame."
+        },
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§7"
+          ],
+          "quote": "**Honesty of Life Score** — composite truth, not vanity XP."
+        }
+      ],
+      "implementation_impact": "Separate celebratory XP from honest Life Score roles. Punitive streak systems non-canon.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-010",
+      "title": "Refuse purple/cream clones and GoodNotes PWA",
+      "category": "Hard Refuse — Visual clones",
+      "domain": "visual",
+      "decision": "AIIMIN will never become a purple SaaS clone, cream-terracotta editorial AI look, or GoodNotes handwriting PWA. Redesign that could belong to another brand after removing the logo equals failure.",
+      "reason": "Timeless identity; Design History survivors/deaths.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-036"
+      ],
+      "blocks": [
+        "Visual QA",
+        "Prototype Studio",
+        "Brand Reviews"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Website",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§6"
+          ],
+          "quote": "A purple SaaS clone, cream-terracotta editorial AI look, or GoodNotes handwriting PWA."
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Redesign that could belong to another brand after removing the logo."
+        }
+      ],
+      "implementation_impact": "Design review gate: brand-test after logo removal. Forbidden aesthetic clusters are product law.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-011",
+      "title": "Refuse sell/share lifelog data",
+      "category": "Hard Refuse — Data commerce",
+      "domain": "product",
+      "decision": "AIIMIN will never sell or share lifelog data.",
+      "reason": "Data sovereignty pillar of Human Momentum.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-003"
+      ],
+      "blocks": [
+        "Analytics Partnerships",
+        "Vendor Contracts",
+        "Export Policy"
+      ],
+      "referenced_by": [
+        "P8",
+        "Backend",
+        "Infrastructure",
+        "Privacy"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§7"
+          ],
+          "quote": "A product that sells or shares lifelog data."
+        }
+      ],
+      "implementation_impact": "No data-sale features or silent third-party lifelog sharing. Analytics must respect journal-body ban (GOV-016).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-012",
+      "title": "Split brand lockup (mark /brand, wordmark Today)",
+      "category": "Brand Navigation Lock",
+      "domain": "product",
+      "decision": "Split brand lockup is permanent: logo mark to /brand (brand book); wordmark to Today (daily OS). Brand book is not daily OS.",
+      "reason": "Recognition continuity; separates identity education from daily use.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-003"
+      ],
+      "blocks": [
+        "Navbar",
+        "BrandLockup",
+        "Routing"
+      ],
+      "referenced_by": [
+        "P8",
+        "Website",
+        "Desktop",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Split brand lockup"
+          ],
+          "quote": "Split brand lockup (mark→`/brand`, wordmark→Today) | Brand book ≠ daily OS"
+        }
+      ],
+      "implementation_impact": "Do not unify click targets. Do not replace with mini-story or purple OAuth chrome. Route ID for Today needs founder bind (see REC-003).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-013",
+      "title": "Phone web /m capture-only ceiling",
+      "category": "Platform Ceiling — Phone web",
+      "domain": "product",
+      "decision": "Phone web /m is capture-first / capture-only. Analytics tools on /m equal failure. Native capture richness does not authorize breaking the /m lock.",
+      "reason": "Device honesty. Known risk explicitly called out.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-002",
+        "GOV-028"
+      ],
+      "blocks": [
+        "Capacitor /m Scope",
+        "Mobile Web Feature Flags",
+        "Release Checks"
+      ],
+      "referenced_by": [
+        "P8",
+        "Website",
+        "Android Build",
+        "Infrastructure"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Capture-first on phone web /m"
+          ],
+          "quote": "Capture-first on phone web `/m` | Device honesty"
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Analytics tools on phone web `/m`."
+        },
+        {
+          "articles": [
+            "Known risks"
+          ],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "Treating native capture-richness as permission to break phone-web `/m` lock."
+        }
+      ],
+      "implementation_impact": "No analytics, insights, pomodoro, or tools on /m. Native Android may be richer; /m stays collection stopgap.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-014",
+      "title": "Export and delete always available",
+      "category": "Trust — Export / Delete",
+      "domain": "product",
+      "decision": "Export and delete must always be available. User trust includes writing privately and exporting everything.",
+      "reason": "Trust and data sovereignty.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-011"
+      ],
+      "blocks": [
+        "Account Settings",
+        "Export APIs",
+        "Deletion Cascades"
+      ],
+      "referenced_by": [
+        "P8",
+        "Backend",
+        "Website",
+        "Android Build",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Export and delete always available"
+          ],
+          "quote": "Export and delete always available | Trust"
+        },
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success"
+          ],
+          "quote": "User trusts the system enough to write privately and still export everything."
+        }
+      ],
+      "implementation_impact": "Ship/keep export + delete paths. Blocking either is constitutional violation.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-015",
+      "title": "Destructive actions must confirm",
+      "category": "Safety — Destructive actions",
+      "domain": "product",
+      "decision": "Destructive actions must confirm.",
+      "reason": "Safety.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [],
+      "blocks": [
+        "Confirm Dialog Pattern",
+        "Delete Flows"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Destructive actions confirm"
+          ],
+          "quote": "Destructive actions confirm | Safety"
+        }
+      ],
+      "implementation_impact": "No silent destructive ops. Confirmations required on every client. Branded confirm detail deferred to Non-Negotiables governance.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-016",
+      "title": "Journal body out of analytics",
+      "category": "Privacy — Journal analytics",
+      "domain": "product",
+      "decision": "Journal body stays out of analytics.",
+      "reason": "Privacy.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-011"
+      ],
+      "blocks": [
+        "Analytics Pipelines",
+        "Telemetry Allowlists"
+      ],
+      "referenced_by": [
+        "P8",
+        "Backend",
+        "Infrastructure",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Journal body out of analytics"
+          ],
+          "quote": "Journal body out of analytics | Privacy"
+        }
+      ],
+      "implementation_impact": "Do not send journal body content to analytics vendors. Event names/metadata only if policy allows — body never.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-017",
+      "title": "Vault ships with behavior change",
+      "category": "Institutional Memory",
+      "domain": "governance",
+      "decision": "Vault ships with every behavior change.",
+      "reason": "Institutional memory; agents must not drift.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [],
+      "blocks": [
+        "Definition of Done",
+        "PR Checklist"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "All Agents",
+        "Docs"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Vault ships with behavior change"
+          ],
+          "quote": "Vault ships with behavior change | Institutional memory"
+        }
+      ],
+      "implementation_impact": "Code + vault update same unit of work. Behavior change without vault update = non-compliant ship.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-018",
+      "title": "Auth/schema only with explicit ask",
+      "category": "Auth / Schema Gate",
+      "domain": "technical",
+      "decision": "Auth and database schema change only with explicit human ask.",
+      "reason": "Safety for agents and humans.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [],
+      "blocks": [
+        "Migrations",
+        "Auth Config Changes"
+      ],
+      "referenced_by": [
+        "P8",
+        "Backend",
+        "Infrastructure",
+        "All Agents"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Auth/schema only with explicit ask"
+          ],
+          "quote": "Auth/schema only with explicit ask | Safety for agents and humans"
+        }
+      ],
+      "implementation_impact": "Agents must refuse unsolicited auth/schema edits. Founder ask required before any change.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-019",
+      "title": "One linking system for life entities",
+      "category": "Life Graph Integrity",
+      "domain": "technical",
+      "decision": "One linking system for life entities.",
+      "reason": "Graph integrity; prevent duplicate link models.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-001",
+        "GOV-004"
+      ],
+      "blocks": [
+        "Entity Model",
+        "API Link Endpoints",
+        "AI Entity Resolution"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Backend",
+        "Android Build",
+        "Website",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "One linking system for life entities"
+          ],
+          "quote": "One linking system for life entities | Graph integrity"
+        }
+      ],
+      "implementation_impact": "No parallel linking systems. New entity types plug into the one graph. Named schema/API still missing (see REC-005).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-020",
+      "title": "One primitive, many surfaces",
+      "category": "Primitives Policy",
+      "domain": "product",
+      "decision": "One primitive, many surfaces — no duplicate mood/theme/arc/resume UIs. Duplicate primitives proliferating equals failure.",
+      "reason": "OS coherence; compression.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-001",
+        "GOV-040"
+      ],
+      "blocks": [
+        "Component System",
+        "IA",
+        "Domain Models"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§3"
+          ],
+          "quote": "**One primitive, many surfaces** — no duplicate mood/theme/arc/resume UIs."
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Duplicate primitives proliferating."
+        }
+      ],
+      "implementation_impact": "Before new UI for a concept, prove no existing primitive covers it. Kill duplicate surfaces.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-021",
+      "title": "Official success criteria (non-vanity)",
+      "category": "Success Metrics",
+      "domain": "product",
+      "decision": "Official success criteria (not downloads, DAU vanity, or feature count): (1) Daily capture possible in under ~60 seconds when the user is ready; (2) Median meaningful interactions per active day trending toward ~5, not ~15+; (3) User can answer how am I doing? without visiting four apps; (4) User trusts system enough to write privately and still export everything; (5) Tomorrow's plan is lighter because yesterday was remembered; (6) Designers and agents can ship without asking who are we?",
+      "reason": "Outcome-aligned product truth.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-002",
+        "GOV-014"
+      ],
+      "blocks": [
+        "Telemetry Spec",
+        "KPI Dashboards",
+        "Product OKRs"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Analytics",
+        "Product"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "What success means"
+          ],
+          "quote": "Success is not downloads, DAU vanity, or feature count."
+        },
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success list"
+          ],
+          "quote": "Daily capture possible in under ~60 seconds when the user is ready."
+        },
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success list"
+          ],
+          "quote": "Median meaningful interactions per active day trending toward ~5, not ~15+."
+        }
+      ],
+      "implementation_impact": "KPI dashboards must prefer these over vanity DAU. Exact telemetry definitions for meaningful interaction and ready capture require founder session (REC-002).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-022",
+      "title": "Official failure triggers",
+      "category": "Failure Triggers",
+      "domain": "product",
+      "decision": "Official failure conditions (any is a governance red flag): rising daily interaction count for same human outcomes; duplicate primitives proliferating; clinical or therapist framing; analytics tools on phone web /m; social comparison as growth strategy; silent wrong automation without correction path; feature shipped without a human problem; redesign that could belong to another brand after removing the logo.",
+      "reason": "Early identity-death detectors.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-006",
+        "GOV-013",
+        "GOV-020",
+        "GOV-023"
+      ],
+      "blocks": [
+        "Ship/Kill Checklist",
+        "Product Review"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "PR Review",
+        "Design Review"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "What failure means"
+          ],
+          "quote": "Failure is:"
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure bullets"
+          ],
+          "quote": "Rising daily interaction count… Duplicate primitives… Clinical or therapist framing… Analytics tools on phone web `/m`… Social comparison… Silent wrong automation… Feature shipped without a human problem… Redesign that could belong to another brand…"
+        }
+      ],
+      "implementation_impact": "Use as ship/kill checklist. Automation without correction path is forbidden.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-023",
+      "title": "Feature must justify human problem",
+      "category": "Feature Intake Gate",
+      "domain": "product",
+      "decision": "Every feature must justify a human problem. Feature without human problem equals failure / refuse.",
+      "reason": "Prevent novelty-driven identity drift.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-004"
+      ],
+      "blocks": [
+        "PRD Process",
+        "Sprint Intake",
+        "Agent Feature Proposals"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "All Agents",
+        "Product"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Feature shipped without a human problem."
+        }
+      ],
+      "implementation_impact": "Intake template must state human problem before build.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-024",
+      "title": "Constitution amendment process",
+      "category": "Amendment Process",
+      "domain": "governance",
+      "decision": "Constitutional change requires: (1) explicit founder approval, (2) written ADR or decision log entry, (3) vault update, (4) Design Bible revision with changelog. Silent amendment by agents/sprints forbidden.",
+      "reason": "Immutability intentional — threat is identity drift, not insufficient novelty.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-017"
+      ],
+      "blocks": [
+        "ADR Process",
+        "Design Bible Changelog"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "All Agents",
+        "Governance Board"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article XI"
+          ],
+          "sections": [
+            "Amendment"
+          ],
+          "quote": "Constitutional change requires **explicit founder approval**, written ADR or decision log entry, vault update, and Design Bible revision with changelog. Agents and redesign sprints may not silently amend Articles I–X."
+        },
+        {
+          "articles": [
+            "Tradeoffs"
+          ],
+          "sections": [
+            "Tradeoffs"
+          ],
+          "quote": "Immutability slows opportunistic pivots. That is intentional. AIIMIN's threat is identity drift, not insufficient novelty."
+        }
+      ],
+      "implementation_impact": "Governance Board may recommend; founder amends. No silent Article edits.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-025",
+      "title": "Article supremacy over later principles",
+      "category": "Hierarchy of Law",
+      "domain": "governance",
+      "decision": "If a later principle, blueprint, or growth rule contradicts an Article, the Article wins until amended.",
+      "reason": "Constitution is supreme identity law within Design Bible stack.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-024"
+      ],
+      "blocks": [
+        "Conflict Resolution",
+        "Later P5 Governance Passes"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "All P7 Artifact Passes"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Future impact"
+          ],
+          "sections": [
+            "Future impact"
+          ],
+          "quote": "If a later principle contradicts an Article, the Article wins until amended."
+        }
+      ],
+      "implementation_impact": "Conflict resolution always prefers Articles I–X.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-026",
+      "title": "Optimize / avoid matrix",
+      "category": "Optimization Policy",
+      "domain": "product",
+      "decision": "Product optimizes for: capture speed; connected memory; correctable inference; interruptibility respect; pattern language; progressive disclosure by stakes; long-term trust; timeless identity. Deliberately avoids: configuration theater; siloed widgets; silent wrongness; JITAI nag loops; punitive streaks; same friction everywhere; short-term engagement hacks; trend following.",
+      "reason": "Explicit optimize/avoid matrix for roadmap and UX.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-002",
+        "GOV-003"
+      ],
+      "blocks": [
+        "Roadmap Scoring",
+        "Notification Policy",
+        "Design Reviews"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "AI",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "What the product optimizes for — table"
+          ],
+          "quote": "Capture speed | Configuration theater"
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize column"
+          ],
+          "quote": "Connected memory; Correctable inference; Interruptibility respect; Pattern language; Progressive disclosure by stakes; Long-term trust; Timeless identity"
+        }
+      ],
+      "implementation_impact": "Design/product reviews score against this matrix. Nag loops and trend-chasing aesthetics fail.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-027",
+      "title": "Intent over interface",
+      "category": "UX — Intent model",
+      "domain": "ux",
+      "decision": "Intent over interface — users arrive with needs, not taxonomies.",
+      "reason": "Cognitive load reality.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-002"
+      ],
+      "blocks": [
+        "Navigation Labels",
+        "Search/Command",
+        "Onboarding"
+      ],
+      "referenced_by": [
+        "P8",
+        "IA",
+        "Android Build",
+        "Website",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§1"
+          ],
+          "quote": "**Intent over interface** — users arrive with needs, not taxonomies."
+        }
+      ],
+      "implementation_impact": "Prefer need-based entry (capture, review, plan) over taxonomy browsers as primary.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-028",
+      "title": "Capture first, structure later",
+      "category": "UX — Capture doctrine",
+      "domain": "ux",
+      "decision": "Capture first, structure later. Raw expression is highest-fidelity signal. Primary emotional contract includes relief after capture.",
+      "reason": "Fidelity and speed under load.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-002",
+        "GOV-004"
+      ],
+      "blocks": [
+        "Capture UX",
+        "AI Structuring Pipeline"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Desktop",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§2"
+          ],
+          "quote": "**Capture first, structure later** — raw expression is highest-fidelity signal."
+        },
+        {
+          "articles": [
+            "Article I"
+          ],
+          "sections": [
+            "Vision lock"
+          ],
+          "quote": "Capture once. AIIMIN remembers, connects, and coaches — without turning life into data entry."
+        },
+        {
+          "articles": [
+            "Article VIII"
+          ],
+          "sections": [
+            "Emotional contract"
+          ],
+          "quote": "**relief after capture**"
+        }
+      ],
+      "implementation_impact": "Default capture = free expression + fast save. Structure via AI/later edit, not pre-forms.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-029",
+      "title": "Read surfaces stay calm",
+      "category": "UX — Read surfaces",
+      "domain": "ux",
+      "decision": "Read surfaces stay calm — intelligence without interrogation.",
+      "reason": "Review should produce clarity, not new anxiety.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-030"
+      ],
+      "blocks": [
+        "Today",
+        "Reports",
+        "Insights"
+      ],
+      "referenced_by": [
+        "P8",
+        "Website",
+        "Android Build",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§5"
+          ],
+          "quote": "**Read surfaces stay calm** — intelligence without interrogation."
+        },
+        {
+          "articles": [
+            "Article VIII"
+          ],
+          "sections": [
+            "Emotional contract"
+          ],
+          "quote": "**clarity after review**"
+        }
+      ],
+      "implementation_impact": "Ban quiz-like interrogation on read paths. Show connected signal calmly.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-030",
+      "title": "Emotional contract triad",
+      "category": "UX — Emotional contract",
+      "domain": "ux",
+      "decision": "Users should feel: Calm, Capable, Honest, Respected, In momentum — not in debt to the product. Contract triad: relief after capture, clarity after review, agency after coaching.",
+      "reason": "Defines acceptable post-interaction emotional state.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-003"
+      ],
+      "blocks": [
+        "UX Acceptance",
+        "Empty States",
+        "Coaching Copy"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Content System",
+        "AI",
+        "Motion"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article VIII"
+          ],
+          "sections": [
+            "What users should feel"
+          ],
+          "quote": "Calm. Capable. Honest. Respected. In momentum — not in debt to the product."
+        },
+        {
+          "articles": [
+            "Article VIII"
+          ],
+          "sections": [
+            "Primary emotional contract"
+          ],
+          "quote": "Primary emotional contract: **relief after capture**, **clarity after review**, **agency after coaching**."
+        }
+      ],
+      "implementation_impact": "UX review includes emotional outcome check against triad.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-031",
+      "title": "Emotional refuse list",
+      "category": "UX — Emotional refuse",
+      "domain": "ux",
+      "decision": "Users must never feel: Interrogated, Shamed, Trapped, Surveilled, Confused by decoration, Patronized by AI magic, Forced to choose among five moods or fourteen lab modules to do one simple thing.",
+      "reason": "Anti-patterns proven by history (lab module sprawl, mood pickers).",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-030"
+      ],
+      "blocks": [
+        "Lab/Modules IA",
+        "Mood UI",
+        "AI Copy"
+      ],
+      "referenced_by": [
+        "P8",
+        "IA",
+        "Content System",
+        "AI",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IX"
+          ],
+          "sections": [
+            "What users should never feel"
+          ],
+          "quote": "Interrogated. Shamed. Trapped. Surveilled. Confused by decoration. Patronized by \"AI magic.\" Forced to choose among five moods or fourteen lab modules to do one simple thing."
+        }
+      ],
+      "implementation_impact": "Mood/lab pickers that block simple tasks are non-canon. AI magic patronizing copy banned.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-032",
+      "title": "Progressive disclosure by stakes",
+      "category": "UX — Progressive disclosure",
+      "domain": "ux",
+      "decision": "Progressive disclosure by stakes — not same friction everywhere.",
+      "reason": "High-stakes (destructive, money, privacy) earn friction; capture does not.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-015",
+        "GOV-026"
+      ],
+      "blocks": [
+        "Friction Mapping",
+        "Settings Depth"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize / Avoid"
+          ],
+          "quote": "Progressive disclosure by stakes | Same friction everywhere"
+        }
+      ],
+      "implementation_impact": "Map friction to stakes. Capture low friction; destructive high friction.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-033",
+      "title": "Interruptibility; no JITAI nag loops",
+      "category": "UX — Interruptibility",
+      "domain": "ux",
+      "decision": "Respect interruptibility; deliberately avoid JITAI nag loops.",
+      "reason": "Agency and long-term trust.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-026"
+      ],
+      "blocks": [
+        "Notification Policy",
+        "Focus Mode",
+        "Reminders"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Infrastructure"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize / Avoid"
+          ],
+          "quote": "Interruptibility respect | JITAI nag loops"
+        }
+      ],
+      "implementation_impact": "Notification policy must justify attention. No engagement-maximizing nag loops.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-034",
+      "title": "Compression as craft (~5 interactions)",
+      "category": "UX — Compression craft",
+      "domain": "ux",
+      "decision": "Compression as craft — median daily interactions trend down (~5), not up (~15+). Rising interaction count for same outcomes equals failure.",
+      "reason": "Less product debt; more life.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-021",
+        "GOV-026"
+      ],
+      "blocks": [
+        "IA Density",
+        "Today Composition",
+        "Shortcuts"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "IA",
+        "Analytics"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§8"
+          ],
+          "quote": "**Compression as craft** — median daily interactions trend down, not up."
+        },
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success"
+          ],
+          "quote": "Median meaningful interactions per active day trending toward ~5, not ~15+."
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Rising daily interaction count for the same human outcomes."
+        }
+      ],
+      "implementation_impact": "Prefer fewer higher-leverage interactions. Resist adding daily touchpoints without removing others.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-035",
+      "title": "Correctable inference; no silent wrongness",
+      "category": "UX — Correction path",
+      "domain": "ux",
+      "decision": "Silent wrong automation without correction path is failure. Optimize for correctable inference; avoid silent wrongness.",
+      "reason": "Trust + mixed-initiative partnership.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-048",
+        "GOV-051"
+      ],
+      "blocks": [
+        "AI Structuring UI",
+        "Entity Linking UX"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Android Build",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Silent wrong automation without correction path."
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize / Avoid"
+          ],
+          "quote": "Correctable inference | Silent wrongness"
+        }
+      ],
+      "implementation_impact": "Every inference UI needs edit/correct/undo path.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-036",
+      "title": "Palette identity non-negotiable",
+      "category": "Visual — Palette identity",
+      "domain": "visual",
+      "decision": "Palette identity is non-negotiable until founder override. Recognition requires continuity.",
+      "reason": "Brand continuity across redesigns.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-003"
+      ],
+      "blocks": [
+        "Design Tokens",
+        "All Client Themes"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website",
+        "Desktop"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Palette identity"
+          ],
+          "quote": "Palette identity | Recognition requires continuity"
+        },
+        {
+          "articles": [
+            "Dependencies"
+          ],
+          "sections": [
+            "Dependencies"
+          ],
+          "quote": "Product Bible; Palette.md; Product Decisions locks; Never-to-Build."
+        }
+      ],
+      "implementation_impact": "Token values live in Palette.md (named Constitution dependency). No new brand colors without founder approval. Do not invent hex in Constitution governance beyond Palette.md lock.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-037",
+      "title": "Forbidden aesthetics + brand-test",
+      "category": "Visual — Forbidden aesthetics",
+      "domain": "visual",
+      "decision": "Forbidden: purple SaaS clone; cream-terracotta editorial AI look; GoodNotes handwriting PWA aesthetic; any redesign interchangeable after logo removal.",
+      "reason": "Timeless identity over trend following.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-010",
+        "GOV-036"
+      ],
+      "blocks": [
+        "Visual QA Checklist"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Website",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§6"
+          ],
+          "quote": "A purple SaaS clone, cream-terracotta editorial AI look, or GoodNotes handwriting PWA."
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Redesign that could belong to another brand after removing the logo."
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize / Avoid"
+          ],
+          "quote": "Timeless identity | Trend following"
+        }
+      ],
+      "implementation_impact": "Visual QA includes anti-clone checklist + brand-test.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-038",
+      "title": "Decoration must not confuse",
+      "category": "Visual — Decoration vs identity",
+      "domain": "visual",
+      "decision": "Decoration must not confuse. Avoid visual clutter as personality. Timeless identity over trend following.",
+      "reason": "Calm/capable emotional contract.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "Medium",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-030",
+        "GOV-031",
+        "GOV-026"
+      ],
+      "blocks": [
+        "Illustration Budget",
+        "Today Widgets",
+        "Motion Decor"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Motion"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IX"
+          ],
+          "sections": [
+            "Never feel"
+          ],
+          "quote": "Confused by decoration."
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize / Avoid"
+          ],
+          "quote": "Timeless identity | Trend following"
+        }
+      ],
+      "implementation_impact": "Decoration budget subordinate to clarity. Reject personality clutter.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-039",
+      "title": "Split lockup visual+IA law",
+      "category": "Visual — Brand lockup behavior",
+      "domain": "visual",
+      "decision": "Split lockup is visual+IA law: mark and wordmark are separate destinations (/brand vs Today).",
+      "reason": "Brand book is not daily OS.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-012"
+      ],
+      "blocks": [
+        "Navbar Components",
+        "Brand Page"
+      ],
+      "referenced_by": [
+        "P8",
+        "Website",
+        "Desktop",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Split brand lockup"
+          ],
+          "quote": "Split brand lockup (mark→`/brand`, wordmark→Today) | Brand book ≠ daily OS"
+        }
+      ],
+      "implementation_impact": "Do not merge targets; do not substitute decorative lockups that break split behavior. Route bind pending GOV-012 / REC-003.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-040",
+      "title": "Shared primitives across surfaces",
+      "category": "Technical — Multi-surface OS",
+      "domain": "technical",
+      "decision": "OS means shared primitives, shared memory, shared intelligence across surfaces. Clients are surfaces of one OS, not separate products with divergent models.",
+      "reason": "Personal Life OS definition.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-001"
+      ],
+      "blocks": [
+        "Cross-Client Contracts",
+        "Entity Alignment",
+        "Token Alignment"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "Desktop",
+        "Backend",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article II"
+          ],
+          "sections": [
+            "OS row"
+          ],
+          "quote": "OS | Shared primitives, shared memory, shared intelligence across surfaces"
+        }
+      ],
+      "implementation_impact": "Cross-client token/entity alignment required. Divergent domain models need ADR.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-041",
+      "title": "/m technical ceiling enforcement",
+      "category": "Technical — Platform honesty",
+      "domain": "technical",
+      "decision": "/m capture ceiling is technical product lock. Native richness does not equal permission to expand /m into analytics/tools.",
+      "reason": "Device honesty.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-013"
+      ],
+      "blocks": [
+        "Route Guards",
+        "Feature Flags",
+        "Release Checks"
+      ],
+      "referenced_by": [
+        "P8",
+        "Website",
+        "Infrastructure",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Capture-first on phone web /m"
+          ],
+          "quote": "Capture-first on phone web `/m` | Device honesty"
+        },
+        {
+          "articles": [
+            "Known risks"
+          ],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "Treating native capture-richness as permission to break phone-web `/m` lock."
+        }
+      ],
+      "implementation_impact": "Enforce ceiling in routing and release checks.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-042",
+      "title": "Auth/schema change control",
+      "category": "Technical — Auth/schema change control",
+      "domain": "technical",
+      "decision": "Auth logic and DB schema are change-controlled: explicit human ask only.",
+      "reason": "Safety.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-018"
+      ],
+      "blocks": [
+        "Migrations",
+        "Better Auth Config"
+      ],
+      "referenced_by": [
+        "P8",
+        "Backend",
+        "All Agents"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Auth/schema only with explicit ask"
+          ],
+          "quote": "Auth/schema only with explicit ask | Safety for agents and humans"
+        }
+      ],
+      "implementation_impact": "CI/review culture + agent refusal. No opportunistic schema cleanup without ask.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-043",
+      "title": "Single linking system (unnamed)",
+      "category": "Technical — One linking system",
+      "domain": "technical",
+      "decision": "Single linking system for life entities (graph integrity).",
+      "reason": "Prevent fragmented graphs and duplicate relation models.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-019"
+      ],
+      "blocks": [
+        "DB Relations",
+        "API Link Endpoints",
+        "Second Graph Store Ban"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Backend",
+        "AI",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "One linking system for life entities"
+          ],
+          "quote": "One linking system for life entities | Graph integrity"
+        }
+      ],
+      "implementation_impact": "New relations use existing link primitive; no second graph store. Constitution asserts one but does not name schema/API — founder/tech lead must name it (REC-005).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-044",
+      "title": "Vault as ship gate",
+      "category": "Technical — Vault as ship gate",
+      "domain": "technical",
+      "decision": "Behavior change incomplete without vault update; constitutional amendment incomplete without vault + Bible changelog.",
+      "reason": "Institutional memory.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-017",
+        "GOV-024"
+      ],
+      "blocks": [
+        "PR Definition of Done"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "All Agents",
+        "Docs"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Vault ships with behavior change"
+          ],
+          "quote": "Vault ships with behavior change | Institutional memory"
+        },
+        {
+          "articles": [
+            "Article XI"
+          ],
+          "sections": [
+            "Amendment"
+          ],
+          "quote": "vault update, and Design Bible revision with changelog"
+        }
+      ],
+      "implementation_impact": "Definition of Done includes vault paths.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-045",
+      "title": "Data sovereignty operations bundle",
+      "category": "Technical — Data sovereignty ops",
+      "domain": "technical",
+      "decision": "No sell/share of lifelog; export+delete always available; journal body out of analytics.",
+      "reason": "Trust + lawfulness of product posture.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "Medium",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-011",
+        "GOV-014",
+        "GOV-016"
+      ],
+      "blocks": [
+        "Export APIs",
+        "Deletion Cascades",
+        "Analytics Scrubbing"
+      ],
+      "referenced_by": [
+        "P8",
+        "Backend",
+        "Infrastructure",
+        "Privacy"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§7"
+          ],
+          "quote": "A product that sells or shares lifelog data."
+        },
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Export / Journal / Trust rows"
+          ],
+          "quote": "Export and delete always available; Journal body out of analytics"
+        },
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success"
+          ],
+          "quote": "write privately and still export everything"
+        }
+      ],
+      "implementation_impact": "Backend and client must implement and regression-test export/delete; analytics allowlists exclude journal body. Bundle is Medium confidence as composite of High items.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-046",
+      "title": "Destructive confirm on all platforms",
+      "category": "Technical — Destructive confirm",
+      "domain": "technical",
+      "decision": "Destructive actions require confirmation on all platforms.",
+      "reason": "Safety.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-015",
+        "GOV-040"
+      ],
+      "blocks": [
+        "Shared Confirm Pattern"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Desktop",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Destructive actions confirm"
+          ],
+          "quote": "Destructive actions confirm | Safety"
+        },
+        {
+          "articles": [
+            "Article II"
+          ],
+          "sections": [
+            "OS"
+          ],
+          "quote": "Shared primitives… across surfaces"
+        }
+      ],
+      "implementation_impact": "Shared interaction contract across clients.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-047",
+      "title": "AI-first means NL intent + derived structure",
+      "category": "AI — Role of AI",
+      "domain": "ai",
+      "decision": "AIIMIN is AI-first meaning: intent expressed in natural language; structure is derived. AI-first does not mean chatbot is the product. Over-interpreting as chatbot-first is a named risk.",
+      "reason": "Protect Life OS from collapsing into chat wrapper.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-001",
+        "GOV-002"
+      ],
+      "blocks": [
+        "AI Product Shell",
+        "Capture NLP",
+        "Structuring Pipeline"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article II"
+          ],
+          "sections": [
+            "AI-first"
+          ],
+          "quote": "AIIMIN is **AI-first** in the sense that intent is expressed in natural language and structure is derived — not in the sense that a chatbot is the product."
+        },
+        {
+          "articles": [
+            "Known risks"
+          ],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "Over-interpreting \"AI-first\" as chatbot-first."
+        }
+      ],
+      "implementation_impact": "Chat may exist as a surface; product is not a chatbot. Structure derivation is core.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-048",
+      "title": "AI confidence bands gate action",
+      "category": "AI — Mixed-initiative partnership",
+      "domain": "ai",
+      "decision": "Mixed-initiative partnership — AI confidence bands gate action.",
+      "reason": "Correctable inference; user agency.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-047",
+        "GOV-035"
+      ],
+      "blocks": [
+        "Confidence Model",
+        "Action Gating Rules",
+        "AI UX States"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§4"
+          ],
+          "quote": "**Mixed-initiative partnership** — AI confidence bands gate action."
+        }
+      ],
+      "implementation_impact": "Bands gate action. Exact thresholds/UI states not in Constitution — founder must define (REC-004).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-049",
+      "title": "Sparring over sycophancy",
+      "category": "AI — Sparring over sycophancy",
+      "domain": "ai",
+      "decision": "Sparring over sycophancy — challenge weak habits with data. Human Momentum without behavioral honesty (Life Score, sparring) is invalid.",
+      "reason": "Honest coaching; agency after coaching.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-003",
+        "GOV-009",
+        "GOV-030"
+      ],
+      "blocks": [
+        "Coaching Copy",
+        "Habit Insights Tone"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Content System"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§6"
+          ],
+          "quote": "**Sparring over sycophancy** — challenge weak habits with data."
+        },
+        {
+          "articles": [
+            "Known risks"
+          ],
+          "sections": [
+            "Known risks"
+          ],
+          "quote": "Using \"Human Momentum\" as slogan without behavioral honesty (Life Score, sparring)."
+        },
+        {
+          "articles": [
+            "Article VIII"
+          ],
+          "sections": [
+            "Emotional contract"
+          ],
+          "quote": "**agency after coaching**"
+        }
+      ],
+      "implementation_impact": "AI tone: challenge with evidence, not empty praise or shame. Tone bounds vs Article IX shame ban need founder examples (REC related).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-050",
+      "title": "No AI therapist / clinical framing",
+      "category": "AI — No therapist / clinical AI",
+      "domain": "ai",
+      "decision": "No AI therapist, diagnostic, or clinical framing.",
+      "reason": "Ethics/liability.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-006"
+      ],
+      "blocks": [
+        "System Prompts",
+        "Safety Classifiers",
+        "Store Listings"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§2"
+          ],
+          "quote": "A clinical mental health device, diagnostic tool, or AI therapist."
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Clinical or therapist framing."
+        }
+      ],
+      "implementation_impact": "System prompts and copy refuse clinical role.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-051",
+      "title": "Inference must be correctable",
+      "category": "AI — Correctable inference",
+      "domain": "ai",
+      "decision": "Inference must be correctable; silent wrongness forbidden.",
+      "reason": "Trust.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-035",
+        "GOV-048"
+      ],
+      "blocks": [
+        "Edit Chips",
+        "Undo",
+        "Confidence UI"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize / Avoid"
+          ],
+          "quote": "Correctable inference | Silent wrongness"
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Silent wrong automation without correction path."
+        }
+      ],
+      "implementation_impact": "Ship correction affordance with every structured inference.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-052",
+      "title": "Structure after raw capture",
+      "category": "AI — Capture structuring",
+      "domain": "ai",
+      "decision": "AI may structure after raw capture; must not force structure before capture.",
+      "reason": "Capture-first, structure-later.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "Medium",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-028",
+        "GOV-047"
+      ],
+      "blocks": [
+        "NLP Pipeline Order",
+        "Mobile/Web Capture"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Android Build",
+        "Website",
+        "Backend"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§2"
+          ],
+          "quote": "**Capture first, structure later** — raw expression is highest-fidelity signal."
+        },
+        {
+          "articles": [
+            "Article II"
+          ],
+          "sections": [
+            "AI-first"
+          ],
+          "quote": "intent is expressed in natural language and structure is derived"
+        },
+        {
+          "articles": [
+            "Article I"
+          ],
+          "sections": [
+            "Vision"
+          ],
+          "quote": "without turning life into data entry"
+        }
+      ],
+      "implementation_impact": "Pipeline order: raw save → structure → user correction. Medium: pipeline order is clear implication of multiple High articles.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-053",
+      "title": "No AI magic patronage",
+      "category": "AI — No AI magic patronage",
+      "domain": "ai",
+      "decision": "Users must never feel patronized by AI magic.",
+      "reason": "Respect + honesty.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-031",
+        "GOV-047"
+      ],
+      "blocks": [
+        "Microcopy",
+        "Onboarding",
+        "Empty States"
+      ],
+      "referenced_by": [
+        "P8",
+        "Content System",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IX"
+          ],
+          "sections": [
+            "Never feel"
+          ],
+          "quote": "Patronized by \"AI magic.\""
+        }
+      ],
+      "implementation_impact": "Ban vague magical claims; explain in human terms what system did.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-054",
+      "title": "Motion serves emotional triad",
+      "category": "Motion — Subordinate to calm/clarity",
+      "domain": "motion",
+      "decision": "Motion must support calm, clarity, and agency — never confuse via decoration or create interrogation/shame theater.",
+      "reason": "Emotional contract + anti-decoration confusion.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "Medium",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-030",
+        "GOV-031",
+        "GOV-038"
+      ],
+      "blocks": [
+        "Motion Principles Governance",
+        "Motion Reviews"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Motion",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article VIII"
+          ],
+          "sections": [
+            "Feel / contract"
+          ],
+          "quote": "Calm… Primary emotional contract: **relief after capture**, **clarity after review**, **agency after coaching**."
+        },
+        {
+          "articles": [
+            "Article IX"
+          ],
+          "sections": [
+            "Never feel"
+          ],
+          "quote": "Confused by decoration."
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize"
+          ],
+          "quote": "Timeless identity | Trend following"
+        }
+      ],
+      "implementation_impact": "Motion reviews ask: does this communicate meaning for capture relief / review clarity / coaching agency? Else cut. Durations/easing not in Constitution.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-055",
+      "title": "Motion anti-nag / anti-casino",
+      "category": "Motion — Anti-nag / anti-casino",
+      "domain": "motion",
+      "decision": "Motion must not serve streak/shame casino or JITAI nag urgency theater.",
+      "reason": "Hard refuse gamification casino; avoid nag loops.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "Medium",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-009",
+        "GOV-033",
+        "GOV-026"
+      ],
+      "blocks": [
+        "Streak Celebrations",
+        "Notification Animation"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Motion",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article III"
+          ],
+          "sections": [
+            "§5"
+          ],
+          "quote": "A gamification casino that optimizes for streaks and shame."
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Avoid"
+          ],
+          "quote": "JITAI nag loops"
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Avoid"
+          ],
+          "quote": "Punitive streaks"
+        }
+      ],
+      "implementation_impact": "Celebratory motion OK for XP role; punitive/urgency loops non-canon.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-056",
+      "title": "Cognitive accessibility under load",
+      "category": "Accessibility — Cognitive load",
+      "domain": "accessibility",
+      "decision": "Product exists for person under cognitive load. UX must not force complex mode/category/lab choices for simple capture. Progressive disclosure by stakes.",
+      "reason": "Accessibility includes cognitive accessibility.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "Medium",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-004",
+        "GOV-008",
+        "GOV-031",
+        "GOV-032"
+      ],
+      "blocks": [
+        "Capture UX",
+        "Lab Modules",
+        "IA Density"
+      ],
+      "referenced_by": [
+        "P8",
+        "Accessibility",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article I"
+          ],
+          "sections": [
+            "Why"
+          ],
+          "quote": "AIIMIN exists so a person under cognitive load can:"
+        },
+        {
+          "articles": [
+            "Article IX"
+          ],
+          "sections": [
+            "Never feel"
+          ],
+          "quote": "Forced to choose among five moods or fourteen lab modules to do one simple thing."
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize"
+          ],
+          "quote": "Progressive disclosure by stakes"
+        }
+      ],
+      "implementation_impact": "Cognitive a11y is constitutional, not optional polish.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-057",
+      "title": "Operable capture within ~60s",
+      "category": "Accessibility — Capture operable when ready",
+      "domain": "accessibility",
+      "decision": "Daily capture must be possible in under ~60 seconds when user is ready — implies operable, low-friction, interruptible capture path.",
+      "reason": "Success metric.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "Medium",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-021",
+        "GOV-028",
+        "GOV-059"
+      ],
+      "blocks": [
+        "Critical Path A11y",
+        "Offline Capture",
+        "IME/Focus Order"
+      ],
+      "referenced_by": [
+        "P8",
+        "Accessibility",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success"
+          ],
+          "quote": "Daily capture possible in under ~60 seconds when the user is ready."
+        }
+      ],
+      "implementation_impact": "Critical path a11y and performance for capture is P0. WCAG numeric bar not in Constitution (later A11y Principles).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-058",
+      "title": "No surveillance feeling; privacy dignity",
+      "category": "Accessibility — No surveillance feeling",
+      "domain": "accessibility",
+      "decision": "Users must never feel surveilled; journal privacy + export/delete support dignity and control.",
+      "reason": "Emotional refuse + trust.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "Medium",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-014",
+        "GOV-016",
+        "GOV-031"
+      ],
+      "blocks": [
+        "Privacy UX",
+        "Permissions Copy",
+        "Analytics Framing"
+      ],
+      "referenced_by": [
+        "P8",
+        "Privacy",
+        "Website",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article IX"
+          ],
+          "sections": [
+            "Never feel"
+          ],
+          "quote": "Surveilled."
+        },
+        {
+          "articles": [
+            "Article IV"
+          ],
+          "sections": [
+            "Journal / Export"
+          ],
+          "quote": "Journal body out of analytics; Export and delete always available"
+        }
+      ],
+      "implementation_impact": "Permission and analytics copy must be honest and non-creepy; no dark-pattern tracking framing.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-059",
+      "title": "Capture speed first-class",
+      "category": "Performance — Capture latency",
+      "domain": "performance",
+      "decision": "Capture speed is a first-class optimization target: under ~60 seconds end-to-end when ready; avoid configuration theater that slows capture.",
+      "reason": "Success + optimize matrix.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-021",
+        "GOV-026",
+        "GOV-028"
+      ],
+      "blocks": [
+        "Client Performance",
+        "Offline Sync",
+        "Async AI Structuring"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Backend",
+        "AI",
+        "Infrastructure"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success"
+          ],
+          "quote": "Daily capture possible in under ~60 seconds when the user is ready."
+        },
+        {
+          "articles": [
+            "Article X"
+          ],
+          "sections": [
+            "Optimize / Avoid"
+          ],
+          "quote": "Capture speed | Configuration theater"
+        }
+      ],
+      "implementation_impact": "Structure/AI work must not block primary save. Measure time-to-saved-capture.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-060",
+      "title": "Interaction economy as performance",
+      "category": "Performance — Interaction economy",
+      "domain": "performance",
+      "decision": "Product performance includes interaction economy: median meaningful interactions/day toward ~5. Extra steps for same outcome equal performance regression (human time).",
+      "reason": "Compression as craft.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "Medium",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-034",
+        "GOV-021"
+      ],
+      "blocks": [
+        "Instrumentation Spec",
+        "IA Ceremony Budget"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Analytics",
+        "IA"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article V"
+          ],
+          "sections": [
+            "§8"
+          ],
+          "quote": "**Compression as craft** — median daily interactions trend down, not up."
+        },
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success"
+          ],
+          "quote": "Median meaningful interactions per active day trending toward ~5, not ~15+."
+        },
+        {
+          "articles": [
+            "Article VII"
+          ],
+          "sections": [
+            "Failure"
+          ],
+          "quote": "Rising daily interaction count for the same human outcomes."
+        }
+      ],
+      "implementation_impact": "Treat added daily taps as budgeted cost. Remove when adding. Instrumentation definition pending founder (REC-002).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-061",
+      "title": "Tomorrow lighter via remembered context",
+      "category": "Performance — Tomorrow lighter",
+      "domain": "performance",
+      "decision": "System must reduce next-day planning friction via remembered context (memory/connection/coaching).",
+      "reason": "Core existence outcome.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-004",
+        "GOV-019",
+        "GOV-047"
+      ],
+      "blocks": [
+        "Memory Graph Jobs",
+        "Plan Surfaces",
+        "Today Remembered Context"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "AI",
+        "Backend",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [
+            "Article I"
+          ],
+          "sections": [
+            "§3"
+          ],
+          "quote": "Act tomorrow with less friction than today — through memory, connection, and honest coaching."
+        },
+        {
+          "articles": [
+            "Article VI"
+          ],
+          "sections": [
+            "Success"
+          ],
+          "quote": "Tomorrow's plan is lighter because yesterday was remembered."
+        }
+      ],
+      "implementation_impact": "Plan/Today should surface remembered context without re-entry.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/01_AIIMIN_CONSTITUTION.md",
+      "canon_class": "canonical"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-001",
+      "title": "Ratify all Status:Approved GOV items as citeable product canon",
+      "reason": "Implementation needs stable GOV-ID citations without re-reading Constitution.",
+      "impact": "PRs and specs may cite GOV-IDs as binding.",
+      "risk": "Low — decisions already High/Medium confidence from Constitution.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-002",
+      "title": "Founder session on Needs Discussion items GOV-012, GOV-021, GOV-043, GOV-048, GOV-060",
+      "reason": "Unblock route bind, telemetry, linking name, AI bands, instrumentation.",
+      "impact": "Closes CF/Missing blockers for Android and Master Spec.",
+      "risk": "Medium — delay blocks P8/P9 readiness.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-012",
+        "GOV-021",
+        "GOV-043",
+        "GOV-048",
+        "GOV-060"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-003",
+      "title": "Publish Route Alias Map: Today = /overview",
+      "reason": "Constitution says Today; product lock says /overview (Today). Same intent, different identifiers (CF-001).",
+      "impact": "Navbar/BrandLockup wiring unambiguous without amending Constitution.",
+      "risk": "Low if alias only; High if wrong route chosen.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-012",
+        "GOV-039"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-004",
+      "title": "Publish AI Confidence Band Spec (names, thresholds, allowed actions)",
+      "reason": "GOV-048 asserts bands gate action but Constitution defines no thresholds.",
+      "impact": "Unblocks AI action gating UX across clients.",
+      "risk": "High if bands wrong — silent automation or over-asking.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-048",
+        "GOV-035",
+        "GOV-051"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-005",
+      "title": "Publish Linking System Spec pointer (named schema/API)",
+      "reason": "GOV-019/043 assert one linking system without naming it.",
+      "impact": "Prevents Android/web graph divergence.",
+      "risk": "Extreme if delayed — dual graphs.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-019",
+        "GOV-043"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-006",
+      "title": "Adopt Ship Kill Checklist from GOV-022 + Article III refuse list",
+      "reason": "Operationalize failure triggers in PR/product review.",
+      "impact": "Identity-death detectors become checklist.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-022"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-007",
+      "title": "Adopt Feature Intake requiring human problem statement",
+      "reason": "GOV-023 failure condition needs process enforcement.",
+      "impact": "Stops feature-without-problem.",
+      "risk": "Low process friction.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-023"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-008",
+      "title": "Adopt Emotional Triad QA (relief / clarity / agency)",
+      "reason": "GOV-030 contract needs UX acceptance gate.",
+      "impact": "UX reviews check triad explicitly.",
+      "risk": "Low.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-030"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-009",
+      "title": "Enforce /m ceiling in release checks",
+      "reason": "GOV-013/041 need automated prevention of analytics creep.",
+      "impact": "Release gate blocks /m analytics/tools.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-013",
+        "GOV-041"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-010",
+      "title": "Enforce journal body not in analytics allowlists",
+      "reason": "GOV-016 privacy lock needs engineering enforcement.",
+      "impact": "Telemetry scrubbing regression tests.",
+      "risk": "Medium if missed — privacy incident.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-016"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-011",
+      "title": "Keep Constitution FROZEN; amend only via Article XI",
+      "reason": "Already constitutional; board restates as operating rule for P7.",
+      "impact": "No silent Article edits during governance passes.",
+      "risk": "None.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-024"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-012",
+      "title": "Next P7 pass: Non-Negotiables then IA Principles",
+      "reason": "Fill M-001 nav IA and M-016 meds/allergies/PIN gaps Constitution cannot supply.",
+      "impact": "Raises build-without-reread completeness.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-013",
+      "title": "Clarify compression = ceremony budget, not capability ceiling",
+      "reason": "CF-012: ~5 interactions may conflict with power-user Life OS breadth if misread.",
+      "impact": "Power users deepen surfaces without raising mandatory daily taps.",
+      "risk": "Medium misinterpretation if skipped.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-034",
+        "GOV-060"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-014",
+      "title": "Agents cite GOV-IDs in PRs touching identity, /m, palette, clinical, social, capture",
+      "reason": "Operationalize governance graph.",
+      "impact": "Traceable PR review against canon.",
+      "risk": "Low process overhead.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-015",
+      "title": "Define sparring vs shame tone bounds with written examples",
+      "reason": "CF-007 tension between GOV-049 sparring and GOV-031 never shame/interrogated.",
+      "impact": "Safe coaching copy across AI surfaces.",
+      "risk": "High if undefined — shame theater or empty praise.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-049",
+        "GOV-031"
+      ],
+      "canon_class": "recommendation"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-001",
+      "type": "Ambiguous wording vs product lock",
+      "detail": "Article IV: wordmark → Today. Product lock elsewhere: wordmark → /overview (Today).",
+      "recommendation": "REC-003 Route Alias Map. Do not amend Constitution."
+    },
+    {
+      "id": "CF-002",
+      "type": "Incomplete vs Non-Negotiables",
+      "detail": "Constitution: destructive actions confirm. Non-Negotiables add branded.",
+      "recommendation": "Elevate branded confirm when governing Non-Negotiables."
+    },
+    {
+      "id": "CF-003",
+      "type": "Duplicate thematic rules",
+      "detail": "Capture-first in Art I, III§8, V§2, VI, X.",
+      "recommendation": "Cite GOV-028 as implementation primary."
+    },
+    {
+      "id": "CF-004",
+      "type": "Duplicate refuse",
+      "detail": "Clinical ban in Art III, IV, VII.",
+      "recommendation": "Cite GOV-006."
+    },
+    {
+      "id": "CF-005",
+      "type": "Potential tension",
+      "detail": "AI-first vs not chatbot / not AI magic.",
+      "recommendation": "Resolved by GOV-047 + GOV-053."
+    },
+    {
+      "id": "CF-006",
+      "type": "Potential tension",
+      "detail": "Native richness vs /m capture-only.",
+      "recommendation": "Resolved by GOV-013/041."
+    },
+    {
+      "id": "CF-007",
+      "type": "Potential tension",
+      "detail": "Sparring vs never shame/interrogated.",
+      "recommendation": "REC-015 tone bounds."
+    },
+    {
+      "id": "CF-008",
+      "type": "Weak / unmeasurable as written",
+      "detail": "~60 seconds, ~5 interactions, meaningful interactions.",
+      "recommendation": "Founder: SLO vs directional OKR (REC-002)."
+    },
+    {
+      "id": "CF-009",
+      "type": "Missing definition",
+      "detail": "One linking system unnamed.",
+      "recommendation": "REC-005."
+    },
+    {
+      "id": "CF-010",
+      "type": "Missing definition",
+      "detail": "AI confidence bands without thresholds.",
+      "recommendation": "REC-004."
+    },
+    {
+      "id": "CF-011",
+      "type": "Hidden assumption",
+      "detail": "One connected graph assumes unified domains desire.",
+      "recommendation": "Progressive disclosure; do not force unused domains."
+    },
+    {
+      "id": "CF-012",
+      "type": "Scalability",
+      "detail": "Median ~5 vs power-user breadth.",
+      "recommendation": "REC-013 ceremony vs capability."
+    },
+    {
+      "id": "CF-013",
+      "type": "Monitor",
+      "detail": "GoodNotes PWA risk via stylus revival.",
+      "recommendation": "Keep refuse; stylus OK if not handwriting-PWA identity."
+    },
+    {
+      "id": "CF-014",
+      "type": "Undefined term",
+      "detail": "Pattern language in Art X.",
+      "recommendation": "Define when governing Component/IA principles."
+    },
+    {
+      "id": "CF-015",
+      "type": "Cross-doc authority",
+      "detail": "Articles vs always-on agent rules.",
+      "recommendation": "Founder ADR if conflict; Articles + founder locks co-equal for ship."
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-001",
+      "missing": "Bottom nav / primary destinations",
+      "why": "IA not in Constitution",
+      "next": "P5 06_INFORMATION_ARCHITECTURE_PRINCIPLES + D-NAV"
+    },
+    {
+      "id": "M-002",
+      "missing": "Exact Today route ID",
+      "why": "Brand lockup wiring",
+      "next": "REC-003"
+    },
+    {
+      "id": "M-003",
+      "missing": "Confidence band thresholds & UI states",
+      "why": "AI gating",
+      "next": "REC-004"
+    },
+    {
+      "id": "M-004",
+      "missing": "Named linking system",
+      "why": "Graph integrity enforcement",
+      "next": "REC-005"
+    },
+    {
+      "id": "M-005",
+      "missing": "Life Score formula / inputs",
+      "why": "Honesty vs vanity XP",
+      "next": "Product Bible / gamification"
+    },
+    {
+      "id": "M-006",
+      "missing": "Telemetry: meaningful interaction",
+      "why": "Success metrics",
+      "next": "REC-002"
+    },
+    {
+      "id": "M-007",
+      "missing": "Capture ready definition & timing method",
+      "why": "60s metric",
+      "next": "REC-002"
+    },
+    {
+      "id": "M-008",
+      "missing": "WCAG level / contrast / targets",
+      "why": "A11y engineering",
+      "next": "P5 11_ACCESSIBILITY_PRINCIPLES"
+    },
+    {
+      "id": "M-009",
+      "missing": "Motion durations/easing/reduced-motion",
+      "why": "Motion impl",
+      "next": "P5 09_MOTION_PRINCIPLES"
+    },
+    {
+      "id": "M-010",
+      "missing": "Notification taxonomy",
+      "why": "Interruptibility",
+      "next": "Interaction principles + Non-Negotiables"
+    },
+    {
+      "id": "M-011",
+      "missing": "Pattern language operational definition",
+      "why": "Art X",
+      "next": "Component/IA principles"
+    },
+    {
+      "id": "M-012",
+      "missing": "Sparring tone guide",
+      "why": "Art V vs IX",
+      "next": "REC-015"
+    },
+    {
+      "id": "M-013",
+      "missing": "Export formats & delete cascade scope",
+      "why": "Trust ops",
+      "next": "Privacy/API specs"
+    },
+    {
+      "id": "M-014",
+      "missing": "Surface × primitive matrix",
+      "why": "OS shared primitives claim",
+      "next": "Monorepo architecture + P1"
+    },
+    {
+      "id": "M-015",
+      "missing": "Growth vs social-refuse detail",
+      "why": "Monetization/waitlist",
+      "next": "Product / launch docs"
+    },
+    {
+      "id": "M-016",
+      "missing": "Meds/allergies/PIN inference bans",
+      "why": "In Non-Negotiables only",
+      "next": "Govern Non-Negotiables"
+    }
+  ],
+  "questions_for_founder": [
+    "Confirm Today ≡ /overview for wordmark lockup (CF-001 / GOV-012 / REC-003)?",
+    "Are ~60s capture and ~5 median interactions hard SLOs or directional OKRs?",
+    "What is the named one linking system (tables/APIs) for GOV-043?",
+    "Define AI confidence bands (names, thresholds, allowed actions).",
+    "Ratify sparring vs shame boundary — written tone examples (REC-015)?",
+    "Is Life Score formula already locked elsewhere — point as dependent canon?",
+    "For native vs /m, any founder exception path ever, or absolute forever?",
+    "Does sell or share lifelog data forbid anonymized aggregates, or only identifiable lifelog?",
+    "Should Status:Approved GOV decisions become enforceable PR checklist items immediately?",
+    "Next artifact to govern: Non-Negotiables (18) or Product Philosophy (02) or IA Principles (06)?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 6,
+    "ai_readiness": 7,
+    "conflict_hygiene": 8,
+    "metric_rigor": 5,
+    "amendment_process": 9,
+    "completeness_build_without_reread": 6,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 76,
+    "interpretation": "Constitution remains strong identity law. Upgrade adds evidence trails, confidence, cost, dependency graph, and canon/recommendation separation. Still insufficient alone for nav IA, confidence thresholds, and telemetry SLOs."
+  }
+}

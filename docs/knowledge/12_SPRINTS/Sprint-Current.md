@@ -1,33 +1,19 @@
-# Sprint Current — Vault Brain OS
+---
+authority: operations
+derived_from: Genesis
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-07-25
+can_override_genesis: false
+knowledge_layer: KL-OPS
+graph_role: leaf
+note_type: NT-SPRINT
+migration_batch: W4
+fm_source: script
+---
+# Sprint Current
 
-**Window:** 2026-07-10
+No active vault sprint. Execution focus: [[15_MEMORY/Current-Context]].
 
-## Goals
-
-- Cut over Obsidian vault to Project Brain OS
-- Enforce agent load order via Cursor rules
-- Slim AGENTS.md
-- Seed known systems (auth, waitlist, sports, calendar, deploy, design)
-
-## Tasks
-
-- [x] Design + plan docs
-- [x] Scaffold folders + archive old vault
-- [x] Home + Memory packs
-- [x] Architecture / Product / Design / Deploy
-- [x] DB + API seed notes
-- [x] Feature migrate + Auth/DailyLog/Gamification MOCs
-- [x] Templates + ADR + rules + manifest + slim AGENTS
-
-## Completed
-
-- Full cutover Approach A
-
-## Blocked
-
-- None for vault OS itself
-- Product launch blockers remain (GA4/Sentry/LC) — tracked in Home/Product
-
-## Notes
-
-Agents: read this sprint only for “what are we doing now,” not whole history.
+The 2026-07-10 Brain OS cutover is **complete**. Record: [[16_DOCUMENTATION/Completed-Work-Ledger]].

@@ -1,7 +1,10 @@
 import React, { useEffect, useId, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CheckCircle2, Sparkles, BadgeCheck } from 'lucide-react';
 import { API_URL } from '../../utils/api';
 import { suggestOsIdFromName } from '../../utils/osId';
+import { trackEvent } from '../../hooks/usePageAnalytics';
+import { LEGAL } from '../../constants/legal';
 import WaitlistQuickFeedback from './WaitlistQuickFeedback';
 import '../../styles/waitlistLanding.css';
 
@@ -432,7 +435,7 @@ export default function WaitlistForm({
 
       {showUrgency && (
         <p className="urgency-chip" role="status">
-          Tester registration closes <strong>31 July</strong>
+          Tester registration closes <strong>31 August</strong>
         </p>
       )}
 

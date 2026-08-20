@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIIMIN - Today Prototypes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #F5F4EF;
+            --primary-green: #2D5016;
+            --accent-green: #4A7C2F;
+            --light-green: #8CC968;
+            --pale-green: #E8F0E0;
+            --border-color: #E5E4DF;
+            --text-main: #1C1C1A;
+            --text-muted: #666666;
+            --card-bg: #FFFFFF;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            padding-top: 100px;
+        }
+        * { box-sizing: border-box; }
+        
+        /* Explorer Bar */
+        .explorer-bar {
+            background-color: #1C1C1A;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        .explorer-btn {
+            background: none;
+            border: 1px solid #333;
+            color: #aaa;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .explorer-btn:hover { background: #333; color: white; }
+        .explorer-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: fixed;
+            top: 40px;
+            width: 100%;
+            z-index: 999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .nav-brand { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+        .nav-links { display: flex; gap: 20px; font-size: 14px; font-weight: 500; color: var(--text-muted); overflow-x: auto;}
+        .nav-link { cursor: pointer; text-decoration: none; color: inherit; padding-bottom: 2px;}
+        .nav-link:hover { color: var(--text-main); }
+        .nav-link.active { color: var(--primary-green); border-bottom: 2px solid var(--primary-green); }
+        .nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;}
+
+        /* Base Layout */
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; display: none; }
+        .container.active { display: flex; gap: 30px; }
+        .main-col { flex: 1; }
+        .sidebar { width: 280px; display: flex; flex-direction: column; gap: 20px; }
+        
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); }
+        
+        .page-label { font-size: 12px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .page-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin: 0 0 24px 0; display: flex; justify-content: space-between; align-items: flex-end;}
+        .date-display { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+
+        /* Components */
+        .exec-window {
+            background: linear-gradient(135deg, var(--primary-green) 0%, #1a300d 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 30px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .exec-window .customize { position: absolute; top: 20px; right: 20px; font-size: 12px; color: rgba(255,255,255,0.7); cursor: pointer;}
+        .exec-window .number { font-size: 64px; font-weight: 800; line-height: 1; margin-right: 10px; }
+        .exec-window .label { font-size: 18px; font-weight: 600; opacity: 0.9; }
+        .exec-window .target { color: var(--light-green); font-weight: 600; margin-top: 8px; font-size: 18px;}
+        .exec-window .btn { background: white; color: var(--primary-green); padding: 10px 20px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; margin-top: 20px; display: inline-block;}
+        .exec-bar-bg { background: rgba(255,255,255,0.2); height: 6px; border-radius: 3px; margin-top: 20px; overflow: hidden; }
+        .exec-bar-fill { background: var(--light-green); height: 100%; width: 65%; }
+        
+        .quick-capture { display: flex; gap: 10px; margin-bottom: 20px; }
+        .qc-btn { flex: 1; background: var(--card-bg); border: 1px solid var(--border-color); padding: 16px; border-radius: 12px; text-align: center; font-weight: 600; cursor: pointer; transition: all 0.2s;}
+        .qc-btn:hover { background: var(--pale-green); border-color: var(--light-green); }
+        .wins-row { display: flex; gap: 10px; align-items: center; margin-top: 15px;}
+        .win-pill { background: var(--pale-green); color: var(--primary-green); font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: 600;}
+
+        .planner-header { display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;}
+        .planner-nav { font-weight: 600; display: flex; align-items: center; gap: 10px;}
+        .planner-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;}
+        .day-col { border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; min-height: 120px; }
+        .day-col.today { background: var(--pale-green); border-color: var(--accent-green); }
+        .day-name { font-size: 12px; font-weight: 600; color: var(--text-muted); text-align: center; margin-bottom: 10px;}
+        .task-dot { width: 6px; height: 6px; background: var(--primary-green); border-radius: 50%; margin: 2px auto; }
+        .task-item { font-size: 11px; background: white; padding: 4px; border-radius: 4px; margin-bottom: 4px; border: 1px solid #eee;}
+
+        .sidebar-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;}
+        .priority-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 14px;}
+        .streak-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: 500;}
+        .trajectory-bar { margin-bottom: 15px; }
+        .t-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;}
+        .t-bg { background: #eee; height: 6px; border-radius: 3px; }
+        .t-fill { background: linear-gradient(90deg, var(--light-green), var(--primary-green)); height: 100%; border-radius: 3px; }
+        
+        .one-liner input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; margin-bottom: 10px; }
+        
+        /* Variant 2 specific */
+        .v2-greeting { font-size: 36px; font-weight: 800; color: var(--primary-green); margin-bottom: 5px; }
+        .v2-sub { color: var(--text-muted); font-weight: 500; margin-bottom: 20px;}
+        .v2-stats { display: flex; gap: 15px; margin-bottom: 30px;}
+        .v2-pill { background: white; border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 14px;}
+        
+        /* Variant 3 specific */
+        .v3-focus { background: var(--primary-green); color: white; padding: 40px; border-radius: 16px; text-align: center; margin-bottom: 20px;}
+        .v3-focus h2 { font-size: 48px; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -1px;}
+        .v3-focus p { opacity: 0.8; font-weight: 500; margin-bottom: 20px;}
+        .v3-btn { background: white; color: var(--text-main); font-weight: bold; padding: 12px 30px; border-radius: 30px; border: none; cursor: pointer;}
+        
+        /* Variant 4 specific */
+        .v4-intel { display: flex; gap: 20px; margin-bottom: 20px; }
+        .v4-intel-card { flex: 1; background: white; border-radius: 16px; padding: 24px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 20px;}
+        .ring-svg { width: 60px; height: 60px; transform: rotate(-90deg); }
+        .ring-bg { fill: none; stroke: #eee; stroke-width: 8; }
+        .ring-progress { fill: none; stroke: var(--primary-green); stroke-width: 8; stroke-dasharray: 100; stroke-dashoffset: 27; stroke-linecap: round; }
+        .mini-stat { text-align: center; flex: 1;}
+        .mini-stat-val { font-size: 24px; font-weight: 800;}
+        .mini-stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;}
+    </style>
+</head>
+<body>
+
+    <div class="explorer-bar">
+        <button class="explorer-btn active" onclick="showVariant(1)">V1 Clean Brief</button>
+        <button class="explorer-btn" onclick="showVariant(2)">V2 Morning Brief</button>
+        <button class="explorer-btn" onclick="showVariant(3)">V3 Focus First</button>
+        <button class="explorer-btn" onclick="showVariant(4)">V4 Life OS Dashboard</button>
+    </div>
+
+    <div class="navbar">
+        <div class="nav-brand">AIIMIN</div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active">Today</a>
+            <a href="#" class="nav-link">Habits</a>
+            <a href="#" class="nav-link">Goals</a>
+            <a href="#" class="nav-link">Journal</a>
+            <a href="#" class="nav-link">Finance</a>
+            <a href="#" class="nav-link">Family</a>
+            <a href="#" class="nav-link">Calendar</a>
+            <a href="#" class="nav-link">Placement</a>
+            <a href="#" class="nav-link">Sports</a>
+            <a href="#" class="nav-link">Discipline</a>
+            <a href="#" class="nav-link">Focus</a>
+            <a href="#" class="nav-link">Lab</a>
+        </div>
+        <div class="nav-avatar">J</div>
+    </div>
+
+    <!-- VARIANT 1: CLEAN BRIEF -->
+    <div id="v1" class="container active">
+        <div class="main-col">
+            <div class="page-label">Operational Intelligence</div>
+            <div class="page-title">
+                Day Control.
+                <div class="date-display">Friday, June 12</div>
+            </div>
+
+            <div class="exec-window">
+                <div class="customize">✎ Customize</div>
+                <div><span class="number">43</span><span class="label">DAYS</span></div>
+                <div class="target">until PLACEMENTS</div>
+                <div class="exec-bar-bg"><div class="exec-bar-fill"></div></div>
+                <div style="font-size: 12px; margin-top: 8px; opacity: 0.8;">65% of window complete</div>
+                <button class="btn">Launch Portal →</button>
+            </div>
+
+            <div class="quick-capture">
+                <div class="qc-btn">✅ Log Habit</div>
+                <div class="qc-btn">✏️ Journal</div>
+                <div class="qc-btn">💸 Expense</div>
+                <div class="qc-btn">🎯 Goal</div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);">RECENT WINS</span>
+                <div class="wins-row">
+                    <div class="win-pill">Read 10 pages</div>
+                    <div class="win-pill">Gym: Leg Day</div>
+                    <div class="win-pill">Saved $15</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="planner-header">
+                    <div style="font-weight: 700;">Master Planner <span class="win-pill" style="margin-left:10px;">✦ AI Schedule</span></div>
+                    <div class="planner-nav">‹ Week 24 ›</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">🔗 Synced with Calendar</div>
+                </div>
+                <div class="planner-grid">
+                    <div class="day-col"><div class="day-name">MON</div><div class="task-dot"></div><div class="task-dot"></div></div>
+                    <div class="day-col"><div class="day-name">TUE</div><div class="task-dot"></div></div>
+                    <div class="day-col"><div class="day-name">WED</div><div class="task-dot"></div><div class="task-dot"></div><div class="task-dot"></div></div>
+                    <div class="day-col"><div class="day-name">THU</div><div class="task-dot"></div></div>
+                    <div class="day-col today">
+                        <div class="day-name" style="color:var(--primary-green)">FRI</div>
+                        <div class="task-item">9AM Sync</div>
+                        <div class="task-item">Deep Work</div>
+                        <div class="task-item">Gym</div>
+                    </div>
+                    <div class="day-col"><div class="day-name">SAT</div></div>
+                    <div class="day-col"><div class="day-name">SUN</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="sidebar-title">Today's Priorities</div>
+                <div class="priority-item"><input type="checkbox"> Ship Sports section</div>
+                <div class="priority-item"><input type="checkbox"> Call Mom</div>
+                <div class="priority-item"><input type="checkbox" checked> Read docs</div>
+                <div style="font-size: 12px; color: var(--accent-green); cursor: pointer; margin-top: 10px;">+ Add priority</div>
+            </div>
+
+            <div class="card">
+                <div class="sidebar-title">Streak Monitor</div>
+                <div class="streak-item"><span>Meditation</span> <span>7d 🔥</span></div>
+                <div class="streak-item"><span>Reading</span> <span>new</span></div>
+                <div class="streak-item"><span>No Sugar</span> <span>new</span></div>
+                <div class="streak-item"><span>Workout</span> <span>3d</span></div>
+            </div>
+
+            <div class="card one-liner">
+                <div class="sidebar-title">One Liner</div>
+                <input type="text" placeholder="What's on your mind?">
+                <button class="qc-btn" style="width: 100%; padding: 10px;">Log Thought</button>
+            </div>
+
+            <div class="card">
+                <div class="sidebar-title">Trajectory Execution</div>
+                <div class="trajectory-bar">
+                    <div class="t-label"><span>DAY</span><span>61%</span></div>
+                    <div class="t-bg"><div class="t-fill" style="width: 61%"></div></div>
+                </div>
+                <div class="trajectory-bar">
+                    <div class="t-label"><span>WEEK</span><span>65%</span></div>
+                    <div class="t-bg"><div class="t-fill" style="width: 65%"></div></div>
+                </div>
+                <div class="trajectory-bar">
+                    <div class="t-label"><span>MONTH</span><span>38%</span></div>
+                    <div class="t-bg"><div class="t-fill" style="width: 38%"></div></div>
+                </div>
+                <div class="trajectory-bar" style="margin-bottom:0;">
+                    <div class="t-label"><span>YEAR</span><span>44%</span></div>
+                    <div class="t-bg"><div class="t-fill" style="width: 44%"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VARIANT 2: MORNING BRIEF -->
+    <div id="v2" class="container">
+        <div class="main-col">
+            <div class="v2-greeting">Good morning, J. ☀️</div>
+            <div class="v2-sub">Friday, June 12 · Week 24 · 7.2h sleep</div>
+            
+            <div class="v2-stats">
+                <div class="v2-pill">✓ Habits 4/6</div>
+                <div class="v2-pill">🔥 Streak 7d</div>
+                <div class="v2-pill">💰 +$42 saved today</div>
+            </div>
+
+            <div class="exec-window" style="padding: 20px;">
+                <div class="customize">✎ Customize</div>
+                <div><span class="number">43</span><span class="label">DAYS</span></div>
+                <div class="target">until PLACEMENTS</div>
+                <button class="btn" style="padding: 6px 12px; margin-top: 10px;">Launch Portal →</button>
+            </div>
+            
+            <div class="quick-capture">
+                <div class="qc-btn">✅ Log Habit</div>
+                <div class="qc-btn">✏️ Journal</div>
+                <div class="qc-btn">💸 Expense</div>
+                <div class="qc-btn">🎯 Goal</div>
+            </div>
+
+            <div class="card">
+                <div class="planner-header">
+                    <div style="font-weight: 700;">Master Planner</div>
+                    <div class="planner-nav">‹ Week 24 ›</div>
+                </div>
+                <!-- ... grid (simplified for proto) ... -->
+                <div class="planner-grid">
+                    <div class="day-col"><div class="day-name">MON</div></div>
+                    <div class="day-col"><div class="day-name">TUE</div></div>
+                    <div class="day-col"><div class="day-name">WED</div></div>
+                    <div class="day-col"><div class="day-name">THU</div></div>
+                    <div class="day-col today"><div class="day-name" style="color:var(--primary-green)">FRI</div><div class="task-item">Deep Work</div></div>
+                    <div class="day-col"><div class="day-name">SAT</div></div>
+                    <div class="day-col"><div class="day-name">SUN</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="card" style="background: var(--pale-green); border-color: var(--light-green);">
+                <div class="sidebar-title">Life Pulse</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div><div style="font-size:18px; font-weight:800;">4/6</div><div style="font-size:11px; color:var(--text-muted);">Habits</div></div>
+                    <div><div style="font-size:18px; font-weight:800;">7d</div><div style="font-size:11px; color:var(--text-muted);">Streak</div></div>
+                    <div><div style="font-size:18px; font-weight:800;">+$42</div><div style="font-size:11px; color:var(--text-muted);">Finance</div></div>
+                    <div><div style="font-size:18px; font-weight:800;">7.2h</div><div style="font-size:11px; color:var(--text-muted);">Sleep</div></div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="sidebar-title">Today's Priorities</div>
+                <div class="priority-item"><input type="checkbox"> Ship Sports section</div>
+                <div class="priority-item"><input type="checkbox"> Call Mom</div>
+            </div>
+            
+            <div class="card">
+                <div class="sidebar-title">Trajectory Execution</div>
+                <div class="trajectory-bar"><div class="t-label"><span>DAY</span><span>61%</span></div><div class="t-bg"><div class="t-fill" style="width: 61%"></div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VARIANT 3: FOCUS FIRST -->
+    <div id="v3" class="container">
+        <div class="main-col">
+            <div class="v3-focus">
+                <h2>SHIP THE SPORTS SECTION</h2>
+                <p>1 of 3 priorities · Jun 12</p>
+                <button class="v3-btn">Mark Done</button>
+            </div>
+            
+            <div style="display:flex; gap:20px; margin-bottom:20px;">
+                <div class="exec-window" style="flex:2; margin-bottom:0;">
+                    <div><span class="number">43</span><span class="label">DAYS</span></div>
+                    <div class="target">until PLACEMENTS</div>
+                </div>
+                <div class="card" style="flex:1; margin-bottom:0; display:flex; flex-direction:column; justify-content:center;">
+                    <div style="font-size:24px; font-weight:800;">4/6</div><div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Habits</div>
+                    <div style="font-size:24px; font-weight:800;">7d</div><div style="font-size:12px; color:var(--text-muted);">Streak</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="planner-header"><div style="font-weight: 700;">Master Planner</div><div class="planner-nav">‹ Week 24 ›</div></div>
+                <div class="planner-grid">
+                    <div class="day-col today"><div class="day-name" style="color:var(--primary-green)">FRI</div><div class="task-item">Deep Work</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="card">
+                <div class="sidebar-title">Today's Priorities</div>
+                <div class="priority-item"><input type="checkbox"> Ship Sports section</div>
+                <div class="priority-item"><input type="checkbox"> Call Mom</div>
+            </div>
+            <div class="card">
+                <div class="sidebar-title">Trajectory</div>
+                <div class="trajectory-bar"><div class="t-label"><span>DAY</span><span>61%</span></div><div class="t-bg"><div class="t-fill" style="width: 61%"></div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VARIANT 4: LIFE OS -->
+    <div id="v4" class="container">
+        <div class="main-col">
+            <div class="v4-intel">
+                <div class="v4-intel-card">
+                    <svg class="ring-svg" viewBox="0 0 36 36">
+                        <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="ring-progress" stroke-dasharray="73, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div>
+                        <div style="font-weight:800; font-size:18px;">SHIP SPORTS SEC.</div>
+                        <div style="font-size:12px; color:var(--accent-green); font-weight:700;">TODAY'S MISSION</div>
+                    </div>
+                </div>
+                <div class="v4-intel-card">
+                    <div class="mini-stat"><div class="mini-stat-val">4</div><div class="mini-stat-label">Habits</div></div>
+                    <div class="mini-stat"><div class="mini-stat-val">7</div><div class="mini-stat-label">Streak</div></div>
+                    <div class="mini-stat"><div class="mini-stat-val">$42</div><div class="mini-stat-label">Saved</div></div>
+                </div>
+            </div>
+            
+            <div class="exec-window">
+                <div class="customize">✎ Customize</div>
+                <div><span class="number">43</span><span class="label">DAYS</span></div>
+                <div class="target">until PLACEMENTS</div>
+                <div class="exec-bar-bg"><div class="exec-bar-fill"></div></div>
+            </div>
+            
+            <div class="card">
+                <div class="planner-header"><div style="font-weight: 700;">Master Planner</div><div class="planner-nav">‹ Week 24 ›</div></div>
+                <div class="planner-grid">
+                    <div class="day-col today"><div class="day-name" style="color:var(--primary-green)">FRI</div><div class="task-item">Deep Work</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="card" style="text-align: center;">
+                <div class="sidebar-title" style="display:flex; justify-content:center; align-items:center; gap:5px;">Life Score <span title="How we calculate: Weighted composite of 7 life dimensions. Habits (25%), Goals (20%), Finance (15%), Learning (15%), Journal (10%), Sleep (10%), Social (5%). Each dimension normalized 0-100 based on your 7-day rolling data. Future: ML model trained on your self-reported wellbeing to personalize weights." style="cursor:help; font-size:16px;">ℹ️</span></div>
+                <svg width="120" height="120" viewBox="0 0 36 36">
+                    <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="ring-progress" stroke-dasharray="73, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <text x="18" y="20.5" text-anchor="middle" font-weight="800" font-size="10">73</text>
+                </svg>
+                <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">
+                    Habits 78% · Goals 82% · Fin 65% · Learn 70%
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="sidebar-title">Today's Priorities</div>
+                <div class="priority-item"><input type="checkbox"> Ship Sports section</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showVariant(num) {
+            document.querySelectorAll('.container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.explorer-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('v' + num).classList.add('active');
+            document.querySelector(`.explorer-btn:nth-child(${num})`).classList.add('active');
+        }
+    </script>
+</body>
+</html>

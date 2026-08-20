@@ -1,4 +1,23 @@
+---
+authority: engineering
+derived_from: Genesis/P8 Master Specification
+status: active
+owner: eng
+lifecycle: living
+last_reviewed: 2026-08-20
+can_override_genesis: false
+knowledge_layer: KL-PROD
+graph_role: leaf
+note_type: NT-FEATURE-LEAF
+migration_batch: W4
+fm_source: script
+---
+
 # Account Personalization
+
+## Parent
+
+- [[09_FEATURES/Index]]
 
 ## Current state
 
@@ -6,6 +25,7 @@
 - Text-size now persists in `user_profiles.font_scale` and hydrates on profile fetch
 - Local bootstrap still applies immediately from localStorage and is reconciled with profile state after auth
 - Life-mode presets (Student, Founder, etc.) now apply nav pins, overview widget visibility, and sports defaults in one click
+- Upgrade-celebration design record: [[09_FEATURES/Account/2026-07-11-click-upgrade-celebration-design]]
 
 ## Key files
 
@@ -122,3 +142,27 @@
 - Why: cross-device persistence and consistent login hydration
 - Files: `server/migrations/029_user_profile_font_scale.sql`, `server/services/userProfileService.js`, `frontend/src/hooks/useFontScale.js`, `frontend/src/hooks/useUserProfile.js`
 - Status: shipped
+
+---
+
+## Structure (Phase V4)
+
+> Added 2026-08-20 so every living feature MOC shares the same skeleton. Fill stubs when next touching this feature.
+
+## Why this exists
+
+One job this feature serves for the user.
+
+## Contracts
+
+Routes, tables, env names (no secret values).
+
+## Files
+
+Frontend / backend / native paths.
+
+## Related
+
+- [[09_FEATURES/Index|Features Index]]
+- [[15_MEMORY/Current-Context]]
+

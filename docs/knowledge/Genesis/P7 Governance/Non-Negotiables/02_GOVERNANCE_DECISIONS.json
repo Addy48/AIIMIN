@@ -1,0 +1,1908 @@
+{
+  "meta": {
+    "document": "Non-Negotiables Governance Decisions",
+    "phase": "P7",
+    "standard": "AIIMIN GENESIS/P7 Governance/00_GOVERNANCE_STANDARD.md",
+    "standard_version": "1.0",
+    "source": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+    "source_version": "3.0",
+    "source_status": "FROZEN",
+    "governance_date": "2026-07-22",
+    "gov_id_range_new": "GOV-062…GOV-093",
+    "gov_id_range_referenced": "GOV-001…GOV-061 (Constitution; referenced only)",
+    "decision_count_new": 32,
+    "recommendation_count": 11,
+    "existing_gov_referenced_count": 30,
+    "authority": "Product Governance Board (founder ratification pending on Needs Discussion + REC-*)",
+    "constitution_governance_untouched": true
+  },
+  "existing_gov_references": [
+    {
+      "nn": "Required 1",
+      "gov": [
+        "GOV-023"
+      ],
+      "note": "Feature must justify human problem"
+    },
+    {
+      "nn": "Required 5 (confirm core)",
+      "gov": [
+        "GOV-015",
+        "GOV-046"
+      ],
+      "note": "Destructive confirm; branded elevated in GOV-065"
+    },
+    {
+      "nn": "Required 6",
+      "gov": [
+        "GOV-035",
+        "GOV-051"
+      ],
+      "note": "Correctable inference"
+    },
+    {
+      "nn": "Required 9",
+      "gov": [
+        "GOV-017",
+        "GOV-044"
+      ],
+      "note": "Vault ships with behavior change"
+    },
+    {
+      "nn": "Required 10",
+      "gov": [
+        "GOV-014"
+      ],
+      "note": "Export and delete"
+    },
+    {
+      "nn": "Required 11",
+      "gov": [
+        "GOV-016"
+      ],
+      "note": "Journal body out of analytics"
+    },
+    {
+      "nn": "Required 12",
+      "gov": [
+        "GOV-036"
+      ],
+      "note": "Palette locked"
+    },
+    {
+      "nn": "Required 13",
+      "gov": [
+        "GOV-012",
+        "GOV-039"
+      ],
+      "note": "Split brand lockup"
+    },
+    {
+      "nn": "Required 14",
+      "gov": [
+        "GOV-013",
+        "GOV-041"
+      ],
+      "note": "/m capture-only"
+    },
+    {
+      "nn": "Required 16",
+      "gov": [
+        "GOV-006",
+        "GOV-050"
+      ],
+      "note": "No clinical claims"
+    },
+    {
+      "nn": "Required 17",
+      "gov": [
+        "GOV-018",
+        "GOV-042"
+      ],
+      "note": "Auth/schema explicit ask"
+    },
+    {
+      "nn": "Required 19",
+      "gov": [
+        "GOV-020"
+      ],
+      "note": "One write primitive per concept"
+    },
+    {
+      "nn": "Required 20",
+      "gov": [
+        "GOV-033"
+      ],
+      "note": "Focus interruptibility"
+    },
+    {
+      "nn": "Forbidden 2",
+      "gov": [
+        "GOV-053"
+      ],
+      "note": "No decorative AI / AI magic"
+    },
+    {
+      "nn": "Forbidden 4",
+      "gov": [
+        "GOV-037",
+        "GOV-038"
+      ],
+      "note": "No visual clutter as personality"
+    },
+    {
+      "nn": "Forbidden 5",
+      "gov": [
+        "GOV-023"
+      ],
+      "note": "No feature without user problem"
+    },
+    {
+      "nn": "Forbidden 7",
+      "gov": [
+        "GOV-005"
+      ],
+      "note": "No social feed / leaderboards"
+    },
+    {
+      "nn": "Forbidden 8",
+      "gov": [
+        "GOV-006",
+        "GOV-050"
+      ],
+      "note": "No AI therapist"
+    },
+    {
+      "nn": "Forbidden 12",
+      "gov": [
+        "GOV-008",
+        "GOV-028"
+      ],
+      "note": "No mode gate before journal"
+    },
+    {
+      "nn": "Forbidden 13",
+      "gov": [
+        "GOV-008"
+      ],
+      "note": "No mandatory finance category-only path"
+    },
+    {
+      "nn": "Forbidden 17",
+      "gov": [
+        "GOV-010"
+      ],
+      "note": "No GoodNotes handwriting product"
+    },
+    {
+      "nn": "Forbidden 18",
+      "gov": [
+        "GOV-010",
+        "GOV-037"
+      ],
+      "note": "No purple/cream/broadsheet identity"
+    },
+    {
+      "nn": "Forbidden 21",
+      "gov": [
+        "GOV-013",
+        "GOV-041"
+      ],
+      "note": "No analytics/tools on /m"
+    },
+    {
+      "nn": "Forbidden 25",
+      "gov": [
+        "GOV-011"
+      ],
+      "note": "No sell/share lifelog"
+    },
+    {
+      "nn": "Forbidden 26",
+      "gov": [
+        "GOV-009",
+        "GOV-031"
+      ],
+      "note": "No shame-streak retention"
+    },
+    {
+      "nn": "Forbidden 27",
+      "gov": [
+        "GOV-033"
+      ],
+      "note": "No JITAI while interruptibility unsolved"
+    },
+    {
+      "nn": "Forbidden 29",
+      "gov": [
+        "GOV-008"
+      ],
+      "note": "No forced sidebar taxonomy"
+    },
+    {
+      "nn": "Forbidden 40",
+      "gov": [
+        "GOV-037"
+      ],
+      "note": "Brand-test required"
+    },
+    {
+      "nn": "Forbidden 41",
+      "gov": [
+        "GOV-010",
+        "GOV-037"
+      ],
+      "note": "No decorative purple/cyan/rainbow identity"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "GOV-062",
+      "title": "Interaction must justify fidelity, speed, trust, or clarity",
+      "category": "UX — Interaction Intake",
+      "domain": "ux",
+      "decision": "Every interaction must justify at least one of: fidelity, speed, trust, or clarity. Interactions that add ceremony without one of these are non-canon.",
+      "reason": "Non-Negotiables Required 2 — extends feature intake to interaction-level economy.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-023",
+        "GOV-026",
+        "GOV-034"
+      ],
+      "blocks": [
+        "Interaction Audit",
+        "Component Patterns",
+        "Android UX Review"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Every interaction justifies fidelity, speed, trust, or clarity."
+        }
+      ],
+      "implementation_impact": "UX reviews reject taps/screens that cannot name which of the four they serve.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-063",
+      "title": "Every animation must communicate meaning",
+      "category": "Motion — Meaningful Motion",
+      "domain": "motion",
+      "decision": "Every animation must communicate meaning. Decorative motion without semantic or emotional-contract purpose is forbidden.",
+      "reason": "Non-Negotiables Required 3.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-054",
+        "GOV-055",
+        "GOV-030"
+      ],
+      "blocks": [
+        "Motion Spec",
+        "Design System Motion Tokens"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Every animation communicates meaning."
+        }
+      ],
+      "implementation_impact": "Motion PRs must state what meaning the motion communicates; else remove.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-064",
+      "title": "Every notification must deserve attention",
+      "category": "UX — Notifications",
+      "domain": "ux",
+      "decision": "Every notification must deserve attention. Notifications that do not clear an attention-worthiness bar are forbidden.",
+      "reason": "Non-Negotiables Required 4; fills Constitution M-010 partially (taxonomy still missing).",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-033",
+        "GOV-026"
+      ],
+      "blocks": [
+        "Notification Taxonomy",
+        "Push Strategy",
+        "Interruptibility Spec"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Backend",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Every notification deserves attention."
+        }
+      ],
+      "implementation_impact": "Needs founder-approved notification taxonomy (channels, urgency, mute rules) before full enforcement. Until then: reject obviously low-value pushes.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-065",
+      "title": "Branded destructive confirm; ban window.confirm",
+      "category": "Safety — Destructive Confirm Branding",
+      "domain": "ux",
+      "decision": "Every destructive action must confirm with a branded confirm path. Product destructive paths must not use browser/native generic window.confirm.",
+      "reason": "Non-Negotiables Required 5 (branded) + Forbidden 28; elevates Constitution CF-002.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-015",
+        "GOV-046"
+      ],
+      "blocks": [
+        "Destructive UX Components",
+        "Web Safety Pass",
+        "Android Safety Pass"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Every destructive action confirms (branded)."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No `window.confirm` for product destructive paths."
+        }
+      ],
+      "implementation_impact": "Ship shared branded confirm pattern on web + Android; grep-ban window.confirm in product flows.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-066",
+      "title": "Ceremony-free Enter/primary save on every capture path",
+      "category": "UX — Capture Ceremony Ban",
+      "domain": "ux",
+      "decision": "Every capture path must allow Enter or primary save without ceremony (no forced taxonomy, mode gates, or extra steps before save).",
+      "reason": "Non-Negotiables Required 7; operationalizes capture-first.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-028",
+        "GOV-008",
+        "GOV-059"
+      ],
+      "blocks": [
+        "Capture UX",
+        "Journal Capture",
+        "Finance Capture",
+        "Android Capture"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Every capture path allows Enter/primary save without ceremony."
+        }
+      ],
+      "implementation_impact": "Capture flows must expose primary save/Enter first; structure optional after.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-067",
+      "title": "Every empty state must teach",
+      "category": "UX — Empty States",
+      "domain": "ux",
+      "decision": "Every empty state must teach — orient the user to the next useful action or meaning of the surface. Blank decorative emptiness is forbidden.",
+      "reason": "Non-Negotiables Required 8.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-030",
+        "GOV-031"
+      ],
+      "blocks": [
+        "Empty State Catalog",
+        "Onboarding Soft Paths"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Every empty state teaches."
+        }
+      ],
+      "implementation_impact": "Empty states require teaching copy/CTA; shame-empty and dead blank panels are non-canon.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-068",
+      "title": "Life Score honest; XP celebratory — roles unmixed",
+      "category": "Product — Score Roles",
+      "domain": "product",
+      "decision": "Life Score stays honest; XP stays celebratory. Their roles must not be mixed (no vanity Life Score; no dishonest XP-as-health).",
+      "reason": "Non-Negotiables Required 15; sharpens GOV-009.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-009",
+        "GOV-003"
+      ],
+      "blocks": [
+        "Life Score Spec",
+        "Gamification UX",
+        "Master Product Specification"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Android Build",
+        "Website",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Life Score stays honest; XP stays celebratory — roles unmixed."
+        }
+      ],
+      "implementation_impact": "Needs Life Score formula/inputs (Constitution M-005) plus explicit XP role matrix before full enforcement.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-069",
+      "title": "Secrets never enter vault, docs, or commit chat dumps",
+      "category": "Governance — Secrets Hygiene",
+      "domain": "governance",
+      "decision": "Secrets (API keys, tokens, passwords, connection strings) must never enter vault notes, docs, or chat dumps intended for commit. Env names OK; values stay in host secrets / local .env.",
+      "reason": "Non-Negotiables Required 18.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-017"
+      ],
+      "blocks": [
+        "Vault Hygiene",
+        "Agent Output Review",
+        "Commit Checks"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Backend",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Secrets never enter vault/docs/chat dumps for commit."
+        }
+      ],
+      "implementation_impact": "Pre-commit and agent rules scrub secrets; vault review rejects secret values.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-070",
+      "title": "Meds/allergies/PIN never inferred; PIN never in telemetry",
+      "category": "Privacy — Sensitive Inference Ban",
+      "domain": "ai",
+      "decision": "Medications, allergies, and PIN must never be inferred by AI or automation. PIN must never appear in telemetry.",
+      "reason": "Non-Negotiables Required 21 + Forbidden 24; fills Constitution M-016.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-051",
+        "GOV-016",
+        "GOV-058"
+      ],
+      "blocks": [
+        "AI Inference Allowlist",
+        "Telemetry Schema",
+        "Health Capture"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Backend",
+        "AI"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Meds/allergies/PIN never inferred."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No PIN in telemetry."
+        }
+      ],
+      "implementation_impact": "Hard deny-list in inference + telemetry scrubbers; explicit user entry only for these fields.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-071",
+      "title": "Critical-path contrast and operable capture",
+      "category": "Accessibility — Critical Paths",
+      "domain": "accessibility",
+      "decision": "Accessibility contrasts and operable capture are required on critical paths.",
+      "reason": "Non-Negotiables Required 22; WCAG level still deferred to Accessibility Principles (M-008).",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-056",
+        "GOV-057",
+        "GOV-059"
+      ],
+      "blocks": [
+        "A11y Spec",
+        "Capture Critical Path QA"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Accessibility contrasts and operable capture on critical paths."
+        }
+      ],
+      "implementation_impact": "Needs WCAG target + contrast tokens from Accessibility Principles; until then enforce operable capture + no color-only status (GOV-087).",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-072",
+      "title": "Reduced motion must be honored",
+      "category": "Motion — Reduced Motion",
+      "domain": "motion",
+      "decision": "Reduced motion preferences must be honored across product surfaces.",
+      "reason": "Non-Negotiables Required 23; durations/easing still in Motion Principles (M-009).",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-063",
+        "GOV-054"
+      ],
+      "blocks": [
+        "Motion Spec",
+        "Android Motion",
+        "Web Motion"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Reduced motion honored."
+        }
+      ],
+      "implementation_impact": "Respect OS/prefers-reduced-motion; provide non-animated equivalents for meaning-bearing motion.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-073",
+      "title": "Cross-client token meaning aligned; drift is debt",
+      "category": "Technical — Token Alignment",
+      "domain": "technical",
+      "decision": "Cross-client token meaning must stay aligned. Treating conflicting token sources as options is forbidden — drift is debt.",
+      "reason": "Non-Negotiables Required 24 + Forbidden 43.",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Extreme",
+      "depends_on": [
+        "GOV-040",
+        "GOV-036"
+      ],
+      "blocks": [
+        "Design Tokens Source of Truth",
+        "Cross-Client Contracts",
+        "Design System"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Cross-client token meaning stays aligned."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No treating conflicting token sources as \"options\" — drift is debt."
+        }
+      ],
+      "implementation_impact": "Founder must name single token source of truth and audit web/Android/native drift.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-074",
+      "title": "Kill List consulted before new fields",
+      "category": "Product — Kill List Gate",
+      "domain": "product",
+      "decision": "The Kill List must be consulted before adding new fields. Fields that revive killed concepts are forbidden without founder override.",
+      "reason": "Non-Negotiables Required 25 + Gate question 1.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-022",
+        "GOV-023"
+      ],
+      "blocks": [
+        "Schema Field Intake",
+        "Feature Intake",
+        "Master Product Specification"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Backend",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Required (must)"
+          ],
+          "quote": "Kill List consulted before new fields."
+        }
+      ],
+      "implementation_impact": "Field/feature proposals must cite Kill List check; PR template checkbox.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-075",
+      "title": "No duplicate navigation systems fighting for primacy",
+      "category": "IA — Navigation Primacy",
+      "domain": "ux",
+      "decision": "There must not be duplicate navigation systems fighting for primacy.",
+      "reason": "Non-Negotiables Forbidden 1; nav destinations still missing (M-001 / IA Principles).",
+      "status": "Needs Discussion",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-012",
+        "GOV-020"
+      ],
+      "blocks": [
+        "Information Architecture",
+        "Bottom Nav",
+        "Sidebar Spec",
+        "Android Navigation"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No duplicate navigation systems fighting for primacy."
+        }
+      ],
+      "implementation_impact": "Needs IA Principles + primary nav map; until then reject second competing nav shells.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-076",
+      "title": "Today anti-clutter: no meaningless widgets; no DEMO/LIVE vanity chrome",
+      "category": "UX — Today Surface Integrity",
+      "domain": "ux",
+      "decision": "Today must not host meaningless widgets. DEMO/LIVE vanity chrome must not compete with Capture on Today.",
+      "reason": "Non-Negotiables Forbidden 3 + Forbidden 46.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-028",
+        "GOV-029",
+        "GOV-062"
+      ],
+      "blocks": [
+        "Today Layout",
+        "Prototype Studio Port",
+        "Android Today"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Design System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No meaningless widgets on Today."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No DEMO/LIVE vanity chrome competing with Capture on Today."
+        }
+      ],
+      "implementation_impact": "Today modules must justify capture/clarity value; strip vanity status chrome.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-077",
+      "title": "No interaction without feedback",
+      "category": "UX — Feedback Mandatory",
+      "domain": "ux",
+      "decision": "No interaction without feedback. User-initiated actions must produce perceptible confirmation, progress, or error state.",
+      "reason": "Non-Negotiables Forbidden 6.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-062",
+        "GOV-089"
+      ],
+      "blocks": [
+        "Interaction Patterns",
+        "Sync UX",
+        "Form Controls"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No interaction without feedback."
+        }
+      ],
+      "implementation_impact": "Buttons/gestures/sync actions need feedback states; silent no-ops forbidden.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-078",
+      "title": "No automatic posting of private life",
+      "category": "Privacy — Auto-Post Ban",
+      "domain": "product",
+      "decision": "Automatic posting of private life is forbidden.",
+      "reason": "Non-Negotiables Forbidden 9; sharpens social refuse.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-005",
+        "GOV-011"
+      ],
+      "blocks": [
+        "Sharing Features",
+        "Social Integrations",
+        "Export-to-Public Paths"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Backend",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No automatic posting of private life."
+        }
+      ],
+      "implementation_impact": "Any share/publish path requires explicit user action; no silent auto-post.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-079",
+      "title": "No dark-pattern upgrade nags; no infinite customization onboarding",
+      "category": "UX — Growth Ethics",
+      "domain": "ux",
+      "decision": "Dark-pattern upgrade nags are forbidden. Infinite customization onboarding is forbidden.",
+      "reason": "Non-Negotiables Forbidden 10 + Forbidden 11.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-031",
+        "GOV-003"
+      ],
+      "blocks": [
+        "Monetization UX",
+        "Onboarding",
+        "Waitlist/Upgrade Flows"
+      ],
+      "referenced_by": [
+        "P8",
+        "Website",
+        "Android Build",
+        "Content System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No dark-pattern upgrade nags."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No infinite customization onboarding."
+        }
+      ],
+      "implementation_impact": "Upgrade prompts honest + dismissible; onboarding finite and capture-first.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-080",
+      "title": "Anti-picker proliferation: mood, theme, Life Arc",
+      "category": "UX — Primitive Uniqueness",
+      "domain": "ux",
+      "decision": "Forbidden: a fifth mood picker family; a third theme picker family (prefer OS sync); parallel Life Arc editors.",
+      "reason": "Non-Negotiables Forbidden 14–16; enforces one-primitive doctrine.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-020",
+        "GOV-040"
+      ],
+      "blocks": [
+        "Mood UX",
+        "Theme System",
+        "Life Arc Editors"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No fifth mood picker family."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No third theme picker family (prefer OS sync)."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No parallel Life Arc editors."
+        }
+      ],
+      "implementation_impact": "Reuse existing pickers/editors; theme prefers OS; no parallel Life Arc write UIs.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-081",
+      "title": "Dead accent revival ban: electric blue; Waitlist forest-green as Life OS",
+      "category": "Visual — Accent Death Locks",
+      "domain": "visual",
+      "decision": "Electric blue system accent revival is forbidden. Forest-green WaitlistBrand-as-Life-OS identity is forbidden.",
+      "reason": "Non-Negotiables Forbidden 19–20; Design History deaths.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-036",
+        "GOV-037",
+        "GOV-010"
+      ],
+      "blocks": [
+        "Palette Enforcement",
+        "Waitlist vs Product Chromes"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Website",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No electric blue system accent revival."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No forest-green WaitlistBrand-as-Life-OS."
+        }
+      ],
+      "implementation_impact": "Keep WaitlistBrand scoped to waitlist surfaces; Life OS uses locked palette only.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-082",
+      "title": "No invented finance transactions without utterance",
+      "category": "AI — Finance Integrity",
+      "domain": "ai",
+      "decision": "Finance transactions must not be invented without an utterance (or equivalent explicit user capture).",
+      "reason": "Non-Negotiables Forbidden 22.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-035",
+        "GOV-051",
+        "GOV-047"
+      ],
+      "blocks": [
+        "Finance AI",
+        "Transaction Ingestion",
+        "Backend Finance APIs"
+      ],
+      "referenced_by": [
+        "P8",
+        "AI",
+        "Backend",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No invented finance transactions without utterance."
+        }
+      ],
+      "implementation_impact": "Finance write path requires user utterance/explicit capture; AI may suggest with correction chip only.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-083",
+      "title": "Journal body never in push notifications",
+      "category": "Privacy — Journal Push Ban",
+      "domain": "technical",
+      "decision": "Journal body must never appear in push notifications.",
+      "reason": "Non-Negotiables Forbidden 23; extends GOV-016 beyond analytics.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-016",
+        "GOV-064"
+      ],
+      "blocks": [
+        "Push Payload Schema",
+        "Notification Templates"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Backend"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No journal body in push notifications."
+        }
+      ],
+      "implementation_impact": "Push templates use generic/safe titles only; never journal body text.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-084",
+      "title": "Elite is not longer-PDF product definition",
+      "category": "Product — Tier Definition Ban",
+      "domain": "product",
+      "decision": "Elite-as-longer-PDF must not define the product or tier value.",
+      "reason": "Non-Negotiables Forbidden 30.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-001",
+        "GOV-021"
+      ],
+      "blocks": [
+        "Pricing/Tier Spec",
+        "Elite Packaging",
+        "Marketing Copy"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "Website",
+        "Content System"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No Elite-as-longer-PDF as the product definition."
+        }
+      ],
+      "implementation_impact": "Tier differentiation must be capability/outcome based, not PDF length.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-085",
+      "title": "Capacitor not primary app; native not bound by /m capture ceiling",
+      "category": "Platform — Client Destiny",
+      "domain": "technical",
+      "decision": "Capacitor-as-primary-app revival against founder decision is forbidden. The phone-web /m capture-only ceiling must not be applied as the native app's destiny.",
+      "reason": "Non-Negotiables Forbidden 31–32; reinforces Constitution CF-006 resolution.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-013",
+        "GOV-041",
+        "GOV-040"
+      ],
+      "blocks": [
+        "Native Roadmap",
+        "Capacitor Scope",
+        "Marketing Device Claims"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Website",
+        "Monorepo"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No Capacitor-as-primary-app revival against founder decision."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No \"capture-only\" ceiling applied as the native app's destiny."
+        }
+      ],
+      "implementation_impact": "Native Android is rich companion; Capacitor /m remains capture stopgap only.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-086",
+      "title": "Agent memory hygiene: vault over whole-repo scan; slim AGENTS; no vendor vanity",
+      "category": "Governance — Agent Operating Rules",
+      "domain": "governance",
+      "decision": "Whole-repo scan culture replacing vault Brain OS is forbidden. Fat AGENTS.md dump revival is forbidden. Vendor attribution vanity in product docs/commits is forbidden.",
+      "reason": "Non-Negotiables Forbidden 33–35.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-017",
+        "GOV-044"
+      ],
+      "blocks": [
+        "Agent Rules",
+        "AGENTS.md Policy",
+        "Documentation Style"
+      ],
+      "referenced_by": [
+        "P8",
+        "Vault",
+        "All Clients"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No whole-repo scan culture replacing vault Brain OS for agents."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No fat AGENTS.md dump revival."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No vendor attribution vanity in product docs/commits."
+        }
+      ],
+      "implementation_impact": "Agents load Home → Current Context → relevant vault notes; keep AGENTS.md slim pointer.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-087",
+      "title": "No emoji-as-IA; no color-only critical status",
+      "category": "Accessibility — Status & IA Encoding",
+      "domain": "accessibility",
+      "decision": "Emoji must not serve as information architecture. Critical status must not be color-only.",
+      "reason": "Non-Negotiables Forbidden 36–37.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-071",
+        "GOV-056"
+      ],
+      "blocks": [
+        "IA Labels",
+        "Status Components",
+        "Design System"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Android Build",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No emoji-as-IA."
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No color-only critical status."
+        }
+      ],
+      "implementation_impact": "IA uses text/structure; status uses text/icon + color, never color alone.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-088",
+      "title": "No mid-Focus coaching modals",
+      "category": "UX — Focus Protection",
+      "domain": "ux",
+      "decision": "Mid-Focus coaching modals are forbidden.",
+      "reason": "Non-Negotiables Forbidden 38; specializes interruptibility.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-033",
+        "GOV-055"
+      ],
+      "blocks": [
+        "Focus Mode UX",
+        "Coaching Timing",
+        "JITAI"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "AI",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No mid-Focus coaching modals."
+        }
+      ],
+      "implementation_impact": "Defer coaching until Focus session ends or user opens coaching surface.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-089",
+      "title": "No silent failed sync presented as success",
+      "category": "Technical — Sync Honesty",
+      "domain": "technical",
+      "decision": "Silent failed sync must never be presented as success.",
+      "reason": "Non-Negotiables Forbidden 39.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "High",
+      "depends_on": [
+        "GOV-077",
+        "GOV-045"
+      ],
+      "blocks": [
+        "Sync UX Contract",
+        "Outbox/WorkManager UX",
+        "Offline Mode"
+      ],
+      "referenced_by": [
+        "P8",
+        "Android Build",
+        "Backend",
+        "Website"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No silent failed sync presented as success."
+        }
+      ],
+      "implementation_impact": "Failed/pending sync must surface truthful state; success chrome only on confirmed success.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-090",
+      "title": "No Inter-as-brand-identity; no unemployed font buffet",
+      "category": "Visual — Typography Identity",
+      "domain": "visual",
+      "decision": "Inter-as-brand-identity and unemployed font buffet on product surfaces are forbidden.",
+      "reason": "Non-Negotiables Forbidden 42.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-037",
+        "GOV-003"
+      ],
+      "blocks": [
+        "Typography Spec",
+        "Design System Fonts",
+        "Brand Book"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Website",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No Inter-as-brand-identity or unemployed font buffet on product surfaces."
+        }
+      ],
+      "implementation_impact": "Use locked brand typography; do not default Inter as identity or scatter unused font families.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-091",
+      "title": "No identical glass-card grids as only page personality",
+      "category": "Visual — Composition Diversity",
+      "domain": "visual",
+      "decision": "Identical glass-card grids must not be the only page personality.",
+      "reason": "Non-Negotiables Forbidden 44.",
+      "status": "Approved",
+      "priority": "P1",
+      "confidence": "High",
+      "implementation_cost": "Medium",
+      "depends_on": [
+        "GOV-038",
+        "GOV-037",
+        "GOV-029"
+      ],
+      "blocks": [
+        "Page Composition",
+        "Design System Layouts"
+      ],
+      "referenced_by": [
+        "P8",
+        "Design System",
+        "Website",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No identical glass-card grids as the only page personality."
+        }
+      ],
+      "implementation_impact": "Surfaces may use cards for interaction containers; pages need distinct composition beyond cloned glass grids.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-092",
+      "title": "No device bait-and-switch marketing vs shipped ceilings",
+      "category": "Product — Marketing Honesty",
+      "domain": "product",
+      "decision": "Device bait-and-switch marketing (e.g., \"pocket Life OS\") that contradicts shipped ceilings is forbidden.",
+      "reason": "Non-Negotiables Forbidden 45.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-013",
+        "GOV-085",
+        "GOV-041"
+      ],
+      "blocks": [
+        "Marketing Copy",
+        "Store Listings",
+        "Website Landing"
+      ],
+      "referenced_by": [
+        "P8",
+        "Website",
+        "Content System",
+        "Android Build"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Forbidden (must not)"
+          ],
+          "quote": "No device bait-and-switch marketing (\"pocket Life OS\") that contradicts shipped ceilings."
+        }
+      ],
+      "implementation_impact": "Marketing must match /m vs native vs desktop ceilings actually shipped.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    },
+    {
+      "id": "GOV-093",
+      "title": "Eight gate questions mandatory beside every proposal",
+      "category": "Governance — Proposal Gate",
+      "domain": "governance",
+      "decision": "Every proposal must be checked against the eight Non-Negotiables gate questions (Kill List, duplicate primitive, interaction inflation, device ceiling, AI chip vs ask, ten-year truth, trust pillars, Constitution conflict). Any fail means redesign or reject.",
+      "reason": "Non-Negotiables Gate questions section.",
+      "status": "Approved",
+      "priority": "P0",
+      "confidence": "High",
+      "implementation_cost": "Low",
+      "depends_on": [
+        "GOV-074",
+        "GOV-023",
+        "GOV-025",
+        "GOV-020"
+      ],
+      "blocks": [
+        "Feature Intake",
+        "Design Reviews",
+        "PR Product Checklist"
+      ],
+      "referenced_by": [
+        "P8",
+        "P9",
+        "All Clients"
+      ],
+      "evidence": [
+        {
+          "articles": [],
+          "sections": [
+            "Gate questions (print beside every proposal)"
+          ],
+          "quote": "Kill List conflict?"
+        },
+        {
+          "articles": [],
+          "sections": [
+            "Gate questions (print beside every proposal)"
+          ],
+          "quote": "Any fail → redesign or reject."
+        }
+      ],
+      "implementation_impact": "Print 8 gates on proposal/PR templates; fail = redesign or reject.",
+      "source_document": "AIIMIN GENESIS/P5 Constitution/18_NON_NEGOTIABLES.md",
+      "canon_class": "canonical"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-016",
+      "title": "Adopt Non-Negotiables eight-gate checklist on every feature/design proposal",
+      "reason": "GOV-093 needs process enforcement.",
+      "impact": "Fastest refuse tool becomes operational.",
+      "risk": "Low process friction; High if skipped — identity drift.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-093",
+        "GOV-074"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-017",
+      "title": "Publish Notification Taxonomy Spec (channels, urgency, mute, attention bar)",
+      "reason": "GOV-064 Approved intent but Needs Discussion on taxonomy; fills M-010.",
+      "impact": "Unblocks push/interruptibility enforcement.",
+      "risk": "High if delayed — nag culture returns.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-064",
+        "GOV-033",
+        "GOV-083"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-018",
+      "title": "Ship branded destructive-confirm component standard; ban window.confirm in CI",
+      "reason": "GOV-065 elevates CF-002.",
+      "impact": "Cross-client safety UX consistency.",
+      "risk": "Medium if web/Android diverge.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-065",
+        "GOV-015",
+        "GOV-046"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-019",
+      "title": "Publish Life Score vs XP role matrix + formula pointer",
+      "reason": "GOV-068 Needs Discussion; Constitution M-005 open.",
+      "impact": "Prevents vanity Life Score / dishonest XP mix.",
+      "risk": "High if undefined — gamification casino drift.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-068",
+        "GOV-009"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-020",
+      "title": "Name single design-token source of truth + run cross-client drift audit",
+      "reason": "GOV-073 Needs Discussion.",
+      "impact": "Stops treating conflicting tokens as options.",
+      "risk": "Extreme cost if delayed — visual/technical debt.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-073",
+        "GOV-040",
+        "GOV-036"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-021",
+      "title": "Wire Kill List living index into field/schema intake",
+      "reason": "GOV-074 operationalization.",
+      "impact": "Prevents revival of killed fields.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-074",
+        "GOV-022"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-022",
+      "title": "Resolve navigation primacy via IA Principles pass (primary nav map)",
+      "reason": "GOV-075 Needs Discussion; M-001 still open.",
+      "impact": "Ends duplicate nav shells.",
+      "risk": "High if skipped — IA thrash.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-075"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-023",
+      "title": "Engineering deny-list for meds/allergies/PIN inference + PIN telemetry scrub",
+      "reason": "GOV-070 fills M-016; needs enforcement.",
+      "impact": "Privacy/safety hard gate.",
+      "risk": "High if missed — sensitive data leak/inference.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-070"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-024",
+      "title": "Publish Sync Honesty UX contract (pending/fail/success states)",
+      "reason": "GOV-089 needs shared client contract.",
+      "impact": "No silent fail-as-success on Android/web.",
+      "risk": "Medium — trust erosion if skipped.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-089",
+        "GOV-077"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-025",
+      "title": "Founder confirm CF-002 closed by GOV-065 (branded confirm)",
+      "reason": "Constitution flagged incomplete confirm; NN elevates branded.",
+      "impact": "Conflict hygiene clean for destructive UX.",
+      "risk": "Low.",
+      "priority": "P1",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-065",
+        "GOV-015"
+      ],
+      "canon_class": "recommendation"
+    },
+    {
+      "id": "REC-026",
+      "title": "Next P7 artifact: 06_INFORMATION_ARCHITECTURE_PRINCIPLES.md",
+      "reason": "Unblock GOV-075 / M-001 after Non-Negotiables.",
+      "impact": "Nav primacy + destinations become governable.",
+      "risk": "Low.",
+      "priority": "P0",
+      "status": "Pending Founder",
+      "related_gov": [
+        "GOV-075"
+      ],
+      "canon_class": "recommendation"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "CF-NN-001",
+      "type": "Additive refinement (not contradiction)",
+      "detail": "Constitution GOV-015/046 require destructive confirm. Non-Negotiables require branded confirm and ban window.confirm. Flagged as CF-002 in Constitution governance; elevated here as GOV-065. Do not amend Constitution.",
+      "related_gov": [
+        "GOV-015",
+        "GOV-046",
+        "GOV-065"
+      ],
+      "recommendation": "REC-018 + REC-025. Founder confirm CF-002 closed."
+    },
+    {
+      "id": "CF-NN-002",
+      "type": "Status tension",
+      "detail": "Non-Negotiables Required 13 states brand lockup split as absolute must. Constitution GOV-012 remains Needs Discussion solely for Today≡/overview route bind (CF-001), while split behavior itself is Approved via GOV-039. Do not auto-resolve route alias.",
+      "related_gov": [
+        "GOV-012",
+        "GOV-039"
+      ],
+      "recommendation": "Keep REC-003. Cite GOV-039 for split law; leave GOV-012 Needs Discussion until route alias ratified."
+    },
+    {
+      "id": "CF-NN-003",
+      "type": "Incomplete definition (Needs Discussion)",
+      "detail": "GOV-064 asserts every notification deserves attention but Non-Negotiables give no taxonomy/thresholds (Constitution M-010).",
+      "related_gov": [
+        "GOV-064"
+      ],
+      "recommendation": "REC-017. Do not invent taxonomy as canon."
+    },
+    {
+      "id": "CF-NN-004",
+      "type": "Incomplete definition (Needs Discussion)",
+      "detail": "GOV-068 requires Life Score/XP role separation but formula/inputs still missing (Constitution M-005).",
+      "related_gov": [
+        "GOV-068",
+        "GOV-009"
+      ],
+      "recommendation": "REC-019."
+    },
+    {
+      "id": "CF-NN-005",
+      "type": "Incomplete definition (Needs Discussion)",
+      "detail": "GOV-073 requires token alignment but does not name the single source of truth.",
+      "related_gov": [
+        "GOV-073",
+        "GOV-040"
+      ],
+      "recommendation": "REC-020."
+    },
+    {
+      "id": "CF-NN-006",
+      "type": "Incomplete definition (Needs Discussion)",
+      "detail": "GOV-075 forbids duplicate navigation primacy fights but does not name primary destinations (M-001).",
+      "related_gov": [
+        "GOV-075"
+      ],
+      "recommendation": "REC-022 — govern IA Principles next."
+    },
+    {
+      "id": "CF-NN-007",
+      "type": "Incomplete definition (Needs Discussion)",
+      "detail": "GOV-071 requires critical-path contrast but WCAG level/targets still deferred (M-008).",
+      "related_gov": [
+        "GOV-071"
+      ],
+      "recommendation": "Govern 11_ACCESSIBILITY_PRINCIPLES later; until then enforce GOV-087 color-only ban."
+    },
+    {
+      "id": "CF-NN-008",
+      "type": "Monitor (no contradiction)",
+      "detail": "Non-Negotiables Known risks: list may be weaponized to block Design Lab. Constitution allows sandboxed exploration; NN Tradeoffs affirm Design Lab valid. No auto-ban of Design Lab.",
+      "related_gov": [
+        "GOV-024"
+      ],
+      "recommendation": "Design Lab remains sandboxed; Non-Negotiables bind shipping product, not lab experiments."
+    }
+  ],
+  "missing_decisions": [
+    {
+      "id": "M-NN-001",
+      "missing": "Notification taxonomy / attention bar criteria",
+      "why": "GOV-064 incomplete",
+      "next": "REC-017"
+    },
+    {
+      "id": "M-NN-002",
+      "missing": "Life Score formula + XP role matrix",
+      "why": "GOV-068 incomplete",
+      "next": "REC-019"
+    },
+    {
+      "id": "M-NN-003",
+      "missing": "Named token source of truth",
+      "why": "GOV-073 incomplete",
+      "next": "REC-020"
+    },
+    {
+      "id": "M-NN-004",
+      "missing": "Primary navigation destinations / primacy map",
+      "why": "GOV-075 incomplete",
+      "next": "REC-022 / IA Principles"
+    },
+    {
+      "id": "M-NN-005",
+      "missing": "WCAG level + contrast targets",
+      "why": "GOV-071 incomplete",
+      "next": "Accessibility Principles"
+    },
+    {
+      "id": "M-NN-006",
+      "missing": "Branded confirm component API across clients",
+      "why": "GOV-065 needs shared pattern",
+      "next": "REC-018"
+    },
+    {
+      "id": "M-NN-007",
+      "missing": "Sync honesty state machine",
+      "why": "GOV-089 needs contract",
+      "next": "REC-024"
+    },
+    {
+      "id": "M-NN-008",
+      "missing": "Sensitive inference deny-list engineering",
+      "why": "GOV-070 needs code gate",
+      "next": "REC-023"
+    },
+    {
+      "id": "M-NN-009",
+      "missing": "Typography lock file pointer (which fonts)",
+      "why": "GOV-090 forbids Inter-as-brand but does not name replacements here",
+      "next": "Design Bible / Brand typography note"
+    },
+    {
+      "id": "M-NN-010",
+      "missing": "Kill List living index path for agents",
+      "why": "GOV-074 needs single citeable list",
+      "next": "REC-021"
+    }
+  ],
+  "questions_for_founder": [
+    "Confirm CF-002 closed by GOV-065 (branded confirm + window.confirm ban)?",
+    "Approve notification taxonomy process (REC-017) — who owns first draft?",
+    "Point to Life Score formula source for GOV-068 / REC-019.",
+    "Name the single design-token source of truth (REC-020).",
+    "Confirm Capacitor remains capture stopgap only; native rich companion (GOV-085) — any exception path?",
+    "Is Design Lab explicitly exempt from Non-Negotiables while sandboxed (CF-NN-008)?",
+    "Should GOV-093 eight gates become mandatory PR checklist immediately?",
+    "Confirm next artifact: 06_INFORMATION_ARCHITECTURE_PRINCIPLES.md (REC-026)?",
+    "Any Non-Negotiable rule founder wants softened before Approved status sticks?",
+    "For GOV-071, interim contrast rule until Accessibility Principles governed?"
+  ],
+  "score": {
+    "identity_clarity": 9,
+    "enforceability": 8,
+    "cross_platform_readiness": 7,
+    "ai_readiness": 8,
+    "conflict_hygiene": 8,
+    "metric_rigor": 6,
+    "amendment_process": 8,
+    "completeness_build_without_reread": 7,
+    "traceability_evidence": 9,
+    "machine_readability": 9,
+    "final": 79,
+    "interpretation": "Non-Negotiables strongly operationalize Constitution refuse/require lists. New GOV-062…093 fill M-016 and many UX/privacy gates. Still Needs Discussion on notifications, Life Score/XP roles, token SoT, nav primacy, and WCAG targets. No hard contradiction with Constitution; additive refinements flagged."
+  }
+}

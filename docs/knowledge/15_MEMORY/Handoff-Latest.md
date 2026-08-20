@@ -1,36 +1,39 @@
-# Handoff Latest
+---
+authority: operations
+derived_from: 15_MEMORY/Current-Context
+status: active
+owner: founder
+lifecycle: living
+last_reviewed: 2026-08-08
+can_override_genesis: false
+---
 
-```text
-AIIMIN handoff — paste as first message in new chat
+# Handoff — Latest (copy pack)
 
-Read first:
-1. docs/knowledge/00_HOME.md
-2. docs/knowledge/15_MEMORY/Current-Context.md
-3. docs/knowledge/15_MEMORY/Handoff-Latest.md
+> Paste into new chat. Boot still: Home → Routing → Current-Context. No secrets.
 
-Done this chat:
-- Locked + shipped Core Ivory Snapshot + Pro Folio Life OS PDF (Elite Deep paused)
-- /reports gate → Core+; Patterns/Skills + Folio PDF = Pro+
-- Shipped tier AI quotas (1/10/25/40) + OpenRouter lite routing
-- Prod: Vercel READY + EC2 ed578457 + AI env synced
-- Updated SWITCH CHAT rule → loud 🚨 red-alert banner
+**Date:** 2026-08-08 · Branch `feat/native-android-v3` · Device AIN065 `9597fdea` · APK `native-android-v3/dist/aiimin-v3-current.apk`
 
-Still open:
-- Elite Deep report — paused (no craft yet)
-- Optional prod spot-check: /reports + AI budget UX
-- Next unrelated feature → new chat
+## Shipped this thread
 
-Touch only if needed:
-- docs/knowledge/09_FEATURES/Reports/
-- docs/knowledge/09_FEATURES/DevTools/
-- .cursor/rules/aiimin-chat-handoff.mdc
+- Screen time: prefer **SCREEN_INTERACTIVE** (DW), not unlocked. Proof: DW 3h8 / unlocked 2h47 / interactive 3h4 · unlocks 35=35. Log: `15_MEMORY/Reliability-Log.md`
+- Splash: `One screen. Every day.` travel→stick under AIIMIN (`BrandMark.kt`)
+- Plan cards: sharp rect `RoundedCornerShape(0.dp)` (`SubscriptionPlan.kt`)
+- Onboarding: BrandMark + Bodoni + law (`OnboardingScreen.kt`)
+- Journal: write-first + optional prompts (`JournalScreen.kt`)
+- Config: English → `https://aiimin.in/lab?module=speaking` (`ConfigScreen.kt`)
 
-Constraints:
-- Vault-first. No whole-repo scan.
-- Palette lock. Mobile /m = capture only.
-- No auth/schema change unless I ask.
-- Commit only if I ask.
+## Do next
 
-Next action:
-- Open new chat; paste this pack; pick next task (not Elite Deep unless reopened)
-```
+1. Founder DW same-minute eye-QA (DW UI lags live UsageEvents)
+2. Deeper sync: bootstrap notes/agenda/goals/lifeScore still ignored (`GraphSyncRepository`)
+3. Native English Lab (not web tab)
+4. Config visual depth · feature discovery on Capture/Day
+
+## Touch paths
+
+`UsageDayParser.kt` · `DeviceMetricsRepository.kt` · `BrandMark.kt` · `SubscriptionPlan.kt` · `OnboardingScreen.kt` · `JournalScreen.kt` · `ConfigScreen.kt` · `09_FEATURES/Subscription/Native-Plan-System.md`
+
+## Locks
+
+Drafting Table steel · `#ff6b35` BrandSpark/Pro only · no auth/schema unless asked · commit/push only on ask · `/m` capture-only · proof-or-stop
