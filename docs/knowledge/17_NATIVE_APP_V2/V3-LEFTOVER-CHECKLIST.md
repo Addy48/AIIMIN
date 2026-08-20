@@ -42,7 +42,7 @@ tags:
 - [x] code · [x] emu chooser · [ ] ain065 · [ ] camera/OCR fire — **A3** Scan OCR (`SCAN SOURCE` · `CAMERA` · `GALLERY`)
 - [x] code · [x] emu · [ ] ain065 — **A4** Money ingest UI (`Log · import` · Approve copy)
 - [x] code · [x] emu — **A5** Journal (`VOICE · APPEND` · `Search history` · `EXPORT · TXT`)
-- [x] code · [x] emu delete · [ ] ain065 · **EC2 live 2026-08-14** (scp, no git) — **A6** `note.delete` on `POST /mobile/sync/batch` · notice `DELETED · SYNC WILL WIPE` · emu signed in as founder — did **not** tap DELETE on live notes
+- [x] code · [x] emu delete · [ ] ain065 · **EC2 live via git 2026-08-20** (`main` @ `5c6a86d0`) — **A6** `note.delete` on `POST /mobile/sync/batch` · notice `DELETED · SYNC WILL WIPE` · prior scp-only deploy superseded
 
 ## TRACK B — Knocks
 
@@ -110,16 +110,16 @@ tags:
 
 ## Now (agent)
 
-1. ~~A6 `note.delete`~~ code + **EC2 file live** 2026-08-14 (scp `mobile.js`, no git). **Next `git reset --hard` on the box will drop it until you commit.**
-2. Emu leftover Graph/Journal/Scan/Reports/D5 row: **this session** (`captures/emu/leftover/`). Still open: A6 test-note delete · camera OCR · 18+ Welcome · AIN065.
+1. ~~A6 `note.delete`~~ code + **on EC2 via git** 2026-08-20 (`main` merge). scp-only path retired.
+2. Emu leftover still open: A6 test-note delete · camera OCR · 18+ Welcome while signed in · AIN065.
 3. Still PARK: FCM · Groq · Room · Billing
-4. Do **not** commit unless asked
+4. Commit/push only when Founder asks (or ship slice already approved)
 
 ## Evidence log
 
 | When | What | Receipt |
 |------|------|---------|
-| 2026-08-13 | assembleDebug leftover pack | BUILD SUCCESSFUL · APK ~60M |
+| 2026-08-20 | feat → main PR #5 · Vercel · EC2 | Merge `5c6a86d0` · Vercel READY · Deploy API success · EC2 `main` @ `5c6a86d0` · health ok · `note.delete` in tree |
 | 2026-08-13 | emu install + launch | Welcome + Day sheet PNGs |
 | 2026-08-14 | D3 + HC + honesty | DayStoreTest 7/7 · assembleDebug EXIT 0 · APK 61M |
 | 2026-08-14 21:20 | A6 on EC2 (no git) | scp `mobile.js` · remote grep `note.delete` L321 · pm2 reload · `GET /api/health` `{"status":"ok"}` · `POST /mobile/sync/batch` HTTP 401 |

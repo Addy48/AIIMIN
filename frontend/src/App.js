@@ -99,6 +99,7 @@ const PUBLIC_PATH_PREFIXES = [
   '/grievance',
   '/subprocessors',
   '/legal',
+  '/app',
   '/brand',
   '/proto',
 ];

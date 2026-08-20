@@ -43,10 +43,11 @@ tags:
 
 ## Founder next
 
-1. ~~Push~~ **done** — feat tip advanced past `cb218e2e` after merge prep
-2. ~~Migrations 049–052~~ **done** on Supabase
-3. ~~EC2~~ **done** — box on feat; health ok
-4. ~~Merge `origin/main` into feat~~ **this turn** — README resolve + V3 surface truth
-5. **Merge/PR feat → `main`** — unlocks Vercel prod web/legal (founder)
-6. Web diet kill rows still founder taste
-7. V3 leftover product list still parked
+1. ~~Push~~ **done**
+2. ~~Migrations 049–052~~ **done**
+3. ~~EC2~~ **done** — now on **`main`** @ merge tip
+4. ~~Merge `origin/main` into feat~~ **done**
+5. ~~Merge/PR feat → `main`~~ **done** — [PR #5](https://github.com/Addy48/AIIMIN/pull/5) · Vercel READY · Deploy API success
+6. Web diet kill rows still founder taste (`/design-lab` already redirects)
+7. V3 leftover product list — physical/emu open items
+8. `/app` public-path for waitlisted signed-in users — fix in flight this turn

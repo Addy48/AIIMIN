@@ -20,30 +20,30 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch `feat/native-android-v3` @ `6b097614` · **pushed** · `origin/main` merged in
+**Date:** 2026-08-20 · Branch **`main`** @ `5c6a86d0` (+ pending `/app` public-path fix) · PR [#5](https://github.com/Addy48/AIIMIN/pull/5) **merged**
 
 ## Stage
 
-Simplification program **closed** (V0–X). Feat has API ghosts, migrations applied, EC2 on earlier feat tip, vault diet. `origin/main` (`fc9e2a76`) is **in** feat. Next gate = **merge feat → main** for Vercel.
+Simplification closed. Feat shipped to **`main`**. Vercel prod READY on merge SHA. Deploy API Action success. EC2 on **`main`** @ `5c6a86d0`. Migrations 049–052 already on Supabase.
 
 | Gate | Status |
 |------|--------|
-| Simplification phases V0–X | Verified — [[16_DOCUMENTATION/Simplification-Phase-Tracker]] |
-| Push + EC2 + migrations 049–052 | Verified |
-| `origin/main` into feat | Verified — tip `6b097614`, ahead of main by 40, behind 0 |
-| Vercel production | Still needs merge **to** `main` |
-| R3 slices S1–S6 | Shipped on feat — inventory updated |
-| API health | Verified `{"status":"ok"}` this turn |
+| PR #5 merge → `main` | Verified — `5c6a86d0` |
+| Deploy API Action | Verified success |
+| Verify Frontend Action | Verified success |
+| Vercel production | Verified READY · commit message PR #5 · SHA `5c6a86d0` |
+| EC2 branch/SHA | Verified `main` @ `5c6a86d0` · health ok |
+| Prod bundle has `/app` + `/legal` | Verified strings in `main.2991b620.js` |
+| `/app` in PUBLIC_PATH_PREFIXES | **This turn** — fix for signed-in waitlist users |
 
 ## P0 next
 
-1. **Founder:** merge/PR feat → `main` (Vercel picks web/legal)
+1. Push `/app` public-path fix (this session)
 2. Web diet kill rows — founder taste ([[16_DOCUMENTATION/Web-Surface-Diet-R4]])
-3. PARK product: [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
+3. V3 leftover physical/emu open items — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
 
 ## Touch
 
-- `README.md` (V3 surface truth + merge resolve)
-- `docs/knowledge/16_DOCUMENTATION/Commit-Slice-Inventory-R3.md`
-- `docs/knowledge/16_DOCUMENTATION/Simplification-Backlog-X.md`
+- `frontend/src/App.js` (`/app` public prefix)
 - `docs/knowledge/16_DOCUMENTATION/Simplification-Phase-Tracker.md`
+- `docs/knowledge/17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST.md` (A6 EC2 via git)

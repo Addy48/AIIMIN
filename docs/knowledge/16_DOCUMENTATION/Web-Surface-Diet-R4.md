@@ -29,7 +29,7 @@ tags:
 | `/brand` · `/legal` · privacy/terms/… legal set | **ship** | Trust / compliance |
 | `/app` | **ship** | Android landing (new) |
 | `/proto/draft` | **park** | Design lock only — not product |
-| `/design-lab` | **kill** redirect already → account design |
+| `/design-lab` | **kill** | redirect already → `/account?section=design` (verified in `App.js`) |
 | `/placements` | **park** | Personal/career — not core Life OS |
 | `/seed-data` | **park** | Dev/seed · gate harder or remove from prod nav |
 | ATS / Placements-adjacent pages if orphaned | **park** | Confirm nav links |
