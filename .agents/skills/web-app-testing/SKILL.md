@@ -3,9 +3,9 @@ name: web-app-testing
 description: >
   Enforce prototype/UI structural uniqueness with Playwright. Screenshot tabs,
   extract DOM structural signatures, pairwise-diff them, and fail the build when
-  similarity crosses a threshold. Use for v7 personal-os tab roots (Today,
-  Capture, Money, Practice, More), anti-cheat skeleton gates, visual regression
-  of screen skeletons, and any "screens must not share the same layout" check.
+  similarity crosses a threshold. Use for product / Drafting Table screens when
+  founder asks for unique skeletons. The v7 personal-os HTML tree was deleted
+  2026-08-14 (see docs/knowledge/16_DOCUMENTATION/Completed-Work-Ledger.md).
 ---
 
 # Web App Testing — Structural Signature Gate
@@ -15,7 +15,10 @@ description: >
 - Founder asks for unique skeletons per tab / screen
 - "Header + stat + list" banned for more than one screen
 - Visual claims must be proof-or-stop (screenshots + measurable diff)
-- After rebuilding `v7-android-life-os.html` tab roots
+
+## Note (2026-08-14)
+
+`frontend/prototypes/personal-os/` including `v7-build/build_v7.py` is gone. Do not run those paths. If a skeleton gate is needed, point it at a living surface (`frontend/prototypes/AIIMIN-Drafting-Table.html` or the native/web app) and update this skill first.
 
 ## Hard contract (v7 five tabs)
 

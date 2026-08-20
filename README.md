@@ -1,16 +1,19 @@
 # AIIMIN
 
-**Personal Life OS** — daily metrics, money, calendar, focus, discipline, sports, and gamification in one place.
+**Personal Life OS** — habits, money, calendar, focus, journal, and gamification. One account, several surfaces.
 
 <p align="center">
   <a href="https://aiimin.in"><img src="https://img.shields.io/badge/Live-aiimin.in-ff6b35?style=for-the-badge" alt="Live" /></a>
   <a href="https://api.aiimin.in/api/health"><img src="https://img.shields.io/badge/API-healthy-10b981?style=for-the-badge" alt="API" /></a>
+  <img src="https://img.shields.io/badge/Auth-Better%20Auth-000?style=for-the-badge" alt="Better Auth" />
   <img src="https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react" alt="React" />
   <img src="https://img.shields.io/badge/Kotlin-Compose-7F52FF?style=for-the-badge&logo=kotlin" alt="Kotlin" />
-  <img src="https://img.shields.io/badge/Postgres-Supabase-00e699?style=for-the-badge&logo=postgresql" alt="Postgres" />
 </p>
 
-**Owner:** [Aaditya Upadhyay](https://github.com/Addy48) · B.Tech CSE, Manipal University Jaipur
+**Owner:** [Aaditya Upadhyay](https://github.com/Addy48) · B.Tech CSE, Manipal University Jaipur  
+**Live:** [aiimin.in](https://aiimin.in) · **API:** [api.aiimin.in](https://api.aiimin.in/api/health)
+
+Phone web (`/m`) is **capture-only**. Full analytics live on desktop / iPad.
 
 ---
 
@@ -167,7 +170,7 @@ Full spec: `docs/knowledge/08_DESIGN/Palette.md`
 
 | Doc | Purpose |
 |-----|---------|
-| [docs/knowledge/00_HOME.md](docs/knowledge/00_HOME.md) | Agent + human entry |
+| [docs/knowledge/00_HOME.md](docs/knowledge/00_HOME.md) | Product + ops hub |
 | [docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md](docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md) | V1 implementation contract |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Commit boundaries |
 | [docs/knowledge/02_ARCHITECTURE/Monorepo.md](docs/knowledge/02_ARCHITECTURE/Monorepo.md) | Three-client architecture |

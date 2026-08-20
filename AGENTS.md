@@ -8,10 +8,12 @@
 ## Start here (mandatory)
 
 1. `docs/knowledge/00_HOME.md`
-2. `docs/knowledge/15_MEMORY/Current-Context.md`
-3. Constitutional work → `docs/knowledge/Maps of Content/Genesis.md` then `docs/knowledge/Genesis/` (immutable)
-4. Only relevant notes under `docs/knowledge/` for the task
-5. Only source files involved in the change
+2. `docs/knowledge/00_ROUTING.md` — **"for X, read exactly this file."** Find your job, open only what it names.
+3. `docs/knowledge/15_MEMORY/Current-Context.md`
+4. V1 work → `docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md`
+5. Constitutional work → `docs/knowledge/Maps of Content/Genesis.md` then `docs/knowledge/Genesis/` (immutable)
+6. Only relevant subsystem notes under `docs/knowledge/` for the task
+7. Only source files involved in the change
 
 **Genesis** lives at `docs/knowledge/Genesis/` (single source). Do not edit Genesis content. Do not create a second copy. Vault notes cannot override Genesis (`can_override_genesis: false`).
 
@@ -47,6 +49,7 @@ Full: `docs/knowledge/08_DESIGN/Palette.md`
 - Update vault before task complete
 - No tool-vendor attribution in docs or commits
 - Proof-or-stop: no done/fixed/shipped without same-turn evidence
+- Anti-lie: Verified/Inferred/Proposed/Blocked/Not performed; no claim without receipt
 
 ## Fat history
 

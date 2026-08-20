@@ -26,8 +26,8 @@ Before acting on any task, check whether a skill applies. If there is even a 1% 
 | Task | Skill to check |
 |------|----------------|
 | Bug / failure | `systematic-debugging` |
-| New feature / design | `brainstorming`, `frontend-design` + **Mobbin MCP** (`search_screens`, `search_flows`) |
-| UI patterns / flows / onboarding | **Mobbin MCP** — screens + flows before proposing layouts |
+| New feature / design | `brainstorming`, `frontend-design` + **VP0 MCP** (`search_vp0_designs`, `get_vp0_design`) |
+| UI patterns / flows / onboarding | **VP0 MCP** — search + fetch design before proposing layouts |
 | Cursor rules | `create-rule` |
 | Commits | `caveman-commit` |
 | Code review | `caveman-review`, `review-security` |
