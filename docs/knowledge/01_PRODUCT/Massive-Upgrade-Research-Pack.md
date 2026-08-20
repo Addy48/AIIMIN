@@ -449,6 +449,8 @@ Semantic search · household · iOS · Hindi · social forge · Career unpark �
 - [[01_PRODUCT/Dual-Market-Pricing]] — INR locked + USD $0/$3/$7/$16 founding plan
 - [[01_PRODUCT/AI-Preference-Map]] — where users want / refuse AI
 - [[01_PRODUCT/Marketing-And-Go-To-Market]] — India + Americas GTM
+- [[01_PRODUCT/Build-Next-Now]] — one-page “what to build next” card
+- [[01_PRODUCT/Stage1-Marketing-Ops-Plan]] — day calendar + AARRR
 
 ## 16. Follow-on research (2026-08-20 deep pass)
 

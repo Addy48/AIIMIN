@@ -99,7 +99,7 @@ export const LAUNCH_PHASES = [
     userAction: 'Complete a 15-minute setup — habits, money categories, and focus defaults.',
     approval: 'Founding members onboard first; testers get early beta access.',
     unlocks: [
-      { name: 'Life Score', hint: 'Daily execution score across sleep, gym, mood, and focus' },
+      { name: 'Life Score', hint: 'Server score across BODY · MIND · DISCIPLINE · MONEY · MOOD' },
     ],
   },
   {
@@ -174,12 +174,12 @@ export const PRICING = [
     tierTagline: 'Household + patterns.',
     price: '₹49',
     discounted: '₹49',
-    note: 'Family vault + UPI review + correlations — founding ₹49.',
+    note: 'Family vault + UPI review + correlations — founding ₹49 (modules as they ship).',
     recommended: true,
     includes: [
       'Everything in Core',
-      'Family vault · Documents viewer · People links · expiry reminders',
-      'Android: UPI payment-alert review queue (on-device parse)',
+      'Family vault · Documents viewer · People links · expiry reminders (modules as they ship)',
+      'Android: UPI payment-alert review queue when available (on-device parse; you Approve)',
       'Wealth AI · What-if · Correlations on Snapshot · Life OS Review PDF',
       'Cloud voice replay (opt-in) · 6 Standard PDFs / month',
       '25 AI calls / day',
@@ -316,7 +316,7 @@ export const FAQS = [
   },
   {
     q: 'When does AIIMIN launch?',
-    a: 'We are targeting end of October 2026. The exact date may shift slightly, but that is our public go-live window.',
+    a: 'We are targeting end of October 2026. That is a public go-live window, not a hard SLA — the exact date may shift slightly.',
   },
   {
     q: 'What do invited testers get?',
