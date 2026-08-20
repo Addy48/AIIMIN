@@ -18,31 +18,29 @@ tags:
 # Current Context
 
 > [!tip] Agent boot
-> [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie + [[14_PROMPTS/Pre-Ship-10x-Gate]].
+> [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Pre-Ship 10× · [[14_PROMPTS/Pre-Ship-10x-Gate]].
 
-**Date:** 2026-08-20 · Branch **`main`** @ **`3dc30412`** · Focus: public overhaul **live**
+**Date:** 2026-08-20 · Branch **`main`** · Focus: Stage-1 Day 1 hedges + **Build Next** card
 
 ## Stage
 
-Waitlist / brand / `/app` overhaul shipped under Pre-Ship 10×. Pack: [[01_PRODUCT/Complete-Overhaul-Pack]].
-
 | Gate | Status |
 |------|--------|
-| Pre-Ship I1–I5 + A1–A5 | **Passed** this ship |
-| Tip SHA `3dc30412` on `origin/main` | **Verified** |
-| Vercel `dpl_7ygh2F1AMvBDq5YL9QBDaLsjWU27` READY | **Verified** |
-| Live `www.aiimin.in` JS: `Launching Oct 2026`, `30 September`, `brand-manifesto__spot` | **Verified** |
-| Stale `31 August` / `Launching Sept` in live main.js | **Absent** (grep MISS) |
-| Founder browser feel (glow / forms) | **Not performed** — human |
+| Day 0 marketing spine | Done |
+| [[01_PRODUCT/Build-Next-Now]] | **Written** — Phase A→E card |
+| Full research | [[Massive-Upgrade-Research-Pack]] |
+| Claims TARGET hedges in waitlist copy | **Code this turn** |
+| Push / Vercel | Pending this closeout |
 
 ## P0 next
 
-1. Founder hard-refresh `/` · `/brand` · `/app` — confirm glow instant + dates
-2. Waitlist dual-form reset browser check
-3. USD founding $6/$13 accept/adjust
+1. Founder: pick provenance golden path (Money recommended)  
+2. Phase A: ain065 physical trust gaps  
+3. Phase B start: `graph_edges` + People  
+4. Hard-refresh site after deploy — “Targeting Oct 2026”
 
 ## Touch
 
-- Live: `https://www.aiimin.in` · `/brand` · `/app`
-- `docs/knowledge/01_PRODUCT/Complete-Overhaul-Pack.md`
-- `docs/knowledge/14_PROMPTS/Pre-Ship-10x-Gate.md`
+- `docs/knowledge/01_PRODUCT/Build-Next-Now.md`
+- `docs/knowledge/01_PRODUCT/Massive-Upgrade-Research-Pack.md`
+- waitlist form / social proof / `waitlistLandingData.js`

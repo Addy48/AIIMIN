@@ -299,6 +299,26 @@
       "moc": "docs/knowledge/01_PRODUCT/Complete-Overhaul-Pack.md",
       "status": "partial",
       "note": "Single file: date shift + waitlist/brand/app UI + research pointers 2026-08-20"
+    },
+    "stage1_marketing_ops": {
+      "moc": "docs/knowledge/01_PRODUCT/Stage1-Marketing-Ops-Plan.md",
+      "status": "active",
+      "note": "AARRR day calendar + feature Phase sync + Instagram skip 2026-08-20"
+    },
+    "marketing_claims_ledger": {
+      "moc": "docs/knowledge/01_PRODUCT/Marketing-Claims-Ledger.md",
+      "status": "active",
+      "note": "FACT/TARGET/FOUNDING/FORBID for public copy"
+    },
+    "notifications_signal_system": {
+      "moc": "docs/knowledge/09_FEATURES/Notifications/Signal-System.md",
+      "status": "active",
+      "note": "Web/site/native notification taxonomy Hold/Knock"
+    },
+    "build_next_now": {
+      "moc": "docs/knowledge/01_PRODUCT/Build-Next-Now.md",
+      "status": "active",
+      "note": "One-page Phase A-E build order from Massive Upgrade research"
     }
   }
 }

@@ -15,8 +15,12 @@ tags:
   - status/living
 ---
 
-# Marketing & go-to-market — AIIMIN Life OS (production plan)
+# Marketing & go-to-market — AIIMIN Life OS
 
+> **Ops calendar + AARRR:** [[Stage1-Marketing-Ops-Plan]]  
+> **Claims law:** [[Marketing-Claims-Ledger]]  
+> **Agent context:** `.agents/product-marketing.md`  
+> **Skills:** [[16_DOCUMENTATION/Stage1-Marketing-Skills-Catalog]]  
 > Audience priority: **Indian subcontinent** then **US / Americas**. Brand: craft Life OS, not another purple AI dashboard.
 
 ## 1. Positioning (one sentence)
@@ -42,69 +46,70 @@ Competitive frame (education, not attack ads): Notion = docs · Finch = pet well
 4. **Founding member economics** — waitlist locks discounts (see [[Dual-Market-Pricing]]).  
 5. **Native companion + web deep OS** — phone captures; desktop thinks.
 
-## 4. Channel plan (90 days)
+## 4. Channel plan (Stage-1)
 
 ### India (primary now)
 
 | Channel | Play | KPI |
 |---------|------|-----|
-| Waitlist landing | Fix trust bugs; geo-aware copy later | Signup conversion, referral |
-| WhatsApp / college ambassadors | Referral codes + OS-ID flex | Referral rate |
+| Waitlist landing | Trust + Claims-hedged copy | Signup conversion, referral |
+| WhatsApp / college ambassadors | Referral codes + OS-ID | Referral rate |
 | X (@aiimin_in) | Weekly craft build-in-public | Followers → waitlist |
 | LinkedIn (founder) | Long-form Life OS thesis | Quality waitlist |
-| YouTube Shorts / Instagram Reels | 20s Capture demos | View → site |
 | Campus / Discord micro-communities | Tester packs | Activated testers |
 
-### US / Americas (build parallel)
+### Explicit Skip (Stage-1)
+
+| Channel | Why |
+|---------|-----|
+| **Instagram / Reels** | High effort; weak ICP ROI vs WhatsApp/X/LI — revisit only if D30 stalls |
+| Paid Meta / Google | ₹0 budget until owned list healthy |
+| Influencer retainers | Premature |
+| ASO | Play not public |
+
+### US / Americas (parallel, light)
 
 | Channel | Play | KPI |
 |---------|------|-----|
 | Product Hunt (when ready) | Launch Story: Life OS not habit app | Upvotes + US waitlist |
-| Reddit (r/productivity, r/selfimprovement) — value posts only | No spam; show Capture grammar | Traffic |
-| SEO | “personal life OS”, “UPI expense tracker India”, “life score app” | Organic |
-| Comparison pages | vs Finch / Habitica / Notion — honest | Intent traffic |
+| Reddit value posts only | No spam | Traffic |
+| SEO / GEO | `llms.txt` + comparison outlines | Organic / AI citation |
+| Comparison pages | vs Finch / Habitica / Notion — honest FACT/TARGET | Intent |
 
-## 5. Asset checklist (production)
+## 5. Asset checklist
 
-- [ ] Region-aware pricing section (INR default IN; USD for US IP) — after Dual-Market-Pricing accepted  
-- [ ] Founding countdown (31 Aug tester / Sep go-live) — live  
-- [ ] `/app` Android status — live  
-- [ ] Case study: “one day in AIIMIN” film (60–90s)  
-- [ ] Press kit: logo, palette, one-pager PDF  
-- [ ] Founder story page (human, not startup-slop)  
-- [ ] Email drip: waitlist → founding perks → invite  
+- [ ] Region-aware pricing (INR default; USD when Dual-Market accepted + Stripe)
+- [x] Timeline: tester **30 Sep 2026** · go-live **end Oct 2026** (TARGET)
+- [x] `/app` Android status
+- [ ] Case study film 60–90s
+- [ ] Press kit (Day 5 owned PR)
+- [ ] Founder story page
+- [ ] Email drip: waitlist → founding → invite (Day 8 outline)
 
-## 6. Unique features to market (differentiated)
+## 6. Unique features to market (only when FACT)
 
-From research pack + gaps competitors miss:
+From [[Massive-Upgrade-Research-Pack]] — market after Phase ships:
 
-1. **Typed life graph** (people ↔ money ↔ loops)  
-2. **Capture grammar** users can feel (Settle / Hold / Drift)  
-3. **India-native money path** (UPI review) without being India-only forever  
-4. **OS maturity unlocks** (capability, not pets)  
-5. **Server Life Score** BODY·MIND·DISCIPLINE·MONEY·MOOD  
-6. **AI-off still complete product**
+1. Typed life graph (People ↔ money ↔ loops) — Phase B  
+2. Capture grammar (Settle / Hold / Drift)  
+3. India-native money path (UPI review) — Phase C  
+4. OS maturity unlocks  
+5. Server Life Score BODY·MIND·DISCIPLINE·MONEY·MOOD  
+6. AI-off still complete product  
 
-## 7. Features users need that are still thin / unmade (marketable when real)
+## 7. Brand safety / real company
 
-| Need | Status | Market line when shipped |
-|------|--------|--------------------------|
-| Open Loops + Knocks that close | Partial | “Your day remembers unfinished truth” |
-| Person hub | Planned W3 | “Money and care in one human card” |
-| Provenance reports | Planned W10 | “Every insight shows its homework” |
-| Health Connect → BODY | Planned W5 | “Steps settle into BODY — you confirm” |
-| Documents vault | Planned W8 | “Expiry ladder for real adult life” |
-| Dual USD/INR checkout | Proposed | “Price that respects where you live” |
-
-## 8. Brand safety
-
-- No “AI therapist / AI doctor / AI wealth manager” claims.  
+- No “AI therapist / AI doctor / AI wealth manager” — **FORBID**.  
 - No fake user counts.  
-- Waitlist confirmation must be honest after “use different email” (fixed 2026-08-20).  
-- Palette locked — no purple OAuth chrome on marketing.
+- Dates = **TARGET**; perks = **FOUNDING** with Terms.  
+- Waitlist confirmation honest after “use different email”.  
+- Palette locked.  
+- Notifications: [[09_FEATURES/Notifications/Signal-System]] — digest > drip.
 
-## 9. Related
+## 8. Related
 
+- [[Stage1-Marketing-Ops-Plan]]
+- [[Marketing-Claims-Ledger]]
 - [[Dual-Market-Pricing]]
 - [[AI-Preference-Map]]
 - [[Massive-Upgrade-Research-Pack]]

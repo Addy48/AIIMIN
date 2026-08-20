@@ -54,18 +54,21 @@ Branch **`main`**. Native V3 = active companion app (`native-android-v3/`). Manu
 
 Drafting Table = **design lock**, not a third product.
 
-**Now:** public marketing overhaul + date shift — [[01_PRODUCT/Complete-Overhaul-Pack]]. Research spine: [[01_PRODUCT/Massive-Upgrade-Research-Pack]]. Simplification tracker closed: [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+**Now:** [[01_PRODUCT/Build-Next-Now]] (what to build) · [[01_PRODUCT/Massive-Upgrade-Research-Pack]] (full research) · [[01_PRODUCT/Stage1-Marketing-Ops-Plan]] (marketing calendar). Overhaul: [[01_PRODUCT/Complete-Overhaul-Pack]].
 
 - **Living leftover list** → [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
 - **Guardrails G1–G10** → [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]] §0
 - **Master status (dated — verify vs Context)** → [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]]
 - **Single vault** — `~/Documents/AIIMIN VAULT/Reference` symlinks here → [[16_DOCUMENTATION/VAULT-CONSOLIDATION-2026-08-03]]
 - **Web diet R4** → [[16_DOCUMENTATION/Web-Surface-Diet-R4]]
+- **Marketing skills catalog** → [[16_DOCUMENTATION/Stage1-Marketing-Skills-Catalog]]
+- **Notifications Signal System** → [[09_FEATURES/Notifications/Signal-System]]
 
 ## Current version / lens
 
 - Waitlist gate when `REACT_APP_WAITLIST_MODE=true`
-- Go-live target: end Oct 2026; founding/tester registration closes **30 Sep 2026**
+- Go-live target: end Oct 2026; founding/tester registration closes **30 Sep 2026** (TARGET)
+- Instagram / Reels: **Skip** Stage-1
 - **Genesis v1.0 (P1–P9) COMPLETE** · immutable at `Genesis/`
 - **Obsidian Vault Stage A FROZEN** · SoT `docs/knowledge/` · [[Founder/01_VAULT_FREEZE_CERTIFICATE]]
 - **AIIMIN V1 Blueprint v1.0** · current implementation contract · [[Roadmap/AIIMIN-V1-Blueprint]]
