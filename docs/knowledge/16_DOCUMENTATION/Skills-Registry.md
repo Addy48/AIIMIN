@@ -61,11 +61,10 @@ fm_source: script
 
 | Tool | Server | Repo use |
 |------|--------|----------|
-| **Mobbin `search_screens`** | `user-Mobbin` (Cursor MCP) | Single-screen UI reference — cite `mobbin_url` |
-| **Mobbin `search_flows`** | `user-Mobbin` | Onboarding, checkout, multi-step journeys |
-| **Mobbin `search_sections`** | `user-Mobbin` | Web marketing sections (pricing, hero) |
+| **VP0 `search_vp0_designs`** | `vp0` (`npx -y vp0-mcp`) | Search free AI-readable designs by intent |
+| **VP0 `get_vp0_design`** | `vp0` | Fetch slug manifest — source, deps, `aiInstructions` |
 
-Rule: `.cursor/rules/aiimin-mobbin-mcp.mdc` — mandatory on design, prototyping, brainstorming. Requires Mobbin paid plan for live results.
+Rule: `.cursor/rules/aiimin-vp0-mcp.mdc` — mandatory on design, prototyping, brainstorming. Mobbin MCP retired (2026-08-06). Adapt VP0 Expo/RN sources to Compose / web; never copy brand.
 
 ### P1 — Web Life OS (`frontend/`)
 

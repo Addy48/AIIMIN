@@ -76,10 +76,9 @@ Their historical full copies are parked in `knowledge/Archive/Duplicates/`.
 DASHBOARD PROJECT/
 ├── frontend/            React 19 web Life OS  ── live at aiimin.in
 ├── server/ + api/       Node/Hono API         ── api.aiimin.in on EC2
-├── native-android-v3/   Kotlin + Compose      ── BEING BUILT
+├── native-android-v3/   Kotlin + Compose      ── CURRENT native product app
 ├── native-android/      old V2                ── reference only, never its ui/
 ├── docs/knowledge/      THE VAULT             ── canonical
-├── docs/audit/          the repo + machine audit report
 ├── scripts/             incl. sync-personal-vault.mjs
 └── deploy/              EC2 provisioning
 ```
@@ -103,8 +102,8 @@ follows the repo without you asking.
 - `~/Documents/AIIMIN VAULT/99-Superseded-Originals/` — your 2026-07-04 notes. They say auth
   is **Clerk**. It isn't.
 - `knowledge/Archive/` and `knowledge/99_ARCHIVE/` — cold storage, banner-marked.
-- `frontend/prototypes/personal-os/` — the closed TIDE/RELAY/ATLAS bake-off.
-- `v7-android-life-os.html` / `v7-build/` — frozen. Do not edit.
+- `frontend/prototypes/personal-os/` — **deleted 2026-08-14**. Closed TIDE/RELAY bake-off. Living lock: `frontend/prototypes/AIIMIN-Drafting-Table.html`. Record: [[16_DOCUMENTATION/Completed-Work-Ledger]].
+- `v7-android-life-os.html` / `v7-build/` — gone with personal-os. Do not recreate.
 
 ## See also
 

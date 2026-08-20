@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-PROD
 graph_role: leaf
@@ -80,3 +80,26 @@ Shipped 2026-07-04 — budgets, logging, dev dashboard tab.
 - **Why:** Authenticated attacker could burn org free-key budgets without real AI calls
 - **Files:** `server/routes/intelligence.js`, `server/services/apiUsageService.js`
 - **Status:** shipped local (restart API); prod needs EC2 deploy
+
+---
+
+## Structure (Phase V4)
+
+> Added 2026-08-20 so every living feature MOC shares the same skeleton. Fill stubs when next touching this feature.
+
+## Current state
+
+Status / scope / last meaningful change. Update when behavior changes.
+
+## Why this exists
+
+One job this feature serves for the user.
+
+## Contracts
+
+Routes, tables, env names (no secret values).
+
+## Files
+
+Frontend / backend / native paths.
+

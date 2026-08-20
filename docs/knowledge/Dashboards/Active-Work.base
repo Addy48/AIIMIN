@@ -7,6 +7,10 @@ filters:
         - 'file.inFolder("Archive")'
         - 'file.inFolder("99_ARCHIVE")'
         - 'file.inFolder("_templates")'
+        - 'file.inFolder("Roadmap/UX-Architecture")'
+        - 'file.inFolder("Roadmap/UX-Intelligence")'
+        - 'file.inFolder("Roadmap/Program-V1-Obsidian-Knowledge-OS")'
+        - 'file.inFolder("Roadmap/Brain-OS-Implementation")'
 
 properties:
   file.name:

@@ -1,103 +1,26 @@
 ---
-authority: historical
-derived_from: Genesis
+authority: archive
+derived_from: Genesis/P2 Knowledge Intelligence/supporting/product-bible/07_AUTOMATION_RULES.md
 status: archived
-owner: founder
-lifecycle: archive
-last_reviewed: 2026-07-25
+owner: eng
+lifecycle: archived
+last_reviewed: 2026-08-20
 can_override_genesis: false
-knowledge_layer: KL-COLD
-graph_role: cold
-note_type: NT-COLD
-migration_batch: W4
-fm_source: script
+knowledge_layer: KL-META
+graph_role: leaf
+note_type: NT-STUB
+tags:
+  - type/stub
+  - status/archived
 ---
 
-> **ARCHIVED — provenance**
-> - **Why archived:** Duplicate of Genesis P2 supporting Product Bible (byte-identical). Removed from docs/ to restore single source.
-> - **Status:** duplicate-archived
-> - **Canonical / active successor:** [[Genesis/P2 Knowledge Intelligence/supporting/product-bible/00_INDEX]]
-> - **Use:** Historical reference only. Do not treat as living law. Cannot override Genesis.
+# Stub — moved to Genesis
 
-# 07 — Automation Rules
+> [!warning] Duplicate retired (Phase V2)
+> Full body removed from Archive to shrink the vault. Canonical immutable copy:
 
-## When to infer vs ask vs never ask
+**Canonical:** `[[Genesis/P2 Knowledge Intelligence/supporting/product-bible/07_AUTOMATION_RULES.md]]`
 
-### Never ask (System)
+Original Archive path: `Archive/Duplicates/docs-AIIMIN_PRODUCT_BIBLE/07_AUTOMATION_RULES.md`
 
-| Field / behavior | Source |
-|------------------|--------|
-| theme | OS `prefers-color-scheme` |
-| finance date | Default today |
-| pinnedNav[] | Route visit frequency |
-| learning_hours | Sum Focus sessions |
-| DSA count | Lab session auto-log |
-| steps | Wearable passive |
-| application_date | Today default |
-| note title | First line derive |
-
-### Never infer (Always ask or user-only)
-
-| Field | Reason |
-|-------|--------|
-| password, PIN | Security |
-| emergency meds, allergies | Safety |
-| substance (addiction) | Clinical sensitivity |
-| member blood_group | Medical accuracy |
-| finance amount | Must be explicit utterance |
-| journal body | User content — never fabricate |
-
-### Infer silently (chip to correct)
-
-| Field | Confidence target |
-|-------|-------------------|
-| finance category | 85% |
-| mood | 80% |
-| goals pillar | 55% → improve |
-| habit category, emoji, color | 60% |
-| calendar allDay | 70% |
-| displayName, avatar | OAuth 85% |
-| feedback category | Page context 70% |
-
-### Ask later (progressive disclosure)
-
-| Field | When to ask |
-|-------|-------------|
-| username | After first week |
-| lifeArc | After 5+ journal entries |
-| wakeTime | When scheduling feature used |
-| member DOB, phone | Emergency wizard |
-| goals why | Goal detail view, not create |
-| recurrence | When pattern detected |
-
-### Kill — do not ask
-
-| Field | Replacement |
-|-------|-------------|
-| goals priority | Behavior inference |
-| habits emoji, color, category | NLP + system palette |
-| notes title | First line |
-| journal mode | Post-capture AI tags |
-| confirmPassword | Passkey/magic link |
-| water, breakfast | Removed |
-| onboarding wakeTime | Inferred |
-
-## Decision tree
-
-```mermaid
-flowchart TD
-    A[New field needed?] --> B{Safety/legal?}
-    B -->|Yes| C[Keep / Ask later]
-    B -->|No| D{Passive signal exists?}
-    D -->|Yes| E[System auto-fill]
-    D -->|No| F{AI confidence ≥70%?}
-    F -->|Yes| G[Infer + chip]
-    F -->|No| H{Needed at capture time?}
-    H -->|No| I[Ask later]
-    H -->|Yes| J[Minimal ask / voice]
-```
-
-## Related
-
-- [[../product-intelligence/things_aiimin_should_stop_asking]]
-- [[06_AI_MODEL]]
+Do not edit Genesis. Do not restore this duplicate body.

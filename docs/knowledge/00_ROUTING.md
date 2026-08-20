@@ -38,10 +38,15 @@ note is the bug** — fix the note and say so.
 | **What is happening right now** | [[15_MEMORY/Current-Context]] |
 | **Full status: web + prototype + what's left** | [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]] |
 | **Rules for how I must work (guardrails G1–G10)** | [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]] §0 |
-| **I'm building the Android app** | [[15_MEMORY/Handoff-Native-App-Build]] |
+| **I'm building the Android app** | [[Maps of Content/Native-App]] · [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]] |
+| **Manus / take over V3 in depth** | [[15_MEMORY/Handoff-Manus-Native-V3]] |
+| **See / test V3 without USB (emulator)** | [[17_NATIVE_APP_V2/Emulator-Workflow]] · [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]] |
+| **Android Studio Lite (Cursor, not Studio.app)** | [[17_NATIVE_APP_V2/Emulator-Workflow]] § Android Studio Lite |
+| **Play Store / release readiness (not APK craft)** | [[17_NATIVE_APP_V2/Play-Store-Launch]] |
 | **I'm testing/fixing the website, Vercel, AWS or the Mac** | [[15_MEMORY/Handoff-Website-Hardening]] |
 | Last session handoff | [[15_MEMORY/Handoff-Latest]] |
 | Open founder decisions | [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]] §9 |
+| **Vault too large / simplify docs + repo** | [[16_DOCUMENTATION/Vault-And-Repo-Simplification-Plan]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]] |
 
 ## A2. Human-readable guides
 
@@ -98,6 +103,7 @@ need orientation rather than a spec. They link down into the detail.
 | Untested surfaces (P2 list) | [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]] §7 P2 |
 | Auth/DB security audit | [[11_BUGS/Audit-Auth-DB-2026-07-18]] |
 | How to prove something works | [[14_PROMPTS/Proof-or-Stop]] |
+| Anti-lie / truth labels / reliability log | [[14_PROMPTS/Anti-Lie-Strategy]] · [[15_MEMORY/Reliability-Log]] |
 
 ## F. Decisions & history
 
@@ -107,6 +113,7 @@ need orientation rather than a spec. They link down into the detail.
 | Why the repo is laid out this way | [[10_DECISIONS/2026-07-30-repository-layout]] |
 | All decisions | [[Dashboards/09_Decisions-Dashboard]] |
 | Historical material | [[Archive/README]] · [[99_ARCHIVE/README]] |
+| Finished / abandoned work (then deleted) | [[16_DOCUMENTATION/Completed-Work-Ledger]] |
 
 ---
 

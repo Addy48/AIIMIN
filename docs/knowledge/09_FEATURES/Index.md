@@ -24,7 +24,11 @@ Constitutional parents: [[Maps of Content/Genesis]] · [[Maps of Content/Product
 | **V1 Blueprint** | [[../Roadmap/AIIMIN-V1-Blueprint]] | v1.0-living |
 | Product guide (human overview) | [[../01_PRODUCT/AIIMIN-Product-Guide]] | overview |
 | Waitlist | [[Waitlist/Waitlist]] | google-oauth-bearer-fix-shipped |
+| Subscription (app ↔ web tiers) | [[Subscription/App-Web-Tiers]] | native-plan-sheet-gates-partial |
+| Subscription · Native Plan System (full design) | [[Subscription/Native-Plan-System]] | p0-p2-shipped |
 | Sports | [[Sports/Sports]] | dual-cricket-failover-live |
+| Mobile · Capacitor `/m` | [[Mobile/Capacitor-Android]] | capture-only |
+| Mobile · Native device insights | [[Mobile/Native-Device-Insights]] | steps-screen-deep-read-shipped |
 | Calendar | [[Calendar/Calendar]] | google-sync-tasks-auto-pull |
 | Account / Personalization | [[Account/Personalization]] | persona-presets-shipped |
 | Typography | [[Typography/Typography]] | token-rollout-phase1-complete |

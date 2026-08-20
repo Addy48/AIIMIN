@@ -1,53 +1,39 @@
 ---
 authority: operations
-derived_from: Genesis
+derived_from: 15_MEMORY/Current-Context
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-31
+last_reviewed: 2026-08-08
 can_override_genesis: false
-knowledge_layer: KL-OPS
-graph_role: leaf
-note_type: NT-DOC
 ---
 
-# Handoff Latest — v8 full auto (6m)
+# Handoff — Latest (copy pack)
 
-```text
-AIIMIN handoff — paste as FIRST message in new chat
+> Paste into new chat. Boot still: Home → Routing → Current-Context. No secrets.
 
-BOOT (mandatory):
-1. docs/knowledge/00_HOME.md
-2. docs/knowledge/15_MEMORY/Current-Context.md
-3. frontend/prototypes/personal-os/v8-build/gates/AUTO_TICK.md
+**Date:** 2026-08-08 · Branch `feat/native-android-v3` · Device AIN065 `9597fdea` · APK `native-android-v3/dist/aiimin-v3-current.apk`
 
-MISSION: v8 FULL AUTO. Interval = 6 minutes. Stop ONLY on founder `stop`.
-If one hub mid-flight → start next hub parallel. Do not ask continue.
+## Shipped this thread
 
-OPEN FILE: frontend/prototypes/personal-os/v8-android-life-os.html
-NEVER EDIT: v7-android-life-os.html / v7-build/ (FROZEN 432900 bytes)
+- Screen time: prefer **SCREEN_INTERACTIVE** (DW), not unlocked. Proof: DW 3h8 / unlocked 2h47 / interactive 3h4 · unlocks 35=35. Log: `15_MEMORY/Reliability-Log.md`
+- Splash: `One screen. Every day.` travel→stick under AIIMIN (`BrandMark.kt`)
+- Plan cards: sharp rect `RoundedCornerShape(0.dp)` (`SubscriptionPlan.kt`)
+- Onboarding: BrandMark + Bodoni + law (`OnboardingScreen.kt`)
+- Journal: write-first + optional prompts (`JournalScreen.kt`)
+- Config: English → `https://aiimin.in/lab?module=speaking` (`ConfigScreen.kt`)
 
-BUILD: python3 frontend/prototypes/personal-os/v8-build/build_v8.py
-GATE:  node .agents/skills/web-app-testing/scripts/tab-skeleton-gate.mjs
-LOG:   frontend/prototypes/personal-os/v8-build/gates/tick.log
-ANTI:  frontend/prototypes/personal-os/ANTI_LIE_v8.md
-DESIGN Soft Monotone: frontend/prototypes/personal-os/DESIGN.md
+## Do next
 
-METHOD each hub:
-web search 5–6 real apps → pick Soft Monotone → edit v8-build only → rebuild → gate if tabs → ANTI_LIE
+1. Founder DW same-minute eye-QA (DW UI lags live UsageEvents)
+2. Deeper sync: bootstrap notes/agenda/goals/lifeScore still ignored (`GraphSyncRepository`)
+3. Native English Lab (not web tab)
+4. Config visual depth · feature discovery on Capture/Day
 
-QUEUE NOW:
-1. Onboard steps 8–13 polish
-2. Search / conflict / notif-detail
-3. Journal CBT + legal calm
-4. Remaining MAP leaves
-5. Re-gate after tab-root changes
+## Touch paths
 
-DONE ALREADY (do not redo / do not touch v7):
-tabs unique + Journal/Habits/Cal/People/Lab/Reports/Account/Notes/Sports/English/Placements/Family/Sheets/DailyLog/Discipline/Empty/LifeScore/OpenLoops/Widgets/Onboard3-7
+`UsageDayParser.kt` · `DeviceMetricsRepository.kt` · `BrandMark.kt` · `SubscriptionPlan.kt` · `OnboardingScreen.kt` · `JournalScreen.kt` · `ConfigScreen.kt` · `09_FEATURES/Subscription/Native-Plan-System.md`
 
-START BUILDING IMMEDIATELY on boot. Treat this paste as AGENT_LOOP_TICK_v8recovery.
-Every ~6m of agent work: pick next queue item and keep going. No filler. Proof-or-stop.
+## Locks
 
-Locks: palette Soft Monotone · no auth/schema · no commit unless asked · Mobbin may be paid-blocked → WebSearch OK
-```
+Drafting Table steel · `#ff6b35` BrandSpark/Pro only · no auth/schema unless asked · commit/push only on ask · `/m` capture-only · proof-or-stop

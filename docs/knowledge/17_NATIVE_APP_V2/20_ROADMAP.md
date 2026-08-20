@@ -89,6 +89,8 @@ iOS decision · Performance · Conflict UX · Public launch
 
 Store listing · Data safety · Legal URLs live · LC checklist aligned · Monitoring · Staged rollout  
 
+**Living ledger (evidence rows, not aspirational prose):** [[Play-Store-Launch]]  
+
 ---
 
 ## Effort summary

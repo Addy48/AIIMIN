@@ -4,7 +4,7 @@ derived_from: Genesis/P8 · Genesis/P9
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -78,3 +78,19 @@ constitutional_reference: Genesis/P8 Master Specification/00_INDEX.md
 - **Wealth:** AI text import logic in `server/services/wealthAiImportService.js`.
 - **Iteration 2 (2026-07-19):** `GET /dashboard/widgets` (was missing — WeekInNumbers lied); `GET /daily-logs` list; `useOverviewWeekSignals`; HabitManager → `/api/habits`; `useDailyStats` → API routes; wealth helpers extracted.
 - **Iteration 4 (2026-07-19):** `correlationService.js` (pool-backed Spearman + BH-FDR); `GET/POST /intelligence/correlations`; cron `/cron/correlations`; `useDailyLogsQuery` + `useCorrelationsQuery` — all analytics widgets share React Query cache; `CausalNodeAnalysis` uses real ρ not fake constants.
+
+---
+
+## Structure (Phase V4)
+
+> Skeleton pass 2026-08-20.
+
+## Files
+
+Key paths for this concern.
+
+## Related
+
+- [[Maps of Content/Architecture]]
+- [[02_ARCHITECTURE/Overview]]
+

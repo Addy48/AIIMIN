@@ -1,15 +1,20 @@
 ---
+
 authority: operations
 derived_from: 95_Publication_Record
-status: active
+status: frozen
 owner: founder
 lifecycle: frozen
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 program: UX-Architecture-v1
 ---
 
 # UX Architecture Program v1.0 — Index
+
+> [!warning] Cold Roadmap
+> Frozen evidence corpus. Not current stage. Living focus: [[15_MEMORY/Current-Context]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+
 
 # COMPLETE · FROZEN · OFFICIALLY PUBLISHED
 

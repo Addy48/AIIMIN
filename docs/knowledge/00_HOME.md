@@ -4,7 +4,7 @@ derived_from: Genesis
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-30
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: boot
@@ -29,7 +29,7 @@ fm_source: script
 
 > **Agents:** Home → **[[00_ROUTING]]** (find your job, open only the files it names) → [[15_MEMORY/Current-Context]] for what's happening now. [[Maps of Content/Genesis]] only for constitutional work. Never whole-repo or whole-vault scan unless asked.
 
-**Last updated:** 2026-08-03
+**Last updated:** 2026-08-20 · Simplification tracker: [[16_DOCUMENTATION/Simplification-Phase-Tracker]]
 
 ## Authority (non-negotiable)
 
@@ -48,15 +48,18 @@ Navigation: **Home → Current Context → Genesis (when needed) → V1 Blueprin
 
 Personal Life OS — daily metrics, money, calendar, focus, discipline, sports context, gamification. Owner: Aaditya Upadhyay.
 
-## Current stage (2026-08-03)
+## Current stage (2026-08-20)
 
-Branch `feat/drafting-table-prototype` · HEAD `941e7267`. **Mobile app build is ON HOLD.**
-Drafting Table prototype is **done** (`frontend/prototypes/AIIMIN-Drafting-Table.html`).
-Stage = make the vault trustworthy · harden the website · fix the machine.
+Branch `feat/native-android-v3`. **Native V3 is the active product app** at `native-android-v3/` (built in-repo with Cursor). Manus = **prototype help only** — not app owner.
 
-- **Status of everything** → [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]]
-- **Guardrails an agent must follow** → [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]]
-- **Single vault** — the second vault at `~/Documents/AIIMIN VAULT` is retired → [[16_DOCUMENTATION/VAULT-CONSOLIDATION-2026-08-03]]
+Drafting Table (`frontend/prototypes/AIIMIN-Drafting-Table.html`) = **design lock**, not a third product.
+
+**Now:** vault + repo simplification — [[16_DOCUMENTATION/Vault-And-Repo-Simplification-Plan]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+
+- **Living leftover list** → [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
+- **Guardrails G1–G10** → [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]] §0
+- **Master status (dated — verify vs Context)** → [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]]
+- **Single vault** — `~/Documents/AIIMIN VAULT/Reference` symlinks here → [[16_DOCUMENTATION/VAULT-CONSOLIDATION-2026-08-03]]
 
 ## Current version / lens
 
@@ -67,11 +70,9 @@ Stage = make the vault trustworthy · harden the website · fix the machine.
 - **AIIMIN V1 Blueprint v1.0** · current implementation contract · [[Roadmap/AIIMIN-V1-Blueprint]]
 - **Vault operating model** · Blueprint-first, compact handoff, stable paths · [[10_DECISIONS/2026-07-30-vault-operating-model]]
 - **Program 0 (Product Readiness)** · [[Roadmap/Program-0-Product-Readiness/00_INDEX]] · priorities [[Roadmap/Operational-Priorities]]
-- **UX Intelligence Package v1.0** · [[Roadmap/UX-Intelligence/00_INDEX]] · [[Roadmap/UX-Intelligence/15_EXECUTIVE_SUMMARY]]
-- **UX Architecture v1.0** · **COMPLETE · FROZEN · PUBLISHED** · [[Roadmap/UX-Architecture/00_INDEX]] · [[Roadmap/UX-Architecture/95_Publication_Record]] · D05 CLOSED
-- **Program V1 — Obsidian Knowledge OS** · **COMPLETE · FROZEN · PUBLISHED** (design) · [[Roadmap/Program-V1-Obsidian-Knowledge-OS/00_INDEX]] · [[Roadmap/Program-V1-Obsidian-Knowledge-OS/95_Publication_Record]]
-- **Brain OS Implementation** · **EXECUTED (W0–W6 vault/config)** · [[Roadmap/Brain-OS-Implementation/00_INDEX]] · evidence [[Roadmap/Brain-OS-Implementation/W6_Validation_Evidence]] · [[Dashboards/00_Founder-Workspace-Index|Founder Workspace]]
-- Native tracker: [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
+- **Cold Roadmap (frozen evidence — not current stage)** → [[Maps of Content/Cold-Roadmap]]
+- Native living pack (path still `17_NATIVE_APP_V2/`): [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]] · [[17_NATIVE_APP_V2/V3-COMPLETE-BUILD-SPEC]]
+- Founder workspace: [[Dashboards/00_Founder-Workspace-Index]]
 
 ## Current blockers
 
@@ -81,13 +82,14 @@ Stage = make the vault trustworthy · harden the website · fix the machine.
 
 ## Architecture (one screen)
 
-- **Monorepo:** three clients — web, Capacitor `/m`, native Android V2. Never mix in one commit. → [[02_ARCHITECTURE/Monorepo]]
+- **Monorepo:** web Life OS · Capacitor `/m` (legacy capture) · **native V3** (current) · native V2 (reference only). Never mix clients in one commit. → [[02_ARCHITECTURE/Monorepo]]
 - Frontend: React 19 + Tailwind — `frontend/`
-- Native: Kotlin Compose — `native-android/`
+- Native **current:** Kotlin Compose — `native-android-v3/`
+- Native **old:** `native-android/` — sync/session/network reference only; never copy `ui/`
 - Backend: Node — `server/` + `api/`
 - DB: Supabase PostgreSQL · Auth: Better Auth + Google OAuth
 - Host: Vercel + EC2 API (`api.aiimin.in`)
-- Desktop = full OS; `/m` = capture-only; Native = rich companion
+- Desktop = full OS; `/m` = capture-only; Native V3 = companion app
 - Canonical paths stay top-level: [[10_DECISIONS/2026-07-30-repository-layout]]
 
 Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]] · [[16_DOCUMENTATION/Repository-Reorganization]]
@@ -102,6 +104,7 @@ Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]] · [[16_D
 6. No secrets in vault. No schema/auth changes without Founder ask.
 7. Commit / push / PR only when Founder asks.
 8. Proof-or-stop — [[14_PROMPTS/Proof-or-Stop]]
+8b. Anti-lie (truth labels + receipts) — [[14_PROMPTS/Anti-Lie-Strategy]]
 9. Numbered folders are frozen Stage A paths. Improve the operating layer; do not mass-rename linked folders.
 10. Product scope belongs in the Blueprint or an accepted ADR, not Current Context.
 
@@ -117,7 +120,9 @@ Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]] · [[16_D
 | Find implementation notes | [[Maps of Content/Engineering]] |
 | Make or inspect a decision | [[Dashboards/09_Decisions-Dashboard]] |
 | Review active work | [[Dashboards/00_Founder-Workspace-Index]] |
-| Inspect historical material | [[Archive/README]] |
+| Inspect historical material | [[Archive/README]] · [[16_DOCUMENTATION/Completed-Work-Ledger]] |
+| Vault too large / simplify | [[16_DOCUMENTATION/Vault-And-Repo-Simplification-Plan]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]] |
+| Native app (V3) | [[Maps of Content/Native-App]] |
 
 ## Genesis (nucleus)
 
@@ -132,7 +137,7 @@ Deep: [[02_ARCHITECTURE/Overview]] · [[Maps of Content/Architecture]] · [[16_D
 | P6 Prototype | `Genesis/P6 Prototype Studio/Prototype/index.html` |
 | Research (bible/intel/audit) | [[Maps of Content/Research]] |
 
-Legacy stub folders (`AIIMIN_DESIGN_BIBLE/`, etc.) and duplicate `docs/AIIMIN_PRODUCT_BIBLE/` trees are **not** authority — see Archive.
+Legacy Genesis stub folders at repo root (`AIIMIN_DESIGN_BIBLE/` etc.) were deleted 2026-08-14. Record: [[16_DOCUMENTATION/Completed-Work-Ledger]]. Duplicate full copies remain only in `Archive/Duplicates/` — **not** authority.
 
 ## Maps of Content
 

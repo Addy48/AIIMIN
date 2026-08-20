@@ -4,7 +4,7 @@ derived_from: Genesis
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: envelope
@@ -26,6 +26,9 @@ constitutional_reference: Genesis/00_DISCOVERY_ARCHIVE.md
 
 > [!important] Law
 > Nothing overrides Genesis. Vault notes cannot set `can_override_genesis: true`.
+
+> [!tip] Phase V6 doorway
+> Founder short shelf: [[Dashboards/11_Law-Bookshelf]]. Prefer P5 / P8 / P9 **indexes** over `supporting/` dumps. Cold Roadmap: [[Maps of Content/Cold-Roadmap]].
 
 
 **Nucleus of the vault.** Immutable constitutional corpus lives at `Genesis/` (single editable source). Nothing overrides it.

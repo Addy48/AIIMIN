@@ -17,6 +17,10 @@ tags:
 
 # Click-upgrade + identity celebration (2026-07-11)
 
+> [!abstract] Satellite note
+> Not the primary feature MOC. Primary contracts live in the folder’s main feature note + [[09_FEATURES/Index]].
+
+
 ## Goal
 
 Until Stripe is live, any signed-in user can change plan by click. Upgrade shows a short identity-shift celebration (B). Per-tier color/motion. Testing: up and down allowed. Later: `UPGRADE_ONLY=true` blocks downgrades.

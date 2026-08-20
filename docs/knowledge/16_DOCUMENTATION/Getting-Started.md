@@ -28,4 +28,6 @@ Local browser workflow: [[16_DOCUMENTATION/LOCAL-CHROME]].
 
 Demo history for feature trials on a live account: [[16_DOCUMENTATION/Seed-Demo-History]].
 
+Finished or abandoned work (plans already deleted): [[16_DOCUMENTATION/Completed-Work-Ledger]].
+
 Coding standards: locked palette [[08_DESIGN/Palette]]; skills under `.agents/skills/`; Cursor rules under `.cursor/rules/`.

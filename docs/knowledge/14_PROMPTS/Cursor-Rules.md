@@ -31,9 +31,11 @@ All `alwaysApply: true`:
 | `use-skills-always.mdc` | Skills before acting |
 | `aiimin-chat-handoff.mdc` | Loud 🚨 SWITCH CHAT; **Current-Context.md** = handoff (no paste pack unless asked) |
 | `aiimin-proof-or-stop.mdc` | No done/fixed/shipped without same-turn evidence — [[Proof-or-Stop]] |
-| `aiimin-mobbin-mcp.mdc` | Mobbin MCP (`user-Mobbin`) for design, prototyping, flows, UI research |
+| `aiimin-anti-lie.mdc` | 7× Anti-Lie — truth labels, receipts, independent verify — [[Anti-Lie-Strategy]] |
+| `aiimin-vp0-mcp.mdc` | VP0 MCP (`vp0` / `npx -y vp0-mcp`) for design, prototyping, flows, UI research — Mobbin retired |
 
 **Stop hook:** `.cursor/hooks/proof-or-stop.py` (wired in `.cursor/hooks.json`, `loop_limit: 1`)
+**Reliability log:** [[15_MEMORY/Reliability-Log]] (Anti-Lie §7)
 
 ## Default load
 
@@ -59,4 +61,4 @@ All `alwaysApply: true`:
 
 ## Review checklist
 
-Load order? Vault updated? Palette lock? Mobile capture-only? Auth/schema untouched without ask? Token discipline held? Proof-or-stop evidence on closeout?
+Load order? Vault updated? Palette lock? Mobile capture-only? Auth/schema untouched without ask? Token discipline held? Proof-or-stop evidence on closeout? Anti-lie truth labels + receipt when claiming completion?

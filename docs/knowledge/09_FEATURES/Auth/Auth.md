@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-30
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-PROD
 graph_role: leaf
@@ -16,7 +16,8 @@ fm_source: script
 
 ## Current state
 
-- Better Auth + Google OAuth for login
+- Better Auth + Google OAuth for login **on aiimin.in**
+- Native Android V3: OS-ID + PIN. No Google button. Biometric = Unlock {OS-ID} (resume session only)
 - Waitlist / allowlist access gates
 - Calendar Google OAuth is separate integration
 - Login/signup `Field` inputs are native textboxes with `htmlFor`/`id`, `name`, `aria-label`, and real `placeholder` (no fake overlay)
@@ -57,6 +58,13 @@ fm_source: script
 
 ## Changelog
 
+### 2026-08-13 — Native phone = OS-ID + PIN; biometric resumes plate
+- **What:** Android V3 has no Google button. Web Google signup already binds Gmail to OS-ID and still mandates PIN. Phone: OS-ID + PIN. Biometric `Unlock {OS-ID}` resumes stored session only; cancel stays on Sign-in (PIN fallback). Bootstrap `user.username` remembered as the plate — never invented from email.
+- **Why:** Founder — Gmail already linked; phone identity is the OS-ID.
+- **Files:** `OnboardingScreen.kt`, `OnboardingViewModel.kt`, `MainActivity.kt`, `BiometricGate.kt`, `BiometricUnlock.kt`, `ConfigStore.kt`, `AuthRepository.kt`, `server/routes/mobile.js`, [[02_ARCHITECTURE/Authentication]], [[17_NATIVE_APP_V2/V3-COMPLETE-BUILD-SPEC]]
+- **Status:** partial — `:core:data:testDebugUnitTest` 128/128 · `:core:network` 3/3 · `:app:assembleDebug` BUILD SUCCESSFUL · device unverified
+- **Notes:** No auth schema change. Email identifier still accepted by `AuthRepository.signIn` if typed.
+
 ### 2026-07-18 — AI abuse + CORS + waitlist Data API lock
 - **What:** CORS allowlist (block evil origins w/ credentials); usage-report no longer drains org provider budgets; atomic per-user AI burn (advisory lock + unit cap ≤5); lite usage settles via `trackExternalCall`; anon INSERT revoked on waitlist_emails/user_feedback.
 - **Why:** User ask — non-hacking, AI tier integrity, attack safety
@@ -96,3 +104,14 @@ fm_source: script
 - **Why:** Project Brain cutover
 - **Files:** `docs/knowledge/09_FEATURES/Auth/Auth.md`
 - **Status:** shipped
+
+---
+
+## Structure (Phase V4)
+
+> Added 2026-08-20 so every living feature MOC shares the same skeleton. Fill stubs when next touching this feature.
+
+## Why this exists
+
+One job this feature serves for the user.
+

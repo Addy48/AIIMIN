@@ -17,6 +17,10 @@ tags:
 
 # Better Auth Migration — AIIMIN (2026-07-08)
 
+> [!abstract] Satellite note
+> Not the primary feature MOC. Primary contracts live in the folder’s main feature note + [[09_FEATURES/Index]].
+
+
 > [!note] Migration record
 > This note records the July 2026 cutover. Use [[09_FEATURES/Auth/Auth]] for the current authentication contract.
 

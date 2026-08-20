@@ -18,7 +18,8 @@ fm_source: script
 
 **Status:** shipped  
 **Always-on rule:** `.cursor/rules/aiimin-proof-or-stop.mdc`  
-**Stop hook:** `.cursor/hooks/proof-or-stop.py` (via `.cursor/hooks.json`)
+**Stop hook:** `.cursor/hooks/proof-or-stop.py` (via `.cursor/hooks.json`)  
+**Extended by:** [[Anti-Lie-Strategy]] · `.cursor/rules/aiimin-anti-lie.mdc` (truth labels, receipts, independent verification, reliability log)
 
 ## Purpose
 

@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -17,3 +17,23 @@ fm_source: script
 - **Why:** Founder request — one repo, web vs native separate, professional public docs, no AI dev attribution
 - **Files:** `README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `docs/knowledge/02_ARCHITECTURE/Monorepo.md`, `Overview.md`, `00_HOME.md`, `_manifest.json`, `15_MEMORY/Current-Context.md`, `17_NATIVE_APP_V2/00_SKILLS_SYNTHESIS.md`, `.gitignore`
 - **Status:** shipped
+
+---
+
+## Structure (Phase V4)
+
+> Skeleton pass 2026-08-20.
+
+## Current state
+
+Living summary. Keep short.
+
+## Files
+
+Key paths for this concern.
+
+## Related
+
+- [[Maps of Content/Architecture]]
+- [[02_ARCHITECTURE/Overview]]
+

@@ -1,15 +1,20 @@
 ---
+
 authority: operations
 derived_from: Program-0 · Features Index · frontend/src · native-android · Genesis (cite only)
-status: active
+status: frozen
 owner: founder
-lifecycle: living
-last_reviewed: 2026-07-25
+lifecycle: frozen
+last_reviewed: 2026-08-20
 can_override_genesis: false
 program: UX-Intelligence-v1
 ---
 
 # UX Intelligence Package v1.0 — Index
+
+> [!warning] Cold Roadmap
+> Frozen evidence corpus. Not current stage. Living focus: [[15_MEMORY/Current-Context]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+
 
 **Mission:** Document product reality before UX Architecture. Not redesign. Not Design System. Not implementation.
 

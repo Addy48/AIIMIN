@@ -133,3 +133,9 @@ A second read-only audit found operating-layer defects that the first pass did n
 - indexed co-located deployment procedures in [[07_DEPLOYMENT/Runbooks-Index]].
 
 Follow-up validation parsed all changed JSON and Base YAML, confirmed 11 unique dashboard IDs, parsed frontmatter on all changed living notes, resolved every newly added link, and found no changes under Genesis or local secret paths.
+
+## 9. 2026-08-14 folder cleanup
+
+Founder asked to drop leftover plans, closed prototypes, extra APKs, and non-product trees after writing a single record. That record is [[16_DOCUMENTATION/Completed-Work-Ledger]].
+
+Compatibility pointers at `docs/*.md` and root `MOVED.md` stubs were removed in the same pass. Canonical paths stay inside `docs/knowledge/`. Mess-menu extractor left the repo (`~/Desktop/mess-menu-extractor`). V3 APK retention remains two files in `native-android-v3/dist/`.

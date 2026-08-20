@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -16,9 +16,10 @@ fm_source: script
 
 ## Current stack
 
-- Better Auth for session + Google login
+- Better Auth for session + Google login **on the website**
 - Login OAuth callback: `{BETTER_AUTH_URL}/api/auth/callback/google`
 - Calendar Google OAuth is a **separate** integration path (`/api/google/auth/callback` style) — do not confuse with login
+- **Native Android V3:** OS-ID + 6-digit PIN only. Google signup is not a phone path — Gmail is already bound to the OS-ID on the web. Biometrics identify the remembered OS-ID and resume a stored session; they never mint credentials. Cancel → PIN.
 
 ## Access gates
 
@@ -34,3 +35,18 @@ fm_source: script
 
 - [[Overview]]
 - [[01_PRODUCT/Product]]
+
+---
+
+## Structure (Phase V4)
+
+> Skeleton pass 2026-08-20.
+
+## Current state
+
+Living summary. Keep short.
+
+## Files
+
+Key paths for this concern.
+

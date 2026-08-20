@@ -16,6 +16,10 @@ tags:
 
 # Journal — Research-Backed Design (post-2020)
 
+> [!abstract] Satellite note
+> Not the primary feature MOC. Primary contracts live in the folder’s main feature note + [[09_FEATURES/Index]].
+
+
 > Flagship capture surface for Android Life OS. Complements Notes (structured knowledge) and Daily Log (metrics). **Private reflection** under P8-R-219 — never in analytics, never in push, never in cross-user insight prompts unless the user explicitly asks AI on that entry.
 
 ## Evidence base (cite before claiming)

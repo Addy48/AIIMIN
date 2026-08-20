@@ -19,7 +19,7 @@ tags:
 
 > The executable map for building the AIIMIN mobile app. Written **for an AI agent**
 > to follow one step at a time without drifting. Date 2026-08-02.
-> Companion: [DRAFTING_TABLE_TESTING_AND_PLAN.md](DRAFTING_TABLE_TESTING_AND_PLAN.md) (test results, genesis gap, harvest).
+> Companion: [[V3-COMPLETE-BUILD-SPEC]] (living app spec). Closed 2026-08-02 test report: [[16_DOCUMENTATION/Completed-Work-Ledger]].
 
 ---
 

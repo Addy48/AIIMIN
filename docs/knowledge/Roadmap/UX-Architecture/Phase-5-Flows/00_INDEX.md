@@ -1,16 +1,21 @@
 ---
+
 authority: operations
 derived_from: Founder finalization · 95_Publication_Record
-status: active
+status: frozen
 owner: founder
 lifecycle: frozen
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 program: UX-Architecture-v1
 phase: 5-frozen
 ---
 
 # Phase 5 — Flow Architecture — Index
+
+> [!warning] Cold Roadmap
+> Frozen evidence corpus. Not current stage. Living focus: [[15_MEMORY/Current-Context]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+
 
 **Status:** Phase 5 **FROZEN** · Program **OFFICIALLY PUBLISHED**  
 [[../95_Publication_Record]] · [[../93_Freeze_Certificate]]

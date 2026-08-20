@@ -1,68 +1,26 @@
 ---
-authority: historical
-derived_from: Genesis
+authority: archive
+derived_from: Genesis/P2 Knowledge Intelligence/supporting/product-bible/02_PHILOSOPHY.md
 status: archived
-owner: founder
-lifecycle: archive
-last_reviewed: 2026-07-25
+owner: eng
+lifecycle: archived
+last_reviewed: 2026-08-20
 can_override_genesis: false
-knowledge_layer: KL-COLD
-graph_role: cold
-note_type: NT-COLD
-migration_batch: W4
-fm_source: script
+knowledge_layer: KL-META
+graph_role: leaf
+note_type: NT-STUB
+tags:
+  - type/stub
+  - status/archived
 ---
 
-> **ARCHIVED — provenance**
-> - **Why archived:** Duplicate of Genesis P2 supporting Product Bible (byte-identical). Removed from docs/ to restore single source.
-> - **Status:** duplicate-archived
-> - **Canonical / active successor:** [[Genesis/P2 Knowledge Intelligence/supporting/product-bible/00_INDEX]]
-> - **Use:** Historical reference only. Do not treat as living law. Cannot override Genesis.
+# Stub — moved to Genesis
 
-# 02 — Philosophy
+> [!warning] Duplicate retired (Phase V2)
+> Full body removed from Archive to shrink the vault. Canonical immutable copy:
 
-## Core beliefs
+**Canonical:** `[[Genesis/P2 Knowledge Intelligence/supporting/product-bible/02_PHILOSOPHY.md]]`
 
-### 1. Intent over interface
-Users arrive with intents ("I need to vent," "I spent too much," "I can't focus") — not with a desire to pick pillars, priorities, or journal modes. The interface serves intent; it does not interrogate.
+Original Archive path: `Archive/Duplicates/docs-AIIMIN_PRODUCT_BIBLE/02_PHILOSOPHY.md`
 
-### 2. Capture first, structure later
-Raw human expression is the highest-fidelity signal. Structure is derived — by AI, by defaults, by passive sensors — and always correctable.
-
-### 3. One primitive, many surfaces
-Mood, life arc, theme, and capture text must not exist in duplicate UIs. One data primitive; many read surfaces.
-
-### 4. Progressive disclosure for stakes
-Daily capture = zero setup. Family emergency vault = wizard when needed. Rare high-stakes flows earn more fields; daily flows earn fewer.
-
-### 5. Mixed-initiative partnership
-AI acts when confident, suggests when uncertain, asks when necessary. The user is never surprised by automation; they are relieved by it.
-
-### 6. Read surfaces stay calm
-Insights, Reports, Sports — consumption without input burden. Compression happens at capture, not at analysis.
-
-### 7. Mobile is capture, desktop is command
-Mobile `/m` collects data in the moment. Desktop is where planning, analysis, and deep configuration live. Do not put analytics tools on mobile.
-
-### 8. Palette and identity are sacred
-Visual language is locked. AIIMIN feels like one product, not a component library demo.
-
-### 9. Sparring over sycophancy
-The product should challenge weak habits with data, not flatter the user into retention metrics.
-
-### 10. Ship intelligence with the feature
-Vault docs, telemetry events, and kill list verdicts ship in the same unit as code — not as follow-up research.
-
-## Design tensions we accept
-
-| Tension | Resolution |
-|---------|------------|
-| Privacy vs inference | On-device where possible; chips for correction |
-| Power users vs beginners | Command Palette + sensible defaults |
-| Gamification vs sincerity | XP celebrates; Life Score informs |
-| Completeness vs speed | Infer + allow edit beats ask upfront |
-
-## Related
-
-- [[13_PRODUCT_PRINCIPLES]]
-- [[../product-intelligence/RESEARCH_FOUNDATIONS]]
+Do not edit Genesis. Do not restore this duplicate body.

@@ -1,87 +1,26 @@
 ---
-authority: historical
-derived_from: Genesis
+authority: archive
+derived_from: Genesis/P2 Knowledge Intelligence/supporting/product-bible/14_FUTURE_IDEAS.md
 status: archived
-owner: founder
-lifecycle: archive
-last_reviewed: 2026-07-25
+owner: eng
+lifecycle: archived
+last_reviewed: 2026-08-20
 can_override_genesis: false
-knowledge_layer: KL-COLD
-graph_role: cold
-note_type: NT-COLD
-migration_batch: W4
-fm_source: script
+knowledge_layer: KL-META
+graph_role: leaf
+note_type: NT-STUB
+tags:
+  - type/stub
+  - status/archived
 ---
 
-> **ARCHIVED — provenance**
-> - **Why archived:** Duplicate of Genesis P2 supporting Product Bible (byte-identical). Removed from docs/ to restore single source.
-> - **Status:** duplicate-archived
-> - **Canonical / active successor:** [[Genesis/P2 Knowledge Intelligence/supporting/product-bible/00_INDEX]]
-> - **Use:** Historical reference only. Do not treat as living law. Cannot override Genesis.
+# Stub — moved to Genesis
 
-# 14 — Future Ideas
+> [!warning] Duplicate retired (Phase V2)
+> Full body removed from Archive to shrink the vault. Canonical immutable copy:
 
-## Ambient capture & passive inference roadmap
+**Canonical:** `[[Genesis/P2 Knowledge Intelligence/supporting/product-bible/14_FUTURE_IDEAS.md]]`
 
-### Near-term (0–6 months)
+Original Archive path: `Archive/Duplicates/docs-AIIMIN_PRODUCT_BIBLE/14_FUTURE_IDEAS.md`
 
-| Idea | Description | Signals |
-|------|-------------|---------|
-| **Universal capture router v2** | Single `⌘K` handles 90% of intents | NL classifier |
-| **Finance voice line** | "spent 450 groceries" end-to-end | STT + merchant NLP |
-| **Mood primitive sync** | One write, five read surfaces | Sentiment model |
-| **Morning briefing** | AI day plan card on Overview | Calendar + habits + goals |
-| **OAuth-first onboarding** | 3-step activation | Google profile prefill |
-| **OS theme sync** | Zero theme pickers | `prefers-color-scheme` |
-| **HealthKit sleep/steps** | Passive daily log card | iOS Health / Google Fit |
-
-### Medium-term (6–12 months)
-
-| Idea | Description |
-|------|-------------|
-| **Receipt OCR** | Photo → finance tx draft |
-| **Email parse (Placements)** | Interview invite → stage update |
-| **Calendar intent (Lookout-style)** | Email → event suggestion |
-| **On-device mood infer** | Journal sentiment local-first |
-| **Shared resume vault** | One PDF for Placements + ATS |
-| **Weekly digest notification** | Life Score + insights push |
-| **Biometric auth** | Replace PIN flows |
-
-### Long-term (12+ months)
-
-| Idea | Description |
-|------|-------------|
-| **Ambient lifelogging** | Activity inference from phone sensors |
-| **Memory reconstruction** | "What was I doing last March?" |
-| **Proactive habit nudges** | Context-aware (time, location) with strict consent |
-| **Family wallet pass** | Emergency card in Apple Wallet |
-| **Multi-modal capture** | Voice + photo + text single pipeline |
-| **On-device LLM** | Private inference for journal/finance |
-
-## Compression targets (recap)
-
-| Flow | Current → Future |
-|------|------------------|
-| Finance tx | 8 → 2 |
-| Onboarding | 45+ → 12 |
-| Daily log | 7 → 1 |
-| Goals create | 9 → 2 |
-| Journal | 5 → 2 |
-
-## Technology dependencies
-
-```mermaid
-flowchart LR
-    STT[Voice STT] --> ROUTER[Capture Router]
-    OCR[Receipt OCR] --> FIN[Finance]
-    HEALTH[HealthKit] --> DLOG[Daily Log]
-    LLM[Cloud/Edge LLM] --> INF[Inference Engine]
-    INF --> CHIP[Correction Chips]
-    ROUTER --> GRAPH[Information Graph]
-```
-
-## Related
-
-- [[../product-intelligence/FUTURE_AIMIN_FRAMEWORK]]
-- [[../product-intelligence/INTERACTION_COMPRESSION_SCORE]]
-- [[01_VISION]]
+Do not edit Genesis. Do not restore this duplicate body.

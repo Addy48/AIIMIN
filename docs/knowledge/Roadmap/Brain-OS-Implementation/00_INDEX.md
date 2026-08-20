@@ -1,10 +1,11 @@
 ---
+
 authority: operations
 derived_from: Roadmap/Program-V1-Obsidian-Knowledge-OS/95_Publication_Record
-status: active
+status: frozen
 owner: founder
-lifecycle: living
-last_reviewed: 2026-07-26
+lifecycle: frozen
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-PROG
 graph_role: leaf
@@ -17,6 +18,10 @@ genesis_touch: forbidden
 ---
 
 # Brain OS Implementation — Index
+
+> [!warning] Cold Roadmap
+> Frozen evidence corpus. Not current stage. Living focus: [[15_MEMORY/Current-Context]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+
 
 **Living execution program** citing frozen Program V1 design.
 

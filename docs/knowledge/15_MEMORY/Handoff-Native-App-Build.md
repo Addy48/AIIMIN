@@ -17,7 +17,9 @@ tags:
 
 # Handoff — Native Android app V3, from scratch, screen by screen
 
-> Paste §3 into a new chat. §1–2 are grounded recon and the stack decision — do not re-derive.
+> **2026-08-15:** V3 is **brownfield**. Do **not** paste §3 into a new agent as a greenfield build — that will try to recreate `native-android-v3/` from scratch. Current takeover brief: [[Handoff-Manus-Native-V3]]. Leftover ticks: [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]. §1–2 (stack + constraints) still stand. §3 is historical.
+
+> Original line (obsolete): Paste §3 into a new chat. §1–2 are grounded recon and the stack decision — do not re-derive.
 
 ## 1. Founder decisions (2026-08-03, locked)
 

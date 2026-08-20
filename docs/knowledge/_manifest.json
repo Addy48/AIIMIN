@@ -1,11 +1,12 @@
 {
-  "lastUpdated": "2026-07-30",
+  "lastUpdated": "2026-08-14",
   "entrypoint": "docs/knowledge/00_HOME.md",
   "currentContext": "docs/knowledge/15_MEMORY/Current-Context.md",
   "v1Blueprint": "docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md",
   "vaultOperatingModel": "docs/knowledge/10_DECISIONS/2026-07-30-vault-operating-model.md",
   "repositoryLayout": "docs/knowledge/10_DECISIONS/2026-07-30-repository-layout.md",
   "repositoryReorganization": "docs/knowledge/16_DOCUMENTATION/Repository-Reorganization.md",
+  "completedWorkLedger": "docs/knowledge/16_DOCUMENTATION/Completed-Work-Ledger.md",
   "repositoryDocsArchive": "docs/knowledge/99_ARCHIVE/repository-docs-2026-07/README.md",
   "deploymentRunbooks": "docs/knowledge/07_DEPLOYMENT/Runbooks-Index.md",
   "founderWorkspace": "docs/knowledge/Dashboards/00_Founder-Workspace-Index.md",
@@ -36,8 +37,10 @@
   "entities": {
     "v1_blueprint": {
       "moc": "docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md",
+      "appendices": "docs/knowledge/Roadmap/Blueprint-Appendices/",
+      "fullArchive": "docs/knowledge/Roadmap/Blueprint-Appendices/00_FULL_ARCHIVE.md",
       "decision": "docs/knowledge/10_DECISIONS/2026-07-30-vault-operating-model.md",
-      "status": "v1.0-living"
+      "status": "v1.0-spine-2026-08-20"
     },
     "life_score": {
       "moc": "docs/knowledge/09_FEATURES/LifeScore/LifeScore.md",
@@ -259,6 +262,33 @@
         "scripts/diagnostics/"
       ],
       "status": "canonical-top-level-boundaries"
+    },
+    "native_device_insights": {
+      "moc": "docs/knowledge/09_FEATURES/Mobile/Native-Device-Insights.md",
+      "files": [
+        "native-android-v3/feature/today/src/main/kotlin/aiimin/feature/today/DeviceInsights.kt",
+        "native-android-v3/feature/today/src/main/kotlin/aiimin/feature/today/TodayScreen.kt",
+        "native-android-v3/core/data/src/main/kotlin/aiimin/core/data/device/DeviceMetricsRepository.kt",
+        "native-android-v3/core/data/src/main/kotlin/aiimin/core/data/device/UsageDayParser.kt",
+        "native-android-v3/core/data/src/main/kotlin/aiimin/core/data/export/LifeExport.kt"
+      ],
+      "status": "deep-insights-shipped-2026-08-08"
+    },
+    "native_graph_sync": {
+      "moc": "docs/knowledge/09_FEATURES/Mobile/Native-Graph-Sync.md",
+      "status": "partial-client-wired"
+    },
+    "native_english_lab": {
+      "moc": "docs/knowledge/09_FEATURES/Lab/Native-English-Lab.md",
+      "status": "spark-mvp-partial"
+    },
+    "native_notes": {
+      "moc": "docs/knowledge/09_FEATURES/Mobile/Native-Notes.md",
+      "status": "vault-surface-shipped"
+    },
+    "native_notification_voice": {
+      "moc": "docs/knowledge/09_FEATURES/Notifications/Native-Notification-Voice.md",
+      "status": "draft-plan"
     }
   }
 }

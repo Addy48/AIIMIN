@@ -1,10 +1,11 @@
 ---
+
 authority: operations
 derived_from: Roadmap/Program-V1-Obsidian-Knowledge-OS/95_Publication_Record
-status: active
+status: frozen
 owner: founder
 lifecycle: frozen
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-20
 can_override_genesis: false
 program: Program-V1-Obsidian-Knowledge-OS
 artifact: program-index
@@ -12,6 +13,10 @@ version: 1.0
 ---
 
 # Program V1 — Obsidian Knowledge OS — Index
+
+> [!warning] Cold Roadmap
+> Frozen evidence corpus. Not current stage. Living focus: [[15_MEMORY/Current-Context]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+
 
 > **COMPLETE · FROZEN · OFFICIALLY PUBLISHED** (design corpus) — [[95_Publication_Record]]
 

@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -24,7 +24,7 @@ fm_source: script
 | Tier | Detection | Experience |
 |------|-----------|------------|
 | **phone web** | iPhone / Android Mobile UA, or width &lt;768 (non-iPad) | `/m` capture shell (Today / Score / Account) — **web stopgap only** |
-| **native app (V2)** | Installed Android/iOS app | **Rich companion** — Today + Practice + Revise + You + Account (not capture-only). Spec: [[17_NATIVE_APP_V2/00_MASTER_PLAN]] |
+| **native app (V3)** | Installed Android app | **Rich companion** — not capture-only. Spec: [[17_NATIVE_APP_V2/V3-COMPLETE-BUILD-SPEC]] |
 | **tablet** | iPad (incl. iPadOS-as-Mac + touch), or width 768–1099 | **Full Life OS**. Masthead max 8 primary links + More (overflow patch). Touch ≥44px. Journal/Notes drawers ≤1099 |
 | **desktop** | width ≥1100 | Full Life OS, wide layouts |
 
@@ -85,3 +85,15 @@ Bypass for testing: `?forceDesktop=1`
 - **Why:** Audit backlog P0 — strategy leak (Habits/Goals on phone nav), brand token violations, iPad nav overflow
 - **Files:** `frontend/src/components/mobile/*`, `DeviceGate.jsx`, `Navbar.jsx`, `waitlistLanding.css`, `DailyLogForm.jsx`, `AccountPage.jsx`, `ProfileSection.jsx`, `subscriptionSection.css`
 - **Status:** partial (P0 local; P1 rail/PWA/Capacitor deferred)
+
+---
+
+## Structure (Phase V4)
+
+> Skeleton pass 2026-08-20.
+
+## Related
+
+- [[Maps of Content/Architecture]]
+- [[02_ARCHITECTURE/Overview]]
+

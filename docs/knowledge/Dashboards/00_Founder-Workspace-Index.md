@@ -4,7 +4,7 @@ derived_from: Roadmap/Program-V1-Obsidian-Knowledge-OS/04_Founder_Workspace_Data
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-07-30
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-META
 graph_role: dashboard
@@ -39,7 +39,9 @@ fm_source: script
 |-------|------|
 | **Build V1** | [[Roadmap/AIIMIN-V1-Blueprint]] |
 | **Continue active work** | [[15_MEMORY/Current-Context]] |
-| **Check law** | [[Maps of Content/Genesis]] |
+| **Simplification phases** | [[16_DOCUMENTATION/Simplification-Phase-Tracker]] |
+| **Check law** | [[Maps of Content/Genesis]] · [[Dashboards/11_Law-Bookshelf]] |
+| **Cold Roadmap (frozen)** | [[Maps of Content/Cold-Roadmap]] |
 
 | Dashboard | Link |
 |-----------|------|

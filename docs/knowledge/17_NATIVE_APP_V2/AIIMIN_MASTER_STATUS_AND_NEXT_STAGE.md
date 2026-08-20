@@ -1,10 +1,11 @@
 ---
+
 authority: operations
 derived_from: Genesis · Roadmap/AIIMIN-V1-Blueprint
-status: active
+status: frozen
 owner: founder
-lifecycle: living
-last_reviewed: 2026-08-03
+lifecycle: frozen
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: hub
@@ -17,9 +18,13 @@ tags:
 
 # AIIMIN — Master Status, App Plan & Next-Stage Handoff
 
+> [!warning] Dated status
+> Written 2026-08-02 — says app ON HOLD. **Superseded for stage.** Use [[15_MEMORY/Current-Context]] · [[Maps of Content/Native-App]]. Keep for historical screen plan text only.
+
+
 > Date 2026-08-02 · Branch `feat/drafting-table-prototype` (pushed to origin)
 > Companions: [AIIMIN_APP_BUILD_AGENT_PLAN.md](AIIMIN_APP_BUILD_AGENT_PLAN.md) (guardrails)
-> · [DRAFTING_TABLE_TESTING_AND_PLAN.md](DRAFTING_TABLE_TESTING_AND_PLAN.md) (test results)
+> · [[V3-COMPLETE-BUILD-SPEC]] · closed session reports: [[16_DOCUMENTATION/Completed-Work-Ledger]]
 >
 > **Stage:** prototype + website hardening. **The real app build is ON HOLD** by founder
 > decision. Everything here prepares for it.
@@ -352,8 +357,7 @@ Only after P0–P2. Follow `AIIMIN_APP_BUILD_AGENT_PLAN.md` phases with its guar
 >    plan screen-by-screen, voice/AI strategy, what's left)
 > 2. `docs/knowledge/17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN.md` (guardrails — follow
 >    them)
-> 3. `docs/knowledge/17_NATIVE_APP_V2/DRAFTING_TABLE_TESTING_AND_PLAN.md` (website test
->    results)
+> 3. `docs/knowledge/17_NATIVE_APP_V2/V3-COMPLETE-BUILD-SPEC.md` (living native spec)
 >
 > **Done:** the Drafting Table prototype is finished — 10 screens, one self-contained file at
 > `frontend/prototypes/AIIMIN-Drafting-Table.html` (rebuild with `node

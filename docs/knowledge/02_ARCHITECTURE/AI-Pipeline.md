@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -26,3 +26,14 @@ fm_source: script
 - [[06_AI/Overview]]
 - [[04_API/intelligence]]
 - [[09_FEATURES/DevTools/ApiUsage]]
+
+---
+
+## Structure (Phase V4)
+
+> Skeleton pass 2026-08-20.
+
+## Files
+
+Key paths for this concern.
+

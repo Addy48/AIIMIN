@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-PROD
 graph_role: leaf
@@ -79,3 +79,27 @@ fm_source: script
 - Why: document production shape in source control and remove dead calendar path
 - Files: `server/migrations/029_calendar_events_modernization.sql`, `server/routes/calendar.js`, `frontend/src/hooks/useCalendarEvents.js`
 - Status: shipped
+
+---
+
+## Structure (Phase V4)
+
+> Added 2026-08-20 so every living feature MOC shares the same skeleton. Fill stubs when next touching this feature.
+
+## Why this exists
+
+One job this feature serves for the user.
+
+## Contracts
+
+Routes, tables, env names (no secret values).
+
+## Files
+
+Frontend / backend / native paths.
+
+## Related
+
+- [[09_FEATURES/Index|Features Index]]
+- [[15_MEMORY/Current-Context]]
+

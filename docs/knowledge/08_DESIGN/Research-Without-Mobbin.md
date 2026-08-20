@@ -8,15 +8,17 @@ last_reviewed: 2026-07-31
 can_override_genesis: false
 ---
 
-# Design research without Mobbin (paid-blocked)
+# Design research — Mobbin retired · VP0 primary
 
-Mobbin MCP returns **paid plan required**. Do **not** claim Mobbin deep research while blocked.
+**Primary MCP (2026-08-06+):** VP0 — server `user-vp0` / `vp0` via `npx -y vp0-mcp`. Tools: `search_vp0_designs`, `get_vp0_design`. Rule: `.cursor/rules/aiimin-vp0-mcp.mdc`.
 
-## Free / freemium stack (use these)
+Mobbin MCP retired (paid-blocked historically). Do **not** call Mobbin. Do **not** invent “Mobbin found X”.
+
+## Fallback free stack (if VP0 empty / down)
 
 | Tool | URL | Use for AIIMIN |
 |------|-----|----------------|
-| **Banani References** | https://www.banani.co/references | Free real app screens + flows (closest free Mobbin-like) |
+| **Banani References** | https://www.banani.co/references | Free real app screens + flows |
 | **Material 3** | https://m3.material.io | Android nav, sheets, lists, density — native IA |
 | **UI Sources** | https://www.uisources.com | Free pattern browsing |
 | **Collect UI** | https://collectui.com | Pattern boards (filter carefully — not Soft Monotone) |
@@ -36,11 +38,11 @@ Mobbin MCP returns **paid plan required**. Do **not** claim Mobbin deep research
 
 ## Agent rule
 
-1. Try Mobbin MCP once per session.  
-2. On paid-block → **stop retrying** · use Banani + M3 + Blueprint + Palette.  
-3. Cite free URLs when referencing patterns.  
-4. Never invent “Mobbin found X” without tool evidence.
+1. Call VP0 MCP (`search_vp0_designs` → `get_vp0_design`) on design/UI tasks.  
+2. If VP0 empty/down → Banani + M3 + Blueprint + Palette + Drafting Table.  
+3. Cite VP0 slug / URL (or free URLs) when referencing patterns.  
+4. Never invent “VP0/Mobbin found X” without tool evidence. Never call Mobbin.
 
 ## Pair with
 
-[[08_DESIGN/Palette]] · Soft Monotone `DESIGN.md` · Blueprint §4–§5 · Journal research
+[[08_DESIGN/Palette]] · Soft Monotone `DESIGN.md` · Blueprint §4–§5 · Journal research · rule `aiimin-vp0-mcp.mdc`

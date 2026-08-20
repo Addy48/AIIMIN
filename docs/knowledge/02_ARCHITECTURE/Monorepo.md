@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-30
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -12,14 +12,16 @@ note_type: NT-ENG-LEAF
 migration_batch: W4
 fm_source: script
 ---
-# Monorepo — one repo, three clients
+# Monorepo — one repo, four client paths (three shipping roles)
 
-**Last updated:** 2026-07-30
+**Last updated:** 2026-08-20
 **Owner:** Aaditya Upadhyay
 
-AIIMIN ships as **one Git repository** with **three independent client surfaces**. They share backend auth and Postgres — they do **not** share UI code, build systems, or release trains.
+AIIMIN ships as **one Git repository**. Clients share backend auth and Postgres — they do **not** share UI code, build systems, or release trains.
 
-Canonical-path decision: [[10_DECISIONS/2026-07-30-repository-layout]]. Production roots remain top-level because they already match build and release boundaries.
+Canonical-path decision: [[10_DECISIONS/2026-07-30-repository-layout]]. Production roots remain top-level.
+
+**Ownership:** Native V3 and web Life OS were built in this repo (founder + Cursor). Manus = prototype help only.
 
 ---
 
@@ -28,9 +30,10 @@ Canonical-path decision: [[10_DECISIONS/2026-07-30-repository-layout]]. Producti
 ```mermaid
 flowchart TB
   subgraph clients["Clients (never mix in one commit)"]
-    WEB["🌐 Web Life OS<br/>frontend/ · React 19"]
-    CAP["📱 Capacitor shell (legacy)<br/>frontend/android/ · WebView → /m"]
-    NAT["🤖 Native Android V2<br/>native-android/ · Kotlin Compose"]
+    WEB["Web Life OS<br/>frontend/ · React 19"]
+    CAP["Capacitor shell legacy<br/>frontend/android/ · WebView → /m"]
+    NAT3["Native Android V3 CURRENT<br/>native-android-v3/ · Kotlin Compose"]
+    NAT2["Native Android V2 REFERENCE<br/>native-android/ · no UI copy"]
   end
 
   subgraph edge["Edge"]
@@ -39,10 +42,10 @@ flowchart TB
   end
 
   subgraph api["API layer"]
-    EC2["EC2 / Vercel serverless<br/>api.aiimin.in"]
+    EC2["EC2<br/>api.aiimin.in"]
     Auth["Better Auth<br/>/api/auth/*"]
     MobileAPI["Mobile sync<br/>/api/mobile/*"]
-    CoreAPI["Life OS routes<br/>/api/daily-logs, /intelligence, …"]
+    CoreAPI["Life OS routes<br/>/api/*"]
   end
 
   subgraph data["Data"]
@@ -51,10 +54,11 @@ flowchart TB
   end
 
   WEB --> Vercel
-  CAP --> Play
-  NAT --> Play
+  CAP --> Vercel
+  NAT3 --> Play
+  NAT3 --> EC2
+  NAT2 -.->|reference only| EC2
   Vercel --> EC2
-  NAT --> EC2
   CAP --> Vercel
   EC2 --> Auth
   EC2 --> MobileAPI
@@ -68,11 +72,12 @@ flowchart TB
 
 ## Client matrix
 
-| Client | Path | Stack | Users get | Deploy |
-|--------|------|-------|-----------|--------|
-| **Web Life OS** | `frontend/` | React 19, Tailwind, React Query | Full dashboard on desktop, iPad, phone browser | Vercel ← `main` |
-| **Capacitor capture** | `frontend/android/` + `/m` routes | Capacitor 7, remote WebView | Thin daily capture shell (stopgap) | Play + Vercel for `/m` bundle |
-| **Native Android V2** | `native-android/` | Kotlin, Compose, Room, Retrofit | Daily companion: Today, Journal, Notes, Vault, More | Play AAB + `main` API |
+| Client | Path | Role | Deploy |
+|--------|------|------|--------|
+| **Web Life OS** | `frontend/` | Full desktop/tablet OS | Vercel ← `main` |
+| **Capacitor `/m`** | `frontend/android/` + `/m` | Legacy capture WebView — sunset when V3 covers capture | Play optional + Vercel |
+| **Native Android V3** | `native-android-v3/` | **Current** companion app | APK/AAB + `api.aiimin.in` |
+| **Native Android V2** | `native-android/` | **Reference only** (`sync/`, `session/`, `security/`, `data/network/`). Never copy `ui/` | frozen |
 
 ### Device routing (web only)
 
@@ -82,10 +87,10 @@ flowchart LR
   T -->|phone| M["/m capture shell"]
   T -->|tablet 768–1099| TAB["Full OS + TabRail"]
   T -->|desktop ≥1100| DESK["Full OS + masthead"]
-  M -.->|not native V2| CAP2[Capacitor optional]
+  M -.->|not native V3| CAP2[Capacitor optional]
 ```
 
-Native app **does not** load `/m`. It calls `/api/mobile/*` directly.
+Native V3 **does not** load `/m`. It calls `/api/mobile/*` directly.
 
 ---
 
@@ -93,13 +98,14 @@ Native app **does not** load `/m`. It calls `/api/mobile/*` directly.
 
 | Path | Role |
 |------|------|
-| `server/` | Express routes, services, cron jobs (EC2 primary) |
-| `api/` | Vercel serverless entry (Hono router) |
-| `server/routes/mobile.js` | Native V2 bootstrap + sync batch |
-| `supabase/migrations/` | SQL migrations |
+| `server/` | Express routes, services, cron (EC2 primary) |
+| `api/` | Vercel serverless entry (Hono) |
+| `server/routes/mobile.js` | Native bootstrap + sync batch (V3) |
+| `server/migrations/` | Numbered SQL migrations (canonical for app) |
+| `supabase/migrations/` | Supabase-side migrations where used |
 | `scripts/diagnostics/` | Manual probes; never part of CI |
 
-Shared contract: **same Better Auth user** on web and native. Different route namespaces — web uses REST feature routes; native uses `/api/mobile/*`.
+Shared contract: **same Better Auth user** on web and native. Web uses feature REST routes; native uses `/api/mobile/*`.
 
 ---
 
@@ -107,55 +113,37 @@ Shared contract: **same Better Auth user** on web and native. Different route na
 
 ```mermaid
 flowchart TB
-  subgraph ok["✅ Separate commits / branches"]
+  subgraph ok["Separate commits / branches"]
     W[Website: frontend pages + server except mobile-only]
     C[Capacitor: frontend/android + /m shell + PWA]
-    N[Native: native-android + mobile routes + 17_NATIVE_APP_V2]
+    N[Native V3: native-android-v3 + mobile routes + 17_NATIVE_APP_V2]
     D[Docs-only: vault + README when cross-cutting]
   end
-  subgraph bad["❌ Never"]
+  subgraph bad["Never"]
     X[One PR mixing web refactor + native + Capacitor]
     Y[Capacitor config in website-only commit]
-    Z[native-android/ in website-only commit]
+    Z[native-android-v3/ in website-only commit]
   end
 ```
 
-| Change type | Branch / commit bucket |
-|-------------|------------------------|
-| Overview, Finance, correlation engine | `main` — website |
-| `/m`, `MobileShell`, Capacitor | `feat/mobile-capture-capacitor` |
-| Kotlin app, Room, sync | `feat/native-android-v2` or `feat/mobile-capture-capacitor` until split |
-| Vault architecture | `main` when website ships; native vault with native code |
-
-Full file lists: `plans/mobile-commit-split.md`, `plans/commit-push-plan-2026-07-19.md`.
+See also: [[02_ARCHITECTURE/Device-Tiers]] · [[16_DOCUMENTATION/Vault-And-Repo-Simplification-Plan]] · [[Guides/Where-Everything-Lives]]
 
 ---
 
-## Local development
+## Structure (Phase V4)
 
-| Surface | Command | Notes |
-|---------|---------|-------|
-| Web | `cd frontend && npm start` | `localhost:3000` |
-| API local | `cd server && npm run dev` | or `npx vercel dev` |
-| Capacitor APK | `cd frontend && npm run cap:build:android` | JDK 21 |
-| Native APK | `cd native-android && ./gradlew :app:assembleDebug` | JDK 17 |
+> Skeleton pass 2026-08-20.
 
----
+## Current state
 
-## Documentation map
+Living summary. Keep short.
 
-| Need | Path |
-|------|------|
-| Vault home | `docs/knowledge/00_HOME.md` |
-| This doc | `docs/knowledge/02_ARCHITECTURE/Monorepo.md` |
-| Reorganization report | `docs/knowledge/16_DOCUMENTATION/Repository-Reorganization.md` |
-| Device tiers | `docs/knowledge/02_ARCHITECTURE/Device-Tiers.md` |
-| Native V2 tracker | `docs/knowledge/17_NATIVE_APP_V2/WORKFLOW-PLAN.md` |
-| Capacitor | `docs/knowledge/09_FEATURES/Mobile/Capacitor-Android.md` |
-| Contributing | `CONTRIBUTING.md` |
+## Files
 
----
+Key paths for this concern.
 
-## Attribution policy
+## Related
 
-Repository docs describe **product and engineering** only. No “built with” tool vendor lines in README, vault, or shipped UI copy. Intelligence features may name **runtime API providers** (e.g. model routes) in legal/third-party docs — that is product disclosure, not dev attribution.
+- [[Maps of Content/Architecture]]
+- [[02_ARCHITECTURE/Overview]]
+

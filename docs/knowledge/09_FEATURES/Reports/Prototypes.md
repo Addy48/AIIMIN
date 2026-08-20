@@ -14,6 +14,10 @@ fm_source: script
 ---
 # Report Prototypes
 
+> [!abstract] Satellite note
+> Not the primary feature MOC. Primary contracts live in the folder’s main feature note + [[09_FEATURES/Index]].
+
+
 ## Locks (2026-07-17)
 
 | Tier | Locked direction | Notes |

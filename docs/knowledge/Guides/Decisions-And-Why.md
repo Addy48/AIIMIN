@@ -76,7 +76,7 @@ Removed from the entry flow. Never stack it with the onboarding tour.
 
 **The three-prototype bake-off (TIDE / RELAY / ATLAS).** Superseded by the Drafting Table
 direction. TIDE and RELAY were built; ATLAS never was and never will be. Do not resume it.
-The `frontend/prototypes/personal-os/` mission is spent.
+The `frontend/prototypes/personal-os/` mission is spent. Folder **deleted 2026-08-14**. Record: [[16_DOCUMENTATION/Completed-Work-Ledger]].
 
 **"React first, native later."** The old recommendation to promote `/proto/draft` → `/m` and
 port to native afterwards. Superseded by the Kotlin decision above.
@@ -87,7 +87,6 @@ port to native afterwards. Superseded by the Kotlin decision above.
 |---|---|
 | **Voice scope** — ship transcription into Capture first, or build the full voice + English-practice suite in one pass | P3 feature line |
 | **AI keys** — Groq, Gemini, OpenRouter (all free tier), none created yet | every AI feature |
-| **`frontend/prototypes/personal-os/`** — 120 untracked files, 11 MB from the closed bake-off: archive outside the repo, commit, or trim | repo cleanliness |
 | **`native-android/` (V2)** — keep the directory, or move it to a tag/branch and delete | public repo clarity |
 
 Full list: [[17_NATIVE_APP_V2/AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]] §9

@@ -17,6 +17,10 @@ tags:
 
 # Google Cloud Console — AIIMIN OAuth (one-time setup)
 
+> [!abstract] Satellite note
+> Not the primary feature MOC. Primary contracts live in the folder’s main feature note + [[09_FEATURES/Index]].
+
+
 Use **one OAuth 2.0 Client** (Web application) for both login and calendar, or two separate clients with the same redirect URIs pattern.
 
 **Client ID in use:** `719779655523-fbio87p15lhshptn8rpeaa779bj41rft.apps.googleusercontent.com`

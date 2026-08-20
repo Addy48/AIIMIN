@@ -78,9 +78,7 @@ Live tracker: [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
 
 ## Constraints that shape it
 
-**Your machine is 8 GB with ~70% of swap already used.** Android Studio + Gradle daemon + an
-emulator will not fit together. Build with Gradle, install to a **physical phone** over `adb`,
-and push release builds to the GitHub Actions runner that already exists. Cap the Gradle heap.
+**Your machine is 8 GB.** Android Studio + Gradle daemon + emulator together will thrash. Cap the Gradle heap. **Override 2026-08-13:** a lean AVD `AiiminLean` exists for visual QA without USB — start it from Terminal (`native-android-v3/scripts/start-emulator.command`), never as a child of the Cursor agent shell. Do **not** `assembleDebug` while qemu is up. Physical AIN065 remains truth for Health Connect, SMS, biometrics, screen-time. Full loop: [[17_NATIVE_APP_V2/Emulator-Workflow]] · leftover list [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]].
 
 **Design is locked.** Match `frontend/prototypes/AIIMIN-Drafting-Table.html`. Tokens at
 `frontend/src/prototypes/drafting-table/tokens.css`. Steel accent, `#ff6b35` only as the

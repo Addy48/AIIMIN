@@ -15,6 +15,10 @@ fm_source: script
 
 # Mobile touch audit (capture shell)
 
+> [!abstract] Satellite note
+> Not the primary feature MOC. Primary contracts live in the folder’s main feature note + [[09_FEATURES/Index]].
+
+
 ## Parent
 
 - [[09_FEATURES/Mobile/Capacitor-Android|Mobile]] · [[09_FEATURES/Index]]

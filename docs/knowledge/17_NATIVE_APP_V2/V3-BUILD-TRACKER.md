@@ -4,7 +4,7 @@ derived_from: 15_MEMORY/Handoff-Native-App-Build · 17_NATIVE_APP_V2/AIIMIN_APP_
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-08-03
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -16,6 +16,10 @@ tags:
 ---
 
 # Native Android V3 — build tracker
+
+> [!tip] Size budget
+> Screen evidence log. Prefer [[V3-LEFTOVER-CHECKLIST]] for current leftover board. Roll when >40 KB.
+
 
 > One row per screen. A screen is only ticked with real build output and a render
 > behind it (G5 · evidence before claims). Screens are built in the order set by
@@ -45,13 +49,94 @@ tags:
 | Track | State |
 |-------|--------|
 | Phone reinstall | ✅ 2026-08-04 17:32 — `adb install -r` Success · device `9597fdea` · `in.aiimin.app.v3` launched |
-| Scoped commits | waiting founder ask |
-| **API wiring** | **partial ✅** — OS-ID live on prod · Capture AI client ready (needs session) |
+| **Device visual polish** | ✅ **2026-08-04** — before+after adb · craft enrichment · install Success 21:09 · assembleDebug ✅ |
+| **Craft + Lab + device OS** | ✅ **2026-08-04** — Blueprint inset marks · Lab how-to-read + tap scatter · TapColumnBars · steps/screen UsageStats · PrefRow HairRule overlay fix · polish2 shots · install 21:30+ |
+| **Config craft + Phone-day** | ✅ **2026-08-04** — Config PrefList/grants-only · ON_RESUME refresh · unlocks/pickups/top apps/walk labels/interrelation lines on Lab · polish3 · screen 6h27m live · steps counter waits first walk |
+| **Device metrics accuracy v2** | ✅ **2026-08-04** — screen midpoint ~5h24m vs Settings ~5.5h · apps list (Instagram/Teams) via package-visibility fix · Lab UNLOCKS/PICKUPS/APP OPENS · polish5 · ArrayMap crash fixed |
+| **Export · theme · motion · capture wires** | ✅ **2026-08-04** — LifeExport MD+JSON · AIIMIN Dark/Light · equal Day cells · voice/scan/journal · softer riseIn · assembleDebug ✅ |
+| **Device fix-everything pass** | ✅ **2026-08-04 23:00** — screen midpoint live **5h43–46m** (interactive+unlocked)/2 · Journal/Voice/Scan proven · Lab 95/92/438 · Config Dark toggle · steps still sensor 1307 · polish6 shots · unit tests ✅ |
+| **Health Connect steps + OCR + HABIT** | ✅ code **2026-08-05** — HC day aggregate · NEED_PERMISSION until grant · Scan ML Kit OCR · HABIT seed · assembleDebug ✅ · log `sdkStatus=3 Permission=DENIED` · **14k parity blocked on founder HC Allow + unlock** |
+| **Steps SPN + screen unlocked + capture UX** | ✅ code **2026-08-05** — HC SPN/android/Nothing origins · screen=unlocked (not midpoint) · Scan Camera\|Gallery · voice intent polish · Journal lead+templates · assembleDebug ✅ · unit tests ✅ · **device install blocked (adb empty)** |
+| **Device metrics loop on AIN065** | ✅ **2026-08-05 15:26** — install Success · steps **7846 phone** (HC SPN) · unlocks **51=DW** · screen midpoint restored after DW 2h52 vs unlocked −9m / mid +3m · Scan CAMERA\|GALLERY · Journal templates UI · shots `metrics-loop/` |
+| **Export TXT + user connections + payment alerts** | ✅ code **2026-08-05** — `.txt`+`.json` share grants · ConnectionsStore (no HDFC/Fi/Google seed) · Share/paste/notif inbox + Approve · parser **7/7** · assembleDebug ✅ · **device reinstall blocked (adb empty)** |
+| Scoped commits | android+api shipped on `feat/native-android-v3`; legal frontend still dirty untracked |
+| **API wiring** | ✅ code **2026-08-05** — Better Auth · bootstrap · sync/batch · wealth · PTR · durable outbox · WorkManager 15m · resume flush · assemble + 69 unit tests (device verify pending) |
+| **Payment sync round 2** | ✅ code **2026-08-05 20:50** — wealth Idempotency-Key · outbox dedupe · share clear · date parse · web categories · assembleDebug ✅ · data unit tests ✅ · `adb install -r` Success · **share E2E blocked (keyguard)** · **EC2 undeployed** |
+| **Money ingest ladder** | ✅ code **2026-08-05** — opt-in READ_SMS scan · manual · AI import · xls/xlsx/csv · assembleDebug ✅ · tests ✅ · **device QA pending** · **Play SMS declaration open** |
+| **Metrics direct Android** | ✅ code **2026-08-05 22:05** — screen=SCREEN_INTERACTIVE only · steps=single HC origin (no android+SPN sum) · assembleDebug ✅ · unit tests ✅ · `adb install -r` Success · **founder Settings/DW compare pending** |
 | DataStore persistence | ✅ done 2026-08-04 |
 | Groq calibration steps 4–5 | deferred (keys on server; arc sharpen still auth-gated) |
 | Reports / Search / voice | out of V3 screen map |
 
-Screen map **complete** for local Drafting Table parity (Foundation → Lab).
+Screen map **complete** for local Drafting Table parity (Foundation → Lab). Device craft polish **closed**. Craft/Lab/device strip pass **closed** 2026-08-04.
+
+## Craft + Lab + device OS — CLOSED 2026-08-04
+
+**One job:** stop overlaps, make Lab readable, wire phone steps/screen time, tap readouts on charts.
+
+**Code:**
+- `BlueprintBox` registration marks inset (no BUILD collision)
+- `SectionRule` bottom pad + ellipsis
+- Lab: HOW TO READ · STRONG/INVERSE badge · axes LOW/MID/HIGH · tap-dot readout · cloud shaped by ρ
+- `Charts.kt`: `TapColumnBars` · `TapTrajectoryLine` · `ChartReadout`
+- Money week bars → tap readout
+- `DeviceMetricsRepository`: TYPE_STEP_COUNTER + UsageStats · Today strip + Config “This phone”
+- Config `PrefRow`: HairRule was overlaying text inside TapSurface Box — fixed
+
+**Evidence:**
+- `:app:assembleDebug` BUILD SUCCESSFUL
+- `adb install -r` Success · `lastUpdateTime=2026-08-04 21:30+` · `versionName=3.0.0-alpha01`
+- Shots: `native-android-v3/device-screenshots/polish2/` (Day · Lab · Money · Config)
+- Live screen time on device: `6h 19m` after usage grant
+
+**Not this slice:** sign-in / Room / live LHS API / commit (ask first).
+
+## Device visual polish — 2026-08-04 (partial)
+
+**One job:** fix overlaps / clipping on the Nothing phone, with adb proof.
+
+**Before evidence:** `native-android-v3/device-screenshots/before/` — 16 PNGs (Day, Score, Money, Capture + offer, Lab, Config, OS-ID, Journal, Onboarding welcome + step 2).
+
+**Bugs found on device:**
+- Onboarding brand row under status clock (no `statusBarsPadding` — shell-only inset)
+- Capture Offer cramped / hard to read under keyboard
+- Journal template strip tight on four equal weights
+- Score fold cut “WHAT MOVED…” until scroll (padding)
+
+**Fixes (code):**
+- `OnboardingScreen` Frame → `statusBarsPadding()` + `navigationBarsPadding()`
+- `CaptureScreen` → `imePadding()`; Offer wrapped in spaced `Column`
+- `JournalScreen` TemplateStrip → slightly smaller type, `maxLines = 2`
+- `ScoreScreen` → extra bottom padding (`s8 + s6`)
+
+**Build evidence:** `:app:assembleDebug` BUILD SUCCESSFUL · APK ~14.8 MB · `in.aiimin.app.v3`.
+
+**Craft enrichment (same day, G4 palette locked):**
+- `SheetGround` — vertical wash + accent vignette under every surface
+- `ScoreFigure` — confidence rail; `TrajectoryLine` — area fill + endpoint; `InstrumentCell` — drafted plates
+- `EmptyState` — Blueprint framed; `ScreenHead` — accent tick + steel top rule
+- `BottomBar` — surface rail, accent active glyph/label + tick
+- Today — capture legend, Life Score Blueprint plate, riseIn stagger, larger checkboxes
+- Capture composer legend; Onboarding on SheetGround + status/nav insets
+- Feature screens stop painting opaque bg so atmosphere shows through
+
+**Blocked:** phone still off adb — replug for after-shot proof.
+
+## Device visual polish — CLOSED 2026-08-04 (after pass)
+
+**Install:** `adb install -r` Success · device `9597fdea` · `lastUpdateTime=2026-08-04 21:09:52` · `versionName=3.0.0-alpha01`
+
+**After evidence:** `native-android-v3/device-screenshots/after/` — 14 PNGs (Day, Score, Money, Capture+offer, Lab, Config, OS-ID, Journal, Onboarding welcome, shell after skip).
+
+**Verified on device (read shots):**
+- UNIVERSAL CAPTURE legend + Life Score Blueprint plate on Day
+- Capture offer stacked clean (LOCAL RULES · THE OFFER · ₹420 · Settle/Drift) — no overlap
+- Accent tab tick + steel active ink on bottom bar
+- Onboarding brand clear of status clock
+- Framed empty state on Capture day-so-far
+- `:app:assembleDebug` BUILD SUCCESSFUL (UP-TO-DATE)
+
+**Next chat:** sign-in (founder types PIN) · Room · merge → main.
 
 ## API wiring · OS-ID live — 2026-08-04 (partial)
 

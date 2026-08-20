@@ -1,16 +1,21 @@
 ---
+
 authority: operations
 derived_from: Founder · Phase-2-Interaction/93
-status: active
+status: frozen
 owner: founder
-lifecycle: living
-last_reviewed: 2026-07-25
+lifecycle: frozen
+last_reviewed: 2026-08-20
 can_override_genesis: false
 program: UX-Architecture-v1
 phase: 2-frozen
 ---
 
 # Phase 2 — Interaction Architecture — Index
+
+> [!warning] Cold Roadmap
+> Frozen evidence corpus. Not current stage. Living focus: [[15_MEMORY/Current-Context]] · [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+
 
 **Status:** Phase 2 **FROZEN** (Founder)  
 **Pack:** `00`–`10` · `90`–`93`  

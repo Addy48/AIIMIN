@@ -4,7 +4,7 @@ derived_from: Genesis/P8 Master Specification
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-PROD
 graph_role: leaf
@@ -44,12 +44,26 @@ Landing (modular v9 — July 2026):
 2. Personas
 3. Pricing
 4. Launch journey (phases)
-5. Preview screens
-6. Early access (tester vs waitlist)
-7. Testimonials
-8. FAQ
-9. Bottom CTA
-10. Footer
+5. **Android companion status** (mobile + desktop — `/app`, no APK)
+6. Preview screens
+7. Early access (tester vs waitlist)
+8. Testimonials
+9. FAQ (includes APK / Android status)
+10. Bottom CTA
+11. Footer (links to `/app`)
+
+### Android status (2026-08-05)
+
+- Public route: `/app` (`AndroidApp.jsx`) — closed device testing, Play not listed, **no APK host**
+- Waitlist module: `WaitlistAndroidSection.jsx` + `ANDROID_APP_STATUS` in `waitlistLandingData.js`
+- Hero / FAQ / Brand roadmap / About copy aligned
+
+### 2026-08-05 — Android status + /app area
+- **What:** Waitlist Android section; `/app` status page (no APK); hero/FAQ/Brand/About updated; APK retention script keeps current+previous only
+- **Why:** Founder — honest app status on waitlist/website; stop APK pile-up; no public sideload
+- **Files:** `AndroidApp.jsx`, `appPage.css`, `WaitlistAndroidSection.jsx`, `waitlistLandingData.js`, `WaitlistLanding.jsx`, `WaitlistHeroSection.jsx`, `WaitlistFooter.jsx`, `App.js`, `Brand.jsx`, `About.jsx`, `scripts/promote-v3-apk.sh`, `native-android-v3/dist/`
+- **Status:** partial (code ready; Vercel deploy when pushed)
+- **Notes:** Mobbin paid tier unavailable — designed from locked palette + existing waitlist craft
 
 ## Signup flow
 
@@ -83,6 +97,8 @@ Landing (modular v9 — July 2026):
 ## Related files
 
 - `frontend/src/pages/WaitlistLanding.jsx`
+- `frontend/src/pages/AndroidApp.jsx`
+- `frontend/src/styles/appPage.css`
 - `frontend/src/components/waitlist/landing/*`
 - `frontend/src/components/waitlist/WaitlistForm.jsx`
 - `frontend/src/components/waitlist/WaitlistHeroAside.jsx`
@@ -91,5 +107,25 @@ Landing (modular v9 — July 2026):
 - `frontend/src/components/waitlist/WaitlistThemeSync.jsx`
 - `frontend/src/pages/Brand.jsx`
 - `frontend/src/styles/waitlistLanding.css`
+- `scripts/promote-v3-apk.sh`
 - `server/routes/waitlist.js`
 - `server/migrations/034_waitlist_referrals.sql`
+
+---
+
+## Structure (Phase V4)
+
+> Added 2026-08-20 so every living feature MOC shares the same skeleton. Fill stubs when next touching this feature.
+
+## Why this exists
+
+One job this feature serves for the user.
+
+## Contracts
+
+Routes, tables, env names (no secret values).
+
+## Files
+
+Frontend / backend / native paths.
+

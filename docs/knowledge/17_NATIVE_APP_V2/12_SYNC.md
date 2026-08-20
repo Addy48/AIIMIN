@@ -45,7 +45,7 @@ Push: POST /sync/batch Idempotency-Key [{entity, op, payload, client_mutated_at}
 | Habit definition | LWW + optional merge name |
 | Goal progress | Max(progress) if numeric else LWW |
 | Journal / notes body | **Manual merge UI** if both dirty; else LWW |
-| Finance tx | Prefer both if different idempotency keys (no silent drop) |
+| Finance tx | Prefer both if different idempotency keys (no silent drop). Native wealth POST: `Idempotency-Key` → `mobile_idempotency` (same store as sync/batch). Client money outbox dedupes `notes=mobile:<clientKey>`. |
 | Preferences | LWW |
 
 ---
@@ -84,6 +84,23 @@ Batch · gzip · field masks · blob separate.
 ## 9. Security
 
 Auth on all sync · rate limit · payload size cap · no cross-user cursors.
+
+---
+
+## V3 client (2026-08-05)
+
+`native-android-v3` live path (not the older Room/WorkManager draft above):
+
+| Direction | Endpoint / action |
+|-----------|-------------------|
+| Pull | `GET /mobile/bootstrap` · `GET /wealth/transactions` · `GET /wealth/budgets` |
+| Push batch | `POST /mobile/sync/batch` — `habit.tick` · `habit.untick` · `journal.upsert` · `note.upsert` · `note.delete` |
+| Push money | `POST /wealth/transactions` — Capture settle · payment approve; failures queue locally |
+| Auth | Better Auth email/username + PIN · cookie jar + Bearer |
+| UI | Pull-to-refresh Today/Money · Config Sync · Sign out |
+| Durability | DataStore outbox JSON · WorkManager 15m + resume oneshot |
+
+Code: `GraphSyncRepository` · `AuthRepository` · `SessionRepository` · `SyncWorker`.
 
 ---
 

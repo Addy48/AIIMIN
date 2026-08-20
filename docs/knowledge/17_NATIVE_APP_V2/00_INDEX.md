@@ -4,7 +4,7 @@ derived_from: Genesis/P8 · Genesis/P9
 status: active
 owner: eng
 lifecycle: living
-last_reviewed: 2026-07-30
+last_reviewed: 2026-08-20
 can_override_genesis: false
 knowledge_layer: KL-BUILD
 graph_role: leaf
@@ -16,14 +16,17 @@ constitutional_reference: Genesis/P8 Master Specification/13_Platform_Specificat
 
 # AIIMIN Native Application — Documentation Index
 
-> **Status:** Phase 1 Compose **shipping** (`native-android/` v2.1.x)  
-> **🔴 LIVE BUILD TRACKER (pin in sidebar):** [[WORKFLOW-PLAN]]  
-> **Last updated:** 2026-07-30
+> [!important] Path name is historical
+> Folder is still `17_NATIVE_APP_V2/` (Stage A freeze). **Current product app = `native-android-v3/`.** V2 at `native-android/` = reference only.
+> Living lists: [[V3-LEFTOVER-CHECKLIST]] · [[Emulator-Workflow]] · [[V3-COMPLETE-BUILD-SPEC]]. Tracker: [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+
+> **Status:** Native **V3** active · V2 reference-only  
+> **Last updated:** 2026-08-20  
 > **Owner:** Aaditya Upadhyay / AIIMIN
 
 > **Constitutional notice:** IA / UX / Design System / Motion / User Journeys doctrine in this pack is **superseded** by Genesis P8/P9. Target V1 scope and sequencing live in [[Roadmap/AIIMIN-V1-Blueprint]]. Engineering docs (backend, DB, sync, workflow) remain living. Nucleus: [[Maps of Content/Genesis]] · Legal drafts: [[Roadmap/Legal-Index]].
 
-**Build note:** See [[CHANGELOG]] + [[WORKFLOW-PLAN]] — `./gradlew :app:assembleDebug` in `native-android/`. Capacitor `frontend/android/` is legacy, not V2.
+**Build note:** V3 → `native-android-v3/` (`./gradlew` via repo root forwarder). Capacitor `frontend/android/` is legacy `/m`, not the native app. V2 `WORKFLOW-PLAN` is historical.
 
 ---
 
@@ -33,9 +36,11 @@ constitutional_reference: Genesis/P8 Master Specification/13_Platform_Specificat
 |-----|---------|
 | **[[AIIMIN_MASTER_STATUS_AND_NEXT_STAGE]]** | **Current status of everything** — web + prototype + what's left. Read this first. |
 | **[[AIIMIN_APP_BUILD_AGENT_PLAN]]** | **Guardrails G1–G10** an agent must follow |
-| [[DRAFTING_TABLE_TESTING_AND_PLAN]] | Website test results |
-| [[NEXT_CHAT_BRIEF]] | Session handoff brief (2026-08-03) |
 | **[[WORKFLOW-PLAN]]** | **Living task board** — P0–P3, screen checklist, session log |
+| **[[V3-BUILD-TRACKER]]** | Native V3 screen-by-screen product evidence |
+| **[[V3-LEFTOVER-CHECKLIST]]** | Living leftover list — update after every slice |
+| **[[Emulator-Workflow]]** | Cursor → Gradle → ADB → AiiminLean (no USB) |
+| **[[Play-Store-Launch]]** | Play release ledger (legal · signing · Console · listing) — not APK craft |
 | [[CHANGELOG]] | Shipped versions |
 | [[15_MEMORY/Current-Context]] | Agent handoff (short) |
 
@@ -60,7 +65,7 @@ Related legacy (do not treat as native spec):
 
 - [[01_PRODUCT/AIIMIN-Product-Guide]] — website Life OS (V1)
 - [[02_ARCHITECTURE/Device-Tiers]] — phone web `/m` capture (V1 mobile web)
-- `plans/native-android-app.md` — interim eng sketch; **superseded by this pack** for product direction
+- Closed V2 plans / bake-off — [[16_DOCUMENTATION/Completed-Work-Ledger]]
 
 ---
 
@@ -76,10 +81,9 @@ Related legacy (do not treat as native spec):
 **Rejected:** Compressing desktop UI onto a phone.  
 **Rejected:** “Mobile = data collection only” as the native product ceiling — that was a **temporary phone-web (`/m`) constraint**, not the native vision.  
 **Rejected:** Treating MCQ/Practice as the whole app — those are **examples** of mobile-fit modules inside Tools/Write.  
-**Required:** Feature selection via [[00_FEATURE_SELECTION]] (≥3 of one-hand / time-sensitive / glanceable / offline / ritual / frequency).  
 **Required:** Native interaction patterns (platform conventions + AIIMIN motion language).
 
-**Canonical plans:** [[00_MASTER_PLAN]] · [[00_FEATURE_SELECTION]] · [[00_SKILLS_SYNTHESIS]] · [[01_PRD]] · [[20_ROADMAP]]
+**Canonical now:** [[V3-COMPLETE-BUILD-SPEC]] · [[01_PRD]] · [[20_ROADMAP]] · [[16_DOCUMENTATION/Completed-Work-Ledger]] (closed V2 plans).
 
 ---
 
@@ -89,12 +93,8 @@ Related legacy (do not treat as native spec):
 |---|----------|----------|-------------|-------------|------------|------------|
 | 00 | **This Index** | `00_INDEX.md` | 8–12 | L | — | VP Product + Architect |
 | 01 | Master PRD | `01_PRD.md` | 35–50 | XL | Decisions §5 | VP Product |
-| 02 | Complete User Journeys | `02_USER_JOURNEYS.md` | 40–60 | XL | 01 | UX Director |
-| 03 | Information Architecture | `03_INFORMATION_ARCHITECTURE.md` | 20–30 | L | 01, 02 | UX + Architect |
-| 04 | App Flow (states & transitions) | `04_APP_FLOW.md` | 25–35 | L | 02, 03 | UX + Motion |
-| 05 | Native Mobile UX | `05_NATIVE_UX.md` | 30–45 | XL | 03, 04 | UX Director |
-| 06 | Design System | `06_DESIGN_SYSTEM.md` | 35–50 | XL | 05 | UX + Motion |
-| 07 | Motion Design | `07_MOTION.md` | 25–40 | L | 06 | Motion Designer |
+| 02–03, 05–07 | Journeys / IA / Native UX / Design / Motion | **deleted stubs** — doctrine is Genesis P8/P9; full old text in `Archive/Superseded/Native-V2-Doctrine/` | — | — | — | — |
+| 04 | App Flow (states & transitions) | `04_APP_FLOW.md` | 25–35 | L | Genesis P8/P9 | UX + Motion |
 | 08 | Feature Documentation | `08_FEATURES.md` | 60–90 | XXL | 01–05 | VP Product + Eng |
 | 09 | Backend Architecture | `09_BACKEND.md` | 40–55 | XL | 01, 08 | Staff Backend + Architect |
 | 10 | Database Design | `10_DATABASE.md` | 35–50 | XL | 09 | Staff Backend |
@@ -215,7 +215,7 @@ Owner must answer before Docs 01–08 freeze. Defaults below are **proposals**, 
 | **D2b** | Near-parity desktop OS on phone — too dense; year-one suicide |
 | **D2c (LOCKED proposal)** | **Rich companion:** Today + Practice (MCQ) + Revise (cheat sheets/flashcards) + You (journal/focus/discipline/goals) + Account — desktop keeps Lab graphs, Finance deep, Placements kanban |
 
-**Proposal:** **D2c**. See [[00_MASTER_PLAN]] IA.
+**Proposal:** **D2c**. Closed V2 plan text: [[16_DOCUMENTATION/Completed-Work-Ledger]]. Living app spec: [[V3-COMPLETE-BUILD-SPEC]].
 
 ### D3 — Platforms for V1 native
 
