@@ -43,9 +43,9 @@ tags:
 
 ## Founder next
 
-1. **Push** branch when ready (`feat/native-android-v3` is **7 commits ahead** locally).
-2. Apply DB migrations **049–052** on Supabase before prod journal-mode reliance.
-3. Deploy API (merge/push path that hits EC2) — do not `git reset --hard` on EC2 until S1 is on the box via git.
-4. Rebase/merge feat onto `origin/main` (`fc9e2a76`) before shipping to production web — histories diverged.
-5. Remaining WT: native-v3 + misc frontend — say `commit S5` when ready.
-6. Web diet kill rows still founder taste.
+1. ~~Push~~ **done** — `origin/feat/native-android-v3` @ `c60ed07e`
+2. ~~Migrations 049–052~~ **done** on Supabase (indexes + columns verified)
+3. ~~EC2~~ **done** — box on feat tip; health ok; `note.delete` in git on box
+4. Merge/rebase feat → `main` before Vercel prod picks up web/legal (prod still `fc9e2a76`)
+5. Web diet kill rows still founder taste
+6. V3 leftover product list still parked
