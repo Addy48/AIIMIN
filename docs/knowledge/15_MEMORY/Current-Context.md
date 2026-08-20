@@ -20,29 +20,24 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch **`main`** · Web diet R4 **executing**
+**Date:** 2026-08-20 · Branch **`main`** @ `e3a349e8` · Web diet R4 **executed**
 
 ## Stage
 
-Main shipped (PR #5). This turn: **execute** web surface diet (not inventory).
+Main live. R4 diet shipped: Career/placements out of product chrome; seed-data dev-only; design-lab kill redirect kept.
 
 | Gate | Status |
 |------|--------|
-| PR #5 / Vercel / EC2 | Prior turn verified |
-| Web diet R4 execution | **in progress** — park placements chrome · gate seed-data · docs |
+| Web diet R4 | Verified code + push `e3a349e8` · Verify Frontend success |
+| Vercel prod diet | Check this turn READY on `e3a349e8` |
+| Next | V3 leftover emu/AIN065 — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]] |
 
 ## P0 next
 
-1. Finish push + Vercel READY for diet commit
-2. V3 leftover physical/emu — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
+1. V3 leftover physical/emu (device)
+2. Optional: hard-delete `/placements` page later if never revive
 
 ## Touch
 
-- `frontend/src/constants/navItems.js`
-- `frontend/src/App.js`
-- `frontend/src/pages/Overview.jsx`
-- `frontend/src/components/system/CommandPalette.jsx`
-- `frontend/src/components/onboarding/GuestTour.jsx`
-- `frontend/src/components/layout/TabRail.jsx` · `BottomNav.jsx`
-- `docs/knowledge/16_DOCUMENTATION/Web-Surface-Diet-R4.md`
-- `docs/knowledge/05_FRONTEND/Frontend-Map.md`
+- [[16_DOCUMENTATION/Web-Surface-Diet-R4]]
+- `frontend/src/constants/navItems.js` · `App.js` · Overview · CommandPalette · GuestTour · TabRail · BottomNav
