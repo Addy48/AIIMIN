@@ -23,6 +23,7 @@ import Grievance from './pages/legal/Grievance';
 import Subprocessors from './pages/legal/Subprocessors';
 import LegalHub from './pages/legal/LegalHub';
 import Brand from './pages/Brand';
+import AndroidApp from './pages/AndroidApp';
 
 // Layout & eager components
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -231,6 +232,7 @@ function AppContent({ user, session }) {
         <Route path="/subprocessors" element={<Subprocessors />} />
         <Route path="/legal" element={<LegalHub />} />
         <Route path="/brand" element={<Brand />} />
+        <Route path="/app" element={<AndroidApp />} />
         <Route path="/proto/draft" element={<Lazy><DraftingTablePrototype /></Lazy>} />
         <Route path="/design-lab" element={<Navigate to="/account?section=design" replace />} />
 

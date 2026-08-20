@@ -19,7 +19,23 @@ import {
   Zap,
 } from 'lucide-react';
 
-export const HERO_TRUST_LINE = 'Replaces Notion, Todoist, Headspace, and spreadsheet trackers';
+export const HERO_TRUST_LINE =
+  'One Life OS — journal, habits, money, focus, and vault. Desktop commands. Android companion in closed testing.';
+
+/** Public Android status — single source for waitlist + /app. No APK download. */
+export const ANDROID_APP_STATUS = {
+  badge: 'Closed device testing · Play not listed',
+  headline: 'Native Android is real — not public yet',
+  subhead:
+    'Kotlin companion for Today, Capture, Money, Lab, and Config. Same account as the web Life OS. No public APK on this site.',
+  detail:
+    'Private builds on founder devices now. Invited testers next. Play Store when ready — waitlist hears first.',
+  points: [
+    'Not a phone-web clone — sensors, share/paste payment alerts, Health Connect',
+    'Phone web (/m) stays capture-only until you open desktop or the native app',
+    'iOS is not in the current plan',
+  ],
+};
 
 export const fadeUp = {
   hidden: { opacity: 0, y: 24, filter: 'blur(4px)' },
@@ -35,22 +51,22 @@ export const PERSONAS = [
   {
     icon: GraduationCap,
     title: 'College students',
-    desc: 'Track habits, focus, sleep, and study rhythm in one place.',
+    desc: 'Journal, habits, focus, and placement prep — one loop, not five apps.',
   },
   {
     icon: BriefcaseBusiness,
     title: 'Early professionals',
-    desc: 'Manage money, goals, consistency, and execution without app hopping.',
+    desc: 'Money, goals, calendar, and evening debrief without spreadsheet chaos.',
   },
   {
     icon: Activity,
-    title: 'Fitness-focused users',
-    desc: 'Connect workouts, recovery, mood, and discipline patterns.',
+    title: 'Consistency builders',
+    desc: 'Depth meter + daily minimum: honest progress, zero shame streaks.',
   },
   {
     icon: ChartColumnBig,
-    title: 'Data-driven builders',
-    desc: 'Turn daily logs into trends and practical coaching loops.',
+    title: 'Pattern thinkers',
+    desc: 'See what actually moves your week — reports that cite your own data.',
   },
 ];
 
@@ -111,7 +127,7 @@ export const LAUNCH_PHASES = [
     approval: 'Included in Pro and Elite tiers at launch; Explore/Core get preview access.',
     unlocks: [
       { name: 'Spade Briefing', hint: 'Sports context without doomscrolling' },
-      { name: 'Native mobile companion', hint: 'Quick logging on the go' },
+      { name: 'Android companion', hint: 'Closed testing now · Play listing later' },
     ],
   },
 ];
@@ -121,71 +137,71 @@ export const PRICING = [
     tier: 'Explore',
     tierAccent: 'explore',
     tierIcon: Compass,
-    tierTagline: 'Log daily. Learn the loop.',
+    tierTagline: 'Capture the day. Feel the loop.',
     price: '₹0',
-    note: 'Your entry point — no card, no catch.',
+    note: 'No card. Journal + Depth + Today — forever free ceiling.',
     startHere: true,
     includes: [
-      'Log sleep, mood, gym, water, and steps daily',
-      'Weekly completion ring and basic streak view',
-      'Full Life OS view with 30-day history',
-      '1 AI call per day (Arc sharpen + Universal Logger)',
-      'Reports nav visible · locked paywall (Pro badge)',
+      'Today + Depth meter + daily minimum (3 honest actions)',
+      'Journal (free write + evening debrief) · Notes · Calendar',
+      'Daily log: sleep, mood, water, movement',
+      'Android: quick capture + 1 English Spark / day',
+      '1 AI call / day · Reports visible, deep tabs locked',
     ],
-    bestFor: 'Anyone curious before committing',
+    bestFor: 'Anyone testing whether one Life OS sticks',
   },
   {
     tier: 'Core',
     tierAccent: 'core',
     tierIcon: Layers,
-    tierTagline: 'Run your essentials.',
+    tierTagline: 'Run the operating loop.',
     price: '₹29',
-    note: 'Habits, money, and focus — wired together.',
+    note: 'Habits, money, focus, journal packs, English — wired.',
     includes: [
       'Everything in Explore',
-      'Habits, money manager, and Pomodoro focus timer',
-      'Weekly pattern insights and review loops',
-      'Goals across 8 metrics (daily / weekly / monthly)',
-      'Ivory Snapshot · 7-day pulse on Reports',
-      '10 AI calls per day',
+      'Habits (if–then cues) · Goals · Focus timer · Discipline toolkit',
+      'Money ledger + lending · Career pipeline · Lab English (full)',
+      'Android-aggressive: Health Connect steps/sleep, offline queue, widgets',
+      'Journal packs (expressive 1–3 day cadence) · Ivory Snapshot',
+      '10 AI calls / day',
     ],
-    bestFor: 'Students and early professionals building daily systems',
+    bestFor: 'Students & early pros who live in the app daily',
   },
   {
     tier: 'Pro',
     tierAccent: 'pro',
     tierIcon: Zap,
-    tierTagline: 'See the patterns.',
+    tierTagline: 'Household + patterns.',
     price: '₹49',
     discounted: '₹49',
-    note: 'Behavioural analytics that actually connect.',
+    note: 'Family vault + UPI review + correlations — founding ₹49.',
     recommended: true,
     includes: [
       'Everything in Core',
-      'Correlation Intelligence on Snapshot (top 3)',
-      'Life OS Review PDF (14-day fingerprint)',
-      '6 Standard PDFs / month · separate from daily AI',
-      'Wealth AI summary + import',
-      '25 AI calls per day',
+      'Family vault · Documents viewer · People links · expiry reminders',
+      'Android: UPI payment-alert review queue (on-device parse)',
+      'Wealth AI · What-if · Correlations on Snapshot · Life OS Review PDF',
+      'Cloud voice replay (opt-in) · 6 Standard PDFs / month',
+      '25 AI calls / day',
     ],
-    bestFor: 'Power users who want full behavioural analytics',
+    bestFor: 'People who manage money + family docs in one place',
   },
   {
     tier: 'Elite',
     tierAccent: 'elite',
     tierIcon: Crown,
-    tierTagline: 'Interactive intelligence · two AI pools.',
+    tierTagline: 'Full intelligence · two AI pools.',
     price: '₹79',
     discounted: '₹79',
-    note: 'Web Intelligence Report + dedicated Deep generation pool.',
+    note: 'Interactive reports + Deep pool — founding ₹79.',
     includes: [
       'Everything in Pro',
-      'Interactive Intelligence Report (30/60/90-day web)',
-      '3 Deep Reports / month · dedicated pool',
-      'Unlimited Standard PDFs',
-      '40 AI calls per day (untouched by Deep gen)',
+      'Interactive Intelligence Report (30/60/90-day)',
+      '3 Deep Reports / month · unlimited Standard PDFs',
+      'Highest Android priority for new capture surfaces',
+      '40 AI calls / day (Deep pool separate)',
     ],
-    bestFor: 'Testers and users who want the full life OS',
+    bestFor: 'Founders & power users who want the full OS',
   },
 ];
 
@@ -203,7 +219,7 @@ export const ACCESS_PACKAGES = [
       { icon: Rocket, text: 'First access to every beta module before public release' },
       { icon: KeyRound, text: 'Priority OS-ID reservation + direct founder feedback channel' },
       { icon: Sparkles, text: 'Prototype features: Life Score, Discipline Engine, Sports Briefing' },
-      { icon: Laptop, text: 'Desktop Life OS + mobile logging companion during beta' },
+      { icon: Laptop, text: 'Desktop Life OS + native Android companion during beta' },
       { icon: MessageSquareQuote, text: 'Direct roadmap input — your bugs and ideas ship first' },
     ],
     cta: { label: 'Sign in to register', href: '/login' },
@@ -284,15 +300,19 @@ export const TESTIMONIALS = [
 export const FAQS = [
   {
     q: 'What is AIIMIN?',
-    a: 'AIIMIN is a personal life operating system — one dashboard where you track habits, sleep, mood, money, focus sessions, and daily wins. It connects the dots across your behaviour so you see patterns, not just logs. Built for Indian students and early professionals who want one system instead of five separate apps.',
+    a: 'AIIMIN is a Personal Life OS — journal, habits, money, calendar, focus, family vault, and English practice on one honest graph. Desktop is the command surface; Android is the rich companion for capture, health, and on-the-go loops. Built for Indian students and early professionals who want one system instead of five apps.',
   },
   {
-    q: 'What is the website vs the mobile app?',
-    a: 'Right now, AIIMIN is a desktop web dashboard at aiimin.in — the full analytics experience with charts, correlations, and multi-panel layouts. A native mobile companion app for quick on-the-go logging is in active development. Join the waitlist from any device; use the full Life OS on your laptop when we launch.',
+    q: 'Website vs Android app?',
+    a: 'Same account, same data. The website (aiimin.in) is the full desktop Life OS — reports, budgets, vault admin, deep editing. The native Android app is a rich companion (Today, Capture, Money, Lab, Config) — not a crippled phone website. It is in closed device testing now; Play Store listing comes later. Status: /app. iOS is not in the current plan. Phone web (/m) stays capture-only.',
   },
   {
-    q: 'Why is AIIMIN desktop-first?',
-    a: 'The Life OS is data-dense — weekly pattern charts, money analytics, and correlation views need screen space to be useful. We optimised for laptops and desktops so nothing feels cramped. A native mobile app for quick logging is coming; until then, join the waitlist on your phone and open AIIMIN on your laptop for the full experience.',
+    q: 'Can I download the Android APK?',
+    a: 'No. We do not host or sideload APKs from aiimin.in. Closed testing stays invite-only. Join the waitlist for founding access and the Play Store announcement. Details: /app.',
+  },
+  {
+    q: 'Why desktop + Android, not phone-web analytics?',
+    a: 'Dense analytics need a large screen. Phone web is intentionally capture-only so we never ship a cramped fake dashboard. Android gets the companion experience with sensors, offline queue, and widgets. Open the website on a laptop for command; open Android for the day when your build is ready.',
   },
   {
     q: 'When does AIIMIN launch?',
@@ -308,7 +328,11 @@ export const FAQS = [
   },
   {
     q: 'Is Explore free?',
-    a: 'Yes. Explore stays free forever. Waitlist perks apply to complimentary Core, the Pro founding price (₹49/mo), and the Elite founding price (₹79/mo) — not to Core list price.',
+    a: 'Yes. Explore stays free forever — including Journal, Depth, and basic Android capture. Waitlist perks apply to complimentary Core and founding Pro/Elite prices.',
+  },
+  {
+    q: 'How do you handle privacy?',
+    a: 'We do not sell your life data. Journal is private reflection and stays out of analytics. Export and delete are always available. Optional connections (Calendar, Health, payment alerts) are off until you turn them on, with a plain-language purpose for each. Full details: /privacy and /security.',
   },
   {
     q: 'What is an OS-ID?',

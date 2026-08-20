@@ -27,9 +27,10 @@ export default function WaitlistHeroSection({
         <div className="waitlist-desktop-notice" role="note">
           <Laptop size={18} className="waitlist-desktop-notice-icon" aria-hidden="true" />
           <div>
-            <p className="waitlist-desktop-notice-title">Built for laptop &amp; desktop</p>
+            <p className="waitlist-desktop-notice-title">Web Life OS + Android companion</p>
             <p className="waitlist-desktop-notice-copy">
-              Join on your phone. Run the full Life OS on laptop at launch — native mobile companion shipping after.
+              Join on your phone. Full Life OS on laptop. Native Android is in closed testing — status at{' '}
+              <a href="/app">/app</a>. No public APK.
             </p>
           </div>
         </div>
@@ -39,7 +40,7 @@ export default function WaitlistHeroSection({
           <span className="hero-headline-lead">Your habits, <span className="hero-accent-word">money</span>, focus, and mood.</span>
         </h1>
         <p>
-          AIIMIN is your personal Life OS — web command center now, native app next.
+          AIIMIN is your personal Life OS — web command center live on waitlist, Android companion in closed device testing.
           Built for Indian students and early professionals who refuse to juggle five apps.
         </p>
         <div className="mobile-preview-wrap">
@@ -74,7 +75,7 @@ export default function WaitlistHeroSection({
               </span>
             </motion.h1>
             <motion.p className="hero-subhead hero-subhead--compact" custom={1} variants={fadeUp}>
-              One aggressive Life OS for Indian students and early professionals — web command center now, native app en route. No app hopping.
+              One aggressive Life OS for Indian students and early professionals — web command center now, Android companion in closed testing. No app hopping.
             </motion.p>
             <motion.p className="hero-trust-line" custom={2} variants={fadeUp}>
               {HERO_TRUST_LINE}
