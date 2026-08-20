@@ -1,0 +1,53 @@
+---
+description: Use VP0 MCP for design, prototyping, flows, and UI research
+alwaysApply: true
+---
+
+# VP0 MCP — Design Research
+
+Server: `user-vp0` / `vp0` (`npx -y vp0-mcp`). Use on **any** task touching app design, prototyping, brainstorming, UI patterns, onboarding, flows, or screen references.
+
+**Mobbin retired** — do not call `user-Mobbin` / Mobbin MCP. VP0 is the design-reference MCP from now on.
+
+## When to call (mandatory)
+
+- New feature UI / screen layout
+- Onboarding, checkout, settings, empty states
+- App flow mapping (multi-step journeys)
+- Design brainstorm or competitor pattern research
+- Mobile / Expo / React Native UI scaffolding from a real target
+
+Skip only for pure backend / DB / deploy with zero UI.
+
+## Tools
+
+| Tool | Use |
+|------|-----|
+| `search_vp0_designs` | Search library by intent — `query` + optional `limit` |
+| `get_vp0_design` | Fetch one design by `slug` — full manifest, source, deps, `aiInstructions` |
+
+Always `GetMcpTools` for `user-vp0` (or `vp0`) before first call in a session.
+
+## Workflow
+
+1. **Search** — one intent per query (e.g. "onboarding", "finance transaction list")
+2. **Fetch** — `get_vp0_design(slug)` for the best match; read source + instructions
+3. **Cite** — name slug + VP0 URL when referencing a design
+4. **Synthesize** — map to AIIMIN Drafting Table palette + Genesis; VP0 = reference / starter, not copy-paste brand theft
+5. **Stack note** — VP0 designs lean Expo/RN/iOS; adapt to Compose (`native-android-v3/`) or web when that is the surface
+
+## Query tips
+
+- One intent per search
+- Prefer concrete UI jobs over vague adjectives
+- After search, always fetch before proposing layout from metadata alone
+
+## Auth / errors
+
+- No API key required for public designs
+- Server fail / empty results → tell founder, continue with vault + `frontend-design` + Drafting Table tokens
+- Optional override: `VP0_API_URL` env on the MCP entry (local/dev only)
+
+## Pair with
+
+`frontend-design`, `brainstorming`, `mobile-app-ui-design`, `docs/knowledge/08_DESIGN/`

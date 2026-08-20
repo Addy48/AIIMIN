@@ -194,7 +194,7 @@ export default function WaitlistQuickFeedback({ compact = false }) {
 
       {!compact && (
         <p className="waitlist-feedback-footnote">
-          Your note helps decide which modules ship first in August and September waves.
+          Your note helps decide which modules ship first in September and October waves.
         </p>
       )}
 
@@ -224,10 +224,10 @@ export function WaitlistPendingScreen() {
       </motion.h1>
       <p className="waitlist-pending-copy">
         Signed in as <strong>{user?.email}</strong>.
-        We're letting in testers in small waves before end-of-September launch.
+        We're letting in testers in small waves before end-of-October launch.
       </p>
       <p className="waitlist-pending-note">
-        Got an invite? Register by 31 August for the VIP tester package — Elite free for a year plus full beta access. Waitlist members get the founding kit, Core subscription, and Elite discount at launch.
+        Got an invite? Register by 30 September for the VIP tester package — Elite free for a year plus full beta access. Waitlist members get the founding kit, Core subscription, and Elite discount at launch.
       </p>
       <div className="waitlist-pending-feedback">
         <WaitlistQuickFeedback compact />

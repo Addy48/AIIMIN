@@ -23,20 +23,21 @@ fm_source: script
 
 Public waitlist gate active when `REACT_APP_WAITLIST_MODE=true` (frontend) and `WAITLIST_MODE=true` (backend).
 
-Landing (modular v9 — July 2026):
+Landing (modular v9 — Aug 2026 overhaul):
 
 - **Orchestrator:** `frontend/src/pages/WaitlistLanding.jsx` (~160 lines)
 - **Modules:** `frontend/src/components/waitlist/landing/*` + shared `waitlistLandingData.js`
 - **Hero:** full-width top bar (brand lockup + exclusive badge + theme toggle); equal-height split panels — copy + preview left, form + `WaitlistHeroAside` right
 - **Mobile (<720px):** mobile headline/preview context + **join form always visible** (`#waitlist-join` not wrapped in desktop-only). Sticky “Reserve my spot” CTA. Theme toggle in mobile topbar only (no second fixed button).
 - **Headline:** **One screen. Every day.** → habits, money, focus, mood. Life OS positioning (web + native app)
-- **Pricing:** premium tier cards with icons, checkmarks, elevated Pro; compact stack-vs-AIIMIN comparison
-- **Launch journey:** 4-phase vertical ladder (Reserve access → Founding launch → Module rollout → Full OS expansion) with access/approval notes
+- **Pricing:** premium tier cards with icons, checkmarks, elevated Pro; compact stack-vs-AIIMIN comparison (INR + Americas $ footnote)
+- **Launch journey:** 4-phase ladder (2-up tablet / 4-up wide); Phase 0 CTAs to join/sign-in; Phase 3 → `/app`
 - **Early access:** tester VIP vs waitlist founding packages (6 perks each)
 - **Testimonials:** 2 professors, 1 student, 1 working professional (regional credible tone)
-- **Brand:** `/brand` → **Human Momentum manifesto** (`Brand.jsx` + `brandPage.css`): brand-first hero, numbered pillars, storage ledger, trust/legal, roadmap, architecture. Navbar: logo → `/brand`, text → `/overview`.
+- **Brand:** `/brand` → **Human Momentum manifesto** (`Brand.jsx` + `brandPage.css`): brand-first hero, numbered pillars, storage ledger, trust/legal, roadmap, architecture. Cursor spot is a dedicated layer (no laggy background transition). Navbar: logo → `/brand`, text → `/overview`.
 - **Post-signup:** OS-ID reserve panel inline; referral share; `localStorage` key `aiimin_waitlist`
 - **SEO:** canonical `aiimin.in`, `og-image-v2.png`, JSON-LD Desktop Web
+- **Timeline pack:** [[01_PRODUCT/Complete-Overhaul-Pack]]
 
 ## Section order
 
@@ -82,7 +83,7 @@ Landing (modular v9 — July 2026):
 | Core subscription | Complimentary Core at launch (waitlist only) |
 | Pro founding price | **₹49/mo** (~17% off ₹59) for 12 months |
 | Elite founding price | **₹79/mo** (~20% off ₹99) for 12 months |
-| Tester perk | Elite free for 1 year if registered by **31 August 2026** (invite only) |
+| Tester perk | Elite free for 1 year if registered by **30 September 2026** (invite only) |
 | Referral queue | Share link moves position up 5 spots per signup |
 
 ## Pricing tiers (public landing copy)

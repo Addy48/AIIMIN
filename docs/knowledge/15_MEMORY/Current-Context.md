@@ -18,35 +18,30 @@ tags:
 # Current Context
 
 > [!tip] Agent boot
-> [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
+> [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie + [[14_PROMPTS/Pre-Ship-10x-Gate]].
 
-**Date:** 2026-08-20 · Branch **`main`** · Focus: waitlist fixes + dual-market research
+**Date:** 2026-08-20 · Branch **`main`** · Focus: ship public overhaul under 10× gate
 
 ## Stage
 
-Deep Life OS research expanded. Waitlist landing bugs fixed in code (sync + theme).
+Pre-ship I1–I5 + A1–A5 running; then commit+push+Vercel verify.
 
 | Gate | Status |
 |------|--------|
-| Waitlist multi-form reset / storage sync | **Code fixed** this turn — verify in browser |
-| Waitlist theme dual-hook desync | **Code fixed** — HeroBrandLockup uses ThemeContext |
-| Dual-market pricing note | Written — [[01_PRODUCT/Dual-Market-Pricing]] |
-| AI preference map | Written — [[01_PRODUCT/AI-Preference-Map]] |
-| Marketing GTM | Written — [[01_PRODUCT/Marketing-And-Go-To-Market]] |
-| USD live checkout | **Not performed** — plan only |
+| Pre-Ship 10× rule + vault prompt | **Installed** |
+| Overhaul code (dates/UI/brand/app) | Ready to ship |
+| `npm run build` (frontend) | **exit 0** this turn |
+| Push + Vercel READY + live string check | **in progress** |
 
 ## P0 next
 
-1. Browser-verify waitlist: refresh + “Use a different email” on hero **and** footer forms; theme toggle icon vs page
-2. Founder accept USD founding numbers ($6 / $13) or adjust
-3. Phase B graph work after decisions
+1. Finish push + live verify (`Launching Oct` / `30 September` / brand spot)
+2. Founder browser: glow feel + form reset
+3. USD founding accept/adjust
 
 ## Touch
 
-- `frontend/src/utils/waitlistSignupStorage.js`
-- `frontend/src/components/waitlist/WaitlistForm.jsx`
-- `frontend/src/components/waitlist/landing/HeroBrandLockup.jsx`
-- `frontend/src/hooks/useWaitlistSurfaceTheme.js`
-- `docs/knowledge/01_PRODUCT/Dual-Market-Pricing.md`
-- `docs/knowledge/01_PRODUCT/AI-Preference-Map.md`
-- `docs/knowledge/01_PRODUCT/Marketing-And-Go-To-Market.md`
+- `docs/knowledge/01_PRODUCT/Complete-Overhaul-Pack.md`
+- `docs/knowledge/14_PROMPTS/Pre-Ship-10x-Gate.md`
+- `.cursor/rules/aiimin-pre-ship-10x.mdc`
+- waitlist / brand / `/app` frontend set

@@ -9,6 +9,28 @@ last_reviewed: 2026-08-06
 
 # Reliability log — device metrics
 
+## 2026-08-20 — Pre-ship 10× gate (inspect + anti-lie)
+
+### Observed
+Founder: marketing/UI ships need deeper mandatory testing — inspect before push, anti-lie on every claim.
+
+### Root cause
+Proof-or-stop alone still allowed soft “looks good” pushes without a fixed 10-gate checklist.
+
+### Fix
+Always-on rule `.cursor/rules/aiimin-pre-ship-10x.mdc` + vault [[14_PROMPTS/Pre-Ship-10x-Gate]]. I1–I5 + A1–A5 required before push/deploy claims.
+
+### Evidence
+Rule file + vault prompt + always-index row this turn.
+
+### Status
+gate installed · first use: waitlist/brand/app overhaul ship
+
+### Guardrail
+No push without I1–I5 receipts; no “live” without A3 deploy/HTTP signal.
+
+---
+
 ## 2026-08-13 — Biometric cancel must not skip into shell
 
 ### Observed

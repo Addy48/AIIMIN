@@ -41,7 +41,8 @@ fm_source: script
 
 ## Launch
 
-- Go-live target end Sep 2026
-- Founding / tester registration closes **31 August 2026**
+- Go-live target end Oct 2026
+- Founding / tester registration closes **30 September 2026**
 - LC checklist in Product / Home blockers
 - Priorities: [[Roadmap/Operational-Priorities]]
+- Overhaul pack: [[01_PRODUCT/Complete-Overhaul-Pack]]

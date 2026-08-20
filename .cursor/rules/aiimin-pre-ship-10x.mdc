@@ -1,0 +1,68 @@
+---
+description: Mandatory 5× inspect + 5× anti-lie before every commit/push/deploy claim
+alwaysApply: true
+---
+
+# Pre-Ship Gate — 5× Inspect + 5× Anti-Lie (Always)
+
+**Mandatory** before any `git push`, deploy claim, or “shipped / live / fixed on prod” language.  
+Pairs with `aiimin-proof-or-stop.mdc` + `aiimin-anti-lie.mdc`. Fail any gate → **blocked** — do not push.
+
+## When it fires
+
+- User asks commit / push / deploy / ship
+- Agent about to claim production READY / live content updated
+- Frontend/API marketing or auth-path changes
+
+Skip only for pure vault typo with zero runtime impact — still run Anti-Lie A1+A2.
+
+---
+
+## 5× Inspect (pre-push — same turn)
+
+Run and cite **short receipts** (exit code + 1 line, or 3–8 source lines).
+
+| # | Gate | What to verify |
+|---|------|----------------|
+| **I1** | Contract grep | Changed copy/dates/routes match intent; stale strings absent |
+| **I2** | Diff hygiene | No `.env`, PEM, secrets, `dist/`, accidental binary; scope matches ask |
+| **I3** | Source read-back | Critical changed files `Read`/`Grep` show intended fix (not memory) |
+| **I4** | Build / lint / targeted test | `frontend` build or relevant test/lint exit 0 when JS/CSS/TS changed; API smoke if `server/**` |
+| **I5** | Link & surface map | Internal links (`/#…`, `/app`, `/brand`, `/login`) resolve in code; no orphan CTAs |
+
+Any fail → fix → re-run failed gates. Do **not** push on “should be fine.”
+
+---
+
+## 5× Anti-Lie (claims — same turn)
+
+| # | Gate | Rule |
+|---|------|------|
+| **A1** | Label | Every material claim = Verified / Inferred / Proposed / Blocked / Not performed |
+| **A2** | Receipt | Exact action · target · evidence location · result |
+| **A3** | Independent verify | Prefer second signal (live HTTP, deploy status, second grep) — not same command twice |
+| **A4** | Plan ≠ done | “Will push” / “deploying” ≠ shipped until tool confirms |
+| **A5** | Adversarial self-check | Before closeout: any claim without evidence? Stale tip SHA? Wrong env? |
+
+---
+
+## After push (when shipping frontend/API)
+
+Still required before “live”:
+
+1. Remote SHA / `git status` matches push tip  
+2. Vercel (web) READY **or** EC2 health + SHA (API) — cite output  
+3. Live fetch of changed surface (HTML/API) contains expected string — **or** Blocked with why  
+
+No deploy receipt → Status `partial` / `blocked`, never `passed` for prod.
+
+---
+
+## Closeout shape (ship tasks)
+
+1. Inspect I1–I5 — pass/fail each  
+2. Anti-Lie A1–A5 — pass/fail each  
+3. Commit/push/deploy receipts  
+4. Status: `passed` | `failed` | `blocked` | `partial`
+
+Missing any of I1–I5 or A1–A5 on a ship task → cannot claim full ship.

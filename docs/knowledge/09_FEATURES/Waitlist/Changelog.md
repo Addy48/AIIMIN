@@ -13,6 +13,12 @@ migration_batch: W4
 fm_source: script
 ---
 
+### 2026-08-20 — Timeline +1mo · journey/hero/brand/app polish
+- **What:** Jul/Aug public dates → Sep+; go-live Oct 2026; journey 2/4-col layout + CTAs; hero mock product dark window; brand cursor spot layer (kill 0.4s background lag); `/app` card contrast; single overhaul note.
+- **Why:** Founder screenshots — clipped graph, laggy brand glow, grey backed-out panels, stale dates.
+- **Files:** waitlist landing set, `Brand.jsx`, `brandPage.css`, `AndroidApp.jsx`, `appPage.css`, `legal.js`, `01_PRODUCT/Complete-Overhaul-Pack.md`
+- **Status:** partial (code + vault; live deploy pending)
+
 ### 2026-07-25 — Founding/tester window → 31 August
 - **What:** Priority 8 schedule: founding/tester registration close moved from 31 July to **31 August 2026**. Go-live remains end September 2026. Waitlist UI copy updated.
 - **Why:** Program 0 Product Readiness — Founder schedule update

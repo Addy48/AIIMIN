@@ -32,7 +32,7 @@ export default function WaitlistSocialProof({ count }) {
         {showLargeCount ? (
           <>Join <strong>{count.toLocaleString('en-IN')}+</strong> founding members on the waitlist</>
         ) : hasCount ? (
-          <>Join <strong>{count.toLocaleString('en-IN')}</strong> early members — spots filling for Sept 2026</>
+          <>Join <strong>{count.toLocaleString('en-IN')}</strong> early members — spots filling for Oct 2026</>
         ) : (
           <>Join the founding waitlist — early members get launch perks first</>
         )}

@@ -121,8 +121,8 @@ function WaitlistLandingContent() {
       <main className="waitlist-main">
         <section className="waitlist-mobile-only waitlist-mobile-essentials">
           <ul className="waitlist-mobile-perk-list">
-            <li>⏰ Tester cutoff: 31 August</li>
-            <li>📅 Go-live: end of September 2026</li>
+            <li>⏰ Tester cutoff: 30 September</li>
+            <li>📅 Go-live: end of October 2026</li>
           </ul>
         </section>
 
