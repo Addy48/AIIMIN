@@ -205,6 +205,7 @@ function AppContent({ user, session }) {
           <Route path="/finance" element={<Lazy><TierRouteGuard label="Finance"><Finance /></TierRouteGuard></Lazy>} />
           <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
           <Route path="/lab" element={<Lazy><TierRouteGuard label="Lab"><LabFullPage /></TierRouteGuard></Lazy>} />
+          {/* Parked: Career/placements — deep-link only (web diet R4); not in nav */}
           <Route path="/placements" element={<Lazy><TierRouteGuard label="Placements"><Placements /></TierRouteGuard></Lazy>} />
           <Route path="/habits"     element={<Lazy><TierRouteGuard label="Habits"><HabitsPage /></TierRouteGuard></Lazy>} />
           <Route path="/goals"       element={<Lazy><TierRouteGuard label="Goals"><GoalsPage /></TierRouteGuard></Lazy>} />
@@ -215,7 +216,12 @@ function AppContent({ user, session }) {
           <Route path="/family"      element={<Lazy><TierRouteGuard label="Family"><FamilyPage /></TierRouteGuard></Lazy>} />
           <Route path="/account"     element={<Lazy><AccountPage /></Lazy>} />
           <Route path="/reports"     element={<Lazy><TierRouteGuard label="Reports"><ReportsPage /></TierRouteGuard></Lazy>} />
-          <Route path="/seed-data"   element={<Lazy><SeedData /></Lazy>} />
+          {/* Parked: wipe/seed tool — localhost only */}
+          <Route path="/seed-data" element={
+            process.env.NODE_ENV === 'development'
+              ? <Lazy><SeedData /></Lazy>
+              : <Navigate to="/overview" replace />
+          } />
         </Route>
 
         {/* ── Public legal & brand ── */}
@@ -234,7 +240,9 @@ function AppContent({ user, session }) {
         <Route path="/legal" element={<LegalHub />} />
         <Route path="/brand" element={<Brand />} />
         <Route path="/app" element={<AndroidApp />} />
+        {/* Parked: Drafting Table craft lock — not product */}
         <Route path="/proto/draft" element={<Lazy><DraftingTablePrototype /></Lazy>} />
+        {/* Killed surface: old design-lab URL */}
         <Route path="/design-lab" element={<Navigate to="/account?section=design" replace />} />
 
         {/* ── 404 ── */}

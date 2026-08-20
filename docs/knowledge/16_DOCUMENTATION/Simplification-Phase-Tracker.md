@@ -48,6 +48,6 @@ tags:
 3. ~~EC2~~ **done** — now on **`main`** @ merge tip
 4. ~~Merge `origin/main` into feat~~ **done**
 5. ~~Merge/PR feat → `main`~~ **done** — [PR #5](https://github.com/Addy48/AIIMIN/pull/5) · Vercel READY · Deploy API success
-6. Web diet kill rows still founder taste (`/design-lab` already redirects)
+6. ~~Web diet kill rows~~ **executed** — [[16_DOCUMENTATION/Web-Surface-Diet-R4]] (placements parked from chrome; seed-data dev-only; design-lab kill redirect)
 7. V3 leftover product list — physical/emu open items
-8. `/app` public-path for waitlisted signed-in users — fix in flight this turn
+8. ~~`/app` public-path~~ **done**

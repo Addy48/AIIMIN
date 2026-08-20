@@ -20,28 +20,29 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch **`main`** @ `0a698e87` · PR [#5](https://github.com/Addy48/AIIMIN/pull/5) **merged** + `/app` public-path fix
+**Date:** 2026-08-20 · Branch **`main`** · Web diet R4 **executing**
 
 ## Stage
 
-Simplification closed. Feat shipped to **`main`**. Vercel prod READY on `0a698e87` (`/app` public-path). Deploy API Action success on merge. EC2 on **`main`** @ `5c6a86d0` (API unchanged by web-only follow-up). Migrations 049–052 on Supabase.
+Main shipped (PR #5). This turn: **execute** web surface diet (not inventory).
 
 | Gate | Status |
 |------|--------|
-| PR #5 merge → `main` | Verified — `5c6a86d0` |
-| Deploy API Action | Verified success |
-| Verify Frontend Action | Verified success (`0a698e87`) |
-| Vercel production | Verified READY · SHA `0a698e87` · aliases aiimin.in |
-| EC2 branch/SHA | Verified `main` @ `5c6a86d0` · health ok |
-| `/app` public path | Verified in `App.js` + prod deploy READY |
+| PR #5 / Vercel / EC2 | Prior turn verified |
+| Web diet R4 execution | **in progress** — park placements chrome · gate seed-data · docs |
 
 ## P0 next
 
-1. Web diet kill rows — founder taste ([[16_DOCUMENTATION/Web-Surface-Diet-R4]]) — say which routes to kill
-2. V3 leftover physical/emu — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]] (needs AVD/AIN065)
+1. Finish push + Vercel READY for diet commit
+2. V3 leftover physical/emu — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
 
 ## Touch
 
-- `frontend/src/App.js` (`/app` public prefix)
-- `docs/knowledge/16_DOCUMENTATION/Simplification-Phase-Tracker.md`
-- `docs/knowledge/17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST.md` (A6 EC2 via git)
+- `frontend/src/constants/navItems.js`
+- `frontend/src/App.js`
+- `frontend/src/pages/Overview.jsx`
+- `frontend/src/components/system/CommandPalette.jsx`
+- `frontend/src/components/onboarding/GuestTour.jsx`
+- `frontend/src/components/layout/TabRail.jsx` · `BottomNav.jsx`
+- `docs/knowledge/16_DOCUMENTATION/Web-Surface-Diet-R4.md`
+- `docs/knowledge/05_FRONTEND/Frontend-Map.md`
