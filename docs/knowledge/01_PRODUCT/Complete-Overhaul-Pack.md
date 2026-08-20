@@ -177,7 +177,7 @@ Already on **`main`** via prior work (PR #5 and follow-ups): vault diet, web sur
 | Brand lag cause = background transition | **Verified** | `brandPage.css` pre-fix had `transition: background 0.4s` |
 | Brand fix in source | **Verified** | Spot layer + rAF in `Brand.jsx` / `brandPage.css` |
 | Hero mock / journey / pricing CSS changed | **Verified** | File writes this turn |
-| Live Vercel READY with this tip | See ship closeout (pre-ship 10× gate) |
+| Live Vercel READY with this tip | **Verified** | `dpl_7ygh2F1AMvBDq5YL9QBDaLsjWU27` READY · SHA `3dc30412` · live main.js HIT `Launching Oct 2026` / `brand-manifesto__spot` |
 | Founder browser “feels instant” | **Blocked** on human check |
 
 ### Mandatory forever
@@ -190,5 +190,5 @@ Always-on Cursor rule: `.cursor/rules/aiimin-pre-ship-10x.mdc` — **5× inspect
 - **What:** Marketing timeline +1mo; waitlist journey/pricing/hero mock polish; brand cursor spot instant path; `/app` card contrast; this single overhaul note; pre-ship 10× rule.
 - **Why:** Founder screenshots — clipped journey, laggy brand glow, grey backed-out windows, stale Jul/Aug copy. Founder asked mandatory deep test before pushes.
 - **Files:** waitlist landing set, `Brand.jsx`, `brandPage.css`, `AndroidApp.jsx`, `appPage.css`, `legal.js`, this note, `.cursor/rules/aiimin-pre-ship-10x.mdc`
-- **Status:** partial → ship when I1–I5 + A1–A5 + Vercel READY pass
+- **Status:** shipped (code + vault + Vercel READY `3dc30412`; founder feel check open)
 - **Notes:** VP0 search returned empty this session — proceeded with Drafting Table palette + frontend-design skill.
