@@ -43,7 +43,9 @@ tags:
 
 ## Founder next
 
-1. Say which commit slice to land first (**S1** recommended).
-2. Optional: `git fetch` + fast-forward local `main` to `origin/main` (`fc9e2a76`).
-3. Optional: reconcile EC2 `main` ahead-28 weirdness before hard reset.
-4. Mark Web diet rows kill/park as you prefer.
+1. **Push** branch when ready (`feat/native-android-v3` is **7 commits ahead** locally).
+2. Apply DB migrations **049–052** on Supabase before prod journal-mode reliance.
+3. Deploy API (merge/push path that hits EC2) — do not `git reset --hard` on EC2 until S1 is on the box via git.
+4. Rebase/merge feat onto `origin/main` (`fc9e2a76`) before shipping to production web — histories diverged.
+5. Remaining WT: native-v3 + misc frontend — say `commit S5` when ready.
+6. Web diet kill rows still founder taste.

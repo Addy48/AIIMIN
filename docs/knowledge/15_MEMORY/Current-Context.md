@@ -18,28 +18,37 @@ tags:
 # Current Context
 
 > [!tip] Agent boot
-> [[00_HOME]] → [[00_ROUTING]] → this note → only the `Touch` paths below. Proof-or-stop + [[14_PROMPTS/Anti-Lie-Strategy]].
+> [[00_HOME]] → [[00_ROUTING]] → this note → only Touch paths. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch `feat/native-android-v3` · Focus: **simplification phases complete — await commit slice**
-
-**Ownership:** Manus = prototype only. App built in-repo with Cursor.
+**Date:** 2026-08-20 · Branch `feat/native-android-v3` · **ahead 7** of origin (local commits, not pushed)
 
 ## Stage
 
-All simplification phases **V0→V6 · R0→R5 · X** marked `passed` on [[16_DOCUMENTATION/Simplification-Phase-Tracker]].
+Simplification phases done. Commit slices landed locally:
 
-Plan: [[16_DOCUMENTATION/Vault-And-Repo-Simplification-Plan]].
+| Slice | Commit |
+|-------|--------|
+| S1 api-mobile ghosts | `a562679b` |
+| S3 migrations 049–052 | `b7bb1bde` |
+| S2 server routes | `e116919e` |
+| S6 vault | `24279417` |
+| S4 web legal | `c53bf327` |
+| cleanup stubs/personal-os | `ade87725` |
+| App.js + waitlist wire | `0e8ae675` |
+
+Local `main` ref reset to `origin/main` (`fc9e2a76`). Feat history does **not** contain that tip — merge/rebase needed before clean ship to main.
 
 ## P0 next
 
-1. Founder picks commit slice — recommend **S1** api-mobile-ghosts ([[16_DOCUMENTATION/Commit-Slice-Inventory-R3]])
-2. Do not `git reset --hard` on EC2 until S1 committed + deployed
-3. PARK product leftovers: [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
+1. **Push** `feat/native-android-v3` when Founder asks (`git push`)
+2. Apply migrations 049–052 on Supabase before relying on journal mode in prod
+3. Deploy API to EC2 after push/merge (Action or SSH) — do not hard-reset EC2 until deploy includes S1
+4. Remaining dirty: native-v3 WT, misc frontend, rules — separate slices
+5. PARK: V3 leftover checklist
 
 ## Touch
 
-- `docs/knowledge/16_DOCUMENTATION/Simplification-Phase-Tracker.md`
 - `docs/knowledge/16_DOCUMENTATION/Commit-Slice-Inventory-R3.md`
-- `docs/knowledge/16_DOCUMENTATION/Truth-Recon-2026-08-20.md`
-- `docs/knowledge/10_DECISIONS/2026-08-20-client-kill-list.md`
-- `~/Documents/AIIMIN-SECRETS/` (secrets moved out)
+- `docs/knowledge/16_DOCUMENTATION/Simplification-Phase-Tracker.md`
+- `server/routes/mobile.js` (now in git)
+- `~/Documents/AIIMIN-SECRETS/`
