@@ -20,27 +20,25 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch **`main`** @ `5c6a86d0` (+ pending `/app` public-path fix) · PR [#5](https://github.com/Addy48/AIIMIN/pull/5) **merged**
+**Date:** 2026-08-20 · Branch **`main`** @ `0a698e87` · PR [#5](https://github.com/Addy48/AIIMIN/pull/5) **merged** + `/app` public-path fix
 
 ## Stage
 
-Simplification closed. Feat shipped to **`main`**. Vercel prod READY on merge SHA. Deploy API Action success. EC2 on **`main`** @ `5c6a86d0`. Migrations 049–052 already on Supabase.
+Simplification closed. Feat shipped to **`main`**. Vercel prod READY on `0a698e87` (`/app` public-path). Deploy API Action success on merge. EC2 on **`main`** @ `5c6a86d0` (API unchanged by web-only follow-up). Migrations 049–052 on Supabase.
 
 | Gate | Status |
 |------|--------|
 | PR #5 merge → `main` | Verified — `5c6a86d0` |
 | Deploy API Action | Verified success |
-| Verify Frontend Action | Verified success |
-| Vercel production | Verified READY · commit message PR #5 · SHA `5c6a86d0` |
+| Verify Frontend Action | Verified success (`0a698e87`) |
+| Vercel production | Verified READY · SHA `0a698e87` · aliases aiimin.in |
 | EC2 branch/SHA | Verified `main` @ `5c6a86d0` · health ok |
-| Prod bundle has `/app` + `/legal` | Verified strings in `main.2991b620.js` |
-| `/app` in PUBLIC_PATH_PREFIXES | **This turn** — fix for signed-in waitlist users |
+| `/app` public path | Verified in `App.js` + prod deploy READY |
 
 ## P0 next
 
-1. Push `/app` public-path fix (this session)
-2. Web diet kill rows — founder taste ([[16_DOCUMENTATION/Web-Surface-Diet-R4]])
-3. V3 leftover physical/emu open items — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
+1. Web diet kill rows — founder taste ([[16_DOCUMENTATION/Web-Surface-Diet-R4]]) — say which routes to kill
+2. V3 leftover physical/emu — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]] (needs AVD/AIN065)
 
 ## Touch
 
