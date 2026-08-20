@@ -352,7 +352,7 @@ export default function WaitlistForm({
     <form onSubmit={submit} className={`waitlist-form ${compact ? 'waitlist-form-compact' : ''} ${variant === 'hero' ? 'waitlist-form-hero' : ''}`}>
       {variant === 'hero' && !compact && (
         <div className="waitlist-form-hero-head">
-          <span className="waitlist-form-badge">Launching Oct 2026</span>
+          <span className="waitlist-form-badge">Targeting Oct 2026</span>
           <h2 className="waitlist-form-heading">Join the waitlist</h2>
           <p className="waitlist-form-lead">
             Founding member perks at launch — complimentary Core, Pro at ₹49/mo, Elite at ₹79/mo.
