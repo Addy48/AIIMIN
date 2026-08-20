@@ -20,19 +20,20 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch `feat/native-android-v3` · merge `origin/main` in progress / landed
+**Date:** 2026-08-20 · Branch `feat/native-android-v3` @ `6b097614` · **pushed** · `origin/main` merged in
 
 ## Stage
 
-Simplification program **closed** (V0–X). Feat has API ghosts, migrations applied, EC2 on feat tip, vault diet. Next gate = **merge feat → main** for Vercel.
+Simplification program **closed** (V0–X). Feat has API ghosts, migrations applied, EC2 on earlier feat tip, vault diet. `origin/main` (`fc9e2a76`) is **in** feat. Next gate = **merge feat → main** for Vercel.
 
 | Gate | Status |
 |------|--------|
 | Simplification phases V0–X | Verified — [[16_DOCUMENTATION/Simplification-Phase-Tracker]] |
-| Push + EC2 + migrations 049–052 | Verified earlier tip `c60ed07e` / Context `cb218e2e` |
-| `origin/main` into feat | This turn — README conflict resolve + V3 truth |
+| Push + EC2 + migrations 049–052 | Verified |
+| `origin/main` into feat | Verified — tip `6b097614`, ahead of main by 40, behind 0 |
 | Vercel production | Still needs merge **to** `main` |
 | R3 slices S1–S6 | Shipped on feat — inventory updated |
+| API health | Verified `{"status":"ok"}` this turn |
 
 ## P0 next
 
