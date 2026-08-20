@@ -215,13 +215,13 @@ app.post('/mindset', requireAuth, async (c) => {
     try {
         const { state, note } = await c.req.json();
         const userId = c.get('userId');
-        const todayStr = new Date().toISOString().slice(0, 10);
         const { rows } = await pool.query(
-            `INSERT INTO lab_mindset_logs (user_id, state, note, day_of, logged_at)
-             VALUES ($1,$2,$3,$4,NOW())
+            // day_of is a GENERATED column derived from logged_at — never insert it.
+            `INSERT INTO lab_mindset_logs (user_id, state, note, logged_at)
+             VALUES ($1,$2,$3,NOW())
              ON CONFLICT (user_id, day_of) DO UPDATE SET state=$2, note=$3, logged_at=NOW()
              RETURNING *`,
-            [userId, state, note, todayStr]
+            [userId, state, note]
         );
         return c.json(rows[0], 201);
     } catch (err) { return c.json({ error: err.message }, 500); }
