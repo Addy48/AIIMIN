@@ -6,12 +6,18 @@ import { suggestOsIdFromName } from '../../utils/osId';
 import { trackEvent } from '../../hooks/usePageAnalytics';
 import { LEGAL } from '../../constants/legal';
 import WaitlistQuickFeedback from './WaitlistQuickFeedback';
+import {
+  captureReferralFromUrl,
+  clearStoredSignup,
+  persistSignup,
+  readStoredSignup,
+  WAITLIST_RESET_EVENT,
+  WAITLIST_SIGNUP_EVENT,
+} from '../../utils/waitlistSignupStorage';
 import '../../styles/waitlistLanding.css';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const OS_ID_RE = /^[A-Z0-9@,._\-=+*^$#!]+$/;
-const WAITLIST_STORAGE_KEY = 'aiimin_waitlist';
-const REFERRAL_STORAGE_KEY = 'aiimin_waitlist_ref';
 
 function validateOsId(value) {
   const v = value.trim().toUpperCase();
@@ -19,43 +25,6 @@ function validateOsId(value) {
   if (!OS_ID_RE.test(v)) return 'Invalid characters in OS-ID';
   if ((v.match(/[0-9]/g) || []).length > 4) return 'Max 4 numbers in OS-ID';
   return null;
-}
-
-function readStoredSignup() {
-  if (typeof window === 'undefined') return null;
-  try {
-    const raw = localStorage.getItem(WAITLIST_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function persistSignup(data) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(WAITLIST_STORAGE_KEY, JSON.stringify({
-    email: data.email || '',
-    name: data.name || '',
-    referralCode: data.referralCode || '',
-    referralCount: data.referralCount ?? 0,
-    reservedId: data.reservedId || '',
-    signedUpAt: new Date().toISOString(),
-  }));
-}
-
-function clearStoredSignup() {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(WAITLIST_STORAGE_KEY);
-}
-
-function captureReferralFromUrl() {
-  if (typeof window === 'undefined') return '';
-  const ref = new URLSearchParams(window.location.search).get('ref');
-  if (ref) {
-    sessionStorage.setItem(REFERRAL_STORAGE_KEY, ref.trim().toUpperCase());
-    return ref.trim().toUpperCase();
-  }
-  return sessionStorage.getItem(REFERRAL_STORAGE_KEY) || '';
 }
 
 function buildReferralUrl(code) {
@@ -221,11 +190,39 @@ export default function WaitlistForm({
   const osIdPreview = osId.trim().toUpperCase() || osIdSuggestion;
 
   useEffect(() => {
-    const stored = readStoredSignup();
-    if (stored?.signedUpAt) {
-      setConfirmation(stored);
-      setStatus('returning');
-    }
+    const applyStored = (stored) => {
+      if (stored?.signedUpAt) {
+        setConfirmation(stored);
+        setStatus('returning');
+        setEmail('');
+        setFirstName('');
+        setOsId('');
+        setErrorMsg('');
+        setEmailTouched(false);
+      }
+    };
+
+    applyStored(readStoredSignup());
+
+    const onSignup = (event) => {
+      applyStored(event.detail || readStoredSignup());
+    };
+    const onReset = () => {
+      setConfirmation(null);
+      setStatus(null);
+      setEmail('');
+      setFirstName('');
+      setOsId('');
+      setErrorMsg('');
+      setEmailTouched(false);
+    };
+
+    window.addEventListener(WAITLIST_SIGNUP_EVENT, onSignup);
+    window.addEventListener(WAITLIST_RESET_EVENT, onReset);
+    return () => {
+      window.removeEventListener(WAITLIST_SIGNUP_EVENT, onSignup);
+      window.removeEventListener(WAITLIST_RESET_EVENT, onReset);
+    };
   }, []);
 
   const submit = async (e) => {
@@ -310,14 +307,8 @@ export default function WaitlistForm({
   };
 
   const resetSignup = () => {
+    // Clears storage + broadcasts so hero + footer forms both return to empty form.
     clearStoredSignup();
-    setConfirmation(null);
-    setStatus(null);
-    setEmail('');
-    setFirstName('');
-    setOsId('');
-    setErrorMsg('');
-    setEmailTouched(false);
   };
 
   if ((status === 'success' || status === 'already' || status === 'returning') && confirmation) {

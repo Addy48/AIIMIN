@@ -1,5 +1,6 @@
 import { useLayoutEffect, useState } from 'react';
 import useTheme from './useTheme';
+import { isLightTheme } from '../constants/themes';
 
 export const WAITLIST_THEME_STORAGE_KEY = 'aiimin-waitlist-theme';
 export const WAITLIST_LIGHT_THEME = 'nordic';
@@ -12,10 +13,10 @@ export function readStoredWaitlistTheme() {
 
 /**
  * Theme preference for waitlist surfaces (landing + waitlist brand).
- * DOM application is handled by WaitlistThemeSync in App.js to avoid flash on / ↔ /brand navigation.
+ * Single writer for forced theme — logo/brand lockups must read ThemeContext, not remount this hook.
  */
 export default function useWaitlistSurfaceTheme() {
-  const { setForcedTheme } = useTheme();
+  const { setForcedTheme, theme } = useTheme();
   const [waitlistTheme, setWaitlistTheme] = useState(readStoredWaitlistTheme);
 
   useLayoutEffect(() => {
@@ -29,7 +30,7 @@ export default function useWaitlistSurfaceTheme() {
     setWaitlistTheme((prev) => (prev === WAITLIST_LIGHT_THEME ? WAITLIST_DARK_THEME : WAITLIST_LIGHT_THEME));
   };
 
-  const isLight = waitlistTheme === WAITLIST_LIGHT_THEME;
+  const isLight = isLightTheme(theme);
 
   return { waitlistTheme, toggleWaitlistTheme, isLight, setWaitlistTheme };
 }

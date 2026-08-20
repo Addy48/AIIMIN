@@ -20,24 +20,33 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch **`main`** @ `e3a349e8` · Web diet R4 **executed**
+**Date:** 2026-08-20 · Branch **`main`** · Focus: waitlist fixes + dual-market research
 
 ## Stage
 
-Main live. R4 diet shipped: Career/placements out of product chrome; seed-data dev-only; design-lab kill redirect kept.
+Deep Life OS research expanded. Waitlist landing bugs fixed in code (sync + theme).
 
 | Gate | Status |
 |------|--------|
-| Web diet R4 | Verified code + push `e3a349e8` · Verify Frontend success |
-| Vercel prod diet | Check this turn READY on `e3a349e8` |
-| Next | V3 leftover emu/AIN065 — [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]] |
+| Waitlist multi-form reset / storage sync | **Code fixed** this turn — verify in browser |
+| Waitlist theme dual-hook desync | **Code fixed** — HeroBrandLockup uses ThemeContext |
+| Dual-market pricing note | Written — [[01_PRODUCT/Dual-Market-Pricing]] |
+| AI preference map | Written — [[01_PRODUCT/AI-Preference-Map]] |
+| Marketing GTM | Written — [[01_PRODUCT/Marketing-And-Go-To-Market]] |
+| USD live checkout | **Not performed** — plan only |
 
 ## P0 next
 
-1. V3 leftover physical/emu (device)
-2. Optional: hard-delete `/placements` page later if never revive
+1. Browser-verify waitlist: refresh + “Use a different email” on hero **and** footer forms; theme toggle icon vs page
+2. Founder accept USD founding numbers ($6 / $13) or adjust
+3. Phase B graph work after decisions
 
 ## Touch
 
-- [[16_DOCUMENTATION/Web-Surface-Diet-R4]]
-- `frontend/src/constants/navItems.js` · `App.js` · Overview · CommandPalette · GuestTour · TabRail · BottomNav
+- `frontend/src/utils/waitlistSignupStorage.js`
+- `frontend/src/components/waitlist/WaitlistForm.jsx`
+- `frontend/src/components/waitlist/landing/HeroBrandLockup.jsx`
+- `frontend/src/hooks/useWaitlistSurfaceTheme.js`
+- `docs/knowledge/01_PRODUCT/Dual-Market-Pricing.md`
+- `docs/knowledge/01_PRODUCT/AI-Preference-Map.md`
+- `docs/knowledge/01_PRODUCT/Marketing-And-Go-To-Market.md`
