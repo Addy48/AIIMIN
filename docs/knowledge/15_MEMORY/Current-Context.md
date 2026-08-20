@@ -18,39 +18,31 @@ tags:
 # Current Context
 
 > [!tip] Agent boot
-> [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
+> [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie + [[14_PROMPTS/Pre-Ship-10x-Gate]].
 
-**Date:** 2026-08-20 · Branch **`main`** · Focus: **Stage-1 marketing / PR / GTM** + waitlist polish
+**Date:** 2026-08-20 · Branch **`main`** @ **`3dc30412`** · Focus: public overhaul **live**
 
 ## Stage
 
-Marketing skill packs installed for Stage-1 GTM. Product GTM note exists. Dual-market pricing + AI preference map written. Waitlist bugs fixed in code (browser verify still open).
+Waitlist / brand / `/app` overhaul shipped under Pre-Ship 10×. Pack: [[01_PRODUCT/Complete-Overhaul-Pack]].
 
 | Gate | Status |
 |------|--------|
-| Corey `marketingskills` (all) → `.agents/skills/` | **Installed** — `skills-lock.json` |
-| Infrasity GEO/SEO/blog (curated ~70) | **Installed** — clone at `dev-gtm-claude-skills/` (gitignored) |
-| `.agents/product-marketing.md` | **Missing** — run `product-marketing` skill first |
-| Full marketing plan (AARRR) | **Not performed** — next |
-| Waitlist multi-form / theme | Code fixed — browser verify open |
-| Dual-market pricing note | Written — [[01_PRODUCT/Dual-Market-Pricing]] |
-| Marketing GTM note | Written — [[01_PRODUCT/Marketing-And-Go-To-Market]] |
-| Skills registry | Updated — [[16_DOCUMENTATION/Skills-Registry]] |
-| `brandkit` (Collective Brain) | **Installed** — Claude + Cursor + project `.agents/skills/brandkit/` |
+| Pre-Ship I1–I5 + A1–A5 | **Passed** this ship |
+| Tip SHA `3dc30412` on `origin/main` | **Verified** |
+| Vercel `dpl_7ygh2F1AMvBDq5YL9QBDaLsjWU27` READY | **Verified** |
+| Live `www.aiimin.in` JS: `Launching Oct 2026`, `30 September`, `brand-manifesto__spot` | **Verified** |
+| Stale `31 August` / `Launching Sept` in live main.js | **Absent** (grep MISS) |
+| Founder browser feel (glow / forms) | **Not performed** — human |
 
 ## P0 next
 
-1. Run **`product-marketing`** → create `.agents/product-marketing.md` from vault GTM + Dual-Market-Pricing
-2. Run **`marketing-plan`** → 90-day India-first + US founding plan (founding close **31 Aug**, go-live end Sep)
-3. Parallel tracks: **`public-relations`** (press kit) · **`launch`** (waitlist close) · **`copywriting`/`cro`** (landing) · **`brandkit`** only for boards that **reuse locked palette** (Drafting Table steel + peak `#ff6b35`)
-4. Browser-verify waitlist forms + theme
-5. Founder accept USD founding numbers ($6 / $13) or adjust
+1. Founder hard-refresh `/` · `/brand` · `/app` — confirm glow instant + dates
+2. Waitlist dual-form reset browser check
+3. USD founding $6/$13 accept/adjust
 
 ## Touch
 
-- `.agents/skills/` (marketing/GTM — gitignored; lock in `skills-lock.json`)
-- `dev-gtm-claude-skills/` (local clone — gitignored)
-- `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md`
-- `docs/knowledge/01_PRODUCT/Marketing-And-Go-To-Market.md`
-- `docs/knowledge/01_PRODUCT/Dual-Market-Pricing.md`
-- `frontend/src/components/waitlist/` (verify only until marketing copy work)
+- Live: `https://www.aiimin.in` · `/brand` · `/app`
+- `docs/knowledge/01_PRODUCT/Complete-Overhaul-Pack.md`
+- `docs/knowledge/14_PROMPTS/Pre-Ship-10x-Gate.md`
