@@ -56,6 +56,14 @@ else
 fi
 pm2 save
 
+# Re-assert the maintenance timer, journald cap and pm2 log rotation on every
+# deploy, so the box cannot drift back to the state that filled the disk.
+# Idempotent — safe to run every time.
+if [ -f "$(dirname "$0")/install-maintenance.sh" ]; then
+  echo "==> maintenance timer"
+  sudo bash "$(dirname "$0")/install-maintenance.sh" || echo "WARN: maintenance install failed (non-fatal)"
+fi
+
 # shellcheck source=deploy/wait-for-api.sh
 source "$(dirname "$0")/wait-for-api.sh"
 echo "==> health check"
