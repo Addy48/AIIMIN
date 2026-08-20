@@ -10,10 +10,10 @@ class OnboardingStoreTest {
     private val store = OnboardingStore(config, day)
 
     @Test
-    fun `fresh starts at welcome ready for shell`() {
+    fun `fresh starts at welcome not completed`() {
         val s = store.state.value
         assertThat(s.step).isEqualTo(1)
-        assertThat(s.completed).isTrue()
+        assertThat(s.completed).isFalse()
         assertThat(s.pickedCount).isEqualTo(3)
         assertThat(s.chosenValid).isTrue()
     }
@@ -22,6 +22,7 @@ class OnboardingStoreTest {
     fun `next and back clamp to step range`() {
         store.back()
         assertThat(store.state.value.step).isEqualTo(1)
+        store.setAgeConfirmed(true)
         repeat(10) { store.next() }
         assertThat(store.state.value.step).isEqualTo(OnboardingState.STEPS)
     }
@@ -65,9 +66,26 @@ class OnboardingStoreTest {
     }
 
     @Test
+    fun `returning sign-in jumps to step 2 with plate`() {
+        store.prepareReturningSignIn("aadi2004")
+        val s = store.state.value
+        assertThat(s.step).isEqualTo(2)
+        assertThat(s.ageConfirmed).isTrue()
+        assertThat(s.chosenId).isEqualTo("AADI2004")
+    }
+
+    @Test
+    fun `skip without age does nothing`() {
+        store.replay()
+        store.skipToShell()
+        assertThat(store.state.value.completed).isFalse()
+    }
+
+    @Test
     fun `skip and replay`() {
         store.replay()
         assertThat(store.state.value.completed).isFalse()
+        store.setAgeConfirmed(true)
         store.skipToShell()
         assertThat(store.state.value.completed).isTrue()
         store.replay()

@@ -9,4 +9,6 @@ android {
 dependencies {
     testImplementation(libs.bundles.unit.test)
     implementation(projects.core.network)
+    implementation(libs.mlkit.text.recognition)
+    implementation(libs.kotlinx.coroutines.android)
 }

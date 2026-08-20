@@ -13,9 +13,8 @@ import androidx.compose.ui.unit.dp
 import aiimin.designsystem.theme.AiiminTheme
 
 /**
- * The empty state: a label, one honest line about what is missing, and — when
- * there is something to do about it — one action. Never a spinner, never a
- * shrug illustration.
+ * The empty state: framed like a blank plate on the drafting board — label,
+ * one honest line, optional action. Never a spinner, never a shrug illustration.
  */
 @Composable
 fun EmptyState(
@@ -25,31 +24,39 @@ fun EmptyState(
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
 ) {
-    Column(
-        modifier
+    BlueprintBox(
+        modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = AiiminTheme.space.s8),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s3),
+            .padding(vertical = AiiminTheme.space.s4),
+        accent = false,
+        tinted = true,
     ) {
-        Text(
-            text = label.uppercase(),
-            style = AiiminTheme.type.sectionLabel,
-            color = AiiminTheme.colors.muted,
-        )
-        Text(
-            text = message,
-            style = AiiminTheme.type.bodySmall,
-            color = AiiminTheme.colors.muted,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = AiiminTheme.space.s6),
-        )
-        if (actionLabel != null && onAction != null) {
-            GhostButton(
-                label = actionLabel,
-                onClick = onAction,
-                modifier = Modifier.padding(top = AiiminTheme.space.s2),
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = AiiminTheme.space.s4),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s3),
+        ) {
+            Text(
+                text = label.uppercase(),
+                style = AiiminTheme.type.sectionLabel,
+                color = AiiminTheme.colors.accent,
             )
+            Text(
+                text = message,
+                style = AiiminTheme.type.bodySmall,
+                color = AiiminTheme.colors.muted,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = AiiminTheme.space.s3),
+            )
+            if (actionLabel != null && onAction != null) {
+                GhostButton(
+                    label = actionLabel,
+                    onClick = onAction,
+                    modifier = Modifier.padding(top = AiiminTheme.space.s2),
+                )
+            }
         }
     }
 }

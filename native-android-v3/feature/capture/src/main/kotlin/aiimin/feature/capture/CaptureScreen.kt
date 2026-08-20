@@ -1,21 +1,32 @@
 package aiimin.feature.capture
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -24,20 +35,31 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import java.io.File
+import kotlinx.coroutines.launch
 import aiimin.designsystem.component.BlueprintBox
 import aiimin.designsystem.component.EmptyState
 import aiimin.designsystem.component.Feedback
@@ -53,16 +75,122 @@ import aiimin.designsystem.component.Text
 import aiimin.designsystem.component.UndoToast
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.designsystem.theme.Hairline
+import aiimin.designsystem.theme.MinTouchTarget
 import aiimin.feature.capture.parse.CaptureField
 import aiimin.feature.capture.parse.CaptureParser
 import aiimin.feature.capture.parse.ParsedCapture
 
 @Composable
-fun CaptureRoute(modifier: Modifier = Modifier, viewModel: CaptureViewModel = hiltViewModel()) {
+fun CaptureRoute(
+    onOpenJournal: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    viewModel: CaptureViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var showScanChooser by remember { mutableStateOf(false) }
+    var pendingCameraUri by remember { mutableStateOf<Uri?>(null) }
+    val voice = remember { VoiceSpeech(context) }
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose { voice.destroy() }
+    }
+
+    fun runOcr(uri: Uri) {
+        scope.launch {
+            viewModel.onPresetNotice("Reading scan…")
+            val ocr = ScanOcr.readText(context, uri)
+            viewModel.onVoiceOrScanText(ScanOcr.seedFromOcr(ocr))
+            if (ocr.isNullOrBlank()) {
+                viewModel.onPresetNotice("No text found — describe amount/merchant on the line.")
+            }
+        }
+    }
+
+    fun beginVoiceHold() {
+        viewModel.onVoiceHoldStart()
+        voice.start(
+            onPartial = viewModel::onVoicePartial,
+            onFinal = viewModel::onVoiceHoldEnd,
+            onError = viewModel::onVoiceFailed,
+        )
+    }
+
+    fun endVoiceHold() {
+        voice.stop()
+        scope.launch {
+            kotlinx.coroutines.delay(600)
+            if (viewModel.state.value.voiceHolding) viewModel.onVoiceHoldEnd(null)
+        }
+    }
+
+    val micPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (granted) viewModel.onPresetNotice("Hold VOICE to talk.")
+        else viewModel.onPresetNotice("Microphone permission needed for voice.")
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent(),
+    ) { uri ->
+        if (uri != null) runOcr(uri)
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture(),
+    ) { ok ->
+        val uri = pendingCameraUri
+        pendingCameraUri = null
+        if (ok && uri != null) runOcr(uri)
+        else if (!ok) viewModel.onPresetNotice("Camera cancelled.")
+    }
+
+    val cameraPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        if (!granted) {
+            viewModel.onPresetNotice("Camera permission needed to snap a receipt.")
+            return@rememberLauncherForActivityResult
+        }
+        val uri = createScanImageUri(context) ?: run {
+            viewModel.onPresetNotice("Could not open camera storage.")
+            return@rememberLauncherForActivityResult
+        }
+        pendingCameraUri = uri
+        cameraLauncher.launch(uri)
+    }
 
     LaunchedEffect(state.notice) {
         if (state.notice != null) viewModel.onNoticeShown()
+    }
+
+    if (showScanChooser) {
+        ScanSourceDialog(
+            onCamera = {
+                showScanChooser = false
+                when {
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CAMERA,
+                    ) == PackageManager.PERMISSION_GRANTED -> {
+                        val uri = createScanImageUri(context)
+                        if (uri == null) {
+                            viewModel.onPresetNotice("Could not open camera storage.")
+                        } else {
+                            pendingCameraUri = uri
+                            cameraLauncher.launch(uri)
+                        }
+                    }
+                    else -> cameraPermission.launch(Manifest.permission.CAMERA)
+                }
+            },
+            onGallery = {
+                showScanChooser = false
+                galleryLauncher.launch("image/*")
+            },
+            onDismiss = { showScanChooser = false },
+        )
     }
 
     CaptureScreen(
@@ -76,9 +204,74 @@ fun CaptureRoute(modifier: Modifier = Modifier, viewModel: CaptureViewModel = hi
         onSettle = viewModel::onSettle,
         onDrift = viewModel::onDrift,
         onUndo = viewModel::onUndo,
-        onPreset = viewModel::onPreset,
+        onOpenJournal = onOpenJournal,
+        onVoicePress = {
+            when {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.RECORD_AUDIO,
+                ) == PackageManager.PERMISSION_GRANTED -> beginVoiceHold()
+                else -> micPermission.launch(Manifest.permission.RECORD_AUDIO)
+            }
+        },
+        onVoiceRelease = { endVoiceHold() },
+        onPreset = { preset ->
+            when (preset.kind) {
+                CapturePreset.Kind.JOURNAL -> onOpenJournal()
+                CapturePreset.Kind.VOICE -> Unit
+                CapturePreset.Kind.SCAN -> showScanChooser = true
+                else -> viewModel.onPreset(preset)
+            }
+        },
         modifier = modifier,
     )
+}
+
+@Composable
+private fun ScanSourceDialog(
+    onCamera: () -> Unit,
+    onGallery: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .background(AiiminTheme.colors.surface)
+                .border(Hairline, AiiminTheme.colors.rule)
+                .padding(AiiminTheme.space.s4),
+            verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s3),
+        ) {
+            Text(
+                text = "SCAN SOURCE",
+                style = AiiminTheme.type.cellLabel,
+                color = AiiminTheme.colors.accent,
+            )
+            Text(
+                text = "Snap a receipt or pick one from the gallery.",
+                style = AiiminTheme.type.bodySmall,
+                color = AiiminTheme.colors.muted,
+            )
+            PrimaryButton(label = "Camera", onClick = onCamera, modifier = Modifier.fillMaxWidth())
+            GhostButton(label = "Gallery", onClick = onGallery, modifier = Modifier.fillMaxWidth())
+            TapSurface(onClick = onDismiss) {
+                Text(
+                    text = "CANCEL",
+                    style = AiiminTheme.type.button,
+                    color = AiiminTheme.colors.muted,
+                    modifier = Modifier.padding(AiiminTheme.space.s2),
+                )
+            }
+        }
+    }
+}
+
+private fun createScanImageUri(context: android.content.Context): Uri? = try {
+    val dir = File(context.cacheDir, "scans").apply { mkdirs() }
+    val file = File(dir, "scan_${System.currentTimeMillis()}.jpg")
+    FileProvider.getUriForFile(context, "${context.packageName}.files", file)
+} catch (_: Exception) {
+    null
 }
 
 /**
@@ -102,16 +295,19 @@ fun CaptureScreen(
     onDrift: () -> Unit,
     onUndo: (Long) -> Unit,
     onPreset: (CapturePreset) -> Unit,
+    onOpenJournal: () -> Unit = {},
+    onVoicePress: () -> Unit = {},
+    onVoiceRelease: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier
-            .fillMaxSize()
-            .background(AiiminTheme.colors.bg),
+            .fillMaxSize(),
     ) {
         Column(
             Modifier
                 .fillMaxSize()
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = AiiminTheme.space.page)
                 .padding(bottom = AiiminTheme.space.s8),
@@ -128,13 +324,20 @@ fun CaptureScreen(
                 onToggleField = onToggleField,
                 onSettle = onSettle,
                 onDrift = onDrift,
+                voiceHolding = state.voiceHolding,
+                voiceElapsedMs = state.voiceElapsedMs,
+                onVoicePress = onVoicePress,
+                onVoiceRelease = onVoiceRelease,
                 modifier = Modifier.padding(top = AiiminTheme.space.s6),
             )
 
-            Presets(onPreset = onPreset, modifier = Modifier.padding(top = AiiminTheme.space.s6))
+            JournalLead(onOpenJournal = onOpenJournal, modifier = Modifier.padding(top = AiiminTheme.space.s4))
 
-            // Nothing held and nothing settled is one fact, not two empty
-            // states shouting it twice.
+            Presets(
+                onPreset = onPreset,
+                modifier = Modifier.padding(top = AiiminTheme.space.s4),
+            )
+
             if (state.holds.isEmpty() && state.settled.isEmpty()) {
                 SectionRule(label = "The day so far")
                 EmptyState(
@@ -169,6 +372,35 @@ fun CaptureScreen(
 }
 
 @Composable
+private fun JournalLead(onOpenJournal: () -> Unit, modifier: Modifier = Modifier) {
+    TapSurface(
+        onClick = onOpenJournal,
+        modifier = modifier
+            .fillMaxWidth()
+            .border(Hairline, AiiminTheme.colors.accent),
+        contentPadding = AiiminTheme.space.s3,
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "JOURNAL · templates · mood",
+                style = AiiminTheme.type.cellLabel,
+                color = AiiminTheme.colors.accent,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "OPEN",
+                style = AiiminTheme.type.button,
+                color = AiiminTheme.colors.accent,
+            )
+        }
+    }
+}
+
+@Composable
 private fun Composer(
     state: CaptureUiState,
     onTextChange: (String) -> Unit,
@@ -179,14 +411,16 @@ private fun Composer(
     onToggleField: (CaptureField) -> Unit,
     onSettle: () -> Unit,
     onDrift: () -> Unit,
+    voiceHolding: Boolean,
+    voiceElapsedMs: Long,
+    onVoicePress: () -> Unit,
+    onVoiceRelease: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val composer = remember { FocusRequester() }
-    // Landing on Capture puts the cursor in the line. Waiting to be tapped is
-    // what made logging feel like filling in a form.
     LaunchedEffect(Unit) { runCatching { composer.requestFocus() } }
 
-    BlueprintBox(modifier = modifier, accent = true, tinted = true) {
+    BlueprintBox(modifier = modifier, legend = "The line", accent = true, tinted = true) {
         BasicTextField(
             value = state.text,
             onValueChange = onTextChange,
@@ -262,6 +496,16 @@ private fun Composer(
                 )
             }
         }
+
+        VoiceHoldChip(
+            holding = voiceHolding,
+            elapsedMs = voiceElapsedMs,
+            onPress = onVoicePress,
+            onRelease = onVoiceRelease,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s3),
+        )
     }
 }
 
@@ -278,57 +522,54 @@ private fun Offer(
     onCancelEdit: () -> Unit,
     onToggleField: (CaptureField) -> Unit,
 ) {
-    Rule(Modifier.padding(vertical = AiiminTheme.space.s3))
-    Text(
-        text = parseSource.label.uppercase(),
-        style = AiiminTheme.type.mono(9.5),
-        color = if (parseSource == ParseSource.AI) {
-            AiiminTheme.colors.accent
-        } else {
-            AiiminTheme.colors.muted
-        },
-        modifier = Modifier.padding(bottom = AiiminTheme.space.s2),
-    )
-
-    Text(
-        text = "THE OFFER · ADJUST BEFORE COMMIT",
-        style = AiiminTheme.type.cellLabel,
-        color = AiiminTheme.colors.accent,
-    )
-
-    FlowRow(
+    Column(
         Modifier
             .fillMaxWidth()
-            .padding(top = AiiminTheme.space.s2),
-        horizontalArrangement = Arrangement.spacedBy(5.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp),
+            .padding(top = AiiminTheme.space.s3),
+        verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
     ) {
-        offer.chips.forEach { chip ->
-            FieldChip(
-                label = chip.label,
-                included = chip.included,
-                selected = editing == chip.field,
-                onClick = { onEditField(chip.field) },
-                onToggle = { onToggleField(chip.field) },
+        Rule()
+        Text(
+            text = parseSource.label.uppercase(),
+            style = AiiminTheme.type.mono(9.5),
+            color = if (parseSource == ParseSource.AI) {
+                AiiminTheme.colors.accent
+            } else {
+                AiiminTheme.colors.muted
+            },
+        )
+        Text(
+            text = "THE OFFER · ADJUST BEFORE COMMIT",
+            style = AiiminTheme.type.cellLabel,
+            color = AiiminTheme.colors.accent,
+        )
+        FlowRow(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+        ) {
+            offer.chips.forEach { chip ->
+                FieldChip(
+                    label = chip.label,
+                    included = chip.included,
+                    selected = editing == chip.field,
+                    onClick = { onEditField(chip.field) },
+                    onToggle = { onToggleField(chip.field) },
+                )
+            }
+        }
+        if (editing != null) {
+            FieldEditor(
+                field = editing,
+                draft = editingDraft,
+                onDraftChange = onEditDraftChange,
+                onCommit = onCommitEdit,
+                onCancel = onCancelEdit,
             )
         }
     }
-
-    if (editing != null) {
-        FieldEditor(
-            field = editing,
-            draft = editingDraft,
-            onDraftChange = onEditDraftChange,
-            onCommit = onCommitEdit,
-            onCancel = onCancelEdit,
-        )
-    }
 }
 
-/**
- * The second tap. One field, one line, two ways to leave it — which is what
- * holds the promise that a wrong reading is correctable in two taps.
- */
 @Composable
 private fun FieldEditor(
     field: CaptureField,
@@ -339,7 +580,9 @@ private fun FieldEditor(
 ) {
     val numeric = field == CaptureField.AMOUNT || field == CaptureField.DURATION
 
-    Column(Modifier.padding(top = AiiminTheme.space.s3)) {
+    Column(
+        Modifier.padding(top = AiiminTheme.space.s1),
+    ) {
         Text(
             text = field.label.uppercase(),
             style = AiiminTheme.type.cellLabel,
@@ -383,10 +626,25 @@ private fun FieldEditor(
 }
 
 @Composable
-private fun Presets(onPreset: (CapturePreset) -> Unit, modifier: Modifier = Modifier) {
+private fun Presets(
+    onPreset: (CapturePreset) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2)) {
-        CapturePreset.entries.sortedByDescending { it.available }.chunked(3).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2)) {
+        Text(
+            text = "QUICK STARTS",
+            style = AiiminTheme.type.cellLabel,
+            color = AiiminTheme.colors.muted,
+        )
+        val taps = CapturePreset.entries
+            .filter { it.kind != CapturePreset.Kind.VOICE }
+            .sortedByDescending { it.available }
+        taps.chunked(3).forEach { row ->
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 row.forEach { preset ->
                     TapSurface(
                         onClick = { onPreset(preset) },
@@ -403,11 +661,62 @@ private fun Presets(onPreset: (CapturePreset) -> Unit, modifier: Modifier = Modi
                             } else {
                                 AiiminTheme.colors.muted
                             },
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }
+                repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
+    }
+}
+
+@Composable
+private fun VoiceHoldChip(
+    holding: Boolean,
+    elapsedMs: Long,
+    onPress: () -> Unit,
+    onRelease: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val fill = if (holding) VoiceCapture.fillFraction(elapsedMs, AiiminTheme.reduceMotion) else 0f
+    val label = if (holding) VoiceCapture.formatElapsed(elapsedMs) else "HOLD TO TALK"
+    Box(
+        modifier
+            .defaultMinSize(minHeight = MinTouchTarget)
+            .border(Hairline, if (holding) AiiminTheme.colors.accent else AiiminTheme.colors.hair)
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    awaitFirstDown()
+                    onPress()
+                    try {
+                        waitForUpOrCancellation()
+                    } finally {
+                        onRelease()
+                    }
+                }
+            },
+    ) {
+        Box(Modifier.matchParentSize()) {
+            Box(
+                Modifier
+                    .align(Alignment.CenterStart)
+                    .fillMaxHeight()
+                    .fillMaxWidth(fill)
+                    .background(AiiminTheme.colors.accent.copy(alpha = if (holding) 0.28f else 0f)),
+            )
+        }
+        Text(
+            text = label,
+            style = AiiminTheme.type.button,
+            color = if (holding) AiiminTheme.colors.accent else AiiminTheme.colors.text,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .fillMaxWidth()
+                .padding(horizontal = AiiminTheme.space.s3, vertical = AiiminTheme.space.s2),
+        )
     }
 }
 

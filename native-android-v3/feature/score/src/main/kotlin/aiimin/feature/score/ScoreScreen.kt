@@ -29,11 +29,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import aiimin.core.data.PublishedDimension
+import aiimin.core.data.PublishedLifeScoreState
 import aiimin.core.data.RailMark
 import aiimin.core.data.ScoreMover
 import aiimin.core.data.ScoreState
 import aiimin.designsystem.component.BlueprintBox
 import aiimin.designsystem.component.HairRule
+import aiimin.designsystem.component.InstrumentCell
 import aiimin.designsystem.component.PrimaryButton
 import aiimin.designsystem.component.ScreenHead
 import aiimin.designsystem.component.SectionRule
@@ -77,10 +80,9 @@ fun ScoreScreen(
     Column(
         modifier
             .fillMaxSize()
-            .background(AiiminTheme.colors.bg)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = AiiminTheme.space.page)
-            .padding(bottom = AiiminTheme.space.s8),
+            .padding(bottom = AiiminTheme.space.s8 + AiiminTheme.space.s6),
     ) {
         ScreenHead(
             title = "Live score",
@@ -102,6 +104,10 @@ fun ScoreScreen(
                     .border(Hairline, AiiminTheme.colors.accent)
                     .padding(AiiminTheme.space.s3),
             )
+        }
+
+        if (state.published.available) {
+            PublishedServerBlock(state.published)
         }
 
         ProvisionalFigure(state)
@@ -161,6 +167,61 @@ fun ScoreScreen(
 }
 
 @Composable
+private fun PublishedServerBlock(published: PublishedLifeScoreState) {
+    BlueprintBox(
+        accent = true,
+        tinted = true,
+        legend = "Published · server",
+        modifier = Modifier.padding(top = AiiminTheme.space.s6),
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            Text(
+                text = published.global.toString(),
+                style = AiiminTheme.type.mono.copy(
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 44.sp,
+                    letterSpacing = (-1).sp,
+                ),
+            )
+            Text(
+                text = published.sourceLabel,
+                style = AiiminTheme.type.mono(10.5),
+                color = AiiminTheme.colors.muted,
+                modifier = Modifier.padding(bottom = 6.dp),
+            )
+        }
+        if (published.dimensions.isNotEmpty()) {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = AiiminTheme.space.s3),
+                horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+            ) {
+                published.dimensions.forEach { dim: PublishedDimension ->
+                    InstrumentCell(
+                        label = dim.label,
+                        value = dim.score.toDouble(),
+                        covered = true,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+        Text(
+            text = "Server figure — rails below are provisional local marks.",
+            style = AiiminTheme.type.bodySmall.copy(fontSize = 11.sp, lineHeight = 16.sp),
+            color = AiiminTheme.colors.muted,
+            modifier = Modifier.padding(top = AiiminTheme.space.s3),
+        )
+    }
+}
+
+@Composable
 private fun ProvisionalFigure(state: ScoreUiState) {
     val target = state.live.toFloat()
     val reduceMotion = AiiminTheme.reduceMotion
@@ -171,7 +232,6 @@ private fun ProvisionalFigure(state: ScoreUiState) {
     )
     BlueprintBox(
         accent = false,
-        marks = true,
         modifier = Modifier.padding(top = AiiminTheme.space.s6),
     ) {
         Row(

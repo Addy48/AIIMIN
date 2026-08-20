@@ -13,10 +13,11 @@ import androidx.compose.ui.unit.sp
 import aiimin.designsystem.R
 
 /**
- * Three faces, one job each (LOCKED, guardrail G4):
+ * Three faces for product chrome (LOCKED, guardrail G4), plus brand wordmark:
  * - **Barlow Condensed** — chrome: screen heads, section labels, buttons, tabs.
  * - **Barlow** — body copy.
  * - **JetBrains Mono** — every numeral in the app, without exception.
+ * - **Bodoni Moda** — literal "AIIMIN" wordmark only (matches aiimin.in / Wordmark.jsx).
  */
 val BarlowCondensed = FontFamily(
     Font(R.font.core_designsystem_barlow_condensed_medium, FontWeight.Medium),
@@ -37,11 +38,27 @@ val JetBrainsMono = FontFamily(
     monoFont(FontWeight.Bold, 700),
 )
 
+/** Site wordmark face — Bodoni Moda 700. Splash / brand lockup only. */
+val BodoniModa = FontFamily(
+    bodoniFont(FontWeight.Bold, 700),
+)
+
 @OptIn(ExperimentalTextApi::class)
 private fun monoFont(weight: FontWeight, axis: Int) = Font(
     resId = R.font.core_designsystem_jetbrains_mono_variable,
     weight = weight,
     variationSettings = FontVariation.Settings(FontVariation.weight(axis)),
+)
+
+@OptIn(ExperimentalTextApi::class)
+private fun bodoniFont(weight: FontWeight, axis: Int) = Font(
+    resId = R.font.core_designsystem_bodoni_moda_variable,
+    weight = weight,
+    variationSettings = FontVariation.Settings(
+        FontVariation.weight(axis),
+        // Match web optical size for display wordmark (~24–28px).
+        FontVariation.Setting("opsz", 28f),
+    ),
 )
 
 /**
@@ -106,6 +123,36 @@ data class AiiminTypography(
         fontSize = 52.sp,
         lineHeight = 52.sp,
         letterSpacing = (-0.02).em,
+    ),
+    /**
+     * Literal AIIMIN wordmark — Bodoni Moda 700, matches web `Wordmark.jsx`
+     * (`letterSpacing: -0.04em`). Not for chrome or body.
+     */
+    val wordmark: TextStyle = TextStyle(
+        fontFamily = BodoniModa,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp,
+        lineHeight = 22.sp,
+        letterSpacing = (-0.04).em,
+    ),
+    /** Cold-open splash — larger Bodoni lockup. */
+    val wordmarkSplash: TextStyle = TextStyle(
+        fontFamily = BodoniModa,
+        fontWeight = FontWeight.Bold,
+        fontSize = 40.sp,
+        lineHeight = 40.sp,
+        letterSpacing = (-0.04).em,
+    ),
+    /**
+     * Splash brand law under the wordmark — Genesis: "One screen. Every day."
+     * Quiet chrome: never competes with Bodoni. Wide tracking = instrument caption.
+     */
+    val splashLaw: TextStyle = TextStyle(
+        fontFamily = BarlowCondensed,
+        fontWeight = FontWeight.Medium,
+        fontSize = 11.sp,
+        lineHeight = 14.sp,
+        letterSpacing = 0.12.em,
     ),
 ) {
     /** A numeral at an arbitrary size — use for every figure that is not [figure]. */

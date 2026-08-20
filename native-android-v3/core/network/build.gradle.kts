@@ -18,11 +18,11 @@ android {
 
 dependencies {
     api(projects.core.model)
+    api(libs.retrofit)
+    api(libs.retrofit.kotlinx.serialization)
+    api(libs.okhttp.logging.interceptor)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.okhttp.logging.interceptor)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.kotlinx.serialization)
 
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.kotlinx.coroutines.test)

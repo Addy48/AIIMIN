@@ -23,6 +23,9 @@ data class CaptureUiState(
     val holds: List<HeldCapture> = emptyList(),
     val settled: List<SettledCapture> = emptyList(),
     val notice: Notice? = null,
+    val voiceHolding: Boolean = false,
+    val voiceElapsedMs: Long = 0L,
+    val voicePartial: String = "",
 ) {
     val hasOffer: Boolean get() = offer?.isEmpty == false
     val canSettle: Boolean get() = text.isNotBlank()

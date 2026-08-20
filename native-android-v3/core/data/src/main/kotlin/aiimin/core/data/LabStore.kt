@@ -1,5 +1,6 @@
 package aiimin.core.data
 
+import aiimin.core.network.CorrelationsResponse
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,119 @@ class LabStore @Inject constructor() {
         if (index !in s.pairs.indices) return@update s
         s.copy(selectedIndex = index)
     }
+
+    fun resetToSeed() {
+        _state.value = LabState.seed()
+    }
+
+    fun markSeedOnly() = _state.update {
+        it.copy(isSeed = true, headMetaOverride = "SEED · DEMO — not your live correlations")
+    }
+
+    /** Almost-true 10-day phone sample correlations for thorough Lab QA. */
+    fun applyRemote(data: CorrelationsResponse) {
+        if (data.insufficientData || data.correlations.isEmpty()) {
+            _state.update {
+                LabState(
+                    pairs = emptyList(),
+                    selectedIndex = 0,
+                    daysLogged = 0,
+                    rejectedCount = 0,
+                    isSeed = false,
+                    headMetaOverride = "INSUFFICIENT · need more days",
+                )
+            }
+            return
+        }
+        val survivors = data.correlations.filter { it.bhPassed }
+        val rejected = (data.correlations.size - survivors.size).coerceAtLeast(0)
+        val pairs = survivors.map { row ->
+            val rho = row.rho ?: 0.0
+            val rhoStr = when {
+                rho < 0 -> "−.${"%.0f".format(kotlin.math.abs(rho) * 100)}"
+                else -> "+.${"%.0f".format(rho * 100)}"
+            }
+            val q = row.pValue?.let { p ->
+                if (p < 0.001) ".001" else ".${"%03d".format((p * 1000).toInt().coerceAtLeast(1))}"
+            } ?: "—"
+            val a = row.signalALabel ?: row.signalA ?: "A"
+            val b = row.signalBLabel ?: row.signalB ?: "B"
+            CorrelationPair(
+                label = "$a → $b",
+                full = "$a → $b",
+                rho = rhoStr,
+                q = q,
+                n = row.n ?: 0,
+                plain = row.headline
+                    ?: data.insights.firstOrNull { it.headline != null }?.headline
+                    ?: "When $a moves, $b tends to follow.",
+            )
+        }
+        val n = survivors.maxOfOrNull { it.n ?: 0 } ?: 0
+        _state.value = LabState(
+            pairs = pairs.ifEmpty {
+                listOf(
+                    CorrelationPair(
+                        label = "No survivors",
+                        full = "Benjamini–Hochberg rejected the rest",
+                        rho = "—",
+                        q = "—",
+                        n = n,
+                        plain = "Nothing cleared FDR 0.10. That is a result — not a demo.",
+                    )
+                )
+            },
+            selectedIndex = 0,
+            daysLogged = n,
+            rejectedCount = rejected,
+            isSeed = false,
+            headMetaOverride = "LIVE · n=${n}d · $rejected rejected",
+        )
+    }
+
+    fun loadTenDaySample() = _state.update {
+        LabState(
+            pairs = listOf(
+                CorrelationPair(
+                    label = "Walk → screen time",
+                    full = "07:00 walk → screen time",
+                    rho = "−.72",
+                    q = ".008",
+                    n = 10,
+                    plain = "Sample 10d: morning walk days sit ~2h lower on screen.",
+                ),
+                CorrelationPair(
+                    label = "Steps → Life Score",
+                    full = "Daily steps → Life Score",
+                    rho = "+.81",
+                    q = ".003",
+                    n = 10,
+                    plain = "Sample 10d: higher step days track with a stronger published mark.",
+                ),
+                CorrelationPair(
+                    label = "Unlocks → screen",
+                    full = "Unlock count → screen time",
+                    rho = "+.64",
+                    q = ".022",
+                    n = 10,
+                    plain = "Sample 10d: twitchy unlock days also run longer screen sessions.",
+                ),
+                CorrelationPair(
+                    label = "Sleep proxy → focus",
+                    full = "Late-night screen → next focus",
+                    rho = "−.48",
+                    q = ".061",
+                    n = 10,
+                    plain = "Sample 10d: heavy late Instagram nights lean into thinner deep work.",
+                ),
+            ),
+            selectedIndex = 0,
+            daysLogged = 10,
+            rejectedCount = 2,
+            isSeed = true,
+            headMetaOverride = "SAMPLE · 10 DAYS — almost-true phone ledger",
+        )
+    }
 }
 
 data class CorrelationPair(
@@ -45,9 +159,14 @@ data class LabState(
     val selectedIndex: Int,
     val daysLogged: Int,
     val rejectedCount: Int,
+    val isSeed: Boolean = true,
+    val headMetaOverride: String? = null,
 ) {
     val selected: CorrelationPair get() = pairs[selectedIndex.coerceIn(pairs.indices)]
-    val headMeta: String get() = "n=${daysLogged}d"
+    val headMeta: String
+        get() = headMetaOverride
+            ?: if (isSeed) "SEED · DEMO"
+            else "n=${daysLogged}d"
 
     companion object {
         fun seed() = LabState(
@@ -96,6 +215,7 @@ data class LabState(
             selectedIndex = 0,
             daysLogged = 184,
             rejectedCount = 14,
+            isSeed = true,
         )
     }
 }

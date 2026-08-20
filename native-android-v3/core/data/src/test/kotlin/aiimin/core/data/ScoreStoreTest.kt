@@ -41,6 +41,13 @@ class ScoreStoreTest {
         assertThat(store.state.value.settled).isTrue()
         assertThat(day.state.value.history).hasSize(before + 1)
         assertThat(day.state.value.history.last()).isEqualTo(score.toDouble())
-        assertThat(store.state.value.notice?.message).contains("Day settled at")
+        assertThat(store.state.value.notice?.message).contains("Day marked")
+        assertThat(store.state.value.notice?.message).contains("server LHS")
+    }
+
+    @Test
+    fun `server pending label is honest`() {
+        store.markServerPending()
+        assertThat(store.state.value.notice?.message).isEqualTo("MARKED ON PHONE · SERVER PENDING")
     }
 }

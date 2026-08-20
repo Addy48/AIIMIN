@@ -38,6 +38,38 @@ data object Score : Destination
 @Serializable
 data object Journal : Destination
 
+/** Contextual — native English Spark from Config / Lab. */
+@Serializable
+data object English : Destination
+
+/** Contextual — notes vault from Today / Config / Capture. */
+@Serializable
+data object Notes : Destination
+
+/** Contextual — Knock channels from Config. */
+@Serializable
+data object Notifications : Destination
+
+/** Contextual — local graph recall. */
+@Serializable
+data object Search : Destination
+
+/** Contextual — chronology, not a feed. */
+@Serializable
+data object Timeline : Destination
+
+/** Contextual — family documents from bootstrap. */
+@Serializable
+data object Family : Destination
+
+/** Contextual — resumes from bootstrap. */
+@Serializable
+data object Documents : Destination
+
+/** Contextual — goals from bootstrap. Edit on web. */
+@Serializable
+data object Goals : Destination
+
 /** A tab in the bottom bar: a destination, its chrome label, and its glyph. */
 enum class Tab(val destination: Destination, val label: String, val icon: AiiminIcon) {
     DAY(Day, "DAY", AiiminIcon.Day),

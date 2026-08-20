@@ -71,4 +71,13 @@ class DayStoreTest {
         assertThat(journal.observation).isEqualTo(Observation(3L, null))
         assertThat(journal.attainment).isNull()
     }
+
+    @Test
+    fun `config minimums focus is one-shot`() {
+        assertThat(store.focusMinimums.value).isFalse()
+        store.requestFocusMinimums()
+        assertThat(store.focusMinimums.value).isTrue()
+        store.consumeFocusMinimums()
+        assertThat(store.focusMinimums.value).isFalse()
+    }
 }

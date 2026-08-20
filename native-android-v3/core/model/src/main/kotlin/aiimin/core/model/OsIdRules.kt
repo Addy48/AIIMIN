@@ -12,6 +12,9 @@ object OsIdRules {
 
     fun normalize(raw: String): String = raw.trim().uppercase()
 
+    fun isEmailIdentifier(raw: String): Boolean =
+        raw.trim().contains('@')
+
     fun isValid(raw: String): Boolean {
         val id = normalize(raw)
         if (id.length != LENGTH) return false

@@ -67,8 +67,11 @@ dependencies {
     implementation(projects.feature.score)
     implementation(projects.feature.journal)
     implementation(projects.feature.lab)
+    implementation(projects.feature.english)
+    implementation(projects.feature.notes)
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -76,6 +79,10 @@ dependencies {
     implementation(libs.bundles.compose)
     implementation(libs.bundles.navigation3)
     implementation(libs.kotlinx.coroutines.android)
+
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.glance.appwidget)
 
     testImplementation(libs.bundles.unit.test)
     androidTestImplementation(libs.bundles.android.test)

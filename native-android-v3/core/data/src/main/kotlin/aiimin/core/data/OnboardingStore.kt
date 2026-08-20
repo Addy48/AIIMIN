@@ -18,13 +18,9 @@ import kotlinx.coroutines.launch
 /**
  * Calibration (onboarding) — local (G7).
  *
- * One job of the surface: get a person from install to their first settled log.
- * Auth / Groq / live OS-ID availability land later; this holds the six-step
- * Drafting Table flow and the completion gate.
- *
- * [completed] defaults **true** so other surfaces stay reachable in craft;
- * Config → Replay resets the path. The flag now survives process death via
- * [AppPreferences].
+ * One job: install → signed-in (or offline demo) → first settled log.
+ * [completed] defaults **false** for new installs; DataStore persists after settle/skip.
+ * Config → Replay / Sign out resets the path.
  */
 @Singleton
 class OnboardingStore @Inject constructor(
@@ -42,7 +38,7 @@ class OnboardingStore @Inject constructor(
         CoroutineScope(SupervisorJob() + Dispatchers.Unconfined),
     )
 
-    private val _state = MutableStateFlow(OnboardingState.fresh(completed = true))
+    private val _state = MutableStateFlow(OnboardingState.fresh(completed = false))
     val state: StateFlow<OnboardingState> = _state.asStateFlow()
 
     init {
@@ -53,7 +49,8 @@ class OnboardingStore @Inject constructor(
     }
 
     fun next() = _state.update { s ->
-        if (s.step >= OnboardingState.STEPS) s else s.copy(step = s.step + 1)
+        if (s.step == 1 && !s.ageConfirmed) s
+        else if (s.step >= OnboardingState.STEPS) s else s.copy(step = s.step + 1)
     }
 
     fun back() = _state.update { s ->
@@ -75,8 +72,44 @@ class OnboardingStore @Inject constructor(
 
     fun setFirstCapture(value: String) = _state.update { it.copy(firstCapture = value) }
 
+    fun setAgeConfirmed(on: Boolean) = _state.update { it.copy(ageConfirmed = on) }
+
+    /**
+     * Returning phone: jump to Sign in with the remembered OS-ID.
+     * Welcome / 18+ already passed. Google is not a phone path.
+     */
+    fun prepareReturningSignIn(osId: String?) {
+        val id = osId?.let { aiimin.core.model.OsIdRules.normalize(it) }
+        val valid = id != null && aiimin.core.model.OsIdRules.isValid(id)
+        _state.update {
+            it.copy(
+                step = 2,
+                ageConfirmed = true,
+                chosenId = if (valid && id != null) id else it.chosenId,
+            )
+        }
+    }
+
     /** Sign-in is visual-only locally — advance without storing a PIN. */
     fun continuePastSignIn() = next()
+
+    /**
+     * Returning user already holds a valid OS-ID (signed in with it).
+     * Skip the claim plate — go to Arc (step 4).
+     */
+    fun skipClaimForReturningUser(osId: String) {
+        val normalized = OsIdRules.normalize(osId)
+        if (!OsIdRules.isValid(normalized)) {
+            next()
+            return
+        }
+        _state.update {
+            it.copy(
+                chosenId = normalized,
+                step = 4.coerceAtMost(OnboardingState.STEPS),
+            )
+        }
+    }
 
     /**
      * Settle the first line, write identity + minimums into the shared stores,
@@ -104,9 +137,11 @@ class OnboardingStore @Inject constructor(
     }
 
     /** Craft escape — mark complete without writing. */
-    fun skipToShell() {
+    fun skipToShell(): Boolean {
+        if (!_state.value.ageConfirmed) return false
         _state.update { it.copy(completed = true) }
         persistCompleted(true)
+        return true
     }
 
     /** Replay from Config — wipe completion, keep seed alts. */
@@ -130,6 +165,7 @@ data class OnboardingState(
     val minimums: List<OnboardingMinimum>,
     val firstCapture: String,
     val completed: Boolean,
+    val ageConfirmed: Boolean = false,
 ) {
     val pickedCount: Int get() = minimums.count { it.picked }
     val chosenValid: Boolean get() = OsIdRules.isValid(chosenId)
@@ -160,6 +196,7 @@ data class OnboardingState(
             },
             firstCapture = "",
             completed = completed,
+            ageConfirmed = false,
         )
     }
 }

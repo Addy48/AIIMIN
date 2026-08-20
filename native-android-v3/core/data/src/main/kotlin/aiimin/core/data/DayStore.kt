@@ -35,6 +35,21 @@ class DayStore @Inject constructor() {
     private val _state = MutableStateFlow(DayState.seed())
     val state: StateFlow<DayState> = _state.asStateFlow()
 
+    /**
+     * Config Daily minimums lands on Today scrolled to the same list
+     * (spec D3 — one catalog, not a dead-end notice).
+     */
+    private val _focusMinimums = MutableStateFlow(false)
+    val focusMinimums: StateFlow<Boolean> = _focusMinimums.asStateFlow()
+
+    fun requestFocusMinimums() {
+        _focusMinimums.value = true
+    }
+
+    fun consumeFocusMinimums() {
+        _focusMinimums.value = false
+    }
+
     /** A settled capture lands on the day. Called by Capture, read by Today. */
     fun recordCapture(label: String, time: String, amount: Int?) = _state.update { day ->
         day.copy(captures = listOf(SettledLine(label, time, amount)) + day.captures)
@@ -65,9 +80,41 @@ class DayStore @Inject constructor() {
 
     fun setMicroTask(text: String) = _state.update { it.copy(microTask = text) }
 
+    /** Name lives in Config — strip identity leftovers off Day. */
+    fun clearIdentityMicroTask() = _state.update { day ->
+        if (day.microTask.startsWith("Signed in as", ignoreCase = true)) {
+            day.copy(microTask = "")
+        } else {
+            day
+        }
+    }
+
+    /** Keep Walk pursuit target aligned with the phone steps goal. */
+    fun setWalkStepsTarget(target: Long) = _state.update { day ->
+        day.copy(
+            today = day.today.map { entry ->
+                val c = entry.commitment
+                val isWalk = c.label.equals("Walk", ignoreCase = true) ||
+                    c.unit.equals("steps", ignoreCase = true)
+                if (!isWalk) entry
+                else entry.copy(commitment = c.copy(target = target.toDouble()))
+            },
+        )
+    }
+
     /** Append a settled day figure so trajectory has something to climb. */
     fun appendHistory(score: Double) = _state.update { day ->
         day.copy(history = day.history + score, baselineDays = day.baselineDays + 1)
+    }
+
+    /** Replace score history with almost-true 10-day sample (for QA charts). */
+    fun loadTenDaySampleHistory(scores: List<Double> = aiimin.core.data.device.TenDaySample.lifeScores()) =
+        _state.update { day ->
+            day.copy(history = scores, baselineDays = scores.size)
+        }
+
+    fun clearSampleHistory() = _state.update { day ->
+        day.copy(history = emptyList(), baselineDays = 0)
     }
 
     /**
@@ -100,6 +147,94 @@ class DayStore @Inject constructor() {
             baselineDays = 0,
         )
     }
+
+    /**
+     * Replace seed pursuits with live habits from `/mobile/bootstrap`.
+     * Floors stay local physiology until the floors API ships.
+     * Same-day local captures survive the pull (flush runs before this).
+     */
+    fun hydrateFromBootstrap(
+        habits: List<aiimin.core.network.HabitDto>,
+        completedToday: Set<String>,
+        userName: String?,
+    ) = _state.update { day ->
+        val keepCaptures = day.captures
+        // Optimistic local ticks survive a lagging habitCompletedToday after flush.
+        val localDoneServerIds = day.today.mapNotNull { entry ->
+            val sid = entry.commitment.serverId ?: return@mapNotNull null
+            if ((entry.observation.value ?: 0.0) >= 0.999) sid else null
+        }.toSet()
+        if (habits.isEmpty()) {
+            val floorsOnly = day.floors.map { it.commitment }
+            return@update day.copy(
+                instruments = floorsOnly.map { it.instrument }.distinct().ifEmpty { day.instruments },
+                today = floorsOnly.map { c ->
+                    DayEntry(c, Observation(c.id, null), Hold.seed())
+                },
+                captures = keepCaptures,
+                isLive = true,
+                isSeed = false,
+            )
+        }
+        val floors = day.floors.map { it.commitment }
+        val pursuits = habits.mapIndexed { i, h ->
+            val label = cleanHabitLabel(h.name).ifBlank { "Habit" }
+            Commitment(
+                id = (i + 1).toLong(),
+                instrument = instrumentFor(label),
+                kind = CommitmentKind.PURSUIT,
+                shape = aiimin.core.model.CommitmentShape.SHOW_UP,
+                label = label,
+                serverId = h.id,
+            )
+        }
+        val nextFloors = floors.mapIndexed { i, c ->
+            c.copy(id = (pursuits.size + i + 1).toLong(), serverId = null)
+        }
+        val all = pursuits + nextFloors
+        day.copy(
+            instruments = pursuits.map { it.instrument }.distinct().ifEmpty { day.instruments },
+            today = all.map { entryCommitment ->
+                val sid = entryCommitment.serverId
+                val done = when {
+                    sid == null -> false
+                    sid in completedToday -> true
+                    // Server lag after a successful tick — keep local done.
+                    sid in localDoneServerIds -> true
+                    else -> false
+                }
+                DayEntry(
+                    commitment = entryCommitment,
+                    observation = Observation(
+                        entryCommitment.id,
+                        if (done) 1.0 else null,
+                    ),
+                    hold = Hold.seed(),
+                )
+            },
+            captures = keepCaptures,
+            isLive = true,
+            isSeed = false,
+        )
+    }
+
+    fun resetToSeed() {
+        _state.value = DayState.seed()
+    }
+
+    /** Drop craft pursuits before live pull; keep floors. */
+    fun clearSeedPursuits() = _state.update { day ->
+        val floors = day.floors
+        day.copy(
+            today = floors,
+            captures = emptyList(),
+            isSeed = false,
+            isLive = true,
+            microTask = "",
+        )
+    }
+
+    fun markLive() = _state.update { it.copy(isLive = true, isSeed = false) }
 }
 
 private fun instrumentFor(label: String): Instrument {
@@ -111,6 +246,14 @@ private fun instrumentFor(label: String): Instrument {
         "lab" in l || "shadow" in l || "deep" in l -> Instrument.CRAFT
         else -> Instrument.CRAFT
     }
+}
+
+/** Drop leading emoji / symbol noise — name only. Drafting Table, not sticker pack. */
+fun cleanHabitLabel(raw: String?): String {
+    if (raw.isNullOrBlank()) return ""
+    val start = raw.indexOfFirst { it.isLetterOrDigit() }
+    if (start < 0) return raw.trim()
+    return raw.substring(start).trim()
 }
 
 /** One committed capture, as the day sees it. */
@@ -142,6 +285,8 @@ data class DayState(
     val history: List<Double>,
     val baselineDays: Int,
     val microTask: String,
+    val isSeed: Boolean = true,
+    val isLive: Boolean = false,
 ) {
     val pursuits: List<DayEntry> get() = today.filter { it.commitment.scored }
     val floors: List<DayEntry> get() = today.filter { !it.commitment.scored }
@@ -217,7 +362,7 @@ data class DayState(
                     id = 5, instrument = Instrument.BODY, kind = CommitmentKind.FLOOR,
                     shape = aiimin.core.model.CommitmentShape.MORE,
                     label = "Steps floor", unit = "steps", target = 5_000.0,
-                    reason = "ten hours seated",
+                    reason = "physiology · not the 13k goal",
                 ),
                 Commitment(
                     id = 6, instrument = Instrument.RECOVERY, kind = CommitmentKind.FLOOR,

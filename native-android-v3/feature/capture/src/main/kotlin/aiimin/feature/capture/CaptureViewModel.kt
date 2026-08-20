@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import aiimin.core.data.DayStore
 import aiimin.core.data.MoneyStore
+import aiimin.core.data.sync.GraphSyncRepository
 import aiimin.core.network.CaptureParseRepository
 import aiimin.core.network.ParseChipDto
 import aiimin.core.network.ParseResponse
@@ -39,6 +40,7 @@ class CaptureViewModel @Inject constructor(
     private val clock: Clock,
     private val day: DayStore,
     private val money: MoneyStore,
+    private val sync: GraphSyncRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CaptureUiState())
@@ -46,7 +48,11 @@ class CaptureViewModel @Inject constructor(
 
     private var nextId = 1L
     private val moneyByCapture = mutableMapOf<Long, Long>()
+    /** Capture id → (description, amount) for undoing queued wealth POSTs. */
+    private val moneyPushByCapture = mutableMapOf<Long, Pair<String, Int>>()
     private var aiJob: Job? = null
+    private var holdJob: Job? = null
+    private var holdStartedAt = 0L
 
     fun onTextChange(text: String) {
         _state.update { current ->
@@ -98,6 +104,7 @@ class CaptureViewModel @Inject constructor(
             amount = amount,
         )
         day.recordCapture(settled.label, settled.time, amount)
+        val noteBody = noteBodyFrom(settled.label, amount)
         if (amount != null && amount > 0) {
             val category = offer?.chip(CaptureField.CATEGORY)?.takeIf { it.included }?.value
                 ?.uppercase()
@@ -110,6 +117,23 @@ class CaptureViewModel @Inject constructor(
                 dateLabel = LocalDate.now(clock).format(DATE),
             )
             moneyByCapture[settled.id] = moneyId
+            val name = offer?.chip(CaptureField.MERCHANT)?.takeIf { it.included }?.value
+                ?: settled.label.take(28)
+            moneyPushByCapture[settled.id] = name to amount
+            viewModelScope.launch {
+                sync.pushExpense(
+                    name = name,
+                    amountInr = amount,
+                    category = category,
+                    dateIso = LocalDate.now(clock).toString(),
+                )
+                sync.refreshAll()
+            }
+        } else if (noteBody != null) {
+            viewModelScope.launch {
+                sync.saveNote(title = noteBody.lineSequence().first().take(48), content = noteBody)
+                sync.flushPendingMutations()
+            }
         }
         current.copy(
             text = "",
@@ -119,8 +143,11 @@ class CaptureViewModel @Inject constructor(
             editingDraft = "",
             settled = listOf(settled) + current.settled,
             notice = Notice(
-                message = amount?.let { "Settled · ₹${it.grouped()} written to the ledger." }
-                    ?: "Settled · logged to the day.",
+                message = when {
+                    amount != null -> "Settled · ₹${amount.grouped()} written to the ledger."
+                    noteBody != null -> "Note queued · sync will push to the vault."
+                    else -> "Settled · logged to the day."
+                },
                 undoId = settled.id,
             ),
         )
@@ -144,12 +171,20 @@ class CaptureViewModel @Inject constructor(
         val undone = current.settled.firstOrNull { it.id == id } ?: return@update current
         day.removeCapture(undone.label)
         moneyByCapture.remove(id)?.let { money.removeEntry(it) }
+        val push = moneyPushByCapture.remove(id)
+        val queued = push?.let { (name, amt) -> sync.cancelPendingMoney(name, amt) } == true
         current.copy(
             settled = current.settled - undone,
             text = undone.label,
             offer = parser.parse(undone.label),
             parseSource = ParseSource.LOCAL,
-            notice = null,
+            notice = Notice(
+                when {
+                    push == null -> "Undone."
+                    queued -> "Undone · queued sync cancelled."
+                    else -> "Undone locally · already synced — edit on aiimin.in if needed."
+                },
+            ),
         )
     }
 
@@ -161,8 +196,69 @@ class CaptureViewModel @Inject constructor(
     fun onDismissNotice() = _state.update { it.copy(notice = null) }
 
     fun onPreset(preset: CapturePreset) = _state.update { current ->
-        preset.seedText?.let { seed -> return@update onSeed(current, seed) }
-        current.copy(notice = Notice(preset.unavailableReason))
+        when (preset.kind) {
+            CapturePreset.Kind.SEED -> {
+                preset.seedText?.let { seed -> return@update onSeed(current, seed) }
+                current.copy(notice = Notice(preset.unavailableReason))
+            }
+            CapturePreset.Kind.JOURNAL,
+            CapturePreset.Kind.VOICE,
+            CapturePreset.Kind.SCAN,
+            -> current // Route / ActivityResult handle these from the UI.
+            CapturePreset.Kind.STUB -> current.copy(notice = Notice(preset.unavailableReason))
+        }
+    }
+
+    fun onPresetNotice(message: String) = _state.update {
+        it.copy(notice = Notice(message))
+    }
+
+    fun onVoiceOrScanText(spoken: String) = _state.update { current ->
+        onSeed(current, spoken.trim())
+    }
+
+    fun onVoiceHoldStart() {
+        holdJob?.cancel()
+        holdStartedAt = clock.millis()
+        _state.update { VoiceCapture.start(it) }
+        holdJob = viewModelScope.launch {
+            while (true) {
+                delay(100)
+                val elapsed = clock.millis() - holdStartedAt
+                _state.update { VoiceCapture.tick(it, elapsed) }
+            }
+        }
+    }
+
+    fun onVoicePartial(text: String) = _state.update { VoiceCapture.partial(it, text) }
+
+    fun onVoiceHoldEnd(spoken: String?) {
+        holdJob?.cancel()
+        holdJob = null
+        val current = _state.value
+        if (!current.voiceHolding) {
+            val extra = spoken?.trim().orEmpty()
+            if (extra.isNotEmpty()) {
+                _state.update { onSeed(it, extra) }
+                scheduleAiParse(extra)
+            }
+            return
+        }
+        val next = VoiceCapture.end(current, spoken, parser::parse)
+        _state.value = next
+        if (next.text.isNotBlank()) scheduleAiParse(next.text)
+    }
+
+    fun onVoiceFailed() {
+        holdJob?.cancel()
+        holdJob = null
+        _state.update {
+            it.copy(
+                voiceHolding = false,
+                voiceElapsedMs = 0L,
+                notice = Notice("VOICE · OFFLINE"),
+            )
+        }
     }
 
     private fun onSeed(current: CaptureUiState, seed: String): CaptureUiState {
@@ -205,6 +301,18 @@ class CaptureViewModel @Inject constructor(
         val DATE: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM")
         const val NOTICE_MILLIS = 4200L
         const val AI_DEBOUNCE_MS = 480L
+
+        /** `note:` / `note ` prefix → vault note; never money. */
+        fun noteBodyFrom(raw: String, amount: Int?): String? {
+            if (amount != null && amount > 0) return null
+            val trimmed = raw.trim()
+            val stripped = when {
+                trimmed.startsWith("note:", ignoreCase = true) -> trimmed.substring(5).trim()
+                trimmed.startsWith("note ", ignoreCase = true) -> trimmed.substring(5).trim()
+                else -> return null
+            }
+            return stripped.takeIf { it.isNotBlank() }
+        }
     }
 }
 
@@ -237,14 +345,18 @@ enum class CapturePreset(
     val label: String,
     val seedText: String? = null,
     val unavailableReason: String = "",
+    val kind: Kind = Kind.SEED,
 ) {
     EXPENSE("Expense", seedText = "paid  swiggy dinner"),
     NOTE("Note", seedText = "note: "),
-    JOURNAL("Journal", unavailableReason = "Journal is a surface of its own — open it from Config."),
-    VOICE("Voice", unavailableReason = "Voice capture arrives with the voice line."),
-    SCAN("Scan", unavailableReason = "Receipt scan needs the camera pipeline."),
-    HABIT("Habit", unavailableReason = "Daily minimums live on Today."),
+    JOURNAL("Journal", kind = Kind.JOURNAL),
+    VOICE("Voice", kind = Kind.VOICE),
+    SCAN("Scan", kind = Kind.SCAN),
+    HABIT("Habit", seedText = "habit done · "),
     ;
 
-    val available: Boolean get() = seedText != null
+    enum class Kind { SEED, JOURNAL, VOICE, SCAN, STUB }
+
+    val available: Boolean
+        get() = kind != Kind.STUB && (seedText != null || kind != Kind.SEED)
 }

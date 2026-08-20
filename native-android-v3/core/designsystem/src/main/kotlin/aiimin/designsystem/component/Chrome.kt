@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +44,7 @@ fun ScreenHead(
     metaColor: Color = AiiminTheme.colors.muted,
 ) {
     Column(modifier.fillMaxWidth()) {
-        Rule()
+        Rule(color = AiiminTheme.colors.accent.copy(alpha = 0.55f))
         Row(
             Modifier
                 .fillMaxWidth()
@@ -51,14 +52,25 @@ fun ScreenHead(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom,
         ) {
-            Text(
-                text = title.uppercase(),
-                style = AiiminTheme.type.chrome,
-                color = AiiminTheme.colors.text,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
                 modifier = Modifier.weight(1f, fill = false),
-            )
+            ) {
+                Box(
+                    Modifier
+                        .height(12.dp)
+                        .width(2.dp)
+                        .background(AiiminTheme.colors.accent),
+                )
+                Text(
+                    text = title.uppercase(),
+                    style = AiiminTheme.type.chrome,
+                    color = AiiminTheme.colors.text,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
             if (meta != null) {
                 Text(text = meta, style = AiiminTheme.type.mono, color = metaColor)
             }
@@ -78,7 +90,11 @@ fun SectionRule(
     value: String? = null,
     valueColor: Color = AiiminTheme.colors.accent,
 ) {
-    Column(modifier.fillMaxWidth().padding(top = AiiminTheme.space.s6)) {
+    Column(
+        modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s6, bottom = AiiminTheme.space.s2),
+    ) {
         Rule()
         Row(
             Modifier
@@ -91,12 +107,17 @@ fun SectionRule(
                 text = label.uppercase(),
                 style = AiiminTheme.type.sectionLabel,
                 color = AiiminTheme.colors.muted,
+                modifier = Modifier.weight(1f, fill = false),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             if (value != null) {
                 Text(
                     text = value,
                     style = AiiminTheme.type.mono(10.0, FontWeight.Medium),
                     color = valueColor,
+                    modifier = Modifier.padding(start = AiiminTheme.space.s3),
+                    maxLines = 1,
                 )
             }
         }

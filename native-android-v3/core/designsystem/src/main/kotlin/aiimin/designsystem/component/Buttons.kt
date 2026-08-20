@@ -7,6 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.designsystem.theme.Hairline
 import aiimin.designsystem.theme.MinTouchTarget
+import androidx.compose.foundation.ExperimentalFoundationApi
 
 /** How a press feels in the hand. A commit must not feel like a browse. */
 enum class Feedback(internal val constant: Int) {
@@ -111,6 +113,7 @@ fun GhostButton(
  *
  * No ripple: a spreading circle is Material's language, not a drafting board's.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TapSurface(
     onClick: () -> Unit,
@@ -120,14 +123,18 @@ fun TapSurface(
     /** Off for chips and inline marks, which carry their own padding. */
     minTouchTarget: Boolean = true,
     feedback: Feedback = Feedback.TAP,
+    onLongClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     val interactions = remember { MutableInteractionSource() }
     val pressed by interactions.collectIsPressedAsState()
     val reduceMotion = AiiminTheme.reduceMotion
     val squeeze by animateFloatAsState(
-        targetValue = if (pressed && !reduceMotion) 0.97f else 1f,
-        animationSpec = tween(durationMillis = if (reduceMotion) 0 else 110),
+        targetValue = if (pressed && !reduceMotion) 0.985f else 1f,
+        animationSpec = tween(
+            durationMillis = if (reduceMotion) 0 else TapPressMillis,
+            easing = TapPressEasing,
+        ),
         label = "tap-squeeze",
     )
     val view = LocalView.current
@@ -136,10 +143,32 @@ fun TapSurface(
         modifier
             .scale(squeeze)
             .then(if (minTouchTarget) Modifier.defaultMinSize(minHeight = MinTouchTarget) else Modifier)
-            .clickable(interactionSource = interactions, indication = null, enabled = enabled) {
-                view.performHapticFeedback(feedback.constant)
-                onClick()
-            }
+            .then(
+                if (onLongClick != null) {
+                    Modifier.combinedClickable(
+                        interactionSource = interactions,
+                        indication = null,
+                        enabled = enabled,
+                        onClick = {
+                            view.performHapticFeedback(feedback.constant)
+                            onClick()
+                        },
+                        onLongClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                            onLongClick()
+                        },
+                    )
+                } else {
+                    Modifier.clickable(
+                        interactionSource = interactions,
+                        indication = null,
+                        enabled = enabled,
+                    ) {
+                        view.performHapticFeedback(feedback.constant)
+                        onClick()
+                    }
+                },
+            )
             .padding(contentPadding),
         contentAlignment = Alignment.Center,
     ) {

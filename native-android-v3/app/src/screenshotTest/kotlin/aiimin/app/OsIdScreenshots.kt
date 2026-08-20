@@ -37,5 +37,5 @@ private fun seed() = OsIdUiState(
 
 @Composable
 private fun OsId(state: OsIdUiState) {
-    OsIdScreen(state = state, onCopy = {}, onDismissNotice = {})
+    OsIdScreen(state = state, onCopy = {}, onShare = {}, onDismissNotice = {})
 }

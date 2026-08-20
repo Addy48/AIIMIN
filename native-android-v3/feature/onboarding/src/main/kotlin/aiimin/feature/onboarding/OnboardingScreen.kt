@@ -15,14 +15,17 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
@@ -40,6 +43,7 @@ import aiimin.core.network.OsIdAvailability
 import aiimin.core.network.OsIdCheckResult
 import aiimin.designsystem.brand.BrandMark
 import aiimin.designsystem.component.BlueprintBox
+import aiimin.designsystem.component.SheetGround
 import aiimin.designsystem.component.GhostButton
 import aiimin.designsystem.component.HairRule
 import aiimin.designsystem.component.PrimaryButton
@@ -47,19 +51,47 @@ import aiimin.designsystem.component.TapSurface
 import aiimin.designsystem.component.Text
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.designsystem.theme.Hairline
+import kotlinx.coroutines.launch
 
 @Composable
 fun OnboardingRoute(
     onEntered: () -> Unit,
+    onRequestBiometric: suspend () -> Boolean = { false },
     modifier: Modifier = Modifier,
     viewModel: OnboardingViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val osIdLive by viewModel.osIdLive.collectAsStateWithLifecycle()
+    val identifier by viewModel.identifier.collectAsStateWithLifecycle()
+    val pin by viewModel.pin.collectAsStateWithLifecycle()
+    val authNotice by viewModel.authNotice.collectAsStateWithLifecycle()
+    val authBusy by viewModel.authBusy.collectAsStateWithLifecycle()
+    val offerBiometric by viewModel.offerBiometric.collectAsStateWithLifecycle()
+    val unlock by viewModel.signInUnlock.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
     OnboardingScreen(
         state = state,
         osIdLive = osIdLive,
+        identifier = identifier,
+        pin = pin,
+        authNotice = authNotice,
+        authBusy = authBusy,
+        offerBiometric = offerBiometric,
+        unlockPlate = unlock.plate,
+        canDirectUnlock = unlock.canDirect,
         onNext = viewModel::onNext,
+        onAgeConfirmed = viewModel::onAgeConfirmed,
+        onIdentifierChange = viewModel::onIdentifierChange,
+        onPinChange = viewModel::onPinChange,
+        onSignIn = { viewModel.onSignIn(onEntered) },
+        onUnlockBiometric = {
+            scope.launch {
+                if (onRequestBiometric()) viewModel.onBiometricUnlocked(onEntered)
+                else viewModel.onAuthNotice("Use PIN for this OS-ID")
+            }
+        },
+        onEnableBiometricNextTime = viewModel::onEnableBiometricNextTime,
+        onSkipBiometricOffer = viewModel::onSkipBiometricOffer,
         onContinueSignIn = viewModel::onContinueSignIn,
         onSelectOsId = viewModel::onSelectOsId,
         onArcChange = viewModel::onArcChange,
@@ -69,8 +101,7 @@ fun OnboardingRoute(
             if (viewModel.onSettleAndEnter()) onEntered()
         },
         onSkip = {
-            viewModel.onSkip()
-            onEntered()
+            if (viewModel.onSkip()) onEntered()
         },
         onClaim = {
             if (viewModel.canClaimOsId()) viewModel.onNext()
@@ -83,7 +114,7 @@ fun OnboardingRoute(
  * **One job: get a person from install to their first settled log.**
  *
  * Six Drafting Table steps — Welcome · Sign in · Claim · Arc · Minimums ·
- * First capture. OS-ID availability is live against the API; auth / PIN stay out.
+ * First capture. Sign-in and OS-ID availability hit the live API.
  */
 @Composable
 fun OnboardingScreen(
@@ -96,13 +127,44 @@ fun OnboardingScreen(
     onFirstCaptureChange: (String) -> Unit,
     onSettle: () -> Unit,
     onSkip: () -> Unit,
+    onAgeConfirmed: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
     osIdLive: OsIdCheckResult = OsIdCheckResult(OsIdAvailability.IDLE, ""),
     onClaim: () -> Unit = onNext,
+    identifier: String = "",
+    pin: String = "",
+    authNotice: String? = null,
+    authBusy: Boolean = false,
+    offerBiometric: Boolean = false,
+    unlockPlate: String? = null,
+    canDirectUnlock: Boolean = false,
+    onIdentifierChange: (String) -> Unit = {},
+    onPinChange: (String) -> Unit = {},
+    onSignIn: () -> Unit = onContinueSignIn,
+    onUnlockBiometric: () -> Unit = {},
+    onEnableBiometricNextTime: () -> Unit = {},
+    onSkipBiometricOffer: () -> Unit = {},
 ) {
     when (state.step) {
-        1 -> WelcomeStep(state, onNext, onSkip, modifier)
-        2 -> SignInStep(state, onContinueSignIn, modifier)
+        1 -> WelcomeStep(state, onNext, onSkip, onAgeConfirmed, modifier)
+        2 -> SignInStep(
+            state = state,
+            identifier = identifier,
+            pin = pin,
+            authNotice = authNotice,
+            authBusy = authBusy,
+            offerBiometric = offerBiometric,
+            unlockPlate = unlockPlate,
+            canDirectUnlock = canDirectUnlock,
+            onIdentifierChange = onIdentifierChange,
+            onPinChange = onPinChange,
+            onSignIn = onSignIn,
+            onUnlockBiometric = onUnlockBiometric,
+            onEnableBiometricNextTime = onEnableBiometricNextTime,
+            onSkipBiometricOffer = onSkipBiometricOffer,
+            onSkipAuth = onContinueSignIn,
+            modifier = modifier,
+        )
         3 -> ClaimStep(state, osIdLive, onSelectOsId, onClaim, modifier)
         4 -> ArcStep(state, onArcChange, onNext, modifier)
         5 -> MinimumsStep(state, onToggleMinimum, onNext, modifier)
@@ -119,25 +181,33 @@ private fun Frame(
     footer: @Composable ColumnScope.() -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    SheetGround(modifier.fillMaxSize()) {
     Column(
-        modifier
+        Modifier
             .fillMaxSize()
-            .background(AiiminTheme.colors.bg)
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .padding(horizontal = AiiminTheme.space.page)
             .padding(top = AiiminTheme.space.s2, bottom = AiiminTheme.space.s8),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s3),
         ) {
-            BrandMark(size = 22.dp)
-            Text(
-                text = "AIIMIN",
-                style = AiiminTheme.type.chrome.copy(
-                    fontSize = 13.sp,
-                    letterSpacing = 3.6.sp,
-                ),
-            )
+            BrandMark(size = 36.dp)
+            Column {
+                Text(
+                    text = "AIIMIN",
+                    style = AiiminTheme.type.wordmark,
+                    color = AiiminTheme.colors.text,
+                )
+                Text(
+                    text = "One screen. Every day.",
+                    style = AiiminTheme.type.splashLaw,
+                    color = AiiminTheme.colors.muted,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
         }
 
         Row(
@@ -186,6 +256,7 @@ private fun Frame(
         )
         Column(Modifier.padding(top = AiiminTheme.space.s4), content = footer)
     }
+    }
 }
 
 @Composable
@@ -193,6 +264,7 @@ private fun WelcomeStep(
     state: OnboardingState,
     onNext: () -> Unit,
     onSkip: () -> Unit,
+    onAgeConfirmed: (Boolean) -> Unit,
     modifier: Modifier,
 ) {
     Frame(
@@ -201,7 +273,28 @@ private fun WelcomeStep(
         title = "One screen.\nEvery day.",
         modifier = modifier,
         footer = {
-            PrimaryButton(label = "Begin", onClick = onNext, modifier = Modifier.fillMaxWidth())
+            TapSurface(
+                onClick = { onAgeConfirmed(!state.ageConfirmed) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = AiiminTheme.space.s3)
+                    .border(Hairline, if (state.ageConfirmed) AiiminTheme.colors.accent else AiiminTheme.colors.hair)
+                    .padding(AiiminTheme.space.s3),
+            ) {
+                Text(
+                    text = if (state.ageConfirmed) "18 OR OLDER · CONFIRMED" else "I AM 18 OR OLDER",
+                    style = AiiminTheme.type.chrome.copy(fontSize = 12.sp),
+                    color = if (state.ageConfirmed) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            PrimaryButton(
+                label = "Begin",
+                onClick = onNext,
+                enabled = state.ageConfirmed,
+                modifier = Modifier.fillMaxWidth(),
+            )
             TapSurface(onClick = onSkip, minTouchTarget = false, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "SKIP · LOCAL DEMO",
@@ -221,22 +314,34 @@ private fun WelcomeStep(
             style = AiiminTheme.type.body.copy(fontSize = 14.sp, lineHeight = 22.sp),
             color = AiiminTheme.colors.muted,
         )
-        Box(
+        Column(
             Modifier
                 .fillMaxWidth()
                 .padding(vertical = AiiminTheme.space.s8),
-            contentAlignment = Alignment.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            BrandMark(size = 120.dp)
+            Text(
+                text = "AIIMIN",
+                style = AiiminTheme.type.wordmarkSplash.copy(fontSize = 28.sp, lineHeight = 28.sp),
+                color = AiiminTheme.colors.text,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = AiiminTheme.space.s4),
+            )
             Box(
                 Modifier
-                    .size(96.dp)
-                    .background(AiiminTheme.colors.tint)
-                    .border(Hairline, AiiminTheme.colors.rule)
-                    .padding(18.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                BrandMark(size = 60.dp)
-            }
+                    .padding(top = AiiminTheme.space.s3)
+                    .width(32.dp)
+                    .height(1.dp)
+                    .background(AiiminTheme.colors.accent.copy(alpha = 0.45f)),
+            )
+            Text(
+                text = "One screen. Every day.",
+                style = AiiminTheme.type.splashLaw,
+                color = AiiminTheme.colors.muted,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = AiiminTheme.space.s3),
+            )
         }
     }
 }
@@ -244,7 +349,20 @@ private fun WelcomeStep(
 @Composable
 private fun SignInStep(
     state: OnboardingState,
-    onContinue: () -> Unit,
+    identifier: String,
+    pin: String,
+    authNotice: String?,
+    authBusy: Boolean,
+    offerBiometric: Boolean,
+    unlockPlate: String?,
+    canDirectUnlock: Boolean,
+    onIdentifierChange: (String) -> Unit,
+    onPinChange: (String) -> Unit,
+    onSignIn: () -> Unit,
+    onUnlockBiometric: () -> Unit,
+    onEnableBiometricNextTime: () -> Unit,
+    onSkipBiometricOffer: () -> Unit,
+    onSkipAuth: () -> Unit,
     modifier: Modifier,
 ) {
     Frame(
@@ -253,9 +371,47 @@ private fun SignInStep(
         title = "Your identity",
         modifier = modifier,
         footer = {
-            PrimaryButton(label = "Continue", onClick = onContinue, modifier = Modifier.fillMaxWidth())
+            if (offerBiometric) {
+                PrimaryButton(
+                    label = "Unlock ${unlockPlate ?: "this OS-ID"} next time",
+                    onClick = onEnableBiometricNextTime,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                GhostButton(
+                    label = "Not now · continue",
+                    onClick = onSkipBiometricOffer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = AiiminTheme.space.s2),
+                )
+            } else {
+                if (canDirectUnlock && !unlockPlate.isNullOrBlank()) {
+                    PrimaryButton(
+                        label = "Unlock $unlockPlate",
+                        onClick = onUnlockBiometric,
+                        enabled = !authBusy,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                PrimaryButton(
+                    label = if (authBusy) "Signing in…" else "Sign in with PIN",
+                    onClick = onSignIn,
+                    enabled = !authBusy && pin.length == 6 && identifier.isNotBlank(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = if (canDirectUnlock) AiiminTheme.space.s2 else 0.dp),
+                )
+                GhostButton(
+                    label = "Continue offline (demo)",
+                    onClick = onSkipAuth,
+                    color = AiiminTheme.colors.muted,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = AiiminTheme.space.s2),
+                )
+            }
             Text(
-                text = "OS-ID + PIN OR GOOGLE · NEVER SHARED",
+                text = "OS-ID + PIN · SAME PLATE AS THE WEBSITE",
                 style = AiiminTheme.type.mono(9.5),
                 color = AiiminTheme.colors.muted,
                 textAlign = TextAlign.Center,
@@ -266,38 +422,77 @@ private fun SignInStep(
         },
     ) {
         Text(
-            text = "Sign in with your 8-character OS-ID or continue with Google. " +
-                "Testers are approved by invite. Local demo — nothing leaves the phone.",
+            text = if (offerBiometric) {
+                "PIN accepted. Unlock ${unlockPlate ?: "this OS-ID"} with the sensor next cold open — or skip and keep PIN."
+            } else {
+                "Google signup lives on aiimin.in — Gmail is already bound to your OS-ID there. " +
+                    "This phone uses the 8-character OS-ID and the same 6-digit PIN. " +
+                    "Biometrics unlock that plate when a session is stored."
+            },
             style = AiiminTheme.type.body.copy(fontSize = 13.5.sp, lineHeight = 20.sp),
             color = AiiminTheme.colors.muted,
         )
-        Text(
-            text = "8-char OS-ID or email",
-            style = AiiminTheme.type.mono(13.0),
-            color = AiiminTheme.colors.muted,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = AiiminTheme.space.s6)
-                .border(Hairline, AiiminTheme.colors.hair)
-                .padding(horizontal = AiiminTheme.space.s4, vertical = AiiminTheme.space.s3),
-        )
-        Text(
-            text = "PIN  ● ● ● ● ● ●",
-            style = AiiminTheme.type.mono(13.0),
-            color = AiiminTheme.colors.muted,
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(Hairline, AiiminTheme.colors.hair)
-                .padding(horizontal = AiiminTheme.space.s4, vertical = AiiminTheme.space.s3),
-        )
-        GhostButton(
-            label = "Continue with Google",
-            onClick = onContinue,
-            color = AiiminTheme.colors.text,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = AiiminTheme.space.s3),
-        )
+        if (!offerBiometric) {
+            if (!unlockPlate.isNullOrBlank()) {
+                Text(
+                    text = "RETURNING · $unlockPlate",
+                    style = AiiminTheme.type.mono(10.0),
+                    color = AiiminTheme.colors.accent,
+                    modifier = Modifier.padding(top = AiiminTheme.space.s6),
+                )
+            }
+            BasicTextField(
+                value = identifier,
+                onValueChange = onIdentifierChange,
+                singleLine = true,
+                textStyle = AiiminTheme.type.mono(13.0).copy(color = AiiminTheme.colors.text),
+                cursorBrush = SolidColor(AiiminTheme.colors.accent),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = if (unlockPlate.isNullOrBlank()) AiiminTheme.space.s6 else AiiminTheme.space.s2)
+                    .border(Hairline, AiiminTheme.colors.rule)
+                    .padding(horizontal = AiiminTheme.space.s4, vertical = AiiminTheme.space.s3),
+                decorationBox = { inner ->
+                    if (identifier.isEmpty()) {
+                        Text(
+                            text = "8-char OS-ID",
+                            style = AiiminTheme.type.mono(13.0),
+                            color = AiiminTheme.colors.muted,
+                        )
+                    }
+                    inner()
+                },
+            )
+            BasicTextField(
+                value = pin,
+                onValueChange = onPinChange,
+                singleLine = true,
+                textStyle = AiiminTheme.type.mono(13.0).copy(color = AiiminTheme.colors.text),
+                cursorBrush = SolidColor(AiiminTheme.colors.accent),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(Hairline, AiiminTheme.colors.rule)
+                    .padding(horizontal = AiiminTheme.space.s4, vertical = AiiminTheme.space.s3),
+                decorationBox = { inner ->
+                    if (pin.isEmpty()) {
+                        Text(
+                            text = "PIN · 6 digits",
+                            style = AiiminTheme.type.mono(13.0),
+                            color = AiiminTheme.colors.muted,
+                        )
+                    }
+                    inner()
+                },
+            )
+        }
+        authNotice?.let {
+            Text(
+                text = it,
+                style = AiiminTheme.type.bodySmall,
+                color = AiiminTheme.colors.accent,
+                modifier = Modifier.padding(top = AiiminTheme.space.s3),
+            )
+        }
     }
 }
 

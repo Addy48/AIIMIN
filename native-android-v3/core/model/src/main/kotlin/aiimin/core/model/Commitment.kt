@@ -54,6 +54,8 @@ data class Commitment(
     val softFloorRatio: Double = DEFAULT_SOFT_FLOOR,
     /** Why this floor exists, in the user's own terms. Shown, never hidden. */
     val reason: String = "",
+    /** Server habit UUID when hydrated from `/mobile/bootstrap`. */
+    val serverId: String? = null,
 ) {
     init {
         require(target > 0.0 || shape == CommitmentShape.LESS) { "target must be positive" }

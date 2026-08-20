@@ -41,8 +41,20 @@ class ScoreStore @Inject constructor(
 
     fun dismissNotice() = _state.update { it.copy(notice = null) }
 
+    fun resetToSeed() {
+        _state.value = ScoreState.seed()
+    }
+
+    fun markLocalProvisional() = _state.update {
+        it.copy(
+            notice = ScoreNotice("LOCAL MARK · published Life Score comes from sync (server)."),
+            settled = false,
+        )
+    }
+
     /**
-     * Lock today’s provisional mark into history. Local only — no `/api` write.
+     * Lock today’s provisional mark into history. Local day mark —
+     * published LHS stays server-side.
      */
     fun settleDay(): Int {
         val dayState = day.state.value
@@ -57,10 +69,18 @@ class ScoreStore @Inject constructor(
         _state.update {
             it.copy(
                 settled = true,
-                notice = ScoreNotice("Day settled at $score. Local only — sync later."),
+                notice = ScoreNotice("Day marked $score. Published score stays on server LHS."),
             )
         }
         return score
+    }
+
+    fun markServerPending() = _state.update {
+        it.copy(notice = ScoreNotice("MARKED ON PHONE · SERVER PENDING"))
+    }
+
+    fun markPosted() = _state.update {
+        it.copy(notice = ScoreNotice("Day marked. Posted daily log. Published score stays on server LHS."))
     }
 }
 

@@ -9,14 +9,11 @@ class OsIdAvailabilityRepositoryTest {
     @Test
     fun `invalid shape never hits the network`() = runTest {
         var called = false
-        val api = object : AiiminApi {
+        val api = object : FakeAiiminApi() {
             override suspend fun osIdAvailable(id: String): OsIdAvailableResponse {
                 called = true
                 error("should not call")
             }
-
-            override suspend fun parseCapture(body: ParseRequest): ParseResponse =
-                error("unused")
         }
         val repo = OsIdAvailabilityRepository(api)
         val result = repo.check("BAD")
@@ -26,16 +23,13 @@ class OsIdAvailabilityRepositoryTest {
 
     @Test
     fun `free id maps to AVAILABLE`() = runTest {
-        val api = object : AiiminApi {
+        val api = object : FakeAiiminApi() {
             override suspend fun osIdAvailable(id: String) = OsIdAvailableResponse(
                 id = id,
                 available = true,
                 reason = "free",
                 message = "Available.",
             )
-
-            override suspend fun parseCapture(body: ParseRequest): ParseResponse =
-                error("unused")
         }
         val result = OsIdAvailabilityRepository(api).check("ADIT2K04")
         assertThat(result.status).isEqualTo(OsIdAvailability.AVAILABLE)
@@ -43,16 +37,13 @@ class OsIdAvailabilityRepositoryTest {
 
     @Test
     fun `taken id maps to TAKEN`() = runTest {
-        val api = object : AiiminApi {
+        val api = object : FakeAiiminApi() {
             override suspend fun osIdAvailable(id: String) = OsIdAvailableResponse(
                 id = id,
                 available = false,
                 reason = "taken",
                 message = "Already claimed.",
             )
-
-            override suspend fun parseCapture(body: ParseRequest): ParseResponse =
-                error("unused")
         }
         val result = OsIdAvailabilityRepository(api).check("AADI0837")
         assertThat(result.status).isEqualTo(OsIdAvailability.TAKEN)

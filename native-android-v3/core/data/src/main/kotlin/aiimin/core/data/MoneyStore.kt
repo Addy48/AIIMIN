@@ -2,6 +2,7 @@ package aiimin.core.data
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -100,8 +101,61 @@ class MoneyStore @Inject constructor() {
     fun markReady() = _state.update {
         it.copy(
             phase = if (it.ledger.isEmpty() && it.budgets.isEmpty()) MoneyPhase.EMPTY else MoneyPhase.READY,
-            syncLabel = if (it.isSeed) "SEED · LOCAL" else "LOCAL",
+            syncLabel = if (it.isSeed) "SEED · LOCAL" else "SYNCED",
         )
+    }
+
+    fun hydrateFromApi(
+        transactions: List<aiimin.core.network.MoneyTransactionDto>,
+        budgets: List<aiimin.core.network.MoneyBudgetDto>,
+    ) {
+        val ledger = transactions.mapIndexed { i, t ->
+            val raw = t.amount?.roundToInt() ?: 0
+            val signed = when {
+                t.type.equals("income", ignoreCase = true) -> raw.absoluteValue
+                t.type.equals("expense", ignoreCase = true) -> -raw.absoluteValue
+                raw < 0 -> raw
+                else -> -raw.absoluteValue
+            }
+            LedgerEntry(
+                id = (i + 1).toLong(),
+                name = t.description ?: t.name ?: t.category ?: "Transaction",
+                meta = listOfNotNull(t.category, t.date).joinToString(" · "),
+                amount = signed,
+                category = t.category ?: "UNCATEGORISED",
+            )
+        }
+        val budgetLines = budgets.map { b ->
+            val limit = (b.limit_amount ?: b.amount ?: 0.0).roundToInt()
+            val name = b.categoryName ?: b.category ?: b.name ?: "Budget"
+            val spent = ledger
+                .filter { it.category.equals(name, ignoreCase = true) && it.amount < 0 }
+                .sumOf { -it.amount }
+            BudgetLine(name = name, spent = spent, limit = limit.coerceAtLeast(0))
+        }
+        nextId = (ledger.maxOfOrNull { it.id } ?: 0L) + 1L
+        _state.update {
+            MoneyState.empty().copy(
+                ledger = ledger,
+                budgets = budgetLines,
+                tab = it.tab,
+                periodLabel = it.periodLabel,
+                isSeed = false,
+                phase = if (ledger.isEmpty() && budgetLines.isEmpty()) MoneyPhase.EMPTY else MoneyPhase.READY,
+                syncLabel = "SYNCED · API",
+                sheetMeta = "LIVE · API",
+            )
+        }
+    }
+
+    fun resetToSeed() {
+        nextId = 100L
+        _state.value = MoneyState.seed()
+    }
+
+    fun resetToEmpty() {
+        nextId = 1L
+        _state.value = MoneyState.empty()
     }
 }
 

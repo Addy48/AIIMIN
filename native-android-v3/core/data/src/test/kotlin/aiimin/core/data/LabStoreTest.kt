@@ -14,7 +14,7 @@ class LabStoreTest {
         assertThat(s.selectedIndex).isEqualTo(0)
         assertThat(s.selected.rho).isEqualTo("−.61")
         assertThat(s.rejectedCount).isEqualTo(14)
-        assertThat(s.headMeta).isEqualTo("n=184d")
+        assertThat(s.headMeta).isEqualTo("SEED · DEMO")
     }
 
     @Test
@@ -28,6 +28,50 @@ class LabStoreTest {
     fun `select out of range ignored`() {
         store.select(99)
         assertThat(store.state.value.selectedIndex).isEqualTo(0)
+    }
+
+    @Test
+    fun `remote survivor is live`() {
+        store.applyRemote(
+            aiimin.core.network.CorrelationsResponse(
+                correlations = listOf(
+                    aiimin.core.network.CorrelationDto(
+                        signalALabel = "Mood",
+                        signalBLabel = "Sleep",
+                        rho = 0.61,
+                        n = 40,
+                        pValue = 0.004,
+                        bhPassed = true,
+                        headline = "When mood is higher, sleep trends up.",
+                    ),
+                    aiimin.core.network.CorrelationDto(
+                        signalALabel = "Noise",
+                        signalBLabel = "Focus",
+                        rho = 0.12,
+                        n = 40,
+                        pValue = 0.4,
+                        bhPassed = false,
+                    ),
+                ),
+            ),
+        )
+        val s = store.state.value
+        assertThat(s.isSeed).isFalse()
+        assertThat(s.pairs).hasSize(1)
+        assertThat(s.rejectedCount).isEqualTo(1)
+        assertThat(s.headMeta).contains("LIVE")
+        assertThat(s.selected.plain).contains("sleep")
+    }
+
+    @Test
+    fun `remote insufficient is live not seed`() {
+        store.applyRemote(
+            aiimin.core.network.CorrelationsResponse(insufficientData = true),
+        )
+        val s = store.state.value
+        assertThat(s.isSeed).isFalse()
+        assertThat(s.pairs).isEmpty()
+        assertThat(s.headMeta).contains("INSUFFICIENT")
     }
 
     @Test

@@ -3,6 +3,7 @@ package aiimin.core.network.di
 import aiimin.core.network.AiiminApi
 import aiimin.core.network.ApiAuth
 import aiimin.core.network.BuildConfig
+import aiimin.core.network.SessionCookieJar
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,7 +31,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun okHttpClient(): OkHttpClient {
+    fun okHttpClient(cookieJar: SessionCookieJar): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) {
                 HttpLoggingInterceptor.Level.BASIC
@@ -39,14 +40,23 @@ object NetworkModule {
             }
         }
         return OkHttpClient.Builder()
+            .cookieJar(cookieJar)
             .connectTimeout(20, TimeUnit.SECONDS)
-            .readTimeout(45, TimeUnit.SECONDS)
+            .readTimeout(90, TimeUnit.SECONDS)
             .addInterceptor { chain ->
                 val builder = chain.request().newBuilder()
                     .header("X-App-Version", "3.0.0-alpha01")
                     .header("X-Platform", "android-v3")
-                ApiAuth.token?.let { token ->
+                    // Better Auth rejects auth calls without a trusted Origin.
+                    .header("Origin", "https://aiimin.in")
+                    .header("Referer", "https://aiimin.in/")
+                val token = ApiAuth.token
+                if (!token.isNullOrBlank() && token != ApiAuth.COOKIE_ONLY) {
                     builder.header("Authorization", "Bearer $token")
+                } else {
+                    cookieJar.sessionToken()?.let { jarToken ->
+                        builder.header("Authorization", "Bearer $jarToken")
+                    }
                 }
                 chain.proceed(builder.build())
             }

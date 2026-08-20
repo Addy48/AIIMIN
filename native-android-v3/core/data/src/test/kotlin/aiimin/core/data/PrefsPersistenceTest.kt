@@ -58,6 +58,7 @@ class PrefsPersistenceTest {
         val second = OnboardingStore(config, day, prefs, scope)
         assertThat(second.state.value.completed).isFalse()
 
+        second.setAgeConfirmed(true)
         second.skipToShell()
         val third = OnboardingStore(config, day, prefs, scope)
         assertThat(third.state.value.completed).isTrue()

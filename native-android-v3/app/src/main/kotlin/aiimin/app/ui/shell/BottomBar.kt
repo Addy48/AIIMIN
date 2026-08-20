@@ -2,11 +2,13 @@ package aiimin.app.ui.shell
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,8 +29,8 @@ import aiimin.designsystem.theme.AiiminTheme
 /**
  * DAY · MONEY · CAPTURE · LAB · CONFIG.
  *
- * The active tab is full ink; the rest sit at 0.55 — readable, not washed out.
- * No pill, no indicator bar: the drawing marks state by weight, not by chrome.
+ * Active tab: accent ink + a short steel tick above the glyph. Inactive sit at
+ * 0.5. Surface plate under the bar so the sheet edge reads as a tool rail.
  */
 @Composable
 fun BottomBar(
@@ -36,8 +38,9 @@ fun BottomBar(
     onSelect: (Tab) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.fillMaxWidth().background(AiiminTheme.colors.bg)) {
-        Rule()
+    val colors = AiiminTheme.colors
+    Column(modifier.fillMaxWidth().background(colors.surface)) {
+        Rule(color = colors.rule)
         Row(
             Modifier
                 .fillMaxWidth()
@@ -47,6 +50,7 @@ fun BottomBar(
         ) {
             Tab.entries.forEach { tab ->
                 val selected = tab == current
+                val ink = if (selected) colors.accent else colors.text
                 TapSurface(
                     onClick = { onSelect(tab) },
                     modifier = Modifier
@@ -58,14 +62,20 @@ fun BottomBar(
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(5.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.alpha(if (selected) 1f else INACTIVE_ALPHA),
                     ) {
-                        AiiminGlyph(icon = tab.icon, color = AiiminTheme.colors.text)
+                        Box(
+                            Modifier
+                                .width(18.dp)
+                                .height(2.dp)
+                                .background(if (selected) colors.accent else colors.bg.copy(alpha = 0f)),
+                        )
+                        AiiminGlyph(icon = tab.icon, color = ink)
                         Text(
                             text = tab.label,
                             style = AiiminTheme.type.cellLabel,
-                            color = AiiminTheme.colors.text,
+                            color = ink,
                         )
                     }
                 }
@@ -74,8 +84,8 @@ fun BottomBar(
     }
 }
 
-private val BarHeight = 66.dp
-private const val INACTIVE_ALPHA = 0.55f
+private val BarHeight = 68.dp
+private const val INACTIVE_ALPHA = 0.5f
 
 @Preview(showBackground = true, backgroundColor = 0xFF15171A)
 @Composable

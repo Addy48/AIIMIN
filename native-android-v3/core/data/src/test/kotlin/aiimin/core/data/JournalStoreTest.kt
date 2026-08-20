@@ -34,4 +34,33 @@ class JournalStoreTest {
         assertThat(s.draft).isEmpty()
         assertThat(s.notice?.message).contains("Saved")
     }
+
+    @Test
+    fun `query filters history`() {
+        store.setQuery("reframe")
+        val visible = store.state.value.visibleEntries
+        assertThat(visible).hasSize(1)
+        assertThat(visible.first().template).isEqualTo(JournalTemplate.CBT)
+    }
+
+    @Test
+    fun `empty query shows all`() {
+        store.setQuery("reframe")
+        store.setQuery("")
+        assertThat(store.state.value.visibleEntries).hasSize(2)
+    }
+
+    @Test
+    fun `export text concatenates bodies`() {
+        val text = store.exportText()
+        assertThat(text).contains("Woke clear")
+        assertThat(text).contains("Reframe")
+    }
+
+    @Test
+    fun `append draft keeps typed text`() {
+        store.setDraft("typed")
+        store.appendDraft("spoken")
+        assertThat(store.state.value.draft).isEqualTo("typed\nspoken")
+    }
 }

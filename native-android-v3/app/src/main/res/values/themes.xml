@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Pre-Compose window theme only. Everything visual lives in AiiminTheme;
-         this exists so the launch window is already the Drafting Table ground. -->
-    <style name="Theme.Aiimin.Starting" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/drafting_bg</item>
+    <style name="Theme.Aiimin" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/industry_bg</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- Ground only — no logo. Compose AiiminSplash is the sole mark. -->
+    <style name="Theme.Aiimin.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/industry_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_silent</item>
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.Aiimin</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

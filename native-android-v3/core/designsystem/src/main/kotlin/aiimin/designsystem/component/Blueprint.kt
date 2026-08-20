@@ -14,16 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.designsystem.theme.Hairline
 
 /**
- * A blueprint frame: hairline (or accent) edge, four `+` registration marks at
- * the corners, and an optional legend that breaks the top border.
+ * A blueprint frame: hairline (or accent) edge and an optional legend that
+ * breaks the top border. Corner `+` registration marks removed — looked noisy.
  *
- * This is the drafting language's "this object matters" mark. Use it for the
- * composer, an offer, a figure — not for every list row.
+ * Use for the composer, an offer, a figure — not for every list row.
  */
 @Composable
 fun BlueprintBox(
@@ -31,7 +30,8 @@ fun BlueprintBox(
     legend: String? = null,
     accent: Boolean = false,
     tinted: Boolean = false,
-    marks: Boolean = true,
+    @Suppress("UNUSED_PARAMETER")
+    marks: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val colors = AiiminTheme.colors
@@ -47,19 +47,13 @@ fun BlueprintBox(
             content = content,
         )
 
-        if (marks) {
-            RegistrationMark(Modifier.align(Alignment.TopStart), (-6).dp, (-6).dp)
-            RegistrationMark(Modifier.align(Alignment.TopEnd), 6.dp, (-6).dp)
-            RegistrationMark(Modifier.align(Alignment.BottomStart), (-6).dp, 6.dp)
-            RegistrationMark(Modifier.align(Alignment.BottomEnd), 6.dp, 6.dp)
-        }
-
         if (legend != null) {
             Text(
                 text = legend.uppercase(),
                 style = AiiminTheme.type.sectionLabel,
                 color = colors.accent,
                 modifier = Modifier
+                    .zIndex(1f)
                     .align(Alignment.TopStart)
                     .offset(x = AiiminTheme.space.s4, y = (-6).dp)
                     .background(colors.bg)
@@ -67,17 +61,6 @@ fun BlueprintBox(
             )
         }
     }
-}
-
-@Composable
-private fun RegistrationMark(modifier: Modifier, dx: androidx.compose.ui.unit.Dp, dy: androidx.compose.ui.unit.Dp) {
-    // Proto Corners: 11px Barlow, −6 on every corner — not bodySmall, not asymmetric.
-    Text(
-        text = "+",
-        style = AiiminTheme.type.body.copy(fontSize = 11.sp, lineHeight = 11.sp),
-        color = AiiminTheme.colors.accent.copy(alpha = 0.85f),
-        modifier = modifier.offset(x = dx, y = dy),
-    )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF15171A)

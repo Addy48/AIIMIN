@@ -17,12 +17,13 @@ class ConfigStoreTest {
     }
 
     @Test
-    fun `toggle theme flips drafting table and industry sheet`() {
+    fun `toggle theme flips AIIMIN Light and Dark`() {
         store.toggleTheme()
         assertThat(store.state.value.darkTheme).isFalse()
-        assertThat(store.state.value.themeName).contains("Industry")
+        assertThat(store.state.value.themeName).isEqualTo("AIIMIN Light")
         store.toggleTheme()
         assertThat(store.state.value.darkTheme).isTrue()
+        assertThat(store.state.value.themeName).isEqualTo("AIIMIN Dark")
     }
 
     @Test
@@ -30,6 +31,38 @@ class ConfigStoreTest {
         assertThat(store.state.value.reduceMotion).isFalse()
         store.toggleReduceMotion()
         assertThat(store.state.value.reduceMotion).isTrue()
+    }
+
+    @Test
+    fun `remote identity does not invent OS-ID from email`() {
+        val before = store.state.value.identity.osId
+        store.applyRemoteIdentity("Aaditya", "aaditya@gmail.com")
+        assertThat(store.state.value.identity.email).isEqualTo("aaditya@gmail.com")
+        assertThat(store.state.value.identity.osId).isEqualTo(before)
+    }
+
+    @Test
+    fun `remote username remembers OS-ID without using email prefix`() {
+        store.applyRemoteIdentity("Aaditya", "aaditya@gmail.com", "adit2k04")
+        assertThat(store.state.value.identity.email).isEqualTo("aaditya@gmail.com")
+        assertThat(store.state.value.identity.osId).isEqualTo("ADIT2K04")
+        store.applyRemoteIdentity("Aaditya", "aaditya@gmail.com", "not-an-id")
+        assertThat(store.state.value.identity.osId).isEqualTo("ADIT2K04")
+    }
+
+    @Test
+    fun `rememberOsId persists valid plate`() {
+        store.rememberOsId("adit2k04")
+        assertThat(store.state.value.identity.osId).isEqualTo("ADIT2K04")
+        store.rememberOsId("nope")
+        assertThat(store.state.value.identity.osId).isEqualTo("ADIT2K04")
+    }
+
+    @Test
+    fun `biometric off by default then toggles`() {
+        assertThat(store.state.value.biometricEnabled).isFalse()
+        store.toggleBiometric()
+        assertThat(store.state.value.biometricEnabled).isTrue()
     }
 
     @Test

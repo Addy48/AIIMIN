@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 /**
  * Journal — local reflection (G7).
  *
- * Templates · mood 1–5 · draft · history. Voice / search / export land later.
+ * Templates · mood 1–5 · draft · history · local search · TXT export. Voice is UI.
  */
 @Singleton
 class JournalStore @Inject constructor() {
@@ -26,6 +26,25 @@ class JournalStore @Inject constructor() {
     }
 
     fun setDraft(value: String) = _state.update { it.copy(draft = value) }
+
+    fun appendDraft(value: String) {
+        val bit = value.trim()
+        if (bit.isEmpty()) return
+        _state.update {
+            val next = if (it.draft.isBlank()) bit else "${it.draft.trimEnd()}\n$bit"
+            it.copy(draft = next)
+        }
+    }
+
+    fun setQuery(value: String) = _state.update { it.copy(query = value) }
+
+    fun exportText(): String = _state.value.visibleEntries.joinToString("\n\n") { e ->
+        "${e.date} · ${e.template.label} · mood ${e.mood}\n${e.body}"
+    }
+
+    fun voiceFailed() = _state.update {
+        it.copy(notice = JournalNotice("VOICE · OFFLINE"))
+    }
 
     fun setMood(mood: Int) = _state.update {
         if (mood !in 1..5) return@update it
@@ -53,6 +72,38 @@ class JournalStore @Inject constructor() {
         return true
     }
 
+    fun hydrateFromBootstrap(rows: List<aiimin.core.network.JournalDto>) {
+        if (rows.isEmpty()) {
+            _state.update { it.copy(entries = emptyList(), headMeta = "LIVE · EMPTY") }
+            return
+        }
+        val mapped = rows.map { row ->
+            val body = row.content.orEmpty()
+            val moodInt = row.mood?.toIntOrNull()?.coerceIn(1, 5) ?: 3
+            JournalEntry(
+                date = row.date?.takeLast(5)?.replace('-', '.') ?: todayLabel(),
+                template = JournalTemplate.FREE_WRITE,
+                mood = moodInt,
+                excerpt = body.take(140),
+                body = body,
+            )
+        }
+        _state.update {
+            it.copy(
+                entries = mapped,
+                headMeta = "LIVE · ${mapped.size} ENTRIES",
+            )
+        }
+    }
+
+    fun resetToSeed() {
+        _state.value = JournalState.seed()
+    }
+
+    fun clearEntriesForLive() = _state.update {
+        it.copy(entries = emptyList(), headMeta = "LIVE · EMPTY", notice = null)
+    }
+
     fun dismissNotice() = _state.update { it.copy(notice = null) }
 }
 
@@ -69,7 +120,16 @@ data class JournalEntry(
     val mood: Int,
     val excerpt: String,
     val body: String,
-)
+) {
+    fun matches(query: String): Boolean {
+        val q = query.trim()
+        if (q.isEmpty()) return true
+        return excerpt.contains(q, ignoreCase = true) ||
+            body.contains(q, ignoreCase = true) ||
+            template.label.contains(q, ignoreCase = true) ||
+            date.contains(q, ignoreCase = true)
+    }
+}
 
 data class JournalNotice(val message: String)
 
@@ -80,7 +140,15 @@ data class JournalState(
     val entries: List<JournalEntry>,
     val headMeta: String,
     val notice: JournalNotice? = null,
+    val query: String = "",
 ) {
+    val visibleEntries: List<JournalEntry>
+        get() {
+            val q = query.trim()
+            if (q.isEmpty()) return entries
+            return entries.filter { it.matches(q) }
+        }
+
     companion object {
         val MOOD_LABELS = listOf("ROUGH", "OFF", "OKAY", "GOOD", "STRONG")
 
