@@ -43,9 +43,10 @@ tags:
 
 ## Founder next
 
-1. ~~Push~~ **done** — `origin/feat/native-android-v3` @ `c60ed07e`
-2. ~~Migrations 049–052~~ **done** on Supabase (indexes + columns verified)
-3. ~~EC2~~ **done** — box on feat tip; health ok; `note.delete` in git on box
-4. Merge/rebase feat → `main` before Vercel prod picks up web/legal (prod still `fc9e2a76`)
-5. Web diet kill rows still founder taste
-6. V3 leftover product list still parked
+1. ~~Push~~ **done** — feat tip advanced past `cb218e2e` after merge prep
+2. ~~Migrations 049–052~~ **done** on Supabase
+3. ~~EC2~~ **done** — box on feat; health ok
+4. ~~Merge `origin/main` into feat~~ **this turn** — README resolve + V3 surface truth
+5. **Merge/PR feat → `main`** — unlocks Vercel prod web/legal (founder)
+6. Web diet kill rows still founder taste
+7. V3 leftover product list still parked

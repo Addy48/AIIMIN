@@ -20,29 +20,29 @@ tags:
 > [!tip] Agent boot
 > [[00_HOME]] → [[00_ROUTING]] → this note → Touch only. Proof-or-stop + Anti-Lie.
 
-**Date:** 2026-08-20 · Branch `feat/native-android-v3` @ `c60ed07e` · **pushed**
+**Date:** 2026-08-20 · Branch `feat/native-android-v3` · merge `origin/main` in progress / landed
 
 ## Stage
 
-Simplification + commit slices + push + EC2 on feat tip + Supabase migrations 049–052.
+Simplification program **closed** (V0–X). Feat has API ghosts, migrations applied, EC2 on feat tip, vault diet. Next gate = **merge feat → main** for Vercel.
 
 | Gate | Status |
 |------|--------|
-| Local commits S1–S5+ | Verified — tip `c60ed07e` |
-| Push `origin/feat/native-android-v3` | Verified |
-| EC2 checkout | Verified — `c60ed07e`, `note.delete` in tree, pm2 online |
-| `/api/health` | Verified `{"status":"ok"}` |
-| Migrations 049–052 | Verified indexes + columns on Supabase |
-| Vercel production | Still `main` @ `fc9e2a76` — feat not merged |
+| Simplification phases V0–X | Verified — [[16_DOCUMENTATION/Simplification-Phase-Tracker]] |
+| Push + EC2 + migrations 049–052 | Verified earlier tip `c60ed07e` / Context `cb218e2e` |
+| `origin/main` into feat | This turn — README conflict resolve + V3 truth |
+| Vercel production | Still needs merge **to** `main` |
+| R3 slices S1–S6 | Shipped on feat — inventory updated |
 
 ## P0 next
 
-1. Merge/rebase feat → `main` when ready for Vercel prod web (histories diverged earlier)
-2. Optional: remaining local fluff only (`native-android-v3/dist/` ignored)
-3. PARK product leftovers: [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
+1. **Founder:** merge/PR feat → `main` (Vercel picks web/legal)
+2. Web diet kill rows — founder taste ([[16_DOCUMENTATION/Web-Surface-Diet-R4]])
+3. PARK product: [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
 
 ## Touch
 
+- `README.md` (V3 surface truth + merge resolve)
+- `docs/knowledge/16_DOCUMENTATION/Commit-Slice-Inventory-R3.md`
+- `docs/knowledge/16_DOCUMENTATION/Simplification-Backlog-X.md`
 - `docs/knowledge/16_DOCUMENTATION/Simplification-Phase-Tracker.md`
-- `docs/knowledge/16_DOCUMENTATION/Truth-Recon-2026-08-20.md`
-- EC2 `/home/ubuntu/AIIMIN` on `feat/native-android-v3`

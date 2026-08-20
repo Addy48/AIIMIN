@@ -29,7 +29,7 @@ flowchart LR
   subgraph cap["Capacitor (legacy)"]
     C[WebView → /m<br/>capture shell]
   end
-  subgraph nat["Native Android V2"]
+  subgraph nat["Native Android V3"]
     N[Kotlin Compose<br/>companion app]
   end
   API[api.aiimin.in]
@@ -43,8 +43,8 @@ flowchart LR
 | Surface | URL / package | For |
 |---------|---------------|-----|
 | **Desktop & iPad** | [aiimin.in/overview](https://aiimin.in/overview) | Full analytics, Lab, Finance, Placements |
-| **Phone browser** | [aiimin.in/m](https://aiimin.in/m) | Quick daily capture (web) |
-| **Android app** | `in.aiimin.app` | Native companion — journal, notes, habits, sync |
+| **Phone browser** | [aiimin.in/m](https://aiimin.in/m) | Quick daily capture (web · Capacitor sunset path) |
+| **Android app** | `native-android-v3/` · `in.aiimin.app` | Current companion — journal, notes, habits, sync |
 
 Do **not** mix web, Capacitor, and native changes in one commit. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -172,9 +172,8 @@ Full spec: `docs/knowledge/08_DESIGN/Palette.md`
 |-----|---------|
 | [docs/knowledge/00_HOME.md](docs/knowledge/00_HOME.md) | Product + ops hub |
 | [docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md](docs/knowledge/Roadmap/AIIMIN-V1-Blueprint.md) | V1 implementation contract |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Commit boundaries |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Commit boundaries (one client per commit) |
 | [docs/knowledge/02_ARCHITECTURE/Monorepo.md](docs/knowledge/02_ARCHITECTURE/Monorepo.md) | Three-client architecture |
-| [docs/knowledge/17_NATIVE_APP_V2/WORKFLOW-PLAN.md](docs/knowledge/17_NATIVE_APP_V2/WORKFLOW-PLAN.md) | Native build tracker |
 
 ---
 

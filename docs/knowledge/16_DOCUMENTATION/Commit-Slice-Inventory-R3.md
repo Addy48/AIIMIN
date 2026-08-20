@@ -15,20 +15,22 @@ tags:
   - status/living
 ---
 
-# Commit-slice inventory (R3) — no commit until Founder asks
+# Commit-slice inventory (R3) — shipped on `feat/native-android-v3`
 
-> Dirty tree ~439 paths (2026-08-20). Never one mega-commit. Order below is suggested ship order.
+> Originally ~439 dirty paths (2026-08-20). Slices below landed on feat; tip after Context closeout was `cb218e2e` (then merge `origin/main`).
 
-| Slice | Contents (approx) | Notes |
-|-------|-------------------|-------|
-| **S1** `api-mobile-ghosts` | `mobile.js` · `mobileIdempotency.js` · `journalMode.js` | Matches EC2 WT — ship first before any EC2 hard reset |
-| **S2** `server-other-routes` | dailyLogs, discipline, family, focus, habits, journal, lab, wealth, correlation | Diff before commit |
-| **S3** `migrations-049-052` | 049–052 SQL | Apply to Supabase **before** or with deploy — absent on EC2 disk |
-| **S4** `web-legal-consent` | legal pages · consent · `/app` · WaitlistAndroid | Frontend-only |
-| **S5** `native-v3` | `native-android-v3/**` (~141) | Largest · separate PR |
-| **S6** `vault-simplification` | `docs/knowledge/**` this program | Docs-only OK |
-| **S7** `deploy-tooling` | deploy scripts · vercel.json · sync-personal-vault | |
-| **S8** `rules-skills` | `.cursor` · AGENTS · skills-lock · CLAUDE | |
-| **S9** `cleanup-misc` | deleted stubs · personal-os deletions · .gitignore | Pair with ledger |
+| Slice | Status | Notes |
+|-------|--------|-------|
+| **S1** `api-mobile-ghosts` | **shipped** | `note.delete` · idempotency · journalMode |
+| **S2** `server-other-routes` | **shipped** | with server align commit |
+| **S3** `migrations-049-052` | **shipped** | applied on Supabase |
+| **S4** `web-legal-consent` | **shipped** | not yet on Vercel prod (`main`) |
+| **S5** `native-v3` | **shipped** | brownfield modules |
+| **S6** `vault-simplification` | **shipped** | + Context/tracker follow-ups |
+| **S7–S9** | **partial / folded** | cleanup + tooling landed with other slices |
 
-**Do not commit** until Founder says which slice. Prefer S1 → S3 → S6 → S4 → S5.
+## Still open (not R3)
+
+- Merge feat → `main` for Vercel prod (founder)
+- Web diet kill rows ([[16_DOCUMENTATION/Web-Surface-Diet-R4]]) — founder taste
+- Capacitor sunset after V3 capture E2E ([[10_DECISIONS/2026-08-20-client-kill-list]])

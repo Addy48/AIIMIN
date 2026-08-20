@@ -28,10 +28,10 @@ tags:
 | 7 | Archive LFS / orphan branch | **defer** — text already stubbed; not needed yet |
 | 8 | Obsidian CSS snippet | **defer** — founder taste |
 | 9 | Merge Guides into Home via Bases | **defer** |
-| 10 | Empty shells README | **do** — see below |
+| 10 | Empty shells README | **done** — READMEs present in `12_SPRINTS` · `13_MEETINGS` · `17_EXPERIMENTS` · `Daily Notes` |
 | 11 | Hide personal superseded in Obsidian | **founder** — local Obsidian setting |
 | 12 | Proof tags on status claims | **partial** — anti-lie prompts already |
 
 ## Empty shells (X10)
 
-Touch `12_SPRINTS`, `13_MEETINGS`, `17_EXPERIMENTS`, `Daily Notes` with one README each if missing — pointer to Current Context / Completed-Work-Ledger.
+**Verified 2026-08-20:** all four folders already have README pointers → Current Context / Completed-Work-Ledger. No new files needed.
