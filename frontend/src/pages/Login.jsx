@@ -928,7 +928,7 @@ const Login = () => {
                       <BackBtn onClick={handleBack} />
                       <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                         <Field
-                          label="OS-ID / Email"
+                          label="OS-ID or Email"
                           type="text"
                           required
                           autoFocus
@@ -936,7 +936,7 @@ const Login = () => {
                           value={forgotIdentifier}
                           onChange={e => setForgotIdentifier(e.target.value)}
                           placeholder="Enter OS-ID or email"
-                          aria-label="OS-ID / EMAIL"
+                          aria-label="OS-ID or Email"
                           autoComplete="username"
                         />
                         <ErrorMsg msg={error} />
@@ -955,7 +955,7 @@ const Login = () => {
                   >
                     <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                       <Field
-                        label="OS-ID / Email"
+                        label="OS-ID or Email"
                         type="text"
                         required
                         autoFocus
@@ -967,7 +967,7 @@ const Login = () => {
                         autoCorrect="off"
                         spellCheck="false"
                         placeholder="8-char OS-ID or email"
-                        aria-label="OS-ID / EMAIL"
+                        aria-label="OS-ID or Email"
                         maxLength={isEmailIdentifier(identifier) || identifier.includes('@') ? 254 : 8}
                         style={{
                           textTransform: isEmailIdentifier(identifier) || identifier.includes('@') ? 'none' : 'uppercase',
@@ -975,7 +975,7 @@ const Login = () => {
                           fontVariantNumeric: 'tabular-nums',
                         }}
                       />
-                      <p style={{ margin: '-8px 0 0', fontSize: '12px', color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.4 }}>
+                      <p style={{ margin: '-8px 0 0', fontSize: '13px', color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
                         {isEmailIdentifier(identifier)
                           ? 'Email detected — press Continue when ready.'
                           : identifier.length > 0

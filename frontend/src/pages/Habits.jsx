@@ -107,14 +107,15 @@ const HabitRow = ({ habit, todayKey, onToggle, onDelete, onEdit }) => {
           <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
             {['M','T','W','T','F','S','S'].map((l, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '9px', fontWeight: 700, color: weekDays[i]?.isToday ? (habit.meta?.color || '#3B82F6') : 'var(--color-text-3)', marginBottom: '3px' }}>{l}</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: weekDays[i]?.isToday ? (habit.meta?.color || 'var(--color-accent)') : 'var(--color-text-3)', marginBottom: '3px' }}>{l}</div>
                 <div style={{
-                  width: '24px', height: '24px', borderRadius: '6px',
-                  background: weekDays[i]?.done ? (habit.meta?.color || '#3B82F6') : 'var(--color-border)',
+                  width: '28px', height: '28px', minWidth: '28px', minHeight: '28px', borderRadius: '8px',
+                  background: weekDays[i]?.done ? (habit.meta?.color || 'var(--color-accent)') : 'var(--color-border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: weekDays[i]?.isToday ? `2px solid ${habit.meta?.color || '#3B82F6'}` : 'none',
+                  border: weekDays[i]?.isToday ? `2px solid ${habit.meta?.color || 'var(--color-accent)'}` : '1.5px solid transparent',
+                  boxSizing: 'border-box'
                 }}>
-                  {weekDays[i]?.done && <Check size={12} color="#fff" strokeWidth={3} />}
+                  {weekDays[i]?.done && <Check size={14} color="#fff" strokeWidth={3} />}
                 </div>
               </div>
             ))}
@@ -210,11 +211,30 @@ const AddModal = ({ isOpen, onClose, onAdd }) => {
     <Modal isOpen={isOpen} onClose={onClose} title="New Habit" maxWidth="480px">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Icon</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Icon</div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {ICONS.map(ic => (
-                <button key={ic} onClick={() => setIcon(ic)}
-                  style={{ fontSize: '20px', padding: '6px 8px', borderRadius: '10px', border: `2px solid ${icon === ic ? 'var(--color-accent)' : 'var(--color-border)'}`, background: 'var(--color-surface)', cursor: 'pointer' }}>
+                <button
+                  key={ic}
+                  type="button"
+                  aria-label={`Select icon ${ic}`}
+                  onClick={() => setIcon(ic)}
+                  style={{
+                    fontSize: '20px',
+                    width: '44px',
+                    height: '44px',
+                    minWidth: '44px',
+                    minHeight: '44px',
+                    borderRadius: '12px',
+                    border: `2px solid ${icon === ic ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    background: icon === ic ? 'color-mix(in srgb, var(--color-accent) 15%, var(--color-surface))' : 'var(--color-surface)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
                   {ic}
                 </button>
               ))}
@@ -233,7 +253,7 @@ const AddModal = ({ isOpen, onClose, onAdd }) => {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {CATS.map(c => (
                 <button key={c} type="button" onClick={() => setCat(c)}
-                  style={{ padding: '6px 12px', borderRadius: '99px', border: `1px solid ${cat === c ? 'var(--color-accent)' : 'var(--color-border)'}`, background: cat === c ? 'var(--color-accent)' : 'transparent', color: cat === c ? '#fff' : 'var(--color-text-1)', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  style={{ minHeight: '36px', padding: '6px 14px', borderRadius: '99px', border: `1px solid ${cat === c ? 'var(--color-accent)' : 'var(--color-border)'}`, background: cat === c ? 'var(--color-accent)' : 'transparent', color: cat === c ? '#fff' : 'var(--color-text-1)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   {c === 'Custom' ? 'Other' : c}
                 </button>
               ))}
@@ -244,16 +264,16 @@ const AddModal = ({ isOpen, onClose, onAdd }) => {
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               {COLORS.map(c => (
                 <button key={c} type="button" aria-label={`Color ${c}`} onClick={() => setColor(c)}
-                  style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px', borderRadius: '50%', background: c, border: `3px solid ${color === c ? '#fff' : 'transparent'}`, cursor: 'pointer', outline: 'none', boxShadow: color === c ? `0 0 0 2px ${c}` : 'none', transition: 'all 0.15s' }} />
+                  style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px', borderRadius: '50%', background: c, border: `3px solid ${color === c ? '#fff' : 'transparent'}`, cursor: 'pointer', outline: 'none', boxShadow: color === c ? `0 0 0 2px ${c}` : 'none', transition: 'all 0.15s' }} />
               ))}
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Weekly Target ({target} days)</div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-text-1)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Weekly Target ({target} {target === '1' ? 'day' : 'days'})</div>
             <input type="range" min={1} max={7} value={target} onChange={e => setTarget(e.target.value)}
-              style={{ width: '100%', accentColor: color, height: '4px' }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px', fontSize: '11px', color: 'var(--color-text-2)' }}>
-              <span>1× / week</span><span>Daily</span>
+              style={{ width: '100%', accentColor: color, height: '6px', cursor: 'pointer' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '12px', color: 'var(--color-text-2)', fontWeight: 600 }}>
+              <span>1× / week</span><span>7× / week (Daily)</span>
             </div>
           </div>
           <button onClick={submit} disabled={loading || !name.trim()}

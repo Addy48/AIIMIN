@@ -22,9 +22,9 @@ const PRESETS = [
 ];
 
 const PHASES = {
-  work: { label: 'FLOW STATE', color: '#ff6b35', darkGlow: '#c2410c', lightGlow: '#fb923c', bgGlow: 'rgba(255, 107, 53, 0.15)' },
-  short: { label: 'COGNITIVE REST', color: '#10b981', darkGlow: '#047857', lightGlow: '#34d399', bgGlow: 'rgba(16, 185, 129, 0.08)' },
-  long: { label: 'DEEP RECOVERY', color: '#E8B84B', darkGlow: '#a16207', lightGlow: '#fbbf24', bgGlow: 'rgba(232, 184, 75, 0.08)' },
+  work: { label: 'Flow State', color: '#ff6b35', darkGlow: '#c2410c', lightGlow: '#fb923c', bgGlow: 'rgba(255, 107, 53, 0.15)' },
+  short: { label: 'Cognitive Rest', color: '#10b981', darkGlow: '#047857', lightGlow: '#34d399', bgGlow: 'rgba(16, 185, 129, 0.08)' },
+  long: { label: 'Deep Recovery', color: '#E8B84B', darkGlow: '#a16207', lightGlow: '#fbbf24', bgGlow: 'rgba(232, 184, 75, 0.08)' },
 };
 
 // ── Flow State Breathing Visual ──────────────────────────────────────────────
@@ -464,8 +464,8 @@ export default function FocusRoom() {
                     padding: '10px 24px', borderRadius: '99px',
                     background: phase === k ? 'var(--color-border)' : 'transparent',
                     color: phase === k ? 'var(--color-text-1)' : 'var(--color-text-2)',
-                    border: 'none', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                    transition: 'all 0.3s ease', letterSpacing: '0.2em', textTransform: 'uppercase'
+                    border: 'none', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                    transition: 'all 0.3s ease', letterSpacing: '0.02em', minHeight: '44px'
                   }}>
                     {v.label}
                   </button>
@@ -475,11 +475,11 @@ export default function FocusRoom() {
               <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
                 {PRESETS.map(p => (
                   <button key={p.label} onClick={() => changePreset(p)} style={{
-                    padding: '10px 28px', borderRadius: '99px',
+                    padding: '10px 24px', borderRadius: '99px', minHeight: '44px',
                     border: `1px solid ${preset.label === p.label ? phaseInfo.color : 'var(--color-border)'}`,
                     background: preset.label === p.label ? `${phaseInfo.color}15` : 'transparent',
-                    color: preset.label === p.label ? phaseInfo.color : 'var(--color-text-3)',
-                    fontSize: '14px', fontWeight: 500, cursor: 'pointer',
+                    color: preset.label === p.label ? phaseInfo.color : 'var(--color-text-2)',
+                    fontSize: '14px', fontWeight: 600, cursor: 'pointer',
                     transition: 'all 0.3s ease',
                     boxShadow: preset.label === p.label ? `0 0 20px ${phaseInfo.color}20` : 'none'
                   }}

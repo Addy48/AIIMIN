@@ -43,7 +43,7 @@ if [ -d native-android-v3 ]; then
   fi
   if [ -n "$NATIVE_JAVA" ]; then
     echo "Building native-android-v3 debug (JDK 17)..."
-    if (cd native-android-v3 && JAVA_HOME="$NATIVE_JAVA" ./gradlew :app:assembleDebug -q >/tmp/aiimin-verify-native.log 2>&1); then
+    if (cd native-android-v3 && JAVA_HOME="$NATIVE_JAVA" ./gradlew :app:assembleDebug --no-daemon -q >/tmp/aiimin-verify-native.log 2>&1); then
       pass "native-android-v3 assembleDebug"
     else
       fail "native-android-v3 build failed (see /tmp/aiimin-verify-native.log)"

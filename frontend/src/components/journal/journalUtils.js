@@ -54,7 +54,12 @@ export function getEntryPreview(raw, max = 80) {
     text = parsed.body.replace(/^#+\s*/gm, '').trim();
   }
   const flat = text.replace(/\s+/g, ' ').trim();
-  return flat.length > max ? `${flat.slice(0, max)}…` : flat || 'Empty entry';
+  if (!flat) return 'Empty entry';
+  if (flat.length <= max) return flat;
+  const sliced = flat.slice(0, max);
+  const lastSpace = sliced.lastIndexOf(' ');
+  const clean = lastSpace > 20 ? sliced.slice(0, lastSpace) : sliced;
+  return `${clean}…`;
 }
 
 export function findEntryForDate(entries, date, mode) {
