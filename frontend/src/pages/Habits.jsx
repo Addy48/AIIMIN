@@ -140,16 +140,20 @@ const HabitRow = ({ habit, todayKey, onToggle, onDelete, onEdit }) => {
 
         {/* Right actions */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-          <button onClick={() => onToggle(habit)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: isDone ? (habit.meta?.color || '#3B82F6') : 'var(--color-text-3)', padding: 0, transition: 'all 0.15s', transform: isDone ? 'scale(1.1)' : 'scale(1)' }}>
+          <button
+            onClick={() => onToggle(habit)}
+            aria-label={isDone ? `Mark ${habit.name || 'habit'} as not done` : `Mark ${habit.name || 'habit'} as done`}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: isDone ? (habit.meta?.color || 'var(--color-accent)') : 'var(--color-text-3)', padding: 0, transition: 'all 0.15s', transform: isDone ? 'scale(1.1)' : 'scale(1)', minWidth: '40px', minHeight: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {isDone ? <CheckCircle size={32} strokeWidth={2} /> : <Circle size={32} />}
           </button>
-          <div style={{ fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', color: isDone ? (habit.meta?.color || '#3B82F6') : 'var(--color-text-2)', letterSpacing: '0.06em' }}>
+          <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: isDone ? (habit.meta?.color || 'var(--color-accent)') : 'var(--color-text-2)', letterSpacing: '0.06em' }}>
             {isDone ? 'Done today' : 'Not done'}
           </div>
-          <button onClick={() => onDelete(habit.id)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: '4px', borderRadius: '6px', opacity: 0.5, marginTop: '4px' }}>
-            <Trash2 size={13} />
+          <button
+            onClick={() => onDelete(habit.id)}
+            aria-label={`Delete ${habit.name || 'habit'}`}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: '6px', borderRadius: '6px', opacity: 0.6, marginTop: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '32px', minHeight: '32px' }}>
+            <Trash2 size={14} />
           </button>
         </div>
       </div>
