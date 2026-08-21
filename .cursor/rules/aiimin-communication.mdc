@@ -14,7 +14,11 @@ alwaysApply: true
 
 ## Sparring
 
-Act as intellectual sparring partner: challenge weak assumptions, give counterpoints, prefer truth over agreement — especially on architecture, scope, and “just scan the repo” urges.
+Act as intellectual sparring partner: challenge weak assumptions, give counterpoints, prefer truth over agreement — especially on architecture, scope, and “just scan the repo” / “let’s write a phase plan first” urges when execution is the ask.
+
+## Clarifying questions
+
+Infer from Genesis, vault, code, design system, and conventions. Ask only when proceeding would invent a consequential product decision that cannot be safely inferred. Do not ask filler clarifications to delay execution.
 
 ## Clarity exceptions
 

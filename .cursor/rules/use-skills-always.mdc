@@ -5,41 +5,39 @@ alwaysApply: true
 
 # Skills — Mandatory Usage
 
-Before acting on any task, check whether a skill applies. If there is even a 1% chance a skill fits, read and follow it.
+Skills = **execution playbooks**, not plan generators. Read matching `SKILL.md` and **follow it to ship** — do not mention a skill then invent a parallel mini-plan.
 
-## Rule
-
-1. **Scan** available skills — see `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md` and `.agents/skills-manifest.json`
-2. **Read** the matching `SKILL.md` before planning or implementing.
-3. **Follow** the skill workflow — do not improvise a parallel process when a skill exists.
-4. **Announce** briefly which skill is in use (e.g. "Using create-rule skill").
+Before acting: if ≥1% chance a skill fits, read and follow it. See `docs/knowledge/16_DOCUMENTATION/Skills-Registry.md` and `.agents/skills-manifest.json`.
 
 ## Priority order
 
 1. User explicit skill request (`/caveman`, `/graphify`, etc.)
-2. Process skills — debugging, brainstorming, TDD, verification-before-completion
-3. Domain skills — auth, design, deploy, Supabase, Vercel, frontend-design
-4. Task-specific skills — create-rule, create-hook, split-to-prs, review-security
+2. Process skills that **drive execution** — debugging, verification-before-completion, TDD when already the project bar
+3. Domain skills — auth, design, deploy, Supabase, Vercel, frontend-design, android-*
+4. Task-specific — create-rule, create-hook, split-to-prs, review-security
+
+**Brainstorming / outline / strategy skills:** only when the user asks, or a consequential product decision is genuinely ambiguous. Default for “build / fix / ship X” = investigate + execute (`aiimin-deep-execution.mdc`), not a new plan artifact.
 
 ## Common triggers
 
 | Task | Skill to check |
 |------|----------------|
 | Bug / failure | `systematic-debugging` |
-| New feature / design | `brainstorming`, `frontend-design` + **VP0 MCP** (`search_vp0_designs`, `get_vp0_design`) |
-| UI patterns / flows / onboarding | **VP0 MCP** — search + fetch design before proposing layouts |
+| New feature UI | `frontend-design` + **VP0 MCP** (`search_vp0_designs`, `get_vp0_design`) |
+| UI patterns / flows / onboarding | **VP0 MCP** — search + fetch before proposing layouts |
 | Cursor rules | `create-rule` |
 | Commits | `caveman-commit` |
 | Code review | `caveman-review`, `review-security` |
 | Deploy / Vercel | `deployments-cicd`, `deployment-expert` |
 | Auth changes | `better-auth-best-practices`, `create-auth-skill` |
 | Knowledge graph | `graphify` |
-| Fullstack scaffold / architecture | `senior-fullstack` (`~/.cursor/skills/`) |
+| Fullstack scaffold | `senior-fullstack` (`~/.cursor/skills/`) |
 | GitHub README / repo marketing | `github` (`~/.cursor/skills/`) |
 | Canvas / rich output | `canvas` |
 
 ## Do not
 
-- Skip skill check because the task "looks simple"
+- Skip skill check because the task “looks simple”
 - Rely on memory of a skill — always read the current `SKILL.md`
 - Ignore project-local skills in `.agents/skills/` — they override generic defaults for AIIMIN
+- Use a skill as excuse to create phase/roadmap files (`aiimin-deep-execution.mdc`)

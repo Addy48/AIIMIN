@@ -37,15 +37,15 @@ tags:
 | Explore free forever (Journal, Depth, Today ceiling) | **FOUNDING**/product policy | Tier table in `waitlistLandingData` | Keep; ensure Refunds/Terms don’t contradict |
 | Core ₹29 / Pro founding ₹49 / Elite founding ₹79 | **FOUNDING** | Waitlist + Dual-Market INR | Keep; “as described at signup / Terms” |
 | Complimentary Core at go-live | **FOUNDING** | Waitlist perks | Keep; define duration in Terms if not already |
-| Elite free 12 mo for VIP testers (₹1,188 value) | **FOUNDING** | Invited testers only · register by 30 Sep | Keep; invite-only explicit |
+| Elite free 12 mo for VIP testers (₹1,188 value) | **FOUNDING** | Invited testers only · register by 31 Oct | Keep; invite-only explicit |
 | Pro/Elite founding ~17%/20% off for 12 mo | **FOUNDING** | FAQ + packages | Keep |
-| Launching / go-live Oct 2026 · end of Oct | **TARGET** | Public timeline | Prefer “targeting end of October 2026” over hard “Launching” where possible |
-| Tester registration closes 30 September | **TARGET**/ops deadline | Cutoff for VIP package | OK as deadline for perk eligibility |
+| Launching / go-live Nov 2026 · end of Nov | **TARGET** | Public timeline | Prefer “targeting end of November 2026” over hard “Launching” where possible |
+| Tester registration closes 31 October | **TARGET**/ops deadline | Cutoff for VIP package | OK as deadline for perk eligibility |
 | Waitlist instant signup | **FACT** | Current API flow | Keep |
 | Android closed device testing · Play not listed · no APK | **FACT** | `/app` + ANDROID_APP_STATUS | Keep |
 | UPI review / Family vault in Pro | **TARGET**/partial | Ship gates Phase C / vault waves | Soften to “includes when module ships” if not live at go-live |
 | Life Score across sleep, gym, mood, focus | **FACT**/product | Server LHS 5D — copy should use BODY·MIND·DISCIPLINE·MONEY·MOOD labels carefully | Align journey unlock text with taxonomy |
-| “Spots filling for Oct 2026” | **TARGET** | Social proof line | Avoid fake scarcity; only show counts when ≥100 |
+| “Early members joining for Nov 2026” | **TARGET** | Social proof line | Avoid fake scarcity; only show counts when ≥100 |
 | Join free — perks lock in at signup | **FOUNDING** | Hero CTA | OK if Terms say perks locked at signup |
 | Americas $0/$3/$7/$16 footnote | **TARGET** | Dual-Market proposed | Footnote OK; not live checkout |
 | AI therapist / doctor / wealth manager | **FORBID** | AI-Preference-Map | Never |

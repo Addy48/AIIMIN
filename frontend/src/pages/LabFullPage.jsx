@@ -178,6 +178,11 @@ export default function LabFullPage() {
             <h1 style={{ font: "var(--text-hero)", color: text1, margin: 0, letterSpacing: "-0.02em", fontSize: '32px' }}>
               The Lab.
             </h1>
+            <p style={{ margin: '10px 0 0', fontSize: 12, lineHeight: 1.45, color: text3 }}>
+              Practice tools (typing, interview, focus drills). Not the Life Graph.
+              Correlations on native Lab stay labelled <span style={{ color: text2, fontWeight: 600 }}>SEED</span> or{' '}
+              <span style={{ color: text2, fontWeight: 600 }}>LIVE</span> — never fake LIVE.
+            </p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -329,13 +334,30 @@ export default function LabFullPage() {
                   { label: "Tests This Week", value: typingStats.testsThisWeek, color: "#5FA85A" },
                   { label: "Reaction (ms)", value: typingStats.reactionMs ?? "—", color: "#E8B84B" },
                   { label: "Speaking score", value: typingStats.speakingScore ?? "—", color: "#E8B84B" },
-                  { label: "Life Score", value: lifeScore?.score ?? "—", color: "#ff6b35", desc: lifeScore?.delta >= 0 ? `+${lifeScore?.delta}` : lifeScore?.delta },
+                  {
+                    label: lifeScore?.source === 'api' ? 'Life Score · LIVE' : 'Life Score · LOCAL',
+                    value: lifeScore?.score ?? "—",
+                    color: "#ff6b35",
+                    desc: lifeScore?.delta != null && lifeScore?.delta !== 0
+                      ? (lifeScore.delta >= 0 ? `+${lifeScore.delta}` : String(lifeScore.delta))
+                      : (lifeScore?.source === 'api' ? 'server LHS' : 'fallback'),
+                  },
                 ].map(stat => (
                   <div key={stat.label} style={{ background: cardBg, border: `1px solid ${border}`, borderRadius: "12px", padding: "20px", borderTop: `4px solid ${stat.color}`, boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
                     <div style={{ fontSize: "11px", fontWeight: 600, color: text3, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>{stat.label}</div>
                     <div style={{ display: "flex", alignItems: "baseline", gap: "8px" }}>
                       <div style={{ fontSize: "28px", fontWeight: 800, color: text1, letterSpacing: "-0.02em", lineHeight: 1, textTransform: "capitalize" }}>{stat.value}</div>
-                      {stat.desc && <div style={{ fontSize: "12px", fontWeight: 600, color: stat.desc.toString().startsWith('+') ? '#22C55E' : '#EF4444' }}>{stat.desc}</div>}
+                      {stat.desc != null && stat.desc !== '' && (
+                        <div style={{
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          color: String(stat.desc).startsWith('+')
+                            ? '#22C55E'
+                            : (String(stat.desc).startsWith('-') || /^-?\d/.test(String(stat.desc)))
+                              ? '#EF4444'
+                              : text3,
+                        }}>{stat.desc}</div>
+                      )}
                     </div>
                   </div>
                 ))}

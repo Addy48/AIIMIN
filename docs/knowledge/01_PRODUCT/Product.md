@@ -49,7 +49,7 @@ When `REACT_APP_WAITLIST_MODE=true`:
 - Primary CTA: **Reserve my spot**
 - Signup returns position + referral code; `localStorage` key `aiimin_waitlist`
 - Social proof only when signup count ≥ 100
-- Go-live target: end of October 2026. Founding / tester registration closes **30 September 2026**.
+- Go-live target: end of November 2026. Founding / tester registration closes **31 October 2026**.
 - Dev/tester emails get elite tier + full app access
 - Public sign-in without allowlist → pending screen
 

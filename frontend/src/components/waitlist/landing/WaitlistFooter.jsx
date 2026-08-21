@@ -8,7 +8,7 @@ const WaitlistFooter = forwardRef(function WaitlistFooter(_props, ref) {
       <Link to="/brand" className="waitlist-footer-brand" aria-label="Explore AIIMIN brand">
         <Wordmark size={22} color="var(--color-text-1)" />
       </Link>
-      <p>India-first life OS for students and early professionals.</p>
+      <p>High-density Personal Life OS for ambitious builders and high performers.</p>
       <nav>
         <Link to="/app">Android</Link>
         <Link to="/privacy">Privacy</Link>

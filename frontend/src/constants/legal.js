@@ -4,7 +4,7 @@ export const LEGAL = {
   // TODO(founder): replace with registered legal entity name + type once incorporated
   entityNote: 'AIIMIN is operated by Aaditya Upadhyay, India.',
   address: null, // TODO(founder): DPDP requires a published postal address before launch
-  effectiveDate: 'September 30, 2026',
+  effectiveDate: 'October 31, 2026',
   emails: {
     support: 'support@aiimin.in',
     privacy: 'privacy@aiimin.in',
@@ -15,7 +15,7 @@ export const LEGAL = {
   grievanceOfficer: 'Aaditya Upadhyay',
   jurisdiction: 'Uttar Pradesh, India',
   liabilityCap: 'the greater of ₹5,000 or the subscription fees you paid in the 12 months before the claim',
-  consentVersion: 'v1-2026-09-30',
+  consentVersion: 'v1-2026-10-31',
 };
 
 /** Shown wherever the registered postal address would otherwise be printed. */

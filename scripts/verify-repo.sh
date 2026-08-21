@@ -32,7 +32,7 @@ else
 fi
 
 # 3. Native debug assemble (skip if no JDK 17)
-if [ -d native-android ]; then
+if [ -d native-android-v3 ]; then
   NATIVE_JAVA=""
   if [ -d /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home ]; then
     NATIVE_JAVA="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
@@ -42,11 +42,11 @@ if [ -d native-android ]; then
     NATIVE_JAVA="$JAVA_HOME"
   fi
   if [ -n "$NATIVE_JAVA" ]; then
-    echo "Building native-android debug (JDK 17)..."
-    if (cd native-android && JAVA_HOME="$NATIVE_JAVA" ./gradlew :app:assembleDebug -q >/tmp/aiimin-verify-native.log 2>&1); then
-      pass "native-android assembleDebug"
+    echo "Building native-android-v3 debug (JDK 17)..."
+    if (cd native-android-v3 && JAVA_HOME="$NATIVE_JAVA" ./gradlew :app:assembleDebug -q >/tmp/aiimin-verify-native.log 2>&1); then
+      pass "native-android-v3 assembleDebug"
     else
-      fail "native-android build failed (see /tmp/aiimin-verify-native.log)"
+      fail "native-android-v3 build failed (see /tmp/aiimin-verify-native.log)"
     fi
   else
     echo "… skipping native (JDK 17 not found — brew install openjdk@17)"
@@ -67,7 +67,7 @@ else
 fi
 
 # 5. Tracked build artifacts check
-if git ls-files 'native-android/**/build/**' 'frontend/android/**/build/**' 2>/dev/null | grep -q .; then
+if git ls-files 'native-android-v3/**/build/**' 'native-android/**/build/**' 'frontend/android/**/build/**' 2>/dev/null | grep -q .; then
   fail "Build artifacts still tracked in git"
 else
   pass "No tracked android build/ dirs"

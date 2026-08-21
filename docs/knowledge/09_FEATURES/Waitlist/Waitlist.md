@@ -83,7 +83,7 @@ Landing (modular v9 — Aug 2026 overhaul):
 | Core subscription | Complimentary Core at launch (waitlist only) |
 | Pro founding price | **₹49/mo** (~17% off ₹59) for 12 months |
 | Elite founding price | **₹79/mo** (~20% off ₹99) for 12 months |
-| Tester perk | Elite free for 1 year if registered by **30 September 2026** (invite only) |
+| Tester perk | Elite free for 1 year if registered by **31 October 2026** (invite only) |
 | Referral queue | Share link moves position up 5 spots per signup |
 
 ## Pricing tiers (public landing copy)

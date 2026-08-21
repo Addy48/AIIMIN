@@ -150,3 +150,21 @@ V2 **source** is still here. Deleting `native-android/` is a separate founder ca
 - **Files:** this note; see deletions listed above
 - **Status:** shipped (local working tree; commit only if founder asks)
 - **Notes:** Genesis and `99_ARCHIVE` not deleted.
+
+### 2026-08-21 — Full-System Deep Audit & Dead-Code Removal
+- **What:** Full-system truth recovery, authority audit, and cleanup.
+- **Deleted Dead Code / Stale Stubs:**
+  - `frontend/src/fix_styling.js`: One-off script containing hardcoded machine paths.
+  - `server/test_sports.js`: Duplicate ad-hoc test (canonical diagnostic is `scripts/diagnostics/test_sports.js`).
+  - `server/scratch_create_family_tables.js`: Redundant scratch SQL script.
+  - `frontend/src/components/PersonalCalendar.jsx`: Unreferenced 519-line legacy calendar (superseded by `CalendarPage.jsx`).
+  - `frontend/src/components/ResetsTracker.jsx`: Unreferenced 271-line legacy resets tracker (superseded by `Discipline.jsx` + `DisciplineUrgeModal.jsx`).
+  - `frontend/src/components/LogoContainer.jsx`: Unreferenced trivial wrapper.
+  - `frontend/src/components/system/DashboardSections.jsx`: Unreferenced 506-line monolithic dashboard sections container (superseded by dedicated page routes).
+  - `frontend/src/components/dashboard/QuickCapture.jsx`: Unreferenced deprecated stub.
+  - `frontend/src/pages/AccountPage.jsx`: Deprecated stub (updated `App.js` to lazy-import `./pages/account/AccountPage` directly).
+- **Fixed & Verified:**
+  - `api/index.js`: Mounted `health` route (`server/routes/health.js`) in lazy `routeMap` enabling `/api/health/db` connectivity checks.
+  - `scripts/verify-repo.sh`: Updated native Android verification step to assemble `native-android-v3` (JDK 17) and check V3 build artifacts.
+- **Status:** Verified exit 0 on `verify-repo.sh`, `npm test`, `npm run build`, and `native-android-v3 assembleDebug`.
+

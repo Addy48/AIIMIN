@@ -16,7 +16,7 @@ fm_source: script
 
 > **Agents:** read this when choosing a skill. **Humans:** install global skills via `~/AGENTS.md`.
 
-**Last updated:** 2026-07-30
+**Last updated:** 2026-08-20
 
 ---
 
@@ -119,11 +119,45 @@ Rule: `.cursor/rules/aiimin-vp0-mcp.mdc` — mandatory on design, prototyping, b
 | **create-rule** | Cursor plugin | `.cursor/rules/` updates |
 | **create-hook** | Cursor plugin | proof-or-stop hooks |
 
+### P0 — Stage-1 marketing / PR / GEO (2026-08-20)
+
+Installed **project-local** (gitignored skill dirs; tracked in `skills-lock.json`). Clone mirror: `dev-gtm-claude-skills/` (also gitignored).
+
+| Pack | Source | Count (approx) | Use for |
+|------|--------|----------------|---------|
+| **marketingskills** | `coreyhaines31/marketingskills` | ~49 | Full funnel: plan, PR, launch, CRO, copy, social, pricing, waitlist |
+| **dev-gtm / GEO / SEO / blog** | `Infrasity-Labs/dev-gtm-claude-skills` | ~70 curated | GEO, `llms.txt`, SEO suite, blog engine, docs audits |
+
+**Always start marketing threads with:** `product-marketing` → writes `.agents/product-marketing.md` (shared ICP / positioning context).
+
+**High-value first skills for AIIMIN Stage 1:**
+
+| Skill | Job |
+|-------|-----|
+| `product-marketing` | ICP + positioning context file |
+| `marketing-plan` | 90-day / 12-month AARRR plan |
+| `public-relations` | Press kit, journalist pitch, podcast prep |
+| `launch` | Founding / waitlist close (31 Aug) + Sep go-live |
+| `copywriting` / `cro` / `signup` | Waitlist landing + conversion |
+| `social` / `social-media-posts` | India-first channel content |
+| `ai-seo` / `llms-txt-checker` / `seo-geo` | AI citation + discoverability |
+| `directory-submissions` | Product Hunt / SaaS directories |
+| `marketing-ideas` | Idea library when stuck |
+| `brandkit` | Brand board (logo / type / mockups) — **must respect locked AIIMIN palette**; no new brand colors without founder ask |
+
+**`brandkit` install (2026-08-20):** `~/.claude/skills/brandkit/` · `~/.cursor/skills/brandkit/` · `.agents/skills/brandkit/` (gitignored). Source: https://collectivebrain.de/en/skills/brandkit/SKILL.md
+
+**Full purpose table:** [[16_DOCUMENTATION/Stage1-Marketing-Skills-Catalog]] (120 skills by expertise domain).
+
+Canonical product GTM note: [[01_PRODUCT/Marketing-And-Go-To-Market]] · pricing [[01_PRODUCT/Dual-Market-Pricing]] · palette lock [[08_DESIGN/Palette]].
+
+**Do not** convert Infrasity pack into always-on `.cursor/rules/*.mdc` — floods context. Skills stay on-demand via `.agents/skills/`.
+
 ### Not for this repo (skip)
 
 | Skill | Why |
 |-------|-----|
-| **marketing-skills** (full pack) | Only `github` sub-skill mapped; rest is growth spam |
+| **Infrasity full 259 dump** | Includes job-search / TDD / random UX — would overwrite first-party skills; we install curated GTM/SEO/blog subset only |
 | **senior-fullstack project_scaffolder** | Greenfield only — we have a monorepo |
 | **industrial-brutalist-ui** | Conflicts with locked AIIMIN palette |
 
@@ -141,6 +175,15 @@ npx -y skills add kostja94/marketing-skills --skill github --agent cursor -g
 
 # Android suite (local to project, gitignored)
 npx skills add rcosteira79/android-skills --skill compose --agent cursor
+
+# Stage-1 full marketing pack (project)
+npx -y skills add coreyhaines31/marketingskills --skill '*' --agent cursor -y
+
+# Stage-1 GEO / SEO / blog (curated names — see skills-lock.json)
+npx -y skills add Infrasity-Labs/dev-gtm-claude-skills --skill <names...> --agent cursor -y
+
+# Restore after clone
+npx -y skills experimental_install
 ```
 
 ---

@@ -450,6 +450,8 @@ Semantic search · household · iOS · Hindi · social forge · Career unpark �
 - [[01_PRODUCT/AI-Preference-Map]] — where users want / refuse AI
 - [[01_PRODUCT/Marketing-And-Go-To-Market]] — India + Americas GTM
 - [[01_PRODUCT/Build-Next-Now]] — one-page “what to build next” card
+- [[01_PRODUCT/Phase-B-Prep-Spec]] — eng tickets for link core (schema gated)
+- [[01_PRODUCT/Owned-PR-Kit]] — Stage-1 owned channels kit
 - [[01_PRODUCT/Stage1-Marketing-Ops-Plan]] — day calendar + AARRR
 
 ## 16. Follow-on research (2026-08-20 deep pass)

@@ -12,6 +12,16 @@ module.exports = {
       'next-themes': path.resolve(__dirname, 'src/shims/next-themes.js'),
     },
   },
+  jest: {
+    configure: {
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '^react-router-dom$': '<rootDir>/node_modules/react-router-dom/dist/index.js',
+        '^react-router/dom$': '<rootDir>/node_modules/react-router/dist/development/dom-export.js',
+        '^react-router$': '<rootDir>/node_modules/react-router/dist/development/index.js',
+      },
+    },
+  },
   // Safari caches CRA chunks aggressively — force no-store in local dev.
   // Phone WebView + SPA routes (/m) must not hit package.json proxy → :3001.
   devServer: {

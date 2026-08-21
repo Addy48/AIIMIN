@@ -72,7 +72,7 @@ const NotesPage     = React.lazy(() => import('./pages/Notes'));
 const DisciplinePage= React.lazy(() => import('./pages/Discipline'));
 const FocusRoom     = React.lazy(() => import('./pages/FocusRoom'));
 const FamilyPage    = React.lazy(() => import('./pages/Family'));
-const AccountPage   = React.lazy(() => import('./pages/AccountPage'));
+const AccountPage   = React.lazy(() => import('./pages/account/AccountPage'));
 const ReportsPage   = React.lazy(() => import('./pages/Reports'));
 const SeedData      = React.lazy(() => import('./pages/SeedData'));
 const DraftingTablePrototype = React.lazy(() => import('./prototypes/drafting-table'));

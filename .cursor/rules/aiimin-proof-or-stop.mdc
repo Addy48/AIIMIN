@@ -20,6 +20,8 @@ Agent output = **claim**. Lifecycle state (`done` / `fixed` / `shipped` / `tests
 
 Never: “done”, “fixed”, “all good”, “should work”, “LGTM” without evidence.
 
+**Complete means end-to-end** (`aiimin-deep-execution.mdc`): user-visible + system behavior coherent — not “UI exists,” “one endpoint works,” “plan finished,” or “main part done; rest later” when the rest is required for the outcome.
+
 ## Claim → required evidence (same turn)
 
 | Claim | Must have this turn |
@@ -49,6 +51,7 @@ No evidence block → cannot use completion language.
 - Say tests/deploy passed without running them this closeout
 - Treat plan / intent / “I will” as done
 - Hide uncertainty behind confident tone
+- Declare `passed` while known required dependency work remains “for later”
 
 ## Token note
 

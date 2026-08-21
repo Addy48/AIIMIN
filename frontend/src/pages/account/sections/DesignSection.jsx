@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './design/designPrototypes.css';
+import ErrorBoundary from '../../../components/system/ErrorBoundary';
 import OverviewPanel from './design/OverviewPanel';
 import UILibraryPanel from './design/UILibraryPanel';
 import PersonalizationPrototypesPanel from './design/PersonalizationPrototypesPanel';
@@ -27,7 +28,7 @@ const PANELS = {
 
 export default function DesignSection() {
   const [tab, setTab] = useState('overview');
-  const Panel = PANELS[tab];
+  const Panel = PANELS[tab] || OverviewPanel;
 
   return (
     <div className="design-lab" style={{ maxWidth: '100%' }}>
@@ -54,7 +55,9 @@ export default function DesignSection() {
         ))}
       </nav>
 
-      <Panel />
+      <ErrorBoundary label="Design Lab Prototype">
+        <Panel />
+      </ErrorBoundary>
     </div>
   );
 }

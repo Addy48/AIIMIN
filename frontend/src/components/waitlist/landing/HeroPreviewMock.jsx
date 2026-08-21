@@ -1,4 +1,5 @@
 import React from 'react';
+import { CheckCircle2, ShieldCheck, Zap, Activity, Wallet, Compass } from 'lucide-react';
 
 const BARS = [
   { h: 68, d: 'M' },
@@ -10,69 +11,123 @@ const BARS = [
   { h: 88, d: 'S' },
 ];
 
+const DIMENSIONS = [
+  { name: 'BODY', pct: '88%', color: '#10b981' },
+  { name: 'MIND', pct: '82%', color: '#749dc4' },
+  { name: 'DISCIPLINE', pct: '90%', color: '#ff6b35' },
+  { name: 'MONEY', pct: '78%', color: '#38bdf8' },
+  { name: 'MOOD', pct: '84%', color: '#a78bfa' },
+];
+
 export default function HeroPreviewMock() {
   return (
     <div className="waitlist-hero-preview">
-      <div className="hero-mock-dashboard" aria-label="Life OS daily board preview">
+      <div className="hero-mock-dashboard" aria-label="Life OS daily command center preview">
         <div className="hero-mock-chrome">
           <div className="hero-mock-dots" aria-hidden="true">
             <span className="hero-mock-dot hero-mock-dot--close" />
             <span className="hero-mock-dot hero-mock-dot--min" />
             <span className="hero-mock-dot hero-mock-dot--max" />
           </div>
-          <div className="hero-mock-chrome-pills" aria-hidden="true">
-            <span className="hero-mock-chrome-pill" />
-            <span className="hero-mock-chrome-pill hero-mock-chrome-pill--accent" />
+          <div className="hero-mock-chrome-cmd" aria-hidden="true">
+            <span>⌘K</span>
+            <span className="hero-mock-chrome-search">Jump to Today, Money, Family, Score...</span>
+          </div>
+          <div className="hero-mock-chrome-status">
+            <span className="hero-mock-pill">● SERVER LHS: LIVE</span>
           </div>
         </div>
+
         <div className="hero-mock-body">
           <div className="hero-mock-sidebar" aria-hidden="true">
-            <span className="hero-mock-nav-item active" />
-            <span className="hero-mock-nav-item" />
-            <span className="hero-mock-nav-item" />
-            <span className="hero-mock-nav-item" />
+            <div className="hero-mock-nav-item active" title="Today">
+              <Compass size={13} />
+            </div>
+            <div className="hero-mock-nav-item" title="Score">
+              <Activity size={13} />
+            </div>
+            <div className="hero-mock-nav-item" title="Money">
+              <Wallet size={13} />
+            </div>
+            <div className="hero-mock-nav-item" title="Focus">
+              <Zap size={13} />
+            </div>
+            <div className="hero-mock-nav-item" title="Family">
+              <ShieldCheck size={13} />
+            </div>
           </div>
+
           <div className="hero-mock-main">
             <div className="hero-mock-header">
               <div className="hero-mock-title-block">
-                <span className="hero-mock-eyebrow">Today</span>
-                <span className="hero-mock-title-text">Daily execution</span>
+                <span className="hero-mock-eyebrow">Today Execution</span>
+                <span className="hero-mock-title-text">Optimal Rhythm · 88% Depth</span>
               </div>
-              <span className="hero-mock-pill">Synced</span>
+              <span className="hero-mock-badge-done">3/3 MINIMUMS DONE</span>
             </div>
+
+            <div className="hero-mock-dimensions-strip" aria-label="5D Life Score dimensions">
+              {DIMENSIONS.map((dim) => (
+                <div key={dim.name} className="hero-mock-dim-chip">
+                  <span className="hero-mock-dim-name" style={{ color: dim.color }}>{dim.name}</span>
+                  <span className="hero-mock-dim-val">{dim.pct}</span>
+                </div>
+              ))}
+            </div>
+
             <div className="hero-mock-stats">
               <div className="hero-mock-stat-card">
-                <span className="hero-mock-stat-value">82%</span>
-                <span className="hero-mock-stat-label">Life score</span>
+                <span className="hero-mock-stat-value">84</span>
+                <span className="hero-mock-stat-label">Life Score</span>
               </div>
               <div className="hero-mock-stat-card">
-                <span className="hero-mock-stat-value">7.2h</span>
-                <span className="hero-mock-stat-label">Sleep</span>
+                <span className="hero-mock-stat-value">7.4h</span>
+                <span className="hero-mock-stat-label">Sleep (Restful)</span>
               </div>
               <div className="hero-mock-stat-card">
-                <span className="hero-mock-stat-value">8/10</span>
-                <span className="hero-mock-stat-label">Logged</span>
+                <span className="hero-mock-stat-value">3.5h</span>
+                <span className="hero-mock-stat-label">Deep Focus</span>
               </div>
             </div>
-            <div className="hero-mock-chart-wrap">
-              <div className="hero-mock-chart-head">
-                <p className="hero-mock-chart-y">Daily completion %</p>
-                <p className="hero-mock-chart-axis">Last 7 days</p>
+
+            <div className="hero-mock-split-grid">
+              <div className="hero-mock-loops-col">
+                <p className="hero-mock-col-title">Daily Verified Loops</p>
+                <div className="hero-mock-loop-item">
+                  <CheckCircle2 size={12} color="#10b981" />
+                  <span>45m Gym Workout</span>
+                </div>
+                <div className="hero-mock-loop-item">
+                  <CheckCircle2 size={12} color="#10b981" />
+                  <span>3.5h Deep Code (DSA)</span>
+                </div>
+                <div className="hero-mock-loop-item">
+                  <CheckCircle2 size={12} color="#749dc4" />
+                  <span>₹420 Lent Rahul (Linked)</span>
+                </div>
               </div>
-              <div className="hero-mock-chart" role="img" aria-label="Sample completion bars for last 7 days">
-                {BARS.map((bar) => (
-                  <div key={bar.d + bar.h} className="hero-mock-bar-col">
-                    <span className="hero-mock-bar" style={{ height: `${bar.h}%` }} />
-                    <span className="hero-mock-bar-day">{bar.d}</span>
-                  </div>
-                ))}
+
+              <div className="hero-mock-chart-wrap">
+                <div className="hero-mock-chart-head">
+                  <p className="hero-mock-chart-y">7-Day Consistency</p>
+                  <p className="hero-mock-chart-axis">Baseline: Optimal</p>
+                </div>
+                <div className="hero-mock-chart" role="img" aria-label="Sample completion bars for last 7 days">
+                  {BARS.map((bar) => (
+                    <div key={bar.d + bar.h} className="hero-mock-bar-col">
+                      <span className="hero-mock-bar" style={{ height: `${bar.h}%` }} />
+                      <span className="hero-mock-bar-day">{bar.d}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
       <p className="preview-caption">
-        Web Life OS today · Android companion in closed testing ·{' '}
+        Desktop Life OS Command Center · Android companion in closed testing ·{' '}
         <a href="/app">Status</a>
       </p>
     </div>

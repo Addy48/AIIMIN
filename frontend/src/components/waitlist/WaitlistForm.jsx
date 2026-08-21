@@ -34,13 +34,13 @@ function buildReferralUrl(code) {
 
 function buildWhatsAppShare(code) {
   const url = buildReferralUrl(code);
-  const text = `I just joined the AIIMIN waitlist — habits, money, focus, and mood in one dashboard. Built for Indian students. Explore free · Core ₹29/mo · Pro founding ₹49/mo · Elite ₹79 for waitlist. ${url}`;
+  const text = `I just joined the AIIMIN waitlist — habits, money, focus, and daily intelligence in one unified Life OS. Explore free · Pro founding ₹49/mo · Elite ₹79 for waitlist. ${url}`;
   return `https://wa.me/?text=${encodeURIComponent(text)}`;
 }
 
 function buildTwitterShare(code) {
   const url = buildReferralUrl(code);
-  const text = `I just joined the AIIMIN waitlist — habits, money, focus, and mood in one dashboard. Built for Indian students. ${url}`;
+  const text = `I just joined the AIIMIN waitlist — habits, money, focus, and daily intelligence in one unified Life OS. ${url}`;
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
 }
 
@@ -352,7 +352,7 @@ export default function WaitlistForm({
     <form onSubmit={submit} className={`waitlist-form ${compact ? 'waitlist-form-compact' : ''} ${variant === 'hero' ? 'waitlist-form-hero' : ''}`}>
       {variant === 'hero' && !compact && (
         <div className="waitlist-form-hero-head">
-          <span className="waitlist-form-badge">Targeting Oct 2026</span>
+          <span className="waitlist-form-badge">Targeting Nov 2026</span>
           <h2 className="waitlist-form-heading">Join the waitlist</h2>
           <p className="waitlist-form-lead">
             Founding member perks at launch — complimentary Core, Pro at ₹49/mo, Elite at ₹79/mo.
@@ -426,7 +426,7 @@ export default function WaitlistForm({
 
       {showUrgency && (
         <p className="urgency-chip" role="status">
-          Tester registration closes <strong>30 September</strong>
+          Tester registration closes <strong>31 October</strong>
         </p>
       )}
 

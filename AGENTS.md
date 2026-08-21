@@ -48,6 +48,7 @@ Full: `docs/knowledge/08_DESIGN/Palette.md`
 - No auth/schema changes without explicit user instruction
 - Update vault before task complete
 - No tool-vendor attribution in docs or commits
+- Deep execution: finish end-to-end; no plan/phase explosion (`.cursor/rules/aiimin-deep-execution.mdc`)
 - Proof-or-stop: no done/fixed/shipped without same-turn evidence
 - Anti-lie: Verified/Inferred/Proposed/Blocked/Not performed; no claim without receipt
 
