@@ -41,7 +41,7 @@ export default function WaitlistHeroSection({
         </h1>
         <p>
           AIIMIN is your personal Life OS — web command center live on waitlist, Android companion in closed device testing.
-          Built for Indian students and early professionals who refuse to juggle five apps.
+          Built for ambitious builders, operators, and high performers who refuse to juggle five apps.
         </p>
         <div className="mobile-preview-wrap">
           <MobilePreviewMock />
@@ -75,7 +75,7 @@ export default function WaitlistHeroSection({
               </span>
             </motion.h1>
             <motion.p className="hero-subhead hero-subhead--compact" custom={1} variants={fadeUp}>
-              One aggressive Life OS for Indian students and early professionals — web command center now, Android companion in closed testing. No app hopping.
+              A focused, unified Life OS for builders, founders, and high performers — web command center now, Android companion in closed testing. Zero app hopping.
             </motion.p>
             <motion.p className="hero-trust-line" custom={2} variants={fadeUp}>
               {HERO_TRUST_LINE}

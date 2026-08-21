@@ -35,17 +35,28 @@ export default function ProfileSection({
   periodEnd = null,
   onOpenSubscription,
 }) {
-  const [name, setName] = useState(user?.full_name || '');
-  const [lifeArc, setLifeArc] = useState(profile?.tagline || '');
-  const [location, setLocation] = useState(profile?.location || '');
+  const [name, setName] = useState(typeof (profile?.full_name || user?.full_name) === 'string' ? (profile?.full_name || user?.full_name) : '');
+  const [lifeArc, setLifeArc] = useState(typeof profile?.tagline === 'string' ? profile.tagline : '');
+  const [location, setLocation] = useState(typeof profile?.location === 'string' ? profile.location : '');
   const [ranksOpen, setRanksOpen] = useState(false);
-  const osId = (profile?.username || user?.username || '').toUpperCase();
+
+  const displayName = typeof (profile?.full_name || user?.full_name) === 'string' ? (profile?.full_name || user?.full_name) : name;
+  const osId = String(profile?.username || user?.username || '').toUpperCase();
   const hasOsId = osId.length === 8;
-  const activeLifeArc = profile?.tagline || lifeArc;
+  const activeLifeArc = typeof (profile?.tagline ?? lifeArc) === 'string' ? (profile?.tagline ?? lifeArc) : '';
+  const hasLifeArc = Boolean(activeLifeArc.trim());
 
   useEffect(() => {
-    setLifeArc(profile?.tagline || '');
+    setLifeArc(typeof profile?.tagline === 'string' ? profile.tagline : '');
   }, [profile?.tagline]);
+
+  useEffect(() => {
+    setName(typeof (profile?.full_name || user?.full_name) === 'string' ? (profile?.full_name || user?.full_name) : '');
+  }, [profile?.full_name, user?.full_name]);
+
+  useEffect(() => {
+    setLocation(typeof profile?.location === 'string' ? profile.location : '');
+  }, [profile?.location]);
 
   const { status: nameStatus, save: saveName } = useFieldSave(async (v) => {
     await apiPatch('/account/profile', { full_name: v });
@@ -58,14 +69,13 @@ export default function ProfileSection({
 
   const fields = [
     { label: 'OS-ID', value: osId, done: hasOsId },
-    { label: 'Name', value: profile?.full_name || user?.full_name, done: !!(profile?.full_name || user?.full_name) },
-    { label: 'Life Arc', value: profile?.tagline, done: !!profile?.tagline?.trim() },
-    { label: 'Location', value: profile?.location, done: !!(profile?.location && String(profile.location).trim()) },
-    { label: 'Avatar', value: user?.avatar_url, done: !!user?.avatar_url },
+    { label: 'Name', value: displayName, done: Boolean(displayName.trim()) },
+    { label: 'Life Arc', value: activeLifeArc, done: hasLifeArc },
+    { label: 'Location', value: profile?.location, done: Boolean(profile?.location && String(profile.location).trim()) },
+    { label: 'Avatar', value: user?.avatar_url, done: Boolean(user?.avatar_url) },
   ];
   const strength = Math.round((fields.filter((f) => f.done).length / fields.length) * 100);
-  const displayName = profile?.full_name || user?.full_name || '';
-  const initials = (displayName.trim().split(/\s+/)[0]?.charAt(0) || user?.email?.charAt(0) || 'A').toUpperCase();
+  const initials = (displayName.trim().split(/\s+/)[0]?.charAt(0) || String(user?.email || '').charAt(0) || 'A').toUpperCase();
 
   return (
     <div style={{ display: 'grid', gap: 18 }}>
@@ -129,8 +139,8 @@ export default function ProfileSection({
                 marginTop: 12,
                 padding: '10px 12px',
                 borderRadius: 12,
-                border: `1px solid ${activeLifeArc?.trim() ? 'color-mix(in srgb, var(--color-accent) 28%, var(--color-border))' : 'var(--color-border)'}`,
-                background: activeLifeArc?.trim() ? 'var(--color-accent-dim)' : 'var(--color-surface-1)',
+                border: `1px solid ${hasLifeArc ? 'color-mix(in srgb, var(--color-accent) 28%, var(--color-border))' : 'var(--color-border)'}`,
+                background: hasLifeArc ? 'var(--color-accent-dim)' : 'var(--color-surface-1)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -143,14 +153,14 @@ export default function ProfileSection({
                 className="profile-life-arc-display"
                 style={{
                   margin: 0,
-                  color: activeLifeArc?.trim() ? 'var(--color-text-1)' : 'var(--color-text-3)',
+                  color: hasLifeArc ? 'var(--color-text-1)' : 'var(--color-text-3)',
                   fontSize: 14,
                   lineHeight: 1.55,
-                  fontStyle: activeLifeArc?.trim() ? 'normal' : 'italic',
-                  fontWeight: activeLifeArc?.trim() ? 600 : 400,
+                  fontStyle: hasLifeArc ? 'normal' : 'italic',
+                  fontWeight: hasLifeArc ? 600 : 400,
                 }}
               >
-                {activeLifeArc?.trim() || ARC_TAGLINE}
+                {hasLifeArc ? activeLifeArc.trim() : ARC_TAGLINE}
               </p>
             </div>
           </div>

@@ -62,8 +62,12 @@ export default function TierUpgradeCelebration({
   const tillLabel = formatPlanTill(periodEnd);
 
   const prefersReduced = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
+    try {
+      return Boolean(window.matchMedia('(prefers-reduced-motion: reduce)')?.matches);
+    } catch {
+      return false;
+    }
   }, []);
 
   useEffect(() => {

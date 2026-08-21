@@ -77,8 +77,12 @@ function writePrefs(prefs) {
     bottomNavEnabled: prefs.bottomNavEnabled !== false,
     personaPresetId: prefs.personaPresetId || 'custom',
   };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: next }));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {}
+  try {
+    window.dispatchEvent(new CustomEvent(CHANGE_EVENT, { detail: next }));
+  } catch {}
   return next;
 }
 

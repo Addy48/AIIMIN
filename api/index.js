@@ -102,6 +102,7 @@ const routeMap = {
     'db':            () => import('../server/routes/db.js'),
     'user':          () => import('../server/routes/user.js'),
     'mobile':        () => import('../server/routes/mobile.js'),
+    'health':        () => import('../server/routes/health.js'),
 };
 
 async function loadRouter(name) {

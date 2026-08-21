@@ -51,12 +51,13 @@ export default function SecuritySection({ user }) {
         }
         setBusy(true);
         try {
-            const result = await changePassword({
+            const updateFn = authClient?.changePassword ? authClient.changePassword.bind(authClient) : changePassword;
+            const result = await updateFn({
                 currentPassword: currentPin,
                 newPassword: newPin,
                 revokeOtherSessions: false,
             });
-            if (result.error) throw new Error(result.error.message);
+            if (result?.error) throw new Error(result.error.message || 'Could not update PIN');
             toast.success('PIN updated');
             setCurrentPin('');
             setNewPin('');
@@ -96,11 +97,12 @@ export default function SecuritySection({ user }) {
         }
         setBusy(true);
         try {
-            const result = await changeEmail({
+            const updateFn = authClient?.changeEmail ? authClient.changeEmail.bind(authClient) : changeEmail;
+            const result = await updateFn({
                 newEmail: newEmail.trim().toLowerCase(),
                 callbackURL: `${window.location.origin}/account?section=privacy`,
             });
-            if (result.error) throw new Error(result.error.message);
+            if (result?.error) throw new Error(result.error.message || 'Could not start email change');
             toast.success('Check your inbox to confirm the email change');
             setNewEmail('');
         } catch (err) {

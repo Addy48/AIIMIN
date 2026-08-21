@@ -68,7 +68,7 @@ function CompactValueComparison() {
           <span className="value-tier-pill value-tier-pill--pro">Pro ₹49*</span>
           <span className="value-tier-pill value-tier-pill--elite">Elite ₹79*</span>
         </div>
-        <p className="value-compare-foot">*Waitlist founding rates · web + mobile · India ≈ Sep 2026 · Americas $0 / $3 / $7 / $16</p>
+        <p className="value-compare-foot">*Waitlist founding rates · web + mobile · India ≈ Nov 2026 · Americas $0 / $3 / $7 / $16</p>
       </div>
     </div>
   );
