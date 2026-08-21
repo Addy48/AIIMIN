@@ -1,4 +1,3 @@
-"use client";;
 import { scaleLinear, scaleTime } from "@visx/scale";
 import { bisector, extent } from "d3-array";
 import {
@@ -57,7 +56,6 @@ import {
   groupLinesByYAxisId,
 } from "./y-axis-scales";
 import { computeYDomainsByAxis } from "./y-domain-utils";
-
 function collectNumericExtents(
   data,
   dataKeys

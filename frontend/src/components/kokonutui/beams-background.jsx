@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Beams Background
@@ -12,7 +11,6 @@
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-
 function createBeam(width, height, isDarkMode) {
   const angle = -35 + Math.random() * 10;
   const hueBase = isDarkMode ? 190 : 210;

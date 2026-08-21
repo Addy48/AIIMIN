@@ -1,9 +1,7 @@
-"use client";;
 import { Cloud, Code, Cpu, Globe, Lock, Zap } from "lucide-react";
 import { motion, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
 const TILT_MAX = 9;

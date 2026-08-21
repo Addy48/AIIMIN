@@ -1,9 +1,7 @@
-"use client";;
 import { localPoint } from "@visx/event";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useScheduledTooltip } from "./use-scheduled-tooltip";
 import { normalizeYAxisId } from "./y-axis-scales";
-
 export function useChartInteraction(
   {
     xScale,

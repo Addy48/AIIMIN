@@ -1,10 +1,8 @@
-"use client";;
 import { memo, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { useHeatmap } from "./heatmap-context";
 import { getHeatmapColumnMonthAnchor } from "./heatmap-utils";
-
 const monthFmt = new Intl.DateTimeFormat("en-US", { month: "short" });
 
 export const HeatmapXAxis = memo(function HeatmapXAxis({

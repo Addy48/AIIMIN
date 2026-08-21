@@ -1,4 +1,3 @@
-"use client";;
 import { useCallback, useMemo } from "react";
 import { clipRevealTransition } from "./animation";
 import {
@@ -9,7 +8,6 @@ import {
 } from "./chart-context";
 import { useChartLegendHover } from "./chart-legend-hover";
 import { getSeriesMarkerVisualExtent, SeriesPointMarker, StaticSeriesPointMarker } from "./series-point-marker";
-
 export function SeriesMarkers({
   dataKey,
   fill,

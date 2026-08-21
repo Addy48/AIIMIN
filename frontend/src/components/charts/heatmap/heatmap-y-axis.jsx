@@ -1,4 +1,3 @@
-"use client";;
 import { memo, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
@@ -9,7 +8,6 @@ import {
   resolveHeatmapRowOpacity,
   shouldShowHeatmapYAxisTick,
 } from "./heatmap-utils";
-
 export const HeatmapYAxis = memo(function HeatmapYAxis({
   className,
   tickFilter = "odd",

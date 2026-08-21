@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Bento Grid
@@ -29,7 +28,6 @@ import MistralAI from "@/components/kokonutui/mistral";
 import OpenAI from "@/components/kokonutui/open-ai";
 import OpenAIDark from "@/components/kokonutui/open-ai-dark";
 import { cn } from "@/lib/utils";
-
 const bentoItems = [
   {
     id: "main",

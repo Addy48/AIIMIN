@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Shimmer Text
@@ -11,7 +10,6 @@
 
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-
 export default function ShimmerText({
   text = "Text Shimmer",
   className

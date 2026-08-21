@@ -1,11 +1,9 @@
-"use client";;
 import { motion, useSpring } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { useChartConfig } from "../chart-config-context";
 import { chartCssVars } from "../chart-context";
-
 // Inner-only-on-visible so `useSpring` initializes at the cursor's actual x/y
 // instead of (0, 0) on first hover.
 export function TooltipBox(props) {

@@ -1,4 +1,3 @@
-"use client";;
 import { memo, useEffect, useId, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
@@ -9,7 +8,6 @@ import {
   getHeatmapSeparatorX,
   resolveHeatmapSeparatorStrokeDasharray,
 } from "./heatmap-utils";
-
 /** Marker for reliably identifying {@link HeatmapSeparator} in chart child trees. */
 export const HEATMAP_SEPARATOR_MARKER = "__isHeatmapSeparator";
 

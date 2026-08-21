@@ -1,8 +1,6 @@
-"use client";;
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
-
 const WaveformPath = () => (
   <motion.path
     animate={{

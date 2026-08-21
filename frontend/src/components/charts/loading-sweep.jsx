@@ -1,4 +1,3 @@
-"use client";;
 import { scaleLinear } from "@visx/scale";
 import { AreaClosed, LinePath } from "@visx/shape";
 import { motion, useReducedMotion } from "motion/react";
@@ -15,7 +14,6 @@ import {
   LINE_LOADING_PULSE_EASE,
   LOADING_LABEL_EXIT_S,
 } from "./line-loading-timing";
-
 /** One shimmer sweep, in seconds. */
 const DEFAULT_SWEEP_DURATION_S = 2;
 /** Sweep travel in objectBoundingBox space: off the left edge to off the right. */

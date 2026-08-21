@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Swoosh Text
@@ -11,7 +10,6 @@
 
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-
 export default function SwooshText({
   text = "Hover Me",
   className = "",

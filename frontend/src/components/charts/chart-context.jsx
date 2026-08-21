@@ -1,7 +1,5 @@
-"use client";;
 import { createContext, useContext, useMemo } from "react";
 import { DEFAULT_Y_AXIS_ID } from "./y-axis-scales";
-
 // CSS variable references for theming
 export const chartCssVars = {
   background: "var(--chart-background)",

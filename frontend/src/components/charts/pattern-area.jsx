@@ -1,8 +1,6 @@
-"use client";;
 import { curveMonotoneX } from "@visx/curve";
 import { AreaClosed } from "@visx/shape";
 import { useChartStable } from "./chart-context";
-
 /**
  * Filled area using an SVG pattern (`url(#id)`).
  * Pair with `PatternLines` in `AreaChart` children and an `Area` with `fillOpacity={0}` for the stroke line.

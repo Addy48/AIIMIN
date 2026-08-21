@@ -1,8 +1,6 @@
-"use client";;
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { HEATMAP_DEFAULT_LEVEL_COLORS } from "./heatmap-colors";
-
 const HeatmapContext = createContext(null);
 const HeatmapInteractionContext =
   createContext(null);

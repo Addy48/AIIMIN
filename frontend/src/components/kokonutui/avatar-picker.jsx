@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Avatar Picker
@@ -16,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-
 // RGB values for the per-avatar color ring on the stage
 const AVATAR_RGB = {
   1: "255, 0, 91",

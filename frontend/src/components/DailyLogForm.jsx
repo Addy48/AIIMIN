@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Coffee, BookOpen } from 'lucide-react';
 import { upsertRow, getRows } from '../services/dbService';
 import { queueOfflineLog } from '../utils/offlineLogQueue';
 import TimePicker from './TimePicker';
@@ -251,12 +251,12 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
                     {/* SLEEP SECTION */}
                     <div>
                         <div className={`${sectionClasses} mt-0`}>Last Night's Sleep</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-3)', fontWeight: 500, marginBottom: '10px', marginTop: '-4px' }}>
+                        <div style={{ fontSize: '12px', color: 'var(--text-2, #b5b5b5)', fontWeight: 500, marginBottom: '12px', marginTop: '-4px' }}>
                             When did you fall asleep and wake up this morning?
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                            <TimePicker label="Fell Asleep" placeholder="e.g. 11:00 PM" value={formData.sleepStart} onChange={(val) => handleTimeChange('sleepStart', val)} />
-                            <TimePicker label="Woke Up" placeholder="e.g. 7:00 AM" value={formData.sleepEnd} onChange={(val) => handleTimeChange('sleepEnd', val)} />
+                            <TimePicker label="Fell Asleep" placeholder="Select sleep time" value={formData.sleepStart} onChange={(val) => handleTimeChange('sleepStart', val)} />
+                            <TimePicker label="Woke Up" placeholder="Select wake time" value={formData.sleepEnd} onChange={(val) => handleTimeChange('sleepEnd', val)} />
                         </div>
                         {formData.sleepStart && formData.sleepEnd && (
                             <div style={{
@@ -275,7 +275,7 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
 
                     {/* BODY SECTION */}
                     <div>
-                        <div className={sectionClasses}>Body</div>
+                        <div className={sectionClasses}>Body & Movement</div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <ToggleCard active={formData.gymDone} onClick={() => handleToggle('gymDone')} icon={<DumbbellIcon size={18} color="var(--text-2)" />} text="Hit the gym today" />
                             {formData.gymDone && (
@@ -284,14 +284,14 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
                                     <input type="number" name="gymDuration" value={formData.gymDuration} onChange={handleChange} placeholder="45" style={inputStyle} />
                                 </div>
                             )}
-                            <ToggleCard active={formData.breakfastDone} onClick={() => handleToggle('breakfastDone')} icon="🍳" text="Had breakfast" />
+                            <ToggleCard active={formData.breakfastDone} onClick={() => handleToggle('breakfastDone')} icon={<Coffee size={18} color="var(--text-2)" />} text="Had nutritious breakfast" />
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '4px' }}>
                                 <div>
                                     <label style={labelStyle}>Steps</label>
-                                    <input type="number" name="steps" value={formData.steps} onChange={handleChange} placeholder="0" style={inputStyle} />
+                                    <input type="number" name="steps" value={formData.steps || ''} onChange={handleChange} placeholder="e.g. 8000" style={inputStyle} />
                                 </div>
                                 <div>
-                                    <label style={labelStyle}>💧 Water</label>
+                                    <label style={labelStyle}>Water (1.5L bottles)</label>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
                                         <button
                                             type="button"
@@ -308,8 +308,8 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
                                             <div style={{ fontSize: '22px', fontWeight: 800, color: formData.waterBottles >= 3 ? 'var(--accent)' : 'var(--text-1)', lineHeight: 1 }}>
                                                 {formData.waterBottles || 0}
                                             </div>
-                                            <div style={{ fontSize: '10px', color: 'var(--text-3)', marginTop: '2px' }}>
-                                                {formData.waterBottles >= 3 ? '🎯 Goal met' : `× 1.5L · Goal: 3`}
+                                            <div style={{ fontSize: '10.5px', color: 'var(--text-2, #a3a3a3)', marginTop: '2px' }}>
+                                                {formData.waterBottles >= 3 ? '🎯 Goal met (4.5L)' : '× 1.5L · Goal: 3 bottles'}
                                             </div>
                                         </div>
                                         <button
@@ -343,9 +343,9 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
 
                     {/* FOCUS SECTION */}
                     <div>
-                        <div className={sectionClasses}>Focus</div>
+                        <div className={sectionClasses}>Focus & Mindset</div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                            <ToggleCard active={formData.learningDone} onClick={() => handleToggle('learningDone')} icon="📚" text="Learned something today?" />
+                            <ToggleCard active={formData.learningDone} onClick={() => handleToggle('learningDone')} icon={<BookOpen size={18} color="var(--text-2)" />} text="Learned something today?" />
                             {formData.learningDone && (
                                 <div style={{ marginBottom: '10px' }}>
                                     <label style={labelStyle}>What topic?</label>
@@ -357,7 +357,7 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
 
                     {/* JOURNAL SECTION */}
                     <div>
-                        <div className={sectionClasses}>Journal</div>
+                        <div className={sectionClasses}>Daily Reflection</div>
                         <textarea
                             name="journalEntry"
                             value={formData.journalEntry}

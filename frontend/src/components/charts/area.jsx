@@ -1,4 +1,3 @@
-"use client";;
 import { curveMonotoneX } from "@visx/curve";
 import { AreaClosed, LinePath } from "@visx/shape";
 
@@ -17,7 +16,6 @@ import { SeriesDashTailOverlay } from "./series-dash-tail-overlay";
 import { SeriesHighlightLayer } from "./series-highlight-layer";
 import { SeriesHoverDim } from "./series-hover-dim";
 import { SeriesMarkers } from "./series-markers";
-
 function useAreaLoadingPulseState(
   chartPhase,
   loading,

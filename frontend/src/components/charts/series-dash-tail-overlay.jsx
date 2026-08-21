@@ -1,8 +1,6 @@
-"use client";;
 import { memo, useMemo } from "react";
 import { DashTailStroke } from "./dash-tail-stroke";
 import { resolveDashStartX, resolveDashTailBounds } from "./path-stroke-utils";
-
 function SeriesDashTailOverlayImpl({
   dashFromIndex,
   dashArray,

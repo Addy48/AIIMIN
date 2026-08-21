@@ -1,10 +1,8 @@
-"use client";;
 import { curveLinear } from "@visx/curve";
 import { LinePath } from "@visx/shape";
 import { useCallback, useId, useMemo } from "react";
 import { useChartStable, useYScale } from "./chart-context";
 import { buildHorizontalTangentBezierPath } from "./projection-utils";
-
 function resolveVisibleEndX(endX, innerWidth, endpointRadius, strokeWidth) {
   const edgePadding = endpointRadius + strokeWidth * 0.5 + 1;
   return Math.min(endX, Math.max(0, innerWidth - edgePadding));

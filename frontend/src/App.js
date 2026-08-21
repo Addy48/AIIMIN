@@ -252,11 +252,11 @@ function AppContent({ user, session }) {
 
       {!isProto && <ConsentBanner />}
 
-      {/* Global Widgets — suppressed on the /proto/* prototype preview surface */}
-      {!isProto && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-      {!isProto && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+      {/* Global Widgets — suppressed on prototype and phone capture surfaces */}
+      {!isProto && !location.pathname.startsWith('/m') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+      {!isProto && !location.pathname.startsWith('/m') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
       {!isProto && isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
-      {!isProto && !isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      {!isProto && !location.pathname.startsWith('/m') && !isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
     </DeviceGate>
   );

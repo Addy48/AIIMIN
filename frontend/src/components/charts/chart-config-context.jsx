@@ -1,6 +1,4 @@
-"use client";;
 import { createContext, useContext, useMemo } from "react";
-
 export const DEFAULT_CHART_CONFIG = {
   tooltipSpring: { stiffness: 300, damping: 30 },
   tooltipBoxSpring: { stiffness: 100, damping: 20 },

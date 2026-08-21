@@ -111,6 +111,7 @@ export default function MobileLiteAccount() {
           <button
             type="button"
             className="mobile-lite-account__action"
+            style={confirmSignOut ? { color: 'var(--color-danger, #ef4444)', background: 'rgba(239, 68, 68, 0.12)' } : undefined}
             onClick={() => {
               if (!confirmSignOut) {
                 setConfirmSignOut(true);
@@ -120,7 +121,7 @@ export default function MobileLiteAccount() {
             }}
           >
             <LogOut size={18} />
-            {confirmSignOut ? 'Tap again to sign out' : 'Sign out'}
+            {confirmSignOut ? 'Tap again to confirm sign out' : 'Sign out'}
           </button>
         </nav>
 

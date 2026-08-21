@@ -1,11 +1,9 @@
-"use client";;
 import { motion } from "motion/react";
 import { memo } from "react";
 import {
   buildHeatmapLegendGradient,
   resolveHeatmapHoverStyle,
 } from "./heatmap-utils";
-
 const HEATMAP_INACTIVE_TRANSITION = {
   duration: 0.22,
   ease: [0.4, 0, 0.2, 1],

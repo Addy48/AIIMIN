@@ -1,6 +1,4 @@
-"use client";;
 import { createContext, useContext, useMemo } from "react";
-
 const ChartLegendHoverContext =
   createContext(null);
 

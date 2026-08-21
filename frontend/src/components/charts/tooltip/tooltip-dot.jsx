@@ -1,8 +1,6 @@
-"use client";;
 import { motion, useSpring, useTransform } from "motion/react";
 import { useChartConfig } from "../chart-config-context";
 import { chartCssVars } from "../chart-context";
-
 function ringCornerRadius(halfExtent, cornerRadiusFraction) {
   const side = halfExtent * 2;
   return side * Math.max(0, Math.min(0.5, cornerRadiusFraction));

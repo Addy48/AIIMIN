@@ -1,8 +1,6 @@
-"use client";;
 import clsx from "clsx";
 import Link from "next/link";
 import { useState } from "react";
-
 const DEFAULT_NAV_ITEMS = {
   "/": { name: "home" },
   "/works": { name: "works" },

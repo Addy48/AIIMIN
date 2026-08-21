@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @kokonut-labs
  * @description: Slide Text Button with animated vertical text transition
@@ -12,7 +11,6 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
 export default function SlideTextButton({
   text = "Browse Components",
   hoverText,

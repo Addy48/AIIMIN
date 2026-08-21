@@ -1,7 +1,5 @@
-"use client";;
 import { useCallback } from "react";
 import { useChartStable, useYScale } from "./chart-context";
-
 /** Renders the projection horizon dot outside the series reveal clip. */
 export function ProjectionLineEndMarker({
   data,

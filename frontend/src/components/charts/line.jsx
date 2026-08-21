@@ -1,4 +1,3 @@
-"use client";;
 import { curveNatural } from "@visx/curve";
 import { LinePath } from "@visx/shape";
 
@@ -17,7 +16,6 @@ import { SeriesHighlightLayer } from "./series-highlight-layer";
 import { SeriesHoverDim } from "./series-hover-dim";
 import { SeriesMarkers } from "./series-markers";
 import { useAnimatedSeriesPath } from "./use-animated-series-path";
-
 function LineSeriesStroke({
   animatedPathD,
   curve,

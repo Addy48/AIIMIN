@@ -5,23 +5,34 @@ import React from 'react';
  */
 const ToggleCard = ({ active, onClick, icon, text }) => (
     <div
+        role="checkbox"
+        aria-checked={active}
+        tabIndex={0}
         onClick={onClick}
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onClick?.()}
         style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '14px 16px', borderRadius: '10px',
+            minHeight: '52px',
             border: active ? '1px solid rgba(245,166,35,0.25)' : '1px solid var(--border)',
             background: active ? 'rgba(245,166,35,0.08)' : 'var(--bg-elevated)',
             cursor: 'pointer', marginBottom: '10px', transition: 'all 0.2s',
+            outline: 'none',
         }}
     >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: 'var(--text-1)' }}>
-            <span style={{ fontSize: '18px' }}>{icon}</span>
+            <span style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                minWidth: '24px', minHeight: '24px', fontSize: '18px', lineHeight: 1,
+            }}>{icon}</span>
             <span>{text}</span>
         </div>
+        {/* Toggle track — 44px wide × 24px tall for reliable tap */}
         <div style={{
             width: '44px', height: '24px', borderRadius: '12px',
             background: active ? '#f5a623' : 'var(--border-hover)',
             position: 'relative', transition: 'background 0.2s', cursor: 'pointer',
+            flexShrink: 0,
         }}>
             <div style={{
                 position: 'absolute', width: '18px', height: '18px', borderRadius: '50%',
@@ -41,3 +52,4 @@ const ToggleCard = ({ active, onClick, icon, text }) => (
 );
 
 export default ToggleCard;
+
