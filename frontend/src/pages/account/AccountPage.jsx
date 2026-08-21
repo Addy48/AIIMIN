@@ -11,6 +11,7 @@ import SubscriptionSection from './sections/SubscriptionSection';
 import DataSection from './sections/DataSection';
 import LegalSection from './sections/LegalSection';
 import DesignSection from './sections/DesignSection';
+import ErrorBoundary from '../../components/system/ErrorBoundary';
 import '../../styles/subscriptionSection.css';
 
 const SECTIONS = [
@@ -240,14 +241,16 @@ export default function AccountPage() {
             {activeMeta.helper}
           </p>
         </div>
-        <ActiveSection
-          user={user}
-          profile={profile}
-          onProfileUpdate={setProfile}
-          planTier={planTier}
-          periodEnd={periodEnd}
-          onOpenSubscription={() => setSearchParams({ section: 'subscription' })}
-        />
+        <ErrorBoundary label={activeMeta?.label || 'Account settings'}>
+          <ActiveSection
+            user={user}
+            profile={profile}
+            onProfileUpdate={setProfile}
+            planTier={planTier}
+            periodEnd={periodEnd}
+            onOpenSubscription={() => setSearchParams({ section: 'subscription' })}
+          />
+        </ErrorBoundary>
       </main>
     </div>
   );

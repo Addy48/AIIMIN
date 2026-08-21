@@ -36,22 +36,27 @@ export default function RankLadder({ compact = false }) {
 
   useEffect(() => {
     if (!user?.id) return;
-    supabase
-      .from('user_xp')
-      .select('total_xp, current_rank, longest_streak, clean_streak')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => { if (data) setXpData(data); });
+    try {
+      supabase
+        .from('user_xp')
+        .select('total_xp, current_rank, longest_streak, clean_streak')
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => { if (data) setXpData(data); })
+        .catch(() => {});
+    } catch {
+      // safe fallback
+    }
   }, [user?.id]);
 
-  const totalXP = xpData?.total_xp || 0;
-  const streak = xpData?.longest_streak || xpData?.clean_streak || 0;
+  const totalXP = Number(xpData?.total_xp) || 0;
+  const streak = Number(xpData?.longest_streak || xpData?.clean_streak) || 0;
   const multiplier = getStreakMultiplier(streak);
   const progress = getRankProgress(totalXP);
-  const current = progress.current;
-  const next = progress.next;
-  const xpToNext = next ? Math.max(0, next.minXP - totalXP) : 0;
-  const progressPct = Math.round((progress.progress || 0) * 100);
+  const current = progress?.current || { rank: 1, name: 'Apprentice', emoji: '🌱', color: 'var(--color-text-3)' };
+  const next = progress?.next || null;
+  const xpToNext = next ? Math.max(0, (next.minXP || next.xpRequired || 0) - totalXP) : 0;
+  const progressPct = Math.round((progress?.progress || 0) * 100);
 
   return (
     <div className="rank-ladder" style={{ marginTop: compact ? 14 : 16 }}>

@@ -33,20 +33,25 @@ export default function MobileLiteAccount() {
       if (st?.tier) setPlanTier(st.tier);
       if (st?.current_period_end) setPeriodEnd(st.current_period_end);
     }).catch(() => {});
-    supabase
-      .from('user_xp')
-      .select('total_xp, current_rank')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => { if (data) setXpData(data); });
+    try {
+      supabase
+        .from('user_xp')
+        .select('total_xp, current_rank')
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => { if (data) setXpData(data); })
+        .catch(() => {});
+    } catch {
+      // safe fallback
+    }
   }, [user?.id]);
 
-  const displayName = profile?.full_name || user?.full_name || 'User';
-  const osId = (profile?.username || user?.username || '').toUpperCase();
-  const lifeArc = profile?.tagline || '';
-  const initials = (displayName.trim().split(/\s+/)[0]?.charAt(0) || 'A').toUpperCase();
-  const progress = getRankProgress(xpData?.total_xp || 0);
-  const xpToNext = progress.next ? Math.max(0, progress.next.minXP - (xpData?.total_xp || 0)) : 0;
+  const displayName = typeof (profile?.full_name || user?.full_name) === 'string' ? (profile?.full_name || user?.full_name) : 'User';
+  const osId = String(profile?.username || user?.username || '').toUpperCase();
+  const lifeArc = typeof profile?.tagline === 'string' ? profile.tagline : '';
+  const initials = (displayName.trim().split(/\s+/)[0]?.charAt(0) || String(user?.email || '').charAt(0) || 'A').toUpperCase();
+  const progress = getRankProgress(Number(xpData?.total_xp) || 0);
+  const xpToNext = progress?.next ? Math.max(0, (progress.next.minXP || progress.next.xpRequired || 0) - (Number(xpData?.total_xp) || 0)) : 0;
 
   return (
     <div className="mobile-capture mobile-lite-account">

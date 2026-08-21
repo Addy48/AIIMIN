@@ -11,22 +11,29 @@ export const normalizeFontScale = (value) => (FONT_SCALE_PRESETS[value] ? value 
 export const applyFontScaleToRoot = (scale) => {
   const normalized = normalizeFontScale(scale);
   const preset = FONT_SCALE_PRESETS[normalized];
-  document.documentElement.style.setProperty('--font-scale-base', preset.px);
-  document.documentElement.style.setProperty('--font-scale-ratio', preset.ratio);
-  document.documentElement.style.fontSize = preset.px;
-  localStorage.setItem('aiimin-font-scale', normalized);
+  if (typeof document !== 'undefined') {
+    document.documentElement.style.setProperty('--font-scale-base', preset.px);
+    document.documentElement.style.setProperty('--font-scale-ratio', preset.ratio);
+    document.documentElement.style.fontSize = preset.px;
+  }
+  try {
+    localStorage.setItem('aiimin-font-scale', normalized);
+  } catch {}
   return normalized;
 };
 
 export function useFontScale(profileFontScale, onPersist) {
-  const initial = useMemo(
-    () => normalizeFontScale(localStorage.getItem('aiimin-font-scale') || profileFontScale || 'normal'),
-    [profileFontScale],
-  );
+  const initial = useMemo(() => {
+    let saved = null;
+    try { saved = localStorage.getItem('aiimin-font-scale'); } catch {}
+    return normalizeFontScale(saved || profileFontScale || 'normal');
+  }, [profileFontScale]);
   const [fontScale, setFontScale] = useState(initial);
 
   useEffect(() => {
-    const fromProfile = normalizeFontScale(profileFontScale || localStorage.getItem('aiimin-font-scale') || 'normal');
+    let saved = null;
+    try { saved = localStorage.getItem('aiimin-font-scale'); } catch {}
+    const fromProfile = normalizeFontScale(profileFontScale || saved || 'normal');
     setFontScale(fromProfile);
     applyFontScaleToRoot(fromProfile);
   }, [profileFontScale]);
