@@ -5,13 +5,25 @@ alwaysApply: true
 
 # Obsidian Vault — Mandatory Documentation
 
-Vault: `docs/knowledge/` (Project Brain OS). Document behavior/contract changes before the task is done.
+Vault: `docs/knowledge/` (Project Brain OS). Document **real** behavior/contract changes after (or with) implementation — not imagined futures.
+
+**Also follow:** `aiimin-deep-execution.mdc` — no plan/phase/roadmap explosion; one authoritative note beats five overlapping ones.
 
 ## When to document
 
-Document for any change that touches features, UI, routes, APIs, auth, env, schema, deploy, gamification, launch, pricing, or access gates. Also bug fixes that alter behavior, and refactors that move entry points.
+Update existing authoritative notes for changes that touch features, UI, routes, APIs, auth, env, schema, deploy, gamification, launch, pricing, or access gates. Also behavior-changing bugs and entry-point moves.
 
-Skip only pure typo/formatting with zero behavioral impact.
+Skip: pure typo/formatting · transient execution notes · plans that die after ship · speculative “future system” docs.
+
+## Anti-bureaucracy (hard)
+
+Do **not** create new planning/phase/audit/roadmap files as task output. Prefer:
+
+1. Code + verification
+2. Changelog / MOC / Current-Context / existing feature note
+3. New vault file **only** when no suitable authority exists **and** the fact must outlive the task
+
+Documentation is downstream of implementation. Contradictory stale notes in scope → fix or archive; do not leave lies beside truth.
 
 ## Structure
 

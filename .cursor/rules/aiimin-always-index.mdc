@@ -5,25 +5,27 @@ alwaysApply: true
 
 # AIIMIN Always-On Rules Index
 
+**North star:** Deep thinking mandatory. Excessive planning artifacts not. → `aiimin-deep-execution.mdc`
+
 All of these are `alwaysApply: true`. Follow them every turn.
 
 | Rule file | Enforces |
 |-----------|----------|
-| `vault-brain-os.mdc` | Home → Context → feature docs → only needed code |
-| `obsidian-vault-documentation.mdc` | Vault update before task done |
-| `aiimin-token-discipline.mdc` | No whole-repo scans; minimal context |
+| `aiimin-deep-execution.mdc` | **Execution spine** — e2e finish, dependency trace, no plan/phase explosion |
+| `vault-brain-os.mdc` | Home → Context → feature docs → needed code |
+| `obsidian-vault-documentation.mdc` | Durable vault truth after ship; no paperwork spam |
+| `aiimin-token-discipline.mdc` | Targeted investigation OK; no context dumps / plan files |
 | `aiimin-product-locks.mdc` | Palette, mobile `/m`, auth/schema, secrets, slim AGENTS |
 | `aiimin-git-workflow.mdc` | Commit/PR/push only on ask; vault ships with code |
-| `aiimin-communication.mdc` | Concise, sparring, design/EEG exceptions |
+| `aiimin-communication.mdc` | Concise, sparring, ask only when needed |
 | `caveman-always.mdc` | Terse chat; vault human docs stay clear prose |
-| `use-skills-always.mdc` | Read matching SKILL.md before acting |
+| `use-skills-always.mdc` | Skills = playbooks; brainstorming not default |
 | `aiimin-chat-handoff.mdc` | Loud 🚨 SWITCH CHAT; Current-Context = handoff |
 | `aiimin-proof-or-stop.mdc` | No done/fixed/shipped without same-turn evidence |
-| `aiimin-anti-lie.mdc` | 7× Anti-Lie — truth labels, receipts, independent verify, discrepancy→guardrail |
-| `aiimin-pre-ship-10x.mdc` | **Mandatory** 5× inspect + 5× anti-lie before push/deploy claims |
-| `aiimin-vp0-mcp.mdc` | VP0 MCP (`vp0`) for design, flows, prototyping, UI research |
+| `aiimin-anti-lie.mdc` | Truth labels, receipts, independent verify |
+| `aiimin-pre-ship-10x.mdc` | 5× inspect + 5× anti-lie before push/deploy claims |
+| `aiimin-vp0-mcp.mdc` | VP0 MCP for design / flows / UI research |
 
 Entrypoint: `docs/knowledge/00_HOME.md`  
 Memory: `docs/knowledge/15_MEMORY/Current-Context.md`  
-Handoff: `docs/knowledge/15_MEMORY/Current-Context.md` (Handoff-Latest only if user asks)  
 Prompts: `docs/knowledge/14_PROMPTS/Cursor-Rules.md`

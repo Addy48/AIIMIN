@@ -19,10 +19,11 @@ Vault path: `docs/knowledge/`. This is the Project Brain. Prefer it over scannin
 
 ## Hard limits
 
-- Never scan the entire repository unless the user explicitly requests it
-- If context is missing, create or update the appropriate vault note instead of dumping more code into context
+- Never aimless whole-repo dump unless the user explicitly requests a full scan
+- Targeted dependency Grep/Read for the feature is required on non-trivial work (`aiimin-deep-execution.mdc`)
+- If a **durable** fact is missing after code investigation, update the appropriate **existing** vault note — do not invent plan/phase files to hold context
 - Keep `15_MEMORY/Current-Context.md` updated when the working focus changes
-- Every architectural decision, feature, bug fix, migration, and API change must be reflected in the vault before the task is complete
+- Real architectural decisions, shipped feature contracts, migrations, and API changes must be reflected in the vault before the task is complete — after reality exists in code
 
 ## Dual-layer content
 
@@ -35,3 +36,4 @@ Vault path: `docs/knowledge/`. This is the Project Brain. Prefer it over scannin
 - Bypass Home/Current Context “to go faster”
 - Re-introduce a fat AGENTS.md dump
 - Store secrets in vault notes
+- Create roadmaps/phase packs as a substitute for finishing the task

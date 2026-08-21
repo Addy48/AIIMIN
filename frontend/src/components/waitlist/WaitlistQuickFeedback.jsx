@@ -24,9 +24,9 @@ const FEATURE_AREAS = [
 ];
 
 const PROMPT_STARTERS = [
-  'One dashboard for gym, sleep, and study streaks',
-  'Student-friendly money tracking with monthly caps',
-  'Cricket + F1 context without opening 5 apps',
+  'One command surface for workouts, sleep, and deep work',
+  'Frictionless cashflow & lending tracking with monthly caps',
+  'Sports briefing context without opening 5 apps',
   'A weekly life score that tells me what to fix next',
 ];
 
@@ -194,7 +194,7 @@ export default function WaitlistQuickFeedback({ compact = false }) {
 
       {!compact && (
         <p className="waitlist-feedback-footnote">
-          Your note helps decide which modules ship first in September and October waves.
+          Your note helps decide which modules ship first in October and November waves.
         </p>
       )}
 
@@ -224,10 +224,10 @@ export function WaitlistPendingScreen() {
       </motion.h1>
       <p className="waitlist-pending-copy">
         Signed in as <strong>{user?.email}</strong>.
-        We're letting in testers in small waves before end-of-October launch.
+        We're letting in testers in small waves before end-of-November launch.
       </p>
       <p className="waitlist-pending-note">
-        Got an invite? Register by 30 September for the VIP tester package — Elite free for a year plus full beta access. Waitlist members get the founding kit, Core subscription, and Elite discount at launch.
+        Got an invite? Register by 31 October for the VIP tester package — Elite free for a year plus full beta access. Waitlist members get the founding kit, Core subscription, and Elite discount at launch.
       </p>
       <div className="waitlist-pending-feedback">
         <WaitlistQuickFeedback compact />

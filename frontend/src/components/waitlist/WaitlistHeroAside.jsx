@@ -11,10 +11,10 @@ export default function WaitlistHeroAside({ count }) {
       <div className="hero-form-timeline" role="note">
         <span className="hero-form-timeline-item">
           <Calendar size={13} aria-hidden="true" />
-          Go-live target · Oct 2026
+          Go-live target · Nov 2026
         </span>
         <span className="hero-form-timeline-item hero-form-timeline-item--accent">
-          Tester invites close · 30 September
+          Tester invites close · 31 October
         </span>
       </div>
     </div>

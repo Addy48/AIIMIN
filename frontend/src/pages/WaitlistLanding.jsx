@@ -29,7 +29,7 @@ function WaitlistLandingContent() {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'AIIMIN',
-    description: 'A data-dense personal Life OS for daily accountability, behavioral insights, money tracking, and habit building. Built for Indian students and early professionals.',
+    description: 'A data-dense personal Life OS for daily accountability, behavioral insights, money tracking, and habit building. Built for ambitious builders, operators, and high performers.',
     url: 'https://aiimin.in',
     applicationCategory: 'ProductivityApplication',
     operatingSystem: 'Web, Android (companion — closed testing)',
@@ -41,9 +41,8 @@ function WaitlistLandingContent() {
       offerCount: '4',
     },
     audience: {
-      '@type': 'EducationalAudience',
-      educationalRole: 'student',
-      geographicArea: { '@type': 'Country', name: 'India' },
+      '@type': 'Audience',
+      audienceType: 'Ambitious builders, operators, and high performers',
     },
     author: { '@type': 'Organization', name: 'AIIMIN', url: 'https://aiimin.in' },
   }), []);
@@ -87,14 +86,14 @@ function WaitlistLandingContent() {
         <title>AIIMIN — Personal Life OS | Join the Waitlist</title>
         <meta
           name="description"
-          content="AIIMIN is a data-dense personal Life OS for Indian students and young professionals. Track habits, money, focus, and mood in one screen. Join the waitlist — launching September 2026."
+          content="AIIMIN is a data-dense personal Life OS for ambitious builders, operators, and high performers. Track habits, money, focus, and mood in one screen. Join the waitlist — targeting November 2026."
         />
         <link rel="canonical" href={PAGE_META.pageUrl} />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="AIIMIN — Life OS from ₹0, Pro founding ₹49/mo" />
         <meta
           property="og:description"
-          content="Track habits, money, focus, and mood in one Life OS. Explore free, Core ₹29/mo, Pro ₹49 founding price, Elite ₹79 for waitlist. Built for Indian students."
+          content="Track habits, money, focus, and mood in one Life OS. Explore free, Core ₹29/mo, Pro ₹49 founding price, Elite ₹79 for waitlist. High-density execution without app hopping."
         />
         <meta property="og:url" content={PAGE_META.pageUrl} />
         <meta property="og:image" content={PAGE_META.imageUrl} />
@@ -105,7 +104,7 @@ function WaitlistLandingContent() {
         <meta name="twitter:title" content="AIIMIN — Life OS from ₹0, Pro founding ₹49/mo" />
         <meta
           name="twitter:description"
-          content="Track habits, money, focus, and mood in one Life OS. Explore free, Core ₹29/mo, Pro ₹49 founding price, Elite ₹79 for waitlist. Built for Indian students."
+          content="Track habits, money, focus, and mood in one Life OS. Explore free, Core ₹29/mo, Pro ₹49 founding price, Elite ₹79 for waitlist. High-density execution without app hopping."
         />
         <meta name="twitter:image" content={PAGE_META.imageUrl} />
         <script type="application/ld+json">{JSON.stringify(launchStructuredData)}</script>
@@ -121,8 +120,8 @@ function WaitlistLandingContent() {
       <main className="waitlist-main">
         <section className="waitlist-mobile-only waitlist-mobile-essentials">
           <ul className="waitlist-mobile-perk-list">
-            <li>⏰ Tester cutoff: 30 September</li>
-            <li>📅 Go-live: end of October 2026</li>
+            <li>⏰ Tester cutoff: 31 October</li>
+            <li>📅 Go-live: end of November 2026</li>
           </ul>
         </section>
 

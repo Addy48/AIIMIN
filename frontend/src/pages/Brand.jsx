@@ -340,7 +340,7 @@ export default function Brand() {
               <Reveal delay={2}>
                 <p className="brand-manifesto__lede">
                   Not another dashboard. AIIMIN is a Life OS that shapes reality through intelligent feedback loops,
-                  extreme privacy, and ritual-based design — built for students and early-career builders under real cognitive load.
+                  extreme privacy, and ritual-based design — built for founders, builders, and high performers operating under high cognitive load.
                 </p>
               </Reveal>
 

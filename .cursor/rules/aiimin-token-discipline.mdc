@@ -5,24 +5,29 @@ alwaysApply: true
 
 # Token Discipline (Always)
 
-Goal: stop ~1M-token chats. Curated vault beats raw repo.
+Goal: stop ~1M-token chats **and** plan-file spam. Curated vault + targeted code beats dumps. Pairs with `aiimin-deep-execution.mdc`.
 
 ## Do
 
 1. Read `docs/knowledge/00_HOME.md` then `15_MEMORY/Current-Context.md` first
 2. Open only the feature / arch / DB / API notes for this task
-3. Open only source files you will change or must verify
-4. Prefer vault update over “read everything to be safe”
+3. Open source files you will change **or** that sit on the dependency path you must verify
+4. Prefer updating an existing authoritative vault note over inventing a new plan/phase doc
 5. Keep replies short (caveman). No long restating of the task
 
 ## Do not
 
-- Scan the entire repository unless user explicitly requests
-- Glob/grep the whole tree “for context” when Home/Feature note already points to files
+- Aimless whole-repo scan or “read everything to be safe”
 - Dump large file trees, full logs, or multi-file pastes into the reply
 - Load fat archived AGENTS or `99_ARCHIVE/` unless migrating history
 - Expand always-on rules with essays — keep rules short
+- Create planning markdown to “save context” — that is plan-explosion
+
+## Investigation vs dump
+
+**Required for non-trivial work:** focused Grep/Glob/Read along dependencies (routes, callers, schema, tests).  
+**Forbidden:** stuffing the thread with the whole tree because it feels thorough.
 
 ## If stuck
 
-Missing fact → create/update the right vault note, then continue. Do not compensate with bigger context windows.
+Missing durable fact after code investigation → update the right **existing** vault note (or create only if no authority exists). Do not compensate with bigger context windows or a new roadmap file.

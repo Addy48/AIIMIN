@@ -49,24 +49,24 @@ export const fadeUp = {
 
 export const PERSONAS = [
   {
-    icon: GraduationCap,
-    title: 'College students',
-    desc: 'Journal, habits, focus, and placement prep — one loop, not five apps.',
-  },
-  {
     icon: BriefcaseBusiness,
-    title: 'Early professionals',
-    desc: 'Money, goals, calendar, and evening debrief without spreadsheet chaos.',
+    title: 'Founders & Builders',
+    desc: 'Code, deep work, runway, and daily loops — one command pane, zero context switching.',
   },
   {
     icon: Activity,
-    title: 'Consistency builders',
-    desc: 'Depth meter + daily minimum: honest progress, zero shame streaks.',
+    title: 'High Performers',
+    desc: 'Habits, intense focus blocks, recovery depth, and evening debrief without spreadsheet chaos.',
+  },
+  {
+    icon: Compass,
+    title: 'Consistency Builders',
+    desc: 'Depth meter + daily minimums: honest momentum, zero streak theater.',
   },
   {
     icon: ChartColumnBig,
-    title: 'Pattern thinkers',
-    desc: 'See what actually moves your week — reports that cite your own data.',
+    title: 'Pattern Thinkers',
+    desc: 'Discover what directly drives your peak days — intelligence reports that cite your own data.',
   },
 ];
 
@@ -84,9 +84,9 @@ export const LAUNCH_PHASES = [
     title: 'Reserve access',
     status: 'open',
     statusLabel: 'Open now',
-    window: 'Today → Sep 2026',
+    window: 'Today → Oct 2026',
     userAction: 'Join the waitlist or sign in as an invited tester. Confirm email, optionally reserve your OS-ID.',
-    approval: 'Waitlist: instant signup. Testers: invite-only approval by 30 September.',
+    approval: 'Waitlist: instant signup. Testers: invite-only approval by 31 October.',
     unlocks: ['Founding perks locked in', 'Priority onboarding queue'],
   },
   {
@@ -94,7 +94,7 @@ export const LAUNCH_PHASES = [
     icon: Rocket,
     title: 'Founding launch',
     status: 'launch',
-    statusLabel: 'Oct 2026',
+    statusLabel: 'Nov 2026',
     window: 'Go-live window',
     userAction: 'Complete a 15-minute setup — habits, money categories, and focus defaults.',
     approval: 'Founding members onboard first; testers get early beta access.',
@@ -107,7 +107,7 @@ export const LAUNCH_PHASES = [
     icon: Sparkles,
     title: 'Module rollout',
     status: 'rollout',
-    statusLabel: 'Nov–Dec 2026',
+    statusLabel: 'Dec 2026 – Jan 2027',
     window: 'Staggered ships',
     userAction: 'Run your daily loop on web. Each module unlocks automatically — no reinstall.',
     approval: 'Active subscribers get modules as they ship; no extra approval step.',
@@ -121,7 +121,7 @@ export const LAUNCH_PHASES = [
     icon: Waves,
     title: 'Full OS expansion',
     status: 'expand',
-    statusLabel: 'Q2 2027',
+    statusLabel: 'Mid 2027',
     window: 'Next wave',
     userAction: 'Keep logging daily — patterns compound as new surfaces go live.',
     approval: 'Included in Pro and Elite tiers at launch; Explore/Core get preview access.',
@@ -165,7 +165,7 @@ export const PRICING = [
       'Journal packs (expressive 1–3 day cadence) · Ivory Snapshot',
       '10 AI calls / day',
     ],
-    bestFor: 'Students & early pros who live in the app daily',
+    bestFor: 'Ambitious builders & daily operators who live in the system',
   },
   {
     tier: 'Pro',
@@ -213,7 +213,7 @@ export const ACCESS_PACKAGES = [
     tag: 'VIP invite',
     tagVariant: 'premium',
     title: 'Invited testers',
-    deadline: () => 'Register by 30 September',
+    deadline: () => 'Register by 31 October',
     perks: [
       { icon: ShieldCheck, text: 'Elite (₹99/mo) free for 12 months — ₹1,188 value' },
       { icon: Rocket, text: 'First access to every beta module before public release' },
@@ -229,7 +229,7 @@ export const ACCESS_PACKAGES = [
     tag: 'Founding member',
     tagVariant: 'founding',
     title: 'Waitlist members',
-    deadline: () => 'Join anytime · live target end of Oct 2026',
+    deadline: () => 'Join anytime · go-live target end of Nov 2026',
     perks: [
       { icon: Gift, text: 'Launch starter kit — habits, money, and focus setup bundle' },
       { icon: Rocket, text: 'Complimentary Core subscription at go-live' },
@@ -244,25 +244,48 @@ export const ACCESS_PACKAGES = [
 
 export const PREVIEW_SCREENS = [
   {
+    tag: 'TODAY SURFACE',
     title: 'Daily execution board',
-    stat: '8/10',
-    statLabel: 'metrics logged',
-    caption: 'Sleep, focus, gym, mood, and wins mapped to one day view.',
-    bars: [72, 88, 64, 91, 78],
+    stat: '88%',
+    statLabel: 'optimal depth',
+    metricBadge: '3/3 Minimums Done',
+    caption: 'Single-pane execution: sleep, gym, focus, and expenses converge without app-switching.',
+    items: [
+      { label: 'Morning Workout', value: '45m Gym', done: true },
+      { label: 'Deep Focus Block', value: '3h 15m Code', done: true },
+      { label: 'Evening Reflection', value: 'Journal Logged', done: true },
+    ],
+    bars: [72, 88, 64, 91, 78, 85, 88],
   },
   {
-    title: 'Pattern dashboard',
-    stat: '+17%',
-    statLabel: 'weekly consistency',
-    caption: 'See what behavior patterns correlate with your best weeks.',
-    bars: [45, 52, 61, 58, 74],
+    tag: 'INTELLIGENCE ENGINE',
+    title: '5D Life Score & Correlation Lab',
+    stat: '84 / 100',
+    statLabel: 'server score (LIVE)',
+    metricBadge: '+19% weekly momentum',
+    caption: 'Server-side correlation engine that reveals which daily habits drive your peak deep-work performance.',
+    dimensions: [
+      { name: 'BODY', pct: 88, color: '#10b981' },
+      { name: 'MIND', pct: 82, color: '#749dc4' },
+      { name: 'DISCIPLINE', pct: 90, color: '#ff6b35' },
+      { name: 'MONEY', pct: 78, color: '#38bdf8' },
+      { name: 'MOOD', pct: 84, color: '#a78bfa' },
+    ],
+    bars: [62, 74, 80, 78, 84, 88, 92],
   },
   {
-    title: 'Money + focus sync',
-    stat: '₹3.2k',
-    statLabel: 'monthly clarity',
-    caption: 'Track spending and productivity together in one loop.',
-    bars: [38, 44, 49, 55, 62],
+    tag: 'LINKED GRAPH',
+    title: 'Money OS & Open Loops',
+    stat: '₹3,450',
+    statLabel: 'reconciled spend',
+    metricBadge: '100% Provenance',
+    caption: 'Track spending and productivity together in an honest, auditable graph linked directly to people and goals.',
+    items: [
+      { label: 'Lent to Rahul', value: '₹500 · Linked', done: true },
+      { label: 'AWS & Domain Infra', value: '₹1,250 · Fixed', done: true },
+      { label: 'Groceries & Nutrition', value: '₹1,700 · Essential', done: true },
+    ],
+    bars: [45, 52, 61, 58, 74, 82, 90],
   },
 ];
 
@@ -275,21 +298,21 @@ export const TESTIMONIALS = [
     initials: 'PM',
   },
   {
-    quote: 'I juggle internship prep, gym, and a part-time tutoring gig. One screen for habits, money, and focus beats five subscriptions on a student budget.',
+    quote: 'I juggle engineering sprints, gym sessions, and side projects. One unified screen for habits, money, and focus beats five disjointed SaaS subscriptions.',
     name: 'Ananya Sharma',
-    role: 'Final-year B.Tech, Computer Science',
-    city: 'VIT Vellore',
+    role: 'Software Engineer & Builder',
+    city: 'Bengaluru',
     initials: 'AS',
   },
   {
-    quote: 'After two years in ops at a mid-size IT firm, I still reconcile Todoist, Sheets, and a meditation app every Sunday. I want one loop that respects Indian pricing.',
+    quote: 'After two years in ops at a fast-growing tech firm, I still reconciled Todoist, Sheets, and a meditation app every Sunday. I wanted one single loop that connects everything.',
     name: 'Rohit Patel',
-    role: 'Operations Analyst',
+    role: 'Operations Lead',
     city: 'Ahmedabad',
     initials: 'RP',
   },
   {
-    quote: 'We study habit relapse in young adults. If streak recovery and correlation views are research-grade, this is more than another wellness app.',
+    quote: 'We study habit relapse and focus retention in knowledge workers. If streak recovery and correlation views are research-grade, this is far more than another wellness app.',
     name: 'Prof. Rajesh Kulkarni',
     role: 'Associate Professor, Human Development',
     city: 'Savitribai Phule Pune University',
@@ -300,7 +323,7 @@ export const TESTIMONIALS = [
 export const FAQS = [
   {
     q: 'What is AIIMIN?',
-    a: 'AIIMIN is a Personal Life OS — journal, habits, money, calendar, focus, family vault, and English practice on one honest graph. Desktop is the command surface; Android is the rich companion for capture, health, and on-the-go loops. Built for Indian students and early professionals who want one system instead of five apps.',
+    a: 'AIIMIN is a Personal Life OS — journal, habits, money, calendar, focus, family vault, and practice on one unified graph. Desktop is the command surface; Android is the rich companion for capture, health, and on-the-go loops. Built for ambitious people who refuse to juggle five separate apps.',
   },
   {
     q: 'Website vs Android app?',
@@ -316,11 +339,11 @@ export const FAQS = [
   },
   {
     q: 'When does AIIMIN launch?',
-    a: 'We are targeting end of October 2026. That is a public go-live window, not a hard SLA — the exact date may shift slightly.',
+    a: 'We are targeting end of November 2026. That is a public go-live window, not a hard SLA — the exact date may shift slightly.',
   },
   {
     q: 'What do invited testers get?',
-    a: 'The VIP package: Elite free for 12 months (₹1,188 value), first beta access to every module, priority OS-ID, prototype features, and direct founder feedback channel. Register by 30 September.',
+    a: 'The VIP package: Elite free for 12 months (₹1,188 value), first beta access to every module, priority OS-ID, prototype features, and direct founder feedback channel. Register by 31 October.',
   },
   {
     q: 'What do waitlist members get?',

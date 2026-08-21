@@ -19,7 +19,7 @@ const STATUS = [
   {
     label: 'Next',
     title: 'Invited tester wave',
-    body: 'VIP testers (register by 30 Sep 2026) get companion builds before public listing.',
+    body: 'VIP testers (register by 31 Oct 2026) get companion builds before public listing.',
   },
   {
     label: 'Public',

@@ -19,6 +19,8 @@ tags:
 
 > **One page:** what to build after waitlist/marketing spine.  
 > **Full research:** [[Massive-Upgrade-Research-Pack]] (Link · Depth · Personalization).  
+> **Phase B tickets:** [[Phase-B-Prep-Spec]] (no schema until founder asks).  
+> **Owned PR kit:** [[Owned-PR-Kit]].  
 > **Native leftovers:** [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]].  
 > **Marketing sync:** [[Stage1-Marketing-Ops-Plan]] — never market more than one wave ahead.
 
@@ -104,13 +106,20 @@ Semantic search · household · iOS · Hindi · social forge · Career unpark.
 | Topic | Note |
 |-------|------|
 | Full idea catalogue | [[Massive-Upgrade-Research-Pack]] |
+| Phase B eng tickets | [[Phase-B-Prep-Spec]] |
 | Edge vocabulary | Research §3 |
 | Unlock ladder | Research §6.2 |
 | Dual-market pricing | [[Dual-Market-Pricing]] |
 | AI want/refuse | [[AI-Preference-Map]] |
 | Notifications | [[09_FEATURES/Notifications/Signal-System]] |
+| Owned PR kit | [[Owned-PR-Kit]] |
 
 ### Changelog
+
+### 2026-08-20 — Phase B prep + PR kit linked
+- **What:** Card points at Phase-B-Prep-Spec + Owned-PR-Kit; Lab web honesty strip shipped in code.
+- **Why:** Keep-going after Day 1 hedges.
+- **Status:** partial
 
 ### 2026-08-20 — Card created
 - **What:** One-page Build Next from research Phases A–E.

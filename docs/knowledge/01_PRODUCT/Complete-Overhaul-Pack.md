@@ -50,13 +50,13 @@ Related deep notes (do not duplicate):
 
 | Old | New |
 |-----|-----|
-| Today → Jul 2026 | Today → **Sep 2026** |
-| Tester cutoff 31 August | **30 September** |
-| Go-live / Launching Sept 2026 | **Oct 2026** (end of October target) |
-| Module rollout Oct–Nov 2026 | **Nov–Dec 2026** |
-| Expansion Q1 2027 | **Q2 2027** |
-| Pricing footnote July 2026 | **Sep 2026** (+ Americas $0/$3/$7/$16 note) |
-| Legal `effectiveDate` July 31, 2026 | **September 30, 2026** (`consentVersion` `v1-2026-09-30`) |
+| Today → Sep 2026 | Today → **Oct 2026** |
+| Tester cutoff 30 September | **31 October** |
+| Go-live / Launching Oct 2026 | **Nov 2026** (end of November target) |
+| Module rollout Nov–Dec 2026 | **Dec 2026 – Jan 2027** |
+| Expansion Q2 2027 | **Mid 2027** |
+| Pricing footnote Sep 2026 | **Nov 2026** (+ Americas $0/$3/$7/$16 note) |
+| Legal `effectiveDate` September 30, 2026 | **October 31, 2026** (`consentVersion` `v1-2026-10-31`) |
 
 **Primary code sources:**
 
@@ -120,7 +120,7 @@ Status page, not APK store. Clear Now / Next / Public path; less muddy grey card
 
 ### Fixes
 
-- Tester copy → **30 Sep 2026**
+- Tester copy → **31 Oct 2026**
 - Cards: stronger border, green “Now” emphasis, elevated split panels
 - CTAs remain waitlist + `/m` capture-only (no APK)
 

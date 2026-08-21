@@ -54,7 +54,7 @@ Branch **`main`**. Native V3 = active companion app (`native-android-v3/`). Manu
 
 Drafting Table = **design lock**, not a third product.
 
-**Now:** [[01_PRODUCT/Build-Next-Now]] (what to build) · [[01_PRODUCT/Massive-Upgrade-Research-Pack]] (full research) · [[01_PRODUCT/Stage1-Marketing-Ops-Plan]] (marketing calendar). Overhaul: [[01_PRODUCT/Complete-Overhaul-Pack]].
+**Now:** [[01_PRODUCT/Build-Next-Now]] (what to build) · [[01_PRODUCT/Massive-Upgrade-Research-Pack]] (full research) · [[01_PRODUCT/Phase-B-Prep-Spec]] (Phase B tickets) · [[01_PRODUCT/Owned-PR-Kit]] · [[01_PRODUCT/Stage1-Marketing-Ops-Plan]] (marketing calendar). Overhaul: [[01_PRODUCT/Complete-Overhaul-Pack]].
 
 - **Living leftover list** → [[17_NATIVE_APP_V2/V3-LEFTOVER-CHECKLIST]]
 - **Guardrails G1–G10** → [[17_NATIVE_APP_V2/AIIMIN_APP_BUILD_AGENT_PLAN]] §0
@@ -67,7 +67,7 @@ Drafting Table = **design lock**, not a third product.
 ## Current version / lens
 
 - Waitlist gate when `REACT_APP_WAITLIST_MODE=true`
-- Go-live target: end Oct 2026; founding/tester registration closes **30 Sep 2026** (TARGET)
+- Go-live target: end Nov 2026; founding/tester registration closes **31 Oct 2026** (TARGET)
 - Instagram / Reels: **Skip** Stage-1
 - **Genesis v1.0 (P1–P9) COMPLETE** · immutable at `Genesis/`
 - **Obsidian Vault Stage A FROZEN** · SoT `docs/knowledge/` · [[Founder/01_VAULT_FREEZE_CERTIFICATE]]

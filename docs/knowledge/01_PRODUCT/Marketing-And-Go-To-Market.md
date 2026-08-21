@@ -79,7 +79,7 @@ Competitive frame (education, not attack ads): Notion = docs · Finch = pet well
 ## 5. Asset checklist
 
 - [ ] Region-aware pricing (INR default; USD when Dual-Market accepted + Stripe)
-- [x] Timeline: tester **30 Sep 2026** · go-live **end Oct 2026** (TARGET)
+- [x] Timeline: tester **31 Oct 2026** · go-live **end Nov 2026** (TARGET)
 - [x] `/app` Android status
 - [ ] Case study film 60–90s
 - [ ] Press kit (Day 5 owned PR)

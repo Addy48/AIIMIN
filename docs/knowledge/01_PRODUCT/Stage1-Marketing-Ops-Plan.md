@@ -22,7 +22,7 @@ tags:
 > **Claims:** [[Marketing-Claims-Ledger]]  
 > **Notifications:** [[09_FEATURES/Notifications/Signal-System]]  
 > **Skills catalog:** [[16_DOCUMENTATION/Stage1-Marketing-Skills-Catalog]]  
-> **Feature spine:** [[Massive-Upgrade-Research-Pack]] Phases A–E
+> **Feature spine:** [[Massive-Upgrade-Research-Pack]] Phases A–E · [[Build-Next-Now]] · [[Phase-B-Prep-Spec]] · [[Owned-PR-Kit]]
 
 ## 0. Locks
 
@@ -32,7 +32,7 @@ tags:
 | Ads budget | ₹0 until waitlist+email healthy |
 | Instagram / Reels | **Skip** Stage-1 |
 | Palette | LOCKED — brandkit may not invent colors |
-| Public dates | Tester **30 Sep 2026** · Go-live **end Oct 2026** (TARGET language) |
+| Public dates | Tester **31 Oct 2026** · Go-live **end Nov 2026** (TARGET language) |
 | Marketing vs build | Marketing never leads feature by more than one wave |
 
 ## 1. Positioning (one line)
@@ -101,10 +101,11 @@ AIIMIN is the personal Life OS that turns daily Capture into linked truth — ha
 | W3 | Sep 5–11 | Phase B edges/People | Comparison drafts |
 | W4 | Sep 12–18 | Depth + Open Loops | Directories |
 | W5 | Sep 19–25 | Provenance golden path | Soft launch TARGET |
-| W6 | Sep 26–30 | Buffer | Tester close 30 Sep messaging |
-| W7–9 | Oct 1–21 | Phase C or deepen B | Email drip · press kit · launch ORB |
-| W10 | Oct 22–28 | Freeze | Owned go-live window |
-| W11–12 | Oct 29–Nov 11 | Stabilize · Phase D prep | Post-launch listen · module TARGET |
+| W6–8 | Sep 26–Oct 15 | Phase C Money + sensors | Email drip · tester onboarding |
+| W9–10 | Oct 16–31 | Polish & verification | Tester close 31 Oct messaging |
+| W11 | Nov 1–15 | Freeze & hardening | Press kit · launch ORB prep |
+| W12 | Nov 16–30 | Launch window | Owned go-live window (TARGET end Nov) |
+| W13+ | Dec 2026+ | Post-launch expansion | Module rollout (Dec 2026 – Jan 2027) |
 
 ## 6. North-star (Stage-1)
 
@@ -119,6 +120,11 @@ Confirmed waitlist emails + honest founding conversion at TARGET go-live — wit
 - [[14_PROMPTS/Pre-Ship-10x-Gate]]
 
 ### Changelog
+
+### 2026-08-20 — Day 5–6 artifacts early
+- **What:** Linked Owned-PR-Kit + Phase-B-Prep-Spec into spine.
+- **Why:** Keep-going after Day 1 hedges; founder asked research paths.
+- **Status:** shipped-docs
 
 ### 2026-08-20 — Day 0 spine
 - **What:** Unified AARRR + day calendar + feature Phase sync + skip list.
