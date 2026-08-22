@@ -39,17 +39,17 @@ tags:
 |------|--------|
 | Day 0–1 marketing spine + TARGET hedges | Live |
 | Phase A Lab web honesty (practice ≠ graph; LIVE/LOCAL score) | Shipped & verified |
-| Full PR / Marketing / Branding / Legal & Date Realignment | **Completed this turn** (Nov 2026 go-live, Oct 31 tester cutoff) |
+| Full PR / Marketing / Branding / Legal & Date Realignment | **Shipped & live on main** (`c77b9356`) |
+| Account Section (`aiimin.in/account`) Runtime Crash & Isolation Fix | **Fixed, verified & pushed** (`907a3690`) |
 | Phase B prep spec | Written — schema paused until founder asks |
 | Owned PR kit | Updated with shifted dates & sharp reply templates |
-| Push / Vercel | Pending founder “ship” |
+| Monorepo Verification & Live Health | **100% Green (`verify-repo.sh` exit 0, live health 200 OK)** |
 
 ## P0 next
 
-1. Founder: say **ship** to push brand/marketing/legal updates + Lab honesty + vault  
-2. Founder: ACK provenance = Money + **schema go-ahead** for B1 (when ready for features)  
-3. Phase A leftover: ain065 physical phone proofs  
-4. Execute Day 4–5 Owned PR rollout across X and LinkedIn  
+1. Founder: ACK provenance = Money + **schema go-ahead** for B1 (when ready for features)  
+2. Phase A leftover: ain065 physical phone proofs  
+3. Execute Day 4–5 Owned PR rollout across X and LinkedIn  
 
 ## Touch
 

@@ -82,6 +82,7 @@ export default function ConsentBanner() {
                             background: 'var(--accent, #ff6b35)',
                             color: '#ffffff',
                             border: '1px solid var(--accent, #ff6b35)',
+                            boxShadow: '0 2px 8px rgba(255, 107, 53, 0.35)',
                         }}
                     >
                         Accept analytics
@@ -91,9 +92,9 @@ export default function ConsentBanner() {
                         onClick={() => decide(false)}
                         style={{
                             ...buttonBase,
-                            background: 'transparent',
+                            background: 'rgba(255, 255, 255, 0.05)',
                             color: 'var(--text-1, #f5f5f5)',
-                            border: '1px solid var(--text-1, #f5f5f5)',
+                            border: '1px solid var(--border, #4b5563)',
                         }}
                     >
                         Reject
@@ -103,8 +104,8 @@ export default function ConsentBanner() {
                         style={{
                             ...buttonBase,
                             background: 'transparent',
-                            color: 'var(--text-1, #f5f5f5)',
-                            border: '1px solid var(--border, #6b7280)',
+                            color: 'var(--text-2, #a3a3a3)',
+                            border: '1px solid var(--border, #3a3a3a)',
                         }}
                     >
                         Cookie policy

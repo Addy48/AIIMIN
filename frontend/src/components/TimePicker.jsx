@@ -52,7 +52,7 @@ const TimePicker = ({ value, onChange, label, placeholder }) => {
                     display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
                     background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: '8px',
                     padding: '10px 14px', cursor: 'pointer',
-                    color: value ? 'var(--text-1)' : 'var(--text-3)',
+                    color: value ? 'var(--text-1)' : 'var(--text-2, #a3a3a3)',
                     fontSize: '14px', justifyContent: 'space-between',
                     transition: 'border-color 0.12s ease',
                 }}

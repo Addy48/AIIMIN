@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import { upsertRow, getRows } from '../services/dbService';
 import { queueOfflineLog } from '../utils/offlineLogQueue';
 import TimePicker from './TimePicker';
@@ -230,7 +231,7 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
                             {todayDisplay}
                         </div>
                     </div>
-                    <button type="button" onClick={() => {
+                    <button type="button" aria-label="Clear form" onClick={() => {
                         setFormData({
                             sleepStart: '', sleepEnd: '',
                             gymDone: false, gymDuration: 0,
@@ -239,8 +240,8 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
                             journalEntry: '', mood: null,
                         });
                         setIsDirty(false);
-                    }} style={{ background: 'transparent', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
-                        ✕
+                    }} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-3)', cursor: 'pointer', minWidth: '36px', minHeight: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px' }}>
+                        <X size={16} />
                     </button>
                 </div>
 
@@ -295,11 +296,12 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
                                         <button
                                             type="button"
                                             className="daily-log-water-btn"
+                                            aria-label="Decrease water bottles"
                                             onClick={() => { setFormData(prev => ({ ...prev, waterBottles: Math.max(0, (prev.waterBottles || 0) - 1) })); setIsDirty(true); }}
                                             style={{
-                                                width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px',
+                                                width: '44px', height: '44px', minWidth: '44px', minHeight: '44px', borderRadius: '10px', fontSize: '18px',
                                                 border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                                                color: 'var(--text-3)', cursor: 'pointer', display: 'flex',
+                                                color: 'var(--text-2)', cursor: 'pointer', display: 'flex',
                                                 alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                                             }}>−</button>
                                         <div style={{ textAlign: 'center', flex: 1 }}>
@@ -313,9 +315,10 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
                                         <button
                                             type="button"
                                             className="daily-log-water-btn"
+                                            aria-label="Increase water bottles"
                                             onClick={() => { setFormData(prev => ({ ...prev, waterBottles: (prev.waterBottles || 0) + 1 })); setIsDirty(true); }}
                                             style={{
-                                                width: '34px', height: '34px', borderRadius: '8px', fontSize: '16px',
+                                                width: '44px', height: '44px', minWidth: '44px', minHeight: '44px', borderRadius: '10px', fontSize: '18px',
                                                 border: '1px solid var(--accent)', background: 'var(--accent-dim)',
                                                 color: 'var(--accent)', cursor: 'pointer', display: 'flex',
                                                 alignItems: 'center', justifyContent: 'center', flexShrink: 0,

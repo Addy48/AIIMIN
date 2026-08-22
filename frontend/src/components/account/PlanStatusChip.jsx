@@ -35,7 +35,7 @@ export function formatPlanTill(iso) {
   const day = d.getDate();
   const mon = d.toLocaleDateString('en-GB', { month: 'short' });
   const year = d.getFullYear();
-  return `till ${day} ${mon.toLowerCase()} ${year}`;
+  return `till ${day} ${mon} ${year}`;
 }
 
 /**
@@ -71,13 +71,13 @@ export default function PlanStatusChip({
       {inline ? (
         <span className="plan-status-chip-inline">
           <strong>{meta.label}</strong>
-          <span className="plan-status-chip-sep" aria-hidden="true" />
+          <span className="plan-status-chip-sep" aria-hidden="true"> </span>
           <span>{sub}</span>
         </span>
       ) : (
         <span className="plan-status-chip-copy">
           <strong>{meta.label}</strong>
-          <span>{sub}</span>
+          <span> {sub}</span>
         </span>
       )}
     </button>

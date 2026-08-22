@@ -31,12 +31,16 @@ const FinanceTransactions = ({
             ) : transactions.map(t => (
               <tr key={t.id} style={{ borderBottom: '1px solid var(--color-border)', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.02)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}>{format(parseISO(t.date), 'MMM dd, yyyy')}</td>
-                <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600 }}>{t.description}</td>
+                <td style={{ padding: '16px 24px', fontSize: '14px', fontWeight: 600, color: 'var(--text-1)' }}>
+                  {t.description?.trim() || (t.category ? (t.category.charAt(0).toUpperCase() + t.category.slice(1).toLowerCase()) : 'Unlabeled transaction')}
+                </td>
                 <td style={{ padding: '16px 24px' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 600, padding: '4px 10px', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '99px', color: 'var(--text-2)' }}>{t.category}</span>
+                  <span style={{ fontSize: '11px', fontWeight: 600, padding: '4px 10px', background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', borderRadius: '99px', color: 'var(--text-2)' }}>
+                    {t.category ? (t.category.charAt(0).toUpperCase() + t.category.slice(1).toLowerCase()) : 'General'}
+                  </span>
                 </td>
                 <td style={{ padding: '16px 24px', textAlign: 'right', fontSize: '15px', fontWeight: 700, color: t.type === 'income' ? '#10B981' : 'var(--text-1)', fontFamily: 'var(--font-mono)' }}>
-                  {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
+                  {t.type === 'income' ? '+' : '−'}{formatCurrency(Math.abs(Number(t.amount) || 0))}
                 </td>
               </tr>
             ))}

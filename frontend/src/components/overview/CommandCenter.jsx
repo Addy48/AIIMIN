@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Check, ChevronRight, Flame } from 'lucide-react';
+import { Plus, Check, ChevronRight, Flame, X } from 'lucide-react';
 import { apiGet } from '../../utils/api';
 import { useLifeScore } from '../../hooks/useLifeScore';
 import { useUserProfile } from '../../hooks/useUserProfile';
@@ -171,16 +171,16 @@ export default function CommandCenter({ user }) {
                 {lifeScore.explanation}
               </div>
               <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
-                <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>DISCIPLINE: {lifeScore.contributors.discipline?.score ?? '—'}</div>
-                <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>MOOD: {lifeScore.contributors.emotional?.score ?? '—'}</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Discipline: {lifeScore.contributors.discipline?.score ?? '—'}</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Mood: {lifeScore.contributors.emotional?.score ?? '—'}</div>
                 {lifeScore.contributors.cognitive && (
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>MIND: {lifeScore.contributors.cognitive.score}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Mind: {lifeScore.contributors.cognitive.score}</div>
                 )}
                 {lifeScore.contributors.financial && (
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>MONEY: {lifeScore.contributors.financial.score}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Money: {lifeScore.contributors.financial.score}</div>
                 )}
                 {lifeScore.contributors.physical && (
-                  <div style={{ fontSize: '10px', color: 'var(--color-text-3)' }}>BODY: {lifeScore.contributors.physical.score}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Body: {lifeScore.contributors.physical.score}</div>
                 )}
               </div>
             </div>
@@ -203,7 +203,9 @@ export default function CommandCenter({ user }) {
                 {p.done ? <Check size={14} strokeWidth={3} /> : <div style={{ width: '14px', height: '14px', borderRadius: '4px', border: '1.5px solid var(--color-text-3)' }} />}
               </button>
               <span style={{ fontSize: '12px', color: p.done ? 'var(--color-text-3)' : 'var(--color-text-1)', textDecoration: p.done ? 'line-through' : 'none', flex: 1, lineHeight: 1.3 }}>{p.text}</span>
-              <button onClick={() => removePriority(p.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: 0, opacity: 0.5, fontSize: '11px', lineHeight: 1 }}>✕</button>
+              <button onClick={() => removePriority(p.id)} aria-label="Remove priority" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-3)', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={12} />
+              </button>
             </div>
           ))}
 
