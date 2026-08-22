@@ -2,9 +2,9 @@ import React from 'react';
 
 /** Shared wordmark styles — high-contrast Didot/Bodoni display serif. */
 export const WORDMARK_STYLE = {
-  fontFamily: 'var(--font-brand)',
+  fontFamily: 'var(--font-brand, "Bodoni Moda", "Didot", Georgia, serif)',
   fontWeight: 700,
-  letterSpacing: '-0.04em',
+  letterSpacing: '-0.03em',
   lineHeight: 1,
   fontOpticalSizing: 'auto',
   textTransform: 'uppercase',
@@ -18,6 +18,7 @@ export default function Wordmark({
   as: Component = 'span',
   style = {},
   className = '',
+  children = 'AIIMIN',
 }) {
   return (
     <Component
@@ -30,7 +31,8 @@ export default function Wordmark({
         ...style,
       }}
     >
-      AIIMIN
+      {children}
     </Component>
   );
 }
+

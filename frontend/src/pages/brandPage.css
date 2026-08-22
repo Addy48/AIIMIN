@@ -839,8 +839,20 @@
 
 .brand-account__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 960px) {
+  .brand-account__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .brand-account__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .brand-account__card {
@@ -876,8 +888,20 @@
 
 .brand-account__steps {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
+}
+
+@media (max-width: 960px) {
+  .brand-account__steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .brand-account__steps {
+    grid-template-columns: 1fr;
+  }
 }
 
 .brand-account__step {
@@ -938,8 +962,20 @@
 
 .brand-account__processors {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 960px) {
+  .brand-account__processors {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .brand-account__processors {
+    grid-template-columns: 1fr;
+  }
 }
 
 .brand-account__processor {
@@ -1245,11 +1281,22 @@
   align-items: center;
   gap: 12px;
   text-decoration: none;
-  color: var(--bm-ink-soft);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  color: var(--bm-ink);
+  transition: opacity 0.15s ease;
+}
+
+.brand-manifesto__footer-brand:hover {
+  opacity: 0.85;
+}
+
+.brand-manifesto__footer-brand-text {
+  font-family: var(--font-brand, 'Bodoni Moda', 'Didot', Georgia, serif);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
+  color: var(--bm-ink);
+  line-height: 1;
 }
 
 .brand-manifesto__footer-links {
