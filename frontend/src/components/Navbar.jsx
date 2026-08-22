@@ -126,6 +126,7 @@ const Navbar = ({ user }) => {
                   className={`nav-masthead__link nav-masthead__more-btn${moreOpen || moreIsActive ? ' nav-masthead__link--active' : ''}`}
                   aria-expanded={moreOpen}
                   aria-haspopup="true"
+                  aria-label={stripMore.length > 0 ? `More navigation sections (${stripMore.length})` : 'More navigation sections'}
                   onClick={() => setMoreOpen((o) => !o)}
                 >
                   {stripMore.length > 0 ? `More (${stripMore.length})` : 'More'}

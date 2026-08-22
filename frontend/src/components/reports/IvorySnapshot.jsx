@@ -150,7 +150,7 @@ export default function IvorySnapshot({
     return (
       <div className={`ivory-snap ${dark ? 'is-dark' : 'is-light'}`}>
         <div className="ivory-snap__empty">
-          No logs in the last 7 days yet. Log from Today or mobile `/m` — Snapshot fills from live data.
+          No logs in the last 7 days yet. Log from Today or mobile /m — Snapshot fills automatically once logged.
         </div>
       </div>
     );

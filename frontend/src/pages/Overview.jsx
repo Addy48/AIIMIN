@@ -606,7 +606,7 @@ const Overview = () => {
               {urgentReminders.map(r => (
                 <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '14px', color: 'var(--color-text-1)', fontWeight: 600 }}>{r.title}</span>
-                  <span style={{ fontSize: '13px', color: '#EF4444', fontWeight: 700 }}>Due: {r.due_date}</span>
+                  <span style={{ fontSize: '13px', color: '#EF4444', fontWeight: 700 }}>Due: {formatDate(r.due_date)}</span>
                 </div>
               ))}
             </div>
