@@ -37,48 +37,36 @@ export default function IvorySnapshot({
   const dark = isDarkTheme(theme);
 
   const pulse = useMemo(() => {
-    const timeline = [...(report?.meta?.timeline || [])].slice(-7);
+    const timeline = [...(report?.lhs?.timeline || report?.meta?.timeline || [])].slice(-7);
     const lhs = report?.lhs || null;
+    const canonicalScore = lhs?.globalScore ?? report?.canonicalReport?.globalScore ?? null;
     const n = timeline.length || 1;
 
-    const moodVals = timeline.map((t) => Number(t.mood) || 0).filter((v) => v > 0);
+    const moodVals = timeline.map((t) => Number(t.mood)).filter((v) => Number.isFinite(v));
     const avgMood = moodVals.length
       ? moodVals.reduce((a, b) => a + b, 0) / moodVals.length
-      : 0;
-    const journalDays = timeline.filter((t) => t.journal).length;
-    const gymDays = timeline.filter((t) => t.gym_done).length;
-    const habitProxy = Math.round(((gymDays + journalDays) / (n * 2)) * 100);
-    const focusMin = timeline.reduce((s, t) => s + (Number(t.focus_minutes) || 0), 0);
-    const spend = timeline.reduce((s, t) => s + (Number(t.daily_spend) || 0), 0);
+      : null;
+    const journalDays = timeline.filter((t) => t.journal === true || t.journal_entry != null).length;
+    const gymDays = timeline.filter((t) => t.gym_done === true).length;
+    const habitInputDays = timeline.filter((t) => t.gym_done === true || t.journal === true || t.journal_entry != null).length;
+    const habitCoverage = Math.round((habitInputDays / n) * 100);
+    const focusVals = timeline.map((t) => Number(t.focus_minutes)).filter((v) => Number.isFinite(v));
+    const focusMin = focusVals.reduce((s, value) => s + value, 0);
+    const spendVals = timeline.map((t) => Number(t.daily_spend)).filter((v) => Number.isFinite(v));
+    const spend = spendVals.reduce((s, value) => s + value, 0);
 
-    const scores = timeline.map((t) => {
-      if (t.globalScore != null) return Math.round(Number(t.globalScore));
-      return (
-        (t.gym_done ? 20 : 0)
-        + (t.learning_done ? 20 : 0)
-        + (t.journal ? 20 : 0)
-        + (Number(t.mood) >= 6 ? 20 : 0)
-        + (Number(t.sleep_hours) >= 6 ? 20 : 0)
-      );
-    });
+    const scores = timeline.map((t) => (t.globalScore == null ? null : Number(t.globalScore))).filter((v) => Number.isFinite(v));
     const weekScore = scores.length
       ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : Math.round(lhs?.globalScore || 0);
+      : (canonicalScore == null ? null : Math.round(Number(canonicalScore)));
 
-    const prior = [...(report?.meta?.timeline || [])].slice(-14, -7);
-    const priorScores = prior.map((t) => (
-      t.globalScore != null
-        ? Math.round(Number(t.globalScore))
-        : (t.gym_done ? 20 : 0)
-          + (t.learning_done ? 20 : 0)
-          + (t.journal ? 20 : 0)
-          + (Number(t.mood) >= 6 ? 20 : 0)
-          + (Number(t.sleep_hours) >= 6 ? 20 : 0)
-    ));
+    const allTimeline = [...(report?.lhs?.timeline || report?.meta?.timeline || [])];
+    const prior = allTimeline.slice(-14, -7);
+    const priorScores = prior.map((t) => t.globalScore == null ? null : Number(t.globalScore)).filter((v) => Number.isFinite(v));
     const priorWeek = priorScores.length
       ? Math.round(priorScores.reduce((a, b) => a + b, 0) / priorScores.length)
       : weekScore;
-    const delta = weekScore - priorWeek;
+    const delta = weekScore != null && priorWeek != null ? weekScore - priorWeek : null;
 
     const driver = report?.behaviorDrivers?.[0];
     const insight = driver?.insight
@@ -94,7 +82,7 @@ export default function IvorySnapshot({
       || (gymDays >= 3 ? `${gymDays} gym days this week` : `${journalDays} journal days`);
     const biggestWin = best?.date
       ? `Best day ${String(best.date).slice(5)}${best.reason ? ` · ${best.reason}` : ''}`
-      : (habitProxy >= 50 ? 'Habits holding above half' : 'Showed up to log');
+      : (habitCoverage >= 50 ? 'Habit inputs present on half the observed days' : 'Showed up to log');
     const watchItem = worst?.date
       ? `Watch ${String(worst.date).slice(5)}${worst.reason ? ` · ${worst.reason}` : ''}`
       : (avgMood > 0 && avgMood < 5 ? 'Mood below baseline' : 'Protect sleep window');
@@ -122,10 +110,10 @@ export default function IvorySnapshot({
       moodSpark: moodVals.length ? moodVals : scores.map((s) => Math.max(1, s / 10)),
       moodLabel: moodVals.length ? moodVals.map((v) => v.toFixed(1)).join(' · ') : '—',
       metrics: [
-        { k: 'Mood average', v: avgMood ? `${avgMood.toFixed(1)} / 10` : '—', note: '7d mean' },
-        { k: 'Habit proxy', v: pct(habitProxy), note: 'gym + journal' },
-        { k: 'Focus hours', v: `${(focusMin / 60).toFixed(1)} h`, note: 'logged' },
-        { k: 'Finance', v: fin, note: 'window sum' },
+        { k: 'Mood average', v: avgMood != null ? `${avgMood.toFixed(1)} / 10` : '—', note: '7d mean' },
+        { k: 'Habit inputs', v: pct(habitCoverage), note: 'gym + journal' },
+        { k: 'Focus hours', v: focusVals.length ? `${(focusMin / 60).toFixed(1)} h` : '—', note: 'logged' },
+        { k: 'Finance', v: spendVals.length ? fin : '—', note: 'window sum' },
         { k: 'Journal', v: pct((journalDays / n) * 100), note: 'days with entry' },
       ],
       insight,
@@ -133,6 +121,7 @@ export default function IvorySnapshot({
       biggestWin,
       watchItem,
       correlations,
+      hasScore: weekScore != null,
       days: timeline.length,
     };
   }, [report]);
@@ -143,8 +132,9 @@ export default function IvorySnapshot({
     if (osId) return `OS-ID: ${osId}`;
     return 'You';
   })();
+  const isOsId = /^OS-ID:\s*/i.test(firstName) || /^[A-Z]{3,8}\d{3,8}$/i.test(firstName);
   const pts = sparkPoints(pulse.moodSpark);
-  const deltaSign = pulse.delta >= 0 ? 'up' : 'down';
+  const deltaSign = pulse.delta == null ? 'unknown' : pulse.delta >= 0 ? 'up' : 'down';
 
   if (!report || pulse.days === 0) {
     return (
@@ -164,7 +154,7 @@ export default function IvorySnapshot({
           <div className="ivory-snap__range">7-day pulse · Snapshot · Core+</div>
         </div>
         <div className="ivory-snap__who">
-          <div className="ivory-snap__name">{firstName}</div>
+          <div className={`ivory-snap__name${isOsId ? ' ivory-snap__name--os-id' : ''}`}>{firstName}</div>
           <div className="ivory-snap__tier">Ivory · follows app theme</div>
         </div>
       </header>
@@ -172,9 +162,9 @@ export default function IvorySnapshot({
       <div className="ivory-snap__body">
         <div>
           <div className="ivory-snap__score-label">Life Score · this week</div>
-          <div className="ivory-snap__score">{pulse.weekScore}</div>
+          <div className="ivory-snap__score">{pulse.weekScore ?? '—'}</div>
           <div className={`ivory-snap__delta ${deltaSign}`}>
-            {deltaSign} {Math.abs(pulse.delta)} vs prior · was {pulse.priorWeek}
+            {pulse.delta == null ? 'unknown vs prior' : `${deltaSign} ${Math.abs(pulse.delta)} vs prior · was ${pulse.priorWeek}`}
           </div>
           <div className="ivory-snap__spark-wrap">
             <div className="ivory-snap__spark-head">

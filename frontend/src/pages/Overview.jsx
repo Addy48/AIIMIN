@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import { motion } from 'framer-motion';
-import { Plus, X, ChevronRight, ChevronLeft, Keyboard, Mic, AlertTriangle, Sun, Moon } from 'lucide-react';
+import { Plus, X, ChevronRight, ChevronLeft, AlertTriangle, Sun, Moon } from 'lucide-react';
 import AnimatedNumber from '../components/ui/AnimatedNumber';
 import PageHeader from '../components/layout/PageHeader';
 import CommandCenter from '../components/overview/CommandCenter';
@@ -538,6 +538,10 @@ const Overview = () => {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
+  const openFamilyReminder = useCallback((reminderId) => {
+    navigate(`/family?tab=reminders&reminder=${encodeURIComponent(reminderId)}`);
+  }, [navigate]);
+
   const now = new Date();
 
   const getWeekNum = (d) => {
@@ -604,9 +608,19 @@ const Overview = () => {
                 <AlertTriangle size={14} /> Urgent Family Reminders
               </div>
               {urgentReminders.map(r => (
-                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--color-text-1)', fontWeight: 600 }}>{r.title}</span>
-                  <span style={{ fontSize: '13px', color: '#EF4444', fontWeight: 700 }}>Due: {formatDate(r.due_date)}</span>
+                <div key={r.id} className="today-urgent-reminder-row">
+                  <div className="today-urgent-reminder-copy">
+                    <span className="today-urgent-reminder-title">{r.title}</span>
+                    <span className="today-urgent-reminder-due">Due: {formatDate(r.due_date)}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="today-urgent-reminder-action"
+                    onClick={() => openFamilyReminder(r.id)}
+                    aria-label={`Open family reminder: ${r.title}`}
+                  >
+                    Open reminder <ChevronRight size={15} aria-hidden="true" />
+                  </button>
                 </div>
               ))}
             </div>

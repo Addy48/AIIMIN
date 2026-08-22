@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { apiPatch } from '../../../utils/api';
 
 const GROUPS = {
@@ -26,20 +26,21 @@ const GROUPS = {
   ],
 };
 
-function Toggle({ on, onChange, disabled }) {
+function Toggle({ on, onChange, disabled, label }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={on}
       disabled={disabled}
+      aria-label={label}
       onClick={() => !disabled && onChange(!on)}
       style={{
         width: 44,
         height: 24,
         borderRadius: 999,
         border: 'none',
-        background: on ? '#ff6b35' : 'var(--color-border-lit)',
+        background: on ? 'var(--color-accent)' : 'var(--color-border-lit)',
         position: 'relative',
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.6 : 1,
@@ -64,17 +65,31 @@ function Toggle({ on, onChange, disabled }) {
 
 export default function NotificationsSection({ profile, onProfileUpdate }) {
   const prefs = profile?.notification_prefs || {};
+  const [savingKey, setSavingKey] = useState(null);
+  const [saveError, setSaveError] = useState('');
 
   const toggle = async (key, val) => {
-    const updated = await apiPatch('/account/user-profile', {
-      notification_prefs: { ...prefs, [key]: val },
-    });
-    onProfileUpdate?.(updated);
+    setSavingKey(key);
+    setSaveError('');
+    try {
+      const updated = await apiPatch('/account/user-profile', {
+        notification_prefs: { ...prefs, [key]: val },
+      });
+      onProfileUpdate?.(updated);
+    } catch {
+      setSaveError('Could not save this preference. Try again when you are online.');
+    } finally {
+      setSavingKey(null);
+    }
   };
 
   return (
     <div>
-      <h1 className="text-h1" style={{ marginBottom: 24 }}>Notifications</h1>
+      <h1 className="text-h1" style={{ marginBottom: 8 }}>Notifications</h1>
+      <p style={{ margin: '0 0 24px', color: 'var(--color-text-2)', fontSize: 14, lineHeight: 1.6 }}>
+        Website notifications appear in the bell menu. Urgent reminders are marked in red and include a direct action link; nothing here changes your data.
+      </p>
+      {saveError && <div role="alert" style={{ marginBottom: 16, padding: '10px 12px', borderRadius: 10, color: '#b91c1c', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', fontSize: 12 }}>{saveError}</div>}
       {Object.entries(GROUPS).map(([group, items]) => (
         <section key={group} className="card" style={{ padding: 24, marginBottom: 16 }}>
           <h2 className="text-label" style={{ marginBottom: 16 }}>{group}</h2>
@@ -92,7 +107,8 @@ export default function NotificationsSection({ profile, onProfileUpdate }) {
               <span className="text-body">{item.label}</span>
               <Toggle
                 on={item.locked ? true : prefs[item.key] !== false}
-                disabled={item.locked}
+                disabled={item.locked || savingKey === item.key}
+                label={`Toggle ${item.label}`}
                 onChange={(v) => toggle(item.key, v)}
               />
             </div>

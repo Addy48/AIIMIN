@@ -3,14 +3,13 @@ package aiimin.core.model
 import kotlin.math.roundToInt
 
 /**
- * Drafting Table **provisional** live-score curve — the marking surface formula.
+ * Retained prototype helpers for backwards compatibility only.
  *
- * This is **not** the published Life Score engine ([Composition]). The Live Score
- * screen uses this so Rail + Ladder visibly move one figure while marks are
- * open. The engine v2 number stays the published state on Today / server.
- *
- * `round(70.7 + minsDone*1.9 + (rung-3)*1.6 + (railAvg-70)*0.12)`
+ * This object is not the published Life Score engine and must not be used to
+ * render a user-facing score. Published score values come from the server LHS
+ * endpoint through PublishedLifeScoreStore.
  */
+@Deprecated("Prototype-only local score helper; use the published server Life Score instead.")
 object ProvisionalScore {
 
     const val BASELINE = 78

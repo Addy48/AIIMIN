@@ -32,7 +32,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import aiimin.core.data.PublishedDimension
 import aiimin.core.data.PublishedLifeScoreState
 import aiimin.core.data.RailMark
-import aiimin.core.data.ScoreMover
 import aiimin.core.data.ScoreState
 import aiimin.designsystem.component.BlueprintBox
 import aiimin.designsystem.component.HairRule
@@ -85,8 +84,8 @@ fun ScoreScreen(
             .padding(bottom = AiiminTheme.space.s8 + AiiminTheme.space.s6),
     ) {
         ScreenHead(
-            title = "Live score",
-            meta = if (state.marks.settled) "SETTLED" else "PROVISIONAL",
+            title = "Life score",
+            meta = state.confidenceLabel.uppercase(),
         )
 
         state.marks.notice?.let { notice ->
@@ -106,39 +105,28 @@ fun ScoreScreen(
             )
         }
 
-        if (state.published.available) {
-            PublishedServerBlock(state.published)
-        }
-
-        ProvisionalFigure(state)
+        PublishedScoreFigure(state.published)
 
         SectionRule(
-            label = "Mechanism 01 · The rail",
-            value = "TAP TO SET",
+            label = "How this number is made",
+            value = "SERVER MODEL",
             valueColor = AiiminTheme.colors.accent,
         )
         Text(
-            text = "Tap anywhere on a rail to mark that area. Snaps to fives, so a mark is always a decision, never a wobble.",
+            text = "The server combines your observed BODY, MIND, DISCIPLINE, MONEY, and MOOD signals. Missing data narrows confidence; it never becomes a zero.",
             style = AiiminTheme.type.bodySmall.copy(fontSize = 11.5.sp, lineHeight = 17.sp),
             color = AiiminTheme.colors.muted,
             modifier = Modifier.padding(top = 5.dp),
         )
-        Column(
-            Modifier.padding(top = AiiminTheme.space.s4),
-            verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s4),
-        ) {
-            state.marks.rails.forEachIndexed { i, rail ->
-                RailRow(rail, onBump = { onBumpRail(i) })
-            }
-        }
+        CanonicalDimensions(state.published)
 
         SectionRule(
-            label = "Mechanism 02 · The ladder",
+            label = "Daily reflection",
             value = "ONE TAP",
             valueColor = AiiminTheme.colors.accent,
         )
         Text(
-            text = "Five rungs, one tap, done in a second at the door. For the nights you will not drag anything.",
+            text = "This reflection is saved as an input for the next server calculation. It does not directly change the score.",
             style = AiiminTheme.type.bodySmall.copy(fontSize = 11.5.sp, lineHeight = 17.sp),
             color = AiiminTheme.colors.muted,
             modifier = Modifier.padding(top = 5.dp),
@@ -150,13 +138,8 @@ fun ScoreScreen(
         )
         Ladder(rung = state.marks.rung, onSet = onSetRung)
 
-        SectionRule(
-            label = "What moved the number",
-        )
-        Movers(state.movers)
-
         PrimaryButton(
-            label = if (state.marks.settled) "Settled · ${state.live}" else "Settle the day",
+            label = if (state.marks.settled) "Reflection saved" else "Save reflection",
             onClick = onSettle,
             enabled = !state.marks.settled,
             modifier = Modifier
@@ -167,11 +150,11 @@ fun ScoreScreen(
 }
 
 @Composable
-private fun PublishedServerBlock(published: PublishedLifeScoreState) {
+private fun PublishedScoreFigure(published: PublishedLifeScoreState) {
     BlueprintBox(
         accent = true,
         tinted = true,
-        legend = "Published · server",
+        legend = if (published.available) published.sourceLabel else "Awaiting server sync",
         modifier = Modifier.padding(top = AiiminTheme.space.s6),
     ) {
         Row(
@@ -180,67 +163,7 @@ private fun PublishedServerBlock(published: PublishedLifeScoreState) {
             verticalAlignment = Alignment.Bottom,
         ) {
             Text(
-                text = published.global.toString(),
-                style = AiiminTheme.type.mono.copy(
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 44.sp,
-                    letterSpacing = (-1).sp,
-                ),
-            )
-            Text(
-                text = published.sourceLabel,
-                style = AiiminTheme.type.mono(10.5),
-                color = AiiminTheme.colors.muted,
-                modifier = Modifier.padding(bottom = 6.dp),
-            )
-        }
-        if (published.dimensions.isNotEmpty()) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = AiiminTheme.space.s3),
-                horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
-            ) {
-                published.dimensions.forEach { dim: PublishedDimension ->
-                    InstrumentCell(
-                        label = dim.label,
-                        value = dim.score.toDouble(),
-                        covered = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-        }
-        Text(
-            text = "Server figure — rails below are provisional local marks.",
-            style = AiiminTheme.type.bodySmall.copy(fontSize = 11.sp, lineHeight = 16.sp),
-            color = AiiminTheme.colors.muted,
-            modifier = Modifier.padding(top = AiiminTheme.space.s3),
-        )
-    }
-}
-
-@Composable
-private fun ProvisionalFigure(state: ScoreUiState) {
-    val target = state.live.toFloat()
-    val reduceMotion = AiiminTheme.reduceMotion
-    val shown by animateFloatAsState(
-        targetValue = target,
-        animationSpec = tween(durationMillis = if (reduceMotion) 0 else 520),
-        label = "live-score",
-    )
-    BlueprintBox(
-        accent = false,
-        modifier = Modifier.padding(top = AiiminTheme.space.s6),
-    ) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            Text(
-                text = shown.roundToInt().toString(),
+                text = published.global?.toString() ?: "—",
                 style = AiiminTheme.type.mono.copy(
                     fontSize = 72.sp,
                     fontWeight = FontWeight.Bold,
@@ -249,32 +172,59 @@ private fun ProvisionalFigure(state: ScoreUiState) {
                 ),
             )
             Text(
-                text = state.delta,
-                style = AiiminTheme.type.mono(15.0, FontWeight.Medium),
+                text = published.confidenceLabel?.uppercase() ?: "UNAVAILABLE",
+                style = AiiminTheme.type.mono(10.5, FontWeight.Medium),
                 color = AiiminTheme.colors.accent,
-                modifier = Modifier.padding(start = AiiminTheme.space.s3, bottom = 10.dp),
+                modifier = Modifier.padding(bottom = 8.dp),
             )
         }
-        Text(
-            text = if (state.marks.settled) {
-                "Locked for today · local mark"
-            } else {
-                "Settles at 23:59 · marks still open"
-            },
-            style = AiiminTheme.type.body.copy(fontSize = 11.sp),
-            color = AiiminTheme.colors.muted,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = AiiminTheme.space.s2),
-        )
-        Text(
-            text = "Engine ${state.engineState.roundToInt()} ±${state.engineBand.roundToInt()} · pursuits",
-            style = AiiminTheme.type.mono(9.5),
-            color = AiiminTheme.colors.muted,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 4.dp),
-        )
+        if (published.available) {
+            val coverageText = published.coverage?.let { "${(it * 100).roundToInt()}% observed" } ?: "coverage unavailable"
+            val bandText = published.uncertaintyBand?.let { " · uncertainty ±$it" } ?: ""
+            Text(
+                text = "$coverageText$bandText · ${published.trendDirection ?: "trend unknown"}",
+                style = AiiminTheme.type.mono(9.5),
+                color = AiiminTheme.colors.muted,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = AiiminTheme.space.s2),
+            )
+            Text(
+                text = "${published.calculationVersion ?: "server model"} · ${published.daysWithData ?: 0} observed days",
+                style = AiiminTheme.type.mono(9.5),
+                color = AiiminTheme.colors.muted,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+            )
+        } else {
+            Text(
+                text = "The score appears after authenticated sync. This screen never invents a local replacement number.",
+                style = AiiminTheme.type.bodySmall.copy(fontSize = 11.sp, lineHeight = 16.sp),
+                color = AiiminTheme.colors.muted,
+                modifier = Modifier.padding(top = AiiminTheme.space.s3),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CanonicalDimensions(published: PublishedLifeScoreState) {
+    if (published.dimensions.isEmpty()) return
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s3),
+        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+    ) {
+        published.dimensions.forEach { dim: PublishedDimension ->
+            InstrumentCell(
+                label = dim.label,
+                value = dim.score?.toDouble() ?: 0.0,
+                covered = dim.score != null,
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 
@@ -376,28 +326,6 @@ private fun Ladder(rung: Int, onSet: (Int) -> Unit) {
     ) {
         Text(text = "ROUGH", style = AiiminTheme.type.mono(9.5), color = AiiminTheme.colors.muted)
         Text(text = "STRONG", style = AiiminTheme.type.mono(9.5), color = AiiminTheme.colors.muted)
-    }
-}
-
-@Composable
-private fun Movers(movers: List<ScoreMover>) {
-    Column(Modifier.padding(top = AiiminTheme.space.s2)) {
-        movers.forEachIndexed { i, m ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(text = m.label, style = AiiminTheme.type.body)
-                Text(
-                    text = m.value,
-                    style = AiiminTheme.type.mono(12.5, FontWeight.Medium),
-                    color = if (m.accent) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
-                )
-            }
-            if (i < movers.lastIndex) HairRule()
-        }
     }
 }
 

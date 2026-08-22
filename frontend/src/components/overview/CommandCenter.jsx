@@ -157,14 +157,14 @@ export default function CommandCenter({ user }) {
 
       {/* ── Section 0: Life Score ── */}
       {lifeScore && (
-        <Section icon="🧠" label="Life Score" right={<span style={{ color: lifeScore.delta >= 0 ? '#22C55E' : '#EF4444' }}>{lifeScore.delta >= 0 ? '+' : ''}{lifeScore.delta} today</span>}>
+        <Section icon="🧠" label="Life Score" right={<span style={{ color: lifeScore.delta == null ? 'var(--color-text-3)' : lifeScore.delta >= 0 ? '#22C55E' : '#EF4444' }}>{lifeScore.delta == null ? 'new window' : `${lifeScore.delta >= 0 ? '+' : ''}${lifeScore.delta} vs prior`}</span>}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{ position: 'relative', width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg viewBox="0 0 36 36" style={{ position: 'absolute', width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
                 <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--color-elevated)" strokeWidth="3" />
-                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--color-accent)" strokeWidth="3" strokeDasharray={`${lifeScore.score}, 100`} />
+                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--color-accent)" strokeWidth="3" strokeDasharray={`${lifeScore.score == null ? 0 : lifeScore.score}, 100`} />
               </svg>
-              <span style={{ fontSize: '16px', fontWeight: 900, color: 'var(--color-text-1)' }}>{lifeScore.score}</span>
+              <span style={{ fontSize: '16px', fontWeight: 900, color: 'var(--color-text-1)' }}>{lifeScore.score == null ? '—' : lifeScore.score}</span>
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: '12px', color: 'var(--color-text-2)', lineHeight: 1.4 }}>
@@ -174,13 +174,13 @@ export default function CommandCenter({ user }) {
                 <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Discipline: {lifeScore.contributors.discipline?.score ?? '—'}</div>
                 <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Mood: {lifeScore.contributors.emotional?.score ?? '—'}</div>
                 {lifeScore.contributors.cognitive && (
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Mind: {lifeScore.contributors.cognitive.score}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Mind: {lifeScore.contributors.cognitive.score ?? '—'}</div>
                 )}
                 {lifeScore.contributors.financial && (
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Money: {lifeScore.contributors.financial.score}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Money: {lifeScore.contributors.financial.score ?? '—'}</div>
                 )}
                 {lifeScore.contributors.physical && (
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Body: {lifeScore.contributors.physical.score}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-2)', fontWeight: 600 }}>Body: {lifeScore.contributors.physical.score ?? '—'}</div>
                 )}
               </div>
             </div>

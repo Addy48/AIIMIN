@@ -15,6 +15,8 @@ const INK = '#14171a';
 const MUTED = '#6b7280';
 const ACCENT = '#ff6b35';
 const LINE = '#e7e2da';
+const scoreBarWidth = (value) => `${Math.max(0, Math.min(100, Number.isFinite(Number(value)) ? Number(value) : 0))}%`;
+const scoreLabel = (value) => (value == null || !Number.isFinite(Number(value)) ? '—' : `${Math.round(Number(value))}%`);
 
 const styles = StyleSheet.create({
   page: {
@@ -302,23 +304,10 @@ function LifeFingerprint({ scores = [] }) {
   );
 }
 
-const DEFAULT_FINDINGS = [
-  {
-    title: 'Protect the morning mobility block before 9am',
-    evidence: 'Mobility × focus hours · r ≈ +0.71 · strongest positive in window',
-  },
-  {
-    title: 'Move caffeine cutoff earlier on training days',
-    evidence: 'Late caffeine × next-day focus · r ≈ −0.64',
-  },
-  {
-    title: 'Hold wake-time variance under 30 minutes',
-    evidence: 'Sleep consistency × Life Score · r ≈ +0.67',
-  },
-];
+const DEFAULT_FINDINGS = [];
 
 const ReportDocument = ({ data, timeline }) => {
-  const findings = (data.findings && data.findings.length ? data.findings : DEFAULT_FINDINGS).slice(0, 5);
+  const findings = (data.findings || DEFAULT_FINDINGS).slice(0, 5);
   return (
     <Document>
       <Page size="A4" style={styles.coverPage}>
@@ -327,11 +316,11 @@ const ReportDocument = ({ data, timeline }) => {
           <View style={styles.coverRule} />
           <Text style={styles.coverBrand}>AIIMIN · Life OS</Text>
           <Text style={styles.coverTitle}>Standard Performance Review</Text>
-          <Text style={styles.coverSubtitle}>Life OS Review · Pro · 14-day fingerprint</Text>
+          <Text style={styles.coverSubtitle}>Life OS Review · {data.tierLabel || 'Pro'} · {data.windowLabel || timeline}</Text>
           <LifeFingerprint scores={data.fingerprintScores} />
-          <Text style={styles.coverScoreLabel}>System integrity</Text>
-          <Text style={styles.coverScore}>{data.disciplineScore}</Text>
-          <Text style={styles.coverScoreHint}>Composite of gym, learning, and mood baselines</Text>
+          <Text style={styles.coverScoreLabel}>Life Score</Text>
+          <Text style={styles.coverScore}>{data.lifeScore == null ? '—' : data.lifeScore}</Text>
+          <Text style={styles.coverScoreHint}>{data.scoreConfidence || 'Insufficient'} · {data.calculationVersion || 'calculation version unavailable'}</Text>
         </View>
         <Text style={styles.coverMeta}>
           Window: {timeline} · Generated {new Date().toLocaleDateString()} · Confidential
@@ -353,15 +342,15 @@ const ReportDocument = ({ data, timeline }) => {
             <Text style={styles.sectionTitle}>Indicators</Text>
             <View style={styles.grid}>
               <View style={styles.card}>
-                <Text style={styles.cardValue}>{data.avgSleep}h</Text>
+                <Text style={styles.cardValue}>{data.avgSleep === '—' ? '—' : `${data.avgSleep}h`}</Text>
                 <Text style={styles.cardLabel}>Avg sleep duration</Text>
               </View>
               <View style={styles.card}>
-                <Text style={styles.cardValue}>{data.gymConsistency}%</Text>
+                <Text style={styles.cardValue}>{data.gymConsistency == null ? '—' : `${data.gymConsistency}%`}</Text>
                 <Text style={styles.cardLabel}>Gym consistency</Text>
               </View>
               <View style={styles.card}>
-                <Text style={styles.cardValue}>{data.avgMood}/10</Text>
+                <Text style={styles.cardValue}>{data.avgMood === '—' ? '—' : `${data.avgMood}/10`}</Text>
                 <Text style={styles.cardLabel}>Avg mood</Text>
               </View>
               <View style={styles.card}>
@@ -377,41 +366,34 @@ const ReportDocument = ({ data, timeline }) => {
               <Text style={styles.insightText}>
                 {data.daysLogged < 5
                   ? 'Insufficient data for a stable review. Continue daily logging to establish baseline telemetry.'
-                  : `Across this window you averaged ${data.avgSleep}h sleep and ${data.gymConsistency}% gym consistency with mood ${data.avgMood}/10. Treat weak days as signal, not failure — this is a performance review, not a scoreboard.`}
+                  : `Across this window you averaged ${data.avgSleep}h sleep and ${data.gymConsistency == null ? '—' : `${data.gymConsistency}%`} training days with mood ${data.avgMood === '—' ? '—' : `${data.avgMood}/10`}. Treat weak days as signal, not failure — this is a performance review, not a scoreboard.`}
               </Text>
             </View>
             <View style={styles.methods}>
               <Text style={styles.methodsTitle}>Methods (window)</Text>
               <Text style={styles.methodsText}>
-                Life Score proxies gym + learning + mood. No clinical inference. Standard PDF draws from the monthly
-                generation pool — not daily AI quota.
+                {data.methodology || 'Life Score is based on observed source records. Missing values are excluded, not treated as zero. No clinical inference.'} Standard PDF draws from the monthly generation pool — not daily AI quota.
               </Text>
             </View>
           </View>
           <View style={styles.section}>
             <Text style={styles.sectionKicker}>Domains</Text>
             <Text style={styles.sectionTitle}>Breakdown</Text>
-            <View style={styles.row}>
-              <Text style={styles.rowLabel}>Physical vitality</Text>
-              <View style={styles.rowBarContainer}>
-                <View style={[styles.rowBarFill, { width: `${data.gymConsistency}%` }]} />
+            {[
+              ['Body', data.physicalScore, ACCENT],
+              ['Mind', data.cognitiveScore, INK],
+              ['Discipline', data.disciplineScore, ACCENT],
+              ['Money', data.financialScore, INK],
+              ['Mood', data.emotionalScore, '#3b826f'],
+            ].map(([label, value, color]) => (
+              <View style={styles.row} key={label}>
+                <Text style={styles.rowLabel}>{label}</Text>
+                <View style={styles.rowBarContainer}>
+                  <View style={[styles.rowBarFill, { width: scoreBarWidth(value), backgroundColor: color }]} />
+                </View>
+                <Text style={styles.rowValue}>{scoreLabel(value)}</Text>
               </View>
-              <Text style={styles.rowValue}>{data.gymConsistency}%</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.rowLabel}>Mood baseline</Text>
-              <View style={styles.rowBarContainer}>
-                <View style={[styles.rowBarFill, { width: `${Math.min(100, Number(data.avgMood) * 10)}%`, backgroundColor: '#10b981' }]} />
-              </View>
-              <Text style={styles.rowValue}>{Math.round(Number(data.avgMood) * 10)}%</Text>
-            </View>
-            <View style={styles.row}>
-              <Text style={styles.rowLabel}>Learning consistency</Text>
-              <View style={styles.rowBarContainer}>
-                <View style={[styles.rowBarFill, { width: `${data.learningConsistency}%`, backgroundColor: INK }]} />
-              </View>
-              <Text style={styles.rowValue}>{data.learningConsistency}%</Text>
-            </View>
+            ))}
           </View>
         </View>
         <Text style={styles.footer}>AIIMIN · Life OS Review · Standard · Pro+ · Not for clinical use</Text>
@@ -471,58 +453,31 @@ const PDFReportGenerator = ({ user, rangeLabel, startDate, endDate, days }) => {
 
         const { apiGet } = await import('../utils/api');
         const report = await apiGet(`/intelligence/report?${params.toString()}`);
-        const rows = report?.meta?.timeline || [];
+        const rows = report?.lhs?.timeline || report?.meta?.timeline || [];
+        const canonical = report?.canonicalReport || {};
+        const scoreMeta = report?.lhs?.scoreMeta || {};
+        const index = Object.fromEntries((canonical.metrics || []).map((metric) => [metric.metricId, metric]));
+        const dimensionScores = report?.lhs?.dimensions || {};
+        const systemScores = report?.lhs?.systemScores || {};
+        const domainScores = Object.fromEntries(['physical', 'cognitive', 'discipline', 'financial', 'emotional'].map((domain) => [domain, dimensionScores[domain]?.score ?? systemScores[domain] ?? null]));
 
-        if (rows.length < 3) {
+        if ((scoreMeta.scoreDays || rows.filter((row) => row.globalScore != null).length) < 7) {
           setEligible(false);
           return;
         }
 
-        let totalSleep = 0;
-        let validSleepCount = 0;
-        let totalMood = 0;
-        let validMoodCount = 0;
-        let gymDays = 0;
-        let learningDays = 0;
-
-        rows.forEach((log) => {
-          if (Number(log.sleep_hours) > 0) {
-            totalSleep += Number(log.sleep_hours);
-            validSleepCount++;
-          }
-          if (Number(log.mood) > 0) {
-            totalMood += Number(log.mood);
-            validMoodCount++;
-          }
-          if (log.gym_done) gymDays++;
-          if (log.learning_done) learningDays++;
-        });
-
-        const daysLogged = rows.length;
-        const avgSleep = validSleepCount > 0 ? (totalSleep / validSleepCount).toFixed(1) : 0;
-        const avgMood = validMoodCount > 0 ? (totalMood / validMoodCount).toFixed(1) : 0;
-        const gymConsistency = Math.round((gymDays / daysLogged) * 100);
-        const learningConsistency = Math.round((learningDays / daysLogged) * 100);
-        const disciplineScore = Math.round((gymConsistency + learningConsistency + (Number(avgMood) * 10)) / 3);
-
-        const fingerprintScores = rows.slice(-14).map((t) => {
-          if (t.globalScore != null) return Math.round(Number(t.globalScore));
-          return (
-            (t.gym_done ? 20 : 0)
-            + (t.learning_done ? 20 : 0)
-            + (t.journal ? 20 : 0)
-            + (Number(t.mood) >= 6 ? 20 : 0)
-            + (Number(t.sleep_hours) >= 6 ? 20 : 0)
-          );
-        });
-
-        const findings = (report?.actionPlan || report?.executiveSummary?.recommendations || [])
+        const daysLogged = canonical.coverage?.observedDays ?? rows.length;
+        const avgSleep = index.sleep_hours?.averageValue == null ? '—' : Number(index.sleep_hours.averageValue).toFixed(1);
+        const avgMood = index.mood?.averageValue == null ? '—' : Number(index.mood.averageValue).toFixed(1);
+        const gymConsistency = index.gym_done?.averageValue == null ? null : Math.round(Number(index.gym_done.averageValue) * 100);
+        const learningConsistency = index.learning_done?.averageValue == null ? null : Math.round(Number(index.learning_done.averageValue) * 100);
+        const fingerprintScores = rows.filter((row) => row.globalScore != null).slice(-14).map((row) => Math.round(Number(row.globalScore)));
+        const findings = (canonical.findings || [])
+          .filter((finding) => finding.claimType !== 'experiment')
           .slice(0, 5)
-          .map((r) => ({
-            title: typeof r === 'string' ? r : (r.title || r.action || r.label || 'Recommended action'),
-            evidence: typeof r === 'string'
-              ? 'Derived from window drivers'
-              : (r.evidence || r.metric || r.reason || 'Derived from window drivers'),
+          .map((finding) => ({
+            title: finding.title || 'Observed finding',
+            evidence: `${finding.claim || ''} · ${finding.method || 'Method unavailable'} · n=${finding.sampleSize ?? '—'} · source ${finding.supportingRecordIds?.length ? finding.supportingRecordIds.slice(0, 3).join(', ') : 'unavailable'}`,
           }));
 
         setEligible(true);
@@ -532,7 +487,17 @@ const PDFReportGenerator = ({ user, rangeLabel, startDate, endDate, days }) => {
           avgMood,
           gymConsistency,
           learningConsistency,
-          disciplineScore,
+          physicalScore: domainScores.physical == null ? null : Math.round(domainScores.physical),
+          cognitiveScore: domainScores.cognitive == null ? null : Math.round(domainScores.cognitive),
+          disciplineScore: domainScores.discipline == null ? null : Math.round(domainScores.discipline),
+          financialScore: domainScores.financial == null ? null : Math.round(domainScores.financial),
+          emotionalScore: domainScores.emotional == null ? null : Math.round(domainScores.emotional),
+          lifeScore: report?.lhs?.globalScore == null ? null : Math.round(report.lhs.globalScore),
+          scoreConfidence: scoreMeta.confidence,
+          calculationVersion: report?.lhs?.calculationVersion || canonical.calculationVersion,
+          methodology: scoreMeta.methodology || canonical.methodology,
+          tierLabel: report?.tier || 'Pro',
+          windowLabel: canonical.window?.label || timeline,
           fingerprintScores,
           findings,
         });
@@ -598,7 +563,7 @@ const PDFReportGenerator = ({ user, rangeLabel, startDate, endDate, days }) => {
           </div>
           <div>
             <h3 style={{ margin: 0, fontSize: '16px', color: 'var(--text-1)' }}>Insufficient data</h3>
-            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-3)' }}>At least 3 days of logging required for {timeline}.</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: 'var(--text-3)' }}>At least 7 scored days are required for a credible PDF for {timeline}.</p>
           </div>
         </div>
       </div>
