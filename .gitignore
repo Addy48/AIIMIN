@@ -248,3 +248,10 @@ dev-gtm-claude-skills/**
 .agents/skills/stop-slop/
 .agents/skills/video/
 .agents/skills/brandkit/
+
+# Supabase temp & QA screenshots
+supabase/.temp/
+*.png
+*.tar.gz
+*-E
+
