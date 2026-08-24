@@ -1,10 +1,8 @@
-"use client";;
 import { Instagram, Link, Linkedin, Twitter } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
 const DEFAULT_SHARE_ITEMS = [
   { icon: Twitter, label: "Share on Twitter" },
   { icon: Instagram, label: "Share on Instagram" },

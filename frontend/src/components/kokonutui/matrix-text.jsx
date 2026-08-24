@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Matrix Text
@@ -12,7 +11,6 @@
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
-
 const MatrixText = ({
   text = "HelloWorld!",
   className,

@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @kokonutui
  * @description: A modern search bar component with action buttons and suggestions
@@ -22,7 +21,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/use-debounce";
-
 const ANIMATION_VARIANTS = {
   container: {
     hidden: { opacity: 0, height: 0 },

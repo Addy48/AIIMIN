@@ -1,9 +1,7 @@
-"use client";;
 import { motion } from "motion/react";
 import { useMemo } from "react";
 import { useChartStable, useYScale } from "./chart-context";
 import { StaticSeriesPointMarker } from "./series-point-marker";
-
 function isTerminalMarkerPhaseVisible(phase) {
   return phase === "ready" || phase === "exitingReady";
 }

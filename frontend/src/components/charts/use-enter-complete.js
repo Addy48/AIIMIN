@@ -1,6 +1,4 @@
-"use client";;
 import { useEffect, useState } from "react";
-
 /**
  * Returns true once a mount-progress MotionValue reaches 1.
  * Use to swap animated MotionValue-driven props for static values after

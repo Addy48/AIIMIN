@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Team Selector
@@ -12,7 +11,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import Image from "next/image";
 import { useRef, useState } from "react";
-
 const AVATAR_OVERLAP = 10;
 
 const DEFAULT_MEMBERS = [

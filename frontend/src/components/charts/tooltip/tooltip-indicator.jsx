@@ -1,10 +1,8 @@
-"use client";;
 import { motion, useSpring } from "motion/react";
 import { useEffect } from "react";
 import { useChartConfig } from "../chart-config-context";
 import { chartCssVars } from "../chart-context";
 import { indicatorFadeGradientStops, resolveVerticalFadeSides } from "../indicator-fade";
-
 function resolveWidth(width) {
   if (typeof width === "number") {
     return width;

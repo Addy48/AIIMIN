@@ -1,11 +1,9 @@
-"use client";;
 import {
   PatternCircles as VisxPatternCircles,
   PatternHexagons as VisxPatternHexagons,
   PatternLines as VisxPatternLines,
   PatternWaves as VisxPatternWaves,
 } from "@visx/pattern";
-
 export function PatternLines(props) {
   return <VisxPatternLines {...props} />;
 }

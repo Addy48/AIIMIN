@@ -30,7 +30,8 @@ export default function MobileScorePage() {
       .select('total_xp, current_rank, clean_streak, longest_streak')
       .eq('user_id', user.id)
       .maybeSingle()
-      .then(({ data }) => { if (data) setXpData(data); });
+      .then(({ data }) => { if (data) setXpData(data); })
+      .catch(() => {});
 
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
@@ -47,6 +48,9 @@ export default function MobileScorePage() {
           done: rows.filter((r) => r.completed).length,
           total: rows.length,
         });
+      })
+      .catch(() => {
+        setHabitWeek({ done: 0, total: 0 });
       });
 
     supabase
@@ -54,7 +58,8 @@ export default function MobileScorePage() {
       .select('id')
       .eq('user_id', user.id)
       .gte('created_at', weekAgo.toISOString())
-      .then(({ data }) => setJournalWeek((data || []).length));
+      .then(({ data }) => setJournalWeek((data || []).length))
+      .catch(() => setJournalWeek(0));
   }, [user?.id]);
 
   const score = lifeScore?.score ?? 0;
@@ -110,17 +115,17 @@ export default function MobileScorePage() {
         <section className="mobile-score__grid" aria-label="Weekly glance">
           <article className="mobile-score__card mobile-score__card--habits">
             <span className="mobile-score__card-label">Habits</span>
-            <strong>{habitWeek.done} / {habitWeek.total || '—'}</strong>
+            <strong>{habitWeek.total > 0 ? `${habitWeek.done} / ${habitWeek.total}` : `${habitWeek.done} logged`}</strong>
             <span className="mobile-score__card-sub">this week</span>
           </article>
           <article className="mobile-score__card mobile-score__card--streak">
             <span className="mobile-score__card-label">Discipline</span>
-            <strong>{streak} days</strong>
+            <strong>{streak} {streak === 1 ? 'day' : 'days'}</strong>
             <span className="mobile-score__card-sub">active streak</span>
           </article>
           <article className="mobile-score__card mobile-score__card--journal">
             <span className="mobile-score__card-label">Journal</span>
-            <strong>{journalWeek} entries</strong>
+            <strong>{journalWeek} {journalWeek === 1 ? 'entry' : 'entries'}</strong>
             <span className="mobile-score__card-sub">this week</span>
           </article>
           <article className="mobile-score__card mobile-score__card--finance">

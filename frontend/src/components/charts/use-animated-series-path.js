@@ -1,4 +1,3 @@
-"use client";;
 import { animate, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LINE_LOADING_PULSE_EASE } from "./line-loading-timing";
@@ -8,7 +7,6 @@ import {
   seriesPathFromPoints,
   seriesPathTransitionSignature,
 } from "./series-path-utils";
-
 export function useAnimatedSeriesPath({
   renderData,
   xAccessor,

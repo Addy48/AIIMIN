@@ -1,4 +1,3 @@
-"use client";;
 import { ParentSize } from "@visx/responsive";
 import { Children, isValidElement, useCallback, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -7,7 +6,6 @@ import { ChartLoadingLabel } from "./chart-loading-label";
 import { DEFAULT_CHART_STATUS, DEFAULT_Y_DOMAIN_TWEEN_MS, resolveRestingChartPhase } from "./chart-phase";
 import { PatternArea } from "./pattern-area";
 import { TimeSeriesChartInner } from "./time-series-chart-shell";
-
 const DEFAULT_MARGIN = { top: 40, right: 40, bottom: 40, left: 40 };
 
 function extractAreaConfigs(children) {

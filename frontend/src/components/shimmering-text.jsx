@@ -1,7 +1,6 @@
-"use client";;
-import { motion, useReducedMotion } from "motion/react";
-import { useCallback } from "react";
-import { cn } from "@/lib/utils";
+import React, { useCallback } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { cn } from "../lib/utils";
 
 export function ShimmeringText({
   text,

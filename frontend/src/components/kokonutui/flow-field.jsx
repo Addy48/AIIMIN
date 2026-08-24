@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @name: FlowField
  * @description: Canvas particle flow field background — organic noise-driven streams of glowing light.
@@ -12,7 +11,6 @@
 import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const PARTICLE_COUNTS = {

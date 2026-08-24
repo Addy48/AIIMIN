@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Background Paths
@@ -11,7 +10,6 @@
 
 import { motion } from "motion/react";
 import { memo, useMemo } from "react";
-
 // Path generation function
 function generateAestheticPath(index, position, type) {
   const baseAmplitude =

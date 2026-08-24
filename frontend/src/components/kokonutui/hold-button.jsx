@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Hold Button
@@ -21,7 +20,6 @@ import { motion, useAnimation } from "motion/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
 const holdButtonVariants = cva("relative min-w-40 touch-none overflow-hidden", {
   variants: {
     variant: {

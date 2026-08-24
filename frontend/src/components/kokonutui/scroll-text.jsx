@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Scroll Text
@@ -12,7 +11,6 @@
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-
 export default function ScrollText({
   texts = [
     "TailwindCSS",

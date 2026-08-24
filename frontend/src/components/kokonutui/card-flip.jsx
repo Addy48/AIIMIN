@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Card Flip
@@ -12,7 +11,6 @@
 import { ArrowRight, Repeat2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
 export default function CardFlip({
   title = "Design Systems",
   subtitle = "Explore the fundamentals",

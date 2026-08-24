@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Switch Button
@@ -13,7 +12,6 @@ import { Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
 export default function SwitchButton({
   className,
   variant = "minimal",

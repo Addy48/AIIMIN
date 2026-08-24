@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Dynamic Text
@@ -11,7 +10,6 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-
 const greetings = [
   { text: "Hello", language: "English" },
   { text: "こんにちは", language: "Japanese" },

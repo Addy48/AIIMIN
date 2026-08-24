@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Mouse Effect Card - Interactive card with animated dot pattern that responds to mouse movement
@@ -14,7 +13,6 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
 const SPRING_CONFIG = { stiffness: 300, damping: 30, mass: 0.5 };
 const OPACITY_DURATION_BASE = 0.8;
 const OPACITY_DURATION_VARIATION = 0.2;

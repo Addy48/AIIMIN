@@ -1,7 +1,5 @@
-"use client";;
 import { useCallback, useEffect, useRef, useState } from "react";
 import { resolveRestingChartPhase } from "./chart-phase";
-
 export function useChartPhaseOrchestrator({
   chartStatus,
   targetData,

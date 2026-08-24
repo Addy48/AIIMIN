@@ -1,11 +1,9 @@
-"use client";;
 import { useMemo } from "react";
 import { generateHeatmapSkeletonFromTarget } from "./generate-heatmap-skeleton-data";
 import { HeatmapCells } from "./heatmap-cells";
 import { HeatmapChart } from "./heatmap-chart";
 import { HeatmapXAxis } from "./heatmap-x-axis";
 import { HeatmapYAxis } from "./heatmap-y-axis";
-
 export function HeatmapChartLoading({
   data,
   xDomain,

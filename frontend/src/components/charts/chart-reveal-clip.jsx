@@ -1,7 +1,5 @@
-"use client";;
 import { motion } from "motion/react";
 import { clipRevealTransition } from "./animation";
-
 /**
  * Left-to-right clip reveal for cartesian series.
  * Grows clip rect width from 0 → full (true LTR; scaleX is avoided — it reveals from center).

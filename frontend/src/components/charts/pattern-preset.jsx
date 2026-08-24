@@ -1,6 +1,4 @@
-"use client";;
 import { PatternCircles, PatternLines } from "./visx-pattern";
-
 export const PATTERN_PRESET_IDS = [
   "none",
   "diagonal",

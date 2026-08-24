@@ -99,7 +99,13 @@ const THEMES = [
  */
 const Settings = () => {
   const { user, session } = useAuth();
-  const authMethod = user?.email ? 'Email account' : '—';
+  const hasGoogle = Boolean(
+    user?.provider === 'google' ||
+    user?.app_metadata?.provider === 'google' ||
+    user?.user_metadata?.provider === 'google' ||
+    user?.identities?.some((id) => id.provider === 'google')
+  );
+  const authMethod = user?.email ? (hasGoogle ? 'Google OAuth' : 'Email account') : '—';
   const { theme, setTheme } = useThemeContext();
   const [notifReminders, setNotifReminders] = useState(() => localStorage.getItem('aiimin_notif_reminders') === 'true');
   const [notifInsights, setNotifInsights] = useState(() => localStorage.getItem('aiimin_notif_insights') === 'true');

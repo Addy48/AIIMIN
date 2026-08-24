@@ -30,20 +30,23 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   min-height: 44px;
   min-width: 44px;
-  padding: 6px 4px 4px;
+  padding: 6px 6px 6px;
   border: none;
   border-top: 2px solid transparent;
   background: transparent;
   color: #6b7280;
   font-family: var(--font-sans, Figtree, system-ui, sans-serif);
   font-size: 10px;
+  line-height: 1.2;
   font-weight: 700;
   letter-spacing: 0.04em;
   cursor: pointer;
   transition: color 160ms ease, border-color 160ms ease;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 .mobile-bottom-nav__tab--active {

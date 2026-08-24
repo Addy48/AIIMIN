@@ -1,4 +1,3 @@
-"use client";;
 import { motion, useSpring } from "motion/react";
 import { memo, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -10,7 +9,6 @@ import { TooltipBox } from "./tooltip-box";
 import { TooltipContent } from "./tooltip-content";
 import { TooltipDot } from "./tooltip-dot";
 import { TooltipIndicator } from "./tooltip-indicator";
-
 const ChartTooltipInner = memo(function ChartTooltipInner({
   showDatePill = true,
   showCrosshair = true,

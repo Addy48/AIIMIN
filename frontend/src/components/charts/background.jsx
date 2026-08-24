@@ -1,9 +1,7 @@
-"use client";;
 import { motion } from "motion/react";
 import { useId, useMemo } from "react";
 import { useChartStable } from "./chart-context";
 import { renderPatternPreset } from "./pattern-preset";
-
 const BACKGROUND_ENTER_FADE_MS = 420;
 
 function clampFadeLength(length) {
