@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @kokonutui
  * @description: AI Input Search
@@ -15,7 +14,6 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
 import { cn } from "@/lib/utils";
-
 export default function AI_Input_Search({
   placeholder = "Search the web...",
   searchLabel = "Search",

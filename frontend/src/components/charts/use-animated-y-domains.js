@@ -1,4 +1,3 @@
-"use client";;
 import { animate, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { LINE_LOADING_PULSE_EASE } from "./line-loading-timing";
@@ -8,7 +7,6 @@ import {
   resolveAnimatedYDestinationDomains,
   shouldTweenYDomain,
 } from "./y-domain-utils";
-
 function lerpDomain(from, to, progress) {
   return [
     from[0] + (to[0] - from[0]) * progress,

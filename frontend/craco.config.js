@@ -14,6 +14,7 @@ module.exports = {
   },
   jest: {
     configure: {
+      setupFiles: ['<rootDir>/src/jestSetupGlobals.js'],
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
         '^react-router-dom$': '<rootDir>/node_modules/react-router-dom/dist/index.js',

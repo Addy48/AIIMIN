@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Particle Button
@@ -14,7 +13,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
 function SuccessParticles({
   buttonRef
 }) {

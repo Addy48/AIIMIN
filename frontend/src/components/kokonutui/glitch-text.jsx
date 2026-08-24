@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Glitch Text
@@ -12,7 +11,6 @@
 import { motion } from "motion/react";
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
-
 const GlitchText = ({
   text = "Glitch Text",
   className,

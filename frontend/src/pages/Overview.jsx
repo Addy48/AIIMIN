@@ -17,7 +17,7 @@ import UniversalLogger from '../components/dashboard/UniversalLogger';
 import ArcBanner from '../components/profile/ArcBanner';
 import YourReportCard from '../components/overview/YourReportCard';
 import { useUserProfile } from '../hooks/useUserProfile';
-import { formatDateLong } from '../utils/formatDate';
+import { formatDate, formatDateLong } from '../utils/formatDate';
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 

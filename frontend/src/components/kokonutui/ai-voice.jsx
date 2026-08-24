@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * @author: @kokonutui
  * @description: AI Voice

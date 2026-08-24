@@ -192,7 +192,10 @@ export default function Brand() {
     root.classList.add('brand-manifesto--ready');
 
     const nodes = root.querySelectorAll('[data-brand-reveal]');
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const mqResult = typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)')
+      : null;
+    const reduce = mqResult?.matches ?? false;
     const sectionIds = RAIL.map((r) => r.href.slice(1));
     const railLinks = root.querySelectorAll('[data-brand-rail]');
 

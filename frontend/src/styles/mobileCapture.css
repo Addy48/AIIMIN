@@ -34,7 +34,7 @@
 
 .mobile-capture__main {
   flex: 1;
-  padding: 20px 16px 88px;
+  padding: 20px 16px 140px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -62,6 +62,8 @@
   font-size: 14px;
   line-height: 1.55;
   color: #a3a3a3;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .mobile-capture__sub a {

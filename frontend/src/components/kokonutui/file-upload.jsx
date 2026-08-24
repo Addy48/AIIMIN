@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: File Upload
@@ -13,7 +12,6 @@ import { UploadCloud } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-
 const DEFAULT_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const UPLOAD_STEP_SIZE = 5;
 const FILE_SIZES = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];

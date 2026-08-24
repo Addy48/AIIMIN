@@ -1,8 +1,6 @@
-"use client";;
 import { motion } from "motion/react";
 import { memo } from "react";
 import { DEFAULT_CHART_ENTER_TRANSITION } from "./animation";
-
 function MarkerCircles({
   fill,
   stroke,

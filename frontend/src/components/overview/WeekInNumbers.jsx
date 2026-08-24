@@ -40,15 +40,15 @@ export default function WeekInNumbers({ user }) {
         fetchLifeScore(user),
       ]);
 
-      const habitsDone = signals.habitCompletions;
-      const habitTarget = signals.habitTarget;
+      const habitsDone = signals?.habitCompletions || 0;
+      const habitTarget = signals?.habitTarget || 0;
 
       return {
         habits: { value: habitsDone, sub: habitTarget ? `${Math.round((habitsDone / habitTarget) * 100)}% rate` : '—', color: 'var(--color-success)' },
-        journal: { value: signals.journalEntries || 0, sub: 'entries', color: 'var(--color-info)' },
-        focus: { value: signals.focusSessions, sub: 'sessions', color: 'var(--color-warning)' },
-        finance: { value: signals.finance.expenses || 0, sub: 'spent (7d)', color: 'var(--color-danger)', isCurrency: true },
-        mood: { value: signals.widgets.avg_mood || '—', sub: signals.widgets.avg_mood ? '/10 avg' : 'no logs', color: 'var(--color-text-2)' },
+        journal: { value: signals?.journalEntries || 0, sub: 'entries', color: 'var(--color-info)' },
+        focus: { value: signals?.focusSessions || 0, sub: 'sessions', color: 'var(--color-warning)' },
+        finance: { value: signals?.finance?.expenses || 0, sub: 'spent (7d)', color: 'var(--color-danger)', isCurrency: true },
+        mood: { value: signals?.widgets?.avg_mood || '—', sub: signals?.widgets?.avg_mood ? '/10 avg' : 'no logs', color: 'var(--color-text-2)' },
         lifeScore: { value: lifeScore?.score || '—', sub: lifeScore?.explanation?.slice(0, 40) || '', color: 'var(--color-accent)' },
       };
     },

@@ -1,6 +1,4 @@
-"use client";;
 import { useEffect, useRef, useState } from "react";
-
 export function useDelayedTooltipData(tooltipData, showDelay, hideDelay) {
   const [displayData, setDisplayData] = useState(null);
   const isShowingRef = useRef(false);

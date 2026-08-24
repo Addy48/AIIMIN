@@ -1,4 +1,3 @@
-"use client";;
 import {
   animate,
   useMotionValue,
@@ -11,7 +10,6 @@ import {
   LINE_LOADING_PULSE_CYCLE_S,
   LINE_LOADING_PULSE_EASE,
 } from "./line-loading-timing";
-
 export function useGridShimmer({
   innerWidth,
   shimmer,

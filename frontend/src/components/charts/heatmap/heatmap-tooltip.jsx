@@ -1,4 +1,3 @@
-"use client";;
 import { memo } from "react";
 import { TooltipBox } from "../tooltip/tooltip-box";
 import { useHeatmap, useHeatmapInteraction } from "./heatmap-context";
@@ -8,7 +7,6 @@ import {
   formatHeatmapTooltipWeekday,
 } from "./heatmap-utils";
 import { useDelayedTooltipData } from "./use-delayed-tooltip-data";
-
 export const HeatmapTooltip = memo(function HeatmapTooltip({
   formatLabel = formatHeatmapContributionLabel,
   className = "",

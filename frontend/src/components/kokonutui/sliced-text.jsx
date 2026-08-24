@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Sliced Text
@@ -11,7 +10,6 @@
 
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-
 const SlicedText = ({
   text = "Sliced Text",
   className = "",

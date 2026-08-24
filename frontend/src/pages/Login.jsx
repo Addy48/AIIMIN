@@ -980,7 +980,7 @@ const Login = () => {
                           ? 'Email detected — press Continue when ready.'
                           : identifier.length > 0
                             ? `OS-ID ${identifier.length}/8 — auto-continues at 8 characters.`
-                            : 'OS-ID auto-continues at 8 chars. Email needs @ and domain.'}
+                            : 'OS-ID auto-continues at 8 characters. Email needs @ and domain.'}
                       </p>
                       <ErrorMsg msg={error} />
                       <PrimaryBtn>Continue →</PrimaryBtn>
@@ -1014,6 +1014,9 @@ const Login = () => {
                     className="login-pin-step"
                   >
                     <BackBtn onClick={handleBack} />
+                    <div style={{ textAlign: 'center', marginBottom: '14px', fontSize: '13px', color: 'var(--color-text-2)', fontWeight: 600 }}>
+                      Signing in as <strong style={{ color: 'var(--color-text-1)' }}>{maskIdentity(identifier)}</strong>
+                    </div>
                     <PinDots length={6} value={pin} shake={shake} />
                     {loading ? (
                       <div style={{ padding: '24px', textAlign: 'center' }}>
@@ -1203,9 +1206,10 @@ const Login = () => {
           position: relative;
           display: flex;
           flex-direction: column;
-          padding: 48px 48px 112px 56px;
+          padding: 48px 48px 128px 56px;
           box-sizing: border-box;
-          overflow: hidden;
+          overflow-x: hidden;
+          overflow-y: auto;
           background: color-mix(in srgb, var(--color-accent) 90%, #000 10%);
           background-image: radial-gradient(
             ellipse 80% 60% at 30% 40%,
@@ -1214,6 +1218,7 @@ const Login = () => {
             color-mix(in srgb, var(--color-accent) 40%, #000 60%) 100%
           );
         }
+
 
         .login-left-glow {
           position: absolute;
@@ -1288,7 +1293,8 @@ const Login = () => {
           gap: 10px;
           position: relative;
           z-index: 2;
-          padding-bottom: 8px;
+          padding-top: 16px;
+          padding-bottom: 16px;
         }
 
         .login-pill {
@@ -1557,9 +1563,12 @@ const Login = () => {
 
         .pin-numpad-btn.is-del,
         .pin-numpad-btn.is-clear {
-          font-size: 15px;
+          font-size: 14px;
           font-weight: 700;
           letter-spacing: 0.02em;
+          background: var(--color-elevated, #f4f4f5);
+          color: var(--color-text-2, #52525b);
+          border-color: var(--color-border);
         }
 
         .pin-numpad-btn:hover {

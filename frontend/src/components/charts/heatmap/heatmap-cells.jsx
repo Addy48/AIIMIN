@@ -1,4 +1,3 @@
-"use client";;
 import { Group } from "@visx/group";
 import { HeatmapRect } from "@visx/heatmap";
 import { animate, motion, useMotionValue } from "motion/react";
@@ -22,7 +21,6 @@ import {
   resolveHeatmapHoverStyle,
   resolveHeatmapRowOpacity,
 } from "./heatmap-utils";
-
 const HEATMAP_INACTIVE_OPACITY = 0.3;
 /** Smooth tween for inactive opacity + scale on hover. */
 const HEATMAP_INACTIVE_TRANSITION = {

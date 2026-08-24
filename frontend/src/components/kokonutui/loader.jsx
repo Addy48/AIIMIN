@@ -1,7 +1,5 @@
-"use client";;
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-
 export default function Loader({
   title = "Configuring your account...",
   subtitle = "Please wait while we prepare everything for you",

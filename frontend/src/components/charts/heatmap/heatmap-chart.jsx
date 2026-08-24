@@ -1,4 +1,3 @@
-"use client";;
 import { ParentSize } from "@visx/responsive";
 import { scaleLinear, scaleTime } from "@visx/scale";
 import { useReducedMotion } from "motion/react";
@@ -30,7 +29,6 @@ import {
   getHeatmapTimeExtent,
   rotateHeatmapColumnBins,
 } from "./heatmap-utils";
-
 const DEFAULT_MARGIN = { top: 28, right: 16, bottom: 0, left: 40 };
 
 function computeHeatmapDimensions({

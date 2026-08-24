@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Toolbar
@@ -27,7 +26,6 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
-
 const DEFAULT_TOOLBAR_ITEMS = [
   { id: "select", title: "Select", icon: MousePointer2 },
   { id: "move", title: "Move", icon: Move },

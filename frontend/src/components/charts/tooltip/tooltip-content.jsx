@@ -1,6 +1,4 @@
-"use client";;
 import { intFmt } from "../chart-formatters";
-
 export function TooltipContent({
   title,
   rows,

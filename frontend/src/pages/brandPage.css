@@ -3,8 +3,6 @@
  * Cursor ember spotlight kept. Locked accents. No dark mode on this page.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,700&display=swap');
-
 .brand-manifesto {
   --font-brand: 'Bodoni Moda', 'Didot', Georgia, serif;
   --bm-accent: #e85a24;

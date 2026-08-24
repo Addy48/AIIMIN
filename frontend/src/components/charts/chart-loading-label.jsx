@@ -1,4 +1,3 @@
-"use client";;
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ShimmeringText } from "../shimmering-text";
@@ -7,7 +6,6 @@ import {
   LOADING_LABEL_EXIT_S,
   LOADING_LABEL_EXIT_Y_PX,
 } from "./line-loading-timing";
-
 export function ChartLoadingLabel({
   text = "Loading",
   className,

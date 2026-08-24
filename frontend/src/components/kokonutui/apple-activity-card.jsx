@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @kokonutui
  * @description: Apple Activity Card
@@ -11,7 +10,6 @@
 
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-
 const activities = [
   {
     label: "MOVE",

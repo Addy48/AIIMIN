@@ -1,4 +1,3 @@
-"use client";;
 import { curveNatural } from "@visx/curve";
 import { useMemo } from "react";
 import { Area } from "./area";
@@ -9,7 +8,6 @@ import {
   generateChartSkeletonData,
 } from "./generate-chart-skeleton-data";
 import { Grid } from "./grid";
-
 const LOADING_DATA_KEY = DEFAULT_SKELETON_DATA_KEY;
 const DEFAULT_LOADING_STROKE = "var(--foreground)";
 const DEFAULT_LOADING_GRID_STROKE =

@@ -1,4 +1,3 @@
-"use client";;
 import { CreditCard, FileText, LogOut, Settings, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import Gemini from "../icons/gemini";
-
 const SAMPLE_PROFILE_DATA = {
   name: "Eugene An",
   email: "eugene@kokonutui.com",

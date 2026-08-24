@@ -1,4 +1,3 @@
-"use client";;
 /**
  * @author: @dorianbaffier
  * @description: Currency Transfer
@@ -26,7 +25,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-
 const draw = {
   hidden: { pathLength: 0, opacity: 0 },
   visible: (i) => ({

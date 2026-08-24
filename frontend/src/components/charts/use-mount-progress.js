@@ -1,5 +1,3 @@
-"use client";
-
 import { animate, useMotionValue } from "motion/react";
 import { useEffect, useRef } from "react";
 import { DEFAULT_CHART_ENTER_TRANSITION } from "./animation";
