@@ -73,3 +73,65 @@ tags:
 - `docs/knowledge/09_FEATURES/Waitlist/Waitlist.md`
 - `docs/knowledge/01_PRODUCT/Marketing-And-Go-To-Market.md`
 - `docs/knowledge/01_PRODUCT/Complete-Overhaul-Pack.md`
+
+
+## 2026-08-22 — Reports and Life Score overhaul
+
+**Status:** Implemented in the working tree; no files deleted. Pre-existing user changes in brand/token files were preserved.
+
+The canonical backend score path is now `life-score-v2.2026-08-22` in `server/services/lifeHealthEngine.js`. It preserves null/missing values, distinguishes observed zero from missing, uses personal median/variability fit after seven observations, aggregates five weighted domains, and exposes coverage, confidence, observed/scored metric IDs, source record IDs, and methodology. Authenticated frontend score consumers use `/intelligence/lhs` and show an explicit unavailable state instead of silently substituting a second authenticated formula.
+
+Reports now return a `report-contract-v1` payload from `/api/intelligence/report` with window, cutoff, metrics, findings, evidence IDs, limitations, calculation version, coverage, and tier entitlements. Explore, Core, Pro, and Elite have distinct report compositions in `frontend/src/components/reports/ReportWorkspace.jsx`; the new route is `frontend/src/pages/Reports.jsx`. The report generator no longer uses the legacy weekly cache directly because it lacks canonical provenance and tier metadata. Correlation results include source-day IDs.
+
+Added `docs/aiimin-metric-inventory.json`, `docs/aiimin-metric-inventory.md`, and `docs/aiimin-reports-life-score-overhaul.md`. Orphaned normalized fields and phantom/unsupported metrics are explicitly listed. Backend tests pass 13/13 and the frontend production build compiles successfully. Authenticated local API smoke checks return HTTP 401 without credentials. Live `https://aiimin.in/reports` resolved to the public waitlist surface in the sandbox browser; authenticated rendered QA was not performed.
+
+
+## 2026-08-22 — Calibrated v3, Reports completion pass, and production QA
+
+**Status:** Working-tree implementation is complete for review; no files deleted, no schema migration, no commit/push/deploy, and no destructive real-account writes. Existing user edits in brand/token/page files were preserved.
+
+The authoritative score is now `lhs-v3.0.0-calibrated` with public reference dataset `lhs-reference-2026-08-22`. It uses null-preserving normalization, conservative CDC/WHO/OECD-informed anchors, diminishing-return operating proxies, robust personal median/MAD profiles after seven unique days, 21-day recency weighting, coverage/stability-adjusted domain weights, confidence, uncertainty, effective sample size, trend, and source provenance. The canonical taxonomy remains physical/cognitive/discipline/financial/emotional, displayed as BODY/MIND/DISCIPLINE/MONEY/MOOD.
+
+Reports now have four tier-specific working-tree surfaces: Explore Daily Signal, Core Weekly Loop Review, Pro Performance Dossier, and Elite Intelligence Room. Legacy report/PDF consumers are retained as compatibility-only helpers and null-safe where reachable; new work routes through the canonical `report-contract-v1` path. A deterministic development-only 30-day fixture powered repeated 1440px and exact 390px visual QA and interaction probes. Final screenshots and QA notes are retained at the project root and in `qa-reports-visual-findings.md`.
+
+Native Android V3 user-facing Score and Today surfaces use the server-published score store and enriched LHS metadata. DayStore/ProvisionalScore remain capture-era internal compatibility rails only. Native selected compilation and supported unit-test tasks passed after stale tests were aligned to the reflection-only contract.
+
+Live authenticated route QA covered primary navigation, hidden More routes, phone capture/account/score, onboarding/verification, public brand/app/legal pages, and read-only account sections. Concrete live blockers remain recorded in `qa-website-live.md`: production still serves the old LHS/report shape and legacy Reports UI; Finance remained loading; `/identity` resolved to the public landing surface; `/proto/draft` remained blank/loading; and public legal pages are stamped October 31, 2026, future-dated relative to this session. The local working tree is ready for review/release gating, not an unreviewed production-complete claim.
+
+
+## 2026-08-22 — Focused theme, OS-ID, and Reports QA follow-up
+
+**Status:** Focused working-tree pass complete for review; no files deleted, no live-account writes, no schema/auth changes, and no commit/push/deploy.
+
+Reports now inherit the normalized runtime `aiimin-dark`/`aiimin-light` palette across Explore, Core, Pro, and Elite. Elite has a numbered/sticky desktop rail, a responsive mobile chapter strip, and a lower evidence-trail footer that reports the canonical model version, window, observed days, and confidence. Exact 390px probes passed all eight theme/tier combinations with document/body width held to 390px.
+
+The scoped Overview/IvorySnapshot typography rule now recognizes an explicit `OS-ID:` fallback or an alphanumeric identifier such as `AADI0837`. Computed-style evidence shows the identifier uses Familjen Grotesk/Figtree display sans at 750 weight and increased tracking, while an ordinary personal name remains Georgia 600. The development-only Reports fixture skips authenticated profile loading, removing the only console error found in the final eight-combination runtime probe.
+
+Final receipts: backend tests 15/15, modified server syntax checks pass, frontend production build compiles successfully, metric inventory JSON validates, `git diff --check` passes excluding the documented pre-existing Wordmark whitespace, and the tracked deletion audit is empty. Live deployment parity and previously recorded Finance, Identity, Prototype, and future-dated legal blockers remain open release gates.
+
+
+## 2026-08-22 — Actionable reminders and website notifications
+
+**Status:** Working-tree notification pass implemented and verified; no files deleted, no live-account writes, no schema/auth changes, and no commit/push/deploy.
+
+Today’s red Family Reminders banner now includes an explicit `Open reminder` action. It routes to `/family?tab=reminders&reminder=<id>`, where the Reminders tab opens and the matching row receives a visual focus treatment. The website notification bell/dropdown now exposes safe internal CTAs, red urgent states, keyboard activation, mark-read-before-navigation behavior, and responsive mobile sizing. Account notification preferences now explain the bell behavior and show save failures without changing the existing server-backed preference contract.
+
+Validation passed: frontend production build, backend tests 15/15, targeted server syntax checks, notification source-contract checks, local Elite runtime with zero console errors, diff check, and tracked deletion audit. Browser push permissions, email delivery, and native FCM remain intentionally unperformed. Existing live deployment parity and previously documented Finance, Identity, Prototype, and future-dated legal blockers remain release gates.
+
+
+## 2026-08-22 — Local Overview application-error regression fix
+
+**Status:** Fixed and verified in the local unpushed working tree; committed/live version unchanged.
+
+The localhost Application Error was caused by the new Today reminder redirect using `useCallback` in `Overview.jsx` without importing it. That render-time `useCallback is not defined` failure triggered the generic application ErrorBoundary. The import was restored and two unused Overview icon imports were removed after targeted lint.
+
+Fresh receipts: backend tests 15/15, frontend tests 31/31, frontend production build compiled successfully, targeted ESLint passed with zero errors/warnings, local unauthenticated `/overview` safely redirected to `/login` with zero runtime errors, Reports passed 8/8 theme-tier combinations with no console errors, and notification/OS-ID probes passed. Authenticated local visual re-entry remains recommended once a dedicated test login is available; no live account was touched.
+
+
+## 2026-08-22 — Approved 120-day QA backfill rolled back
+
+**Status:** Complete; the user rejected the generated history and explicitly confirmed rollback. The unrelated Reports, Life Score, theme, OS-ID typography, reminder, and notification implementation work remains in the uncommitted working tree.
+
+A read-only audit found existing AADI0837 history from 2026-01-19 through 2026-08-21. An append-only 120-day gap backfill was then applied only after explicit confirmation, inserting 221 marked rows across 33 missing dates. The user was not satisfied with that generated data and requested undo. A strict preflight verified exactly 33 daily logs, 62 sessions, 16 journal entries, 19 money transactions, 14 calendar events, 29 wins, 33 daily commitments, 8 tasks, and 7 notes before deletion. The exact 221 rows were removed using the recorded gap dates and source/marker constraints.
+
+Post-rollback read-back restored the pre-backfill key counts: 182 daily logs, 273 sessions, 168 journal entries, 207 money transactions, 156 calendar events, and 14 notes, with the account date range still 2026-01-19 through 2026-08-21. No broad account wipe, existing-row update, code deletion, commit, push, deployment, or schema migration occurred. The append-only utility remains available as a reviewed tool but was not used again after rollback.

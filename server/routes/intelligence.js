@@ -12,7 +12,8 @@ import { summarizeLifeHealth } from '../services/lifeHealthEngine.js';
 import { buildIntelligenceReportSections } from '../services/intelligenceReportService.js';
 import { getCorrelationsForUser, processUserCorrelations } from '../services/correlationService.js';
 import { generateWeeklyReview } from '../services/weeklyReviewEngine.js';
-import { generateReportPayload } from '../services/reportGenerator.js';
+import { buildCanonicalReport, generateReportPayload } from '../services/reportGenerator.js';
+import { getUserTier } from '../services/billingService.js';
 import { BehavioralEngine } from '../utils/BehavioralEngine.js';
 import { withVoiceRules } from '../lib/aiVoice.js';
 import { enrichSystemPrompt } from '../lib/arcContext.js';
@@ -95,6 +96,15 @@ app.get('/lhs', requireAuth, async (c) => {
                 start: start || dataset.sinceDate,
                 end: end || dataset.untilDate,
                 daysWithData: dataset.dailyRecords.length,
+                calculationVersion: lhs.calculationVersion,
+                profileVersion: lhs.scoreMeta?.profileVersion,
+                referenceDatasetVersion: lhs.scoreMeta?.referenceDatasetVersion,
+                coverage: lhs.scoreMeta?.coverage ?? 0,
+                scoreConfidence: lhs.scoreMeta?.confidence || 'unavailable',
+                confidenceScore: lhs.scoreMeta?.confidenceScore ?? 0,
+                uncertaintyBand: lhs.scoreMeta?.uncertaintyBand ?? null,
+                effectiveSampleSize: lhs.scoreMeta?.effectiveSampleSize ?? 0,
+                trend: lhs.scoreMeta?.trend || null,
             },
         });
     } catch (err) {
@@ -114,20 +124,18 @@ app.get('/report', requireAuth, async (c) => {
         const end = c.req.query('end') || null;
         const useCustomRange = Boolean(start || end || days !== 30);
 
-        // Cached weekly summary only for default rolling 30d (not past/custom ranges)
-        if (!useCustomRange) {
-            const { rows: cachedRows } = await pool.query(
-                `SELECT data FROM weekly_summaries WHERE user_id = $1 ORDER BY generated_at DESC LIMIT 1`,
-                [userId]
-            ).catch(() => ({ rows: [] }));
-            const cachedSummary = cachedRows[0];
-            if (cachedSummary?.data) {
-                return c.json(cachedSummary.data);
-            }
-        }
+        // Do not return the legacy weekly_summaries cache here. It predates the
+        // canonical contract and has no reliable tier/provenance metadata. The
+        // dataset cache below is safe because it only caches raw per-user inputs.
+        void useCustomRange;
 
         const dataset = await getAnalyticsDataset(userId, days, { start, end });
         const lhs = summarizeLifeHealth(dataset.dailyRecords);
+        const tier = String(await getUserTier(userId)).toLowerCase();
+        const tierRank = { explore: 0, core: 1, pro: 2, elite: 3 }[tier] ?? 0;
+        const canCompare = tierRank >= 1;
+        const canAnalyze = tierRank >= 2;
+        const canInvestigate = tierRank >= 3;
 
         const sections = buildIntelligenceReportSections(dataset, lhs);
         const { drivers, drift, forecast, clusters, archetypes, momentumInput, meta: reportMeta } = sections;
@@ -144,33 +152,59 @@ app.get('/report', requireAuth, async (c) => {
 
         const report = generateReportPayload({
             lhs,
-            drivers,
-            drift,
-            forecast,
-            clusters,
-            archetypes,
+            drivers: canAnalyze ? drivers : { rankedDrivers: [] },
+            drift: canCompare ? drift : { alerts: [] },
+            forecast: canInvestigate ? forecast : { horizons: null },
+            clusters: canAnalyze ? clusters : { clusters: [] },
+            archetypes: canAnalyze ? archetypes : { archetypes: [] },
             momentum,
             weeklyReview
         });
 
-        const signalCorrelations = await getCorrelationsForUser(userId).catch(() => ({
-            correlations: [],
-            insights: [],
-            insufficientData: true,
-        }));
+        const signalCorrelations = canAnalyze
+            ? await getCorrelationsForUser(userId).catch(() => ({
+                correlations: [],
+                insights: [],
+                insufficientData: true,
+            }))
+            : { correlations: [], insights: [], insufficientData: true };
+        const reportWindow = {
+            start: start || dataset.sinceDate,
+            end: end || dataset.untilDate,
+            timezone: 'Asia/Kolkata',
+            label: start || end ? `${start || dataset.sinceDate} → ${end || dataset.untilDate}` : `Last ${days} days`,
+            days,
+        };
+        const canonicalReport = buildCanonicalReport({
+            tier,
+            window: reportWindow,
+            lhs,
+            drivers: canAnalyze ? drivers : { rankedDrivers: [] },
+            drift: canCompare ? drift : { alerts: [] },
+            forecast: canInvestigate ? forecast : { horizons: null },
+            signalCorrelations: signalCorrelations.correlations || [],
+            weeklyReview,
+        });
 
         return c.json({
             ...report,
+            tier,
+            canonicalReport,
             signalCorrelations: signalCorrelations.correlations?.slice(0, 8) || [],
             correlationInsights: signalCorrelations.insights?.slice(0, 6) || [],
             lhs,
             meta: {
                 days,
+                tier,
                 start: start || dataset.sinceDate,
                 end: end || dataset.untilDate,
+                timezone: 'Asia/Kolkata',
                 daysWithData: dataset.dailyRecords.length,
                 computedFromData: reportMeta.computedFromData,
                 insufficientData: reportMeta.insufficientData,
+                calculationVersion: lhs.calculationVersion,
+                coverage: lhs.scoreMeta?.coverage ?? 0,
+                scoreConfidence: lhs.scoreMeta?.confidence || 'insufficient',
                 timeline: (lhs.timeline || []).map((t) => ({
                     date: t.date,
                     sleep_hours: t.sleep_hours,

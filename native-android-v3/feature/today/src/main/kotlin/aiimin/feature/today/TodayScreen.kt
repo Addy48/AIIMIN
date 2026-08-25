@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -870,11 +871,7 @@ private fun TodayScore(
     published: PublishedLifeScoreState,
     onOpenScore: () -> Unit,
 ) {
-    if (published.available) {
-        PublishedTodayScore(published, onOpenScore = onOpenScore)
-    } else {
-        LocalTodayScore(state, onOpenScore = onOpenScore)
-    }
+    PublishedTodayScore(published, onOpenScore = onOpenScore)
 }
 
 @Composable
@@ -891,11 +888,20 @@ private fun PublishedTodayScore(
             .riseIn(120),
     ) {
         BlueprintBox(accent = true, tinted = true, legend = "Life score · published") {
-            ScoreFigure(
-                state = published.global.toDouble(),
-                band = 0.0,
-                confidence = 1.0,
-            )
+            val canonicalGlobal = published.global
+            if (canonicalGlobal != null) {
+                ScoreFigure(
+                    state = canonicalGlobal.toDouble(),
+                    band = published.uncertaintyBand?.toDouble() ?: 0.0,
+                    confidence = published.confidenceScore ?: 0.0,
+                )
+            } else {
+                Text(
+                    text = "—",
+                    style = AiiminTheme.type.mono.copy(fontSize = 56.sp, fontWeight = FontWeight.Bold),
+                    color = AiiminTheme.colors.muted,
+                )
+            }
             Text(
                 text = published.sourceLabel,
                 style = AiiminTheme.type.mono(10.5),
@@ -912,8 +918,8 @@ private fun PublishedTodayScore(
                     published.dimensions.forEach { dim ->
                         InstrumentCell(
                             label = dim.label,
-                            value = dim.score.toDouble(),
-                            covered = true,
+                            value = dim.score?.toDouble() ?: 0.0,
+                            covered = dim.score != null,
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -927,72 +933,6 @@ private fun PublishedTodayScore(
                     modifier = Modifier.padding(top = AiiminTheme.space.s3),
                 )
             }
-            Text(
-                text = "TAP · MARK THE DAY",
-                style = AiiminTheme.type.cellLabel,
-                color = AiiminTheme.colors.accent,
-                modifier = Modifier.padding(top = AiiminTheme.space.s3),
-            )
-        }
-    }
-}
-
-@Composable
-private fun LocalTodayScore(state: DayState, onOpenScore: () -> Unit) {
-    val score = state.score
-    TapSurface(
-        onClick = onOpenScore,
-        minTouchTarget = false,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = AiiminTheme.space.s3)
-            .riseIn(120),
-    ) {
-        BlueprintBox(accent = true, tinted = true, legend = "Life score") {
-            ScoreFigure(state = score.state, band = score.band, confidence = score.confidence)
-
-            if (state.history.size >= 2) {
-                TapTrajectoryLine(
-                    series = state.history,
-                    modifier = Modifier.padding(top = AiiminTheme.space.s3),
-                )
-            } else {
-                Text(
-                    text = trajectoryLabel(score.trajectory.direction, state.history.size),
-                    style = AiiminTheme.type.mono(10.5),
-                    color = AiiminTheme.colors.muted,
-                    modifier = Modifier.padding(top = AiiminTheme.space.s3),
-                )
-            }
-
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = AiiminTheme.space.s4),
-                horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
-            ) {
-                score.readings.forEach { reading ->
-                    InstrumentCell(
-                        label = reading.instrument.label,
-                        value = reading.score,
-                        covered = reading.covered,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-            }
-
-            if (score.attribution.isNotEmpty()) {
-                Text(
-                    text = score.attribution.joinToString("  ·  ") { attribution ->
-                        val sign = if (attribution.delta >= 0) "+" else "−"
-                        "${attribution.instrument.label} $sign${kotlin.math.abs(attribution.delta).roundToInt()}"
-                    },
-                    style = AiiminTheme.type.mono(10.5),
-                    color = AiiminTheme.colors.accent,
-                    modifier = Modifier.padding(top = AiiminTheme.space.s3),
-                )
-            }
-
             Text(
                 text = "TAP · MARK THE DAY",
                 style = AiiminTheme.type.cellLabel,

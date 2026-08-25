@@ -176,6 +176,8 @@ export async function computeUserCorrelations(userId, { since } = {}) {
                 rho: Number(rho.toFixed(3)),
                 pValue,
                 n,
+                sourceDates: commonDates,
+                sourceRecordIds: commonDates.map((date) => `daily:${date}`),
             });
         }
     }

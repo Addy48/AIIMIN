@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import supabase from '../utils/supabase';
 import PageHeader from '../components/layout/PageHeader';
@@ -141,9 +142,12 @@ const EmptyState = ({ icon: Icon, title, description, buttonText, onAction }) =>
 
 export default function FamilyPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('members');
+  const [searchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab');
+  const requestedReminder = searchParams.get('reminder');
+  const [activeTab, setActiveTab] = useState(() => requestedTab === 'reminders' ? 'reminders' : 'members');
   const [loading, setLoading] = useState(true);
-  
+
   // Data States
   const [members, setMembers] = useState([]);
   const [documents, setDocuments] = useState([]);
@@ -197,6 +201,19 @@ export default function FamilyPage() {
   const visibleRelationships = useMemo(() => filterVisible('family_relationships', relationships), [filterVisible, relationships]);
   const visibleReminders = useMemo(() => filterVisible('family_reminders', reminders), [filterVisible, reminders]);
   const visibleEmergency = useMemo(() => filterVisible('family_emergency_contacts', emergency), [filterVisible, emergency]);
+
+  useEffect(() => {
+    if (requestedTab === 'reminders') setActiveTab('reminders');
+  }, [requestedTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'reminders' || !requestedReminder || loading) return undefined;
+    const target = Array.from(document.querySelectorAll('[data-family-reminder-id]'))
+      .find((element) => String(element.dataset.familyReminderId) === String(requestedReminder));
+    if (!target) return undefined;
+    const frame = window.requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeTab, loading, requestedReminder, visibleReminders]);
 
   const fetchData = useCallback(async () => {
     if (!user) {
@@ -1030,7 +1047,7 @@ export default function FamilyPage() {
               {visibleReminders.map(r => {
                 const isOverdue = new Date(r.due_date) < new Date();
                 return (
-                  <div key={r.id} style={{ background: 'var(--color-surface)', border: `1px solid ${isOverdue && !r.completed ? '#EF4444' : 'var(--color-border)'}`, borderRadius: '16px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: r.completed ? 0.5 : 1 }}>
+                  <div key={r.id} data-family-reminder-id={r.id} style={{ background: 'var(--color-surface)', border: `1px solid ${isOverdue && !r.completed ? '#EF4444' : 'var(--color-border)'}`, boxShadow: String(requestedReminder) === String(r.id) ? '0 0 0 3px rgba(239, 68, 68, 0.16)' : 'none', borderRadius: '16px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: r.completed ? 0.5 : 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <input type="checkbox" checked={r.completed} onChange={async () => {
                         await supabase.from('family_reminders').update({ completed: !r.completed }).eq('id', r.id);

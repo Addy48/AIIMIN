@@ -3,6 +3,10 @@ import { motion } from 'framer-motion';
 import { Download, X, FileText, Target, Activity, TrendingUp, ChevronRight } from 'lucide-react';
 import { REPORT_MODES, PAGE_TITLES } from './ReportPdfUtils';
 
+/**
+ * @deprecated Compatibility-only preview. The mounted Reports route uses
+ * ReportWorkspace and the current standard export uses PDFReportGenerator.
+ */
 const SECTION_ICONS = {
     coverPage: '📋',
     executiveSummary: '📊',
@@ -24,6 +28,12 @@ const SECTION_ICONS = {
 const ReportPreviewModal = ({ ctx, onClose, onDownload, reportMode = 'standard', startDate, endDate }) => {
     const mode = REPORT_MODES[reportMode] || REPORT_MODES.standard;
     const sections = mode.sections || [];
+    const lhs = ctx?.lhs || null;
+    const dimensions = lhs?.dimensions || {};
+    const domainValue = (domain) => {
+        const value = dimensions[domain]?.score ?? lhs?.systemScores?.[domain];
+        return value == null || !Number.isFinite(Number(value)) ? '—' : Math.round(Number(value));
+    };
 
     return (
         <div style={{
@@ -97,12 +107,13 @@ const ReportPreviewModal = ({ ctx, onClose, onDownload, reportMode = 'standard',
                 {/* Score preview */}
                 {ctx?.lhs && (
                     <div style={{ padding: '16px 32px', borderBottom: '1px solid var(--border, #2a2a3a)' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '10px' }}>
                             {[
-                                { label: 'LHS Score', value: ctx.lhs.globalScore || 0, color: '#D4AF37', suffix: '/100' },
-                                { label: 'Physical', value: Math.round(ctx.lhs.systemScores?.physical || 0), color: '#22C55E', suffix: '' },
-                                { label: 'Focus', value: Math.round(ctx.lhs.baseMetrics?.focusScore || 0), color: '#3B82F6', suffix: '' },
-                                { label: 'Discipline', value: Math.round(ctx.lhs.systemScores?.discipline || 0), color: '#8B5CF6', suffix: '' },
+                                { label: 'Life Score', value: lhs.globalScore == null || !Number.isFinite(Number(lhs.globalScore)) ? '—' : Math.round(Number(lhs.globalScore)), color: '#749dc4', suffix: '/100' },
+                                { label: 'Body', value: domainValue('physical'), color: '#749dc4', suffix: '' },
+                                { label: 'Mind', value: domainValue('cognitive'), color: '#416180', suffix: '' },
+                                { label: 'Discipline', value: domainValue('discipline'), color: '#749dc4', suffix: '' },
+                                { label: 'Money · Mood', value: `${domainValue('financial')} · ${domainValue('emotional')}`, color: '#416180', suffix: '' },
                             ].map((m) => (
                                 <div key={m.label} style={{
                                     background: 'var(--bg-elevated, #252535)',

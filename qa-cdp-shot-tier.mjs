@@ -1,0 +1,13 @@
+const fs = await import('node:fs/promises');
+const tier = process.argv[2] || 'elite';
+const output = process.argv[3] || `/Users/aaditya/Desktop/DASHBOARD PROJECT/reports-demo-${tier}-mobile-fixed.png`;
+const pages = await (await fetch('http://127.0.0.1:9222/json')).json();
+const page = pages.find((item) => item.type === 'page');
+if (!page) throw new Error('No Chrome page found');
+const ws = new WebSocket(page.webSocketDebuggerUrl); let nextId=1; const pending=new Map();
+ws.onmessage=(event)=>{const m=JSON.parse(event.data); if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id);}};
+const send=(method,params={})=>new Promise((resolve,reject)=>{const id=nextId++;pending.set(id,m=>m.error?reject(new Error(m.error.message)):resolve(m.result));ws.send(JSON.stringify({id,method,params}));});
+await new Promise(r=>ws.readyState===1?r():ws.addEventListener('open',r,{once:true}));
+await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+await send('Page.navigate',{url:`http://127.0.0.1:3000/reports-demo?demo=1&tier=${tier}`}); await new Promise(r=>setTimeout(r,2500));
+const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false}); await fs.writeFile(output,Buffer.from(shot.data,'base64')); console.log(output); ws.close();

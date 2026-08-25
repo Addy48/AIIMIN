@@ -394,42 +394,46 @@ export const calculateLifeScoreLocal = async (user) => {
   };
 };
 
-/** API-first unified score — same path as useLifeScore hook */
+/** API-first unified score — authenticated users never fall back to a second production formula. */
 export const calculateLifeScore = async (user) => {
-  if (user && !user.isGuest) {
-    try {
-      const lhs = await apiGet('/intelligence/lhs?days=30');
-      if (lhs?.globalScore != null) {
-        const ss = lhs.systemScores || {};
-        const score = Math.round(Number(lhs.globalScore) || 0);
-        let delta = 0;
-        try {
-          const prev = Number(localStorage.getItem(SCORE_PREV_KEY));
-          if (!Number.isNaN(prev) && prev > 0) delta = score - prev;
+  if (!user || user.isGuest) return calculateLifeScoreLocal(user);
+  try {
+    const lhs = await apiGet('/intelligence/lhs?days=30');
+    if (lhs?.calculationVersion && Object.prototype.hasOwnProperty.call(lhs, 'globalScore')) {
+      const ss = lhs.systemScores || {};
+      const score = lhs.globalScore == null ? null : Math.round(Number(lhs.globalScore));
+      let delta = null;
+      try {
+        const prev = Number(localStorage.getItem(SCORE_PREV_KEY));
+        if (score != null) {
           localStorage.setItem(SCORE_PREV_KEY, String(score));
-        } catch { /* ignore */ }
-        // Canonical taxonomy — ADR 2026-08-03-life-score-taxonomy.
-        // Keys are the contract, labels are presentation. The previous mapping
-        // renamed all five and crossed two of them: `cognitive` was shown as
-        // "Goal Momentum" and `emotional` as "Mental Clarity".
-        const contributors = {
-          physical: { score: Math.round(ss.physical || 0), label: 'BODY' },
-          cognitive: { score: Math.round(ss.cognitive || 0), label: 'MIND' },
-          discipline: { score: Math.round(ss.discipline || 0), label: 'DISCIPLINE' },
-          financial: { score: Math.round(ss.financial || 0), label: 'MONEY' },
-          emotional: { score: Math.round(ss.emotional || 0), label: 'MOOD' },
-        };
-        return {
-          score,
-          delta,
-          explanation: 'Score reflects your logged habits, sleep, focus, money, and mood.',
-          source: 'api',
-          contributors,
-        };
-      }
-    } catch {
-      /* fall through to local */
+          delta = Number.isFinite(prev) && prev > 0 ? score - prev : null;
+        }
+      } catch { /* ignore */ }
+      const contributors = {
+        physical: { score: ss.physical == null ? null : Math.round(ss.physical), label: 'BODY' },
+        cognitive: { score: ss.cognitive == null ? null : Math.round(ss.cognitive), label: 'MIND' },
+        discipline: { score: ss.discipline == null ? null : Math.round(ss.discipline), label: 'DISCIPLINE' },
+        financial: { score: ss.financial == null ? null : Math.round(ss.financial), label: 'MONEY' },
+        emotional: { score: ss.emotional == null ? null : Math.round(ss.emotional), label: 'MOOD' },
+      };
+      return { score, delta, explanation: lhs.scoreMeta?.methodology || 'Score reflects observed source records across your five operating dimensions.', source: 'api', confidence: lhs.scoreMeta?.confidence || 'insufficient', coverage: lhs.scoreMeta?.coverage ?? 0, calculationVersion: lhs.calculationVersion, contributors, lhs };
     }
+  } catch {
+    /* Explicit unavailable state below; never substitute a second authenticated formula. */
   }
-  return calculateLifeScoreLocal(user);
+  return {
+    score: null,
+    delta: null,
+    explanation: 'Life Score is temporarily unavailable. Your source records were not replaced with an estimate.',
+    source: 'api-unavailable',
+    confidence: 'insufficient',
+    contributors: {
+      physical: { score: null, label: 'BODY' },
+      cognitive: { score: null, label: 'MIND' },
+      discipline: { score: null, label: 'DISCIPLINE' },
+      financial: { score: null, label: 'MONEY' },
+      emotional: { score: null, label: 'MOOD' },
+    },
+  };
 };

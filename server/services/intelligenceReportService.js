@@ -38,9 +38,9 @@ function pearson(xs, ys) {
     return num / den;
 }
 
-function enrichTimeline(records) {
+function enrichTimeline(records, profile = null) {
     return records.map((record) => {
-        const scored = calculateLifeHealthForRecord(record);
+        const scored = calculateLifeHealthForRecord(record, { profile });
         return { ...record, ...scored };
     });
 }
@@ -60,11 +60,13 @@ export function computeBehaviorDrivers(timeline = []) {
     const rankedDrivers = METRIC_DEFS.map((def) => {
         const pairs = scored.filter((d) => d[def.key] != null && d[def.key] !== '');
         if (pairs.length < MIN_SAMPLES) return null;
-        const xs = pairs.map((d) => Number(d[def.key]) || 0);
-        const ys = pairs.map((d) => Number(d.globalScore) || 0);
+        const xs = pairs.map((d) => Number(d[def.key])).filter((value) => Number.isFinite(value));
+        const ys = pairs.map((d) => Number(d.globalScore)).filter((value) => Number.isFinite(value));
+        if (xs.length < MIN_SAMPLES || ys.length < MIN_SAMPLES) return null;
         const rho = pearson(xs, ys);
         if (rho == null || Math.abs(rho) < 0.15) return null;
         return {
+            metric: def.key,
             behaviorLabel: def.label,
             label: `${def.label} → ${def.target}`,
             impact: Number((Math.abs(rho) * 10).toFixed(1)),
@@ -97,9 +99,11 @@ export function computeDriftAlerts(dataset) {
     ];
 
     const alerts = driftMetrics.map(({ metric, label, suffix }) => {
-        const recentAvg = avg(recent.map((d) => Number(d[metric]) || 0));
-        const baseAvg = avg(baseline.map((d) => Number(d[metric]) || 0));
-        if (!baseAvg && !recentAvg) return null;
+        const recentValues = recent.map((d) => Number(d[metric])).filter((value) => Number.isFinite(value));
+        const baselineValues = baseline.map((d) => Number(d[metric])).filter((value) => Number.isFinite(value));
+        if (recentValues.length < 3 || baselineValues.length < 3) return null;
+        const recentAvg = avg(recentValues);
+        const baseAvg = avg(baselineValues);
         const driftPct = baseAvg ? ((recentAvg - baseAvg) / Math.abs(baseAvg)) * 100 : 0;
         if (Math.abs(driftPct) < DRIFT_THRESHOLD_PCT) return null;
         return {
@@ -116,8 +120,8 @@ export function computeDriftAlerts(dataset) {
     return { alerts, insufficientData: false };
 }
 
-export function computeForecast(timeline = []) {
-    const scored = enrichTimeline(timeline);
+export function computeForecast(timeline = [], profile = null) {
+    const scored = enrichTimeline(timeline, profile).filter((day) => day.globalScore != null);
     const recent = scored.slice(-7);
     const previous = scored.slice(-14, -7);
 
@@ -132,26 +136,27 @@ export function computeForecast(timeline = []) {
     const sevenDays = {};
 
     systemKeys.forEach((key) => {
-        const recentAvg = avg(recent.map((d) => d.systemScores?.[key] || 0));
-        const prevAvg = previous.length
-            ? avg(previous.map((d) => d.systemScores?.[key] || 0))
-            : recentAvg;
+        const recentValues = recent.map((d) => d.systemScores?.[key]).filter((value) => value != null).map(Number);
+        const previousValues = previous.map((d) => d.systemScores?.[key]).filter((value) => value != null).map(Number);
+        if (recentValues.length < 3) return;
+        const recentAvg = avg(recentValues);
+        const prevAvg = previousValues.length >= 3 ? avg(previousValues) : recentAvg;
         sevenDays[key] = trendLabel(recentAvg, prevAvg);
     });
 
     return { horizons: { sevenDays }, insufficientData: false };
 }
 
-export function computeBehaviorClusters(timeline = []) {
-    const scored = enrichTimeline(timeline);
+export function computeBehaviorClusters(timeline = [], profile = null) {
+    const scored = enrichTimeline(timeline, profile).filter((day) => day.globalScore != null);
     if (scored.length < MIN_SAMPLES) {
         return { clusters: [], insufficientData: true };
     }
 
-    const scores = scored.map((d) => d.globalScore);
+    const scores = scored.map((d) => Number(d.globalScore)).filter((value) => Number.isFinite(value));
     const median = [...scores].sort((a, b) => a - b)[Math.floor(scores.length / 2)];
-    const high = scored.filter((d) => d.globalScore >= median);
-    const low = scored.filter((d) => d.globalScore < median);
+    const high = scored.filter((d) => Number(d.globalScore) >= median);
+    const low = scored.filter((d) => Number(d.globalScore) < median);
 
     const highAvg = avg(high.map((d) => d.globalScore));
     const lowAvg = avg(low.map((d) => d.globalScore));
@@ -182,8 +187,8 @@ export function computeBehaviorClusters(timeline = []) {
     return { clusters, insufficientData: false };
 }
 
-export function computeArchetypes(timeline = []) {
-    const scored = enrichTimeline(timeline);
+export function computeArchetypes(timeline = [], profile = null) {
+    const scored = enrichTimeline(timeline, profile).filter((day) => day.globalScore != null);
     if (scored.length < MIN_SAMPLES) {
         return { archetypes: [], insufficientData: true };
     }
@@ -263,9 +268,10 @@ export function buildIntelligenceReportSections(dataset, lhs) {
     const timeline = lhs?.timeline || [];
     const drivers = computeBehaviorDrivers(timeline);
     const drift = computeDriftAlerts(dataset);
-    const forecast = computeForecast(timeline);
-    const clusters = computeBehaviorClusters(timeline);
-    const archetypes = computeArchetypes(timeline);
+    const profile = lhs?.profile || dataset?.profile || null;
+    const forecast = computeForecast(timeline, profile);
+    const clusters = computeBehaviorClusters(timeline, profile);
+    const archetypes = computeArchetypes(timeline, profile);
     const momentumInput = buildMomentumInput(dataset);
 
     const hasRealData = timeline.length >= MIN_SAMPLES;

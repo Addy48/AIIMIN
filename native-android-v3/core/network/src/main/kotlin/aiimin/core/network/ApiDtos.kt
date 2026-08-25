@@ -126,6 +126,24 @@ data class LifeHealthMetaDto(
     val daysWithData: Int? = null,
     val start: String? = null,
     val end: String? = null,
+    val calculationVersion: String? = null,
+    val profileVersion: String? = null,
+    val referenceDatasetVersion: String? = null,
+    val coverage: Double? = null,
+    val scoreConfidence: String? = null,
+    val confidenceScore: Double? = null,
+    val uncertaintyBand: Double? = null,
+    val effectiveSampleSize: Double? = null,
+    val trend: LifeHealthTrendDto? = null,
+)
+
+@Serializable
+data class LifeHealthTrendDto(
+    val direction: String? = null,
+    val delta: Double? = null,
+    val volatility: Double? = null,
+    val recentScore: Double? = null,
+    val priorScore: Double? = null,
 )
 
 @Serializable

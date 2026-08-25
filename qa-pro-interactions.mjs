@@ -1,0 +1,18 @@
+const pages = await (await fetch('http://127.0.0.1:9222/json')).json();
+const page = pages.find((item) => item.type === 'page');
+if (!page) throw new Error('No Chrome page found');
+const ws = new WebSocket(page.webSocketDebuggerUrl); let nextId=1; const pending=new Map();
+ws.onmessage=(event)=>{const m=JSON.parse(event.data); if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id);}};
+const send=(method,params={})=>new Promise((resolve,reject)=>{const id=nextId++;pending.set(id,m=>m.error?reject(new Error(m.error.message)):resolve(m.result));ws.send(JSON.stringify({id,method,params}));});
+const evaluate=async(expression)=>{const r=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.text);return r.result?.value;};
+await new Promise(r=>ws.readyState===1?r():ws.addEventListener('open',r,{once:true}));
+await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+await send('Page.navigate',{url:'http://127.0.0.1:3000/reports-demo?demo=1&tier=pro'}); await new Promise(r=>setTimeout(r,2200));
+const before=await evaluate(`JSON.stringify({findings:document.querySelectorAll('.report-finding button').length,metrics:document.querySelectorAll('.report-metric-index .report-metric-row').length,filters:document.querySelectorAll('.report-filters select').length})`);
+await evaluate(`document.querySelector('.report-finding button')?.click()`); await new Promise(r=>setTimeout(r,150));
+const expanded=await evaluate(`JSON.stringify({expanded:document.querySelectorAll('.report-finding.is-expanded').length,detail:document.querySelector('.report-finding.is-expanded .report-finding__detail')?.innerText||'',claim:document.querySelector('.report-finding.is-expanded .report-finding__claim')?.innerText||''})`);
+await evaluate(`(()=>{const el=document.querySelector('.report-filters select');const setter=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value').set;setter.call(el,'cognitive');el.dispatchEvent(new Event('change',{bubbles:true}));})()`); await new Promise(r=>setTimeout(r,150));
+const filtered=await evaluate(`JSON.stringify({value:document.querySelector('.report-filters select')?.value,buttons:document.querySelectorAll('.report-finding button').length,empty:document.querySelector('.report-empty')?.innerText||''})`);
+await evaluate(`(()=>{const el=document.querySelector('.report-metric-search');const setter=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set;setter.call(el,'sleep');el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));})()`); await new Promise(r=>setTimeout(r,150));
+const searched=await evaluate(`JSON.stringify({value:document.querySelector('.report-metric-search')?.value,rows:[...document.querySelectorAll('.report-metric-index .report-metric-row')].map((n)=>n.innerText)})`);
+console.log(JSON.stringify({before,expanded,filtered,searched}));ws.close();

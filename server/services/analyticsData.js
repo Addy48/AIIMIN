@@ -4,47 +4,60 @@ import { cacheGet, cacheSet } from '../lib/cache.js';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 const toDateKey = (value) => new Date(value).toISOString().slice(0, 10);
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-const avg = (values) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+export const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+export const avg = (values) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
+const numberOrNull = (value) => value === null || value === undefined || value === '' || Number.isNaN(Number(value)) ? null : Number(value);
+const boolOrNull = (value) => value === null || value === undefined ? null : Boolean(value);
 
 function createDailyRecord(date, log, session, spend, commitments, routineRuns, habitLogs) {
-    const focusCycles = Number(session?.focus_cycles || 0);
-    const focusMinutes = Number(session?.focus_minutes || 0);
-    const dailySpend = Number(spend?.daily_spend || 0);
-    const dailyIncome = Number(spend?.daily_income || 0);
-    const savingsRate = dailyIncome > 0 ? clamp((dailyIncome - dailySpend) / dailyIncome, -1, 1) : 0;
+    const focusCycles = numberOrNull(session?.focus_cycles);
+    const focusMinutes = numberOrNull(session?.focus_minutes);
+    const dailySpend = numberOrNull(spend?.daily_spend);
+    const dailyIncome = numberOrNull(spend?.daily_income);
+    const savingsRate = dailyIncome != null && dailyIncome > 0 && dailySpend != null
+        ? clamp((dailyIncome - dailySpend) / dailyIncome, -1, 1)
+        : (dailyIncome === 0 && dailySpend != null && dailySpend > 0 ? -1 : null);
     const habitCompletion = commitments?.fulfillment_pct != null
-        ? Number(commitments.fulfillment_pct)
-        : (habitLogs?.total > 0 ? (habitLogs.done / habitLogs.total) * 100 : 0);
-    const routineAdherence = routineRuns?.started > 0
-        ? clamp((routineRuns.completed / routineRuns.started) * 100, 0, 100)
-        : 0;
+        ? numberOrNull(commitments.fulfillment_pct)
+        : (Number(habitLogs?.total) > 0 ? (Number(habitLogs.done || 0) / Number(habitLogs.total)) * 100 : null);
+    const routineAdherence = Number(routineRuns?.started) > 0
+        ? clamp((Number(routineRuns.completed || 0) / Number(routineRuns.started)) * 100, 0, 100)
+        : null;
+
+    const sourceRecordIds = [];
+    if (log) sourceRecordIds.push(`daily_logs:${date}`);
+    if (session) sourceRecordIds.push(`pomodoro_sessions:${date}`);
+    if (spend) sourceRecordIds.push(`money_transactions:${date}`);
+    if (commitments) sourceRecordIds.push(`daily_commitments:${date}`);
+    if (routineRuns) sourceRecordIds.push(`routine_runs:${date}`);
+    if (habitLogs) sourceRecordIds.push(`habit_logs:${date}`);
 
     return {
         date,
-        sleep_hours: Number(log?.sleep_hours || 0),
-        gym_done: Boolean(log?.gym_done),
-        steps: Number(log?.steps || 0),
-        learning_done: Boolean(log?.learning_done),
-        journal_entry: log?.journal_entry || '',
-        water_bottles: Number(log?.water_bottles || 0),
-        mood: Number(log?.mood || 0),
-        breakfast_done: Boolean(log?.breakfast_done),
+        sourceRecordIds,
+        sleep_hours: numberOrNull(log?.sleep_hours),
+        gym_done: boolOrNull(log?.gym_done),
+        steps: numberOrNull(log?.steps),
+        learning_done: boolOrNull(log?.learning_done),
+        journal_entry: log?.journal_entry == null ? null : String(log.journal_entry),
+        water_bottles: numberOrNull(log?.water_bottles),
+        mood: numberOrNull(log?.mood),
+        breakfast_done: boolOrNull(log?.breakfast_done),
         focus_cycles: focusCycles,
         focus_minutes: focusMinutes,
-        target_cycles: 4,
+        target_cycles: session ? 4 : null,
         daily_spend: dailySpend,
         daily_income: dailyIncome,
-        burn_target: 1500,
+        burn_target: dailySpend != null ? 1500 : null,
         savings_rate: savingsRate,
-        budget_adherence: dailySpend <= 1500 ? 100 : clamp(100 - (((dailySpend / 1500) - 1) * 50), 0, 100),
-        commitment_pct: Number(commitments?.fulfillment_pct || 0),
-        habit_completion_pct: clamp(habitCompletion, 0, 100),
+        budget_adherence: dailySpend != null ? (dailySpend <= 1500 ? 100 : clamp(100 - (((dailySpend / 1500) - 1) * 50), 0, 100)) : null,
+        commitment_pct: commitments?.fulfillment_pct == null ? null : numberOrNull(commitments.fulfillment_pct),
+        habit_completion_pct: habitCompletion == null ? null : clamp(habitCompletion, 0, 100),
         routine_adherence_pct: routineAdherence,
-        habits_done: Number(habitLogs?.done || 0),
-        habits_total: Number(habitLogs?.total || 0),
-        routines_started: Number(routineRuns?.started || 0),
-        routines_completed: Number(routineRuns?.completed || 0),
+        habits_done: habitLogs ? Number(habitLogs?.done || 0) : null,
+        habits_total: habitLogs ? Number(habitLogs?.total || 0) : null,
+        routines_started: routineRuns ? Number(routineRuns?.started || 0) : null,
+        routines_completed: routineRuns ? Number(routineRuns?.completed || 0) : null,
     };
 }
 
@@ -90,7 +103,6 @@ export async function getAnalyticsDataset(userId, windowDays = 120, opts = {}) {
             baseParams
         ),
         pool.query(
-            // Live schema: daily rollup rows (date, cycles_completed, total_focus_minutes) — not per-start timestamps.
             `SELECT date::text AS date,
                     COALESCE(SUM(cycles_completed), 0)::numeric AS focus_cycles,
                     COALESCE(SUM(total_focus_minutes), 0)::numeric AS focus_minutes
@@ -184,5 +196,3 @@ export async function getAnalyticsDataset(userId, windowDays = 120, opts = {}) {
     cacheSet(cacheKey, dataset, 60_000);
     return dataset;
 }
-
-export { avg, clamp };
