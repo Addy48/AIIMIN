@@ -12,6 +12,9 @@ import { useCorrelationsQuery } from '../../hooks/useCorrelationsQuery';
 /**
  * Patterns — former Insights tab, grounded in live logs + intelligence report.
  * Dropped fake "Advanced Practitioner / Top 4%" vanity chrome.
+ *
+ * @deprecated Compatibility-only adjacent panel. The mounted Reports route uses
+ * ReportWorkspace; keep this file for existing consumers and do not add new score logic here.
  */
 export default function PatternsPanel({ report }) {
   const { user, session } = useAuth();
@@ -24,7 +27,7 @@ export default function PatternsPanel({ report }) {
   const actions = report?.actionPlan || reportData?.actionPlan || reportData?.executiveSummary?.recommendations || [];
   const diagnostics = report?.systemDiagnostics || reportData?.systemDiagnostics || [];
   const lhs = report?.lhs || lhsData;
-  const scores = lhs?.systemScores || report?.lifeHealthRadar || {};
+  const scores = lhs?.dimensions || lhs?.systemScores || report?.lifeHealthRadar || {};
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -34,14 +37,17 @@ export default function PatternsPanel({ report }) {
       </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 12 }}>
-        {['physical', 'cognitive', 'discipline', 'financial', 'emotional'].map((key) => (
-          <div key={key} style={{ padding: 16, borderRadius: 14, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-3)' }}>{key}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-text-1)', marginTop: 4 }}>
-              {Math.round(Number(scores[key]) || 0)}
+        {['physical', 'cognitive', 'discipline', 'financial', 'emotional'].map((key) => {
+          const value = scores[key]?.score ?? scores[key];
+          return (
+            <div key={key} style={{ padding: 16, borderRadius: 14, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-3)' }}>{key}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-text-1)', marginTop: 4 }}>
+                {value == null || !Number.isFinite(Number(value)) ? '—' : Math.round(Number(value))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>

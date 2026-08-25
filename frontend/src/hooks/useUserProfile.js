@@ -28,7 +28,7 @@ const DEFAULT_PROFILE = {
     updated_at: null,
 };
 
-export function useUserProfile() {
+export function useUserProfile({ enabled = true } = {}) {
     const [profile, setProfile] = useState(DEFAULT_PROFILE);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -86,16 +86,22 @@ export function useUserProfile() {
     }, [updateProfile]);
 
     useEffect(() => {
+        if (!enabled) {
+            setLoading(false);
+            return undefined;
+        }
         fetchProfile();
-    }, [fetchProfile]);
+        return undefined;
+    }, [enabled, fetchProfile]);
 
     useEffect(() => {
+        if (!enabled) return undefined;
         const onRefresh = () => {
             fetchProfile();
         };
         window.addEventListener('aiimin:profile-refresh', onRefresh);
         return () => window.removeEventListener('aiimin:profile-refresh', onRefresh);
-    }, [fetchProfile]);
+    }, [enabled, fetchProfile]);
 
     useEffect(() => {
         if (profile?.font_scale) {

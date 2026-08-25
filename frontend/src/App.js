@@ -159,6 +159,12 @@ function AppContent({ user, session }) {
         {showWaitlistAtRoot && (
           <Route path="/" element={<WaitlistLanding />} />
         )}
+        {/* Local visual QA only: seed-backed Reports modes never ship behind this route. */}
+        <Route path="/reports-demo" element={
+          process.env.NODE_ENV === 'development'
+            ? <Lazy><ReportsPage /></Lazy>
+            : <Navigate to="/reports" replace />
+        } />
 
         {/* Auth */}
         <Route path="/login/*" element={
@@ -250,13 +256,13 @@ function AppContent({ user, session }) {
 
       </Routes>
 
-      {!isProto && <ConsentBanner />}
+      {!isProto && !location.pathname.startsWith('/reports-demo') && <ConsentBanner />}
 
       {/* Global Widgets — suppressed on prototype and phone capture surfaces */}
-      {!isProto && !location.pathname.startsWith('/m') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-      {!isProto && !location.pathname.startsWith('/m') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+      {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+      {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
       {!isProto && isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
-      {!isProto && !location.pathname.startsWith('/m') && !isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && !isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
     </DeviceGate>
   );

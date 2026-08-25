@@ -1,6 +1,10 @@
 /**
  * ReportSections.js — Premium section renderers for AIIMIN Life-System PDF Reports.
  * Each function renders one rich, data-driven section into a jsPDF document.
+ *
+ * @deprecated Compatibility-only renderer. The mounted Reports route and current
+ * standard export use the canonical report-contract-v1 workspace/pipeline instead.
+ * Keep this file for existing consumers, but do not wire it to new product UI.
  */
 import autoTable from 'jspdf-autotable';
 import {

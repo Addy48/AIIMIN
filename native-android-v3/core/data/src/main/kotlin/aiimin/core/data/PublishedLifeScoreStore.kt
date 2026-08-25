@@ -53,17 +53,26 @@ enum class LifeScoreSource { ABSENT, BOOTSTRAP, API }
 data class PublishedDimension(
     val key: String,
     val label: String,
-    val score: Int,
+    val score: Int?,
 )
 
 data class PublishedLifeScoreState(
-    val global: Int,
+    val global: Int?,
     val dimensions: List<PublishedDimension>,
     val daysWithData: Int?,
+    val coverage: Double?,
+    val confidenceLabel: String?,
+    val confidenceScore: Double?,
+    val uncertaintyBand: Int?,
+    val trendDirection: String?,
+    val trendDelta: Double?,
+    val calculationVersion: String?,
+    val profileVersion: String?,
+    val referenceDatasetVersion: String?,
     val source: LifeScoreSource,
     val fetchedAtMs: Long?,
 ) {
-    val available: Boolean get() = source != LifeScoreSource.ABSENT
+    val available: Boolean get() = source != LifeScoreSource.ABSENT && global != null
 
     val sourceLabel: String
         get() = when (source) {
@@ -74,9 +83,18 @@ data class PublishedLifeScoreState(
 
     companion object {
         fun absent() = PublishedLifeScoreState(
-            global = 0,
+            global = null,
             dimensions = emptyList(),
             daysWithData = null,
+            coverage = null,
+            confidenceLabel = null,
+            confidenceScore = null,
+            uncertaintyBand = null,
+            trendDirection = null,
+            trendDelta = null,
+            calculationVersion = null,
+            profileVersion = null,
+            referenceDatasetVersion = null,
             source = LifeScoreSource.ABSENT,
             fetchedAtMs = null,
         )
@@ -86,16 +104,25 @@ data class PublishedLifeScoreState(
 private fun LifeHealthDto.toPublished(source: LifeScoreSource): PublishedLifeScoreState {
     val systems = systemScores
     val dims = listOf(
-        PublishedDimension("physical", "BODY", (systems?.physical ?: 0.0).roundToInt()),
-        PublishedDimension("cognitive", "MIND", (systems?.cognitive ?: 0.0).roundToInt()),
-        PublishedDimension("discipline", "DISCIPLINE", (systems?.discipline ?: 0.0).roundToInt()),
-        PublishedDimension("financial", "MONEY", (systems?.financial ?: 0.0).roundToInt()),
-        PublishedDimension("emotional", "MOOD", (systems?.emotional ?: 0.0).roundToInt()),
+        PublishedDimension("physical", "BODY", systems?.physical?.roundToInt()?.coerceIn(0, 100)),
+        PublishedDimension("cognitive", "MIND", systems?.cognitive?.roundToInt()?.coerceIn(0, 100)),
+        PublishedDimension("discipline", "DISCIPLINE", systems?.discipline?.roundToInt()?.coerceIn(0, 100)),
+        PublishedDimension("financial", "MONEY", systems?.financial?.roundToInt()?.coerceIn(0, 100)),
+        PublishedDimension("emotional", "MOOD", systems?.emotional?.roundToInt()?.coerceIn(0, 100)),
     )
     return PublishedLifeScoreState(
-        global = (globalScore ?: 0.0).roundToInt().coerceIn(0, 100),
+        global = globalScore?.roundToInt()?.coerceIn(0, 100),
         dimensions = dims,
         daysWithData = meta?.daysWithData,
+        coverage = meta?.coverage,
+        confidenceLabel = meta?.scoreConfidence,
+        confidenceScore = meta?.confidenceScore,
+        uncertaintyBand = meta?.uncertaintyBand?.roundToInt(),
+        trendDirection = meta?.trend?.direction,
+        trendDelta = meta?.trend?.delta,
+        calculationVersion = meta?.calculationVersion,
+        profileVersion = meta?.profileVersion,
+        referenceDatasetVersion = meta?.referenceDatasetVersion,
         source = source,
         fetchedAtMs = System.currentTimeMillis(),
     )

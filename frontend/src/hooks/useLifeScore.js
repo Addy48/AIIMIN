@@ -3,48 +3,69 @@ import { apiGet } from '../utils/api';
 import { calculateLifeScoreLocal } from '../utils/lifeScoreEngine';
 
 const SCORE_PREV_KEY = 'aiimin_life_score_prev';
+const DIMENSIONS = ['physical', 'cognitive', 'discipline', 'financial', 'emotional'];
+const LABELS = { physical: 'BODY', cognitive: 'MIND', discipline: 'DISCIPLINE', financial: 'MONEY', emotional: 'MOOD' };
 
-function mapLhsToDisplay(lhs) {
-    const ss = lhs?.systemScores || {};
-    const score = Math.round(Number(lhs?.globalScore) || 0);
-    let delta = 0;
+function deltaFromPrevious(score) {
+    if (score == null) return null;
     try {
         const prev = Number(localStorage.getItem(SCORE_PREV_KEY));
-        if (!Number.isNaN(prev) && prev > 0) delta = score - prev;
         localStorage.setItem(SCORE_PREV_KEY, String(score));
-    } catch { /* ignore */ }
-
-    // Canonical taxonomy — ADR 2026-08-03-life-score-taxonomy.
-    const contributors = {
-        physical: { score: Math.round(ss.physical || 0), label: 'BODY' },
-        cognitive: { score: Math.round(ss.cognitive || 0), label: 'MIND' },
-        discipline: { score: Math.round(ss.discipline || 0), label: 'DISCIPLINE' },
-        financial: { score: Math.round(ss.financial || 0), label: 'MONEY' },
-        emotional: { score: Math.round(ss.emotional || 0), label: 'MOOD' },
-    };
-
-    const dims = Object.values(contributors);
-    const best = dims.reduce((a, b) => (a.score >= b.score ? a : b));
-    const worst = dims.reduce((a, b) => (a.score <= b.score ? a : b));
-    let explanation = 'Score reflects your logged habits, sleep, focus, money, and mood.';
-    if (best.score - worst.score > 20) {
-        explanation = `${best.label} is strongest; ${worst.label.toLowerCase()} needs attention.`;
+        return Number.isFinite(prev) && prev > 0 ? score - prev : null;
+    } catch {
+        return null;
     }
+}
 
-    return { score, delta, explanation, source: 'api', contributors, lhs };
+export function unavailableLifeScore(reason = 'unavailable') {
+    return {
+        score: null,
+        delta: null,
+        explanation: 'Life Score is temporarily unavailable. Your source records were not replaced with an estimate.',
+        source: reason,
+        confidence: 'insufficient',
+        contributors: Object.fromEntries(DIMENSIONS.map((key) => [key, { score: null, label: LABELS[key] }])),
+    };
+}
+
+function mapLhsToDisplay(lhs) {
+    const scores = lhs?.systemScores || {};
+    const score = lhs?.globalScore == null ? null : Math.round(Number(lhs.globalScore));
+    const contributors = Object.fromEntries(DIMENSIONS.map((key) => [key, {
+        score: scores[key] == null ? null : Math.round(Number(scores[key])),
+        label: LABELS[key],
+        coverage: lhs?.dimensions?.[key]?.coverage ?? null,
+        confidence: lhs?.dimensions?.[key]?.confidence || 'insufficient',
+    }]));
+    const available = Object.values(contributors).filter((item) => item.score != null);
+    const best = available.reduce((a, b) => (a.score >= b.score ? a : b), available[0] || null);
+    const worst = available.reduce((a, b) => (a.score <= b.score ? a : b), available[0] || null);
+    let explanation = lhs?.scoreMeta?.methodology || 'Score reflects observed source records across your five operating dimensions.';
+    if (best && worst && best.score - worst.score > 20) explanation = `${best.label} is strongest in this window; ${worst.label.toLowerCase()} is the clearest area to inspect.`;
+
+    return {
+        score,
+        delta: deltaFromPrevious(score),
+        explanation,
+        source: 'api',
+        confidence: lhs?.scoreMeta?.confidence || 'insufficient',
+        coverage: lhs?.scoreMeta?.coverage ?? 0,
+        calculationVersion: lhs?.calculationVersion,
+        contributors,
+        lhs,
+    };
 }
 
 async function fetchLifeScore(user) {
-    if (!user || user.isGuest) {
-        return calculateLifeScoreLocal(user);
-    }
+    if (!user || user.isGuest) return calculateLifeScoreLocal(user);
     try {
         const lhs = await apiGet('/intelligence/lhs?days=30');
-        if (lhs?.globalScore != null) return mapLhsToDisplay(lhs);
+        if (lhs?.calculationVersion && Object.prototype.hasOwnProperty.call(lhs, 'globalScore')) return mapLhsToDisplay(lhs);
+        return unavailableLifeScore('invalid-api-contract');
     } catch (err) {
-        console.warn('[useLifeScore] API fallback:', err.message);
+        console.warn('[useLifeScore] server score unavailable:', err.message);
+        return unavailableLifeScore('api-unavailable');
     }
-    return calculateLifeScoreLocal(user);
 }
 
 export function useLifeScore(user, { enabled = true } = {}) {

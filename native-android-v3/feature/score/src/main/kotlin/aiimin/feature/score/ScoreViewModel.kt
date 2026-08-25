@@ -18,10 +18,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
- * One job: **mark and settle the day.**
+ * One job: capture and sync a day reflection.
  *
- * Rails + ladder move the provisional figure; Settle locks it into day history.
- * Published server Life Score (when hydrated) sits above as honesty context.
+ * The numeric Life Score is always the published server result. The app never
+ * computes a competing provisional score from rails, rungs, or local pursuits.
  */
 @HiltViewModel
 class ScoreViewModel @Inject constructor(
@@ -36,17 +36,7 @@ class ScoreViewModel @Inject constructor(
         day.state,
         publishedLifeScore.state,
     ) { marks, dayState, published ->
-        val minsDone = dayState.pursuits.count { (it.attainment ?: 0.0) >= 0.999 }
-        val minsTotal = dayState.pursuits.size.coerceAtLeast(1)
-        ScoreUiState(
-            marks = marks,
-            minsDone = minsDone,
-            minsTotal = minsTotal,
-            engineState = dayState.score.state,
-            engineBand = dayState.score.band,
-            engineConfidence = dayState.score.confidence,
-            published = published,
-        )
+        ScoreUiState.from(marks, dayState, published)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5_000),
@@ -55,6 +45,7 @@ class ScoreViewModel @Inject constructor(
 
     fun onBumpRail(index: Int) = score.bumpRail(index)
     fun onSetRung(rung: Int) = score.setRung(rung)
+
     fun onSettle() {
         score.settleDay()
         val rung = score.state.value.rung
@@ -64,6 +55,7 @@ class ScoreViewModel @Inject constructor(
                 .onFailure { score.markServerPending() }
         }
     }
+
     fun onDismissNotice() = score.dismissNotice()
 }
 
@@ -71,14 +63,16 @@ data class ScoreUiState(
     val marks: ScoreState,
     val minsDone: Int,
     val minsTotal: Int,
+    /** Compatibility metadata only; the UI should read [published]. */
     val engineState: Double,
     val engineBand: Double,
     val engineConfidence: Double,
     val published: PublishedLifeScoreState = PublishedLifeScoreState.absent(),
 ) {
-    val live: Int get() = marks.liveScore(minsDone)
-    val delta: String get() = marks.deltaLabel(minsDone)
-    val movers get() = marks.movers(minsDone, minsTotal)
+    val scoreAvailable: Boolean get() = published.available && published.global != null
+    val displayScore: Int? get() = published.global
+    val confidenceLabel: String get() = published.confidenceLabel ?: "unavailable"
+    val trendLabel: String get() = published.trendDirection ?: "unknown"
 
     companion object {
         fun from(
@@ -91,9 +85,9 @@ data class ScoreUiState(
                 marks = marks,
                 minsDone = minsDone,
                 minsTotal = day.pursuits.size.coerceAtLeast(1),
-                engineState = day.score.state,
-                engineBand = day.score.band,
-                engineConfidence = day.score.confidence,
+                engineState = published.global?.toDouble() ?: 0.0,
+                engineBand = published.uncertaintyBand?.toDouble() ?: 0.0,
+                engineConfidence = published.confidenceScore ?: 0.0,
                 published = published,
             )
         }

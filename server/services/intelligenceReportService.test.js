@@ -7,7 +7,8 @@ import {
     computeBehaviorClusters,
     buildIntelligenceReportSections,
 } from '../services/intelligenceReportService.js';
-import { calculateLifeHealthForRecord } from '../services/lifeHealthEngine.js';
+import { calculateLifeHealthForRecord, summarizeLifeHealth } from '../services/lifeHealthEngine.js';
+import { buildCanonicalReport } from '../services/reportGenerator.js';
 
 const sampleTimeline = Array.from({ length: 14 }, (_, i) => {
     const record = {
@@ -76,5 +77,64 @@ describe('intelligenceReportService', () => {
         const sections = buildIntelligenceReportSections(dataset, lhs);
         assert.equal(sections.meta.computedFromData, true);
         assert.ok(sections.drivers.rankedDrivers.length >= 0);
+    });
+
+    it('buildCanonicalReport is traceable and changes capability by tier', () => {
+        const records = sampleTimeline.map(({ date, ...rest }) => ({ date, ...rest }));
+        const lhs = summarizeLifeHealth(records);
+        const pro = buildCanonicalReport({
+            tier: 'pro',
+            window: { start: '2026-07-01', end: '2026-07-14', timezone: 'Asia/Kolkata', label: 'Last 14 days', days: 14 },
+            lhs,
+            drivers: { rankedDrivers: [] },
+            drift: { alerts: [] },
+            forecast: { horizons: { sevenDays: {} } },
+            signalCorrelations: [],
+            weeklyReview: { recommendations: [] },
+        });
+        const explore = buildCanonicalReport({
+            tier: 'explore',
+            window: { start: '2026-07-01', end: '2026-07-07', timezone: 'Asia/Kolkata', label: 'Last 7 days', days: 7 },
+            lhs,
+            drivers: { rankedDrivers: [] },
+            drift: { alerts: [] },
+            forecast: { horizons: null },
+            signalCorrelations: [],
+            weeklyReview: { recommendations: [] },
+        });
+        const core = buildCanonicalReport({
+            tier: 'core',
+            window: { start: '2026-07-01', end: '2026-07-14', timezone: 'Asia/Kolkata', label: 'Last 14 days', days: 14 },
+            lhs,
+            drivers: { rankedDrivers: [] },
+            drift: { alerts: [] },
+            forecast: { horizons: null },
+            signalCorrelations: [],
+            weeklyReview: { recommendations: [] },
+        });
+        const elite = buildCanonicalReport({
+            tier: 'elite',
+            window: { start: '2026-07-01', end: '2026-07-14', timezone: 'Asia/Kolkata', label: 'Last 14 days', days: 14 },
+            lhs,
+            drivers: { rankedDrivers: [] },
+            drift: { alerts: [] },
+            forecast: { horizons: { sevenDays: {} } },
+            signalCorrelations: [],
+            weeklyReview: { recommendations: [] },
+        });
+        assert.equal(pro.contractVersion, 'report-contract-v1');
+        assert.ok(pro.metrics.some((metric) => metric.metricId === 'sleep_hours'));
+        assert.equal(pro.metrics.find((metric) => metric.metricId === 'journal_entry').currentValue, false);
+        assert.ok(pro.entitlements.includes('evidence_drawer'));
+        assert.equal(explore.entitlements.includes('evidence_drawer'), false);
+        assert.equal(explore.forecast, null);
+        assert.equal(pro.globalScore, lhs.globalScore);
+        assert.equal(pro.scoreConfidence, lhs.scoreMeta.confidence);
+        assert.equal(pro.uncertaintyBand, lhs.scoreMeta.uncertaintyBand);
+        assert.equal(pro.referenceDatasetVersion, lhs.scoreMeta.referenceDatasetVersion);
+        assert.ok(core.entitlements.includes('weekly_comparison'));
+        assert.equal(core.entitlements.includes('evidence_drawer'), false);
+        assert.ok(elite.entitlements.includes('deep_report'));
+        assert.ok(elite.entitlements.includes('forecast_assumptions'));
     });
 });

@@ -64,6 +64,14 @@
   color: var(--ivory-ink);
 }
 
+.ivory-snap__name--os-id {
+  font-family: var(--font-display, 'Familjen Grotesk', 'Figtree', system-ui, sans-serif);
+  font-size: clamp(.9rem, 2vw, 1.05rem);
+  font-weight: 750;
+  letter-spacing: .045em;
+  line-height: 1.15;
+}
+
 .ivory-snap__tier {
   margin-top: 4px;
   font-family: var(--ivory-mono);

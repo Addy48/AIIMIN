@@ -9,7 +9,7 @@ import '../../styles/mobileCapture.css';
 import '../../styles/mobileScore.css';
 
 function deltaLabel(delta, score) {
-  if (!score || score === 0) return 'Log today to start your score';
+  if (score == null || score === 0) return 'Log more source data to establish your score';
   if (delta > 0) return `Up ${delta} from yesterday`;
   if (delta < 0) return `Down ${Math.abs(delta)} from yesterday`;
   return 'No change from yesterday';
@@ -62,9 +62,9 @@ export default function MobileScorePage() {
       .catch(() => setJournalWeek(0));
   }, [user?.id]);
 
-  const score = lifeScore?.score ?? 0;
-  const delta = lifeScore?.delta ?? 0;
-  const hasScore = score > 0;
+  const score = lifeScore?.score ?? null;
+  const delta = lifeScore?.delta ?? null;
+  const hasScore = score != null && score > 0;
   const streak = xpData?.clean_streak || xpData?.longest_streak || 0;
   const progress = getRankProgress(xpData?.total_xp || 0);
   const xpToNext = progress.next ? Math.max(0, progress.next.minXP - (xpData?.total_xp || 0)) : 0;
@@ -91,10 +91,10 @@ export default function MobileScorePage() {
                 fill="none"
                 stroke="#ff6b35"
                 strokeWidth="2"
-                strokeDasharray={`${score}, 100`}
+                strokeDasharray={`${score == null ? 0 : score}, 100`}
               />
             </svg>
-            <span className="mobile-score__number">{loading ? '—' : score}</span>
+            <span className="mobile-score__number">{loading ? '—' : score == null ? '—' : score}</span>
           </div>
           <p className={`mobile-score__delta${
             !hasScore
@@ -109,7 +109,7 @@ export default function MobileScorePage() {
           {streak > 0 && (
             <span className="mobile-score__streak-badge">{streak}-day log streak</span>
           )}
-          <p className="mobile-score__label">Life Score</p>
+          <p className="mobile-score__label">Life Score{lifeScore?.confidence ? <span style={{ display: 'block', marginTop: 5, fontSize: 10, opacity: 0.7 }}>{lifeScore.confidence}</span> : null}</p>
         </section>
 
         <section className="mobile-score__grid" aria-label="Weekly glance">

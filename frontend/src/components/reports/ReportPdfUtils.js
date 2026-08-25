@@ -1,5 +1,9 @@
 /**
- * ReportPdfUtils.js — Premium PDF design utilities for AIIMIN Life-System Reports
+ * ReportPdfUtils.js — Premium PDF design utilities for AIIMIN Life-System Reports.
+ *
+ * @deprecated Compatibility-only drawing substrate. New reports must use the
+ * canonical report-contract-v1 data and PDFReportGenerator.
+ *
  * Professional-grade report generation with rich data visualization.
  */
 

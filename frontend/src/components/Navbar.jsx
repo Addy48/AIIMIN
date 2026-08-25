@@ -3,7 +3,7 @@ import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '../hooks/useNotifications';
 import { useThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
-import { Menu, X, Sun, Moon, ChevronDown, Bell } from 'lucide-react';
+import { Menu, X, Sun, Moon, ChevronDown, ChevronRight, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from './notifications/NotificationBell';
 import BrandLockup from './brand/BrandLockup';
@@ -12,6 +12,22 @@ import useNavPreferences from '../hooks/useNavPreferences';
 import { useDeviceTier } from '../hooks/useDeviceTier';
 
 const TABLET_NAV_CAP = 8;
+
+const isUrgentNotification = (notification) => (
+  ['commitment_miss', 'drift_alert', 'integration_error'].includes(notification?.type)
+  || /urgent|overdue|due|renewal|expir/i.test(`${notification?.title || ''} ${notification?.body || ''}`)
+);
+
+const notificationActionLabel = (notification) => {
+  if (notification?.action_label) return notification.action_label;
+  if (notification?.type === 'weekly_report' || notification?.type === 'weekly_summary' || notification?.type === 'weekly_summary_ready') return 'Open report';
+  if (notification?.type === 'commitment_miss' || notification?.type === 'drift_alert') return 'Review now';
+  return 'Open details';
+};
+
+const safeNotificationPath = (actionUrl) => (
+  typeof actionUrl === 'string' && actionUrl.startsWith('/') && !actionUrl.startsWith('//') ? actionUrl : '/overview'
+);
 
 const mastheadLinkClass = ({ isActive }) =>
   `nav-masthead__link${isActive ? ' nav-masthead__link--active' : ''}`;
@@ -205,7 +221,7 @@ const Navbar = ({ user }) => {
           </button>
 
           <div ref={bellRef} style={{ position: 'relative' }}>
-            <NotificationBell count={unreadCount} onOpen={handleOpenNotif} isOpen={notifOpen} />
+            <NotificationBell count={unreadCount} urgent={notifications.some(isUrgentNotification)} onOpen={handleOpenNotif} isOpen={notifOpen} />
             {notifOpen && (
               <NotifDropdown
                 notifications={notifications}
@@ -306,6 +322,13 @@ const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDi
   const ref = useRef(null);
   const navigate = useNavigate();
 
+  const openNotification = (notification) => {
+    if (!notification?.action_url) return;
+    if (!notification.read_at) onMarkRead(notification.id);
+    navigate(safeNotificationPath(notification.action_url));
+    onClose();
+  };
+
   useEffect(() => {
     const handle = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
     document.addEventListener('mousedown', handle);
@@ -335,23 +358,32 @@ const NotifDropdown = ({ notifications, loading, onMarkRead, onMarkAllRead, onDi
         {!loading && notifications.map((n) => (
           <div
             key={n.id}
-            className={`nav-notif-dropdown__item${!n.read_at ? ' is-unread' : ''}`}
-            onClick={(e) => {
-              if (n.action_url && !e.defaultPrevented) {
-                if (!n.read_at) onMarkRead(n.id);
-                navigate(n.action_url);
-                onClose();
+            className={`nav-notif-dropdown__item${!n.read_at ? ' is-unread' : ''}${isUrgentNotification(n) ? ' is-urgent' : ''}`}
+            onClick={() => openNotification(n)}
+            onKeyDown={(event) => {
+              if (n.action_url && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                openNotification(n);
               }
             }}
-            onKeyDown={() => {}}
             role={n.action_url ? 'button' : undefined}
             tabIndex={n.action_url ? 0 : undefined}
+            aria-label={n.action_url ? `${n.title}. ${notificationActionLabel(n)}` : undefined}
           >
-            <span className="nav-notif-dropdown__icon">{typeIcon(n.type)}</span>
+            <span className="nav-notif-dropdown__icon" aria-hidden="true">{typeIcon(n.type)}</span>
             <div className="nav-notif-dropdown__body">
               <div className="nav-notif-dropdown__item-title">{n.title}</div>
               {n.body && <div className="nav-notif-dropdown__item-body">{n.body}</div>}
               <div className="nav-notif-dropdown__time">{timeAgo(n.created_at)}</div>
+              {n.action_url && (
+                <button
+                  type="button"
+                  className="nav-notif-dropdown__cta"
+                  onClick={(event) => { event.preventDefault(); event.stopPropagation(); openNotification(n); }}
+                >
+                  {notificationActionLabel(n)} <ChevronRight size={13} aria-hidden="true" />
+                </button>
+              )}
             </div>
             <div className="nav-notif-dropdown__actions">
               {!n.read_at && (
