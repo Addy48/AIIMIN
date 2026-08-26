@@ -11,15 +11,15 @@ import './brandPage.css';
  */
 
 const PILLARS = [
-  { title: 'Absolute Precision', desc: 'Every interaction is minimal and intentional. No feature bloat, no decorative chrome. Extreme utility only.' },
-  { title: 'Feedback Loops', desc: 'Every input produces immediate, visible output. Log behavior → score momentum → extract insight → take action.' },
-  { title: 'Behavioral Intelligence', desc: 'Surface deep, invisible patterns. Predict mental drift before it compounds into regression.' },
-  { title: 'Data Sovereignty', desc: 'Your behavioural archive never leaves your control. Full export, full ownership, zero harvesting.' },
-  { title: 'Momentum Engineering', desc: 'Systems built to compound consistency — intelligent streaks, contextual scores, ritual reinforcement.' },
-  { title: 'Deep Mode State', desc: 'When intense focus begins, noise disappears. No sidebar. No notifications. Just you and the work.' },
-  { title: 'Dimensional Analysis', desc: 'Correlate sleep, deep focus, mood variance, and spending into one behavioural intelligence layer.' },
-  { title: 'Disciplined Growth', desc: 'Stable foundations first. Every feature earns its place through validated momentum generation.' },
-  { title: 'Adaptive Interventions', desc: 'The system evolves with your habits. Push when momentum is high. Catch you when you drift.' },
+  { title: 'Absolute Cognitive Clarity', desc: 'Zero decorative fluff. Every pixel, metric, and hotkey serves raw operational leverage and high-bandwidth thinking.' },
+  { title: 'High-Velocity Feedback Loops', desc: 'Action creates data; data calculates trajectory; trajectory dictates next move. Shorten the latency between behavior and insight.' },
+  { title: 'Behavioral Telemetry', desc: 'Decode hidden biological and execution patterns across sleep, focus depth, mood variance, and capital allocation.' },
+  { title: 'Sovereign Data Custody', desc: 'Your historical archive is your intellectual property. Zero third-party training, zero telemetry brokering, complete exportability.' },
+  { title: 'Momentum Compounding', desc: 'Build unshakeable habits through velocity metrics, anti-fragile streaks, and contextual execution rituals.' },
+  { title: 'Sanctuary Deep Mode', desc: 'When deep focus initiates, all peripheral clutter evaporates. No navigation bars, no pings, no context switching. Just pure output.' },
+  { title: 'Multi-Vector Synthesis', desc: 'Unify habits, finances, biological rhythms, milestones, and reflection into a unified personal intelligence layer.' },
+  { title: 'Anti-Fragile Discipline', desc: 'Systems engineered to withstand disruptions. Push ruthlessly when momentum peaks; recalibrate instantly when drift begins.' },
+  { title: 'Autonomous Calibration', desc: 'Intelligent diagnostics that evolve alongside your capacity, preventing burnout while expanding your peak output ceiling.' },
 ];
 
 const STORAGE = [
@@ -27,7 +27,7 @@ const STORAGE = [
     key: 'Where it lives',
     val: (
       <>
-        Account data and behavioural logs sit in <strong>Supabase Postgres</strong> with row-level isolation. API traffic runs on our backend host; the app UI ships from <strong>Vercel</strong>.
+        Account data and encrypted behavioural ledgers reside in dedicated <strong>Supabase PostgreSQL</strong> clusters with cryptographic row-level isolation. Edge routing runs on <strong>Vercel</strong>; backend intelligence executes on our isolated EC2 compute nodes.
       </>
     ),
   },
@@ -35,15 +35,15 @@ const STORAGE = [
     key: 'What we store',
     val: (
       <>
-        Habits, goals, journal, notes, finance, focus sessions, calendar sync metadata, and preferences — tied to your <strong>OS ID</strong>. Not sold. Not used for ads.
+        Habits, quantifiable goals, journal logs, notes, financial records, focus metrics, calendar metadata, and system preferences — keyed strictly to your <strong>OS-ID</strong>. Never sold. Never used for ad targeting.
       </>
     ),
   },
   {
-    key: 'What leaves',
+    key: 'Data custody',
     val: (
       <>
-        Google Calendar / YouTube tokens stay <strong>encrypted at rest</strong>. Revoke Google access anytime. Full account deletion removes your archive on request.
+        OAuth tokens for Google Calendar, YouTube, and Drive remain <strong>encrypted at rest</strong>. Revoke provider access at any second. Request complete account purge for permanent cryptographic erasure.
       </>
     ),
   },
@@ -59,9 +59,9 @@ const LEGAL = [
 ];
 
 const LAYERS = [
-  { role: 'Interface', tech: 'React + design tokens', detail: 'Edge-rendered on Vercel — zero-latency UI for daily capture.' },
-  { role: 'Compute', tech: 'Express API', detail: 'api.aiimin.in on our EC2 host — intelligence, auth, and sync.' },
-  { role: 'Archive', tech: 'Supabase Postgres', detail: 'Row-level security. Your behavioural history stays yours.' },
+  { role: 'Interface Layer', tech: 'React 19 + High-Density Design Engine', detail: 'Edge-distributed on Vercel with zero-latency input pipelines and instantaneous telemetry capture.' },
+  { role: 'Intelligence Layer', tech: 'Node / Express Dedicated Services', detail: 'api.aiimin.in on dedicated EC2 nodes — orchestrating synchronization, token security, and scheduled analytics.' },
+  { role: 'Sovereign Archive', tech: 'Supabase PostgreSQL + Cryptographic RLS', detail: 'Row-level security isolation ensuring complete data sovereignty. Your behavioral history remains yours.' },
 ];
 
 const RAIL = [
@@ -74,99 +74,121 @@ const RAIL = [
 ];
 
 const WE_ARE = [
-  'A Life OS for intent, not engagement',
-  'Private behavioural archive you own',
-  'Cheap daily capture, honest patterns',
+  'A sovereign Life OS built for human momentum',
+  'Private behavioral archive with zero harvesting',
+  'Frictionless daily telemetry & high-density signal',
 ];
 
 const WE_REFUSE = [
-  'Ad tracking and data harvesting',
-  'Streak shame and wellness theater',
-  'Feature bloat that dilutes focus',
+  'Attention extraction, ad networks, & surveillance telemetry',
+  'Streak theater, artificial vanity badges, & guilt loops',
+  'Shallow productivity bloat that degrades cognitive output',
 ];
 
 /** Brand-surface summary — enforceable via linked Privacy / Terms / Deletion / Security. */
 const HARD_COMMITMENTS = [
-  { title: 'No sale of personal data', body: 'We do not sell, rent, or commercially transfer your personal data to third parties.' },
-  { title: 'No ads / no tracking pixels', body: 'No advertising cookies, marketing scripts, or behavioural ad profiles on the platform.' },
-  { title: 'Google Limited Use', body: 'Google API data is used only to show your own data in your dashboard — not ads, not model training, not third-party transfer.' },
-  { title: 'Humans do not browse your Google data', body: 'No human reads your Google-connected data except at your explicit request for support, or as required by law.' },
-  { title: 'Your content stays yours', body: 'Goals, journal, notes, and logs you enter remain your property. We only process them to run the Service.' },
-  { title: 'Minimum OAuth scopes', body: 'Calendar / YouTube / Drive integrations are read-oriented. You can revoke Google access anytime.' },
+  { title: 'Zero personal data sale', body: 'We never sell, rent, monetize, or commercially transfer your telemetry or personal records to any third party.' },
+  { title: 'Zero ad tracking & surveillance', body: 'No marketing trackers, third-party advertising scripts, or behavioral profiling pixels anywhere across the platform.' },
+  { title: 'Strict Google Limited Use', body: 'Google API data is processed strictly to render your own dashboard. Never used for model training, advertising, or external transfers.' },
+  { title: 'Zero human data browsing', body: 'No human accesses your connected Google data or private logs, except upon your explicit support request or lawful court order.' },
+  { title: 'Absolute content ownership', body: 'Your goals, journal entries, financial ledgers, and logs remain your sole intellectual property. We process them solely to power the OS.' },
+  { title: 'Least-privilege OAuth scopes', body: 'All external integrations (Calendar, YouTube, Drive) operate under minimal read-oriented permissions. Revocable anytime.' },
 ];
 
 const USER_RIGHTS = [
-  { title: 'Access', body: 'Request a copy of the personal data we hold about you.' },
-  { title: 'Correction', body: 'Update profile and account details in Settings / dashboard.' },
-  { title: 'Deletion', body: 'Delete account in-app or request wipe — active purge immediate; backups within 30 days.' },
-  { title: 'Revoke Google', body: 'Remove AIIMIN from Google Account Permissions — Google features cut off immediately.' },
-  { title: 'Export / leave', body: 'Stop using the Service anytime. Deletion path is documented and linked below.' },
-  { title: 'Complain', body: 'Email founders for privacy, security, or policy disputes. We respond as the operator of record.' },
+  { title: 'Access & Portability', body: 'Obtain a full machine-readable export of all behavioral and telemetry data associated with your identity.' },
+  { title: 'Instant Correction', body: 'Update, rectify, or purge profile details, goals, and logged variables directly within the application.' },
+  { title: 'Cryptographic Deletion', body: 'Trigger an immediate active data purge in-app or via verified request. Backup copies are purged within 30 days.' },
+  { title: 'OAuth Severance', body: 'Instantly revoke Google integrations from Google Account security settings to terminate token access immediately.' },
+  { title: 'Unconditional Exit', body: 'Terminate your account and export your entire historical ledger at any time with zero lock-in or retention hurdles.' },
+  { title: 'Founder Escalation', body: 'Direct escalation channel to company founders for privacy inquiries, data requests, or operational disputes.' },
 ];
 
 const HOLD_US = [
   {
     step: '01',
     title: 'Delete your archive',
-    body: 'Settings → Delete Account, or email a deletion request. Active data purged; backups cleared within 30 days.',
+    body: 'Settings → Delete Account, or submit a formal wipe request. Active data purged immediately; backups purged within 30 days.',
     to: '/data-deletion',
     label: 'Data deletion policy',
   },
   {
     step: '02',
-    title: 'Cut Google access',
-    body: 'Revoke AIIMIN in Google Account Permissions. That kills Calendar / YouTube / Drive tokens for us.',
+    title: 'Sever Google permissions',
+    body: 'Revoke AIIMIN inside Google Account Permissions to immediately invalidate all OAuth tokens for Calendar, YouTube, and Drive.',
     href: 'https://myaccount.google.com/permissions',
     label: 'Google permissions',
     external: true,
   },
   {
     step: '03',
-    title: 'Open a formal request',
-    body: 'Privacy, correction, access, security incident, or dispute — write founders@aiimin.in with a clear subject.',
+    title: 'Export complete ledger',
+    body: 'Download your entire behavioral history, daily logs, habit trends, and focus metrics in portable JSON format anytime.',
+    to: '/data-deletion',
+    label: 'Data export guide',
+  },
+  {
+    step: '04',
+    title: 'Report security findings',
+    body: 'Responsible disclosures and data vulnerability reports receive priority engineering response and mitigation within 24 hours.',
+    to: '/security',
+    label: 'Security policy',
+  },
+  {
+    step: '05',
+    title: 'Founder direct escalation',
+    body: 'For privacy grievances, compliance verification, or account disputes — email founders@aiimin.in for direct operator review.',
     href: 'mailto:founders@aiimin.in',
     label: 'Email founders',
   },
   {
-    step: '04',
-    title: 'Read the binding pages',
-    body: 'Privacy, Terms, Security, and Deletion are the enforceable documents. This page is a summary, not a substitute.',
+    step: '06',
+    title: 'Inspect binding contracts',
+    body: 'Our Privacy Policy, Terms of Service, Security Architecture, and Subprocessor list are the binding governing documents.',
     to: '/privacy',
-    label: 'Privacy Policy',
+    label: 'Privacy & Legal',
   },
 ];
 
 const SCOPES = [
-  { scope: 'openid / email / profile', use: 'Sign-in identity only' },
-  { scope: 'calendar.readonly (+ events read)', use: 'Show your schedule — we do not create/edit/delete events' },
-  { scope: 'youtube.readonly', use: 'Show your YouTube activity — no posts or deletes' },
-  { scope: 'drive.readonly (optional)', use: 'Notes folder watch — read only, never write to Drive' },
+  { scope: 'openid / email / profile', use: 'Cryptographic authentication & account identity only' },
+  { scope: 'calendar.readonly (+ events read)', use: 'Synchronize your schedule — strictly read-only, never creates or alters events' },
+  { scope: 'youtube.readonly', use: 'Index study and focus session media — never publishes, comments, or deletes' },
+  { scope: 'drive.readonly (optional)', use: 'Synchronize Obsidian / markdown notes folder — strictly read-only access' },
 ];
 
 const DISCLAIMERS = [
   {
-    title: 'Not medical / clinical advice',
-    body: 'AIIMIN is a productivity Life OS. Insights are behavioural patterns from your logs — not diagnosis, therapy, or clinical claims.',
+    title: 'Not clinical or medical advice',
+    body: 'AIIMIN provides behavioral productivity telemetry and self-directed analytics — never medical diagnosis, psychiatric care, therapy, or clinical claims.',
   },
   {
-    title: 'Service “as is”',
-    body: 'Per Terms: no warranty of uninterrupted or error-free operation. Downtime or bugs may happen; we work to fix them.',
+    title: 'High availability & uptime',
+    body: 'Built on high-availability cloud infrastructure. Service is provided "as is" without warranty of uninterrupted, zero-latency, or error-free continuous operation.',
   },
   {
-    title: 'Liability limits',
-    body: 'To the maximum extent allowed by law, indirect / consequential damages (including data or productivity loss) are limited as stated in Terms.',
+    title: 'Absolute data sovereignty',
+    body: 'You retain 100% ownership of your logged behavioral data. Export your entire historical archive in standard open formats anytime.',
   },
   {
-    title: 'Governing law',
-    body: 'Terms are governed by the laws of India. Disputes: competent courts in Uttar Pradesh, India.',
+    title: 'Third-party integrations',
+    body: 'Connected services (Google Calendar, YouTube, Drive) operate under least-privilege OAuth scopes and are subject to provider availability and API terms.',
+  },
+  {
+    title: 'Liability limitations',
+    body: 'To the fullest extent permitted by applicable law, direct, indirect, and consequential damages (including productivity loss) are limited as stated in Terms.',
+  },
+  {
+    title: 'Governing jurisdiction',
+    body: 'Terms of Service are governed by the laws of India. Legal disputes are subject to the exclusive jurisdiction of competent courts in Uttar Pradesh, India.',
   },
 ];
 
 const PROCESSORS = [
-  { name: 'Supabase', role: 'Postgres + auth', href: 'https://supabase.com/privacy' },
-  { name: 'Vercel', role: 'Frontend hosting', href: 'https://vercel.com/legal/privacy-policy' },
-  { name: 'Google APIs', role: 'Calendar / YouTube / Drive you connect', href: 'https://policies.google.com/privacy' },
-  { name: 'EC2 API host', role: 'api.aiimin.in compute', to: '/security' },
+  { name: 'Supabase', role: 'PostgreSQL DB + Auth Engine', href: 'https://supabase.com/privacy' },
+  { name: 'Vercel', role: 'Edge Application Distribution', href: 'https://vercel.com/legal/privacy-policy' },
+  { name: 'Google Cloud APIs', role: 'Read-only OAuth Integrations', href: 'https://policies.google.com/privacy' },
+  { name: 'EC2 API Host', role: 'api.aiimin.in Compute & Sync', to: '/security' },
 ];
 
 function Reveal({ children, className = '', delay = 0 }) {
@@ -342,8 +364,8 @@ export default function Brand() {
 
               <Reveal delay={2}>
                 <p className="brand-manifesto__lede">
-                  Not another dashboard. AIIMIN is a Life OS that shapes reality through intelligent feedback loops,
-                  extreme privacy, and ritual-based design — built for founders, builders, and high performers operating under high cognitive load.
+                  AIIMIN is an intelligent Life Operating System engineered for builders, operators, and high performers.
+                  We turn daily telemetry into compounding momentum through high-density signal, ruthless feedback loops, and sovereign local-first privacy.
                 </p>
               </Reveal>
 
@@ -383,7 +405,7 @@ export default function Brand() {
                   </ul>
                 </div>
                 <p className="brand-stance__quote">
-                  Capture stays cheap. Patterns stay honest. The archive stays yours.
+                  Telemetry without friction. Insights without theater. An archive owned entirely by you.
                 </p>
               </aside>
             </Reveal>
@@ -394,10 +416,10 @@ export default function Brand() {
               <div className="brand-section__head">
                 <div>
                   <p className="brand-section__index">01 — Problem</p>
-                  <h2 className="brand-section__title">We optimize for intent.</h2>
+                  <h2 className="brand-section__title">Engineered for execution, not retention.</h2>
                 </div>
                 <p className="brand-section__desc">
-                  Modern software optimizes for engagement. Filing cabinets dressed as productivity. You need an engine.
+                  Modern software is engineered to capture and monetize your attention. Most &ldquo;productivity&rdquo; tools are bloated filing cabinets that induce cognitive exhaustion.
                 </p>
               </div>
             </Reveal>
@@ -406,20 +428,19 @@ export default function Brand() {
               <div className="brand-problem">
                 <div className="brand-problem__copy">
                   <p>
-                    The average professional loses hours a day to context switching, low-friction entertainment, and interface traps.
-                    Current tools hold data but do not shape behaviour.
+                    Ambitious operators hemorrhage peak cognitive hours across fragmented tools, performative streak trackers, and interfaces engineered for dopamine extraction. Passive tools store notes; they never catalyze execution.
                   </p>
                   <p>
-                    <strong>AIIMIN flips the paradigm.</strong>
+                    <strong>AIIMIN is an execution engine.</strong>
                     {' '}
-                    Every pixel enforces constraints, visualizes momentum, and removes friction between thought and action.
+                    Every architectural layer enforces deep focus, exposes invisible behavioral leakage, and converts daily consistency into compounding momentum.
                   </p>
                 </div>
                 <div className="brand-stats" role="list">
                   {[
-                    { metric: '90+', label: 'Minute deep sessions' },
-                    { metric: 'Zero', label: 'Algorithmic distractions' },
-                    { metric: '100%', label: 'Private & encrypted' },
+                    { metric: '0%', label: 'Attention harvesting & ad trackers' },
+                    { metric: 'Sub-50ms', label: 'Telemetry logging & command response' },
+                    { metric: '100%', label: 'Sovereign row-level encrypted data' },
                   ].map((s) => (
                     <div className="brand-stats__row" role="listitem" key={s.label}>
                       <div className="brand-stats__metric">{s.metric}</div>
@@ -439,7 +460,7 @@ export default function Brand() {
                   <h2 className="brand-section__title">Nine pillars of momentum.</h2>
                 </div>
                 <p className="brand-section__desc">
-                  We do not follow standard UX conventions. We follow psychological principles. Every feature must pass the momentum test.
+                  We reject superficial UX trends in pursuit of raw cognitive leverage. Every system mechanic is engineered to maximize human output.
                 </p>
               </div>
             </Reveal>
@@ -467,7 +488,7 @@ export default function Brand() {
                   <h2 className="brand-section__title">Where your life archive lives.</h2>
                 </div>
                 <p className="brand-section__desc">
-                  Storage is part of the brand promise — not a footer afterthought.
+                  Data custody is a foundational architectural contract — not an obscure legal afterthought.
                 </p>
               </div>
             </Reveal>
@@ -492,8 +513,7 @@ export default function Brand() {
                   <h2 className="brand-section__title">Everything you can hold us to.</h2>
                 </div>
                 <p className="brand-section__desc">
-                  Commitments, rights, escalation paths, scopes, processors, and limits — summarized here, binding on the linked policy pages.
-                  If we break a promise below, you have concrete ways to act.
+                  Operational commitments, sovereign user rights, instant escalation paths, verified API scopes, and clear liability boundaries — summarized with complete transparency.
                 </p>
               </div>
             </Reveal>
@@ -654,7 +674,7 @@ export default function Brand() {
                   <h2 className="brand-section__title">The trajectory.</h2>
                 </div>
                 <p className="brand-section__desc">
-                  Foundation first. Proactive intelligence when the archive is deep enough to deserve it.
+                  Solid foundation first. Autonomous intelligence synthesized as the behavioral archive deepens.
                 </p>
               </div>
             </Reveal>
@@ -666,11 +686,9 @@ export default function Brand() {
                     <i />
                     Phase 1 · Foundation
                   </div>
-                  <h3>Behavioral aggregation</h3>
+                  <h3>Execution engine &amp; multi-vector graph</h3>
                   <p>
-                    A high-performance behaviour-tracking OS: focus, streaks, mood, money, calendar, and YouTube context —
-                    powered by a commitment engine and weekly intelligence. Desktop web is the command surface;
-                    native Android companion is in closed device testing (
+                    A high-performance behavioral OS unifying focus telemetry, streaks, biometrics, financial allocation, and calendar intelligence into a live command surface. Web command center with companion mobile capture (
                     <Link to="/app">/app</Link>
                     ).
                   </p>
@@ -680,11 +698,9 @@ export default function Brand() {
                     <i />
                     Phase 2 · Horizons
                   </div>
-                  <h3>Proactive intelligence</h3>
+                  <h3>Autonomous intelligence &amp; predictive synthesis</h3>
                   <p>
-                    Drift detection before setbacks compound. Contextual interventions from your unique activity signatures —
-                    with cross-device ritual sync and offline-first architecture. Public Play listing follows closed testing —
-                    no APK hosted on this site.
+                    Preemptive behavioral drift detection before stagnation compounds. Contextual interventions synthesized from unique multi-month activity signatures, local-first ML edge models, and seamless cross-platform synchronization.
                   </p>
                 </article>
               </div>
@@ -699,7 +715,7 @@ export default function Brand() {
                   <h2 className="brand-section__title">Technical infrastructure.</h2>
                 </div>
                 <p className="brand-section__desc">
-                  Three layers. One promise: your behavioural archive stays under your control.
+                  Three isolated infrastructure layers. One immutable guarantee: your behavioral archive is sovereign and uncompromised.
                 </p>
               </div>
             </Reveal>
@@ -721,10 +737,9 @@ export default function Brand() {
 
           <section className="brand-close">
             <Reveal>
-              <h2 className="brand-close__title">Build momentum. Keep the archive yours.</h2>
+              <h2 className="brand-close__title">Build unshakeable momentum. Own your archive.</h2>
               <p className="brand-close__copy">
-                AIIMIN is for people who want signal over noise — capture that stays cheap, patterns that stay honest,
-                and a system that never farms your life for ads.
+                AIIMIN is engineered for ambitious individuals who prioritize signal over spectacle — instantaneous daily capture, honest behavioral feedback, and an infrastructure that never monetizes your attention.
               </p>
               <div className="brand-close__actions">
                 <Link to={canAccessApp ? '/overview' : '/'} className="brand-manifesto__cta brand-manifesto__cta--accent">
@@ -738,9 +753,9 @@ export default function Brand() {
           </section>
 
           <footer className="brand-manifesto__footer">
-            <Link to={backTo} className="brand-manifesto__footer-brand">
+            <Link to={backTo} className="brand-manifesto__footer-brand" aria-label="Return from Brand to application">
               <ArchBracketMark size={26} withChip colors={markColors} />
-              AIIMIN System
+              <span className="brand-manifesto__footer-brand-text">AIIMIN SYSTEM</span>
             </Link>
             <div className="brand-manifesto__footer-links">
               <Link to="/privacy">Privacy</Link>

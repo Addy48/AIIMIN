@@ -100,6 +100,7 @@
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-mono:  'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
   --font-display: 'Familjen Grotesk', 'Figtree', var(--font-sans);
+  --font-brand: 'Bodoni Moda', 'Didot', Georgia, serif;
 
   /* Type Scale */
   --text-hero:    italic 700 48px/1.05 var(--font-serif);
