@@ -6,12 +6,38 @@ import { shouldShip } from '../../utils/designVoteShip';
 import ParticleButton from '../kokonutui/particle-button';
 import { ShippedGlitchLabel } from '../design/ShippedUI';
 import SafeRender from '../design/SafeRender';
+import {
+  Plant,
+  Lightning,
+  Sword,
+  Trophy,
+  BookBookmark,
+  Crown,
+  Star,
+  Sparkle,
+  DiamondsFour,
+  Medal,
+} from '@phosphor-icons/react';
+
+const RANK_ICON_MAP = {
+  1: Plant,
+  2: Lightning,
+  3: Sword,
+  4: Trophy,
+  5: BookBookmark,
+  6: Crown,
+  7: Star,
+  8: Sparkle,
+  9: DiamondsFour,
+  10: Medal,
+};
 
 export default function LevelUpModal({ data, onClose }) {
   if (!data?.rank) return null;
 
   const line = RANK_UP_LINES[data.rank.rank] || data.rank.tagline;
   const useParticle = shouldShip('k-particle-btn');
+  const RankIcon = RANK_ICON_MAP[data.rank.rank] || Trophy;
 
   return (
     <AnimatePresence>
@@ -31,12 +57,14 @@ export default function LevelUpModal({ data, onClose }) {
           onClick={(e) => e.stopPropagation()}
         >
           <p className="xp-level-eyebrow">Rank up</p>
-          <div className="xp-level-emoji">{data.rank.emoji}</div>
+          <div className="xp-level-emoji" style={{ display: 'flex', justifyContent: 'center', color: 'var(--color-accent)' }}>
+            <RankIcon size={56} weight="duotone" />
+          </div>
           <h2 className="xp-level-title"><ShippedGlitchLabel text={data.rank.name} /></h2>
           <p className="xp-level-line">{line}</p>
           {data.rank.nextRank && (
             <p className="xp-level-next">
-              Next: {data.rank.nextRank.emoji} {data.rank.nextRank.name} · {data.rank.xpToNext} XP to go
+              Next: {data.rank.nextRank.name} · {data.rank.xpToNext} XP to go
             </p>
           )}
           {useParticle ? (

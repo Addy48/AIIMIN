@@ -3,21 +3,34 @@
 export const NAV_MAX_PINNED = 12;
 export const NAV_MIN_PINNED = 1;
 
+export const LEGACY_NAV_ID_MAP = {
+  sports: 'forge',
+  lab: 'forge',
+};
+
 export const NAV_REGISTRY = [
-  { id: 'overview', to: '/overview', label: 'Today' },
-  { id: 'habits', to: '/habits', label: 'Habits' },
-  { id: 'goals', to: '/goals', label: 'Goals' },
-  { id: 'journal', to: '/journal', label: 'Journal' },
-  { id: 'notes', to: '/notes', label: 'Notes' },
-  { id: 'finance', to: '/finance', label: 'Finance' },
-  { id: 'family', to: '/family', label: 'Family' },
-  { id: 'calendar', to: '/calendar', label: 'Calendar' },
-  // /placements parked — web diet R4 (deep-link route remains; not in masthead)
-  { id: 'sports', to: '/sports', label: 'Sports', hideFromGuest: true },
-  { id: 'discipline', to: '/discipline', label: 'Discipline', hideFromGuest: true },
-  { id: 'focus', to: '/focus', label: 'Focus' },
-  { id: 'lab', to: '/lab', label: 'Lab' },
-  { id: 'reports', to: '/reports', label: 'Reports' },
+  { id: 'overview', to: '/overview', label: 'Today', shortLabel: 'Today' },
+  { id: 'habits', to: '/habits', label: 'Habits', shortLabel: 'Habits' },
+  { id: 'goals', to: '/goals', label: 'Goals', shortLabel: 'Goals' },
+  { id: 'journal', to: '/journal', label: 'Journal', shortLabel: 'Journal' },
+  { id: 'notes', to: '/notes', label: 'Notes', shortLabel: 'Notes' },
+  { id: 'finance', to: '/finance', label: 'Finance', shortLabel: 'Finance' },
+  { id: 'family', to: '/family', label: 'Family Vault', shortLabel: 'Family' },
+  { id: 'calendar', to: '/calendar', label: 'Calendar', shortLabel: 'Calendar' },
+  { id: 'discipline', to: '/discipline', label: 'Discipline', shortLabel: 'Discipline', hideFromGuest: true },
+  { id: 'focus', to: '/focus', label: 'Focus Room', shortLabel: 'Focus' },
+  {
+    id: 'forge',
+    to: '/lab',
+    label: 'Forge',
+    shortLabel: 'Forge',
+    description: 'Skill development, cognitive training & match intelligence',
+    children: [
+      { id: 'lab', to: '/lab', label: 'Skill Lab', shortLabel: 'Lab', description: 'Cognitive training, mental models, aptitude & system design' },
+      { id: 'sports', to: '/sports', label: 'Sports Arena', shortLabel: 'Sports', description: 'Match intelligence, live sports feeds & team tracker', hideFromGuest: true },
+    ],
+  },
+  { id: 'reports', to: '/reports', label: 'Reports', shortLabel: 'Reports' },
 ];
 
 export const DEFAULT_PINNED_IDS = ['overview', 'habits', 'goals', 'journal', 'notes'];
@@ -51,7 +64,7 @@ export const NAV_PERSONA_PRESETS = [
     id: 'student',
     label: 'Student',
     desc: 'Study rhythm, habits, money, and focus.',
-    activeIds: ['overview', 'habits', 'goals', 'journal', 'notes', 'finance', 'calendar', 'focus', 'discipline', 'sports', 'lab', 'reports'],
+    activeIds: ['overview', 'habits', 'goals', 'journal', 'notes', 'finance', 'calendar', 'focus', 'discipline', 'forge', 'reports'],
     pinnedIds: ['overview', 'habits', 'goals', 'journal', 'notes', 'calendar', 'focus'],
     overviewWidgets: { ...BASE_WIDGETS, monday_insight: true, week_numbers: true, logger: true },
     sportsDefaults: ['Cricket'],
@@ -73,8 +86,8 @@ export const NAV_PERSONA_PRESETS = [
     id: 'founder',
     label: 'Founder / builder',
     desc: 'Execution, experiments, finance, discipline, and shipping momentum.',
-    activeIds: ['overview', 'goals', 'journal', 'notes', 'finance', 'calendar', 'discipline', 'focus', 'lab', 'habits', 'reports'],
-    pinnedIds: ['overview', 'goals', 'finance', 'calendar', 'lab', 'journal', 'notes', 'focus'],
+    activeIds: ['overview', 'goals', 'journal', 'notes', 'finance', 'calendar', 'discipline', 'focus', 'forge', 'habits', 'reports'],
+    pinnedIds: ['overview', 'goals', 'finance', 'calendar', 'forge', 'journal', 'notes', 'focus'],
     overviewWidgets: { ...BASE_WIDGETS, trajectory: true, command_center: true, micro_task: true, week_numbers: false, wins: false },
     sportsDefaults: [],
     teamDefaults: {},
@@ -95,8 +108,8 @@ export const NAV_PERSONA_PRESETS = [
     id: 'athlete',
     label: 'Athlete / fitness',
     desc: 'Training consistency, discipline, sports, recovery, and goals.',
-    activeIds: ['overview', 'habits', 'goals', 'journal', 'notes', 'calendar', 'sports', 'discipline', 'focus', 'finance', 'reports'],
-    pinnedIds: ['overview', 'habits', 'sports', 'discipline', 'focus', 'journal', 'notes'],
+    activeIds: ['overview', 'habits', 'goals', 'journal', 'notes', 'calendar', 'forge', 'discipline', 'focus', 'finance', 'reports'],
+    pinnedIds: ['overview', 'habits', 'forge', 'discipline', 'focus', 'journal', 'notes'],
     overviewWidgets: { ...BASE_WIDGETS, micro_task: true, trajectory: true, week_numbers: true, command_center: false },
     sportsDefaults: ['Cricket', 'Football', 'Basketball'],
     teamDefaults: { Cricket: ['India'], Football: ['Arsenal'], Basketball: ['Lakers'] },
@@ -106,15 +119,26 @@ export const NAV_PERSONA_PRESETS = [
 
 const REGISTRY_BY_ID = Object.fromEntries(NAV_REGISTRY.map((item) => [item.id, item]));
 
+const LEGACY_ITEMS = {
+  lab: { id: 'lab', to: '/lab', label: 'Skill Lab', shortLabel: 'Lab', parentId: 'forge' },
+  sports: { id: 'sports', to: '/sports', label: 'Sports Arena', shortLabel: 'Sports', parentId: 'forge', hideFromGuest: true },
+};
+
 export function getNavItem(id) {
-  return REGISTRY_BY_ID[id];
+  if (REGISTRY_BY_ID[id]) return REGISTRY_BY_ID[id];
+  if (LEGACY_ITEMS[id]) return LEGACY_ITEMS[id];
+  if (LEGACY_NAV_ID_MAP[id] && REGISTRY_BY_ID[LEGACY_NAV_ID_MAP[id]]) {
+    return REGISTRY_BY_ID[LEGACY_NAV_ID_MAP[id]];
+  }
+  return undefined;
 }
 
 export function resolveNavItems(ids, { isGuest = false, activeIds = DEFAULT_ACTIVE_IDS } = {}) {
   const seen = new Set();
   const active = new Set(sanitizeActiveIds(activeIds));
   const items = [];
-  for (const id of ids) {
+  for (const rawId of ids || []) {
+    const id = LEGACY_NAV_ID_MAP[rawId] || rawId;
     const item = REGISTRY_BY_ID[id];
     if (!item || seen.has(id)) continue;
     if (!active.has(id)) continue;
@@ -126,7 +150,7 @@ export function resolveNavItems(ids, { isGuest = false, activeIds = DEFAULT_ACTI
 }
 
 export function availableForMore(pinnedIds, { isGuest = false, activeIds = DEFAULT_ACTIVE_IDS } = {}) {
-  const pinned = new Set(pinnedIds);
+  const pinned = new Set((pinnedIds || []).map((id) => LEGACY_NAV_ID_MAP[id] || id));
   const active = new Set(sanitizeActiveIds(activeIds));
   return NAV_REGISTRY.filter((item) => {
     if (pinned.has(item.id)) return false;
@@ -139,7 +163,8 @@ export function availableForMore(pinnedIds, { isGuest = false, activeIds = DEFAU
 export function sanitizePinnedIds(ids) {
   const valid = [];
   const seen = new Set();
-  for (const id of ids || []) {
+  for (const rawId of ids || []) {
+    const id = LEGACY_NAV_ID_MAP[rawId] || rawId;
     if (!REGISTRY_BY_ID[id] || seen.has(id)) continue;
     seen.add(id);
     valid.push(id);
@@ -153,7 +178,8 @@ export function sanitizePinnedIds(ids) {
 export function sanitizeActiveIds(ids) {
   const valid = [];
   const seen = new Set();
-  for (const id of ids || []) {
+  for (const rawId of ids || []) {
+    const id = LEGACY_NAV_ID_MAP[rawId] || rawId;
     if (!REGISTRY_BY_ID[id] || seen.has(id)) continue;
     seen.add(id);
     valid.push(id);

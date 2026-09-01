@@ -1,10 +1,10 @@
 import React from 'react';
-import { BadgeCheck, Gift, KeyRound } from 'lucide-react';
+import { Gift, SealCheck, Key } from '@phosphor-icons/react';
 
 export const FOUNDING_PERKS = [
   { icon: Gift, text: 'Free Core at go-live' },
-  { icon: BadgeCheck, text: 'Pro ₹49/mo · Elite ₹79/mo founding rates' },
-  { icon: KeyRound, text: 'Reserve your OS-ID at signup' },
+  { icon: SealCheck, text: 'Pro ₹49/mo · Elite ₹79/mo founding rates' },
+  { icon: Key, text: 'Reserve your OS-ID at signup' },
 ];
 
 /**
@@ -20,7 +20,7 @@ export default function WaitlistFoundingPerks({ compact = false, className = '' 
           return (
             <li key={perk.text}>
               <span className="hero-founding-perk-icon" aria-hidden="true">
-                <Icon size={14} strokeWidth={2.25} />
+                <Icon size={14} weight="duotone" />
               </span>
               <span>{perk.text}</span>
             </li>

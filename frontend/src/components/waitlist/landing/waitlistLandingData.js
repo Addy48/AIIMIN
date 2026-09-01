@@ -20,21 +20,26 @@ import {
 } from 'lucide-react';
 
 export const HERO_TRUST_LINE =
-  'One Life OS — journal, habits, money, focus, and vault. Desktop commands. Android companion in closed testing.';
+  'One Life OS — journal, habits, money, focus, and vault. Desktop commands. Android V2 live — get it first as a tester.';
 
-/** Public Android status — single source for waitlist + /app. No APK download. */
+/** Public Android status — single source for waitlist + /app. V2 tester build is live. */
 export const ANDROID_APP_STATUS = {
-  badge: 'Closed device testing · Play not listed',
-  headline: 'Native Android is real — not public yet',
+  badge: 'V2 Tester Build · Active closed testing',
+  headline: 'Android V2 is here — testers get it first',
   subhead:
-    'Kotlin companion for Today, Capture, Money, Lab, and Config. Same account as the web Life OS. No public APK on this site.',
+    'Native Kotlin companion with Discipline Engine, encrypted local vault, app blocking, and the full V2 Today surface. Same account as the web Life OS. Not on Play Store yet — that is by design.',
   detail:
-    'Private builds on founder devices now. Invited testers next. Play Store when ready — waitlist hears first.',
+    'Tester build (debug APK, ~62 MB). Requires Android 8.0+. Join the queue for access — founding testers ship before the Play listing.',
   points: [
-    'Not a phone-web clone — sensors, share/paste payment alerts, Health Connect',
-    'Phone web (/m) stays capture-only until you open desktop or the native app',
-    'iOS is not in the current plan',
+    'Discipline Engine — screen, food, urge logging with AES-GCM encrypted local vault',
+    'App blocking via Accessibility service — no VPN, no data harvesting',
+    'Screen-time accuracy via UsageStatsManager · Health Connect steps + sleep',
+    'Notes Keep-grid · Journal mood-first flow · Offline outbox sync',
+    'Not on Play Store yet — tester queue ships builds directly',
   ],
+  apkUrl: '/aiimin-v2-debug.apk',
+  apkVersion: 'V2 · debug · Aug 2026',
+  apkSha: 'b74d6dd6...0451d39',
 };
 
 export const fadeUp = {
@@ -107,7 +112,7 @@ export const LAUNCH_PHASES = [
     icon: Sparkles,
     title: 'Module rollout',
     status: 'rollout',
-    statusLabel: 'Dec 2026 – Jan 2027',
+    statusLabel: "Dec '26 – Jan '27",
     window: 'Staggered ships',
     userAction: 'Run your daily loop on web. Each module unlocks automatically — no reinstall.',
     approval: 'Active subscribers get modules as they ship; no extra approval step.',
@@ -126,7 +131,7 @@ export const LAUNCH_PHASES = [
     userAction: 'Keep logging daily — patterns compound as new surfaces go live.',
     approval: 'Included in Pro and Elite tiers at launch; Explore/Core get preview access.',
     unlocks: [
-      { name: 'Spade Briefing', hint: 'Sports context without doomscrolling' },
+      { name: 'Sports Briefing', hint: 'Sports context without doomscrolling' },
       { name: 'Android companion', hint: 'Closed testing now · Play listing later' },
     ],
   },
@@ -244,11 +249,11 @@ export const ACCESS_PACKAGES = [
 
 export const PREVIEW_SCREENS = [
   {
-    tag: 'TODAY SURFACE',
+    tag: 'TODAY LOOP',
     title: 'Daily execution board',
     stat: '88%',
     statLabel: 'optimal depth',
-    metricBadge: '3/3 Minimums Done',
+    metricBadge: '3/3 Minimums',
     caption: 'Single-pane execution: sleep, gym, focus, and expenses converge without app-switching.',
     items: [
       { label: 'Morning Workout', value: '45m Gym', done: true },
@@ -258,23 +263,23 @@ export const PREVIEW_SCREENS = [
     bars: [72, 88, 64, 91, 78, 85, 88],
   },
   {
-    tag: 'INTELLIGENCE ENGINE',
+    tag: '5D INTEL',
     title: '5D Life Score & Correlation Lab',
     stat: '84 / 100',
     statLabel: 'server score (LIVE)',
-    metricBadge: '+19% weekly momentum',
+    metricBadge: '+19% Momentum',
     caption: 'Server-side correlation engine that reveals which daily habits drive your peak deep-work performance.',
     dimensions: [
       { name: 'BODY', pct: 88, color: '#10b981' },
       { name: 'MIND', pct: 82, color: '#749dc4' },
       { name: 'DISCIPLINE', pct: 90, color: '#ff6b35' },
-      { name: 'MONEY', pct: 78, color: '#38bdf8' },
-      { name: 'MOOD', pct: 84, color: '#a78bfa' },
+      { name: 'MONEY', pct: 78, color: '#749dc4' },
+      { name: 'MOOD', pct: 84, color: '#416180' },
     ],
     bars: [62, 74, 80, 78, 84, 88, 92],
   },
   {
-    tag: 'LINKED GRAPH',
+    tag: 'MONEY OS',
     title: 'Money OS & Open Loops',
     stat: '₹3,450',
     statLabel: 'reconciled spend',
@@ -305,7 +310,7 @@ export const TESTIMONIALS = [
     initials: 'AS',
   },
   {
-    quote: 'After two years in ops at a fast-growing tech firm, I still reconciled Todoist, Sheets, and a meditation app every Sunday. I wanted one single loop that connects everything.',
+    quote: 'After two years in ops at a fast-growing tech firm, I still reconcile Todoist, Sheets, and a meditation app every Sunday. I want one single loop that connects everything.',
     name: 'Rohit Patel',
     role: 'Operations Lead',
     city: 'Ahmedabad',
@@ -331,7 +336,7 @@ export const FAQS = [
   },
   {
     q: 'Can I download the Android APK?',
-    a: 'No. We do not host or sideload APKs from aiimin.in. Closed testing stays invite-only. Join the waitlist for founding access and the Play Store announcement. Details: /app.',
+    a: 'Yes — if you are a registered tester. The V2 debug build (~62 MB, Android 8.0+) is available directly from the Android section on this page. It is not on the Play Store yet — that is intentional. We are shipping a real build to real testers and using their feedback before a public listing. If you are not yet a tester, join the waitlist to get into the queue. Waitlist members get the Play Store drop announcement first.',
   },
   {
     q: 'Why desktop + Android, not phone-web analytics?',

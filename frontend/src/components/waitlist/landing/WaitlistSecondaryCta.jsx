@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowUp } from '@phosphor-icons/react';
 import WaitlistForm from '../WaitlistForm';
 
 export default function WaitlistSecondaryCta({ onSignupSuccess }) {
@@ -13,7 +13,7 @@ export default function WaitlistSecondaryCta({ onSignupSuccess }) {
         <WaitlistForm compact onSuccess={onSignupSuccess} showFeatureVote={false} />
       </div>
       <a href="#top" className="waitlist-back-top">
-        Back to hero <ArrowRight size={14} />
+        Back to top <ArrowUp size={14} weight="bold" />
       </a>
     </section>
   );

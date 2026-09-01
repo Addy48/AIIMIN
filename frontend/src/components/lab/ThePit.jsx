@@ -1,13 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../utils/supabase';
+import {
+  Snowflake,
+  Brain,
+  Barbell,
+  DeviceMobileSlash,
+  Heartbeat,
+  BookOpen,
+  Check,
+  X,
+} from '@phosphor-icons/react';
 
 const CHALLENGES = [
-  { id: 'cold_shower', label: 'Cold Shower', icon: '❄️', xp: 50 },
-  { id: 'deep_work', label: 'Deep Work (2h+)', icon: '🧠', xp: 100 },
-  { id: 'hard_workout', label: 'Hard Workout', icon: '🏋️', xp: 80 },
-  { id: 'no_distraction', label: 'Zero Distraction Day', icon: '📵', xp: 120 },
-  { id: 'meditation', label: 'Meditation (20m+)', icon: '🧘', xp: 40 },
-  { id: 'reading_deep', label: 'Deep Reading', icon: '📖', xp: 60 },
+  { id: 'cold_shower', label: 'Cold Shower', icon: Snowflake, xp: 50 },
+  { id: 'deep_work', label: 'Deep Work (2h+)', icon: Brain, xp: 100 },
+  { id: 'hard_workout', label: 'Hard Workout', icon: Barbell, xp: 80 },
+  { id: 'no_distraction', label: 'Zero Distraction Day', icon: DeviceMobileSlash, xp: 120 },
+  { id: 'meditation', label: 'Meditation (20m+)', icon: Heartbeat, xp: 40 },
+  { id: 'reading_deep', label: 'Deep Reading', icon: BookOpen, xp: 60 },
 ];
 
 export default function ThePit({ userId, isDark, onClose }) {
@@ -48,21 +58,28 @@ export default function ThePit({ userId, isDark, onClose }) {
     setLogging(null);
   };
 
-  const isLogged = (id) => logs.some(l => l.challenge_id === id);
+  const isDone = (challengeId) => logs.some(l => l.challenge_id === challengeId);
 
   return (
-    <div style={{ padding: '80px 40px 40px', maxWidth: '850px', margin: '0 auto', position: 'relative', height: '100%', overflowY: 'auto' }}>
-
-      <div style={{ marginBottom: '40px' }}>
-        <h2 style={{ fontSize: '40px', fontWeight: 800, color: text1, margin: '0 0 12px' }}>The Pit</h2>
-        <p style={{ fontSize: '18px', color: text2 }}>Where discipline is forged. No excuses, just output.</p>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <div>
+          <h2 style={{ fontSize: '28px', fontWeight: 900, color: text1, margin: 0, letterSpacing: '-0.02em' }}>THE PIT</h2>
+          <p style={{ fontSize: '14px', color: text2, marginTop: '4px' }}>Voluntary hardship builds unshakeable resilience. Log one daily.</p>
+        </div>
+        {onClose && (
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: text2, cursor: 'pointer' }}>
+            <X size={20} />
+          </button>
+        )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '40px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '40px' }}>
         {CHALLENGES.map(c => {
-          const done = isLogged(c.id);
+          const done = isDone(c.id);
+          const Icon = c.icon;
           return (
-            <button 
+            <button
               key={c.id}
               onClick={() => !done && handleLog(c)}
               disabled={done || logging === c.id}
@@ -73,16 +90,16 @@ export default function ThePit({ userId, isDark, onClose }) {
                 display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative', overflow: 'hidden'
               }}
             >
-              <div style={{ fontSize: '32px' }}>{c.icon}</div>
+              <div style={{ color: done ? '#22C55E' : 'var(--color-accent)' }}>
+                <Icon size={32} weight="duotone" />
+              </div>
               <div>
                 <div style={{ fontSize: '18px', fontWeight: 700, color: done ? '#22C55E' : text1 }}>{c.label}</div>
                 <div style={{ fontSize: '14px', color: done ? '#22C55E' : text2, opacity: 0.8, marginTop: '4px' }}>+{c.xp} XP</div>
               </div>
               {done && (
                 <div style={{ position: 'absolute', top: '12px', right: '12px', color: '#22C55E' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
+                  <Check size={18} weight="bold" />
                 </div>
               )}
               {logging === c.id && (

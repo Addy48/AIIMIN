@@ -118,22 +118,25 @@ export default function HabitManager({ user }) {
                     >
                         All ({habits.length})
                     </button>
-                    {HABIT_CATEGORIES.filter(c => habits.some(h => h.category === c.key)).map(c => (
-                        <button
-                            key={c.key}
-                            onClick={() => setFilterCat(c.key)}
-                            style={{
-                                padding: '4px 10px', borderRadius: '99px', fontSize: '10px', fontWeight: 600,
-                                border: `1px solid ${filterCat === c.key ? 'var(--accent)' : 'var(--border)'}`,
-                                background: filterCat === c.key ? 'rgba(255,107,53,0.1)' : 'var(--bg-elevated)',
-                                color: filterCat === c.key ? 'var(--accent)' : 'var(--text-3)',
-                                cursor: 'pointer', transition: 'all 0.15s',
-                                display: 'flex', alignItems: 'center', gap: '3px',
-                            }}
-                        >
-                            <span style={{ fontSize: '11px' }}>{c.icon}</span> {c.label}
-                        </button>
-                    ))}
+                    {HABIT_CATEGORIES.filter(c => habits.some(h => h.category === c.key)).map(c => {
+                        const Icon = c.icon;
+                        return (
+                            <button
+                                key={c.key}
+                                onClick={() => setFilterCat(c.key)}
+                                style={{
+                                    padding: '4px 10px', borderRadius: '99px', fontSize: '10px', fontWeight: 600,
+                                    border: `1px solid ${filterCat === c.key ? 'var(--accent)' : 'var(--border)'}`,
+                                    background: filterCat === c.key ? 'rgba(255,107,53,0.1)' : 'var(--bg-elevated)',
+                                    color: filterCat === c.key ? 'var(--accent)' : 'var(--text-3)',
+                                    cursor: 'pointer', transition: 'all 0.15s',
+                                    display: 'flex', alignItems: 'center', gap: '4px',
+                                }}
+                            >
+                                <Icon size={12} weight="duotone" /> {c.label}
+                            </button>
+                        );
+                    })}
                 </div>
             )}
 
@@ -250,24 +253,27 @@ export default function HabitManager({ user }) {
                                             Category
                                         </label>
                                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                            {HABIT_CATEGORIES.map(c => (
-                                                <button
-                                                    key={c.key}
-                                                    type="button"
-                                                    onClick={() => setCategory(c.key)}
-                                                    style={{
-                                                        padding: '5px 12px', borderRadius: '99px',
-                                                        fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                                                        border: `1px solid ${category === c.key ? 'var(--accent)' : 'var(--border)'}`,
-                                                        background: category === c.key ? 'rgba(255,107,53,0.1)' : 'var(--bg-elevated)',
-                                                        color: category === c.key ? 'var(--accent)' : 'var(--text-1)',
-                                                        transition: 'all 0.15s',
-                                                        display: 'flex', alignItems: 'center', gap: '4px',
-                                                    }}
-                                                >
-                                                    <span style={{ fontSize: '12px' }}>{c.icon}</span> {c.label}
-                                                </button>
-                                            ))}
+                                            {HABIT_CATEGORIES.map(c => {
+                                                const Icon = c.icon;
+                                                return (
+                                                    <button
+                                                        key={c.key}
+                                                        type="button"
+                                                        onClick={() => setCategory(c.key)}
+                                                        style={{
+                                                            padding: '5px 12px', borderRadius: '99px',
+                                                            fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                                                            border: `1px solid ${category === c.key ? 'var(--accent)' : 'var(--border)'}`,
+                                                            background: category === c.key ? 'rgba(255,107,53,0.1)' : 'var(--bg-elevated)',
+                                                            color: category === c.key ? 'var(--accent)' : 'var(--text-1)',
+                                                            transition: 'all 0.15s',
+                                                            display: 'flex', alignItems: 'center', gap: '5px',
+                                                        }}
+                                                    >
+                                                        <Icon size={13} weight="duotone" /> {c.label}
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
 

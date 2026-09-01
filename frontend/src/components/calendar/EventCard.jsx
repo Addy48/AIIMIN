@@ -1,16 +1,24 @@
 import React from 'react';
+import {
+    Lightning,
+    Heartbeat,
+    CurrencyInr,
+    Users,
+    ChatCircleText,
+    Circle,
+} from '@phosphor-icons/react';
 
 /**
  * SYSTEM_COLORS — Life OS system type color map for calendar events.
- * Redesigned with Nordic Calm palette.
+ * Redesigned with Nordic Calm palette and Phosphor icons.
  */
 export const SYSTEM_COLORS = {
-    work:       { color: '#ff6b35',  bg: 'rgba(255,107,53,0.14)',  border: 'rgba(255,107,53,0.35)',  icon: '⚡', label: 'Work' },
-    health:     { color: '#10b981',  bg: 'rgba(16,185,129,0.14)',  border: 'rgba(16,185,129,0.35)',  icon: '🧘', label: 'Health' },
-    finance:    { color: '#E8B84B',  bg: 'rgba(232,184,75,0.16)',  border: 'rgba(232,184,75,0.4)',   icon: '💰', label: 'Finance' },
-    social:     { color: '#5B8DEF',  bg: 'rgba(91,141,239,0.14)',  border: 'rgba(91,141,239,0.35)',  icon: '🤝', label: 'Social' },
-    reflection: { color: '#9A7B4F',  bg: 'rgba(154,123,79,0.14)',  border: 'rgba(154,123,79,0.35)',  icon: '💭', label: 'Reflection' },
-    general:    { color: '#6b7280',  bg: 'rgba(107,114,128,0.14)', border: 'rgba(107,114,128,0.3)',  icon: '◎', label: 'General' },
+    work:       { color: '#ff6b35',  bg: 'rgba(255,107,53,0.14)',  border: 'rgba(255,107,53,0.35)',  icon: Lightning, label: 'Work' },
+    health:     { color: '#10b981',  bg: 'rgba(16,185,129,0.14)',  border: 'rgba(16,185,129,0.35)',  icon: Heartbeat, label: 'Health' },
+    finance:    { color: '#E8B84B',  bg: 'rgba(232,184,75,0.16)',  border: 'rgba(232,184,75,0.4)',   icon: CurrencyInr, label: 'Finance' },
+    social:     { color: '#5B8DEF',  bg: 'rgba(91,141,239,0.14)',  border: 'rgba(91,141,239,0.35)',  icon: Users, label: 'Social' },
+    reflection: { color: '#9A7B4F',  bg: 'rgba(154,123,79,0.14)',  border: 'rgba(154,123,79,0.35)',  icon: ChatCircleText, label: 'Reflection' },
+    general:    { color: '#6b7280',  bg: 'rgba(107,114,128,0.14)', border: 'rgba(107,114,128,0.3)',  icon: Circle, label: 'General' },
 };
 
 /**
@@ -18,6 +26,7 @@ export const SYSTEM_COLORS = {
  */
 export const EventCard = ({ event, onClick, compact = false }) => {
     const sys = SYSTEM_COLORS[event.system_type] || SYSTEM_COLORS.general;
+    const Icon = sys.icon;
     const startTime = event.all_day ? 'All day' : new Date(event.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 
     if (compact) {
@@ -88,7 +97,9 @@ export const EventCard = ({ event, onClick, compact = false }) => {
                     {event.location && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>· {event.location}</span>}
                 </div>
             </div>
-            <div style={{ fontSize: '16px', flexShrink: 0, opacity: 0.8 }}>{sys.icon}</div>
+            <div style={{ flexShrink: 0, opacity: 0.85, color: sys.color, display: 'flex', alignItems: 'center' }}>
+                <Icon size={16} weight="duotone" />
+            </div>
         </div>
     );
 };
@@ -98,26 +109,31 @@ export const EventCard = ({ event, onClick, compact = false }) => {
  */
 export const EventTagSelector = ({ value, onChange }) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-        {Object.entries(SYSTEM_COLORS).map(([key, sys]) => (
-            <button
-                key={key}
-                type="button"
-                onClick={() => onChange(key)}
-                style={{
-                    padding: '10px 12px', borderRadius: '10px', cursor: 'pointer',
-                    border: value === key ? `1.5px solid ${sys.color}` : '1px solid var(--color-border)',
-                    background: value === key ? `${sys.color}15` : 'var(--color-elevated)',
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    fontSize: '11px', fontWeight: value === key ? 700 : 600,
-                    color: value === key ? sys.color : 'var(--color-text-2)',
-                    transition: 'all 200ms var(--ease)',
-                    fontFamily: 'var(--font-sans)',
-                    outline: 'none',
-                }}
-            >
-                <span style={{ fontSize: '14px' }}>{sys.icon}</span>
-                {sys.label}
-            </button>
-        ))}
+        {Object.entries(SYSTEM_COLORS).map(([key, sys]) => {
+            const Icon = sys.icon;
+            return (
+                <button
+                    key={key}
+                    type="button"
+                    onClick={() => onChange(key)}
+                    style={{
+                        padding: '10px 12px', borderRadius: '10px', cursor: 'pointer',
+                        border: value === key ? `1.5px solid ${sys.color}` : '1px solid var(--color-border)',
+                        background: value === key ? `${sys.color}15` : 'var(--color-elevated)',
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        fontSize: '11px', fontWeight: value === key ? 700 : 600,
+                        color: value === key ? sys.color : 'var(--color-text-2)',
+                        transition: 'all 200ms var(--ease)',
+                        fontFamily: 'var(--font-sans)',
+                        outline: 'none',
+                    }}
+                >
+                    <Icon size={15} weight="duotone" />
+                    {sys.label}
+                </button>
+            );
+        })}
     </div>
 );
+
+export default EventCard;

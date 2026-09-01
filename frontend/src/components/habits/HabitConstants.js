@@ -1,31 +1,22 @@
 /**
  * HabitConstants — shared data for HabitManager.
  */
-
-export const EMOJI_PICKER = [
-    '🏋️‍♂️', '🏃‍♂️', '🧘‍♂️', '🚴‍♂️', '🏊‍♂️', '🤸‍♂️',
-    '💧', '🥗', '🥩', '😴', '📚', '✍️', '💻', '🧠',
-    '🎯', '🔥', '🌅', '🌿', '🎵', '📝', '⏰', '💆‍♂️',
-];
-
-export const EMOJI_LABELS = {
-    '🏋️‍♂️': 'Weightlifting', '🏃‍♂️': 'Running', '🧘‍♂️': 'Meditation',
-    '🚴‍♂️': 'Cycling', '🏊‍♂️': 'Swimming', '🤸‍♂️': 'Gymnastics',
-    '💧': 'Hydration', '🥗': 'Healthy Eating', '🥩': 'Protein',
-    '😴': 'Sleep', '📚': 'Reading', '✍️': 'Journaling',
-    '💻': 'Coding', '🧠': 'Brain Training', '🎯': 'Focus',
-    '🔥': 'Challenge', '🌅': 'Morning Routine', '🌿': 'Nature',
-    '🎵': 'Music Practice', '📝': 'Planning', '⏰': 'Time Management',
-    '💆‍♂️': 'Self-Care',
-};
+import {
+    Barbell,
+    Heartbeat,
+    BookOpen,
+    Brain,
+    Lightning,
+    Target,
+} from '@phosphor-icons/react';
 
 export const HABIT_CATEGORIES = [
-    { key: 'fitness', label: 'Fitness', icon: '💪' },
-    { key: 'health', label: 'Health', icon: '❤️' },
-    { key: 'learning', label: 'Learning', icon: '📖' },
-    { key: 'mental', label: 'Mental', icon: '🧠' },
-    { key: 'productivity', label: 'Productivity', icon: '⚡' },
-    { key: 'general', label: 'General', icon: '🎯' },
+    { key: 'fitness', label: 'Fitness', icon: Barbell },
+    { key: 'health', label: 'Health', icon: Heartbeat },
+    { key: 'learning', label: 'Learning', icon: BookOpen },
+    { key: 'mental', label: 'Mental', icon: Brain },
+    { key: 'productivity', label: 'Productivity', icon: Lightning },
+    { key: 'general', label: 'General', icon: Target },
 ];
 
 export const FREQUENCIES = [

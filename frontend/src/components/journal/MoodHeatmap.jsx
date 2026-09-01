@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useThemeContext } from '../../context/ThemeContext';
 
 const MOODS = [
-  { val: 1, emoji: '😞', label: 'Rough', color: '#ef4444' },
-  { val: 2, emoji: '😐', label: 'Meh', color: '#E8B84B' },
-  { val: 3, emoji: '😊', label: 'Okay', color: '#10b981' },
-  { val: 4, emoji: '😄', label: 'Good', color: '#ff6b35' },
-  { val: 5, emoji: '🔥', label: 'Great', color: '#E8B84B' },
+  { val: 1, label: 'Rough', color: '#ef4444' },
+  { val: 2, label: 'Meh', color: '#E8B84B' },
+  { val: 3, label: 'Okay', color: '#10b981' },
+  { val: 4, label: 'Good', color: '#ff6b35' },
+  { val: 5, label: 'Great', color: '#ff6b35' },
 ];
 
 export default function MoodHeatmap({ entries, onSelectEntry }) {
@@ -75,7 +75,7 @@ export default function MoodHeatmap({ entries, onSelectEntry }) {
             <div 
               key={dateStr}
               onClick={() => { if(entry) onSelectEntry(entry); }}
-              title={`${dateStr} ${moodObj ? '- ' + moodObj.label + ' ' + moodObj.emoji : ''}`}
+              title={`${dateStr} ${moodObj ? '- Mood: ' + moodObj.label : ''}`}
               style={{
                 aspectRatio: '1',
                 borderRadius: '6px',

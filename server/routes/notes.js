@@ -272,6 +272,8 @@ app.post('/', requireAuth, async (c) => {
         let status = 'unlinked';
         let ocrMethod = body.ocr_method || null;
         let meta = body.meta && typeof body.meta === 'object' ? body.meta : {};
+        const pinned = body.pinned === true || body.pinned === 'true' || meta.pinned === true || meta.pinned === 'true';
+        meta = { ...meta, pinned };
 
         if (sourceType === 'pdf') {
             let buffer = null;
@@ -343,6 +345,15 @@ app.patch('/:id', requireAuth, async (c) => {
         if (body.status !== undefined && ['indexing', 'linked', 'unlinked'].includes(body.status)) {
             params.push(body.status);
             sets.push(`status = $${params.length}`);
+        }
+        if (body.pinned !== undefined) {
+            const pinned = body.pinned === true || body.pinned === 'true';
+            params.push(pinned);
+            sets.push(`meta = COALESCE(meta, '{}'::jsonb) || jsonb_build_object('pinned', $${params.length}::boolean)`);
+        }
+        if (body.meta && typeof body.meta === 'object') {
+            params.push(JSON.stringify(body.meta));
+            sets.push(`meta = COALESCE(meta, '{}'::jsonb) || $${params.length}::jsonb`);
         }
         if (sets.length === 0) return c.json({ error: 'No fields' }, 400);
         sets.push('updated_at = NOW()');

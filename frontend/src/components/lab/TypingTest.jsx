@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, ChevronRight, CheckCircle2, AlertTriangle, ArrowLeft, Keyboard } from 'lucide-react';
+import { Lightning, Target, Trophy, Star, Barbell, Plant } from '@phosphor-icons/react';
 
 /* ─── Word Banks ─────────────────────────────────────────────────── */
 const COMMON_WORDS = [
@@ -239,7 +240,7 @@ export default function TypingTest({ userId, onComplete, onClose }) {
       {/* Mode Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '28px' }}>
         <ModeCard
-          emoji="⚡"
+          icon={Lightning}
           title="Speed Test"
           desc="15, 30, or 60 second benchmark — see your raw WPM and accuracy"
           color="#3B82F6"
@@ -247,7 +248,7 @@ export default function TypingTest({ userId, onComplete, onClose }) {
           badge={bestWpm ? `Best: ${bestWpm} WPM` : null}
         />
         <ModeCard
-          emoji="🎯"
+          icon={Target}
           title="Typing Practice"
           desc="Step-by-step key-by-key lessons — builds muscle memory from scratch"
           color="#8B5CF6"
@@ -304,7 +305,7 @@ export default function TypingTest({ userId, onComplete, onClose }) {
 }
 
 /* ─── Mode Card ──────────────────────────────────────────────────── */
-function ModeCard({ emoji, title, desc, color, onClick, badge }) {
+function ModeCard({ icon: Icon, title, desc, color, onClick, badge }) {
   const [hov, setHov] = useState(false);
   return (
     <button
@@ -321,7 +322,9 @@ function ModeCard({ emoji, title, desc, color, onClick, badge }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '36px' }}>{emoji}</span>
+        <span style={{ display: 'flex', color }}>
+          <Icon size={36} weight="duotone" />
+        </span>
         {badge && (
           <span style={{ fontSize: '12px', fontWeight: 700, padding: '6px 14px', borderRadius: '8px', background: `rgba(${hexToRgb(color)},0.15)`, color }}>
             {badge}
@@ -449,14 +452,17 @@ function SpeedTest({ userId, onComplete, onBack, onUpdateProgress, progress }) {
   const accentColor = '#3B82F6';
 
   if (phase === 'done') {
-    const rating = wpm >= 80 ? { label: 'Expert', color: '#10B981', emoji: '🏆' } : wpm >= 60 ? { label: 'Advanced', color: '#3B82F6', emoji: '⭐' } : wpm >= 40 ? { label: 'Intermediate', color: '#F59E0B', emoji: '💪' } : { label: 'Beginner', color: '#8B5CF6', emoji: '🌱' };
+    const rating = wpm >= 80 ? { label: 'Expert', color: '#10B981', icon: Trophy } : wpm >= 60 ? { label: 'Advanced', color: '#3B82F6', icon: Star } : wpm >= 40 ? { label: 'Intermediate', color: '#F59E0B', icon: Barbell } : { label: 'Beginner', color: '#8B5CF6', icon: Plant };
+    const RatingIcon = rating.icon;
     return (
       <div style={{ padding: '40px 32px', maxWidth: '900px', margin: '0 auto' }}>
         <button className="tt-btn-secondary" style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', padding: '12px 20px' }} onClick={onBack}>
           <ArrowLeft size={16} /> Back
         </button>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '56px', marginBottom: '12px' }}>{rating.emoji}</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px', color: rating.color }}>
+            <RatingIcon size={56} weight="duotone" />
+          </div>
           <div style={{ fontSize: '16px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: rating.color, marginBottom: '40px' }}>
             {rating.label} Typist
           </div>

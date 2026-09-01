@@ -1,6 +1,7 @@
 package aiimin.core.data.device
 
 import android.app.usage.UsageEvents
+import android.app.usage.UsageStatsManager
 
 /**
  * Pure parsing of UsageEvents for unlocks, pickups, hourly heat, and app sessions.
@@ -32,6 +33,24 @@ object UsageDayParser {
      * Real mid-session locks are far outside this window.
      */
     private const val LOCKSCREEN_ABORT_MS = 5_000L
+
+    /**
+     * Authoritative daily total from UsageStatsManager.
+     *
+     * This aligns with the system's Digital Wellbeing figure by aggregating
+     * totalTimeInForeground across all apps that count toward wellbeing.
+     */
+    fun queryAuthoritativeTotalMs(
+        manager: UsageStatsManager,
+        rangeStartMs: Long,
+        rangeEndMs: Long,
+    ): Long {
+        val stats = manager.queryAndAggregateUsageStats(rangeStartMs, rangeEndMs)
+        return stats.values
+            .filter { ScreenTime.countsTowardDigitalWellbeing(it.packageName) }
+            .filterNot { ScreenTime.isDonutChrome(it.packageName) }
+            .sumOf { it.totalTimeInForeground.coerceAtLeast(0L) }
+    }
 
     data class Result(
         val screenOnMs: Long,

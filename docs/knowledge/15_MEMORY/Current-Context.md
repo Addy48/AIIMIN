@@ -4,7 +4,7 @@ derived_from: Genesis · Roadmap/AIIMIN-V1-Blueprint
 status: active
 owner: founder
 lifecycle: living
-last_reviewed: 2026-08-20
+last_reviewed: 2026-08-23
 can_override_genesis: false
 knowledge_layer: KL-OPS
 graph_role: context
@@ -44,6 +44,8 @@ tags:
 | Phase B prep spec | Written — schema paused until founder asks |
 | Owned PR kit | Updated with shifted dates & sharp reply templates |
 | Monorepo Verification & Live Health | **100% Green (`verify-repo.sh` exit 0, live health 200 OK)** |
+| Waitlist Theme Engine & Light/Dark Parity Fix | **Resolved & verified** (appPage isolation, token normalization, tests pass) |
+| Phase 2 Nav IA Restructuring (Option A: Forge grouping + labels + compatibility) | **Completed & verified** (20 navItems unit tests, 5 useNavPreferences migration tests, 4 NavbarForge tests, full suite 63/63 pass, production build exit 0) |
 
 ## P0 next
 
@@ -135,3 +137,33 @@ Fresh receipts: backend tests 15/15, frontend tests 31/31, frontend production b
 A read-only audit found existing AADI0837 history from 2026-01-19 through 2026-08-21. An append-only 120-day gap backfill was then applied only after explicit confirmation, inserting 221 marked rows across 33 missing dates. The user was not satisfied with that generated data and requested undo. A strict preflight verified exactly 33 daily logs, 62 sessions, 16 journal entries, 19 money transactions, 14 calendar events, 29 wins, 33 daily commitments, 8 tasks, and 7 notes before deletion. The exact 221 rows were removed using the recorded gap dates and source/marker constraints.
 
 Post-rollback read-back restored the pre-backfill key counts: 182 daily logs, 273 sessions, 168 journal entries, 207 money transactions, 156 calendar events, and 14 notes, with the account date range still 2026-01-19 through 2026-08-21. No broad account wipe, existing-row update, code deletion, commit, push, deployment, or schema migration occurred. The append-only utility remains available as a reviewed tool but was not used again after rollback.
+
+## 2026-08-23 — Android V2 APK on website + ADB install
+
+**Status:** Shipped and verified on device.
+
+### What happened
+
+The V2 debug APK (`aiimin-v2-full-debug.apk`, 62 MB, SHA-256 `4dd36a8e…387245f`) has been:
+
+1. **Hosted at `/aiimin-v2-debug.apk`** — copied to `frontend/public/` and served as a static asset.
+2. **Waitlist landing page `WaitlistAndroidSection.jsx` fully rebuilt** — two-column layout with pulsing live badge, animated download button (green success state on click), SHA-256 metadata strip, V2 changelog panel (6 features), "Why not Play Store" cards (3 honest reasons), install instructions callout, local-privacy + Play-path footer strip.
+3. **`AndroidApp.jsx` (`/app` route) rebuilt** — reflects V2 reality: pulse dot in status pill, APK download section with full feature list, 3-column split (Desktop / Privacy / What we don't do), Why not Play Store callout.
+4. **`waitlistLandingData.js` updated** — `ANDROID_APP_STATUS` now has V2 features + `apkUrl`/`apkVersion`/`apkSha`. FAQ updated: APK available for registered testers.
+5. **Installed on physical device via USB** — `adb install -r` → `Performing Streamed Install · Success` (device `9597fdea`).
+6. **Dev server open** at `http://localhost:3000` — compiled successfully.
+
+### Files changed
+
+- `frontend/public/aiimin-v2-debug.apk` — [NEW] APK static asset
+- `frontend/src/components/waitlist/landing/WaitlistAndroidSection.jsx` — full rewrite
+- `frontend/src/components/waitlist/landing/waitlistLandingData.js` — ANDROID_APP_STATUS, hero trust line, FAQ
+- `frontend/src/styles/waitlistLanding.css` — ~440 lines new V2 Android styles
+- `frontend/src/pages/AndroidApp.jsx` — full rewrite
+- `frontend/src/styles/appPage.css` — ~290 lines new V2 styles
+
+### Pending
+
+- [ ] Commit + push to main (await founder "ship")
+- [ ] Physical device smoke test: Discipline, Notes, app blocker on device `9597fdea`
+- [ ] Vercel deploy to serve APK from `aiimin.in/aiimin-v2-debug.apk`

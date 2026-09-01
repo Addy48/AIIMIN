@@ -164,7 +164,11 @@ fun JournalScreen(
             )
         }
 
-        // One job: write. Prompts optional — not four competing modes.
+        // Mood first — capture the state before it evaporates.
+        SectionRule(label = "Mood", value = "REQUIRED")
+        MoodGrid(selected = state.mood, onSelect = onMood)
+
+        // Reflection canvas.
         SectionRule(label = "Today", value = "OPEN")
         BlueprintBox(
             accent = true,
@@ -182,7 +186,7 @@ fun JournalScreen(
                 cursorBrush = SolidColor(AiiminTheme.colors.accent),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp),
+                    .height(220.dp),
                 decorationBox = { inner ->
                     if (state.draft.isEmpty()) {
                         Text(
@@ -200,17 +204,14 @@ fun JournalScreen(
             )
         }
 
-        SectionRule(label = "Need a prompt?", value = "OPTIONAL")
+        SectionRule(label = "Nudges", value = "OPTIONAL")
         Text(
-            text = "Tap a starter if you want a nudge. Writing stays free.",
+            text = "Tap a starter if you want a prompt. Writing stays free.",
             style = AiiminTheme.type.bodySmall,
             color = AiiminTheme.colors.muted,
             modifier = Modifier.padding(top = AiiminTheme.space.s2),
         )
         PromptChips(selected = state.template, onSelect = onTemplate)
-
-        SectionRule(label = "Mood")
-        MoodGrid(selected = state.mood, onSelect = onMood)
 
         GhostButton(
             label = "Voice · append",

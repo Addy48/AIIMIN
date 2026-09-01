@@ -22,15 +22,18 @@ export default function WaitlistHeroSection({
       <section className="waitlist-mobile-only mobile-hero-context">
         <div className="mobile-hero-topbar">
           <HeroBrandLockup markSize={28} wordmarkSize={22} />
-          <WaitlistThemeToggle isLight={isLight} onToggle={onToggleTheme} className="waitlist-theme-icon-btn--inline" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <a href="/login" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none' }}>Sign in</a>
+            <WaitlistThemeToggle isLight={isLight} onToggle={onToggleTheme} className="waitlist-theme-icon-btn--inline" />
+          </div>
         </div>
         <div className="waitlist-desktop-notice" role="note">
           <Laptop size={18} className="waitlist-desktop-notice-icon" aria-hidden="true" />
           <div>
             <p className="waitlist-desktop-notice-title">Web Life OS + Android companion</p>
             <p className="waitlist-desktop-notice-copy">
-              Join on your phone. Full Life OS on laptop. Native Android is in closed testing — status at{' '}
-              <a href="/app">/app</a>. No public APK.
+              Join on your phone. Full Life OS on laptop. Native Android V2 tester preview is live — get the APK at{' '}
+              <a href="/app">/app</a> or in the Android section below.
             </p>
           </div>
         </div>
@@ -55,6 +58,8 @@ export default function WaitlistHeroSection({
         <div className="waitlist-top-bar waitlist-desktop-only">
           <HeroBrandLockup />
           <div className="waitlist-top-bar-actions">
+            <a href="/app" style={{ fontSize: '13px', color: 'var(--color-text-2)', textDecoration: 'none', marginRight: '6px', fontWeight: 500 }}>Android V2</a>
+            <a href="/login" style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--color-accent)', textDecoration: 'none', padding: '5px 12px', border: '1px solid color-mix(in srgb, var(--color-accent) 35%, transparent)', borderRadius: '6px', background: 'color-mix(in srgb, var(--color-accent) 6%, transparent)' }}>Tester Sign in →</a>
             <span className="hero-exclusive-badge hero-exclusive-badge--topbar">✦ Exclusive early access</span>
             <WaitlistThemeToggle isLight={isLight} onToggle={onToggleTheme} className="waitlist-theme-icon-btn--topbar" />
           </div>

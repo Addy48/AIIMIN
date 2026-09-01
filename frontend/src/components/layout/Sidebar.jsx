@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { Lightning, Brain, ChartBar, ChatCircleText } from '@phosphor-icons/react';
 
 const navItems = [
-    { to: '/systems/physical', icon: '⚡', label: 'Physical' },
-    { to: '/systems/cognitive', icon: '🧠', label: 'Cognitive' },
-    { to: '/systems/behavior', icon: '📊', label: 'Behavior' },
-    { to: '/systems/reflection', icon: '💭', label: 'Reflection' },
+    { to: '/systems/physical', icon: Lightning, label: 'Physical' },
+    { to: '/systems/cognitive', icon: Brain, label: 'Cognitive' },
+    { to: '/systems/behavior', icon: ChartBar, label: 'Behavior' },
+    { to: '/systems/reflection', icon: ChatCircleText, label: 'Reflection' },
 ];
 
 /**
@@ -30,7 +31,7 @@ const Sidebar = () => {
                 width: '56px',
             }}
         >
-            {navItems.map(({ to, icon, label }) => (
+            {navItems.map(({ to, icon: IconComponent, label }) => (
                 <NavLink
                     key={to}
                     to={to}
@@ -44,34 +45,31 @@ const Sidebar = () => {
                         width: '40px',
                         height: '40px',
                         borderRadius: '12px',
-                        fontSize: '18px',
                         textDecoration: 'none',
                         transition: 'background 0.15s ease, box-shadow 0.15s ease',
                         background: isActive ? 'var(--accent-dim)' : 'transparent',
                         boxShadow: isActive ? 'inset 0 0 0 1px var(--accent)' : 'none',
+                        color: isActive ? 'var(--accent)' : 'var(--color-text-2)',
                     })}
                 >
-                    <span>{icon}</span>
+                    <IconComponent size={20} weight="duotone" />
 
                     {/* Tooltip */}
                     {hovered === to && (
                         <span style={{
                             position: 'absolute',
                             left: '52px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            background: 'var(--bg-card)',
-                            color: 'var(--text-1)',
+                            whiteSpace: 'nowrap',
+                            background: 'var(--surface-overlay)',
+                            color: 'var(--color-text-1)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: '8px',
+                            padding: '4px 10px',
                             fontSize: '12px',
                             fontWeight: 600,
-                            padding: '4px 10px',
-                            borderRadius: '8px',
-                            whiteSpace: 'nowrap',
-                            border: '1px solid var(--border)',
                             boxShadow: 'var(--shadow-md)',
-                            zIndex: 100,
                             pointerEvents: 'none',
-                            opacity: 1,
+                            zIndex: 100,
                         }}>
                             {label}
                         </span>
