@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import {
+  TrendDown,
+  TrendUp,
+  DeviceMobile,
+  Cookie,
+  EyeSlash,
+  GameController,
+  Brain,
+  Barbell,
+  Drop,
+  Heartbeat,
+  ArrowLeft,
+} from '@phosphor-icons/react';
 
 export default function DopamineProtocol({ onBack }) {
   const [day, setDay] = useState(1);
@@ -8,7 +21,6 @@ export default function DopamineProtocol({ onBack }) {
 
   // Simulated data for 30 days
   useEffect(() => {
-    // We could load this from Supabase, but keeping it local state for demo
     const saved = localStorage.getItem('dopamine_logs');
     if (saved) {
       setLogs(JSON.parse(saved));
@@ -26,17 +38,17 @@ export default function DopamineProtocol({ onBack }) {
   };
 
   const cheapDopamine = [
-    { label: "Doomscrolling (30m)", impact: -10, emoji: "📱" },
-    { label: "Junk Food / Sugar", impact: -15, emoji: "🍩" },
-    { label: "Porn / High Stimulus", impact: -25, emoji: "🔞" },
-    { label: "Video Games (Binge)", impact: -10, emoji: "🎮" }
+    { label: "Doomscrolling (30m)", impact: -10, icon: DeviceMobile },
+    { label: "Junk Food / Sugar", impact: -15, icon: Cookie },
+    { label: "High Stimulus / Impulse", impact: -25, icon: EyeSlash },
+    { label: "Video Games (Binge)", impact: -10, icon: GameController }
   ];
 
   const earnedDopamine = [
-    { label: "Deep Work (90m)", impact: +15, emoji: "🧠" },
-    { label: "Intense Workout", impact: +20, emoji: "🏋️" },
-    { label: "Cold Exposure", impact: +15, emoji: "🧊" },
-    { label: "Meditation (20m)", impact: +10, emoji: "🧘" }
+    { label: "Deep Work (90m)", impact: +15, icon: Brain },
+    { label: "Intense Workout", impact: +20, icon: Barbell },
+    { label: "Cold Exposure", impact: +15, icon: Drop },
+    { label: "Mindfulness & Reset", impact: +10, icon: Heartbeat }
   ];
 
   return (
@@ -50,53 +62,57 @@ export default function DopamineProtocol({ onBack }) {
         <button 
           onClick={onBack}
           style={{
-            background: 'transparent', border: 'none', color: 'var(--color-text-2)',
-            cursor: 'pointer', fontSize: '1.25rem', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            borderRadius: '50%'
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: '8px',
+            padding: '0.5rem 0.75rem',
+            color: 'var(--color-text-2)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontSize: '0.85rem'
           }}
         >
-          ←
+          <ArrowLeft size={14} /> Back to Lab
         </button>
         <div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-text-1)', margin: 0 }}>Dopamine Protocol</h2>
-          <p style={{ color: 'var(--color-text-3)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>Monitor stimulus intake and recover your baseline focus.</p>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0, color: 'var(--color-text-1)' }}>Dopamine Calibration</h2>
+          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-3)' }}>Re-sensitize Baseline Receptors Protocol</span>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '1.5rem' }}>
-        {/* Left Column: Actions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          
-          {/* Baseline Gauge */}
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', color: 'var(--color-text-2)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between' }}>
-              <span>Baseline Dopamine Tone</span>
-              <span style={{ color: level > 70 ? '#10B981' : level < 30 ? '#EF4444' : '#F59E0B', fontWeight: 600 }}>{level}%</span>
-            </h3>
-            <div style={{ height: '12px', background: 'var(--color-bg)', borderRadius: '6px', overflow: 'hidden' }}>
-              <motion.div 
-                animate={{ width: `${level}%` }} 
-                transition={{ type: 'spring', bounce: 0.4 }}
-                style={{ 
-                  height: '100%', 
-                  background: level > 70 ? 'linear-gradient(90deg, #10B981, #34D399)' : level < 30 ? 'linear-gradient(90deg, #EF4444, #F87171)' : 'linear-gradient(90deg, #F59E0B, #FBBF24)',
-                  borderRadius: '6px'
-                }} 
-              />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {/* Baseline Meter */}
+        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
+            <div>
+              <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-3)', fontWeight: 600 }}>Estimated Baseline</span>
+              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: level >= 50 ? '#10B981' : '#EF4444' }}>{level}%</div>
             </div>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-3)', marginTop: '0.75rem', margin: '0.75rem 0 0 0' }}>
-              {level > 70 ? "Optimal baseline. High motivation, calm focus." : level < 30 ? "Baseline depleted. High lethargy, cravings, brain fog." : "Average baseline. Susceptible to cheap spikes."}
-            </p>
+            <span style={{ fontSize: '0.8rem', color: 'var(--color-text-2)' }}>Day {day} of 30 Calibration</span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            {/* Cheap Dopamine */}
-            <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', color: '#EF4444', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>📉</span> Cheap Dopamine
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {cheapDopamine.map((action, i) => (
+          <div style={{ width: '100%', height: '8px', background: 'var(--color-bg)', borderRadius: '4px', overflow: 'hidden' }}>
+            <motion.div 
+              style={{ height: '100%', background: level >= 50 ? '#10B981' : '#EF4444' }}
+              initial={{ width: 0 }}
+              animate={{ width: `${level}%` }}
+              transition={{ type: 'spring', stiffness: 50 }}
+            />
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          {/* Cheap Dopamine */}
+          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1rem', color: '#EF4444', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <TrendDown size={18} weight="bold" /> Cheap Dopamine
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {cheapDopamine.map((action, i) => {
+                const Icon = action.icon;
+                return (
                   <button 
                     key={i} 
                     onClick={() => handleAction(action.label, action.impact)}
@@ -107,20 +123,25 @@ export default function DopamineProtocol({ onBack }) {
                       color: 'var(--color-text-1)', fontSize: '0.9rem'
                     }}
                   >
-                    <span>{action.emoji} {action.label}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                      <Icon size={16} weight="duotone" /> {action.label}
+                    </span>
                     <span style={{ color: '#EF4444', fontSize: '0.8rem', fontWeight: 600 }}>{action.impact}</span>
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
+          </div>
 
-            {/* Earned Dopamine */}
-            <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem' }}>
-              <h3 style={{ fontSize: '1rem', color: '#10B981', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>📈</span> Earned Dopamine
-              </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {earnedDopamine.map((action, i) => (
+          {/* Earned Dopamine */}
+          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem' }}>
+            <h3 style={{ fontSize: '1rem', color: '#10B981', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <TrendUp size={18} weight="bold" /> Earned Dopamine
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {earnedDopamine.map((action, i) => {
+                const Icon = action.icon;
+                return (
                   <button 
                     key={i} 
                     onClick={() => handleAction(action.label, action.impact)}
@@ -131,40 +152,16 @@ export default function DopamineProtocol({ onBack }) {
                       color: 'var(--color-text-1)', fontSize: '0.9rem'
                     }}
                   >
-                    <span>{action.emoji} {action.label}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                      <Icon size={16} weight="duotone" /> {action.label}
+                    </span>
                     <span style={{ color: '#10B981', fontSize: '0.8rem', fontWeight: 600 }}>+{action.impact}</span>
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         </div>
-
-        {/* Right Column: Log */}
-        <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ fontSize: '1rem', color: 'var(--color-text-2)', marginBottom: '1rem' }}>Stimulus Log</h3>
-          
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {logs.length === 0 ? (
-              <div style={{ textAlign: 'center', color: 'var(--color-text-3)', fontSize: '0.9rem', marginTop: '2rem' }}>
-                No stimulus logged today.
-              </div>
-            ) : (
-              logs.map(log => (
-                <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--color-bg)', padding: '0.75rem', borderRadius: '8px', borderLeft: `3px solid ${log.impact > 0 ? '#10B981' : '#EF4444'}` }}>
-                  <div>
-                    <div style={{ color: 'var(--color-text-1)', fontSize: '0.9rem', fontWeight: 500 }}>{log.type}</div>
-                    <div style={{ color: 'var(--color-text-3)', fontSize: '0.75rem' }}>{log.time}</div>
-                  </div>
-                  <div style={{ color: log.impact > 0 ? '#10B981' : '#EF4444', fontWeight: 600, fontSize: '0.9rem' }}>
-                    {log.impact > 0 ? '+' : ''}{log.impact}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
       </div>
     </motion.div>
   );

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 
 const MOODS = [
-    { n: 1, emoji: '😔', label: 'Terrible. Overwhelming, cannot function.' },
-    { n: 2, emoji: '😞', label: 'Very low. Anxious or depressed, struggling.' },
-    { n: 3, emoji: '😕', label: 'Low. Unmotivated, drained, going through motions.' },
-    { n: 4, emoji: '😑', label: 'Below average. Tired, slightly off, manageable.' },
-    { n: 5, emoji: '😐', label: 'Neutral. Neither good nor bad. Baseline.' },
-    { n: 6, emoji: '🙂', label: 'Decent. Okay day, slightly positive.' },
-    { n: 7, emoji: '😊', label: 'Good. Productive, feeling capable.' },
-    { n: 8, emoji: '😄', label: 'Great. Energized, focused, things flowing.' },
-    { n: 9, emoji: '🤩', label: 'Excellent. Peak state, highly motivated.' },
-    { n: 10, emoji: '🔥', label: 'Exceptional. Everything clicking, best version of self.' },
+    { n: 1, label: 'Terrible. Overwhelming, cannot function.' },
+    { n: 2, label: 'Very low. Anxious or depressed, struggling.' },
+    { n: 3, label: 'Low. Unmotivated, drained, going through motions.' },
+    { n: 4, label: 'Below average. Tired, slightly off, manageable.' },
+    { n: 5, label: 'Neutral. Neither good nor bad. Baseline.' },
+    { n: 6, label: 'Decent. Okay day, slightly positive.' },
+    { n: 7, label: 'Good. Productive, feeling capable.' },
+    { n: 8, label: 'Great. Energized, focused, things flowing.' },
+    { n: 9, label: 'Excellent. Peak state, highly motivated.' },
+    { n: 10, label: 'Exceptional. Everything clicking, best version of self.' },
 ];
 
 const getColorGroup = (n) => {

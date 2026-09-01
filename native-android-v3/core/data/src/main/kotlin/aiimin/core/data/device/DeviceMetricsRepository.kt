@@ -238,9 +238,20 @@ class DeviceMetricsRepository @Inject constructor(
                 rangeStartMs = start,
                 rangeEndMs = end,
             )
-            val screenMs = parsed.screenOnMs
-            val apps = parsed.appFgMs.entries
-                .filter { (pkg, ms) -> ms >= 30_000L && isUsefulApp(pkg) }
+            val authoritativeTotalMs = UsageDayParser.queryAuthoritativeTotalMs(usage, start, end)
+            val screenMs = ScreenTime.digitalWellbeingTotalMs(
+                appForegroundByPackage = parsed.appFgMs,
+                eventInteractiveMs = parsed.interactiveMs,
+                unlockedMs = parsed.unlockedMs,
+                exclusiveAppUnionMs = parsed.appUnionMs,
+                authoritativeTotalMs = authoritativeTotalMs,
+            )
+            val historicalFg = ScreenTime.scaleAppForegroundToTotal(
+                parsed.appFgMs.filterKeys { isUsefulApp(it) },
+                screenMs,
+            )
+            val apps = historicalFg.entries
+                .filter { (_, ms) -> ms >= 30_000L }
                 .sortedByDescending { it.value }
                 .take(5)
                 .map { (pkg, ms) ->
@@ -661,12 +672,15 @@ class DeviceMetricsRepository @Inject constructor(
             dailyFg[pkg] = (dailyFg[pkg] ?: 0L) + ms
         }
 
+        val authoritativeTotalMs = UsageDayParser.queryAuthoritativeTotalMs(usage, start, end)
+
         val screenMs = ScreenTime.digitalWellbeingTotalMs(
             appForegroundByPackage = parsed.appFgMs,
             eventInteractiveMs = eventInteractive,
             unlockedMs = parsed.unlockedMs,
             exclusiveAppUnionMs = parsed.appUnionMs,
             dailyForegroundByPackage = dailyFg,
+            authoritativeTotalMs = authoritativeTotalMs,
         )
         val scaledFg = ScreenTime.scaleAppForegroundToTotal(dailyFg, screenMs)
         android.util.Log.i(

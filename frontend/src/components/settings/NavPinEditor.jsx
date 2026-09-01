@@ -130,6 +130,7 @@ export default function NavPinEditor() {
                 <span>
                   <span style={{ display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--color-text-1)' }}>{item.label}</span>
                   <span style={{ display: 'block', fontSize: 10, color: 'var(--color-text-3)', marginTop: 2 }}>
+                    {item.children?.length ? `Includes ${item.children.map((c) => c.label).join(' + ')} · ` : ''}
                     {isActive ? 'Active section' : 'Hidden from your AIIMIN'}
                   </span>
                 </span>

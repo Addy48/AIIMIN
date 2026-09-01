@@ -1,11 +1,11 @@
 import React from 'react';
 
 const AVATARS = [
-  { initials: 'AK', hue: 145 },
-  { initials: 'RS', hue: 168 },
-  { initials: 'MP', hue: 132 },
-  { initials: 'VD', hue: 155 },
-  { initials: 'NJ', hue: 120 },
+  { initials: 'AK', bg: '#232936', text: '#cbd5e1' },
+  { initials: 'RS', bg: '#1c222e', text: '#94a3b8' },
+  { initials: 'MP', bg: '#2a3242', text: '#e2e8f0' },
+  { initials: 'VD', bg: '#1f2533', text: '#cbd5e1' },
+  { initials: 'NJ', bg: '#262f3f', text: '#94a3b8' },
 ];
 
 export default function WaitlistSocialProof({ count }) {
@@ -21,7 +21,12 @@ export default function WaitlistSocialProof({ count }) {
             className="waitlist-avatar-chip"
             style={{
               zIndex: AVATARS.length - index,
-              background: `linear-gradient(145deg, hsl(${avatar.hue} 42% 38%), hsl(${avatar.hue} 48% 28%))`,
+              background: avatar.bg,
+              color: avatar.text,
+              border: '1px solid var(--color-border)',
+              fontFamily: 'var(--font-mono, monospace)',
+              fontSize: '10px',
+              fontWeight: 700,
             }}
           >
             {avatar.initials}

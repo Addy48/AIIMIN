@@ -1,5 +1,12 @@
 import React from 'react';
-import { CheckCircle2, ShieldCheck, Zap, Activity, Wallet, Compass } from 'lucide-react';
+import {
+  Compass,
+  ChartBar,
+  Wallet,
+  Lightning,
+  ShieldCheck,
+  CheckCircle,
+} from '@phosphor-icons/react';
 
 const BARS = [
   { h: 68, d: 'M' },
@@ -12,11 +19,11 @@ const BARS = [
 ];
 
 const DIMENSIONS = [
-  { name: 'BODY', pct: '88%', color: '#10b981' },
+  { name: 'BODY', pct: '88%', color: '#22c55e' },
   { name: 'MIND', pct: '82%', color: '#749dc4' },
   { name: 'DISCIPLINE', pct: '90%', color: '#ff6b35' },
-  { name: 'MONEY', pct: '78%', color: '#38bdf8' },
-  { name: 'MOOD', pct: '84%', color: '#a78bfa' },
+  { name: 'MONEY', pct: '78%', color: '#749dc4' },
+  { name: 'MOOD', pct: '84%', color: '#94a3b8' },
 ];
 
 export default function HeroPreviewMock() {
@@ -41,16 +48,16 @@ export default function HeroPreviewMock() {
         <div className="hero-mock-body">
           <div className="hero-mock-sidebar" aria-hidden="true">
             <div className="hero-mock-nav-item active" title="Today">
-              <Compass size={13} />
+              <Compass size={13} weight="duotone" />
             </div>
             <div className="hero-mock-nav-item" title="Score">
-              <Activity size={13} />
+              <ChartBar size={13} />
             </div>
             <div className="hero-mock-nav-item" title="Money">
               <Wallet size={13} />
             </div>
             <div className="hero-mock-nav-item" title="Focus">
-              <Zap size={13} />
+              <Lightning size={13} />
             </div>
             <div className="hero-mock-nav-item" title="Family">
               <ShieldCheck size={13} />
@@ -94,15 +101,15 @@ export default function HeroPreviewMock() {
               <div className="hero-mock-loops-col">
                 <p className="hero-mock-col-title">Daily Verified Loops</p>
                 <div className="hero-mock-loop-item">
-                  <CheckCircle2 size={12} color="#10b981" />
+                  <CheckCircle size={13} weight="fill" color="#22c55e" />
                   <span>45m Gym Workout</span>
                 </div>
                 <div className="hero-mock-loop-item">
-                  <CheckCircle2 size={12} color="#10b981" />
+                  <CheckCircle size={13} weight="fill" color="#22c55e" />
                   <span>3.5h Deep Code (DSA)</span>
                 </div>
                 <div className="hero-mock-loop-item">
-                  <CheckCircle2 size={12} color="#749dc4" />
+                  <CheckCircle size={13} weight="fill" color="#749dc4" />
                   <span>₹420 Lent Rahul (Linked)</span>
                 </div>
               </div>

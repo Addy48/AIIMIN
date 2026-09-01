@@ -69,6 +69,7 @@ dependencies {
     implementation(projects.feature.lab)
     implementation(projects.feature.english)
     implementation(projects.feature.notes)
+    implementation(projects.feature.discipline)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)

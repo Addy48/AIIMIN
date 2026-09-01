@@ -2,17 +2,18 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiPost } from '../../utils/api';
 import { createJournalEntry, updateJournalEntry } from '../../api/journal';
+import { SmileySad, SmileyMeh, Smiley, SmileyWink, Flame, Lightbulb } from '@phosphor-icons/react';
 import { Smile, Zap, Moon, Save, Trash2, X, Sparkles, Brain, HelpCircle, Calendar, FileText, Hash, Type, MoreHorizontal, Plus } from 'lucide-react';
 import { useThemeContext } from '../../context/ThemeContext';
 import { getJournalPrompts } from '../../services/aiService';
 import { formatDateLong } from '../../utils/formatDate';
 
 const MOODS = [
-  { val: 1, emoji: '😞', label: 'Rough', color: '#ef4444' },
-  { val: 2, emoji: '😐', label: 'Meh', color: '#E8B84B' },
-  { val: 3, emoji: '😊', label: 'Okay', color: '#10b981' },
-  { val: 4, emoji: '😄', label: 'Good', color: '#ff6b35' },
-  { val: 5, emoji: '🔥', label: 'Great', color: '#E8B84B' },
+  { val: 1, icon: SmileySad, label: 'Rough', color: '#ef4444' },
+  { val: 2, icon: SmileyMeh, label: 'Meh', color: '#E8B84B' },
+  { val: 3, icon: Smiley, label: 'Okay', color: '#10b981' },
+  { val: 4, icon: SmileyWink, label: 'Good', color: '#ff6b35' },
+  { val: 5, icon: Flame, label: 'Great', color: '#ff6b35' },
 ];
 
 const COVERS = [
@@ -177,7 +178,7 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
         insertion = '\n---\n';
         break;
       case 'template':
-        insertion = '\n# Mindset & Momentum\n\n## 🎯 Core Aims & Focus\n- \n\n## 🔥 Achievements & Wins\n- \n\n## 🌱 Approach to Life\n- \n';
+        insertion = '\n# Mindset & Momentum\n\n## Core Aims & Focus\n- \n\n## Achievements & Wins\n- \n\n## Approach to Life\n- \n';
         break;
       case 'list':
         insertion = '- ';
@@ -244,10 +245,10 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
 
           <div style={{ 
             position: 'absolute', bottom: '0px', left: 'max(40px, 15%)',
-            fontSize: '84px', filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.3))',
+            filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.3))',
             transform: 'translateY(30%)'
           }}>
-            {MOODS.find(m => m.val === mood)?.emoji || '📓'}
+            {React.createElement(MOODS.find(m => m.val === mood)?.icon || Smiley, { size: 64, weight: 'duotone', color: MOODS.find(m => m.val === mood)?.color || '#ff6b35' })}
           </div>
         </div>
 
@@ -278,20 +279,26 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
                 <Smile size={16} /> Mood
               </div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {MOODS.map(m => (
-                  <button
-                    key={m.val}
-                    onClick={() => setMood(m.val)}
-                    style={{
-                      background: mood === m.val ? m.color + '15' : 'transparent',
-                      border: mood === m.val ? `1.5px solid ${m.color}` : `1px solid ${border}`,
-                      color: mood === m.val ? m.color : text2,
-                      padding: '5px 14px', borderRadius: '20px', cursor: 'pointer',
-                      fontSize: '12px', fontWeight: 700, transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      display: 'flex', alignItems: 'center', gap: '6px'
-                    }}
-                  ><span>{m.emoji}</span> {m.label}</button>
-                ))}
+                {MOODS.map(m => {
+                  const Icon = m.icon;
+                  return (
+                    <button
+                      key={m.val}
+                      onClick={() => setMood(m.val)}
+                      style={{
+                        background: mood === m.val ? m.color + '15' : 'transparent',
+                        border: mood === m.val ? `1.5px solid ${m.color}` : `1px solid ${border}`,
+                        color: mood === m.val ? m.color : text2,
+                        padding: '5px 14px', borderRadius: '20px', cursor: 'pointer',
+                        fontSize: '12px', fontWeight: 700, transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        display: 'flex', alignItems: 'center', gap: '6px'
+                      }}
+                    >
+                      <Icon size={16} weight={mood === m.val ? "fill" : "duotone"} />
+                      {m.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -402,7 +409,7 @@ const JournalEditor = ({ selectedEntry, user, onSaveSuccess, onDelete, onClose }
                       {aiFeedback.feedback}
                     </p>
                     <div style={{ fontSize: '12px', color: text2, fontStyle: 'italic', display: 'flex', gap: '6px', alignItems: 'center' }}>
-                      <span>💡</span> {aiFeedback.habitsAdvice}
+                      <Lightbulb size={15} color="#eab308" weight="duotone" /> {aiFeedback.habitsAdvice}
                     </div>
                   </motion.div>
                 )}

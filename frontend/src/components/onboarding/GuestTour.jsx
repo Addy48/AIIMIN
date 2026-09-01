@@ -116,12 +116,25 @@ const STEPS = [
 
 const TOUR_POS_KEY = 'aiimin_tour_pos_v1';
 
+const PUBLIC_PREFIXES = [
+  '/privacy', '/terms', '/contact', '/about', '/security', '/data-deletion',
+  '/cookies', '/acceptable-use', '/refunds', '/ai-disclosure', '/grievance',
+  '/subprocessors', '/legal', '/app', '/brand', '/proto', '/waitlist', '/login', '/m'
+];
+
+const isPublicPath = (pathname) => {
+  if (!pathname || pathname === '/') return true;
+  return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+};
+
 const GuestTour = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [visible, setVisible] = useState(false);
   const [step, setStep] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
+
+  if (isPublicPath(location.pathname)) return null;
 
   const getInitialPos = () => {
     try {

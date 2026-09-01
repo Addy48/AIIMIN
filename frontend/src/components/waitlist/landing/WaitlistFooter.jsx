@@ -1,8 +1,9 @@
 import React, { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import Wordmark from '../../brand/Wordmark';
+import WaitlistThemeToggle from './WaitlistThemeToggle';
 
-const WaitlistFooter = forwardRef(function WaitlistFooter(_props, ref) {
+const WaitlistFooter = forwardRef(function WaitlistFooter({ isLight, onToggleTheme }, ref) {
   return (
     <footer className="waitlist-footer" ref={ref}>
       <Link to="/brand" className="waitlist-footer-brand" aria-label="Explore AIIMIN brand">
@@ -15,6 +16,13 @@ const WaitlistFooter = forwardRef(function WaitlistFooter(_props, ref) {
         <Link to="/terms">Terms</Link>
         <Link to="/contact">Contact</Link>
         <Link to="/login">Sign in</Link>
+        {typeof onToggleTheme === 'function' && (
+          <WaitlistThemeToggle
+            isLight={isLight}
+            onToggle={onToggleTheme}
+            className="waitlist-theme-icon-btn--inline"
+          />
+        )}
       </nav>
     </footer>
   );

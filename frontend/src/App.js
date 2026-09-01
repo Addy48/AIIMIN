@@ -102,6 +102,7 @@ const PUBLIC_PATH_PREFIXES = [
   '/app',
   '/brand',
   '/proto',
+  '/waitlist',
 ];
 
 /* ── Root App ─────────────────────────────────────────────────────── */
@@ -137,9 +138,14 @@ function AppContent({ user, session }) {
   const showWaitlistAtRoot = isWaitlistMode && !canAccessApp && !accessLoading;
   const isProto = location.pathname.startsWith('/proto');
 
+  const isPublicSurface =
+    location.pathname === '/' ||
+    location.pathname === '/login' ||
+    PUBLIC_PATH_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
+
   const showPendingScreen = isWaitlistMode && isSignedIn && !canAccessApp && !accessLoading
     && !['/login', '/'].includes(location.pathname)
-    && !PUBLIC_PATH_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
+    && !isPublicSurface;
 
   if (accessLoading && isWaitlistMode) {
     return <Fallback />;
@@ -155,10 +161,11 @@ function AppContent({ user, session }) {
       <WaitlistThemeSync />
       <Routes>
 
-        {/* Waitlist landing at / for public visitors */}
+        {/* Waitlist landing at / for public visitors and always at /waitlist */}
         {showWaitlistAtRoot && (
           <Route path="/" element={<WaitlistLanding />} />
         )}
+        <Route path="/waitlist" element={<WaitlistLanding />} />
         {/* Local visual QA only: seed-backed Reports modes never ship behind this route. */}
         <Route path="/reports-demo" element={
           process.env.NODE_ENV === 'development'
@@ -211,6 +218,7 @@ function AppContent({ user, session }) {
           <Route path="/finance" element={<Lazy><TierRouteGuard label="Finance"><Finance /></TierRouteGuard></Lazy>} />
           <Route path="/settings" element={<Lazy><Settings /></Lazy>} />
           <Route path="/lab" element={<Lazy><TierRouteGuard label="Lab"><LabFullPage /></TierRouteGuard></Lazy>} />
+          <Route path="/forge" element={<Navigate to="/lab" replace />} />
           {/* Parked: Career/placements — deep-link only (web diet R4); not in nav */}
           <Route path="/placements" element={<Lazy><TierRouteGuard label="Placements"><Placements /></TierRouteGuard></Lazy>} />
           <Route path="/habits"     element={<Lazy><TierRouteGuard label="Habits"><HabitsPage /></TierRouteGuard></Lazy>} />
@@ -258,11 +266,11 @@ function AppContent({ user, session }) {
 
       {!isProto && !location.pathname.startsWith('/reports-demo') && <ConsentBanner />}
 
-      {/* Global Widgets — suppressed on prototype and phone capture surfaces */}
-      {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-      {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+      {/* Global Widgets — suppressed on public surfaces, prototypes, and phone capture surfaces */}
+      {!isProto && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+      {!isProto && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
       {!isProto && isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
-      {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && !isWaitlistMode && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && !isWaitlistMode && !isPublicSurface && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
     </div>
     </DeviceGate>
   );

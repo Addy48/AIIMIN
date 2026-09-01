@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkle, Check, X, ArrowRight } from '@phosphor-icons/react';
 
 const QUESTIONS = [
   {
@@ -211,8 +212,8 @@ export default function SystemDesign({ onClose }) {
               }}
             >
               {opt}
-              {selectedOpt !== null && idx === question.correct && <span>✓</span>}
-              {selectedOpt !== null && idx === selectedOpt && idx !== question.correct && <span>✕</span>}
+              {selectedOpt !== null && idx === question.correct && <Check size={20} weight="bold" />}
+              {selectedOpt !== null && idx === selectedOpt && idx !== question.correct && <X size={20} weight="bold" />}
             </button>
           );
         })}
@@ -229,7 +230,7 @@ export default function SystemDesign({ onClose }) {
             <div style={{ background: 'rgba(14, 165, 233, 0.05)', border: '1px solid rgba(14, 165, 233, 0.2)', borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: '#0EA5E9' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#0284C7', fontWeight: 800, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <span style={{ fontSize: '20px' }}>✨</span> AI Architectural Review
+                <Sparkle size={18} weight="fill" /> AI Architectural Review
               </div>
               <div style={{ fontSize: '18px', color: 'var(--color-text-1)', lineHeight: 1.6 }}>{question.aiExplanation}</div>
             </div>
@@ -240,7 +241,8 @@ export default function SystemDesign({ onClose }) {
       {selectedOpt !== null && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', paddingBottom: '40px' }}>
           <button onClick={handleNext} style={{ padding: '16px 40px', background: 'var(--color-text-1)', color: 'var(--color-base)', borderRadius: '12px', fontSize: '18px', fontWeight: 800, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {currentIdx < QUESTIONS.length - 1 ? 'Next Scenario →' : 'View Results'}
+            {currentIdx < QUESTIONS.length - 1 ? 'Next Scenario' : 'View Results'}
+            <ArrowRight size={18} />
           </button>
         </div>
       )}

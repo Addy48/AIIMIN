@@ -94,7 +94,7 @@ fun LabScreen(
     modifier: Modifier = Modifier,
 ) {
     val pair = state.selected
-    val rho = pair.rhoValue
+    val rho = pair?.rhoValue ?: 0f
     val strength = correlationStrength(rho)
     val sense = correlationSense(rho)
 
@@ -154,36 +154,55 @@ fun LabScreen(
             modifier = Modifier.padding(top = AiiminTheme.space.s2),
         )
 
-        SelectedPairCard(pair, strength, sense)
+        if (pair != null) {
+            SelectedPairCard(pair, strength, sense)
 
-        Text(
-            text = pair.plain,
-            style = AiiminTheme.type.bodySmall.copy(fontSize = 13.sp, lineHeight = 19.sp),
-            color = AiiminTheme.colors.text,
-            modifier = Modifier.padding(top = AiiminTheme.space.s3),
-        )
-
-        HowToRead(rho = rho, strength = strength, sense = sense, n = pair.n)
-
-        SectionRule(label = "Scatter · one point per day")
-        ScatterPlot(
-            rhoLabel = pair.rho,
-            rho = rho,
-            xLabel = pair.full.substringBefore("→").trim(),
-            yLabel = pair.full.substringAfter("→").trim(),
-            n = pair.n,
-            modifier = Modifier.padding(top = AiiminTheme.space.s3),
-        )
-
-        SectionRule(label = "All survivors · q < 0.10")
-        SurvivorsHeader()
-        state.pairs.forEachIndexed { i, p ->
-            SurvivorRow(
-                pair = p,
-                selected = i == state.selectedIndex,
-                onClick = { onSelect(i) },
+            Text(
+                text = pair.plain,
+                style = AiiminTheme.type.bodySmall.copy(fontSize = 13.sp, lineHeight = 19.sp),
+                color = AiiminTheme.colors.text,
+                modifier = Modifier.padding(top = AiiminTheme.space.s3),
             )
-            HairRule()
+
+            HowToRead(rho = rho, strength = strength, sense = sense, n = pair.n)
+
+            SectionRule(label = "Scatter · one point per day")
+            ScatterPlot(
+                rhoLabel = pair.rho,
+                rho = rho,
+                xLabel = pair.full.substringBefore("→").trim(),
+                yLabel = pair.full.substringAfter("→").trim(),
+                n = pair.n,
+                modifier = Modifier.padding(top = AiiminTheme.space.s3),
+            )
+
+            SectionRule(label = "All survivors · q < 0.10")
+            SurvivorsHeader()
+            state.pairs.forEachIndexed { i, p ->
+                SurvivorRow(
+                    pair = p,
+                    selected = i == state.selectedIndex,
+                    onClick = { onSelect(i) },
+                )
+                HairRule()
+            }
+        } else {
+            BlueprintBox(
+                accent = false,
+                modifier = Modifier.padding(top = AiiminTheme.space.s3),
+            ) {
+                Text(
+                    text = "ACCUMULATING SIGNAL",
+                    style = AiiminTheme.type.cellLabel,
+                    color = AiiminTheme.colors.muted,
+                )
+                Text(
+                    text = "AIIMIN needs 7+ unique logged days to compute verified correlation survivors with Benjamini–Hochberg FDR 0.10.",
+                    style = AiiminTheme.type.bodySmall,
+                    color = AiiminTheme.colors.muted,
+                    modifier = Modifier.padding(top = AiiminTheme.space.s2),
+                )
+            }
         }
 
         Column(

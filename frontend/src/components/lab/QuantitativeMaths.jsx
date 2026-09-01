@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ChevronRight, RotateCcw, BarChart2, BookOpen } from 'lucide-react';
+import { ChartBar, Trophy, ThumbsUp, Barbell, Check, X, Sparkle, Warning } from '@phosphor-icons/react';
 
 /* ─── Question Bank (15 questions × 50 sets = 750 questions) ──────────────── */
 function generateQuestionBank() {
@@ -323,7 +324,9 @@ function HistoryView({ history }) {
   if (!history.length) {
     return (
       <div style={{ textAlign: 'center', padding: '80px 24px', color: 'var(--text-3)' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px', color: 'var(--text-3)' }}>
+          <ChartBar size={48} weight="duotone" />
+        </div>
         <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-1)', marginBottom: '8px' }}>No history yet</div>
         <div style={{ fontSize: '14px' }}>Complete sets to track your progress here.</div>
       </div>
@@ -356,8 +359,8 @@ function HistoryView({ history }) {
 
       {weakTopics.length > 0 && (
         <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '14px', padding: '20px', marginBottom: '20px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 800, color: '#EF4444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
-            ⚠️ Topics to Work On
+          <div style={{ fontSize: '12px', fontWeight: 800, color: '#EF4444', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Warning size={15} weight="bold" /> Topics to Work On
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {weakTopics.map(([topic, count]) => (
@@ -433,7 +436,9 @@ function Quiz({ questions, setNumber, onFinish, onClose }) {
     return (
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         style={{ maxWidth: '560px', margin: '0 auto', padding: '48px 24px', textAlign: 'center' }}>
-        <div style={{ fontSize: '64px', marginBottom: '20px' }}>{pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '💪'}</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px', color }}>
+          {pct >= 80 ? <Trophy size={64} weight="duotone" /> : pct >= 50 ? <ThumbsUp size={64} weight="duotone" /> : <Barbell size={64} weight="duotone" />}
+        </div>
         <h2 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text-1)', marginBottom: '8px' }}>Set {setNumber} Complete</h2>
         <div style={{ fontSize: '56px', fontWeight: 900, color, marginBottom: '8px' }}>{score}/{questions.length}</div>
         <div style={{ fontSize: '18px', color, fontWeight: 700, marginBottom: '32px' }}>{pct}% accuracy</div>
@@ -500,8 +505,8 @@ function Quiz({ questions, setNumber, onFinish, onClose }) {
                 <button key={idx} onClick={() => handleSelect(idx)} disabled={selectedOpt !== null}
                   style={{ width: '100%', padding: '18px 24px', background: bg, border: `2px solid ${border}`, borderRadius: '14px', textAlign: 'left', fontSize: '17px', fontWeight: 600, color: textColor, cursor: selectedOpt === null ? 'pointer' : 'default', transition: 'all 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>{opt}</span>
-                  {selectedOpt !== null && idx === question.correct && <span>✓</span>}
-                  {selectedOpt !== null && idx === selectedOpt && idx !== question.correct && <span>✕</span>}
+                  {selectedOpt !== null && idx === question.correct && <Check size={18} weight="bold" />}
+                  {selectedOpt !== null && idx === selectedOpt && idx !== question.correct && <X size={18} weight="bold" />}
                 </button>
               );
             })}
@@ -513,7 +518,9 @@ function Quiz({ questions, setNumber, onFinish, onClose }) {
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                 <div style={{ background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.25)', borderRadius: '14px', padding: '20px', position: 'relative', overflow: 'hidden', marginBottom: '24px' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: '#A855F7' }} />
-                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#A855F7', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>✨ AI Breakdown</div>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#A855F7', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Sparkle size={14} weight="fill" /> AI Breakdown
+                  </div>
                   <div style={{ fontSize: '15px', color: 'var(--text-1)', lineHeight: 1.7 }}>{question.explanation}</div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

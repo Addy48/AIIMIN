@@ -53,19 +53,20 @@ export default function WaitlistLaunchJourney() {
 
               <article className="launch-phase-card">
                 <header className="launch-phase-head">
-                  <div className="launch-phase-head-left">
-                    <span className="launch-phase-level">Phase {stage.phase}</span>
-                    <div className="launch-phase-title-row">
-                      <span className="launch-phase-icon" aria-hidden="true">
-                        <Icon size={16} strokeWidth={2} />
-                      </span>
-                      <h3>{stage.title}</h3>
-                    </div>
-                    <p className="launch-phase-window">{stage.window}</p>
+                  <div className="launch-phase-top-bar">
+                    <span className="launch-phase-level">Phase&nbsp;{stage.phase}</span>
+                    <span className={`launch-phase-status launch-phase-status--${stage.status}`}>
+                      {stage.statusLabel}
+                    </span>
                   </div>
-                  <span className={`launch-phase-status launch-phase-status--${stage.status}`}>
-                    {stage.statusLabel}
-                  </span>
+
+                  <div className="launch-phase-title-row">
+                    <span className="launch-phase-icon" aria-hidden="true">
+                      <Icon size={16} strokeWidth={2} />
+                    </span>
+                    <h3>{stage.title}</h3>
+                  </div>
+                  <p className="launch-phase-window">{stage.window}</p>
                 </header>
 
                 <div className="launch-phase-split">

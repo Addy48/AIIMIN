@@ -26,6 +26,7 @@ import {
   CheckCircle,
   StickyNote,
   Mic,
+  Flame,
 } from 'lucide-react';
 
 /* ─────────────────────────────────────────────
@@ -125,14 +126,24 @@ const ALL_ACTIONS = [
     keywords: ['finance', 'money', 'wealth', 'budget', 'spending'],
   },
   {
+    id: 'nav_forge',
+    label: 'Go to Forge',
+    description: 'Skill Lab & Sports Arena hub',
+    route: '/lab',
+    icon: Flame,
+    category: 'Navigation',
+    type: 'navigate',
+    keywords: ['forge', 'skill lab', 'sports arena', 'skills', 'lab', 'sports'],
+  },
+  {
     id: 'nav_lab',
-    label: 'Go to Lab',
-    description: 'Experiments & analytics',
+    label: 'Go to Skill Lab',
+    description: 'Technical skill tracking & experiments',
     route: '/lab',
     icon: Brain,
     category: 'Navigation',
     type: 'navigate',
-    keywords: ['lab', 'experiments', 'analytics'],
+    keywords: ['lab', 'skill lab', 'skills', 'experiments', 'analytics'],
   },
   {
     id: 'nav_vocal_mastery',
@@ -186,13 +197,13 @@ const ALL_ACTIONS = [
   },
   {
     id: 'nav_sports',
-    label: 'Go to Sports',
-    description: 'Live sports context',
+    label: 'Go to Sports Arena',
+    description: 'Live sports context & matches',
     route: '/sports',
     icon: Activity,
     category: 'Navigation',
     type: 'navigate',
-    keywords: ['sports', 'cricket', 'football', 'scores', 'live'],
+    keywords: ['sports', 'arena', 'cricket', 'football', 'scores', 'live'],
   },
   {
     id: 'nav_account',

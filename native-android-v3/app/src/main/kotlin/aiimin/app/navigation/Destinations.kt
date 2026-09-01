@@ -45,6 +45,9 @@ data object English : Destination
 /** Contextual — notes vault from Today / Config / Capture. */
 @Serializable
 data object Notes : Destination
+/** Contextual — private behavior logging and control surface. */
+@Serializable
+data object Discipline : Destination
 
 /** Contextual — Knock channels from Config. */
 @Serializable

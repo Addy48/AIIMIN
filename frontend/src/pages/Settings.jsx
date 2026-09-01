@@ -8,7 +8,7 @@ import { exportUserData } from '../utils/exportUserData';
 import {
   User, Palette, Bell, Shield, Database, Activity,
   Globe, Lock, ChevronRight, Check, X, Edit2,
-  Download, Trash2, Eye, EyeOff
+  Download, Trash2, Eye, EyeOff, Smartphone
 } from 'lucide-react';
 import PageHeader from '../components/layout/PageHeader';
 
@@ -451,6 +451,84 @@ const Settings = () => {
               </span>
             </div>
           ))}
+        </Section>
+
+        {/* ── Android Companion ────────────────────────────────────────────── */}
+        <Section icon={Smartphone} title="Android Companion" accent="#FF6B35">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-text-1)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Native Android V2 Companion
+                  <span style={{ fontSize: '10px', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', background: 'rgba(255,107,53,0.14)', color: '#FF6B35', border: '1px solid rgba(255,107,53,0.3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    V2 Live · Closed Testing
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-3)', marginTop: '4px', maxWidth: '540px', lineHeight: 1.5 }}>
+                  Companion app for Today, Discipline Engine, urge logging with encrypted local vault, screen-time tracking, and app blocking.
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <a
+                  href="/aiimin-v2-debug.apk"
+                  download="aiimin-v2-debug.apk"
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: '#FF6B35',
+                    color: '#fff',
+                    textDecoration: 'none',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(255,107,53,0.35)',
+                  }}
+                >
+                  <Download size={14} /> Download V2 APK
+                </a>
+                <a
+                  href="/app"
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    background: 'var(--color-elevated)',
+                    color: 'var(--color-text-2)',
+                    textDecoration: 'none',
+                    border: '1px solid var(--color-border)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  App Status Page <ChevronRight size={12} />
+                </a>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', paddingTop: '8px' }}>
+              {[
+                { label: 'Discipline Engine', desc: 'Screen, food, urge logs in AES-GCM local vault' },
+                { label: 'App Blocking', desc: 'Accessibility-service enforcement without VPN' },
+                { label: 'Screen Time', desc: 'UsageStatsManager authoritative totals' },
+                { label: 'Outbox Sync', desc: 'Coarse sync (privacy_mode=local_detail_v1)' },
+              ].map((f, fi) => (
+                <div key={fi} style={{ padding: '10px 12px', borderRadius: '10px', background: 'var(--color-elevated)', border: '1px solid var(--color-border)' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-text-1)' }}>✓ {f.label}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '2px' }}>{f.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', fontSize: '11.5px', color: 'var(--color-text-2)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span style={{ color: '#F59E0B', fontWeight: 800 }}>Note:</span>
+              <span>This is a direct tester build (~62 MB, Android 8.0+). Enable <strong>Install unknown apps</strong> in Android Settings. Play Store listing follows tester verification.</span>
+            </div>
+          </div>
         </Section>
 
         {/* ── Data & Reports ───────────────────────────────────────────────── */}

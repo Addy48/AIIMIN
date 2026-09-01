@@ -4,10 +4,10 @@ import useTheme from '../../hooks/useTheme';
 import { useAccessGate } from '../../hooks/useAccessGate';
 import { readStoredWaitlistTheme } from '../../hooks/useWaitlistSurfaceTheme';
 
-const WAITLIST_SURFACE_PATHS = new Set(['/', '/brand']);
+const WAITLIST_ALWAYS_PATHS = new Set(['/waitlist', '/brand']);
 
 /**
- * Keeps nordic/vercel forced while the user is on waitlist landing or waitlist brand.
+ * Keeps waitlist theme forced while the user is on waitlist landing or waitlist brand.
  * Lives in App so theme does not reset during client-side navigation between those routes.
  */
 export default function WaitlistThemeSync() {
@@ -16,9 +16,9 @@ export default function WaitlistThemeSync() {
   const { setForcedTheme } = useTheme();
 
   useLayoutEffect(() => {
-    const onWaitlistSurface = isWaitlistMode
-      && !canAccessApp
-      && WAITLIST_SURFACE_PATHS.has(location.pathname);
+    const onWaitlistSurface =
+      WAITLIST_ALWAYS_PATHS.has(location.pathname) ||
+      (location.pathname === '/' && isWaitlistMode && !canAccessApp);
 
     if (onWaitlistSurface) {
       setForcedTheme(readStoredWaitlistTheme());

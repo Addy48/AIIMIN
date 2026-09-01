@@ -7,6 +7,7 @@ import {
   Link2,
   Mic,
   Plus,
+  Pin,
   Search,
   Trash2,
   Upload,
@@ -17,6 +18,7 @@ import {
   fetchNotes,
   createNote,
   deleteNote,
+  updateNote,
   suggestNoteLinks,
   fetchNoteAnchors,
   confirmAnchor,
@@ -292,6 +294,19 @@ export default function NotesPage() {
     }
   };
 
+  const handleTogglePin = async () => {
+    if (!selected?.id) return;
+    const nextPinned = !(selected.pinned === true || selected.meta?.pinned === true || selected.meta?.pinned === 'true');
+    try {
+      const updated = await updateNote(selected.id, { pinned: nextPinned });
+      setSelected((current) => current ? { ...current, ...(updated || {}), pinned: nextPinned, meta: { ...(current.meta || {}), ...(updated?.meta || {}), pinned: nextPinned } } : current);
+      setNotes((current) => current.map((note) => note.id === selected.id ? { ...note, ...(updated || {}), pinned: nextPinned, meta: { ...(note.meta || {}), ...(updated?.meta || {}), pinned: nextPinned } } : note));
+      toast.success(nextPinned ? 'Pinned' : 'Unpinned');
+    } catch (err) {
+      toast.error(err?.message || 'Pin update failed');
+    }
+  };
+
   const handleDelete = async () => {
     if (!selected?.id) return;
     try {
@@ -483,6 +498,9 @@ export default function NotesPage() {
           <span className="notes-reader__when">{formatWhen(selected.created_at)}</span>
         </div>
         <div className="notes-reader__actions">
+          <button type="button" className={`notes-btn${selected.pinned ? ' is-pressed' : ''}`} onClick={handleTogglePin}>
+            <Pin size={14} /> {selected.pinned ? 'Unpin' : 'Pin'}
+          </button>
           <button type="button" className="notes-btn" onClick={handleSuggest}>
             <Link2 size={14} /> Suggest links
           </button>

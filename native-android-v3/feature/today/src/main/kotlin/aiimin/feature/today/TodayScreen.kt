@@ -86,6 +86,8 @@ fun TodayRoute(
     onOpenCapture: (String) -> Unit,
     onOpenScore: () -> Unit = {},
     onOpenNotes: () -> Unit = {},
+    onOpenJournal: () -> Unit = {},
+    onOpenDiscipline: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
@@ -171,6 +173,8 @@ fun TodayRoute(
         onOpenCapture = onOpenCapture,
         onOpenScore = onOpenScore,
         onOpenNotes = onOpenNotes,
+        onOpenJournal = onOpenJournal,
+        onOpenDiscipline = onOpenDiscipline,
         onToggle = viewModel::onToggle,
         onRequestSteps = { requestSteps(openSettingsFallback = true) },
         onRequestScreen = {
@@ -244,6 +248,8 @@ fun TodayScreen(
     onToggle: (Long) -> Unit,
     onOpenScore: () -> Unit = {},
     onOpenNotes: () -> Unit = {},
+    onOpenJournal: () -> Unit = {},
+    onOpenDiscipline: () -> Unit = {},
     onRequestSteps: () -> Unit = {},
     onRequestScreen: () -> Unit = {},
     onRefreshDevice: () -> Unit = {},
@@ -293,6 +299,11 @@ fun TodayScreen(
             )
 
             NotesStrip(notes, onOpenNotes = onOpenNotes)
+            PrivateTools(
+                onOpenNotes = onOpenNotes,
+                onOpenJournal = onOpenJournal,
+                onOpenDiscipline = onOpenDiscipline,
+            )
 
             DeviceStrip(
                 device = device,
@@ -799,6 +810,69 @@ private fun AgendaRow(event: AgendaEvent) {
             )
         }
         HairRule()
+    }
+}
+
+@Composable
+private fun PrivateTools(
+    onOpenNotes: () -> Unit,
+    onOpenJournal: () -> Unit,
+    onOpenDiscipline: () -> Unit,
+) {
+    SectionRule(label = "Private stack", value = "LOCAL FIRST")
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+    ) {
+        PrivateTool(
+            label = "JOURNAL",
+            meta = "REFLECT",
+            onClick = onOpenJournal,
+            modifier = Modifier.weight(1f),
+        )
+        PrivateTool(
+            label = "DISCIPLINE",
+            meta = "TRACK",
+            onClick = onOpenDiscipline,
+            modifier = Modifier.weight(1f),
+        )
+        PrivateTool(
+            label = "NOTES",
+            meta = "CAPTURE",
+            onClick = onOpenNotes,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun PrivateTool(
+    label: String,
+    meta: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    TapSurface(
+        onClick = onClick,
+        modifier = modifier.border(Hairline, AiiminTheme.colors.rule),
+        contentPadding = AiiminTheme.space.s3,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = label,
+                style = AiiminTheme.type.cellLabel,
+                color = AiiminTheme.colors.text,
+            )
+            Text(
+                text = meta,
+                style = AiiminTheme.type.mono(10.5),
+                color = AiiminTheme.colors.accent,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
     }
 }
 

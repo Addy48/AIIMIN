@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import aiimin.app.di.ConfigEntryPoint
 import aiimin.app.di.PaymentInboxEntryPoint
+import aiimin.app.security.BiometricGate
 import aiimin.app.navigation.Capture
 import aiimin.app.navigation.Config
 import aiimin.app.navigation.Day
@@ -21,6 +22,7 @@ import aiimin.app.navigation.Lab
 import aiimin.app.navigation.Money
 import aiimin.app.navigation.Notes
 import aiimin.app.navigation.Documents
+import aiimin.app.navigation.Discipline
 import aiimin.app.navigation.Family
 import aiimin.app.navigation.Goals
 import aiimin.app.navigation.Notifications
@@ -39,9 +41,13 @@ import aiimin.feature.journal.JournalRoute
 import aiimin.feature.lab.LabRoute
 import aiimin.feature.money.MoneyRoute
 import aiimin.feature.notes.NotesRoute
+import aiimin.feature.discipline.DisciplineRoute
 import aiimin.feature.osid.OsIdRoute
 import aiimin.feature.score.ScoreRoute
 import aiimin.feature.today.TodayRoute
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.getValue
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -62,6 +68,7 @@ fun AiiminShell(modifier: Modifier = Modifier) {
         is OsId -> Tab.CONFIG
         is Journal -> Tab.CAPTURE
         is Notes -> Tab.DAY
+        is Discipline -> Tab.CONFIG
         is English -> Tab.LAB
         is Notifications -> Tab.CONFIG
         is Search -> Tab.CONFIG
@@ -72,6 +79,7 @@ fun AiiminShell(modifier: Modifier = Modifier) {
         is Score -> Tab.DAY
         else -> Tab.of(top)
     }
+    val hostActivity = LocalContext.current as? FragmentActivity
     val app = LocalContext.current.applicationContext as Application
     val paymentInbox = remember(app) {
         EntryPointAccessors.fromApplication(app, PaymentInboxEntryPoint::class.java).paymentInbox()
@@ -80,6 +88,7 @@ fun AiiminShell(modifier: Modifier = Modifier) {
         EntryPointAccessors.fromApplication(app, ConfigEntryPoint::class.java)
     }
     val configStore = configEntry.configStore()
+    val configState by configStore.state.collectAsStateWithLifecycle()
     val knockStore = configEntry.knockStore()
     fun openPlans(focus: aiimin.core.model.SubscriptionTier? = null) {
         configStore.requestOpenPlan(focus)
@@ -121,7 +130,7 @@ fun AiiminShell(modifier: Modifier = Modifier) {
     AiiminShellContent(
         currentTab = currentTab,
         onSelectTab = { tab ->
-            if (tab != currentTab || top is OsId || top is Score || top is Journal || top is English || top is Notes || top is Notifications || top is Search || top is Timeline || top is Family || top is Documents || top is Goals) {
+            if (tab != currentTab || top is OsId || top is Score || top is Journal || top is English || top is Notes || top is Discipline || top is Notifications || top is Search || top is Timeline || top is Family || top is Documents || top is Goals) {
                 backStack.clear()
                 backStack.add(tab.destination)
             }
@@ -140,6 +149,8 @@ fun AiiminShell(modifier: Modifier = Modifier) {
                         },
                         onOpenScore = { backStack.add(Score) },
                         onOpenNotes = { backStack.add(Notes) },
+                        onOpenJournal = { backStack.add(Journal) },
+                        onOpenDiscipline = { backStack.add(Discipline) },
                     )
                 }
                 entry<Score> { ScoreRoute() }
@@ -181,6 +192,7 @@ fun AiiminShell(modifier: Modifier = Modifier) {
                         onOpenJournal = { backStack.add(Journal) },
                         onOpenEnglish = { backStack.add(English) },
                         onOpenNotes = { backStack.add(Notes) },
+                        onOpenDiscipline = { backStack.add(Discipline) },
                         onOpenNotifications = { backStack.add(Notifications) },
                         onOpenSearch = { backStack.add(Search) },
                         onOpenTimeline = { backStack.add(Timeline) },
@@ -199,6 +211,22 @@ fun AiiminShell(modifier: Modifier = Modifier) {
                 }
                 entry<Notes> {
                     NotesRoute(onBack = { backStack.removeLastOrNull() })
+                }
+                entry<Discipline> {
+                    DisciplineRoute(
+                        onBack = { backStack.removeLastOrNull() },
+                        onOpenBlockingSettings = {
+                            app.startActivity(
+                                android.content.Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                                    .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK),
+                            )
+                        },
+                        onRequireBiometric = if (configState.biometricEnabled) {
+                            {
+                                hostActivity != null && BiometricGate.authenticateForLogin(hostActivity, null)
+                            }
+                        } else null,
+                    )
                 }
                 entry<English> {
                     EnglishRoute(

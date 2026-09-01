@@ -10,6 +10,7 @@ import {
   Calendar,
   Users,
   FlaskConical,
+  Flame,
   Focus,
   Shield,
   LayoutGrid,
@@ -30,6 +31,7 @@ const BOTTOM_NAV_ICONS = {
   discipline: Shield,
   focus: Focus,
   lab: FlaskConical,
+  forge: Flame,
 };
 
 const HIDE_ON_PATHS = [
@@ -93,7 +95,9 @@ export default function BottomNav() {
     <>
       <nav className="bottom-nav" aria-label="Mobile navigation">
         {bottomTabs.map(({ id, to, label }) => {
-          const active = location.pathname === to || location.pathname.startsWith(`${to}/`);
+          const active = id === 'forge'
+            ? location.pathname.startsWith('/lab') || location.pathname.startsWith('/sports') || location.pathname.startsWith('/forge')
+            : location.pathname === to || location.pathname.startsWith(`${to}/`);
           const Icon = IconFor(id);
           return (
             <button
@@ -141,17 +145,34 @@ export default function BottomNav() {
               className="bottom-nav__sheet"
               role="menu"
             >
-              {moreItems.map(({ id, to, label }) => (
-                <button
-                  key={id}
-                  type="button"
-                  role="menuitem"
-                  onClick={() => { navigate(to); setMoreOpen(false); }}
-                  className="bottom-nav__sheet-item"
-                >
-                  {label}
-                </button>
-              ))}
+              {moreItems.flatMap((item) => {
+                if (item.children && item.children.length > 0) {
+                  return item.children
+                    .filter((child) => !(user?.isGuest && child.hideFromGuest))
+                    .map((child) => (
+                      <button
+                        key={child.id}
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { navigate(child.to); setMoreOpen(false); }}
+                        className="bottom-nav__sheet-item"
+                      >
+                        {child.label}
+                      </button>
+                    ));
+                }
+                return [(
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { navigate(item.to); setMoreOpen(false); }}
+                    className="bottom-nav__sheet-item"
+                  >
+                    {item.label}
+                  </button>
+                )];
+              })}
             </motion.div>
           </motion.div>
         )}

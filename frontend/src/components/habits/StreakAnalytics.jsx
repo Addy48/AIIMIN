@@ -8,6 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { apiGet } from '../../utils/api';
 import { fetchHabits } from '../../api/habits';
 import { fetchDailyLogs } from '../../api/dailyLogs';
+import { ChartBar } from '@phosphor-icons/react';
 
 export default function StreakAnalytics({ user }) {
     const [habits, setHabits] = useState([]);
@@ -51,7 +52,9 @@ export default function StreakAnalytics({ user }) {
     if (habits.length === 0) {
         return (
             <div style={{ padding: '60px 20px', textAlign: 'center', background: 'var(--bg-card)', borderRadius: 'var(--r-lg)', border: '1px solid var(--border)' }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>📊</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px', color: 'var(--text-3)' }}>
+                    <ChartBar size={40} weight="duotone" />
+                </div>
                 <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>No Habits Yet</div>
                 <p style={{ fontSize: '12px', color: 'var(--text-3)', marginTop: '6px' }}>
                     Create habits in the Library tab to see analytics here.

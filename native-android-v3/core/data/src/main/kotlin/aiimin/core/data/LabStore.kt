@@ -162,7 +162,9 @@ data class LabState(
     val isSeed: Boolean = true,
     val headMetaOverride: String? = null,
 ) {
-    val selected: CorrelationPair get() = pairs[selectedIndex.coerceIn(pairs.indices)]
+    val selected: CorrelationPair?
+        get() = if (pairs.isEmpty()) null else pairs.getOrNull(selectedIndex.coerceIn(0, pairs.lastIndex))
+
     val headMeta: String
         get() = headMetaOverride
             ?: if (isSeed) "SEED · DEMO"

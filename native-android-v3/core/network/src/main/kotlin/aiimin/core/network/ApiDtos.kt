@@ -38,6 +38,7 @@ data class BootstrapResponse(
     val habitCompletedToday: List<String> = emptyList(),
     val journal: List<JournalDto> = emptyList(),
     val notes: List<NoteDto> = emptyList(),
+    val discipline: DisciplineSummaryDto? = null,
     val agenda: List<AgendaDto> = emptyList(),
     val lifeScore: JsonElement? = null,
     val familyDocuments: List<FamilyDocDto> = emptyList(),
@@ -83,6 +84,13 @@ data class NoteDto(
     val pinned: Boolean? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
+)
+
+@Serializable
+data class DisciplineSummaryDto(
+    @SerialName("streak_days") val streakDays: Int = 0,
+    @SerialName("total_logs") val totalLogs: Int = 0,
+    @SerialName("last_outcome") val lastOutcome: String? = null,
 )
 
 @Serializable

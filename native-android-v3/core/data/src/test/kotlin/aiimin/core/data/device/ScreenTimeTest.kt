@@ -130,6 +130,18 @@ class ScreenTimeTest {
     }
 
     @Test
+    fun authoritative_total_wins_over_event_heuristics() {
+        val shown = ScreenTime.digitalWellbeingTotalMs(
+            appForegroundByPackage = mapOf("com.instagram.android" to 9L * 3_600_000),
+            eventInteractiveMs = 6L * 3_600_000,
+            unlockedMs = 5L * 3_600_000,
+            exclusiveAppUnionMs = 4L * 3_600_000,
+            authoritativeTotalMs = 47L * 60_000,
+        )
+        assertThat(shown).isEqualTo(47L * 60_000)
+    }
+
+    @Test
     fun excludes_os_shell_packages() {
         assertThat(ScreenTime.countsTowardDigitalWellbeing("android")).isFalse()
         assertThat(ScreenTime.countsTowardDigitalWellbeing("com.android.systemui")).isFalse()

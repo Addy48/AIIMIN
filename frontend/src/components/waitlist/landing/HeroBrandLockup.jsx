@@ -9,7 +9,7 @@ import { isLightTheme } from '../../../constants/themes';
 export default function HeroBrandLockup({ markSize = 32, wordmarkSize = 28 }) {
   const { theme } = useTheme();
   const isLight = isLightTheme(theme);
-  const colors = pickMarkColors(isLight, { variant: 'light' });
+  const colors = pickMarkColors(isLight);
 
   return (
     <Link to="/brand" className="hero-brand-lockup" aria-label="Explore AIIMIN brand guidelines">
