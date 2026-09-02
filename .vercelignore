@@ -14,7 +14,6 @@ dist/
 build/
 coverage/
 .DS_Store
-.claude/
 **/.npm-cache/
 **/node_modules/
 

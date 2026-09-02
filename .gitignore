@@ -87,6 +87,8 @@ deploy/EC2.env.paste
 
 # Tools & editors (local only — never ship on GitHub)
 .claude/
+CLAUDE.md
+GEMINI.md
 .cursor/
 .cursor/**
 .codex/
