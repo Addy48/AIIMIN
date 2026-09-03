@@ -1,0 +1,180 @@
+[
+  {
+    "theme": "aiimin-dark",
+    "tier": "explore",
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "workspace": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 4033.90625
+    },
+    "footer": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 3913.90625
+    },
+    "rail": null,
+    "heading": "See what happened today."
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "core",
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "workspace": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 3813.09375
+    },
+    "footer": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 3693.09375
+    },
+    "rail": null,
+    "heading": "See how your week operated."
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "pro",
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "workspace": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 5285.921875
+    },
+    "footer": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 5165.921875
+    },
+    "rail": null,
+    "heading": "Find the signals that repeat."
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "elite",
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "workspace": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 2245.953125
+    },
+    "footer": {
+      "x": 16,
+      "width": 358,
+      "right": 374,
+      "bottom": 2229.953125
+    },
+    "rail": {
+      "x": 16,
+      "width": 358,
+      "right": 374,
+      "bottom": 430.296875
+    },
+    "heading": "Investigate your personal system."
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "explore",
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "workspace": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 4033.90625
+    },
+    "footer": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 3913.90625
+    },
+    "rail": null,
+    "heading": "See what happened today."
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "core",
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "workspace": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 3813.09375
+    },
+    "footer": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 3693.09375
+    },
+    "rail": null,
+    "heading": "See how your week operated."
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "pro",
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "workspace": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 5285.921875
+    },
+    "footer": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 5165.921875
+    },
+    "rail": null,
+    "heading": "Find the signals that repeat."
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "elite",
+    "innerWidth": 390,
+    "scrollWidth": 390,
+    "bodyScrollWidth": 390,
+    "workspace": {
+      "x": 0,
+      "width": 390,
+      "right": 390,
+      "bottom": 2245.953125
+    },
+    "footer": {
+      "x": 16,
+      "width": 358,
+      "right": 374,
+      "bottom": 2229.953125
+    },
+    "rail": {
+      "x": 16,
+      "width": 358,
+      "right": 374,
+      "bottom": 430.296875
+    },
+    "heading": "Investigate your personal system."
+  }
+]

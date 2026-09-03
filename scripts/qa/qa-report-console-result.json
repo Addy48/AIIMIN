@@ -1,0 +1,130 @@
+[
+  {
+    "theme": "aiimin-dark",
+    "tier": "explore",
+    "probe": {
+      "workspace": true,
+      "footer": true,
+      "tier": "explore",
+      "theme": "aiimin-dark",
+      "score": true,
+      "method": true,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "bodyText": "LOCAL QA FIXTURE\nDemo data only\nNot connected to a real account. Try ?demo=1&tier=explore|core|pro|elite.\nEXPLORE · DAIL"
+    },
+    "errors": []
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "core",
+    "probe": {
+      "workspace": true,
+      "footer": true,
+      "tier": "core",
+      "theme": "aiimin-dark",
+      "score": true,
+      "method": true,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "bodyText": "LOCAL QA FIXTURE\nDemo data only\nNot connected to a real account. Try ?demo=1&tier=explore|core|pro|elite.\nCORE · WEEKLY "
+    },
+    "errors": []
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "pro",
+    "probe": {
+      "workspace": true,
+      "footer": true,
+      "tier": "pro",
+      "theme": "aiimin-dark",
+      "score": true,
+      "method": true,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "bodyText": "LOCAL QA FIXTURE\nDemo data only\nNot connected to a real account. Try ?demo=1&tier=explore|core|pro|elite.\n14 days\n30 day"
+    },
+    "errors": []
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "elite",
+    "probe": {
+      "workspace": true,
+      "footer": true,
+      "tier": "elite",
+      "theme": "aiimin-dark",
+      "score": true,
+      "method": true,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "bodyText": "LOCAL QA FIXTURE\nDemo data only\nNot connected to a real account. Try ?demo=1&tier=explore|core|pro|elite.\n14 days\n30 day"
+    },
+    "errors": []
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "explore",
+    "probe": {
+      "workspace": true,
+      "footer": true,
+      "tier": "explore",
+      "theme": "aiimin-light",
+      "score": true,
+      "method": true,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "bodyText": "LOCAL QA FIXTURE\nDemo data only\nNot connected to a real account. Try ?demo=1&tier=explore|core|pro|elite.\nEXPLORE · DAIL"
+    },
+    "errors": []
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "core",
+    "probe": {
+      "workspace": true,
+      "footer": true,
+      "tier": "core",
+      "theme": "aiimin-light",
+      "score": true,
+      "method": true,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "bodyText": "LOCAL QA FIXTURE\nDemo data only\nNot connected to a real account. Try ?demo=1&tier=explore|core|pro|elite.\nCORE · WEEKLY "
+    },
+    "errors": []
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "pro",
+    "probe": {
+      "workspace": true,
+      "footer": true,
+      "tier": "pro",
+      "theme": "aiimin-light",
+      "score": true,
+      "method": true,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "bodyText": "LOCAL QA FIXTURE\nDemo data only\nNot connected to a real account. Try ?demo=1&tier=explore|core|pro|elite.\n14 days\n30 day"
+    },
+    "errors": []
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "elite",
+    "probe": {
+      "workspace": true,
+      "footer": true,
+      "tier": "elite",
+      "theme": "aiimin-light",
+      "score": true,
+      "method": true,
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "bodyText": "LOCAL QA FIXTURE\nDemo data only\nNot connected to a real account. Try ?demo=1&tier=explore|core|pro|elite.\n14 days\n30 day"
+    },
+    "errors": []
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "theme": "aiimin-dark",
+    "tier": "explore",
+    "height": 2328,
+    "footerText": "EXPLORE · EVIDENCE TRAIL\nNext: Core when you need more context.\n\nA weekly comparison adds context without hiding the raw signal.\n\nMODEL\nlhs-v3.0.0-calibrated\nWINDOW\nLast 30 days · demo fixture\nOBSERVED\n30 days\nCONFIDENCE\nstrong",
+    "footerBottom": 2128,
+    "viewportBottom": 1000,
+    "screenshot": "reports-demo-explore-aiimin-dark-bottom.png"
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "pro",
+    "height": 3012,
+    "footerText": "PRO · EVIDENCE TRAIL\nNext: Elite when you need more context.\n\nQuestions, alternatives, scenarios, and experiments deepen the readout.\n\nMODEL\nlhs-v3.0.0-calibrated\nWINDOW\nLast 30 days · demo fixture\nOBSERVED\n30 days\nCONFIDENCE\nstrong",
+    "footerBottom": 2811.546875,
+    "viewportBottom": 1000,
+    "screenshot": "reports-demo-pro-aiimin-dark-bottom.png"
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "elite",
+    "height": 1388,
+    "footerText": "ELITE · EVIDENCE TRAIL\nKeep the signal honest.\n\nYour score is an operating read of logged inputs, not a diagnosis or a verdict. Revisit the source records before turning a pattern into a decision.\n\nMODEL\nlhs-v3.0.0-calibrated\nWINDOW\nLast 30 days · demo fixture\nOBSERVED\n30 days\nCONFIDENCE\nstrong",
+    "footerBottom": 1188.28125,
+    "viewportBottom": 1000,
+    "screenshot": "reports-demo-elite-aiimin-dark-bottom.png"
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "explore",
+    "height": 2328,
+    "footerText": "EXPLORE · EVIDENCE TRAIL\nNext: Core when you need more context.\n\nA weekly comparison adds context without hiding the raw signal.\n\nMODEL\nlhs-v3.0.0-calibrated\nWINDOW\nLast 30 days · demo fixture\nOBSERVED\n30 days\nCONFIDENCE\nstrong",
+    "footerBottom": 2128,
+    "viewportBottom": 1000,
+    "screenshot": "reports-demo-explore-aiimin-light-bottom.png"
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "pro",
+    "height": 3012,
+    "footerText": "PRO · EVIDENCE TRAIL\nNext: Elite when you need more context.\n\nQuestions, alternatives, scenarios, and experiments deepen the readout.\n\nMODEL\nlhs-v3.0.0-calibrated\nWINDOW\nLast 30 days · demo fixture\nOBSERVED\n30 days\nCONFIDENCE\nstrong",
+    "footerBottom": 2811.546875,
+    "viewportBottom": 1000,
+    "screenshot": "reports-demo-pro-aiimin-light-bottom.png"
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "elite",
+    "height": 1388,
+    "footerText": "ELITE · EVIDENCE TRAIL\nKeep the signal honest.\n\nYour score is an operating read of logged inputs, not a diagnosis or a verdict. Revisit the source records before turning a pattern into a decision.\n\nMODEL\nlhs-v3.0.0-calibrated\nWINDOW\nLast 30 days · demo fixture\nOBSERVED\n30 days\nCONFIDENCE\nstrong",
+    "footerBottom": 1188.28125,
+    "viewportBottom": 1000,
+    "screenshot": "reports-demo-elite-aiimin-light-bottom.png"
+  }
+]

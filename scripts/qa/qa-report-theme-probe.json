@@ -1,0 +1,176 @@
+[
+  {
+    "theme": "aiimin-dark",
+    "tier": "explore",
+    "innerWidth": 1440,
+    "scrollWidth": 1436,
+    "bodyWidth": 1436,
+    "workspace": {
+      "x": 0,
+      "y": 53.1875,
+      "width": 1220,
+      "height": 2194.8125,
+      "right": 1220,
+      "bottom": 2248
+    },
+    "hero": {
+      "x": 0,
+      "y": 165.765625,
+      "width": 1220,
+      "height": 278.390625,
+      "right": 1220,
+      "bottom": 444.15625
+    },
+    "footer": {
+      "x": 0,
+      "y": 1944.40625,
+      "width": 1220,
+      "height": 183.59375,
+      "right": 1220,
+      "bottom": 2128
+    },
+    "rail": null,
+    "colors": {
+      "canvas": "#14171A",
+      "card": "#1E2228",
+      "accent": "#FF6B35",
+      "ink": "#F0EDE8",
+      "background": "rgb(20, 23, 26)"
+    },
+    "heading": "See what happened today."
+  },
+  {
+    "theme": "aiimin-dark",
+    "tier": "elite",
+    "innerWidth": 1440,
+    "scrollWidth": 1436,
+    "bodyWidth": 1436,
+    "workspace": {
+      "x": -24,
+      "y": 104.375,
+      "width": 1436,
+      "height": 1203.90625,
+      "right": 1412,
+      "bottom": 1308.28125
+    },
+    "hero": {
+      "x": 246,
+      "y": 232.953125,
+      "width": 1142,
+      "height": 235.390625,
+      "right": 1388,
+      "bottom": 468.34375
+    },
+    "footer": {
+      "x": 0,
+      "y": 1004.6875,
+      "width": 1388,
+      "height": 183.59375,
+      "right": 1388,
+      "bottom": 1188.28125
+    },
+    "rail": {
+      "x": 0,
+      "y": 232.953125,
+      "width": 216,
+      "height": 527.078125,
+      "right": 216,
+      "bottom": 760.03125
+    },
+    "colors": {
+      "canvas": "#14171A",
+      "card": "#1E2228",
+      "accent": "#FF6B35",
+      "ink": "#F0EDE8",
+      "background": "rgb(20, 23, 26)"
+    },
+    "heading": "Investigate your personal system."
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "explore",
+    "innerWidth": 1440,
+    "scrollWidth": 1436,
+    "bodyWidth": 1436,
+    "workspace": {
+      "x": 0,
+      "y": 53.1875,
+      "width": 1220,
+      "height": 2194.8125,
+      "right": 1220,
+      "bottom": 2248
+    },
+    "hero": {
+      "x": 0,
+      "y": 165.765625,
+      "width": 1220,
+      "height": 278.390625,
+      "right": 1220,
+      "bottom": 444.15625
+    },
+    "footer": {
+      "x": 0,
+      "y": 1944.40625,
+      "width": 1220,
+      "height": 183.59375,
+      "right": 1220,
+      "bottom": 2128
+    },
+    "rail": null,
+    "colors": {
+      "canvas": "#EDE4D3",
+      "card": "#FFFFFF",
+      "accent": "#E85A24",
+      "ink": "#14171A",
+      "background": "rgb(237, 228, 211)"
+    },
+    "heading": "See what happened today."
+  },
+  {
+    "theme": "aiimin-light",
+    "tier": "elite",
+    "innerWidth": 1440,
+    "scrollWidth": 1436,
+    "bodyWidth": 1436,
+    "workspace": {
+      "x": -24,
+      "y": 104.375,
+      "width": 1436,
+      "height": 1203.90625,
+      "right": 1412,
+      "bottom": 1308.28125
+    },
+    "hero": {
+      "x": 246,
+      "y": 232.953125,
+      "width": 1142,
+      "height": 235.390625,
+      "right": 1388,
+      "bottom": 468.34375
+    },
+    "footer": {
+      "x": 0,
+      "y": 1004.6875,
+      "width": 1388,
+      "height": 183.59375,
+      "right": 1388,
+      "bottom": 1188.28125
+    },
+    "rail": {
+      "x": 0,
+      "y": 232.953125,
+      "width": 216,
+      "height": 527.078125,
+      "right": 216,
+      "bottom": 760.03125
+    },
+    "colors": {
+      "canvas": "#EDE4D3",
+      "card": "#FFFFFF",
+      "accent": "#E85A24",
+      "ink": "#14171A",
+      "background": "rgb(237, 228, 211)"
+    },
+    "heading": "Investigate your personal system."
+  }
+]
