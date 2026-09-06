@@ -35,9 +35,11 @@ object ScreenTime {
         eventInteractiveMs: Long = 0L,
         unlockedMs: Long = 0L,
         exclusiveAppUnionMs: Long = 0L,
-        @Suppress("UNUSED_PARAMETER")
         dailyForegroundByPackage: Map<String, Long> = emptyMap(),
+        authoritativeTotalMs: Long = 0L,
     ): Long {
+        if (authoritativeTotalMs > 0L) return authoritativeTotalMs
+
         val interactive = when {
             eventInteractiveMs > 0L -> eventInteractiveMs
             systemInteractiveMs > 0L -> systemInteractiveMs
@@ -115,7 +117,7 @@ object ScreenTime {
         try {
             android.util.Log.d(
                 "DW_CALC",
-                "in: union=$exclusiveAppUnionMs interactive=$eventInteractiveMs " +
+                "in: auth=$authoritativeTotalMs union=$exclusiveAppUnionMs interactive=$eventInteractiveMs " +
                     "unlocked=$unlockedMs dailyFg=$dailyForegroundMs gap=$gap trimmed=$trimmed " +
                     "path=$path → out=$result " +
                     "(unionMin=${exclusiveAppUnionMs / 60_000}m " +

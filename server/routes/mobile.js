@@ -38,7 +38,7 @@ function mapNoteRow(row) {
     title: row.title ?? '',
     content: row.body_text ?? row.content ?? '',
     color: row.color ?? row.meta?.color ?? '#2D2D2D',
-    pinned: row.pinned === true || row.meta?.pinned === true,
+    pinned: row.pinned === true || row.meta?.pinned === true || row.meta?.pinned === 'true',
     labels: row.labels ?? null,
     checklist: row.checklist ?? null,
     meta: row.meta ?? null,
@@ -143,6 +143,30 @@ app.get('/bootstrap', requireAuth, async (c) => {
       driveStatus = { watches: [], connected: false };
     }
 
+    let disciplineSummary = { streak_days: 0, total_logs: 0, last_outcome: null };
+    try {
+      const { rows: disciplineRows } = await pool.query(
+        `SELECT outcome, created_at
+         FROM public.urge_events
+         WHERE user_id = $1
+         ORDER BY created_at DESC
+         LIMIT 200`,
+        [userId],
+      );
+      let streakDays = 0;
+      for (const row of disciplineRows) {
+        if (row.outcome !== 'resisted') break;
+        streakDays += 1;
+      }
+      disciplineSummary = {
+        streak_days: streakDays,
+        total_logs: disciplineRows.length,
+        last_outcome: disciplineRows[0]?.outcome || null,
+      };
+    } catch {
+      // Older deployments may not have the urge_events table yet.
+    }
+
     return c.json({
       user: {
         id: userId,
@@ -154,6 +178,7 @@ app.get('/bootstrap', requireAuth, async (c) => {
       habitCompletedToday: todayDone,
       journal: journal.rows.map(mapJournalRow),
       notes: notes.rows.map(mapNoteRow),
+      discipline: disciplineSummary,
       goals: goals.rows,
       agenda: agenda.rows,
       lifeScore: score.rows[0]?.payload || null,
@@ -293,28 +318,55 @@ app.post('/sync/batch', requireAuth, async (c) => {
             );
             results.push({ id: m.id, ok: true, entity_id: up.rows[0].id });
           }
+        } else if (type === 'discipline.urge.upsert') {
+          const id = payload.id || randomUUID();
+          const category = String(payload.category || 'custom').slice(0, 80);
+          const allowedOutcomes = new Set(['resisted', 'acted', 'partial', 'still_riding']);
+          const outcome = allowedOutcomes.has(payload.outcome) ? payload.outcome : 'still_riding';
+          const intensity = Math.max(1, Math.min(5, Number(payload.intensity) || 3));
+          const note = String(payload.note || '').slice(0, 1_000);
+          const startedAt = payload.started_at || new Date().toISOString();
+          const resolvedAt = payload.resolved_at || new Date().toISOString();
+          await pool.query(
+            `INSERT INTO public.urge_events
+                (id, user_id, category, started_at, resolved_at, intensity, outcome, note, status, updated_at)
+             VALUES ($1, $2, $3, $4::timestamptz, $5::timestamptz, $6::smallint, $7, $8, 'resolved', NOW())
+             ON CONFLICT (id) DO UPDATE SET
+               category = EXCLUDED.category,
+               started_at = EXCLUDED.started_at,
+               resolved_at = EXCLUDED.resolved_at,
+               intensity = EXCLUDED.intensity,
+               outcome = EXCLUDED.outcome,
+               note = EXCLUDED.note,
+               status = 'resolved',
+               updated_at = NOW()
+             WHERE urge_events.user_id = $2`,
+            [id, userId, category, startedAt, resolvedAt, intensity, outcome, note],
+          );
+          results.push({ id: m.id, ok: true, entity_id: id });
         } else if (type === 'note.upsert') {
           const id = payload.id || randomUUID();
           const title = payload.title || '';
           const content = String(payload.content || '').slice(0, 50000);
           const color = payload.color || '#2D2D2D';
+          const pinned = payload.pinned === true || payload.pinned === 'true';
           await pool.query(
             `INSERT INTO notes (id, user_id, source_type, title, body_text, content, status, meta, created_at, updated_at)
              VALUES ($1, $2, 'mobile', $3, $4, $4, 'ready',
-                     jsonb_build_object('color', $5::text, 'pinned', false), NOW(), NOW())
+                     jsonb_build_object('color', $5::text, 'pinned', $6::boolean), NOW(), NOW())
              ON CONFLICT (id) DO UPDATE SET
                title = EXCLUDED.title,
                body_text = EXCLUDED.body_text,
                content = EXCLUDED.content,
-               meta = COALESCE(notes.meta, '{}'::jsonb) || jsonb_build_object('color', $5::text),
+               meta = COALESCE(notes.meta, '{}'::jsonb) || jsonb_build_object('color', $5::text, 'pinned', $6::boolean),
                updated_at = NOW()
              WHERE notes.user_id = $2`,
-            [id, userId, title, content, color],
+            [id, userId, title, content, color, pinned],
           ).catch(async () => {
             await pool.query(
               `INSERT INTO notes (user_id, title, content, body_text, source_type, status, meta)
-               VALUES ($1, $2, $3, $3, 'mobile', 'ready', jsonb_build_object('color', $4::text))`,
-              [userId, title, content, color],
+               VALUES ($1, $2, $3, $3, 'mobile', 'ready', jsonb_build_object('color', $4::text, 'pinned', $5::boolean))`,
+              [userId, title, content, color, pinned],
             );
           });
           results.push({ id: m.id, ok: true, entity_id: id });

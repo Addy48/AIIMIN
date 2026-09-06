@@ -7,6 +7,7 @@
  *   3. Streak Analytics — heatmap, completion %, streak data
  */
 import React, { useState } from 'react';
+import { Lightning, Books, ChartBar } from '@phosphor-icons/react';
 import HabitsWidget from './HabitsWidget';
 import HabitManager from './HabitManager';
 import StreakAnalytics from './StreakAnalytics';
@@ -14,9 +15,9 @@ import WinsEngine from '../WinsEngine';
 import useFeatureFlag from '../../hooks/useFeatureFlag';
 
 const SUBTABS = [
-    { key: 'routines', label: "Today's Routines", icon: '⚡' },
-    { key: 'library',  label: 'Habit Library',    icon: '📚' },
-    { key: 'streaks',  label: 'Streak Analytics',  icon: '📊' },
+    { key: 'routines', label: "Today's Routines", icon: Lightning },
+    { key: 'library',  label: 'Habit Library',    icon: Books },
+    { key: 'streaks',  label: 'Streak Analytics',  icon: ChartBar },
 ];
 
 export default function HabitsPage({ user }) {
@@ -57,7 +58,7 @@ export default function HabitsPage({ user }) {
                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                         }}
                     >
-                        <span style={{ fontSize: '13px' }}>{icon}</span>
+                        {React.createElement(icon, { size: 14, weight: 'duotone' })}
                         {label}
                     </button>
                 ))}

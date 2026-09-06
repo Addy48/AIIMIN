@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
   Target,
@@ -10,6 +10,7 @@ import {
   Trophy,
   Shield,
   FlaskConical,
+  Flame,
   Users,
   LayoutGrid,
   ChevronLeft,
@@ -37,11 +38,12 @@ const RAIL_ICONS = {
   discipline: Shield,
   focus: Focus,
   lab: FlaskConical,
+  forge: Flame,
   reports: LayoutGrid,
 };
 
 const PRIMARY_RAIL_IDS = [
-  'overview', 'habits', 'goals', 'journal', 'notes', 'finance', 'reports', 'focus',
+  'overview', 'habits', 'goals', 'journal', 'notes', 'finance', 'forge', 'reports', 'focus',
 ];
 
 const RAIL_WIDTH_KEY = 'aiimin_rail_expanded';
@@ -143,6 +145,15 @@ export default function TabRail() {
 
   if (!isTablet) return null;
 
+  const location = useLocation();
+
+  const isLinkActive = useCallback((id, to) => {
+    if (id === 'forge') {
+      return location.pathname.startsWith('/lab') || location.pathname.startsWith('/sports') || location.pathname.startsWith('/forge');
+    }
+    return location.pathname === to || location.pathname.startsWith(`${to}/`);
+  }, [location.pathname]);
+
   return (
     <aside
       className={`tab-rail${expanded ? ' tab-rail--expanded' : ''}`}
@@ -169,11 +180,12 @@ export default function TabRail() {
       <nav className="tab-rail__primary">
         {primaryItems.map(({ id, to, label }) => {
           const Icon = IconFor(id);
+          const active = isLinkActive(id, to);
           return (
             <NavLink
               key={id}
               to={to}
-              className={({ isActive }) => `tab-rail__link${isActive ? ' tab-rail__link--active' : ''}`}
+              className={`tab-rail__link${active ? ' tab-rail__link--active' : ''}`}
               title={label}
             >
               <Icon size={20} aria-hidden />
@@ -196,16 +208,35 @@ export default function TabRail() {
           </button>
           {moreOpen && expanded && (
             <div className="tab-rail__more-panel">
-              {secondaryItems.map(({ id, to, label }) => (
-                <NavLink
-                  key={id}
-                  to={to}
-                  className={({ isActive }) => `tab-rail__sublink${isActive ? ' tab-rail__sublink--active' : ''}`}
-                  onClick={() => setMoreOpen(false)}
-                >
-                  {label}
-                </NavLink>
-              ))}
+              {secondaryItems.map((item) => {
+                if (item.children && item.children.length > 0) {
+                  return item.children.map((child) => {
+                    if (user?.isGuest && child.hideFromGuest) return null;
+                    const childActive = isLinkActive(child.id, child.to);
+                    return (
+                      <NavLink
+                        key={child.id}
+                        to={child.to}
+                        className={`tab-rail__sublink${childActive ? ' tab-rail__sublink--active' : ''}`}
+                        onClick={() => setMoreOpen(false)}
+                      >
+                        {child.label}
+                      </NavLink>
+                    );
+                  });
+                }
+                const active = isLinkActive(item.id, item.to);
+                return (
+                  <NavLink
+                    key={item.id}
+                    to={item.to}
+                    className={`tab-rail__sublink${active ? ' tab-rail__sublink--active' : ''}`}
+                    onClick={() => setMoreOpen(false)}
+                  >
+                    {item.label}
+                  </NavLink>
+                );
+              })}
             </div>
           )}
         </div>

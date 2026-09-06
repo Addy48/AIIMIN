@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateWithGemini } from '../../utils/serverAi';
+import { Brain } from '@phosphor-icons/react';
 
 export default function DecisionMatrix({ onBack }) {
   const [step, setStep] = useState(0);
@@ -185,7 +186,7 @@ Regret Minimization: ${regret}`;
               <div style={{ textAlign: 'left', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '1.5rem', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                   <h4 style={{ margin: 0, color: 'var(--color-text-1)', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.2rem' }}>🧠</span> AI Synthesis
+                    <Brain size={18} weight="duotone" /> AI Synthesis
                   </h4>
                   {!aiSynthesis && !isAnalyzing && (
                     <button

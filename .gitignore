@@ -33,6 +33,8 @@ frontend/android/build/
 frontend/android/capacitor-cordova-android-plugins/build/
 
 # Native Android V2 — never commit build cache or APK outputs
+*.apk
+frontend/src/assets/icons/
 native-android/.gradle/
 native-android/**/build/
 native-android/local.properties

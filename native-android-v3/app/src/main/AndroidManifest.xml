@@ -42,6 +42,7 @@
         </intent>
     </queries>
 
+
     <application
         android:name=".AiiminApplication"
         android:allowBackup="false"
@@ -122,6 +123,17 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".blocking.AiiminAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/aiimin_accessibility_service" />
+        </service>
         <receiver
             android:name=".widget.DayGlanceWidgetReceiver"
             android:exported="true"

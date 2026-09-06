@@ -246,6 +246,32 @@ class GraphSyncRepository @Inject constructor(
         )
     }
 
+    fun enqueueDisciplineEvent(
+        id: String,
+        category: String,
+        intensity: Int,
+        outcome: String,
+        note: String,
+        startedAt: String,
+        resolvedAt: String,
+    ) {
+        enqueueMutation(
+            SyncMutationDto(
+                id = UUID.randomUUID().toString(),
+                type = "discipline.urge.upsert",
+                payload = mapOf(
+                    "id" to id,
+                    // Detailed category, intensity, note, and timestamps remain local.
+                    // The server receives only the aggregate outcome needed for Life OS.
+                    "category" to "discipline",
+                    "outcome" to outcome,
+                    "privacy_mode" to "local_detail_v1",
+                ),
+                clientMutatedAt = Instant.now().toString(),
+            ),
+        )
+    }
+
     fun enqueueNote(
         id: String,
         title: String,
@@ -459,7 +485,7 @@ class GraphSyncRepository @Inject constructor(
         )
     }
 
-    private fun applyBootstrap(boot: aiimin.core.network.BootstrapResponse) {
+    private suspend fun applyBootstrap(boot: aiimin.core.network.BootstrapResponse) {
         val completed = pendingHabitOverlay().apply(boot.habitCompletedToday.toSet())
         day.hydrateFromBootstrap(
             habits = boot.habits,

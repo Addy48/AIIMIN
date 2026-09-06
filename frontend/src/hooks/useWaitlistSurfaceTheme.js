@@ -1,14 +1,16 @@
 import { useLayoutEffect, useState } from 'react';
 import useTheme from './useTheme';
-import { isLightTheme } from '../constants/themes';
+import { THEME_DARK, THEME_LIGHT, isLightTheme, normalizeThemeId } from '../constants/themes';
 
 export const WAITLIST_THEME_STORAGE_KEY = 'aiimin-waitlist-theme';
-export const WAITLIST_LIGHT_THEME = 'nordic';
-export const WAITLIST_DARK_THEME = 'vercel';
+export const WAITLIST_LIGHT_THEME = THEME_LIGHT;
+export const WAITLIST_DARK_THEME = THEME_DARK;
 
 export function readStoredWaitlistTheme() {
-  if (typeof window === 'undefined') return WAITLIST_LIGHT_THEME;
-  return localStorage.getItem(WAITLIST_THEME_STORAGE_KEY) || WAITLIST_LIGHT_THEME;
+  if (typeof window === 'undefined') return WAITLIST_DARK_THEME;
+  const stored = localStorage.getItem(WAITLIST_THEME_STORAGE_KEY);
+  if (!stored) return WAITLIST_DARK_THEME;
+  return normalizeThemeId(stored);
 }
 
 /**
@@ -27,10 +29,10 @@ export default function useWaitlistSurfaceTheme() {
   }, [waitlistTheme, setForcedTheme]);
 
   const toggleWaitlistTheme = () => {
-    setWaitlistTheme((prev) => (prev === WAITLIST_LIGHT_THEME ? WAITLIST_DARK_THEME : WAITLIST_LIGHT_THEME));
+    setWaitlistTheme((prev) => (isLightTheme(prev) ? WAITLIST_DARK_THEME : WAITLIST_LIGHT_THEME));
   };
 
-  const isLight = isLightTheme(theme);
+  const isLight = isLightTheme(waitlistTheme);
 
   return { waitlistTheme, toggleWaitlistTheme, isLight, setWaitlistTheme };
 }

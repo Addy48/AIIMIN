@@ -2,6 +2,31 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { getRankProgress } from '../../utils/xpEngine';
 import supabase from '../../utils/supabase';
+import {
+    Plant,
+    Lightning,
+    Sword,
+    Trophy,
+    BookBookmark,
+    Crown,
+    Star,
+    Sparkle,
+    DiamondsFour,
+    Medal,
+} from '@phosphor-icons/react';
+
+const RANK_ICON_MAP = {
+    1: Plant,
+    2: Lightning,
+    3: Sword,
+    4: Trophy,
+    5: BookBookmark,
+    6: Crown,
+    7: Star,
+    8: Sparkle,
+    9: DiamondsFour,
+    10: Medal,
+};
 
 const DesktopXPBar = () => {
     const { user } = useAuth();
@@ -20,6 +45,7 @@ const DesktopXPBar = () => {
     if (!xpData) return null;
 
     const progress = getRankProgress(xpData.total_xp);
+    const RankIcon = RANK_ICON_MAP[progress.rank] || Plant;
 
     return (
         <div style={{
@@ -32,7 +58,9 @@ const DesktopXPBar = () => {
             borderRadius: '999px',
             fontSize: '12px',
         }}>
-            <span>{progress.emoji}</span>
+            <span style={{ display: 'inline-flex', color: 'var(--accent)' }}>
+                <RankIcon size={16} weight="duotone" />
+            </span>
             <span style={{ color: 'var(--text-2)', fontWeight: 700 }}>{progress.name}</span>
             <div style={{
                 width: '80px', height: '4px',
@@ -48,7 +76,7 @@ const DesktopXPBar = () => {
                     transition: 'width 0.4s ease',
                 }} />
             </div>
-            <span style={{ color: 'var(--text-3)' }}>{xpData.total_xp} XP</span>
+            <span style={{ color: 'var(--text-3)', fontFamily: 'var(--font-mono)' }}>{xpData.total_xp} XP</span>
         </div>
     );
 };

@@ -3,15 +3,19 @@ package aiimin.feature.notes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -81,115 +85,130 @@ fun NotesScreen(
     onDismissNotice: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = AiiminTheme.space.page)
-            .padding(bottom = AiiminTheme.space.s8),
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(
+            horizontal = AiiminTheme.space.page,
+            vertical = AiiminTheme.space.s4
+        ),
+        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s3),
+        verticalItemSpacing = AiiminTheme.space.s3,
     ) {
-        GhostButton(label = "BACK", onClick = onBack, modifier = Modifier.padding(top = AiiminTheme.space.s2))
-        ScreenHead(title = "Notes", meta = state.headMeta)
+        item(span = StaggeredGridItemSpan.FullLine) {
+            Column {
+                GhostButton(label = "BACK", onClick = onBack, modifier = Modifier.padding(top = AiiminTheme.space.s2))
+                ScreenHead(title = "Notes", meta = state.headMeta)
 
-        state.notice?.let { notice ->
-            TapSurface(onClick = onDismissNotice, modifier = Modifier.padding(top = AiiminTheme.space.s3)) {
+                state.notice?.let { notice ->
+                    TapSurface(onClick = onDismissNotice, modifier = Modifier.padding(top = AiiminTheme.space.s3)) {
+                        Text(
+                            text = notice.message.uppercase(Locale.US),
+                            style = AiiminTheme.type.mono(10.5),
+                            color = AiiminTheme.colors.accent,
+                        )
+                    }
+                }
+
                 Text(
-                    text = notice.message.uppercase(Locale.US),
-                    style = AiiminTheme.type.mono(10.5),
-                    color = AiiminTheme.colors.accent,
+                    text = "Park a thought. Not a diary — that’s Journal. Syncs with the graph.",
+                    style = AiiminTheme.type.bodySmall,
+                    color = AiiminTheme.colors.muted,
+                    modifier = Modifier.padding(top = AiiminTheme.space.s2),
                 )
             }
         }
 
-        Text(
-            text = "Park a thought. Not a diary — that’s Journal. Syncs with the graph.",
-            style = AiiminTheme.type.bodySmall,
-            color = AiiminTheme.colors.muted,
-            modifier = Modifier.padding(top = AiiminTheme.space.s2),
-        )
-
         if (state.composing) {
-            SectionRule(
-                label = if (state.editingId == null) "New note" else "Edit note",
-                value = "DRAFT",
-            )
-            BlueprintBox(
-                accent = true,
-                tinted = true,
-                modifier = Modifier.padding(top = AiiminTheme.space.s3),
-            ) {
-                BasicTextField(
-                    value = state.draftTitle,
-                    onValueChange = onTitle,
-                    textStyle = AiiminTheme.type.body.copy(
-                        fontSize = 16.sp,
-                        color = AiiminTheme.colors.text,
-                    ),
-                    cursorBrush = SolidColor(AiiminTheme.colors.accent),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    decorationBox = { inner ->
-                        if (state.draftTitle.isEmpty()) {
-                            Text("Title (optional)", style = AiiminTheme.type.body, color = AiiminTheme.colors.muted)
-                        }
-                        inner()
-                    },
-                )
-                HairRule(Modifier.padding(vertical = AiiminTheme.space.s3))
-                BasicTextField(
-                    value = state.draftBody,
-                    onValueChange = onBody,
-                    textStyle = AiiminTheme.type.body.copy(
-                        fontSize = 15.sp,
-                        lineHeight = 22.sp,
-                        color = AiiminTheme.colors.text,
-                    ),
-                    cursorBrush = SolidColor(AiiminTheme.colors.accent),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 120.dp),
-                    decorationBox = { inner ->
-                        if (state.draftBody.isEmpty()) {
-                            Text(
-                                "Write the thing before it evaporates…",
-                                style = AiiminTheme.type.body,
-                                color = AiiminTheme.colors.muted,
-                            )
-                        }
-                        inner()
-                    },
-                )
-            }
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = AiiminTheme.space.s3),
-                horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s3),
-            ) {
-                GhostButton(label = "CANCEL", onClick = onCancel, modifier = Modifier.weight(1f))
-                PrimaryButton(
-                    label = "SAVE",
-                    onClick = onSave,
-                    enabled = state.canSave,
-                    modifier = Modifier.weight(1f),
-                )
+            item(span = StaggeredGridItemSpan.FullLine) {
+                Column {
+                    SectionRule(
+                        label = if (state.editingId == null) "New note" else "Edit note",
+                        value = "DRAFT",
+                    )
+                    BlueprintBox(
+                        accent = true,
+                        tinted = true,
+                        modifier = Modifier.padding(top = AiiminTheme.space.s3),
+                    ) {
+                        BasicTextField(
+                            value = state.draftTitle,
+                            onValueChange = onTitle,
+                            textStyle = AiiminTheme.type.body.copy(
+                                fontSize = 16.sp,
+                                color = AiiminTheme.colors.text,
+                            ),
+                            cursorBrush = SolidColor(AiiminTheme.colors.accent),
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            decorationBox = { inner ->
+                                if (state.draftTitle.isEmpty()) {
+                                    Text("Title (optional)", style = AiiminTheme.type.body, color = AiiminTheme.colors.muted)
+                                }
+                                inner()
+                            },
+                        )
+                        HairRule(Modifier.padding(vertical = AiiminTheme.space.s3))
+                        BasicTextField(
+                            value = state.draftBody,
+                            onValueChange = onBody,
+                            textStyle = AiiminTheme.type.body.copy(
+                                fontSize = 15.sp,
+                                lineHeight = 22.sp,
+                                color = AiiminTheme.colors.text,
+                            ),
+                            cursorBrush = SolidColor(AiiminTheme.colors.accent),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 120.dp),
+                            decorationBox = { inner ->
+                                if (state.draftBody.isEmpty()) {
+                                    Text(
+                                        "Write the thing before it evaporates…",
+                                        style = AiiminTheme.type.body,
+                                        color = AiiminTheme.colors.muted,
+                                    )
+                                }
+                                inner()
+                            },
+                        )
+                    }
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = AiiminTheme.space.s3),
+                        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s3),
+                    ) {
+                        GhostButton(label = "CANCEL", onClick = onCancel, modifier = Modifier.weight(1f))
+                        PrimaryButton(
+                            label = "SAVE",
+                            onClick = onSave,
+                            enabled = state.canSave,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
             }
         } else {
-            PrimaryButton(
-                label = "NEW NOTE",
-                onClick = onNew,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = AiiminTheme.space.s4),
-            )
+            item(span = StaggeredGridItemSpan.FullLine) {
+                PrimaryButton(
+                    label = "NEW NOTE",
+                    onClick = onNew,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = AiiminTheme.space.s4),
+                )
+            }
         }
 
         val pinned = state.pinnedFirst.filter { it.pinned }
         val rest = state.pinnedFirst.filterNot { it.pinned }
 
         if (pinned.isNotEmpty()) {
-            SectionRule(label = "Pinned", value = "${pinned.size}")
-            pinned.forEach { note ->
+            item(span = StaggeredGridItemSpan.FullLine) {
+                SectionRule(label = "Pinned", value = "${pinned.size}")
+            }
+            items(pinned, key = { it.id }) { note ->
                 NoteCard(
                     note = note,
                     onOpen = { onEdit(note.id) },
@@ -199,16 +218,21 @@ fun NotesScreen(
             }
         }
 
-        SectionRule(label = "Vault", value = "${rest.size}")
+        item(span = StaggeredGridItemSpan.FullLine) {
+            SectionRule(label = "Vault", value = "${rest.size}")
+        }
+
         if (rest.isEmpty() && pinned.isEmpty()) {
-            Text(
-                text = "Empty vault. First note is free — the forgetting is expensive.",
-                style = AiiminTheme.type.bodySmall,
-                color = AiiminTheme.colors.muted,
-                modifier = Modifier.padding(top = AiiminTheme.space.s3),
-            )
+            item(span = StaggeredGridItemSpan.FullLine) {
+                Text(
+                    text = "Empty vault. First note is free — the forgetting is expensive.",
+                    style = AiiminTheme.type.bodySmall,
+                    color = AiiminTheme.colors.muted,
+                    modifier = Modifier.padding(top = AiiminTheme.space.s3),
+                )
+            }
         } else {
-            rest.forEach { note ->
+            items(rest, key = { it.id }) { note ->
                 NoteCard(
                     note = note,
                     onOpen = { onEdit(note.id) },
@@ -216,6 +240,10 @@ fun NotesScreen(
                     onDelete = { onDelete(note.id) },
                 )
             }
+        }
+
+        item(span = StaggeredGridItemSpan.FullLine) {
+            Box(Modifier.heightIn(min = AiiminTheme.space.s8))
         }
     }
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Sparkles } from 'lucide-react';
+import { Sparkle, Clock, CalendarCheck } from '@phosphor-icons/react';
 import useWaitlistSurfaceTheme from '../hooks/useWaitlistSurfaceTheme';
 import { API_URL } from '../utils/api';
 import WaitlistErrorBoundary from '../components/waitlist/landing/WaitlistErrorBoundary';
@@ -15,6 +15,9 @@ import WaitlistTestimonialsSection from '../components/waitlist/landing/Waitlist
 import WaitlistFaqSection from '../components/waitlist/landing/WaitlistFaqSection';
 import WaitlistSecondaryCta from '../components/waitlist/landing/WaitlistSecondaryCta';
 import WaitlistFooter from '../components/waitlist/landing/WaitlistFooter';
+import WaitlistAnnouncementBar from '../components/waitlist/landing/WaitlistAnnouncementBar';
+import WaitlistFeatureMarquee from '../components/waitlist/landing/WaitlistFeatureMarquee';
+import WaitlistStickyFloatingCTA from '../components/waitlist/landing/WaitlistStickyFloatingCTA';
 import { PAGE_META } from '../components/waitlist/landing/waitlistLandingData';
 import '../styles/waitlistLanding.css';
 
@@ -110,6 +113,8 @@ function WaitlistLandingContent() {
         <script type="application/ld+json">{JSON.stringify(launchStructuredData)}</script>
       </Helmet>
 
+      <WaitlistAnnouncementBar />
+
       <WaitlistHeroSection
         count={count}
         onSignupSuccess={fetchCount}
@@ -117,11 +122,13 @@ function WaitlistLandingContent() {
         onToggleTheme={toggleWaitlistTheme}
       />
 
+      <WaitlistFeatureMarquee />
+
       <main className="waitlist-main">
         <section className="waitlist-mobile-only waitlist-mobile-essentials">
           <ul className="waitlist-mobile-perk-list">
-            <li>⏰ Tester cutoff: 31 October</li>
-            <li>📅 Go-live: end of November 2026</li>
+            <li><Clock size={14} weight="bold" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Tester cutoff: 31 October</li>
+            <li><CalendarCheck size={14} weight="bold" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Go-live: end of November 2026</li>
           </ul>
         </section>
 
@@ -136,15 +143,17 @@ function WaitlistLandingContent() {
         <WaitlistSecondaryCta onSignupSuccess={fetchCount} />
       </main>
 
-      <WaitlistFooter ref={footerRef} />
+      <WaitlistFooter ref={footerRef} isLight={isLight} onToggleTheme={toggleWaitlistTheme} />
 
       <a
         href="#waitlist-join"
         className={`waitlist-mobile-cta waitlist-btn waitlist-btn-primary sticky-cta ${stickyHidden ? 'hidden' : ''}`}
       >
-        <Sparkles size={15} />
+        <Sparkle size={15} weight="fill" />
         Reserve my spot
       </a>
+
+      <WaitlistStickyFloatingCTA count={count} />
     </div>
   );
 }

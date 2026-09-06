@@ -389,3 +389,22 @@ fm_source: script
 - **Evidence:** Full `./gradlew test` returned `BUILD SUCCESSFUL` in 31s; final qemu-down `:app:assembleDebug` returned `BUILD SUCCESSFUL` in 2s; Lab screenshot `depth-lab.png`; Journal screenshots `depth-journal-verified.png` and `depth-journal-no-match3.png`; Money screenshots `depth-money-initial.png` and `depth-money-log.png`; source/tests inspected for sync, parser, journal, and approval contracts.
 - **Status:** Lab and Journal search are Verified on emulator-5554; Capture/sync/Money live-auth paths remain Inferred or Blocked where authentication or safe controlled data prevented live proof. No unsupported completion claims were added.
 - **Notes:** No code change was required by the tested depth paths. No commit or push performed.
+
+### 2026-08-23 — V2 Full Delivery + APK on Website + ADB Install
+
+- **What:** V2 debug APK (`aiimin-v2-full-debug.apk`, 62 MB, SHA-256 `4dd36a8e6a9bb46426ec7f0b2eef2f08aaf3fc5ecef8c87ed5f0e3141387245f`) hosted on website and installed on device `9597fdea` via USB debugging.
+- **Website changes:**
+  - `frontend/public/aiimin-v2-debug.apk` — static file served directly by the frontend
+  - `WaitlistAndroidSection.jsx` rebuilt — pulsing live badge, animated download button, V2 changelog panel, "Why not Play Store" cards, privacy strip
+  - `AndroidApp.jsx` (`/app`) rebuilt — pulse dot, APK download section, 3-column split, honest Why-not-Play explainer
+  - `waitlistLandingData.js` — `ANDROID_APP_STATUS` now lists V2 features, `apkUrl`, FAQ updated
+  - `waitlistLanding.css` + `appPage.css` — full design system for new sections
+- **ADB:** `adb install -r aiimin-v2-full-debug.apk` → `Success` on device `9597fdea`
+- **V2 surface summary:**
+  - Discipline Engine: screen, food, urge logging · AES-GCM encrypted local vault (Android Keystore)
+  - App blocking: Accessibility service (no VPN, no packet intercept)
+  - Screen-time: UsageStatsManager aggregate — daily totals consistent
+  - Notes: Keep-grid layout · Journal: mood-first flow
+  - Sync: offline outbox with `discipline.urge.upsert` · `privacy_mode=local_detail_v1` coarse upload
+  - Biometric gate on Discipline surface
+- **Status:** Installed · Dev server verified · Pending founder push instruction for Vercel deploy

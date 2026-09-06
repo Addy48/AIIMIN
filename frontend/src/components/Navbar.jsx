@@ -39,10 +39,12 @@ const Navbar = ({ user }) => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [forgeOpen, setForgeOpen] = useState(false);
   const bellRef = useRef(null);
   const drawerRef = useRef(null);
   const menuToggleRef = useRef(null);
   const moreRef = useRef(null);
+  const forgeRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const isDark = isDarkTheme(theme);
@@ -55,11 +57,18 @@ const Navbar = ({ user }) => {
     ? [...visiblePrimary.slice(TABLET_NAV_CAP), ...visibleMore]
     : visibleMore;
   const visibleAll = [...visiblePrimary, ...visibleMore];
-  const moreIsActive = stripMore.some((link) => location.pathname.startsWith(link.to));
+  const isRouteMatching = (link) => {
+    if (link.id === 'forge' || link.children) {
+      return location.pathname.startsWith('/lab') || location.pathname.startsWith('/sports') || location.pathname.startsWith('/forge');
+    }
+    return location.pathname.startsWith(link.to);
+  };
+  const moreIsActive = stripMore.some(isRouteMatching);
 
   useEffect(() => {
     setMobileMenuOpen(false);
     setMoreOpen(false);
+    setForgeOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -72,6 +81,17 @@ const Navbar = ({ user }) => {
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
   }, [moreOpen]);
+
+  useEffect(() => {
+    if (!forgeOpen) return undefined;
+    const handle = (e) => {
+      if (forgeRef.current && !forgeRef.current.contains(e.target)) {
+        setForgeOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, [forgeOpen]);
 
   useEffect(() => {
     if (!mobileMenuOpen) return undefined;
@@ -129,11 +149,71 @@ const Navbar = ({ user }) => {
         <div className="nav-masthead__center">
           <div className="desktop-nav-links nav-masthead__links">
             <div className="nav-masthead__links-scroll">
-              {stripPrimary.map(({ to, label }) => (
-                <NavLink key={to} to={to} className={mastheadLinkClass}>
-                  {label}
-                </NavLink>
-              ))}
+              {stripPrimary.map((item) => {
+                if (item.children && item.children.length > 0) {
+                  const isForgeActive = location.pathname.startsWith('/lab')
+                    || location.pathname.startsWith('/sports')
+                    || location.pathname.startsWith('/forge');
+                  return (
+                    <div
+                      key={item.id}
+                      className="nav-masthead__flyout-wrap"
+                      ref={forgeRef}
+                      onMouseLeave={() => setForgeOpen(false)}
+                    >
+                      <NavLink
+                        to={item.to}
+                        className={`nav-masthead__link${isForgeActive ? ' nav-masthead__link--active' : ''}`}
+                        onClick={() => setForgeOpen((v) => !v)}
+                        onMouseEnter={() => setForgeOpen(true)}
+                        aria-expanded={forgeOpen}
+                        aria-haspopup="true"
+                        aria-label="Forge skill and sports sections"
+                      >
+                        {item.label}
+                        <ChevronDown
+                          size={13}
+                          className={`nav-masthead__more-chevron${forgeOpen ? ' is-open' : ''}`}
+                          aria-hidden
+                        />
+                      </NavLink>
+                      <AnimatePresence>
+                        {forgeOpen && (
+                          <motion.div
+                            className="nav-masthead__flyout-panel"
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
+                            role="menu"
+                          >
+                            <div className="nav-masthead__group-heading">{item.label}</div>
+                            {item.children.map((child) => {
+                              if (user?.isGuest && child.hideFromGuest) return null;
+                              return (
+                                <NavLink
+                                  key={child.to}
+                                  to={child.to}
+                                  className={mastheadLinkClass}
+                                  role="menuitem"
+                                  onClick={() => setForgeOpen(false)}
+                                >
+                                  {child.label}
+                                </NavLink>
+                              );
+                            })}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                }
+                return (
+                  <NavLink key={item.to} to={item.to} className={mastheadLinkClass}>
+                    {item.label}
+                  </NavLink>
+                );
+              })}
             </div>
             {(stripMore.length > 0 || true) && (
               <div className="nav-masthead__more-wrap" ref={moreRef}>
@@ -162,33 +242,79 @@ const Navbar = ({ user }) => {
                       transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
                       role="menu"
                     >
-                      {stripMore.map(({ to, label }) => (
-                        <NavLink
-                          key={to}
-                          to={to}
-                          className={mastheadLinkClass}
-                          role="menuitem"
-                          onClick={() => setMoreOpen(false)}
+                      {stripMore.map((item) => {
+                        if (item.children && item.children.length > 0) {
+                          return (
+                            <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                              <div className="nav-masthead__group-heading">{item.label}</div>
+                              {item.children.map((child) => {
+                                if (user?.isGuest && child.hideFromGuest) return null;
+                                const childActive = location.pathname.startsWith(child.to);
+                                return (
+                                  <NavLink
+                                    key={child.to}
+                                    to={child.to}
+                                    className={`${mastheadLinkClass({ isActive: childActive })} nav-masthead__sublink`}
+                                    role="menuitem"
+                                    onClick={() => setMoreOpen(false)}
+                                  >
+                                    {child.label}
+                                  </NavLink>
+                                );
+                              })}
+                            </div>
+                          );
+                        }
+                        return (
+                          <NavLink
+                            key={item.to}
+                            to={item.to}
+                            className={mastheadLinkClass}
+                            role="menuitem"
+                            onClick={() => setMoreOpen(false)}
+                          >
+                            {item.label}
+                            {item.to === '/reports' && (
+                              <span
+                                style={{
+                                  marginLeft: 8,
+                                  fontSize: 9,
+                                  fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                                  letterSpacing: '0.06em',
+                                  color: 'var(--color-accent)',
+                                  border: '1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)',
+                                  borderRadius: 3,
+                                  padding: '1px 5px',
+                                }}
+                              >
+                                INTEL
+                              </span>
+                            )}
+                          </NavLink>
+                        );
+                      })}
+                      <NavLink
+                        to="/app"
+                        className={mastheadLinkClass}
+                        role="menuitem"
+                        onClick={() => setMoreOpen(false)}
+                      >
+                        Android companion
+                        <span
+                          style={{
+                            marginLeft: 8,
+                            fontSize: 9,
+                            fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+                            letterSpacing: '0.06em',
+                            color: '#10b981',
+                            border: '1px solid color-mix(in srgb, #10b981 30%, transparent)',
+                            borderRadius: 3,
+                            padding: '1px 5px',
+                          }}
                         >
-                          {label}
-                          {to === '/reports' && (
-                            <span
-                              style={{
-                                marginLeft: 8,
-                                fontSize: 9,
-                                fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-                                letterSpacing: '0.06em',
-                                color: 'var(--color-accent)',
-                                border: '1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)',
-                                borderRadius: 3,
-                                padding: '1px 5px',
-                              }}
-                            >
-                              INTEL
-                            </span>
-                          )}
-                        </NavLink>
-                      ))}
+                          V2 LIVE
+                        </span>
+                      </NavLink>
                       <button
                         type="button"
                         role="menuitem"
@@ -270,17 +396,48 @@ const Navbar = ({ user }) => {
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
             className="nav-mobile-drawer"
           >
-            {visibleAll.map(({ to, label }) => (
-              <NavLink
-                key={`${to}-mobile`}
-                to={to}
-                className={({ isActive }) =>
-                  `nav-mobile-drawer__link${isActive ? ' nav-mobile-drawer__link--active' : ''}`
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
+            {visibleAll.map((item) => {
+              if (item.children && item.children.length > 0) {
+                return (
+                  <div key={`${item.id}-mobile-group`} className="nav-mobile-drawer__group">
+                    <div className="nav-mobile-drawer__group-label">{item.label}</div>
+                    {item.children.map((child) => {
+                      if (user?.isGuest && child.hideFromGuest) return null;
+                      return (
+                        <NavLink
+                          key={`${child.to}-mobile`}
+                          to={child.to}
+                          className={({ isActive }) =>
+                            `nav-mobile-drawer__link nav-mobile-drawer__sublink${isActive ? ' nav-mobile-drawer__link--active' : ''}`
+                          }
+                        >
+                          {child.label}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                );
+              }
+              return (
+                <NavLink
+                  key={`${item.to}-mobile`}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    `nav-mobile-drawer__link${isActive ? ' nav-mobile-drawer__link--active' : ''}`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              );
+            })}
+            <NavLink
+              to="/app"
+              className={({ isActive }) =>
+                `nav-mobile-drawer__link${isActive ? ' nav-mobile-drawer__link--active' : ''}`
+              }
+            >
+              Android Companion (V2 APK)
+            </NavLink>
 
             <div className="nav-mobile-drawer__footer">
               <button

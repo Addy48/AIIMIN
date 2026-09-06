@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle2, Sparkles, BadgeCheck } from 'lucide-react';
+import { CheckCircle, Sparkle, SealCheck } from '@phosphor-icons/react';
 import { API_URL } from '../../utils/api';
 import { suggestOsIdFromName } from '../../utils/osId';
 import { trackEvent } from '../../hooks/usePageAnalytics';
@@ -71,7 +71,7 @@ function ConfirmationPanel({
   return (
     <div className={`confirmation-panel ${compact ? 'confirmation-panel-compact' : ''}`} role="status" aria-live="polite">
       <div className="confirmation-icon-wrap">
-        <CheckCircle2 size={40} className="confirmation-check" />
+        <CheckCircle size={40} weight="fill" color="#22c55e" className="confirmation-check" />
       </div>
       <span className="confirmation-founder-pill">Founding member · perks locked</span>
       <h3>
@@ -96,9 +96,9 @@ function ConfirmationPanel({
       <div className="confirmation-perks">
         <p className="confirmation-perks-title">Locked in at launch</p>
         <ul className="confirmation-perks-list">
-          <li><BadgeCheck size={14} /> Complimentary Core tier</li>
-          <li><BadgeCheck size={14} /> Pro at ₹49/mo founding rate</li>
-          <li><BadgeCheck size={14} /> Elite at ₹79/mo founding rate</li>
+          <li><SealCheck size={14} weight="duotone" /> Complimentary Core tier</li>
+          <li><SealCheck size={14} weight="duotone" /> Pro at ₹49/mo founding rate</li>
+          <li><SealCheck size={14} weight="duotone" /> Elite at ₹79/mo founding rate</li>
         </ul>
       </div>
 
@@ -316,7 +316,7 @@ export default function WaitlistForm({
       return (
         <div className={`waitlist-form-message ${compact ? 'waitlist-form-message-compact' : ''}`}>
           <p className="waitlist-form-success-title">
-            <CheckCircle2 size={16} />
+            <CheckCircle size={16} weight="fill" color="#22c55e" />
             Welcome back — you&apos;re already on the list.
           </p>
           <ConfirmationPanel
@@ -431,7 +431,7 @@ export default function WaitlistForm({
       )}
 
       <button type="submit" disabled={loading} className="waitlist-submit-btn">
-        <Sparkles size={14} />
+        <Sparkle size={15} weight="fill" />
         {loading ? 'Joining...' : 'Join the waitlist'}
       </button>
 

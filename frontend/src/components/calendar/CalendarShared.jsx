@@ -1,10 +1,18 @@
 import React from 'react';
+import {
+    Calendar,
+    CheckSquare,
+    Bell,
+    Check,
+    PencilSimple,
+    Trash,
+} from '@phosphor-icons/react';
 
 /* ─── Type config ─── */
 export const TYPE_CONFIG = {
-    event: { label: 'Event', color: '#9b8af5', bg: 'rgba(155,138,245,0.08)', border: 'rgba(155,138,245,0.18)', icon: '📅' },
-    task: { label: 'Task', color: '#f5a623', bg: 'rgba(245,166,35,0.08)', border: 'rgba(245,166,35,0.18)', icon: '☐' },
-    reminder: { label: 'Reminder', color: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.18)', icon: '🔔' },
+    event: { label: 'Event', color: '#9b8af5', bg: 'rgba(155,138,245,0.08)', border: 'rgba(155,138,245,0.18)', icon: Calendar },
+    task: { label: 'Task', color: '#f5a623', bg: 'rgba(245,166,35,0.08)', border: 'rgba(245,166,35,0.18)', icon: CheckSquare },
+    reminder: { label: 'Reminder', color: '#10b981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.18)', icon: Bell },
 };
 
 /* ─── Inline time input ─── */
@@ -51,21 +59,25 @@ export const ItemForm = ({ formData, setFormData, onSubmit, onCancel, isEditing 
 
         {/* Type selector */}
         <div style={{ display: 'flex', gap: '6px' }}>
-            {Object.entries(TYPE_CONFIG).map(([key, cfg]) => (
-                <button
-                    key={key}
-                    onClick={() => setFormData(p => ({ ...p, eventType: key }))}
-                    style={{
-                        flex: 1, padding: '7px 0', borderRadius: '8px', fontSize: '12px', fontWeight: 700,
-                        border: formData.eventType === key ? `1px solid ${cfg.color}` : '1px solid var(--border)',
-                        background: formData.eventType === key ? cfg.bg : 'transparent',
-                        color: formData.eventType === key ? cfg.color : 'var(--text-3)',
-                        cursor: 'pointer', transition: 'all 0.15s',
-                    }}
-                >
-                    {cfg.icon} {cfg.label}
-                </button>
-            ))}
+            {Object.entries(TYPE_CONFIG).map(([key, cfg]) => {
+                const Icon = cfg.icon;
+                return (
+                    <button
+                        key={key}
+                        onClick={() => setFormData(p => ({ ...p, eventType: key }))}
+                        style={{
+                            flex: 1, padding: '7px 0', borderRadius: '8px', fontSize: '12px', fontWeight: 700,
+                            border: formData.eventType === key ? `1px solid ${cfg.color}` : '1px solid var(--border)',
+                            background: formData.eventType === key ? cfg.bg : 'transparent',
+                            color: formData.eventType === key ? cfg.color : 'var(--text-3)',
+                            cursor: 'pointer', transition: 'all 0.15s',
+                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                        }}
+                    >
+                        <Icon size={14} weight="duotone" /> {cfg.label}
+                    </button>
+                );
+            })}
         </div>
 
         {/* All day toggle */}
@@ -84,7 +96,7 @@ export const ItemForm = ({ formData, setFormData, onSubmit, onCancel, isEditing 
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.15s',
             }}>
-                {formData.allDay && <span style={{ color: 'white', fontSize: '11px', fontWeight: 800 }}>✓</span>}
+                {formData.allDay && <Check size={12} weight="bold" color="white" />}
             </div>
             <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>All day</span>
         </div>
@@ -140,7 +152,7 @@ export const CalendarItem = ({ item, onToggle, onEdit, onDelete }) => {
                         flexShrink: 0, transition: 'all 0.15s',
                     }}
                 >
-                    {item.completed && <span style={{ color: 'white', fontSize: '11px', fontWeight: 800 }}>✓</span>}
+                    {item.completed && <Check size={13} weight="bold" color="white" />}
                 </div>
             ) : (
                 <div style={{
@@ -168,14 +180,20 @@ export const CalendarItem = ({ item, onToggle, onEdit, onDelete }) => {
                 <button onClick={() => onEdit(item)} style={{
                     width: '28px', height: '28px', borderRadius: '6px', border: 'none',
                     background: 'transparent', color: 'var(--text-3)', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px',
-                }} title="Edit">✎</button>
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }} title="Edit">
+                    <PencilSimple size={14} />
+                </button>
                 <button onClick={() => onDelete(item.id)} style={{
                     width: '28px', height: '28px', borderRadius: '6px', border: 'none',
                     background: 'transparent', color: 'var(--text-3)', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px',
-                }} title="Delete">✕</button>
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }} title="Delete">
+                    <Trash size={14} />
+                </button>
             </div>
         </div>
     );
 };
+
+export default CalendarItem;

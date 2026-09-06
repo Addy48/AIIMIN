@@ -5,6 +5,31 @@ import { useAuth } from '../../hooks/useAuth';
 import supabase from '../../utils/supabase';
 import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem } from '../../utils/motionPresets';
+import {
+  Plant,
+  Lightning,
+  Sword,
+  Trophy,
+  BookBookmark,
+  Crown,
+  Star,
+  Sparkle,
+  DiamondsFour,
+  Medal,
+} from '@phosphor-icons/react';
+
+const RANK_ICON_MAP = {
+  1: Plant,
+  2: Lightning,
+  3: Sword,
+  4: Trophy,
+  5: BookBookmark,
+  6: Crown,
+  7: Star,
+  8: Sparkle,
+  9: DiamondsFour,
+  10: Medal,
+};
 
 const RANK_UNLOCK_HINTS = {
   2: 'Streak multipliers start climbing with consistent daily logs.',
@@ -131,7 +156,7 @@ export default function RankLadder({ compact = false }) {
             {!compact && (
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 6, fontSize: 12, color: 'var(--color-text-2)' }}>
-                  <span>{xpToNext.toLocaleString()} XP to {next.emoji} {next.name}</span>
+                  <span>{xpToNext.toLocaleString()} XP to {next.name}</span>
                   <span style={{ color: 'var(--color-text-3)' }}>{progressPct}%</span>
                 </div>
                 <p style={{ margin: '10px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--color-text-3)' }}>
@@ -213,6 +238,7 @@ export default function RankLadder({ compact = false }) {
                     const isCurrent = r.rank === current.rank;
                     const isPast = totalXP >= r.minXP && !isCurrent;
                     const isLocked = totalXP < r.minXP && !isCurrent;
+                    const Icon = RANK_ICON_MAP[r.rank] || Plant;
                     return (
                       <motion.li
                         key={r.rank}
@@ -226,7 +252,9 @@ export default function RankLadder({ compact = false }) {
                           opacity: isLocked ? 0.55 : 1,
                         }}
                       >
-                        <span className="rank-ladder__emoji">{r.emoji}</span>
+                        <span className="rank-ladder__emoji" style={{ display: 'flex', alignItems: 'center', color: isCurrent ? 'var(--color-accent)' : 'var(--color-text-2)' }}>
+                          <Icon size={22} weight="duotone" />
+                        </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
                             <strong style={{ color: 'var(--color-text-1)' }}>{r.name}</strong>

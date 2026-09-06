@@ -12,7 +12,7 @@ class LabStoreTest {
         val s = store.state.value
         assertThat(s.pairs).hasSize(5)
         assertThat(s.selectedIndex).isEqualTo(0)
-        assertThat(s.selected.rho).isEqualTo("−.61")
+        assertThat(s.selected?.rho).isEqualTo("−.61")
         assertThat(s.rejectedCount).isEqualTo(14)
         assertThat(s.headMeta).isEqualTo("SEED · DEMO")
     }
@@ -20,8 +20,8 @@ class LabStoreTest {
     @Test
     fun `select changes pair`() {
         store.select(2)
-        assertThat(store.state.value.selected.label).contains("Delivery")
-        assertThat(store.state.value.selected.rhoValue).isLessThan(0f)
+        assertThat(store.state.value.selected?.label).contains("Delivery")
+        assertThat(store.state.value.selected?.rhoValue).isLessThan(0f)
     }
 
     @Test
@@ -60,7 +60,7 @@ class LabStoreTest {
         assertThat(s.pairs).hasSize(1)
         assertThat(s.rejectedCount).isEqualTo(1)
         assertThat(s.headMeta).contains("LIVE")
-        assertThat(s.selected.plain).contains("sleep")
+        assertThat(s.selected?.plain).contains("sleep")
     }
 
     @Test

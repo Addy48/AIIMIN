@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Target, Sparkle, Check, X, ArrowLeft } from '@phosphor-icons/react';
 
 const QUESTIONS = [
   {
@@ -98,7 +99,9 @@ export default function AptitudeTest({ onClose }) {
   if (showResult) {
     return (
       <div style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center', padding: '40px 20px' }}>
-        <div style={{ fontSize: '64px', marginBottom: '24px' }}>🎯</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px', color: 'var(--color-accent)' }}>
+          <Target size={64} weight="duotone" />
+        </div>
         <h2 style={{ fontSize: '28px', color: 'var(--color-text-1)', marginBottom: '16px' }}>Test Complete</h2>
         <div style={{ fontSize: '48px', fontWeight: 900, color: 'var(--color-accent)', marginBottom: '24px' }}>
           {score} / {QUESTIONS.length}
@@ -152,8 +155,8 @@ export default function AptitudeTest({ onClose }) {
               }}
             >
               {opt}
-              {selectedOpt !== null && idx === question.correct && <span>✓</span>}
-              {selectedOpt !== null && idx === selectedOpt && idx !== question.correct && <span>✕</span>}
+              {selectedOpt !== null && idx === question.correct && <Check size={20} weight="bold" />}
+              {selectedOpt !== null && idx === selectedOpt && idx !== question.correct && <X size={20} weight="bold" />}
             </button>
           );
         })}
@@ -170,7 +173,7 @@ export default function AptitudeTest({ onClose }) {
             <div style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: '16px', padding: '24px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: '#3B82F6' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#3B82F6', fontWeight: 800, fontSize: '15px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <span style={{ fontSize: '20px' }}>✨</span> AI Explanation
+                <Sparkle size={18} weight="fill" /> AI Explanation
               </div>
               <div style={{ fontSize: '18px', color: 'var(--color-text-1)', lineHeight: 1.6 }}>{question.aiExplanation}</div>
             </div>

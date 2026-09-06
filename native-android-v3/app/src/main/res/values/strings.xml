@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">AIIMIN</string>
     <string name="widget_day_description">Day score, steps, and screen time</string>
+    <string name="accessibility_service_description">Blocks selected apps and visible blocked browser terms in Aimin Discipline.</string>
 </resources>

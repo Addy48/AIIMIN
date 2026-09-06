@@ -83,6 +83,7 @@ fun ConfigRoute(
     onOpenJournal: () -> Unit = {},
     onOpenEnglish: () -> Unit = {},
     onOpenNotes: () -> Unit = {},
+    onOpenDiscipline: () -> Unit = {},
     onOpenNotifications: () -> Unit = {},
     onOpenSearch: () -> Unit = {},
     onOpenTimeline: () -> Unit = {},
@@ -238,6 +239,7 @@ fun ConfigRoute(
         },
         onOpenEnglish = onOpenEnglish,
         onOpenNotes = onOpenNotes,
+        onOpenDiscipline = onOpenDiscipline,
         onOpenNotifications = onOpenNotifications,
         onOpenSearch = onOpenSearch,
         onOpenTimeline = onOpenTimeline,
@@ -556,6 +558,7 @@ fun ConfigScreen(
     onOpenPlan: () -> Unit = {},
     onOpenEnglish: () -> Unit = {},
     onOpenNotes: () -> Unit = {},
+    onOpenDiscipline: () -> Unit = {},
     onOpenNotifications: () -> Unit = {},
     onOpenSearch: () -> Unit = {},
     onOpenTimeline: () -> Unit = {},
@@ -696,6 +699,12 @@ fun ConfigScreen(
                 glyph = PrefGlyph.Notes,
                 value = "Park thoughts",
                 onClick = onOpenNotes,
+            )
+            PrefRow(
+                label = "Discipline",
+                glyph = PrefGlyph.Minimums,
+                value = "Private behavior log",
+                onClick = onOpenDiscipline,
             )
             PrefRow(
                 label = "English · Spark",
