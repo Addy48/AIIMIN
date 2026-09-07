@@ -5,12 +5,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DIST="$ROOT/native-android-v3/dist"
-SRC="${1:-$ROOT/native-android-v3/app/build/outputs/apk/debug/app-debug.apk}"
+DIST="$ROOT/app/dist"
+SRC="${1:-$ROOT/app/app/build/outputs/apk/debug/app-debug.apk}"
 
 if [[ ! -f "$SRC" ]]; then
   echo "APK not found: $SRC" >&2
-  echo "Build first: cd native-android-v3 && ./gradlew :app:assembleDebug" >&2
+  echo "Build first: cd app && ./gradlew :app:assembleDebug" >&2
   exit 1
 fi
 

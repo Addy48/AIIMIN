@@ -12,7 +12,7 @@ Solo-maintained repo. These rules keep the **web Life OS**, **Capacitor shell**,
 |--------|-----------|-------------------|
 | Web Life OS | `frontend/src/` (except `components/mobile/`) | Dashboard, Finance, Lab, Overview, … |
 | Capacitor `/m` | `frontend/android/`, `frontend/src/components/mobile/` | WebView shell, PWA, touch targets |
-| Native Android V2 | `native-android/` | Kotlin, Compose, Room, Gradle |
+| Native Android App | `app/` | Kotlin, Compose, Room, Gradle |
 | Shared API | `server/`, `api/` | Route by namespace — don't bundle unrelated refactors |
 
 ---
@@ -22,7 +22,6 @@ Solo-maintained repo. These rules keep the **web Life OS**, **Capacitor shell**,
 ```
 main                          ← web + API production (Vercel + EC2)
 feat/mobile-capture-capacitor ← Capacitor + /m (merge when /m ready on prod)
-feat/native-android-v2        ← Kotlin app (optional; may live on mobile branch until split)
 ```
 
 Ship order: **website to `main` first** → deploy → native/mobile branches rebase → merge when smoke-tested.
@@ -36,7 +35,7 @@ Before `git add`:
 1. **Which client?** If more than one, split the commit.
 2. **Vault updated?** Behavior changes need `docs/knowledge/` changelog.
 3. **Secrets?** Never `.env`, keystores, `*.pem`, `local.properties`.
-4. **Build artifacts?** Never `frontend/build/`, `native-android/**/build/`, `.gradle/`.
+4. **Build artifacts?** Never `frontend/build/`, `app/**/build/`, `.gradle/`.
 5. **Attribution?** No Co-authored-by tool trailers; no “developed with X” in docs.
 6. **Hooks (optional):** `bash scripts/setup-git-hooks.sh` — strips tool trailers from commit messages.
 

@@ -32,14 +32,17 @@ frontend/android/app/build/
 frontend/android/build/
 frontend/android/capacitor-cordova-android-plugins/build/
 
-# Native Android V2 — never commit build cache or APK outputs
+# Native Android App — local build cache and properties
 *.apk
 frontend/src/assets/icons/
-native-android/.gradle/
-native-android/**/build/
-native-android/local.properties
-native-android/*.iml
-native-android/.idea/
+app/.gradle/
+app/**/build/
+app/local.properties
+app/*.iml
+app/.idea/
+app/.kotlin/
+app/.device-shots/
+app/dist/
 
 # Local audit artifacts
 laptop-disk-audit-*.html
@@ -120,13 +123,6 @@ render.yaml
 .agents/skills/web-app-testing/node_modules/
 .agents/skills/web-app-testing/package-lock.json
 
-# Native Android V3 — local IDE / shot dumps
-native-android-v3/.kotlin/
-native-android-v3/.device-shots/
-native-android-v3/**/build/
-native-android-v3/.gradle/
-native-android/dist/
-native-android-v3/dist/
 deliverables/
 
 # Third-party marketing / GTM / GEO skills (reinstall via skills-lock + npx skills)

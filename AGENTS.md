@@ -25,14 +25,14 @@ Never whole-repo scan unless user explicitly asks.
 |--------|------|----------------|
 | **Web Life OS** | `frontend/` (excl. `components/mobile/` for web-only work) | `main` |
 | **Capacitor `/m`** | `frontend/android/`, `frontend/src/components/mobile/` | `feat/mobile-capture-capacitor` |
-| **Native Android V2** | `native-android/`, `server/routes/mobile.js` | native feature branch |
+| **Native Android App** | `app/` | `main` |
 
 Architecture: `docs/knowledge/02_ARCHITECTURE/Monorepo.md`  
 Contributing: `CONTRIBUTING.md`
 
 ## Stack (one line)
 
-React 19 + Tailwind (`frontend/`) · Kotlin Compose (`native-android/`) · Node `server/` · Supabase Postgres · Better Auth · Vercel + `api.aiimin.in`
+React 19 + Tailwind (`frontend/`) · Kotlin Compose (`app/`) · Node `server/` · Supabase Postgres · Better Auth · Vercel + `api.aiimin.in`
 
 ## Palette LOCKED
 
