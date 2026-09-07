@@ -1,7 +1,6 @@
 #!/bin/bash
-# Double-click or: open native-android-v3/scripts/start-emulator.command
-# Must start outside Cursor's process group or the emulator is killed when the
-# agent shell exits.
+# Double-click or: open app/scripts/start-emulator.command
+# Must start in a detached session so the emulator process is preserved.
 set -euo pipefail
 SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-$HOME/Library/Android/sdk}}"
 export ANDROID_HOME="$SDK"

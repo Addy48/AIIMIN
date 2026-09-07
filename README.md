@@ -44,7 +44,7 @@ flowchart LR
 |---------|---------------|-----|
 | **Desktop & iPad** | [aiimin.in/overview](https://aiimin.in/overview) | Full analytics, Lab, Finance, Placements |
 | **Phone browser** | [aiimin.in/m](https://aiimin.in/m) | Quick daily capture (web · Capacitor sunset path) |
-| **Android app** | `native-android-v3/` · `in.aiimin.app` | Current companion — journal, notes, habits, sync |
+| **Android app** | `app/` · `in.aiimin.app` | Current companion — journal, notes, habits, sync |
 
 Do **not** mix web, Capacitor, and native changes in one commit. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -78,12 +78,12 @@ Do **not** mix web, Capacitor, and native changes in one commit. See [CONTRIBUTI
 AIIMIN/
 ├── frontend/              # Web Life OS (React)
 │   ├── src/pages/         # Overview, Finance, Journal, Lab, …
-│   ├── src/components/mobile/   # ⚠ Capacitor /m only — not native V2
+│   ├── src/components/mobile/   # ⚠ Capacitor /m only
 │   └── android/           # ⚠ Capacitor Gradle project (WebView)
-├── native-android/        # ⚠ Native V2 — Kotlin + Compose (separate app)
+├── app/                   # Native Android companion — Kotlin + Compose
 ├── server/                # Express API (EC2 deploy)
 ├── api/                   # Vercel serverless entry
-├── scripts/               # Maintained automation + manual diagnostics
+├── scripts/               # Maintained automation + QA probes
 ├── docs/knowledge/        # Project brain (Obsidian vault)
 ├── plans/                 # Commit splits, sprint plans
 └── CONTRIBUTING.md        # Client boundaries + commit rules
@@ -143,13 +143,11 @@ npm run dev
 ### Native Android
 
 ```bash
-cd native-android
+cd app
 export JAVA_HOME="$(/usr/libexec/java_home -v 17)"   # macOS
 ./gradlew :app:assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
-
-Details: [native-android/README.md](native-android/README.md)
 
 ---
 
