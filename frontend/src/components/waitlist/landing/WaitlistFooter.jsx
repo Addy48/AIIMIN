@@ -9,13 +9,21 @@ const WaitlistFooter = forwardRef(function WaitlistFooter({ isLight, onToggleThe
       <Link to="/brand" className="waitlist-footer-brand" aria-label="Explore AIIMIN brand">
         <Wordmark size={22} color="var(--color-text-1)" />
       </Link>
-      <p>High-density Personal Life OS for ambitious builders and high performers.</p>
-      <nav>
-        <Link to="/app">Android</Link>
+      <p className="waitlist-footer-desc">High-density Personal Life OS for ambitious builders, founders, and high performers.</p>
+      
+      <div className="waitlist-footer-contact" aria-label="Direct contact channels">
+        <a href="mailto:support@aiimin.in" className="waitlist-footer-contact-link" aria-label="Email support">
+          ✉ support@aiimin.in
+        </a>
+      </div>
+
+      <nav className="waitlist-footer-nav" aria-label="Footer links">
+        <Link to="/app">Android V2</Link>
         <Link to="/privacy">Privacy</Link>
         <Link to="/terms">Terms</Link>
+        <Link to="/security">Security</Link>
         <Link to="/contact">Contact</Link>
-        <Link to="/login">Sign in</Link>
+        <Link to="/login">Tester Sign in</Link>
         {typeof onToggleTheme === 'function' && (
           <WaitlistThemeToggle
             isLight={isLight}
@@ -24,6 +32,9 @@ const WaitlistFooter = forwardRef(function WaitlistFooter({ isLight, onToggleThe
           />
         )}
       </nav>
+      <p className="waitlist-footer-copy">
+        © {new Date().getFullYear()} AIIMIN Inc. Built with heart & focus by Aaditya · Private by design.
+      </p>
     </footer>
   );
 });

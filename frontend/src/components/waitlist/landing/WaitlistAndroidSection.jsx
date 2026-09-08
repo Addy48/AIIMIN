@@ -10,7 +10,7 @@ import {
 } from '@phosphor-icons/react';
 import { fadeUp } from './waitlistLandingData';
 
-const SHA256_HASH = 'b74d6dd68c2f151c6ce7593be2769581e1eb02e496d4982d58992270451d3993';
+const SHA256_HASH = 'b53e0426d0fabc0169464e0747b678e91608025a2dc4523a7ae97ba8dfb8770e';
 
 export default function WaitlistAndroidSection() {
   const [copied, setCopied] = useState(false);
@@ -23,10 +23,10 @@ export default function WaitlistAndroidSection() {
 
   return (
     <section className="waitlist-section waitlist-android-section" id="android-app" aria-labelledby="android-app-heading">
-      <p className="waitlist-section-label">Physical Execution Layer</p>
-      <h2 id="android-app-heading">Hardware-Grade Mobile Terminal. Built for the Real World.</h2>
+      <p className="waitlist-section-label">Native Companion</p>
+      <h2 id="android-app-heading">Fast mobile capture. Zero bloated web wrappers.</h2>
       <p className="waitlist-section-copy">
-        Your desktop runs the strategy. Your mobile terminal captures physical execution instantly. Built in pure native silicon — zero web wrappers, AES-256 hardware keystore encryption, and 100% offline autonomy.
+        Desktop is your command center for deep planning and weekly reviews. The Android companion logs habits, expenses, and quick notes in under two seconds — built with 100% native Kotlin and Jetpack Compose, offline SQLite sync, and AES-256 hardware keystore encryption.
       </p>
 
       <motion.div
@@ -78,7 +78,7 @@ export default function WaitlistAndroidSection() {
           <div className="waitlist-android-dl-card">
             <div className="waitlist-android-dl-head">
               <span className="waitlist-android-build-tag">BUILD: v2.0.4-rc</span>
-              <span className="waitlist-android-size-tag">~62.8 MB (ARM64/x86)</span>
+              <span className="waitlist-android-size-tag">~27.3 MB (ARM64/x86)</span>
             </div>
 
             <div className="waitlist-android-dl-actions">
@@ -88,7 +88,7 @@ export default function WaitlistAndroidSection() {
                 className="waitlist-android-primary-btn"
               >
                 <DownloadSimple size={16} weight="bold" />
-                Download V2 APK (~62 MB)
+                Download V2 APK (~27 MB)
               </a>
 
               <Link to="/app" className="waitlist-android-secondary-btn">

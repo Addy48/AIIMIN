@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowsClockwise,
@@ -27,8 +28,11 @@ import {
   X,
   CaretLeft,
   CaretRight,
+  CaretDown,
   ArrowUpRight,
   Sparkle,
+  SquaresFour,
+  Check,
 } from '@phosphor-icons/react';
 
 export const ALL_FEATURES = [
@@ -36,17 +40,17 @@ export const ALL_FEATURES = [
     id: 'daily-loop',
     label: 'Daily Loop',
     tag: 'CORE',
-    subsystem: 'LIFECYCLE MACHINE',
+    subsystem: 'DAILY CADENCE',
     icon: ArrowsClockwise,
     accent: '#749dc4',
     platform: 'Web Desktop OS + Android Companion',
     tier: 'Included in Core (Free Forever)',
-    summary: 'The unified 24-hour cadence linking your morning agenda, active execution sprints, and night debrief into a continuous state machine.',
-    deepDive: 'Instead of disjointed todo lists that accumulate guilt and abandon context, the Daily Loop operates as a closed-loop execution protocol. Incomplete priorities require conscious evening triage, rollover debt is calculated explicitly, and daily momentum scores calibrate every midnight.',
+    summary: 'Links your morning priorities, active deep-work blocks, and evening debrief into one unified loop.',
+    deepDive: 'Instead of endless todo lists that accumulate guilt, the Daily Loop forces honest triage: unfinished items get consciously rolled over or closed out, keeping your daily execution clean.',
     specs: {
       runtime: 'Deterministic State Loop',
       privacy: 'Local-First Persistence',
-      sync: 'Sub-16ms Realtime Event Bus',
+      sync: 'Realtime Local Bus',
       status: 'Core Subsystem',
     },
   },
@@ -54,33 +58,33 @@ export const ALL_FEATURES = [
     id: 'life-score',
     label: '5D Life Score',
     tag: 'INTEL',
-    subsystem: 'EQUILIBRIUM ENGINE',
+    subsystem: 'BALANCE METRIC',
     icon: Gauge,
     accent: '#10b981',
     platform: 'Web Desktop OS + Android Companion',
     tier: 'Included in Core & Pro',
-    summary: 'A holistic 0–100 equilibrium metric calculating real-time balance across Focus, Capital Runway, Physical Recovery, Habit Integrity, and Emotional Equilibrium.',
-    deepDive: 'Productivity without equilibrium is just accelerated burnout. The 5D Life Score uses multi-variate modeling to reveal hidden lag effects: how two consecutive nights of 5-hour sleep degrade deep-work velocity 36 hours later, or how weekend financial leaks destabilize weekday calm.',
+    summary: 'A single 0–100 score measuring balance across Focus, Runway, Recovery, Habits, and Mood.',
+    deepDive: 'Productivity without balance leads to burnout. The 5D Life Score shows how sleep loss degrades deep-work velocity, or how unplanned spending spikes impact peace of mind.',
     specs: {
-      runtime: 'Multi-Variate Equation',
+      runtime: 'Multi-Variate Scoring',
       privacy: 'Client-Side Local Compute',
       sync: 'Cached Vector State',
-      status: 'Algorithmic Model',
+      status: 'Balance Model',
     },
   },
   {
     id: 'discipline-engine',
     label: 'Discipline Engine',
     tag: 'SYSTEM',
-    subsystem: 'INERTIA BREAKER',
+    subsystem: 'MOMENTUM ENGINE',
     icon: Lightning,
     accent: '#ff6b35',
     platform: 'Web Desktop OS + Android Companion',
     tier: 'Included in Core (Free Forever)',
-    summary: 'Algorithmic friction counteracting procrastination through velocity-decay detection and adaptive cognitive load scaling.',
-    deepDive: 'Monitors real-time task completion intervals and hesitation pauses. When cognitive resistance or task stalling is detected, the engine dynamically decomposes intimidating objectives into micro-actions or triggers focused countdown sprints to restore operational momentum.',
+    summary: 'Breaks task paralysis by decomposing big items into immediate micro-actions and timed countdown sprints.',
+    deepDive: 'When you are stuck or hesitating, the engine breaks large goals into tiny next actions with an immediate countdown timer to get you back in flow.',
     specs: {
-      runtime: 'Hesitation Decay Heuristic',
+      runtime: 'Activity Gap Detection',
       privacy: 'Zero Telemetry Leaks',
       sync: 'Immediate Reactive Bus',
       status: 'Realtime Trigger',
@@ -90,13 +94,13 @@ export const ALL_FEATURES = [
     id: 'money-os',
     label: 'Money OS',
     tag: 'FINANCE',
-    subsystem: 'RUNWAY SIMULATOR',
+    subsystem: 'RUNWAY TRACKER',
     icon: Wallet,
     accent: '#749dc4',
     platform: 'Web Desktop OS + Android Companion',
     tier: 'Included in Core & Pro',
-    summary: 'Personal financial command station tracking daily burn rate, liquid runway in days, and capital preservation without invasive bank scraping.',
-    deepDive: 'Treats personal capital as flight fuel for your life rather than backward-looking bookkeeping. Calculates your true survival and comfort runways against recurring fixed commitments, simulating how every discretionary purchase affects your financial independence date.',
+    summary: 'Track daily burn rate, liquid runway in days, and recurring commitments without invasive bank scraping.',
+    deepDive: 'Treats capital as runway. Calculates how long your savings last against fixed costs and shows how discretionary purchases affect your timeline.',
     specs: {
       runtime: 'Deterministic Double-Entry',
       privacy: 'Encrypted-at-Rest SQLite',
@@ -108,13 +112,13 @@ export const ALL_FEATURES = [
     id: 'focus-shield',
     label: 'Focus Shield',
     tag: 'FOCUS',
-    subsystem: 'COGNITIVE INTERCEPT',
+    subsystem: 'DISTRACTION BLOCKER',
     icon: ShieldCheck,
     accent: '#ff6b35',
     platform: 'Web Desktop OS + Android Companion',
     tier: 'Included in Core & Pro',
-    summary: 'System-level distraction defense blocking algorithmic feed hijacking during designated high-value focus windows.',
-    deepDive: 'Operates as an intentional barrier between your focus and dopamine-engineered feeds. On Android, Focus Shield intercepts notification banners and introduces mindful friction delays; on desktop, it locks down workspace tabs and logs distraction attempts into your focus integrity score.',
+    summary: 'Blocks notifications and feeds during designated focus windows across desktop and Android.',
+    deepDive: 'Locks down distractive browser tabs on desktop and intercepts notification banners on Android so you can stay in unbroken flow.',
     specs: {
       runtime: 'Android Accessibility + Web Guard',
       privacy: 'Local Process Sandboxing',
@@ -453,6 +457,7 @@ const ROW_2 = ALL_FEATURES.slice(12);
 
 export default function WaitlistFeatureMarquee() {
   const [activeFeature, setActiveFeature] = useState(null);
+  const [showAllModules, setShowAllModules] = useState(false);
 
   const row1Doubled = [...ROW_1, ...ROW_1];
   const row2Doubled = [...ROW_2, ...ROW_2];
@@ -471,6 +476,16 @@ export default function WaitlistFeatureMarquee() {
     setActiveFeature(ALL_FEATURES[nextIdx]);
   }, [activeIndex]);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (!activeFeature) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [activeFeature]);
+
   // Keyboard navigation for inspector
   useEffect(() => {
     if (!activeFeature) return;
@@ -478,6 +493,7 @@ export default function WaitlistFeatureMarquee() {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         setActiveFeature(null);
+        setShowAllModules(false);
       } else if (e.key === 'ArrowLeft') {
         handlePrev();
       } else if (e.key === 'ArrowRight') {
@@ -492,6 +508,7 @@ export default function WaitlistFeatureMarquee() {
   const handleJoinClick = (e) => {
     e.preventDefault();
     setActiveFeature(null);
+    setShowAllModules(false);
     const target = document.getElementById('waitlist-join') || document.querySelector('.waitlist-hero-form');
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
@@ -501,6 +518,239 @@ export default function WaitlistFeatureMarquee() {
       }
     }
   };
+
+  const modalNode = (
+    <AnimatePresence>
+      {activeFeature && (
+        <motion.div
+          className="feature-inspector-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.16 }}
+          onClick={() => {
+            setActiveFeature(null);
+            setShowAllModules(false);
+          }}
+        >
+          <motion.div
+            className="feature-inspector-dialog"
+            initial={{ scale: 0.96, opacity: 0, y: 14 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.96, opacity: 0, y: 10 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 380 }}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={activeFeature.label}
+          >
+            {/* Top Chrome Bar */}
+            <div className="feature-inspector-chrome">
+              <div className="feature-inspector-chrome-left">
+                <span className="feature-inspector-diode" aria-hidden="true" />
+                <span className="feature-inspector-sys-index">
+                  SYS // {String(activeIndex + 1).padStart(2, '0')}
+                </span>
+                <span
+                  className="feature-inspector-subsystem-badge"
+                  style={{
+                    color: activeFeature.accent,
+                    borderColor: `color-mix(in srgb, ${activeFeature.accent} 40%, var(--color-border))`,
+                  }}
+                >
+                  {activeFeature.tag} · {activeFeature.subsystem}
+                </span>
+                <button
+                  type="button"
+                  className={`feature-inspector-browse-btn ${showAllModules ? 'is-open' : ''}`}
+                  onClick={() => setShowAllModules(!showAllModules)}
+                  aria-expanded={showAllModules}
+                  aria-label="Toggle all 23 subsystems list"
+                >
+                  <SquaresFour size={13} weight="bold" />
+                  <span>23 Modules</span>
+                  <CaretDown size={11} weight="bold" className="browse-arrow" />
+                </button>
+              </div>
+
+              <div className="feature-inspector-chrome-right">
+                <span className="feature-inspector-tier-badge">
+                  {activeFeature.tier}
+                </span>
+
+                <button
+                  type="button"
+                  className="feature-inspector-close-btn"
+                  onClick={() => {
+                    setActiveFeature(null);
+                    setShowAllModules(false);
+                  }}
+                  aria-label="Close dialog"
+                >
+                  <span className="key-hint">ESC</span>
+                  <X size={13} weight="bold" />
+                </button>
+              </div>
+            </div>
+
+            {/* Quick 23-Subsystem Module Grid Drawer (Collapsible) */}
+            <AnimatePresence>
+              {showAllModules && (
+                <motion.div
+                  className="feature-inspector-modules-drawer"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="feature-inspector-drawer-header">
+                    <span>DIRECT SUBSYSTEM SELECTOR (23 CORE ENGINES)</span>
+                    <span className="feature-inspector-drawer-hint">Click any module to inspect</span>
+                  </div>
+                  <div className="feature-inspector-modules-grid">
+                    {ALL_FEATURES.map((item, idx) => {
+                      const isCur = item.id === activeFeature.id;
+                      const ModIcon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`feature-inspector-module-pill ${isCur ? 'is-active' : ''}`}
+                          onClick={() => {
+                            setActiveFeature(item);
+                            setShowAllModules(false);
+                          }}
+                        >
+                          <span className="mod-idx">{String(idx + 1).padStart(2, '0')}</span>
+                          <ModIcon size={12} weight="bold" style={{ color: item.accent }} />
+                          <span className="mod-label">{item.label}</span>
+                          {isCur && <Check size={11} weight="bold" className="mod-check" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Subsystem Quick-Rail (Horizontal Swiper for rapid jumping) */}
+            <div className="feature-inspector-quick-rail" aria-label="Subsystem quick navigation">
+              {ALL_FEATURES.map((item, idx) => {
+                const isCur = item.id === activeFeature.id;
+                const ChipIcon = item.icon;
+                return (
+                  <button
+                    key={`rail-${item.id}`}
+                    type="button"
+                    className={`feature-inspector-rail-chip ${isCur ? 'is-active' : ''}`}
+                    onClick={() => setActiveFeature(item)}
+                    title={`Jump to ${item.label}`}
+                  >
+                    <ChipIcon size={12} weight={isCur ? 'fill' : 'bold'} style={{ color: item.accent }} />
+                    <span className="rail-label">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Body */}
+            <div className="feature-inspector-body">
+              {/* Hero Area */}
+              <div className="feature-inspector-hero">
+                <div
+                  className="feature-inspector-icon-box"
+                  style={{
+                    color: activeFeature.accent,
+                    borderColor: `color-mix(in srgb, ${activeFeature.accent} 35%, var(--color-border))`,
+                  }}
+                >
+                  {React.createElement(activeFeature.icon, { size: 28, weight: 'duotone' })}
+                </div>
+
+                <div className="feature-inspector-title-area">
+                  <div className="feature-inspector-title-row">
+                    <h3 className="feature-inspector-title">{activeFeature.label}</h3>
+                    <span className="feature-inspector-platform-badge">
+                      {activeFeature.platform}
+                    </span>
+                  </div>
+                  <p className="feature-inspector-summary">{activeFeature.summary}</p>
+                </div>
+              </div>
+
+              {/* Deep Architectural Breakdown */}
+              <div className="feature-inspector-deepdive">
+                <div className="feature-inspector-section-label">
+                  SYSTEM ARCHITECTURE & EXECUTION MECHANISM
+                </div>
+                <p>{activeFeature.deepDive}</p>
+              </div>
+
+              {/* Technical Specs Grid */}
+              <div className="feature-inspector-specs-grid">
+                <div className="feature-inspector-spec-card">
+                  <div className="feature-inspector-spec-label">EXECUTION ENGINE</div>
+                  <div className="feature-inspector-spec-value">{activeFeature.specs.runtime}</div>
+                </div>
+                <div className="feature-inspector-spec-card">
+                  <div className="feature-inspector-spec-label">PRIVACY MODEL</div>
+                  <div className="feature-inspector-spec-value">{activeFeature.specs.privacy}</div>
+                </div>
+                <div className="feature-inspector-spec-card">
+                  <div className="feature-inspector-spec-label">SYNC GUARANTEE</div>
+                  <div className="feature-inspector-spec-value">{activeFeature.specs.sync}</div>
+                </div>
+                <div className="feature-inspector-spec-card">
+                  <div className="feature-inspector-spec-label">LAYER STATUS</div>
+                  <div className="feature-inspector-spec-value" style={{ color: activeFeature.accent }}>
+                    {activeFeature.specs.status}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Controls */}
+              <div className="feature-inspector-footer">
+                <div className="feature-inspector-nav-group">
+                  <button
+                    type="button"
+                    className="feature-inspector-nav-btn"
+                    onClick={handlePrev}
+                    aria-label="Previous subsystem"
+                    title="Previous (Left Arrow)"
+                  >
+                    <CaretLeft size={13} weight="bold" />
+                    <span>Prev</span>
+                  </button>
+                  <span className="feature-inspector-counter">
+                    {activeIndex + 1} / {ALL_FEATURES.length}
+                  </span>
+                  <button
+                    type="button"
+                    className="feature-inspector-nav-btn"
+                    onClick={handleNext}
+                    aria-label="Next subsystem"
+                    title="Next (Right Arrow)"
+                  >
+                    <span>Next</span>
+                    <CaretRight size={13} weight="bold" />
+                  </button>
+                </div>
+
+                <a
+                  href="#waitlist-join"
+                  className="feature-inspector-cta-btn"
+                  onClick={handleJoinClick}
+                >
+                  <span>Reserve Access in Beta</span>
+                  <ArrowUpRight size={13} weight="bold" />
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 
   return (
     <section className="waitlist-marquee-section" aria-label="Operating system architecture">
@@ -579,154 +829,8 @@ export default function WaitlistFeatureMarquee() {
         </div>
       </div>
 
-      {/* Feature Inspector Modal */}
-      <AnimatePresence>
-        {activeFeature && (
-          <motion.div
-            className="feature-inspector-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            onClick={() => setActiveFeature(null)}
-          >
-            <motion.div
-              className="feature-inspector-dialog"
-              initial={{ scale: 0.94, opacity: 0, y: 16 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.94, opacity: 0, y: 12 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              onClick={(e) => e.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-label={activeFeature.label}
-            >
-              {/* Top Chrome Bar */}
-              <div className="feature-inspector-chrome">
-                <div className="feature-inspector-badge-group">
-                  <span
-                    className="feature-inspector-subsystem-badge"
-                    style={{
-                      color: activeFeature.accent,
-                      background: `color-mix(in srgb, ${activeFeature.accent} 12%, transparent)`,
-                      border: `1px solid color-mix(in srgb, ${activeFeature.accent} 25%, transparent)`,
-                    }}
-                  >
-                    {activeFeature.tag} // {activeFeature.subsystem}
-                  </span>
-                  <span className="feature-inspector-tier-badge">
-                    {activeFeature.tier}
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  className="feature-inspector-close-btn"
-                  onClick={() => setActiveFeature(null)}
-                  aria-label="Close dialog"
-                >
-                  <span>ESC</span>
-                  <X size={14} weight="bold" />
-                </button>
-              </div>
-
-              {/* Body */}
-              <div className="feature-inspector-body">
-                {/* Hero Area */}
-                <div className="feature-inspector-hero">
-                  <div
-                    className="feature-inspector-icon-box"
-                    style={{
-                      color: activeFeature.accent,
-                      background: `color-mix(in srgb, ${activeFeature.accent} 12%, var(--color-surface))`,
-                      border: `1px solid color-mix(in srgb, ${activeFeature.accent} 30%, transparent)`,
-                      boxShadow: `0 0 24px color-mix(in srgb, ${activeFeature.accent} 20%, transparent)`,
-                    }}
-                  >
-                    {React.createElement(activeFeature.icon, { size: 28, weight: 'duotone' })}
-                  </div>
-
-                  <div className="feature-inspector-title-area">
-                    <h3 className="feature-inspector-title">{activeFeature.label}</h3>
-                    <div className="feature-inspector-platform">
-                      <span>PLATFORM: {activeFeature.platform}</span>
-                    </div>
-                    <p className="feature-inspector-summary">{activeFeature.summary}</p>
-                  </div>
-                </div>
-
-                {/* Deep Architectural Breakdown */}
-                <div className="feature-inspector-deepdive">
-                  <div className="feature-inspector-section-label">
-                    ARCHITECTURAL MECHANISM
-                  </div>
-                  <p>{activeFeature.deepDive}</p>
-                </div>
-
-                {/* Technical Specs Grid */}
-                <div className="feature-inspector-specs-grid">
-                  <div className="feature-inspector-spec-card">
-                    <div className="feature-inspector-spec-label">EXECUTION ENGINE</div>
-                    <div className="feature-inspector-spec-value">{activeFeature.specs.runtime}</div>
-                  </div>
-                  <div className="feature-inspector-spec-card">
-                    <div className="feature-inspector-spec-label">PRIVACY MODEL</div>
-                    <div className="feature-inspector-spec-value">{activeFeature.specs.privacy}</div>
-                  </div>
-                  <div className="feature-inspector-spec-card">
-                    <div className="feature-inspector-spec-label">SYNC GUARANTEE</div>
-                    <div className="feature-inspector-spec-value">{activeFeature.specs.sync}</div>
-                  </div>
-                  <div className="feature-inspector-spec-card">
-                    <div className="feature-inspector-spec-label">LAYER STATUS</div>
-                    <div className="feature-inspector-spec-value" style={{ color: activeFeature.accent }}>
-                      {activeFeature.specs.status}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer Controls */}
-                <div className="feature-inspector-footer">
-                  <div className="feature-inspector-nav-group">
-                    <button
-                      type="button"
-                      className="feature-inspector-nav-btn"
-                      onClick={handlePrev}
-                      aria-label="Previous subsystem"
-                      title="Previous (Left Arrow)"
-                    >
-                      <CaretLeft size={14} weight="bold" />
-                      <span>Prev</span>
-                    </button>
-                    <span className="feature-inspector-counter">
-                      {activeIndex + 1} / {ALL_FEATURES.length}
-                    </span>
-                    <button
-                      type="button"
-                      className="feature-inspector-nav-btn"
-                      onClick={handleNext}
-                      aria-label="Next subsystem"
-                      title="Next (Right Arrow)"
-                    >
-                      <span>Next</span>
-                      <CaretRight size={14} weight="bold" />
-                    </button>
-                  </div>
-
-                  <a
-                    href="#waitlist-join"
-                    className="feature-inspector-cta-btn"
-                    onClick={handleJoinClick}
-                  >
-                    <span>Reserve Access in Beta</span>
-                    <ArrowUpRight size={14} weight="bold" />
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Render modal into document.body to avoid parent containment clipping */}
+      {typeof document !== 'undefined' ? createPortal(modalNode, document.body) : null}
     </section>
   );
 }

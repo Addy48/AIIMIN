@@ -17,6 +17,24 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+data class StepsDayDetail(
+    val dateIso: String,
+    val totalSteps: Long,
+    val hourlySteps: List<Long>,
+    val peakHour: Int?,
+    val quietHour: Int?,
+    val distanceKm: Double,
+    val activeMinutes: Int,
+    val caloriesKcal: Int,
+)
+
+data class StepsDaySummary(
+    val dateIso: String,
+    val totalSteps: Long,
+    val distanceKm: Double,
+    val activeMinutes: Int,
+    val caloriesKcal: Int,
+)
 
 /**
  * Day-total steps at **Nothing pedometer / phone** accuracy.
@@ -223,6 +241,98 @@ internal object HealthConnectSteps {
             }
             null
         }
+    }
+
+    /** Detailed step statistics for a specific day (e.g. yesterday). */
+    suspend fun readDayDetailed(context: Context, date: LocalDate): StepsDayDetail? {
+        if (!isAvailable(context) || !hasReadPermission(context)) return null
+        val client = HealthConnectClient.getOrCreate(context)
+        val zone = ZoneId.systemDefault()
+        val start = date.atStartOfDay(zone).toInstant()
+        val end = date.plusDays(1).atStartOfDay(zone).toInstant()
+        return try {
+            val breakdown = originBreakdown(client, start, end)
+            val phonePkgs = resolvePhoneOrigins(
+                seenOrigins = breakdown.keys,
+                deviceSpn = currentDeviceSpn(context),
+            )
+            val bestOrigin = pickBestPhoneOrigin(phonePkgs, breakdown)
+            val hourly = LongArray(24)
+            var total = 0L
+
+            var pageToken: String? = null
+            do {
+                val response = client.readRecords(
+                    ReadRecordsRequest(
+                        recordType = StepsRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(start, end),
+                        pageSize = 1000,
+                        pageToken = pageToken,
+                    ),
+                )
+                for (record in response.records) {
+                    val pkg = record.metadata.dataOrigin.packageName
+                    if (bestOrigin == null || pkg == bestOrigin || (bestOrigin !in breakdown.keys && isOnDevicePhoneOrigin(pkg))) {
+                        val count = record.count
+                        total += count
+                        val h = record.startTime.atZone(zone).hour.coerceIn(0, 23)
+                        hourly[h] += count
+                    }
+                }
+                pageToken = response.pageToken
+            } while (pageToken != null)
+
+            val hourlyList = hourly.toList()
+            val peak = peakHourIndex(hourlyList)
+            val quiet = quietHourIndex(hourlyList)
+            val km = total * DeviceMetricsRepository.STRIDE_METERS / 1000.0
+            val activeMin = kotlin.math.round((total / 105.0)).toInt()
+            val kcal = kotlin.math.round((total * 0.04)).toInt()
+
+            StepsDayDetail(
+                dateIso = date.toString(),
+                totalSteps = total,
+                hourlySteps = hourlyList,
+                peakHour = peak,
+                quietHour = quiet,
+                distanceKm = km,
+                activeMinutes = activeMin,
+                caloriesKcal = kcal,
+            )
+        } catch (e: Exception) {
+            Log.w("HC", "readDayDetailed failed for $date: ${e.message}")
+            null
+        }
+    }
+
+    /** Historical step totals for the past N calendar days. */
+    suspend fun readHistoricalDays(context: Context, days: Int): List<StepsDaySummary> {
+        if (!isAvailable(context) || !hasReadPermission(context)) return emptyList()
+        val client = HealthConnectClient.getOrCreate(context)
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val count = days.coerceIn(1, 30)
+        val results = mutableListOf<StepsDaySummary>()
+
+        for (offset in 1..count) {
+            val d = today.minusDays(offset.toLong())
+            val start = d.atStartOfDay(zone).toInstant()
+            val end = d.plusDays(1).atStartOfDay(zone).toInstant()
+            val agg = aggregateFiltered(client, start, end, null) ?: 0L
+            val km = agg * DeviceMetricsRepository.STRIDE_METERS / 1000.0
+            val activeMin = kotlin.math.round((agg / 105.0)).toInt()
+            val kcal = kotlin.math.round((agg * 0.04)).toInt()
+            results.add(
+                StepsDaySummary(
+                    dateIso = d.toString(),
+                    totalSteps = agg,
+                    distanceKm = km,
+                    activeMinutes = activeMin,
+                    caloriesKcal = kcal,
+                ),
+            )
+        }
+        return results
     }
 
     /** @deprecated use [readToday] */

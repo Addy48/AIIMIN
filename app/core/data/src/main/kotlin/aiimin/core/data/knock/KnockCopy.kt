@@ -20,74 +20,74 @@ object KnockCopy {
             title = title.replace("{$k}", v)
             body = body.replace("{$k}", v)
         }
-        return Line(title.take(42), body.take(90))
+        return Line(title.take(48), body.take(120))
     }
 
     private fun linesFor(case: KnockCase): List<Line> = when (case) {
         KnockCase.EVENING_MINIMA -> listOf(
-            Line("Your day left the chat", "Three ticks still waiting. Ghost them or finish them — either is a choice."),
-            Line("Plot twist: unfinished", "The minimums didn’t complete themselves. Shocking, we know."),
-            Line("Soft close available", "Not a lecture. Just a door. Tap if you want it shut clean."),
+            Line("Evening check-in · @{user}", "{open} daily minimums waiting. A few quiet minutes close your day clean."),
+            Line("Day wrap · @{user}", "{done} completed, {open} remaining. Finish strong or close out for tonight."),
+            Line("Close your day · @{user}", "Review your board before bed. A clean close sets up tomorrow."),
         )
         KnockCase.EMPTY_DAY -> listOf(
-            Line("Blank day sheet", "Nothing logged. Rest day or reboot day — you decide the label."),
-            Line("Silence on the wire", "No captures. If that’s intentional, respect. If not, one line fixes it."),
+            Line("Daily log open · @{user}", "No captures logged yet today. Jot a quick note or log an entry to keep continuity."),
+            Line("Quiet day check", "Take 30 seconds to capture what mattered today on your board."),
         )
         KnockCase.STREAK -> listOf(
-            Line("Streak’s watching", "Day {n} streak. One tick keeps the lore intact."),
-            Line("Chain wants a link", "Not pressure — continuity. Tick if you still want the story."),
+            Line("Day {n} streak active", "One logged minimum keeps your unbroken momentum going, @{user}."),
+            Line("Momentum check · Day {n}", "Your {n}-day streak is on the line. Log an entry to keep the lore intact."),
         )
         KnockCase.MORNING -> listOf(
-            Line("Day sheet’s warm", "No agenda speech. Just open if you want the board."),
-            Line("Fresh page energy", "Yesterday’s score stayed home. Today’s still hiring."),
+            Line("Good morning, @{user}", "Your day board is clear and ready. Set your daily minimums and focus."),
+            Line("Morning briefing", "Fresh board open for today. One deliberate step at a time."),
         )
         KnockCase.STEPS_HALF -> listOf(
-            Line("Halfway isn’t nothing", "{n} steps. The couch has opinions. You’re winning the argument."),
-            Line("Legs clocked in", "Mid-goal. Keep walking like the elevator’s broken."),
+            Line("Halfway to your goal · {n} steps", "You've crossed 50% of your {target} step target today. Strong rhythm, @{user}."),
+            Line("Strong stride today", "{n} steps logged so far towards {target}. Keep the momentum going."),
         )
         KnockCase.STEPS_NEAR -> listOf(
-            Line("So close it hurts (nicely)", "{left} steps left. The goal can taste the drama."),
-            Line("Final boss: sidewalk", "Almost there. Don’t let the last {left} ghost you."),
+            Line("Almost at your goal!", "Only {left} steps to hit your {target} goal tonight, @{user}. A short walk wraps it."),
+            Line("Final stretch · {left} steps", "You're within reach of today's movement target. Finish strong tonight."),
         )
         KnockCase.STEPS_HIT -> listOf(
-            Line("Goal clocked", "{n} steps. The shoes send their regards."),
-            Line("Movement: filed", "Target hit. Sit if you want — you earned the chair."),
+            Line("Daily step goal reached! · {n}", "You achieved your {target} target today, @{user}. Excellent movement."),
+            Line("Movement target completed", "{n} steps filed. Great discipline and pacing today."),
         )
         KnockCase.SCREEN_NEAR -> listOf(
-            Line("Screen’s getting clingy", "{left} left before the ceiling. Maybe blink once for science."),
-            Line("Glow budget low", "You’re dating the pixels again. Cute. Budget’s not."),
+            Line("Screen time check · @{user}", "{used} used today · {left} left before your daily ceiling."),
+            Line("Approaching screen ceiling", "{used} of screentime logged. Prepare to unplug and rest your eyes."),
         )
         KnockCase.SCREEN_OVER -> listOf(
-            Line("Ceiling called. It lost", "Over by {over}. No fine. Just a mirror."),
-            Line("Doomscroll: overtime", "Past the line you set. The line is still your friend."),
+            Line("Screen ceiling exceeded", "Past your daily limit by {over}. Time to step away from the display, @{user}."),
+            Line("Time to unplug · @{user}", "Over ceiling by {over}. Step away and reset your focus."),
         )
         KnockCase.STILL -> listOf(
-            Line("Chair loyalty program", "90 minutes. Standing is free and mildly rebellious."),
-            Line("Blood flow called", "It wants a short walk and a better story later."),
+            Line("Posture & stretch check", "You've been seated for 90 minutes. A quick 2-minute walk resets circulation."),
+            Line("Movement break · @{user}", "90 minutes of stillness logged. Stand up and reset blood flow."),
         )
         KnockCase.ENGLISH -> listOf(
-            Line("60 seconds of bravery", "Spark’s waiting. The prompt doesn’t bite. Much."),
-            Line("Mouth gym open", "One drill. Then you can go back to typing heroically."),
+            Line("60s English Spark", "Your daily vocal drill is waiting, @{user}. 60 seconds to keep your fluency sharp."),
+            Line("Fluency pulse · @{user}", "One quick 60-second speaking drill keeps your verbal streak alive."),
         )
         KnockCase.MONEY -> listOf(
-            Line("Burn rate’s spicy", "Day’s budget is sweating. Not judging — just math."),
-            Line("Ledger side-eye", "Pace is hot. Check Money if you want the receipts."),
+            Line("Burn pace alert · {pct}%", "Today's expenses reached {pct}% of your daily budget. Keep an eye on the ledger."),
+            Line("Daily spend pace", "Pacing at {pct}% today. Check your Money ledger to stay within your targets, @{user}."),
         )
         KnockCase.SYNC -> listOf(
-            Line("Graph’s in the lobby", "{n} writes waiting. Open Config · Sync when the line’s friendly."),
-            Line("Outbox doing cardio", "Still queued. Not lost — just patient."),
+            Line("Cloud sync queued", "{n} updates waiting to upload. Reconnecting to the cloud ledger."),
+            Line("Offline writes held", "{n} entries stored locally on device. Will sync once network is stable."),
         )
         KnockCase.AGENDA -> listOf(
-            Line("In 15: {title}", "Calendar didn’t forget. Neither should you."),
-            Line("Coming up", "{title}. Shoes optional. Being there isn’t."),
+            Line("In 15m: {title}", "Scheduled on your calendar. Take a moment to prepare."),
+            Line("Starting soon: {title}", "Next session begins in 15 minutes. Clear your deck."),
         )
         KnockCase.NOTE -> listOf(
-            Line("That note still exists", "“{title}” is collecting dust. Open, pin harder, or let it go."),
-            Line("Thought in storage", "You parked it. Want it back on the windshield?"),
+            Line("Pinned thought: {title}", "Parked 3 days ago. Tap to review, action, or archive."),
+            Line("Memory check · @{user}", "“{title}” is still pinned. Review when you have a quiet moment."),
         )
         KnockCase.SCORE_WEEK -> listOf(
-            Line("Week’s number landed", "Life Score {n}. Tap Score if you’re curious — not obligated."),
-            Line("Quiet report card", "Server did the math. You can peek or ignore. Both valid."),
+            Line("Weekly Life Score: {n}", "Your comprehensive weekly Life Score is ready to view, @{user}."),
+            Line("Sunday life review", "Score: {n}. Tap to explore your movement, focus, habits, and balance."),
         )
     }
 }

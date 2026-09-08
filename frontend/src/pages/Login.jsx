@@ -7,6 +7,7 @@ import { useThemeContext } from '../context/ThemeContext';
 import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
 import { apiGet, apiPost } from '../utils/api';
 import { getPostAuthPath } from '../utils/mobileEntry';
+import SEO from '../components/common/SEO';
 
 const IS_WAITLIST_MODE = process.env.REACT_APP_WAITLIST_MODE === 'true';
 
@@ -797,6 +798,11 @@ const Login = () => {
   /* ───── RENDER ───── */
   return (
     <div className="login-root">
+      <SEO
+        title="Terminal Access · Sign In"
+        description="Sign in to your AIIMIN Life OS command surface using your unique OS-ID or verified email."
+        canonicalPath="/login"
+      />
       {/* ─── LEFT PANEL ─── */}
       <div className="login-left">
         {/* Radial glow overlay */}

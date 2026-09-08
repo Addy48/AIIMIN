@@ -11,6 +11,7 @@ import useNavPreferences from '../hooks/useNavPreferences';
 import ArcEditor from '../components/profile/ArcEditor';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
+import SEO from '../components/common/SEO';
 import { getPostAuthPath } from '../utils/mobileEntry';
 
 /* ─── helpers ──────────────────────────────────────────────── */
@@ -739,6 +740,9 @@ export default function Onboarding() {
                     opacity: 1;
                 }
             `}</style>
+
+            <SEO title="Setup & Onboarding" description="Complete your AIIMIN profile and personal operating system setup." path="/onboarding" noIndex={true} />
+            <h1 className="sr-only">AIIMIN Account Onboarding and Setup</h1>
 
             <div style={{ width: '100%', maxWidth: '440px', paddingTop: arcOnly ? 48 : 0 }}>
                 {/* Logo — full setup only; arc-only flow uses Arc lockup inside the card */}

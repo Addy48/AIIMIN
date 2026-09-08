@@ -5,6 +5,12 @@ module.exports = {
     enable: false,
   },
   webpack: {
+    configure: (webpackConfig, { env }) => {
+      if (env === 'production') {
+        webpackConfig.devtool = false;
+      }
+      return webpackConfig;
+    },
     alias: {
       '@': path.resolve(__dirname, 'src'),
       'next/link': path.resolve(__dirname, 'src/shims/next/link.js'),

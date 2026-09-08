@@ -7,6 +7,8 @@ package aiimin.core.data.money
  * shares/pastes an alert, or (opt-in) via notification listener. Raw bodies
  * never leave the device; only approved drafts hit [aiimin.core.data.MoneyStore].
  */
+import aiimin.core.data.money.engine.AntiSpamGuard
+
 object PaymentAlertParser {
 
     enum class Direction { DEBIT, CREDIT }
@@ -21,16 +23,19 @@ object PaymentAlertParser {
         val preview: String,
         /** ISO-8601 local date when the alert embeds one; else null (approve uses today). */
         val dateIso: String? = null,
+        /** Optional available balance if present in alert. */
+        val balanceInr: Int? = null,
     )
 
     private val amountPatterns = listOf(
-        // Prefer full digit runs / Indian grouping — never stop at first 3 digits of 18000.
+        // Explicit verb + amount: "debited by INR 500", "spent Rs 1,200", "paid ₹450"
         Regex(
-            """(?:INR|Rs\.?|₹)\s*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]+)(?:\.[0-9]{1,2})?""",
+            """(?:debited\s+(?:by|for|with)?|spent|paid|purchase\s+of|withdrawn|transferred\s+(?:of)?)\s*(?:INR|Rs\.?|₹)?\s*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]+)(?:\.[0-9]{1,2})?""",
             RegexOption.IGNORE_CASE,
         ),
+        // Explicit credit verb + amount: "credited with INR 10,000", "received Rs 500"
         Regex(
-            """(?:debited|credited|spent|paid|received|txn(?:\s+of)?|transaction(?:\s+of)?)\s+(?:for\s+)?(?:INR|Rs\.?|₹)?\s*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]+)(?:\.[0-9]{1,2})?""",
+            """(?:credited\s+(?:with|for|to)?|received|refund\s+of|deposited)\s*(?:INR|Rs\.?|₹)?\s*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]+)(?:\.[0-9]{1,2})?""",
             RegexOption.IGNORE_CASE,
         ),
         // "Amount Debited: INR 1,250.00"
@@ -38,10 +43,20 @@ object PaymentAlertParser {
             """amount\s+(?:debited|credited)\s*[:\-]?\s*(?:INR|Rs\.?|₹)?\s*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]+)""",
             RegexOption.IGNORE_CASE,
         ),
+        // General currency token followed by amount (not preceded by Bal/Balance)
+        Regex(
+            """(?<!bal[:\s]|balance[:\s]|bal\.\s)(?:INR|Rs\.?|₹)\s*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]+)(?:\.[0-9]{1,2})?""",
+            RegexOption.IGNORE_CASE,
+        ),
+    )
+
+    private val balancePattern = Regex(
+        """(?:avail(?:able)?\s+bal(?:ance)?|bal(?:ance)?)\s*(?:is|:|\-)?\s*(?:INR|Rs\.?|₹)?\s*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]+)(?:\.[0-9]{1,2})?""",
+        RegexOption.IGNORE_CASE,
     )
 
     private val debitWords = Regex(
-        """\b(debited|spent|paid|purchase|withdrawn|dr\.?|sent)\b""",
+        """\b(debited|spent|paid|purchase|withdrawn|dr\.?|sent|transferred)\b""",
         RegexOption.IGNORE_CASE,
     )
     private val creditWords = Regex(
@@ -50,13 +65,21 @@ object PaymentAlertParser {
     )
 
     private val merchantPatterns = listOf(
-        Regex("""(?:at|to|from|towards)\s+([A-Za-z0-9 &._-]{2,40})""", RegexOption.IGNORE_CASE),
-        Regex("""UPI[- ]?([A-Za-z0-9.@]{3,40})""", RegexOption.IGNORE_CASE),
-        Regex("""(?:VPA|UPI ID)[:\s]+([A-Za-z0-9.@-]{3,40})""", RegexOption.IGNORE_CASE),
+        Regex("""(?:at|to|towards)\s+([A-Za-z0-9 &._-]{2,40})""", RegexOption.IGNORE_CASE),
+        Regex("""UPI[- /]([A-Za-z0-9.@-]{3,40})""", RegexOption.IGNORE_CASE),
+        Regex("""(?:VPA|UPI ID|Info)[:\s]+([A-Za-z0-9.@-]{3,40})""", RegexOption.IGNORE_CASE),
+        Regex("""from\s+([A-Za-z0-9 &._-]{2,40})""", RegexOption.IGNORE_CASE),
+    )
+
+    private val knownBankNames = setOf(
+        "hdfc", "sbi", "icici", "axis", "kotak", "yes bank", "idfc", "bob", "pnb",
+        "union bank", "canara", "indusind", "federal bank", "rbl", "standard chartered",
+        "citibank", "hsbc", "bank of baroda", "punjab national", "state bank of india",
+        "account", "a/c", "acct",
     )
 
     private val accountHints = listOf(
-        Regex("""(?:A/c|Ac|Account|acct)[.\s:-]*([Xx*0-9]{4,})""", RegexOption.IGNORE_CASE),
+        Regex("""(?:A/c|Ac|Account|acct|Card)[.\s:-]*([Xx*0-9]{4,})""", RegexOption.IGNORE_CASE),
         Regex("""\b((?:HDFC|SBI|ICICI|AXIS|FI|KOTAK|YES|IDFC|BOB|PNB|UNION|CANARA)[A-Za-z]*)\b""", RegexOption.IGNORE_CASE),
         Regex("""\b(GPay|Google Pay|PhonePe|Paytm|Amazon Pay|CRED|BHIM)\b""", RegexOption.IGNORE_CASE),
     )
@@ -81,13 +104,12 @@ object PaymentAlertParser {
     fun parse(raw: String): Parsed? {
         val text = raw.trim().replace('\u00a0', ' ')
         if (text.length < 12) return null
-        // Never treat OTP-only messages as payments.
-        if (Regex("""\bOTP\b""", RegexOption.IGNORE_CASE).containsMatchIn(text) &&
-            !debitWords.containsMatchIn(text) && !creditWords.containsMatchIn(text)
-        ) {
-            return null
-        }
 
+        // 1. Anti-Spam Guard Gate
+        val spamCheck = AntiSpamGuard.check(text)
+        if (spamCheck.isSpam) return null
+
+        // 2. Amount Extraction
         val amount = extractAmount(text) ?: return null
         if (amount <= 0 || amount > 10_000_000) return null
 
@@ -100,7 +122,10 @@ object PaymentAlertParser {
 
         val merchant = merchantPatterns.firstNotNullOfOrNull { re ->
             re.find(text)?.groupValues?.getOrNull(1)?.trim()?.takeIf { it.length in 2..40 }
-        }?.let { cleanMerchant(it) }
+        }?.let { cleanMerchant(it) }?.takeIf { candidate ->
+            val lower = candidate.lowercase()
+            knownBankNames.none { lower == it || lower.startsWith("$it ") }
+        }
 
         val accountHint = accountHints.firstNotNullOfOrNull { re ->
             re.find(text)?.groupValues?.getOrNull(1)?.trim()?.takeIf { it.isNotBlank() }
@@ -115,6 +140,10 @@ object PaymentAlertParser {
             else -> "ALERT"
         }
 
+        val balanceInr = balancePattern.find(text)?.groupValues?.getOrNull(1)?.let { rawBal ->
+            rawBal.replace(",", "").substringBefore('.').toIntOrNull()
+        }
+
         return Parsed(
             amountInr = amount,
             direction = direction,
@@ -123,6 +152,7 @@ object PaymentAlertParser {
             channel = channel,
             preview = redactPreview(text),
             dateIso = extractDateIso(text),
+            balanceInr = balanceInr,
         )
     }
 

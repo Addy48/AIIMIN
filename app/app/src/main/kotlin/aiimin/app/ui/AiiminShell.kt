@@ -48,6 +48,12 @@ import aiimin.feature.today.TodayRoute
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -140,6 +146,14 @@ fun AiiminShell(modifier: Modifier = Modifier) {
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
+            transitionSpec = {
+                (fadeIn(animationSpec = tween(220)) + scaleIn(initialScale = 0.98f, animationSpec = tween(220)))
+                    .togetherWith(fadeOut(animationSpec = tween(160)))
+            },
+            popTransitionSpec = {
+                fadeIn(animationSpec = tween(180))
+                    .togetherWith(fadeOut(animationSpec = tween(160)) + scaleOut(targetScale = 0.98f, animationSpec = tween(160)))
+            },
             entryProvider = entryProvider {
                 entry<Day> {
                     TodayRoute(

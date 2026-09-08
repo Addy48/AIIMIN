@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArchBracketMark, pickMarkColors } from '../components/brand/archBracketMark';
 import Wordmark from '../components/brand/Wordmark';
 import { useAccessGate } from '../hooks/useAccessGate';
+import SEO from '../components/common/SEO';
 import './brandPage.css';
 
 /**
@@ -296,6 +297,11 @@ export default function Brand() {
 
   return (
     <div className="brand-manifesto" ref={rootRef} data-surface="light">
+      <SEO
+        title="Brand Identity & Design Manifesto"
+        description="The design philosophy, color system, and operational principles behind AIIMIN Life OS."
+        canonicalPath="/brand"
+      />
       <div className="brand-manifesto__progress" aria-hidden="true" />
 
       <div className="brand-manifesto__atmosphere" aria-hidden="true">

@@ -1,9 +1,9 @@
 export const LEGAL = {
-  entity: 'AIIMIN',
-  operator: 'Aaditya Upadhyay',
-  // TODO(founder): replace with registered legal entity name + type once incorporated
-  entityNote: 'AIIMIN is operated by Aaditya Upadhyay, India.',
-  address: null, // TODO(founder): DPDP requires a published postal address before launch
+  entity: 'AIIMIN Inc.',
+  operator: 'AIIMIN Inc.',
+  entityNote: 'AIIMIN is an independent software product developed and operated by AIIMIN Inc.',
+  credits: 'Crafted with heart and relentless focus by Aaditya · Wholly owned by Aaditya and AIIMIN Inc.',
+  address: null, // Available on request at legal@aiimin.in
   effectiveDate: 'October 31, 2026',
   emails: {
     support: 'support@aiimin.in',
@@ -12,7 +12,9 @@ export const LEGAL = {
     grievance: 'grievance@aiimin.in',
     legal: 'legal@aiimin.in',
   },
-  grievanceOfficer: 'Aaditya Upadhyay',
+  phone: null,
+  phoneDisplay: null,
+  grievanceOfficer: 'Grievance Officer, AIIMIN Inc.',
   jurisdiction: 'Uttar Pradesh, India',
   liabilityCap: 'the greater of ₹5,000 or the subscription fees you paid in the 12 months before the claim',
   consentVersion: 'v1-2026-10-31',

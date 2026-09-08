@@ -526,7 +526,7 @@ const Settings = () => {
 
             <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.25)', fontSize: '11.5px', color: 'var(--color-text-2)', display: 'flex', gap: '8px', alignItems: 'center' }}>
               <span style={{ color: '#F59E0B', fontWeight: 800 }}>Note:</span>
-              <span>This is a direct tester build (~62 MB, Android 8.0+). Enable <strong>Install unknown apps</strong> in Android Settings. Play Store listing follows tester verification.</span>
+              <span>This is a direct tester build (~27 MB, Android 8.0+). Enable <strong>Install unknown apps</strong> in Android Settings. Play Store listing follows tester verification.</span>
             </div>
           </div>
         </Section>

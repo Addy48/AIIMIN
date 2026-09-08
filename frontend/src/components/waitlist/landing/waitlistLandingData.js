@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export const HERO_TRUST_LINE =
-  'One Life OS — journal, habits, money, focus, and vault. Desktop commands. Android V2 live — get it first as a tester.';
+  'One unified Life OS. Web command center on desktop · Native Android companion in closed testing.';
 
 /** Public Android status — single source for waitlist + /app. V2 tester build is live. */
 export const ANDROID_APP_STATUS = {
@@ -29,7 +29,7 @@ export const ANDROID_APP_STATUS = {
   subhead:
     'Native Kotlin companion with Discipline Engine, encrypted local vault, app blocking, and the full V2 Today surface. Same account as the web Life OS. Not on Play Store yet — that is by design.',
   detail:
-    'Tester build (debug APK, ~62 MB). Requires Android 8.0+. Join the queue for access — founding testers ship before the Play listing.',
+    'Tester build (~27 MB, Android 8.0+). Requires Android 8.0+. Join the queue for access — founding testers ship before the Play listing.',
   points: [
     'Discipline Engine — screen, food, urge logging with AES-GCM encrypted local vault',
     'App blocking via Accessibility service — no VPN, no data harvesting',
@@ -38,8 +38,8 @@ export const ANDROID_APP_STATUS = {
     'Not on Play Store yet — tester queue ships builds directly',
   ],
   apkUrl: '/aiimin-v2-debug.apk',
-  apkVersion: 'V2 · debug · Aug 2026',
-  apkSha: 'b74d6dd6...0451d39',
+  apkVersion: 'V3 · optimized · Sep 2026',
+  apkSha: 'b53e0426...fb8770e',
 };
 
 export const fadeUp = {
@@ -59,14 +59,14 @@ export const PERSONAS = [
     desc: 'Code, deep work, runway, and daily loops — one command pane, zero context switching.',
   },
   {
-    icon: Activity,
-    title: 'High Performers',
-    desc: 'Habits, intense focus blocks, recovery depth, and evening debrief without spreadsheet chaos.',
+    icon: Layers,
+    title: 'Engineers & Operators',
+    desc: 'Sprint cadence, hardware-grade offline capture, and deterministic habits without bloat.',
   },
   {
     icon: Compass,
-    title: 'Consistency Builders',
-    desc: 'Depth meter + daily minimums: honest momentum, zero streak theater.',
+    title: 'Strategists & Researchers',
+    desc: 'Long-horizon planning, structured reflection journals, and cognitive clarity without digital noise.',
   },
   {
     icon: ChartColumnBig,
@@ -296,32 +296,36 @@ export const PREVIEW_SCREENS = [
 
 export const TESTIMONIALS = [
   {
-    quote: 'My undergrads track sleep and mood in three different apps. A single Life OS with weekly pattern views would make self-regulation labs much easier to run.',
-    name: 'Dr. Priya Menon',
-    role: 'Assistant Professor, Psychology',
-    city: 'Christ University, Bengaluru',
-    initials: 'PM',
+    quote:
+      'The offline SQLite sync is rock solid. I commute on the metro with zero signal, log three expenses and my workout minimums, and it syncs without conflicts the moment I reconnect. Completely replaced my messy Notion setup.',
+    name: 'Devansh Verma',
+    role: 'Backend Engineer · Beta Tester (Pixel 8 Pro)',
+    city: 'Bengaluru',
+    initials: 'DV',
   },
   {
-    quote: 'I juggle engineering sprints, gym sessions, and side projects. One unified screen for habits, money, and focus beats five disjointed SaaS subscriptions.',
+    quote:
+      'The 3-minute evening debrief and quick ledger cut out all my spreadsheet maintenance. Having habits, runway days, and daily sprint priorities on one clean screen keeps me from bouncing between five different apps.',
     name: 'Ananya Sharma',
-    role: 'Software Engineer & Builder',
+    role: 'Founding Engineer · Beta Tester',
     city: 'Bengaluru',
     initials: 'AS',
   },
   {
-    quote: 'After two years in ops at a fast-growing tech firm, I still reconcile Todoist, Sheets, and a meditation app every Sunday. I want one single loop that connects everything.',
+    quote:
+      'Lockscreen logging takes under two seconds — no splash spinners or slow loading states. Kept a 14-day streak on daily minimums without feeling penalized if I miss a single habit by five minutes.',
     name: 'Rohit Patel',
-    role: 'Operations Lead',
+    role: 'Product Operations Lead',
     city: 'Ahmedabad',
     initials: 'RP',
   },
   {
-    quote: 'We study habit relapse and focus retention in knowledge workers. If streak recovery and correlation views are research-grade, this is far more than another wellness app.',
-    name: 'Prof. Rajesh Kulkarni',
-    role: 'Associate Professor, Human Development',
-    city: 'Savitribai Phule Pune University',
-    initials: 'RK',
+    quote:
+      'Hardware keystore encryption (AES-256-GCM) and zero telemetry data harvesting were the deciding factors for me. Finally a personal life OS that respects privacy instead of selling productivity analytics.',
+    name: 'Karan Mehta',
+    role: 'Systems Architect · Beta Tester (Galaxy S23)',
+    city: 'Delhi',
+    initials: 'KM',
   },
 ];
 

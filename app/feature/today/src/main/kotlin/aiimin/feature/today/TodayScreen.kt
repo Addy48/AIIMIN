@@ -99,6 +99,7 @@ fun TodayRoute(
     val notes by viewModel.notes.collectAsStateWithLifecycle()
     val publishedScore by viewModel.publishedScore.collectAsStateWithLifecycle()
     val focusMinimums by viewModel.focusMinimums.collectAsStateWithLifecycle()
+    val stepsHistory by viewModel.stepsHistory.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -194,6 +195,7 @@ fun TodayRoute(
     if (showStepsInsight) {
         StepsInsightSheet(
             device = device,
+            history = stepsHistory,
             onDismiss = { showStepsInsight = false },
             onEditGoal = {
                 showStepsInsight = false

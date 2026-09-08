@@ -17,7 +17,7 @@ function UnlockChip({ item }) {
 
 export default function WaitlistLaunchJourney() {
   return (
-    <section className="waitlist-section launch-journey-section waitlist-desktop-only">
+    <section className="waitlist-section launch-journey-section" id="launch-journey">
       <p className="waitlist-section-label">Launch journey</p>
       <h2>Four phases — from signup to full Life OS</h2>
       <p className="waitlist-section-copy">

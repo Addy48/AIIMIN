@@ -369,7 +369,7 @@ export default function WaitlistForm({
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            placeholder="Arnav"
+            placeholder="Your name"
             maxLength={100}
             className="waitlist-input"
             aria-label="First name"
@@ -410,7 +410,7 @@ export default function WaitlistForm({
               setOsId(e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '').slice(0, 8));
               if (status) setStatus(null);
             }}
-            placeholder={osIdSuggestion}
+            placeholder={osIdSuggestion || '8-char handle'}
             maxLength={8}
             className="waitlist-input waitlist-input-id waitlist-input-osid"
             aria-label="OS-ID handle (optional)"
@@ -418,10 +418,16 @@ export default function WaitlistForm({
             spellCheck={false}
           />
         </div>
-        <p className="waitlist-osid-preview">
-          Preview: <strong>@{osIdPreview}</strong>
-          <span className="waitlist-osid-preview-meta"> · 8 chars · max 4 digits</span>
-        </p>
+        {osIdPreview ? (
+          <p className="waitlist-osid-preview">
+            Preview: <strong>@{osIdPreview}</strong>
+            <span className="waitlist-osid-preview-meta"> · 8 chars · max 4 digits</span>
+          </p>
+        ) : (
+          <p className="waitlist-osid-preview">
+            <span className="waitlist-osid-preview-meta">Optional handle · 8 chars · max 4 digits (e.g. your handle or initials)</span>
+          </p>
+        )}
       </div>
 
       {showUrgency && (
@@ -432,7 +438,7 @@ export default function WaitlistForm({
 
       <button type="submit" disabled={loading} className="waitlist-submit-btn">
         <Sparkle size={15} weight="fill" />
-        {loading ? 'Joining...' : 'Join the waitlist'}
+        {loading ? 'Securing your spot...' : 'Join the waitlist'}
       </button>
 
       {!compact && (
@@ -441,11 +447,15 @@ export default function WaitlistForm({
         </p>
       )}
 
-      {emailHasError && <p className="waitlist-form-error">Enter a valid email address.</p>}
+      {emailHasError && (
+        <div className="waitlist-form-error" role="alert">
+          <span>⚠ Enter a valid email address (e.g. name@domain.com).</span>
+        </div>
+      )}
       {status === 'error' && (
-        <p className="waitlist-form-error">
-          {errorMsg || 'Something went wrong. Try again.'}
-        </p>
+        <div className="waitlist-form-error" role="alert">
+          <span>⚠ {errorMsg || 'Something went wrong. Please check your connection and try again.'}</span>
+        </div>
       )}
 
       {!compact && (

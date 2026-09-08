@@ -6,6 +6,9 @@ plugins {
 
 android {
     namespace = "aiimin.core.data"
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {

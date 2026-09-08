@@ -6,7 +6,7 @@ const WaitlistFaqSection = forwardRef(function WaitlistFaqSection(_props, ref) {
   const [openFaq, setOpenFaq] = useState(0);
 
   return (
-    <section className="waitlist-section waitlist-faq-wrap faq-section" ref={ref}>
+    <section className="waitlist-section waitlist-faq-wrap faq-section" id="faq" ref={ref}>
       <p className="waitlist-section-label">FAQ</p>
       <h2>Questions before joining?</h2>
       <div className="waitlist-faq-list">

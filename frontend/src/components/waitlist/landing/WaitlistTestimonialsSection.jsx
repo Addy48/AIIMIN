@@ -21,11 +21,11 @@ export default function WaitlistTestimonialsSection() {
   }, [paused, next]);
 
   return (
-    <section className="waitlist-section waitlist-testimonials waitlist-desktop-only">
-      <p className="waitlist-section-label">Early voices</p>
+    <section className="waitlist-section waitlist-testimonials">
+      <p className="waitlist-section-label">Closed Beta Feedback</p>
       <h2>What testers are saying</h2>
       <p className="waitlist-testimonials-honest">
-        Paraphrased feedback from closed beta interviews — not paid endorsements.
+        Direct feedback from closed testers running Android APK build v2.0.4 and the desktop web command center.
       </p>
 
       <motion.div

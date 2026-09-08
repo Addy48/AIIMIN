@@ -1,11 +1,87 @@
 import React from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../Navbar';
 import TabRail from './TabRail';
 import BottomNav from './BottomNav';
 import CommandPalette from '../system/CommandPalette';
 import ArcGuard from '../system/ArcGuard';
 import { useDeviceTier } from '../../hooks/useDeviceTier';
+import SEO from '../common/SEO';
+
+const ROUTE_META = {
+  '/overview': {
+    title: 'Overview · Life Score & Trajectory',
+    description: 'Real-time Life Score radar, trajectory projection, daily habits, quick capture, and recent transactions.',
+  },
+  '/insights': {
+    title: 'Behavioral Insights & Correlated Signals',
+    description: 'Correlations between sleep, focus duration, habit consistency, and daily mood.',
+  },
+  '/calendar': {
+    title: 'Calendar & Daily Trajectory',
+    description: 'Chronological timeline of daily entries, habit streaks, and scheduled events.',
+  },
+  '/sports': {
+    title: 'Sports & Active Telemetry',
+    description: 'Match fixtures, active sports tracking, and physical performance logging.',
+  },
+  '/journal': {
+    title: 'Mindset & Daily Reflection',
+    description: 'Multi-mode journal with mood rating, reflections, voice notes, and emotional trajectory.',
+  },
+  '/finance': {
+    title: 'Finance & Wealth Telemetry',
+    description: 'Net worth tracking, monthly income/expense velocity, and automated transaction ledger.',
+  },
+  '/settings': {
+    title: 'Settings & Data Controls',
+    description: 'Manage personal preferences, notifications, theme engine, and data backups.',
+  },
+  '/lab': {
+    title: 'Behavioral Intelligence Lab',
+    description: 'Advanced behavioral experimentation, vocal biomarkers, and hypothesis testing.',
+  },
+  '/placements': {
+    title: 'Career & Placement Kanban',
+    description: 'Interview pipeline, resume vault, and career opportunity management.',
+  },
+  '/habits': {
+    title: 'Atomic Habits & Consistency',
+    description: 'Track daily habits, streak momentum, and weekly completion matrices.',
+  },
+  '/goals': {
+    title: 'Strategic Goals & Milestones',
+    description: 'Active, at-risk, and achieved goals with granular milestone tracking.',
+  },
+  '/identity': {
+    title: 'Identity & Core Operating Rules',
+    description: 'Personal mission statement, non-negotiable principles, and behavioral guidelines.',
+  },
+  '/notes': {
+    title: 'Notes & Second Brain Archive',
+    description: 'Encrypted personal knowledge base, markdown notes, and fast capture cards.',
+  },
+  '/discipline': {
+    title: 'Discipline & Impulse Control',
+    description: 'Real-time urge delay timer, trigger taxonomy, and friction tracking.',
+  },
+  '/focus': {
+    title: 'Deep Focus Room',
+    description: 'Distraction-free Pomodoro session room with ambient soundscapes.',
+  },
+  '/family': {
+    title: 'Family Vital Records Vault',
+    description: 'Secure, encrypted repository for family medical, insurance, and emergency details.',
+  },
+  '/account': {
+    title: 'Account Profile & Membership',
+    description: 'Manage subscription tier, OS-ID identifier, and account security credentials.',
+  },
+  '/reports': {
+    title: 'Life Performance Reports',
+    description: 'Weekly and monthly comprehensive life telemetry reviews and trend breakdowns.',
+  },
+};
 
 /**
  * DashboardLayout — Authenticated shell for iPad + desktop Life OS.
@@ -13,7 +89,13 @@ import { useDeviceTier } from '../../hooks/useDeviceTier';
  */
 const DashboardLayout = ({ user }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isPhone, isTablet } = useDeviceTier();
+
+  const currentMeta = ROUTE_META[location.pathname] || {
+    title: 'Dashboard',
+    description: 'AIIMIN personal Life OS dashboard surface.',
+  };
 
   return (
     <div
@@ -24,6 +106,12 @@ const DashboardLayout = ({ user }) => {
       paddingTop: 'var(--nav-height)',
       color: 'var(--color-text-1)',
     }}>
+      <SEO
+        title={currentMeta.title}
+        description={currentMeta.description}
+        canonicalPath={location.pathname}
+        noIndex={true}
+      />
       <Navbar user={user} />
       {isTablet && <TabRail />}
       <CommandPalette />

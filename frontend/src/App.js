@@ -1,35 +1,37 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
-// Eagerly loaded Auth & public pages
-import Login from './pages/Login';
-import AuthCallback from './pages/AuthCallback';
-import Onboarding from './pages/Onboarding';
-import VerifyEmail from './pages/VerifyEmail';
+// Auth, public, & legal pages (Code-split for optimized initial bundle)
+const Login = React.lazy(() => import('./pages/Login'));
+const AuthCallback = React.lazy(() => import('./pages/AuthCallback'));
+const Onboarding = React.lazy(() => import('./pages/Onboarding'));
+const VerifyEmail = React.lazy(() => import('./pages/VerifyEmail'));
 import WaitlistLanding from './pages/WaitlistLanding';
 import { WaitlistPendingScreen } from './components/waitlist/WaitlistQuickFeedback';
 import WaitlistThemeSync from './components/waitlist/WaitlistThemeSync';
-import Privacy from './pages/legal/Privacy';
-import Terms from './pages/legal/Terms';
-import DataDeletion from './pages/legal/DataDeletion';
-import Security from './pages/legal/Security';
-import About from './pages/legal/About';
-import Contact from './pages/legal/Contact';
-import Cookies from './pages/legal/Cookies';
-import AcceptableUse from './pages/legal/AcceptableUse';
-import Refunds from './pages/legal/Refunds';
-import AiDisclosure from './pages/legal/AiDisclosure';
-import Grievance from './pages/legal/Grievance';
-import Subprocessors from './pages/legal/Subprocessors';
-import LegalHub from './pages/legal/LegalHub';
-import Brand from './pages/Brand';
-import AndroidApp from './pages/AndroidApp';
+const Privacy = React.lazy(() => import('./pages/legal/Privacy'));
+const Terms = React.lazy(() => import('./pages/legal/Terms'));
+const DataDeletion = React.lazy(() => import('./pages/legal/DataDeletion'));
+const Security = React.lazy(() => import('./pages/legal/Security'));
+const About = React.lazy(() => import('./pages/legal/About'));
+const Contact = React.lazy(() => import('./pages/legal/Contact'));
+const Cookies = React.lazy(() => import('./pages/legal/Cookies'));
+const AcceptableUse = React.lazy(() => import('./pages/legal/AcceptableUse'));
+const Refunds = React.lazy(() => import('./pages/legal/Refunds'));
+const AiDisclosure = React.lazy(() => import('./pages/legal/AiDisclosure'));
+const Grievance = React.lazy(() => import('./pages/legal/Grievance'));
+const Subprocessors = React.lazy(() => import('./pages/legal/Subprocessors'));
+const LegalHub = React.lazy(() => import('./pages/legal/LegalHub'));
+const Brand = React.lazy(() => import('./pages/Brand'));
+const AndroidApp = React.lazy(() => import('./pages/AndroidApp'));
+const EmptyStatePage = React.lazy(() => import('./pages/EmptyStatePage'));
+const NotFound = React.lazy(() => import('./pages/NotFound'));
 
-// Layout & eager components
+// Layout & lazy widgets
 import DashboardLayout from './components/layout/DashboardLayout';
-import FeedbackWidget from './components/FeedbackWidget';
-import ProductTour from './components/onboarding/ProductTour';
-import GuestTour from './components/onboarding/GuestTour';
+const FeedbackWidget = React.lazy(() => import('./components/FeedbackWidget'));
+const ProductTour = React.lazy(() => import('./components/onboarding/ProductTour'));
+const GuestTour = React.lazy(() => import('./components/onboarding/GuestTour'));
 
 // Guest mode
 // (Removed unused guest providers)
@@ -103,6 +105,7 @@ const PUBLIC_PATH_PREFIXES = [
   '/brand',
   '/proto',
   '/waitlist',
+  '/empty',
 ];
 
 /* ── Root App ─────────────────────────────────────────────────────── */
@@ -135,7 +138,7 @@ function AppContent({ user, session }) {
   const { isSignedIn } = useAuth();
   const { canAccessApp, loading: accessLoading, isWaitlistMode } = useAccessGate();
 
-  const showWaitlistAtRoot = isWaitlistMode && !canAccessApp && !accessLoading;
+  const showWaitlistAtRoot = !session || isWaitlistMode || (!canAccessApp && !accessLoading);
   const isProto = location.pathname.startsWith('/proto');
 
   const isPublicSurface =
@@ -176,15 +179,15 @@ function AppContent({ user, session }) {
         {/* Auth */}
         <Route path="/login/*" element={
           isWaitlistMode && !canAccessApp
-            ? <Login />
-            : (session ? <Navigate to={getPostAuthPath()} replace /> : <Login />)
+            ? <Lazy><Login /></Lazy>
+            : (session ? <Navigate to={getPostAuthPath()} replace /> : <Lazy><Login /></Lazy>)
         } />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/verify-email" element={session ? <VerifyEmail /> : <Navigate to="/login" replace />} />
+        <Route path="/auth/callback" element={<Lazy><AuthCallback /></Lazy>} />
+        <Route path="/verify-email" element={session ? <Lazy><VerifyEmail /></Lazy> : <Navigate to="/login" replace />} />
         <Route path="/onboarding" element={
           isWaitlistMode && !canAccessApp && !accessLoading
             ? <Navigate to="/" replace />
-            : (session ? <Onboarding /> : <Navigate to="/login" replace />)
+            : (session ? <Lazy><Onboarding /></Lazy> : <Navigate to="/login" replace />)
         } />
         {!showWaitlistAtRoot && (
           <Route path="/" element={<Navigate to={canAccessApp && session ? getPostAuthPath() : '/login'} replace />} />
@@ -239,38 +242,41 @@ function AppContent({ user, session }) {
         </Route>
 
         {/* ── Public legal & brand ── */}
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/data-deletion" element={<DataDeletion />} />
-        <Route path="/security" element={<Security />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/cookies" element={<Cookies />} />
-        <Route path="/acceptable-use" element={<AcceptableUse />} />
-        <Route path="/refunds" element={<Refunds />} />
-        <Route path="/ai-disclosure" element={<AiDisclosure />} />
-        <Route path="/grievance" element={<Grievance />} />
-        <Route path="/subprocessors" element={<Subprocessors />} />
-        <Route path="/legal" element={<LegalHub />} />
-        <Route path="/brand" element={<Brand />} />
-        <Route path="/app" element={<AndroidApp />} />
+        <Route path="/privacy" element={<Lazy><Privacy /></Lazy>} />
+        <Route path="/terms" element={<Lazy><Terms /></Lazy>} />
+        <Route path="/data-deletion" element={<Lazy><DataDeletion /></Lazy>} />
+        <Route path="/security" element={<Lazy><Security /></Lazy>} />
+        <Route path="/about" element={<Lazy><About /></Lazy>} />
+        <Route path="/contact" element={<Lazy><Contact /></Lazy>} />
+        <Route path="/cookies" element={<Lazy><Cookies /></Lazy>} />
+        <Route path="/acceptable-use" element={<Lazy><AcceptableUse /></Lazy>} />
+        <Route path="/refunds" element={<Lazy><Refunds /></Lazy>} />
+        <Route path="/ai-disclosure" element={<Lazy><AiDisclosure /></Lazy>} />
+        <Route path="/grievance" element={<Lazy><Grievance /></Lazy>} />
+        <Route path="/subprocessors" element={<Lazy><Subprocessors /></Lazy>} />
+        <Route path="/legal" element={<Lazy><LegalHub /></Lazy>} />
+        <Route path="/brand" element={<Lazy><Brand /></Lazy>} />
+        <Route path="/app" element={<Lazy><AndroidApp /></Lazy>} />
+        <Route path="/empty" element={<Lazy><EmptyStatePage /></Lazy>} />
         {/* Parked: Drafting Table craft lock — not product */}
         <Route path="/proto/draft" element={<Lazy><DraftingTablePrototype /></Lazy>} />
         {/* Killed surface: old design-lab URL */}
         <Route path="/design-lab" element={<Navigate to="/account?section=design" replace />} />
 
         {/* ── 404 ── */}
-        <Route path="*" element={<Navigate to={showWaitlistAtRoot && !session ? '/' : (user ? '/overview' : '/login')} replace />} />
+        <Route path="*" element={<Lazy><NotFound /></Lazy>} />
 
       </Routes>
 
       {!isProto && !location.pathname.startsWith('/reports-demo') && <ConsentBanner />}
 
-      {/* Global Widgets — suppressed on public surfaces, prototypes, and phone capture surfaces */}
-      {!isProto && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
-      {!isProto && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
-      {!isProto && isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
-      {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && !isWaitlistMode && !isPublicSurface && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      {/* Global Widgets — lazy wrapped, suppressed on public surfaces, prototypes, and phone capture surfaces */}
+      <React.Suspense fallback={null}>
+        {!isProto && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <ProductTour />}
+        {!isProto && !isPublicSurface && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && canAccessApp && location.pathname !== '/login' && user && !user.isGuest && <FeedbackWidget />}
+        {!isProto && isWaitlistMode && location.pathname === '/' && <FeedbackWidget waitlistPublic />}
+        {!isProto && !location.pathname.startsWith('/m') && !location.pathname.startsWith('/reports-demo') && !isWaitlistMode && !isPublicSurface && location.pathname !== '/login' && !session && (!user || user.isGuest) && <GuestTour />}
+      </React.Suspense>
     </div>
     </DeviceGate>
   );

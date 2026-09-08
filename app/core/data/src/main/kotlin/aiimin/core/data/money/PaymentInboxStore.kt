@@ -67,66 +67,54 @@ class PaymentInboxStore @Inject constructor(
     }
 
     /**
-     * Ingest raw alert text. Returns true when a draft was queued.
-     * Dedupes on (amount, direction, preview) within a short window.
-     * On parse miss: parks [raw] for paste + still opens Money.
+     * Ingest raw alert text via the FinancialTransactionEngine. Returns true when a draft was queued.
+     * Dedupes against recent drafts across both SMS and Notification sources.
+     * On parse miss: parks [raw] for paste ONLY if explicitly initiated by user (SHARE or PASTE).
      */
-    fun ingest(raw: String, source: PaymentDraftSource): Boolean {
+    fun ingest(
+        raw: String,
+        source: PaymentDraftSource,
+        senderHeaderOrPackage: String? = null,
+    ): Boolean {
         val text = raw.trim()
         if (text.isEmpty()) {
             Log.w(TAG, "ingest empty source=$source")
             return false
         }
-        val parsed = PaymentAlertParser.parse(text)
-        if (parsed == null) {
-            Log.i(TAG, "ingest parse-miss len=${text.length} source=$source — park paste")
-            _sharedRaw.value = text.take(4_000)
-            requestOpenMoney()
-            return false
-        }
-        val now = System.currentTimeMillis()
-        val name = parsed.merchant?.takeIf { it.isNotBlank() }
-            ?: parsed.accountHint
-            ?: "Payment alert"
-        val category = when (parsed.direction) {
-            PaymentAlertParser.Direction.CREDIT -> "INCOME"
-            PaymentAlertParser.Direction.DEBIT -> guessCategory(name, parsed.channel)
-        }
-        val draft = PaymentDraft(
-            id = UUID.randomUUID().toString(),
-            amountInr = parsed.amountInr,
-            direction = parsed.direction,
-            merchant = parsed.merchant,
-            accountHint = parsed.accountHint,
-            channel = parsed.channel,
-            category = category,
-            preview = parsed.preview,
+
+        val result = aiimin.core.data.money.engine.FinancialTransactionEngine.process(
+            rawText = text,
             source = source,
-            atMs = now,
-            dateIso = parsed.dateIso,
+            senderHeaderOrPackage = senderHeaderOrPackage,
+            existingDrafts = _state.value.drafts,
         )
-        var added = false
-        _state.update { inbox ->
-            val dup = inbox.drafts.any {
-                it.amountInr == draft.amountInr &&
-                    it.direction == draft.direction &&
-                    it.preview == draft.preview &&
-                    now - it.atMs < 120_000L
+
+        when (result) {
+            is aiimin.core.data.money.engine.FinancialTransactionEngine.EngineResult.Accepted -> {
+                val draft = result.draft
+                _state.update { inbox ->
+                    inbox.copy(drafts = listOf(draft) + inbox.drafts).trimmed()
+                }
+                _sharedRaw.value = null
+                requestOpenMoney()
+                persistDrafts()
+                Log.i(TAG, "ingest accepted ₹${draft.amountInr} ${draft.direction} ${draft.channel} cat=${draft.category} source=$source")
+                return true
             }
-            if (dup) {
-                Log.i(TAG, "ingest dup ₹${draft.amountInr} source=$source")
-                return@update inbox
+            is aiimin.core.data.money.engine.FinancialTransactionEngine.EngineResult.Duplicate -> {
+                Log.i(TAG, "ingest duplicate ₹${result.amountInr} already in drafts (original: ${result.originalDraftId})")
+                return false
             }
-            added = true
-            inbox.copy(drafts = listOf(draft) + inbox.drafts).trimmed()
+            is aiimin.core.data.money.engine.FinancialTransactionEngine.EngineResult.Rejected -> {
+                Log.i(TAG, "ingest rejected: ${result.reason} source=$source")
+                // Only park text for user review if user deliberately shared or pasted it
+                if (source == PaymentDraftSource.SHARE || source == PaymentDraftSource.PASTE) {
+                    _sharedRaw.value = text.take(4_000)
+                    requestOpenMoney()
+                }
+                return false
+            }
         }
-        if (added) {
-            Log.i(TAG, "ingest ok ₹${draft.amountInr} ${draft.direction} ${draft.channel} cat=$category source=$source")
-            _sharedRaw.value = null
-            requestOpenMoney()
-            persistDrafts()
-        }
-        return added
     }
 
     fun consumeSharedRaw(): String? {

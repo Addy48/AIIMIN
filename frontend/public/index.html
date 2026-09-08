@@ -3,15 +3,13 @@
 
 <head>
   <meta charset="utf-8" />
-  <!-- cache-bust 2026-07-18-cal-v4: Safari ignore stale webpack chunks -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <!-- Favicon and Icons -->
-  <link rel="icon" href="/favicon-light.svg" media="(prefers-color-scheme: light)">
-  <link rel="icon" href="/favicon-dark.svg" media="(prefers-color-scheme: dark)">
-  <link rel="icon" href="/favicon-light.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/logo-symbol.svg" />
+  <!-- Favicon and App Icons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+  <link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: light)" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.json" />
 
   <!-- Viewport & theme -->
@@ -20,8 +18,8 @@
   <meta name="color-scheme" content="dark light" />
 
   <!-- Primary Meta Tags -->
-  <title>AIIMIN — Personal Life OS | Join the Waitlist</title>
-  <meta name="title" content="AIIMIN — Personal Life OS | Join the Waitlist" />
+  <title>AIIMIN — Personal Life OS for High Agency Living</title>
+  <meta name="title" content="AIIMIN — Personal Life OS for High Agency Living" />
   <meta name="description"
     content="AIIMIN is a data-dense personal Life OS for ambitious builders, operators, and high performers. Track habits, money, focus, and mood in one screen. Join the waitlist — targeting November 2026." />
   <meta name="keywords"
@@ -62,8 +60,6 @@
     content="Track habits, money, focus, and mood in one unified command surface. Built for ambitious builders and high performers. Join the founding waitlist." />
   <meta name="twitter:image" content="https://aiimin.in/og-image-v2.png" />
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
   <!-- Typography: Familjen Grotesk (display) + Figtree (body) + JetBrains Mono (data) + Bodoni Moda (brand) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -131,7 +127,66 @@
 
 <body>
   <noscript>You need to enable JavaScript to run AIIMIN.</noscript>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Static pre-render shell: guarantees non-empty View Source and instant crawlers indexing -->
+    <div id="prerender-shell" style="min-height: 100vh; background: #1a1a1a; color: #f4f4f6; font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; flex-direction: column;">
+      <header style="border-bottom: 1px solid #2d2d2d; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; width: 100%; margin: 0 auto; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="display: inline-block; width: 18px; height: 18px; background: #ff6b35; border-radius: 3px;"></span>
+          <span style="font-family: 'Bodoni Moda', serif; font-size: 20px; font-weight: 700; letter-spacing: 0.05em; color: #f4f4f6;">AIIMIN</span>
+        </div>
+        <nav style="display: flex; gap: 20px; font-size: 14px; font-weight: 500;">
+          <a href="/waitlist" style="color: #749dc4; text-decoration: none;">Waitlist</a>
+          <a href="/app" style="color: #9c9ca4; text-decoration: none;">App</a>
+          <a href="/about" style="color: #9c9ca4; text-decoration: none;">About</a>
+          <a href="/security" style="color: #9c9ca4; text-decoration: none;">Security</a>
+          <a href="/login" style="color: #ff6b35; text-decoration: none; font-weight: 600;">Sign In</a>
+        </nav>
+      </header>
+
+      <main style="flex: 1; max-width: 880px; width: 100%; margin: 48px auto; padding: 0 24px; box-sizing: border-box;">
+        <div style="display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #ff6b35; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.25); padding: 4px 10px; border-radius: 4px; margin-bottom: 20px;">
+          Personal Life Operating System
+        </div>
+        <h1 style="font-size: clamp(32px, 5vw, 48px); font-weight: 800; line-height: 1.15; letter-spacing: -0.03em; color: #f4f4f6; margin: 0 0 20px 0;">
+          The Command Surface for High-Agency Living
+        </h1>
+        <p style="font-size: 18px; line-height: 1.6; color: #9c9ca4; margin: 0 0 32px 0;">
+          AIIMIN unifies habits, money, focus, and daily reflections into a single high-density command center. Built for engineers, founders, and high performers who demand complete personal telemetry without fragmented apps.
+        </p>
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 48px;">
+          <a href="/waitlist" style="padding: 12px 24px; background: #ff6b35; color: #1a1a1a; font-weight: 700; font-size: 14px; border-radius: 6px; text-decoration: none;">Join Founding Waitlist</a>
+          <a href="/login" style="padding: 12px 24px; background: #2d2d2d; color: #f4f4f6; border: 1px solid #416180; font-weight: 600; font-size: 14px; border-radius: 6px; text-decoration: none;">Access Terminal</a>
+        </div>
+
+        <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 48px;">
+          <div style="background: #222; border: 1px solid #2d2d2d; padding: 20px; border-radius: 8px;">
+            <h2 style="font-size: 15px; font-weight: 700; color: #749dc4; margin: 0 0 8px 0;">Life Score Matrix</h2>
+            <p style="font-size: 13px; color: #9c9ca4; line-height: 1.5; margin: 0;">Multi-dimensional real-time scoring across Body, Mind, Discipline, Money, and Mood.</p>
+          </div>
+          <div style="background: #222; border: 1px solid #2d2d2d; padding: 20px; border-radius: 8px;">
+            <h2 style="font-size: 15px; font-weight: 700; color: #749dc4; margin: 0 0 8px 0;">Financial Truth</h2>
+            <p style="font-size: 13px; color: #9c9ca4; line-height: 1.5; margin: 0;">Net worth tracking, monthly cashflow, category velocity, and automated ledger imports.</p>
+          </div>
+          <div style="background: #222; border: 1px solid #2d2d2d; padding: 20px; border-radius: 8px;">
+            <h2 style="font-size: 15px; font-weight: 700; color: #749dc4; margin: 0 0 8px 0;">Atomic Habits &amp; Focus</h2>
+            <p style="font-size: 13px; color: #9c9ca4; line-height: 1.5; margin: 0;">Consistency heatmaps, urge-delay timers, Pomodoro focus blocks, and distraction logs.</p>
+          </div>
+        </section>
+      </main>
+
+      <footer style="border-top: 1px solid #2d2d2d; padding: 24px; text-align: center; font-size: 13px; color: #666; max-width: 1200px; width: 100%; margin: 0 auto; box-sizing: border-box;">
+        <p style="margin: 0 0 12px 0;">AIIMIN · Zero tracking cookies · End-to-end data ownership · Built for ambition</p>
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+          <a href="/about" style="color: #888; text-decoration: none;">About</a>
+          <a href="/security" style="color: #888; text-decoration: none;">Security</a>
+          <a href="/privacy" style="color: #888; text-decoration: none;">Privacy</a>
+          <a href="/terms" style="color: #888; text-decoration: none;">Terms</a>
+          <a href="/contact" style="color: #888; text-decoration: none;">Contact</a>
+        </div>
+      </footer>
+    </div>
+  </div>
 </body>
 
 </html>

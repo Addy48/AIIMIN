@@ -31,8 +31,8 @@ else
   fail "frontend build failed (see /tmp/aiimin-verify-build.log)"
 fi
 
-# 3. Native debug assemble (skip if no JDK 17)
-if [ -d app ]; then
+# 3. Native debug assemble (skip if no JDK 17 or SKIP_NATIVE=1)
+if [ -d app ] && [ "${SKIP_NATIVE:-0}" != "1" ]; then
   NATIVE_JAVA=""
   if [ -d /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home ]; then
     NATIVE_JAVA="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"

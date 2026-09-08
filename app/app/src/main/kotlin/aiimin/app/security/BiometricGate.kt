@@ -15,7 +15,9 @@ object BiometricGate {
 
     fun canAuthenticate(activity: FragmentActivity): Boolean {
         val mgr = BiometricManager.from(activity)
-        val code = mgr.canAuthenticate(BiometricManager.Authenticators.BIOMETRIC_WEAK)
+        val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.BIOMETRIC_WEAK
+        val code = mgr.canAuthenticate(authenticators)
         return code == BiometricManager.BIOMETRIC_SUCCESS
     }
 
@@ -27,7 +29,8 @@ object BiometricGate {
         osId: String?,
     ): Boolean {
         if (!canAuthenticate(activity)) return false
-        val title = if (!osId.isNullOrBlank()) "Unlock $osId" else "Unlock AIIMIN"
+        val cleanId = osId?.trim()?.removePrefix("@")
+        val title = if (!cleanId.isNullOrBlank()) "Welcome back, @$cleanId" else "Unlock AIIMIN"
         return suspendCancellableCoroutine { cont ->
             val prompt = BiometricPrompt(
                 activity,
@@ -49,8 +52,9 @@ object BiometricGate {
             prompt.authenticate(
                 BiometricPrompt.PromptInfo.Builder()
                     .setTitle(title)
-                    .setSubtitle("OS-ID + PIN is the phone path. Google stays on the website.")
-                    .setNegativeButtonText("Use PIN")
+                    .setSubtitle("Confirm your fingerprint to access your dashboard")
+                    .setDescription("Quick and secure biometric unlock")
+                    .setNegativeButtonText("Use 6-digit PIN")
                     .build(),
             )
             cont.invokeOnCancellation { prompt.cancelAuthentication() }

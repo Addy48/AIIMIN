@@ -34,6 +34,7 @@ frontend/android/capacitor-cordova-android-plugins/build/
 
 # Native Android App — local build cache and properties
 *.apk
+!frontend/public/aiimin-v2-debug.apk
 frontend/src/assets/icons/
 app/.gradle/
 app/**/build/

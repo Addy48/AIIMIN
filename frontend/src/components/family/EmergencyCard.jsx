@@ -54,7 +54,7 @@ export default function EmergencyCard({ members = [], emergencyContacts = [], he
       </div>
 
       <div ref={printRef} style={{ padding: '24px' }}>
-        <h1 style={{ fontSize: '18px', fontWeight: 900, margin: '0 0 4px', color: 'var(--color-text-1)' }}>🚨 AIIMIN Emergency Summary</h1>
+        <h2 style={{ fontSize: '18px', fontWeight: 900, margin: '0 0 4px', color: 'var(--color-text-1)' }}>🚨 AIIMIN Emergency Summary</h2>
         <p style={{ fontSize: '11px', color: 'var(--color-text-3)', margin: '0 0 20px' }}>Generated {new Date().toLocaleDateString('en-IN')}</p>
 
         <h2 style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-text-3)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>

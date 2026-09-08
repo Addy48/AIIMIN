@@ -86,10 +86,11 @@ function WaitlistLandingContent() {
   return (
     <div className="waitlist-page" id="top">
       <Helmet>
-        <title>AIIMIN — Personal Life OS | Join the Waitlist</title>
+        <html lang="en" />
+        <title>AIIMIN — Personal Life OS for High Agency Living</title>
         <meta
           name="description"
-          content="AIIMIN is a data-dense personal Life OS for ambitious builders, operators, and high performers. Track habits, money, focus, and mood in one screen. Join the waitlist — targeting November 2026."
+          content="AIIMIN is a data-dense personal Life OS for ambitious builders, operators, and high performers. Track habits, money, focus, and mood in one screen. Join the founding waitlist."
         />
         <link rel="canonical" href={PAGE_META.pageUrl} />
         <meta property="og:type" content="website" />

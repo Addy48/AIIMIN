@@ -8,7 +8,7 @@ export default function Image({ src, alt, width, height, className, fill, style,
   return (
     <img
       src={src}
-      alt={alt || ''}
+      alt={alt || 'Visual asset'}
       width={width}
       height={height}
       className={className}

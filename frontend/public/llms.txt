@@ -1,0 +1,33 @@
+# AIIMIN — Personal Life Operating System
+> AIIMIN is a data-dense, privacy-first personal Life OS for ambitious builders, operators, and high performers. It unifies daily journaling, atomic habit tracking, net worth and cashflow telemetry, deep focus timers, and behavioral pattern detection into a single command surface.
+
+## Quick Facts
+- Domain: https://aiimin.in
+- Type: Personal Life OS / Productivity Platform
+- Primary User Base: Builders, engineers, students, athletes, founders
+- Visual Design System: Drafting Table (Locked dark palette: #1A1A1A, #2D2D2D, Steel #749DC4, Spark #FF6B35, JetBrains Mono data typography)
+- Architecture: React web client, Supabase Postgres database, Better Auth, Express API (api.aiimin.in), Native Android companion app (Kotlin Compose)
+
+## Core Capabilities
+- Life Score: Real-time calculation across 5 canonical dimensions — Body, Mind, Discipline, Money, Mood (0-100 scale).
+- Financial Truth: Net worth, monthly cashflow, category breakdown, account ledgers with bank/credit sync and CSV import.
+- Mindset & Journal: Multi-mode daily reflection (Voice, Reflection, Urge logging, Brain Dump, Gratefulness) with mood tracking.
+- Habit & Discipline Engine: Atomic habit streaks, urge management with delay timers, friction tracking, and consistency score.
+- Deep Focus Room: Integrated Pomodoro, session goals, binaural/ambient sound generator, and execution metrics.
+- The Lab (Behavioral Intelligence): Cross-domain correlation engine discovering patterns between sleep, focus, habits, and mood.
+- Native Android Companion: Lightweight Kotlin Compose app for instantaneous on-device data capture, biometric unlock, and offline-first outbox sync.
+
+## Access Tiers & Pricing
+- Core: Free forever (₹0) — 3 daily logs, essential habits, manual finance entries, standard Life Score.
+- Pro: Founding ₹49/month — Unlimited habits & logs, full financial telemetry, deep focus analytics, CSV export.
+- Elite: Founding ₹79/month (Standard ₹149/month) — Advanced behavioral intelligence, cross-domain correlation graphs, family vault, priority sync.
+
+## Key URLs
+- Home & Waitlist: https://aiimin.in/
+- Android Companion Guide: https://aiimin.in/app
+- Brand Identity & Manifesto: https://aiimin.in/brand
+- Security & Privacy Architecture: https://aiimin.in/security
+- Privacy Policy: https://aiimin.in/privacy
+- Terms of Service: https://aiimin.in/terms
+- Legal Hub: https://aiimin.in/legal
+- Detailed LLM Reference: https://aiimin.in/llms-full.txt
