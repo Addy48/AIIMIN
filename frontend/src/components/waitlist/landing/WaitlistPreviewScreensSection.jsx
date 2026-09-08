@@ -5,7 +5,7 @@ import { fadeUp, PREVIEW_SCREENS } from './waitlistLandingData';
 
 export default function WaitlistPreviewScreensSection() {
   return (
-    <section className="waitlist-section waitlist-section-alt waitlist-desktop-only">
+    <section className="waitlist-section waitlist-section-alt waitlist-screens-section" id="screens">
       <p className="waitlist-section-label">Command surfaces</p>
       <h2>High-density surfaces — zero decorative noise</h2>
       <p className="waitlist-section-copy">

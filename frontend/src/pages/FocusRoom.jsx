@@ -355,6 +355,7 @@ export default function FocusRoom() {
       margin: '0 auto', width: '100%',
       transition: 'background-image 1s ease, box-shadow 1s ease'
     }}>
+      <h1 className="sr-only">Deep Focus Room &amp; Flow State Timer</h1>
       {/* ── AMBIENT DEEP GLOW BACKGROUND ── */}
       <motion.div 
         animate={{

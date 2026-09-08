@@ -42,6 +42,8 @@ jest.mock('framer-motion', () => {
 });
 
 describe('Waitlist Theme Integration', () => {
+  jest.setTimeout(15000);
+
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.className = '';

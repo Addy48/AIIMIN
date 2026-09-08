@@ -144,6 +144,7 @@ const CalendarPage = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h1 className="sr-only">Calendar &amp; Scheduled Events</h1>
             <CalendarToolbar
                 view={view}
                 onViewChange={setView}

@@ -30,6 +30,7 @@ const Contact = () => {
                     head={['Topic', 'Email']}
                     rows={[
                         ['Product support, billing, refunds', mailto(LEGAL.emails.support)],
+                        ...(LEGAL.phone ? [['Telephone assistance (Mon–Fri, 10am–6pm IST)', <a href={`tel:${LEGAL.phone}`} style={link}>{LEGAL.phoneDisplay}</a>]] : []),
                         ['Privacy questions, export and deletion requests', mailto(LEGAL.emails.privacy)],
                         ['Security vulnerability reports', mailto(LEGAL.emails.security)],
                         ['Data-protection grievances and nominations', mailto(LEGAL.emails.grievance)],

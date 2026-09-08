@@ -57,6 +57,7 @@ class PaymentNotificationListener : NotificationListenerService() {
             "sent", "received", "withdrawn",
         ).any { it in lower }
         if (!moneyish) return
-        inbox.ingest(body, PaymentDraftSource.NOTIFICATION)
+        val pkg = sbn.packageName
+        inbox.ingest(body, PaymentDraftSource.NOTIFICATION, pkg)
     }
 }

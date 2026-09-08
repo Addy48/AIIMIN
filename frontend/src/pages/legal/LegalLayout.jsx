@@ -1,8 +1,6 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-
-const SITE_ORIGIN = 'https://aiimin.in';
+import SEO from '../../components/common/SEO';
 
 export const LegalSection = ({ title, children }) => (
     <div style={{ marginBottom: '40px' }}>
@@ -92,12 +90,11 @@ export const LegalTable = ({ head, rows, caption }) => (
 const LegalLayout = ({ title, lastUpdated, description, canonicalPath, children }) => {
     return (
         <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '80px 20px 60px' }}>
-            <Helmet>
-                <title>{`${title} · AIIMIN`}</title>
-                {description && <meta name="description" content={description} />}
-                {canonicalPath && <link rel="canonical" href={`${SITE_ORIGIN}${canonicalPath}`} />}
-                <meta name="robots" content="index,follow" />
-            </Helmet>
+            <SEO
+                title={title}
+                description={description || `${title} for the AIIMIN Life Operating System.`}
+                canonicalPath={canonicalPath}
+            />
 
             <div style={{ maxWidth: '680px', margin: '0 auto' }}>
 

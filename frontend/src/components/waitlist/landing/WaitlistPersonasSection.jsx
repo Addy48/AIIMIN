@@ -4,7 +4,7 @@ import { fadeUp, PERSONAS } from './waitlistLandingData';
 
 export default function WaitlistPersonasSection() {
   return (
-    <section className="waitlist-section waitlist-desktop-only">
+    <section className="waitlist-section waitlist-personas-section">
       <p className="waitlist-section-label">Who this is for</p>
       <h2>Built for people who want one system to run their life</h2>
       <div className="waitlist-grid waitlist-grid-4">
@@ -12,7 +12,7 @@ export default function WaitlistPersonasSection() {
           const Icon = item.icon;
           return (
             <motion.article
-              key={item.title}
+              key={item.title || index}
               custom={index}
               variants={fadeUp}
               initial="hidden"

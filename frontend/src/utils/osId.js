@@ -9,7 +9,7 @@ export function suggestOsIdFromName(fullName = '') {
   } else if (words.length === 1) {
     letterPart = letters(words[0]).slice(0, 6);
   } else {
-    return 'USER0001';
+    return '';
   }
 
   letterPart = letterPart.padEnd(6, 'X').slice(0, 6);

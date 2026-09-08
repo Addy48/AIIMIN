@@ -72,18 +72,20 @@ class TransactionalSmsScanner @Inject constructor(
             context.contentResolver.query(uri, projection, selection, args, sort)?.use { c ->
                 val bodyIdx = c.getColumnIndex(Telephony.Sms.BODY)
                 val dateIdx = c.getColumnIndex(Telephony.Sms.DATE)
+                val addressIdx = c.getColumnIndex(Telephony.Sms.ADDRESS)
                 if (bodyIdx < 0 || dateIdx < 0) {
                     return@withContext ScanResult(error = "SMS inbox columns missing")
                 }
                 while (c.moveToNext() && scanned < MAX_ROWS) {
                     scanned++
                     val body = c.getString(bodyIdx)?.trim().orEmpty()
+                    val sender = if (addressIdx >= 0) c.getString(addressIdx)?.trim() else null
                     if (body.length < 12) continue
                     if (!looksTransactional(body)) {
                         parseMiss++
                         continue
                     }
-                    val ok = inbox.ingest(body, PaymentDraftSource.SMS)
+                    val ok = inbox.ingest(body, PaymentDraftSource.SMS, sender)
                     if (ok) queued++ else parseMiss++
                 }
             } ?: return@withContext ScanResult(error = "Could not open SMS inbox")

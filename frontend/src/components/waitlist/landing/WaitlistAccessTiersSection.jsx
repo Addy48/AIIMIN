@@ -6,7 +6,7 @@ import { ACCESS_PACKAGES } from './waitlistLandingData';
 
 export default function WaitlistAccessTiersSection() {
   return (
-    <section className="waitlist-section waitlist-access-tiers waitlist-desktop-only">
+    <section className="waitlist-section waitlist-access-tiers">
       <p className="waitlist-section-label">Early access</p>
       <h2>Two paths in — testers get the VIP package</h2>
       <p className="waitlist-section-copy">

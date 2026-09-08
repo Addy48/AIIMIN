@@ -1,0 +1,33 @@
+# AIIMIN — Comprehensive LLM Specification & Context
+
+## Project Mission
+AIIMIN is designed for high-agency individuals who require absolute honesty in their personal telemetry. It eliminates disjointed consumer apps by synthesizing life tracking into a coherent, high-density system.
+
+## Foundational Tenets
+1. High Information Density: Minimal whitespace fluff, high signal-to-noise ratio, instant clarity.
+2. Privacy By Default: Zero monetization of user data. User-scoped RLS policies on Supabase Postgres. End-to-end data ownership.
+3. Offline-First Companion: The Android companion collects data locally and syncs opportunistically with idempotency guarantees.
+4. Objective Life Scoring: Life Score is computed systematically across Body, Mind, Discipline, Money, and Mood.
+
+## Surface Directory
+- / : Main public landing & waitlist portal.
+- /overview : Real-time Life Score radar, trajectory projection, daily habits, quick capture, and recent transactions.
+- /journal : Markdown-capable journal with mood selection, voice notes, and historical heatmap.
+- /habits : Binary & numeric habit tracking with streak maintenance and weekly compliance matrices.
+- /goals : Active, at-risk, and achieved goals with milestone tracking and progress bars.
+- /finance : Account ledgers, income vs expense breakdowns, transaction categorizations, and net worth charts.
+- /focus : Clean focus timer with ambient soundscapes and distraction logging.
+- /discipline : Urge-delay stopwatch, trigger categorization, and impulse control logs.
+- /lab : Cross-domain multivariate analysis linking habits and behavioral metrics.
+- /family : Encrypted personal vault for medical, emergency, and vital records.
+- /settings : Theme customization, data export (JSON/CSV), notification preferences, and account controls.
+- /app : Native Android APK download and architecture documentation.
+- /brand : Design system philosophy, color tokens, and typography specifications.
+- /legal : Central legal index containing Privacy Policy, Terms, Security Whitepaper, Subprocessors, and Cookie disclosures.
+
+## Technical Architecture
+- Frontend: React 19 SPA, Tailwind CSS, Lucide icons, React Router 7, React Query, Web Workers.
+- Styling: Drafting Table palette (Base: #1A1A1A, Surface: #2D2D2D, Steel: #749DC4, Spark: #FF6B35).
+- Server: Node.js / Express API deployed on AWS EC2 (https://api.aiimin.in/api/health).
+- Authentication: Better Auth with Supabase Postgres session persistence and Google OAuth.
+- Android: Kotlin, Jetpack Compose, Room Database, Hilt dependency injection, WorkManager background synchronization.

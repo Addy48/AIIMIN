@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
+import SEO from '../components/common/SEO';
 import { Link } from 'react-router-dom';
 import {
   DownloadSimple,
@@ -32,7 +32,7 @@ import Wordmark from '../components/brand/Wordmark';
 import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
 import '../styles/appPage.css';
 
-const SHA256_HASH = 'b74d6dd68c2f151c6ce7593be2769581e1eb02e496d4982d58992270451d3993';
+const SHA256_HASH = 'b53e0426d0fabc0169464e0747b678e91608025a2dc4523a7ae97ba8dfb8770e';
 const ADB_COMMAND = 'adb install -r aiimin-v2-debug.apk';
 
 const CORE_CAPABILITIES = [
@@ -78,7 +78,7 @@ const SPECS = [
   { label: 'Minimum Compatibility', value: 'Android 8.0 Oreo (API Level 26)' },
   { label: 'Local Storage Engine', value: 'SQLCipher v4.5.4 Encrypted SQLite (Room)' },
   { label: 'Cryptographic Enclave', value: 'AndroidKeyStore TEE · AES-256-GCM' },
-  { label: 'Binary Footprint', value: '62.8 MB (Universal ARM64-v8a / x86_64)' },
+  { label: 'Binary Footprint', value: '27.3 MB (Universal ARM64-v8a / x86_64)' },
   { label: 'Third-Party Trackers', value: '0 SDKs · Zero Analytics · Zero Ad Beacons' },
   { label: 'Sync Architecture', value: 'Deterministic Conflict-Free Outbox (CRDT)' },
 ];
@@ -88,7 +88,7 @@ const INSTALL_STEPS = [
     step: '01',
     title: 'Download the Verified Binary',
     desc: 'Download the compiled v2.0.4 APK directly to your Android device from our secure release mirror.',
-    note: 'Universal APK (~62.8 MB) works across modern ARM64 and x86_64 Android devices.',
+    note: 'Universal APK (~27.3 MB) works across modern ARM64 and x86_64 Android devices.',
   },
   {
     step: '02',
@@ -702,18 +702,11 @@ export default function AndroidApp() {
 
   return (
     <div className="app-page-root">
-      <Helmet>
-        <title>AIIMIN Android Companion — Physical Capture App</title>
-        <meta
-          name="description"
-          content="The native Android companion app for AIIMIN Life OS. Instant habit capture, offline-first SQLite database, app blocker focus shield, and local AES-256 encryption."
-        />
-        <link rel="canonical" href="https://aiimin.in/app" />
-        <meta property="og:title" content="AIIMIN Android Companion — Native Physical Capture" />
-        <meta property="og:description" content="Companion app for AIIMIN Life OS. Native V-Sync rendering, 100% offline habit logging, app blocker focus shield, and local AES-256 encryption." />
-        <meta property="og:url" content="https://aiimin.in/app" />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SEO
+        title="Android Companion App"
+        description="The native Android companion app for AIIMIN Life OS. Instant habit capture, offline-first SQLite database, app blocker focus shield, and local AES-256 encryption."
+        canonicalPath="/app"
+      />
 
       {/* ── FLOATING PILL NAV ── */}
       <header className="app-nav-wrap">
@@ -778,7 +771,7 @@ export default function AndroidApp() {
                   }}
                 >
                   <DownloadSimple size={16} weight="bold" />
-                  <span>{downloading ? 'Downloading APK…' : 'Download APK (62.8 MB)'}</span>
+                  <span>{downloading ? 'Downloading APK…' : 'Download APK (27.3 MB)'}</span>
                 </a>
                 <a href="#install" className="app-ghost-btn">
                   <Play size={13} weight="fill" />
@@ -1144,7 +1137,7 @@ export default function AndroidApp() {
           <div className="install-download-box">
             <div className="download-box-left">
               <span className="download-box-tag">VERIFIED CRYPTOGRAPHIC RELEASE</span>
-              <h3 className="download-box-title">aiimin-v2-debug.apk (v2.0.4)</h3>
+              <h3 className="download-box-title">aiimin-v2-debug.apk (v3.0.0)</h3>
               <div className="sha-hash-row">
                 <span className="sha-label">SHA-256:</span>
                 <code className="sha-string">{SHA256_HASH}</code>
@@ -1166,7 +1159,7 @@ export default function AndroidApp() {
                 className="app-primary-btn"
               >
                 <DownloadSimple size={15} weight="bold" />
-                <span>Download APK (62.8 MB)</span>
+                <span>Download APK (27.3 MB)</span>
               </a>
             </div>
           </div>
@@ -1252,7 +1245,7 @@ export default function AndroidApp() {
                 className="app-primary-btn"
               >
                 <DownloadSimple size={15} weight="bold" />
-                <span>Download APK (62.8 MB)</span>
+                <span>Download APK (27.3 MB)</span>
               </a>
               <Link to="/waitlist#waitlist-join" className="app-ghost-btn">
                 Join Waitlist Queue
@@ -1292,7 +1285,7 @@ export default function AndroidApp() {
               </button>
             </div>
             <div className="footer-meta-notes">
-              <span>Universal APK · ARM64-v8a + x86_64 · 62.8 MB</span>
+              <span>Universal APK · ARM64-v8a + x86_64 · 27.3 MB</span>
               <span>Target: Android 15 (API 35) · Compiled via Kotlin 2.0</span>
             </div>
           </div>

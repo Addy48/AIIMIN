@@ -60,7 +60,7 @@
   },
   "scripts": {
     "start": "craco start",
-    "build": "node scripts/export-logo-assets.mjs && craco build",
+    "build": "node scripts/export-logo-assets.mjs && GENERATE_SOURCEMAP=false craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
     "cap:icons": "node scripts/export-android-icons.mjs",

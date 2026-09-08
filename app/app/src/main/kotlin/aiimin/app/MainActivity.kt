@@ -22,6 +22,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import aiimin.app.security.BiometricGate
+import aiimin.app.security.BiometricLockGate
 import aiimin.app.ui.AiiminShell
 import aiimin.app.knock.KnockNotifier
 import aiimin.core.data.ConfigStore
@@ -54,6 +55,8 @@ class MainActivity : FragmentActivity() {
     @Inject lateinit var knocks: KnockStore
 
     @Volatile private var lastResumeSyncAt = 0L
+    @Volatile private var lastBackgroundedAt = 0L
+    private val resumeLockTrigger = mutableStateOf(0L)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
@@ -105,47 +108,66 @@ class MainActivity : FragmentActivity() {
                 val shellReady = sessionState.hydrated && sessionState.canEnterShell && cal.completed
                 var bioPassed by remember { mutableStateOf(false) }
                 var skipBioThisOpen by remember { mutableStateOf(false) }
-                LaunchedEffect(shellReady) {
-                    if (!shellReady) {
-                        bioPassed = false
-                        return@LaunchedEffect
-                    }
-                    if (skipBioThisOpen || !prefs.biometricEnabled || !sessionState.isSignedIn) {
-                        bioPassed = true
-                        return@LaunchedEffect
-                    }
-                    val plate = BiometricUnlock.plate(
+
+                val plate = remember(sessionState.emailOrOsId, prefs.identity.osId) {
+                    BiometricUnlock.plate(
                         sessionState.emailOrOsId,
                         prefs.identity.osId,
                     )
-                    bioPassed = BiometricGate.authenticateForLogin(
-                        this@MainActivity,
-                        plate,
-                    )
                 }
-                val enterShell = shellReady && bioPassed
-                val showOnboarding = sessionState.hydrated && !enterShell
-                Box(Modifier.fillMaxSize()) {
-                    if (showOnboarding) {
-                        OnboardingRoute(
-                            onEntered = {
-                                skipBioThisOpen = true
-                                bioPassed = true
-                            },
-                            onRequestBiometric = {
-                                val plate = BiometricUnlock.plate(
-                                    session.state.value.emailOrOsId,
-                                    config.state.value.identity.osId,
-                                )
-                                BiometricGate.authenticateForLogin(
-                                    this@MainActivity,
-                                    plate,
-                                )
-                            },
-                        )
-                    } else if (enterShell) {
-                        AiiminShell()
+                val requiresBiometric = prefs.biometricEnabled && sessionState.isSignedIn && !skipBioThisOpen
+
+                LaunchedEffect(resumeLockTrigger.value) {
+                    if (resumeLockTrigger.value > 0L && requiresBiometric) {
+                        bioPassed = false
                     }
+                }
+
+                Box(Modifier.fillMaxSize()) {
+                    when {
+                        !shellReady -> {
+                            OnboardingRoute(
+                                onEntered = {
+                                    skipBioThisOpen = true
+                                    bioPassed = true
+                                },
+                                onRequestBiometric = {
+                                    BiometricGate.authenticateForLogin(
+                                        this@MainActivity,
+                                        plate,
+                                    )
+                                },
+                            )
+                        }
+                        requiresBiometric && !bioPassed -> {
+                            BiometricLockGate(
+                                plate = plate,
+                                onRequestBiometric = {
+                                    BiometricGate.authenticateForLogin(
+                                        this@MainActivity,
+                                        plate,
+                                    )
+                                },
+                                onVerifyPin = { pin ->
+                                    val id = plate ?: sessionState.emailOrOsId ?: prefs.identity.osId
+                                    auth.signIn(id, pin)
+                                },
+                                onUnlocked = {
+                                    bioPassed = true
+                                },
+                                onSignOut = {
+                                    lifecycleScope.launch {
+                                        auth.signOut()
+                                        bioPassed = false
+                                    }
+                                },
+                            )
+                        }
+                        else -> {
+                            AiiminShell()
+                        }
+                    }
+
                     if (showMark) {
                         AiiminSplash(
                             reduceMotion = splashReduceMotion,
@@ -164,9 +186,20 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        lastBackgroundedAt = System.currentTimeMillis()
+    }
+
     override fun onResume() {
         super.onResume()
         val now = System.currentTimeMillis()
+        if (lastBackgroundedAt > 0L && now - lastBackgroundedAt >= 60_000L) {
+            if (config.state.value.biometricEnabled && session.state.value.isSignedIn) {
+                resumeLockTrigger.value = now
+            }
+        }
+        lastBackgroundedAt = 0L
         if (now - lastResumeSyncAt < 15_000L) return
         lastResumeSyncAt = now
         lifecycleScope.launch {

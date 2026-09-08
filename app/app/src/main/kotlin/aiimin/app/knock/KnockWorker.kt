@@ -39,6 +39,7 @@ interface KnockWorkerEntryPoint {
     fun speaking(): SpeakingStore
     fun config(): ConfigStore
     fun session(): SessionRepository
+    fun lifeScore(): aiimin.core.data.PublishedLifeScoreStore
 }
 
 class KnockWorker(
@@ -100,7 +101,7 @@ class KnockWorker(
             agendaTitle = next?.title,
             agendaInMs = next?.let { it.startEpochMs - now },
             agingPinnedTitle = aging?.title,
-            lifeScore = null,
+            lifeScore = ep.lifeScore().state.value.global,
             isCorePlus = ep.config().state.value.identity.tier.rank >= 1,
         )
         val decisions = KnockEvaluator.evaluate(snapshot)

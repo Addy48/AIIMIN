@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,6 +31,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -443,10 +448,15 @@ private fun SignInStep(
             }
             BasicTextField(
                 value = identifier,
-                onValueChange = onIdentifierChange,
+                onValueChange = { onIdentifierChange(it.trim()) },
                 singleLine = true,
-                textStyle = AiiminTheme.type.mono(13.0).copy(color = AiiminTheme.colors.text),
+                textStyle = AiiminTheme.type.mono(14.0).copy(color = AiiminTheme.colors.text),
                 cursorBrush = SolidColor(AiiminTheme.colors.accent),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Characters,
+                    autoCorrectEnabled = false,
+                    imeAction = ImeAction.Next,
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = if (unlockPlate.isNullOrBlank()) AiiminTheme.space.s6 else AiiminTheme.space.s2)
@@ -455,7 +465,7 @@ private fun SignInStep(
                 decorationBox = { inner ->
                     if (identifier.isEmpty()) {
                         Text(
-                            text = "8-char OS-ID",
+                            text = "8-char OS-ID (e.g. AADI0837)",
                             style = AiiminTheme.type.mono(13.0),
                             color = AiiminTheme.colors.muted,
                         )
@@ -467,10 +477,19 @@ private fun SignInStep(
                 value = pin,
                 onValueChange = onPinChange,
                 singleLine = true,
-                textStyle = AiiminTheme.type.mono(13.0).copy(color = AiiminTheme.colors.text),
+                textStyle = AiiminTheme.type.mono(14.0).copy(
+                    color = AiiminTheme.colors.text,
+                    letterSpacing = 4.sp,
+                ),
+                visualTransformation = PasswordVisualTransformation('●'),
                 cursorBrush = SolidColor(AiiminTheme.colors.accent),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.NumberPassword,
+                    imeAction = ImeAction.Done,
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(top = AiiminTheme.space.s3)
                     .border(Hairline, AiiminTheme.colors.rule)
                     .padding(horizontal = AiiminTheme.space.s4, vertical = AiiminTheme.space.s3),
                 decorationBox = { inner ->
@@ -484,6 +503,24 @@ private fun SignInStep(
                     inner()
                 },
             )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                repeat(6) { i ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(3.dp)
+                            .background(
+                                if (i < pin.length) aiimin.designsystem.theme.BrandSpark
+                                else AiiminTheme.colors.hair,
+                            ),
+                    )
+                }
+            }
         }
         authNotice?.let {
             Text(

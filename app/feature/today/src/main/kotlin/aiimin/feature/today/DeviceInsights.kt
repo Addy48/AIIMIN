@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,11 +20,14 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,6 +40,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,6 +49,9 @@ import androidx.compose.ui.window.DialogProperties
 import android.view.HapticFeedbackConstants
 import aiimin.core.data.device.DeviceMetrics
 import aiimin.core.data.device.DeviceMetricsRepository
+import aiimin.core.data.device.StepsDayDetail
+import aiimin.core.data.device.StepsDaySummary
+import aiimin.core.data.device.StepsHistoryBundle
 import aiimin.core.data.device.UsageDayParser
 import aiimin.core.data.device.formatHourLabel
 import aiimin.core.data.device.peakHourIndex
@@ -58,20 +66,36 @@ import aiimin.designsystem.component.TapColumnBars
 import aiimin.designsystem.component.Text
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.designsystem.theme.Hairline
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
+
+private enum class StepsScope(val label: String) {
+    TODAY("Today"),
+    YESTERDAY("Yesterday"),
+    WEEK("7 Days"),
+    MONTH("30 Days"),
+}
 
 /**
- * Deep read for STEPS — long-press opens; triple-tap edits goal.
- * Swipe down to dismiss.
+ * Deep read for STEPS — multi-timescale intelligence engine.
+ * Today live predictor, Yesterday 24h breakdown, 7-day volume, 30-day streak & macro heatmap.
  */
 @Composable
 fun StepsInsightSheet(
     device: DeviceMetrics,
+    history: StepsHistoryBundle? = null,
     onDismiss: () -> Unit,
     onEditGoal: () -> Unit,
 ) {
+    val view = LocalView.current
+    var selectedScope by remember { mutableStateOf(StepsScope.TODAY) }
     val steps = device.steps ?: 0L
     val km = device.kmWalked
     val peak = peakHourIndex(device.hourlySteps)
@@ -89,156 +113,714 @@ fun StepsInsightSheet(
 
     InsightDialog(onDismiss = onDismiss) {
         SheetHandle()
-        Text(
-            text = "BODY · STEPS",
-            style = AiiminTheme.type.cellLabel,
-            color = AiiminTheme.colors.accent,
-        )
         Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = AiiminTheme.space.s3),
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s4),
         ) {
-            GoalRing(
-                fraction = device.stepsFraction.coerceIn(0f, 1f),
-                over = device.stepsFraction > 1f,
-                center = if (steps > 0L) "%,d".format(steps) else "—",
-                caption = "$pct%",
-            )
-            Column(Modifier.fillMaxWidth()) {
-                Text(
-                    text = "goal %,d".format(device.stepsTarget),
-                    style = AiiminTheme.type.mono(13.0, FontWeight.Medium),
-                )
-                Text(
-                    text = when {
-                        steps <= 0L -> "Walk to seed the day."
-                        remaining <= 0L -> "Goal cleared · keep moving if you want."
-                        else -> "%,d left · ~%,d / hr to finish".format(remaining, paceNeeded)
-                    },
-                    style = AiiminTheme.type.bodySmall.copy(fontSize = 12.sp, lineHeight = 17.sp),
-                    color = AiiminTheme.colors.muted,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
-                Text(
-                    text = km?.let { "%.2f km · stride est.".format(it) } ?: "km pending",
-                    style = AiiminTheme.type.mono(11.0),
-                    color = AiiminTheme.colors.accent,
-                    modifier = Modifier.padding(top = 6.dp),
-                )
-            }
-        }
-
-        ChartReadout(
-            title = "Read",
-            detail = narrative,
-            modifier = Modifier.padding(top = AiiminTheme.space.s4),
-        )
-
-        SectionRule(label = "Day bands")
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = AiiminTheme.space.s2),
-            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
-        ) {
-            bands.forEach { band ->
-                InsightStat(
-                    label = band.label,
-                    value = if (band.value > 0L) "%,d".format(band.value) else "—",
-                    meta = band.meta,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = AiiminTheme.space.s2),
-            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
-        ) {
-            InsightStat(
-                label = "PEAK",
-                value = peak?.let { formatHourLabel(it) } ?: "—",
-                meta = peak?.let { "%,d".format(device.hourlySteps[it]) } ?: "no bout",
-                modifier = Modifier.weight(1f),
-            )
-            InsightStat(
-                label = "QUIET",
-                value = quiet?.let { formatHourLabel(it) } ?: "—",
-                meta = "least active",
-                modifier = Modifier.weight(1f),
-            )
-            InsightStat(
-                label = "BOUTS",
-                value = device.walks.size.toString(),
-                meta = "≥350 steps",
-                modifier = Modifier.weight(1f),
-            )
-        }
-
-        SectionRule(label = "By clock hour")
-        if (bars.any { it.value > 0f }) {
-            TapColumnBars(
-                bars = bars,
-                valueFormat = { "%,d".format(it.roundToInt()) },
-                hint = "TAP AN HOUR · READ STEPS",
-                modifier = Modifier.padding(top = AiiminTheme.space.s2),
-            )
-        } else {
             Text(
-                text = "No hour buckets yet — walk with the app open so bouts land on the clock.",
-                style = AiiminTheme.type.bodySmall,
-                color = AiiminTheme.colors.muted,
-                modifier = Modifier.padding(top = AiiminTheme.space.s2),
+                text = "BODY · STEPS ENGINE",
+                style = AiiminTheme.type.cellLabel,
+                color = AiiminTheme.colors.accent,
             )
+            if (history != null && history.streakDays > 0) {
+                Text(
+                    text = "${history.streakDays}D STREAK 🔥",
+                    style = AiiminTheme.type.mono(10.5, FontWeight.Bold),
+                    color = AiiminTheme.colors.accent,
+                )
+            }
         }
 
-        if (device.walks.isNotEmpty()) {
-            SectionRule(label = "Named walks")
-            device.walks.forEach { walk ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+        // Segmented scope switcher
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s2, bottom = AiiminTheme.space.s2),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            StepsScope.values().forEach { scope ->
+                val active = selectedScope == scope
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(if (active) AiiminTheme.colors.accent else AiiminTheme.colors.surface)
+                        .border(Hairline, if (active) AiiminTheme.colors.accent else AiiminTheme.colors.rule)
+                        .clickable {
+                            view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                            selectedScope = scope
+                        }
+                        .padding(vertical = 7.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Column {
-                        Text(text = walk.label, style = AiiminTheme.type.body.copy(fontSize = 13.sp))
-                        Text(
-                            text = walk.timeLabel,
-                            style = AiiminTheme.type.cellLabel,
-                            color = AiiminTheme.colors.muted,
-                            modifier = Modifier.padding(top = 2.dp),
-                        )
-                    }
                     Text(
-                        text = "%,d".format(walk.steps),
-                        style = AiiminTheme.type.mono(13.0, FontWeight.Medium),
-                        color = AiiminTheme.colors.accent,
+                        text = scope.label.uppercase(),
+                        style = AiiminTheme.type.cellLabel.copy(
+                            fontWeight = if (active) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 9.5.sp,
+                        ),
+                        color = if (active) AiiminTheme.colors.onAccent else AiiminTheme.colors.muted,
+                        maxLines = 1,
                     )
                 }
-                HairRule()
             }
         }
 
-        val bodyLines = device.lines.filter {
-            it.contains("walk", ignoreCase = true) ||
-                it.contains("step", ignoreCase = true) ||
-                it.contains("movement", ignoreCase = true) ||
-                it.contains("Gym", ignoreCase = true) ||
-                it.contains("body", ignoreCase = true)
-        }.ifEmpty { device.lines.take(4) }
-        if (bodyLines.isNotEmpty()) {
-            SectionRule(label = "What it means")
-            MeaningBlock(bodyLines)
+        when (selectedScope) {
+            StepsScope.TODAY -> {
+                TodayStepsSection(
+                    device = device,
+                    steps = steps,
+                    km = km,
+                    remaining = remaining,
+                    paceNeeded = paceNeeded,
+                    pct = pct,
+                    bands = bands,
+                    peak = peak,
+                    quiet = quiet,
+                    bars = bars,
+                    narrative = narrative,
+                )
+            }
+            StepsScope.YESTERDAY -> {
+                YesterdayStepsSection(
+                    yesterday = history?.yesterday,
+                    target = device.stepsTarget,
+                )
+            }
+            StepsScope.WEEK -> {
+                Past7DaysStepsSection(
+                    days = history?.past7Days.orEmpty(),
+                    target = device.stepsTarget,
+                )
+            }
+            StepsScope.MONTH -> {
+                Past30DaysStepsSection(
+                    history = history,
+                    target = device.stepsTarget,
+                )
+            }
         }
 
         GestureLegend(primary = "SWIPE DOWN · CLOSE", secondary = "TRIPLE-TAP CELL · EDIT GOAL")
         SheetActions(editLabel = "Edit goal", onEdit = onEditGoal, onDismiss = onDismiss)
+    }
+}
+
+@Composable
+private fun TodayStepsSection(
+    device: DeviceMetrics,
+    steps: Long,
+    km: Double?,
+    remaining: Long,
+    paceNeeded: Int,
+    pct: Int,
+    bands: List<DayBand>,
+    peak: Int?,
+    quiet: Int?,
+    bars: List<BarDatum>,
+    narrative: String,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s2),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s4),
+    ) {
+        GoalRing(
+            fraction = device.stepsFraction.coerceIn(0f, 1f),
+            over = device.stepsFraction > 1f,
+            center = if (steps > 0L) "%,d".format(steps) else "—",
+            caption = "$pct%",
+        )
+        Column(Modifier.fillMaxWidth()) {
+            Text(
+                text = "goal %,d".format(device.stepsTarget),
+                style = AiiminTheme.type.mono(13.0, FontWeight.Medium),
+            )
+            Text(
+                text = when {
+                    steps <= 0L -> "Walk to seed the day."
+                    remaining <= 0L -> "Goal cleared · keep moving if you want."
+                    else -> "%,d left · ~%,d / hr to finish".format(remaining, paceNeeded)
+                },
+                style = AiiminTheme.type.bodySmall.copy(fontSize = 12.sp, lineHeight = 17.sp),
+                color = AiiminTheme.colors.muted,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+            Text(
+                text = km?.let { "%.2f km · stride est.".format(it) } ?: "km pending",
+                style = AiiminTheme.type.mono(11.0),
+                color = AiiminTheme.colors.accent,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+        }
+    }
+
+    // Real-time pace predictor or narrative readout
+    val paceLabel = device.paceInsightLabel
+    if (!paceLabel.isNullOrBlank()) {
+        ChartReadout(
+            title = "Real-time Pace Predictor",
+            detail = paceLabel,
+            modifier = Modifier.padding(top = AiiminTheme.space.s3),
+        )
+    } else {
+        ChartReadout(
+            title = "Read",
+            detail = narrative,
+            modifier = Modifier.padding(top = AiiminTheme.space.s3),
+        )
+    }
+
+    SectionRule(label = "Day bands")
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s2),
+        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+    ) {
+        bands.forEach { band ->
+            InsightStat(
+                label = band.label,
+                value = if (band.value > 0L) "%,d".format(band.value) else "—",
+                meta = band.meta,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s2),
+        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+    ) {
+        InsightStat(
+            label = "PEAK",
+            value = peak?.let { formatHourLabel(it) } ?: "—",
+            meta = peak?.let { "%,d".format(device.hourlySteps[it]) } ?: "no bout",
+            modifier = Modifier.weight(1f),
+        )
+        InsightStat(
+            label = "QUIET",
+            value = quiet?.let { formatHourLabel(it) } ?: "—",
+            meta = "least active",
+            modifier = Modifier.weight(1f),
+        )
+        InsightStat(
+            label = "BOUTS",
+            value = device.walks.size.toString(),
+            meta = "≥350 steps",
+            modifier = Modifier.weight(1f),
+        )
+    }
+
+    SectionRule(label = "By clock hour")
+    if (bars.any { it.value > 0f }) {
+        TapColumnBars(
+            bars = bars,
+            valueFormat = { "%,d".format(it.roundToInt()) },
+            hint = "TAP AN HOUR · READ STEPS",
+            modifier = Modifier.padding(top = AiiminTheme.space.s2),
+        )
+    } else {
+        Text(
+            text = "No hour buckets yet — walk with the app open so bouts land on the clock.",
+            style = AiiminTheme.type.bodySmall,
+            color = AiiminTheme.colors.muted,
+            modifier = Modifier.padding(top = AiiminTheme.space.s2),
+        )
+    }
+
+    if (device.walks.isNotEmpty()) {
+        SectionRule(label = "Named walks")
+        device.walks.forEach { walk ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column {
+                    Text(text = walk.label, style = AiiminTheme.type.body.copy(fontSize = 13.sp))
+                    Text(
+                        text = walk.timeLabel,
+                        style = AiiminTheme.type.cellLabel,
+                        color = AiiminTheme.colors.muted,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+                Text(
+                    text = "%,d".format(walk.steps),
+                    style = AiiminTheme.type.mono(13.0, FontWeight.Medium),
+                    color = AiiminTheme.colors.accent,
+                )
+            }
+            HairRule()
+        }
+    }
+
+    val bodyLines = device.lines.filter {
+        it.contains("walk", ignoreCase = true) ||
+            it.contains("step", ignoreCase = true) ||
+            it.contains("movement", ignoreCase = true) ||
+            it.contains("Gym", ignoreCase = true) ||
+            it.contains("body", ignoreCase = true)
+    }.ifEmpty { device.lines.take(4) }
+    if (bodyLines.isNotEmpty()) {
+        SectionRule(label = "What it means")
+        MeaningBlock(bodyLines)
+    }
+}
+
+@Composable
+private fun YesterdayStepsSection(
+    yesterday: StepsDayDetail?,
+    target: Long,
+) {
+    if (yesterday == null) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = AiiminTheme.space.s4),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "Yesterday's data is syncing from Health Connect...",
+                style = AiiminTheme.type.bodySmall,
+                color = AiiminTheme.colors.muted,
+            )
+        }
+        return
+    }
+
+    val dateFormatted = try {
+        LocalDate.parse(yesterday.dateIso).format(DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.getDefault()))
+    } catch (_: Exception) {
+        yesterday.dateIso
+    }
+
+    val diff = yesterday.totalSteps - target
+    val cleared = diff >= 0
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s2),
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text(
+                    text = dateFormatted.uppercase(),
+                    style = AiiminTheme.type.cellLabel,
+                    color = AiiminTheme.colors.muted,
+                )
+                Text(
+                    text = "%,d steps".format(yesterday.totalSteps),
+                    style = AiiminTheme.type.mono(22.0, FontWeight.Bold),
+                    color = AiiminTheme.colors.text,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
+            Box(
+                Modifier
+                    .border(Hairline, if (cleared) AiiminTheme.colors.accent else AiiminTheme.colors.rule)
+                    .background(if (cleared) AiiminTheme.colors.tint else AiiminTheme.colors.surface)
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+            ) {
+                Text(
+                    text = if (cleared) "✓ GOAL CLEARED (+%,d)".format(diff) else "— %,d SHORT".format(abs(diff)),
+                    style = AiiminTheme.type.mono(10.0, FontWeight.Medium),
+                    color = if (cleared) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
+                )
+            }
+        }
+
+        // Metrics grid
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s3),
+            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+        ) {
+            InsightStat(
+                label = "DISTANCE",
+                value = "%.2f km".format(yesterday.distanceKm),
+                meta = "stride est.",
+                modifier = Modifier.weight(1f),
+            )
+            InsightStat(
+                label = "ACTIVE",
+                value = "${yesterday.activeMinutes}m",
+                meta = "paced bouts",
+                modifier = Modifier.weight(1f),
+            )
+            InsightStat(
+                label = "CALORIES",
+                value = "${yesterday.caloriesKcal}",
+                meta = "kcal burned",
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s2),
+            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+        ) {
+            InsightStat(
+                label = "PEAK HOUR",
+                value = yesterday.peakHour?.let { formatHourLabel(it) } ?: "—",
+                meta = yesterday.peakHour?.let { "%,d steps".format(yesterday.hourlySteps.getOrElse(it) { 0L }) } ?: "no bout",
+                modifier = Modifier.weight(1f),
+            )
+            InsightStat(
+                label = "QUIET HOUR",
+                value = yesterday.quietHour?.let { formatHourLabel(it) } ?: "—",
+                meta = "least movement",
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        SectionRule(label = "Yesterday 24-hour step distribution")
+        val yesterdayBars = yesterday.hourlySteps.mapIndexed { hour, count ->
+            BarDatum(
+                label = "%02d".format(hour),
+                value = count.toFloat(),
+                highlight = yesterday.peakHour == hour,
+                detail = "%,d steps · %s".format(count, formatHourLabel(hour)),
+            )
+        }
+        TapColumnBars(
+            bars = yesterdayBars,
+            valueFormat = { "%,d".format(it.roundToInt()) },
+            hint = "TAP AN HOUR · READ EXACT RECORD",
+            modifier = Modifier.padding(top = AiiminTheme.space.s2),
+        )
+
+        ChartReadout(
+            title = "Yesterday Retrospective",
+            detail = "Total %,d steps logged with %d active minutes. Peak movement was at %s with %,d steps.".format(
+                yesterday.totalSteps,
+                yesterday.activeMinutes,
+                yesterday.peakHour?.let { formatHourLabel(it) } ?: "—",
+                yesterday.peakHour?.let { yesterday.hourlySteps.getOrElse(it) { 0L } } ?: 0L,
+            ),
+            modifier = Modifier.padding(top = AiiminTheme.space.s3),
+        )
+    }
+}
+
+@Composable
+private fun Past7DaysStepsSection(
+    days: List<StepsDaySummary>,
+    target: Long,
+) {
+    if (days.isEmpty()) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = AiiminTheme.space.s4),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "Past 7 days history syncing from Health Connect...",
+                style = AiiminTheme.type.bodySmall,
+                color = AiiminTheme.colors.muted,
+            )
+        }
+        return
+    }
+
+    val avgSteps = days.map { it.totalSteps }.average().roundToLong()
+    val clearedCount = days.count { it.totalSteps >= target }
+    val totalKm = days.sumOf { it.distanceKm }
+    val totalActiveMins = days.sumOf { it.activeMinutes }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s2),
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+        ) {
+            InsightStat(
+                label = "7D AVG",
+                value = "%,d".format(avgSteps),
+                meta = "steps / day",
+                modifier = Modifier.weight(1f),
+            )
+            InsightStat(
+                label = "CLEARED",
+                value = "$clearedCount / ${days.size}",
+                meta = "days met goal",
+                modifier = Modifier.weight(1f),
+            )
+            InsightStat(
+                label = "VOLUME",
+                value = "%.1f km".format(totalKm),
+                meta = "${totalActiveMins}m active",
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        SectionRule(label = "Daily step volume")
+        val weekBars = days.reversed().map { day ->
+            val dayLabel = try {
+                LocalDate.parse(day.dateIso).dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()).uppercase()
+            } catch (_: Exception) {
+                day.dateIso.takeLast(2)
+            }
+            BarDatum(
+                label = dayLabel,
+                value = day.totalSteps.toFloat(),
+                highlight = day.totalSteps >= target,
+                detail = "%s · %,d steps · %.1f km".format(day.dateIso, day.totalSteps, day.distanceKm),
+            )
+        }
+        TapColumnBars(
+            bars = weekBars,
+            valueFormat = { "%,d".format(it.roundToInt()) },
+            hint = "TAP A DAY · READ STEPS & DISTANCE",
+            modifier = Modifier.padding(top = AiiminTheme.space.s2),
+        )
+
+        SectionRule(label = "Day by day log")
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s2),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            days.forEach { day ->
+                val dayName = try {
+                    LocalDate.parse(day.dateIso).format(DateTimeFormatter.ofPattern("EEE, d MMM", Locale.getDefault()))
+                } catch (_: Exception) {
+                    day.dateIso
+                }
+                val met = day.totalSteps >= target
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .border(Hairline, if (met) AiiminTheme.colors.accent.copy(alpha = 0.4f) else AiiminTheme.colors.rule)
+                        .background(if (met) AiiminTheme.colors.tint else AiiminTheme.colors.surface)
+                        .padding(horizontal = AiiminTheme.space.s3, vertical = 7.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column {
+                        Text(text = dayName, style = AiiminTheme.type.bodySmall.copy(fontSize = 12.5.sp))
+                        Text(
+                            text = "%.2f km · %d min".format(day.distanceKm, day.activeMinutes),
+                            style = AiiminTheme.type.cellLabel,
+                            color = AiiminTheme.colors.muted,
+                        )
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "%,d".format(day.totalSteps),
+                            style = AiiminTheme.type.mono(13.5, FontWeight.SemiBold),
+                            color = if (met) AiiminTheme.colors.accent else AiiminTheme.colors.text,
+                        )
+                        if (met) {
+                            Text(
+                                text = " ✓",
+                                style = AiiminTheme.type.mono(12.0, FontWeight.Bold),
+                                color = AiiminTheme.colors.accent,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Past30DaysStepsSection(
+    history: StepsHistoryBundle?,
+    target: Long,
+) {
+    if (history == null || history.past30Days.isEmpty()) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = AiiminTheme.space.s4),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "30-day macro history syncing from Health Connect...",
+                style = AiiminTheme.type.bodySmall,
+                color = AiiminTheme.colors.muted,
+            )
+        }
+        return
+    }
+
+    val days = history.past30Days
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s2),
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+        ) {
+            InsightStat(
+                label = "STREAK",
+                value = "${history.streakDays} DAYS",
+                meta = "active streak",
+                modifier = Modifier.weight(1f),
+            )
+            InsightStat(
+                label = "CONSISTENCY",
+                value = "${history.monthlyConsistencyPct}%",
+                meta = "goal met rate",
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s2),
+            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+        ) {
+            InsightStat(
+                label = "30D AVG",
+                value = "%,d".format(history.monthlyAverage),
+                meta = "steps / day",
+                modifier = Modifier.weight(1f),
+            )
+            InsightStat(
+                label = "RECORD DAY",
+                value = "%,d".format(history.bestDaySteps),
+                meta = "month peak",
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        SectionRule(label = "30-day streak & momentum calendar")
+        StepsCalendarHeatmap(days = days, target = target)
+
+        ChartReadout(
+            title = "Momentum Engine",
+            detail = "${history.monthlyConsistencyPct}% goal achievement over the last 30 days. Average of %,d steps/day with a 30-day high of %,d.".format(
+                history.monthlyAverage,
+                history.bestDaySteps,
+            ),
+            modifier = Modifier.padding(top = AiiminTheme.space.s3),
+        )
+    }
+}
+
+@Composable
+private fun StepsCalendarHeatmap(
+    days: List<StepsDaySummary>,
+    target: Long,
+) {
+    val view = LocalView.current
+    var selectedIndex by remember { mutableIntStateOf(-1) }
+    // Chronological order (oldest to newest)
+    val sorted = remember(days) { days.sortedBy { it.dateIso } }
+
+    Column(Modifier.fillMaxWidth()) {
+        // Grid: 6 columns × 5 rows (30 days)
+        val columns = 6
+        val rows = (sorted.size + columns - 1) / columns
+
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s2),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            for (r in 0 until rows) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    for (c in 0 until columns) {
+                        val idx = r * columns + c
+                        if (idx < sorted.size) {
+                            val item = sorted[idx]
+                            val isSelected = selectedIndex == idx
+                            val met = item.totalSteps >= target
+                            val frac = (item.totalSteps.toFloat() / target).coerceIn(0f, 1f)
+
+                            val cellBg = when {
+                                met -> AiiminTheme.colors.accent
+                                frac > 0.5f -> AiiminTheme.colors.accent.copy(alpha = 0.55f)
+                                frac > 0.1f -> AiiminTheme.colors.hair
+                                else -> AiiminTheme.colors.surface
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(38.dp)
+                                    .background(cellBg, RoundedCornerShape(2.dp))
+                                    .border(
+                                        if (isSelected) 1.5.dp else Hairline,
+                                        if (isSelected) AiiminTheme.colors.text else AiiminTheme.colors.rule,
+                                        RoundedCornerShape(2.dp),
+                                    )
+                                    .clickable {
+                                        view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+                                        selectedIndex = if (selectedIndex == idx) -1 else idx
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                val dayNum = try {
+                                    LocalDate.parse(item.dateIso).dayOfMonth.toString()
+                                } catch (_: Exception) {
+                                    "${idx + 1}"
+                                }
+                                Text(
+                                    text = dayNum,
+                                    style = AiiminTheme.type.mono(9.5, if (met) FontWeight.Bold else FontWeight.Normal),
+                                    color = if (met) AiiminTheme.colors.onAccent else AiiminTheme.colors.muted,
+                                )
+                            }
+                        } else {
+                            Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
+            }
+        }
+
+        if (selectedIndex in sorted.indices) {
+            val pick = sorted[selectedIndex]
+            val met = pick.totalSteps >= target
+            ChartReadout(
+                title = pick.dateIso,
+                detail = "%,d steps (%.2f km) · %s".format(
+                    pick.totalSteps,
+                    pick.distanceKm,
+                    if (met) "✓ Goal Achieved" else "Fell Short",
+                ),
+                modifier = Modifier.padding(top = AiiminTheme.space.s2),
+            )
+        } else {
+            Text(
+                text = "TAP A DAY IN GRID · READ STEP RECORD",
+                style = AiiminTheme.type.cellLabel,
+                color = AiiminTheme.colors.muted,
+                modifier = Modifier.padding(top = AiiminTheme.space.s2),
+            )
+        }
     }
 }
 

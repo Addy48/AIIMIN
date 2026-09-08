@@ -79,7 +79,7 @@ export default function WaitlistPricingSection() {
   const active = PRICING.find((p) => p.tier === selectedPricing) ?? PRICING[2];
 
   return (
-    <section className="waitlist-section pricing-section waitlist-desktop-only">
+    <section className="waitlist-section pricing-section" id="pricing">
       <p className="waitlist-section-label">Pricing</p>
       <h2>Four tiers — each built for a different level of control</h2>
       <p className="waitlist-section-copy">

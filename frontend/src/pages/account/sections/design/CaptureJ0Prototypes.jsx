@@ -127,7 +127,7 @@ function TodayPageShell({ option }) {
       <main className="cj0-today__main">
         <div className="cj0-today__intro">
           <p className="cj0-eyebrow">Tuesday · Today</p>
-          <h1 className="cj0-today__h1">Good evening, Adi</h1>
+          <h2 className="cj0-today__h1">Good evening, Adi</h2>
         </div>
         <ProtoInsight />
 
@@ -176,7 +176,7 @@ export default function CaptureJ0Prototypes({ embedded = false }) {
       <div className="cj0-controls">
         <div className="cj0-controls__copy">
           <p className="cj0-eyebrow">Craft · Track J0</p>
-          <h1 className="cj0-controls__title">Capture fold prototypes</h1>
+          <h2 className="cj0-controls__title">Capture fold prototypes</h2>
           <p className="cj0-controls__sub">
             Pick the Today fold that feels clearer. Live Overview is unchanged until you decide.
           </p>

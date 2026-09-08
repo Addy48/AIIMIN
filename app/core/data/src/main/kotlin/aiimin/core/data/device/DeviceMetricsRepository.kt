@@ -65,6 +65,9 @@ class DeviceMetricsRepository @Inject constructor(
     private val _state = MutableStateFlow(DeviceMetrics.cold())
     val state: StateFlow<DeviceMetrics> = _state.asStateFlow()
 
+    private val _stepsHistory = MutableStateFlow<StepsHistoryBundle?>(null)
+    val stepsHistory: StateFlow<StepsHistoryBundle?> = _stepsHistory.asStateFlow()
+
     private val sensorManager =
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val stepCounter: Sensor? =
@@ -604,8 +607,43 @@ class DeviceMetricsRepository @Inject constructor(
         }
     }
 
+    private suspend fun refreshStepsHistory() {
+        if (!HealthConnectSteps.isAvailable(context) || !HealthConnectSteps.hasReadPermission(context)) {
+            return
+        }
+        try {
+            val yesterdayDate = LocalDate.now().minusDays(1)
+            val yesterdayDetail = HealthConnectSteps.readDayDetailed(context, yesterdayDate)
+            val past30 = HealthConnectSteps.readHistoricalDays(context, 30)
+            val past7 = past30.take(7)
+
+            var streak = 0
+            for (day in past30) {
+                if (day.totalSteps >= stepsGoal) streak++ else break
+            }
+            val consistency = if (past30.isNotEmpty()) {
+                kotlin.math.round((past30.count { it.totalSteps >= stepsGoal }.toDouble() / past30.size) * 100).toInt()
+            } else 0
+            val avg = if (past30.isNotEmpty()) past30.map { it.totalSteps }.average().toLong() else 0L
+            val best = past30.maxOfOrNull { it.totalSteps } ?: 0L
+
+            _stepsHistory.value = StepsHistoryBundle(
+                yesterday = yesterdayDetail,
+                past7Days = past7,
+                past30Days = past30,
+                streakDays = streak,
+                monthlyConsistencyPct = consistency,
+                monthlyAverage = avg,
+                bestDaySteps = best,
+            )
+        } catch (e: Exception) {
+            android.util.Log.w("AiiminMetrics", "refreshStepsHistory error: ${e.message}")
+        }
+    }
+
     private suspend fun refreshAll() = withContext(Dispatchers.Default) {
         refreshHealthConnectSteps()
+        refreshStepsHistory()
 
         if (!hasActivityPermission()) {
             if (_state.value.stepsStatus != StepsStatus.NEED_PERMISSION ||
@@ -903,6 +941,27 @@ data class DeviceMetrics(
     val kmWalked: Double?
         get() = steps?.let { it * DeviceMetricsRepository.STRIDE_METERS / 1000.0 }
 
+    val paceNeededPerHour: Int
+        get() {
+            val current = steps ?: 0L
+            val remaining = (stepsTarget - current).coerceAtLeast(0L)
+            val hourNow = LocalTime.now().hour.coerceIn(0, 23)
+            val hoursLeft = (24 - hourNow).coerceAtLeast(1)
+            return if (remaining > 0L) kotlin.math.round(remaining.toDouble() / hoursLeft).toInt() else 0
+        }
+
+    val paceInsightLabel: String
+        get() {
+            val current = steps ?: 0L
+            val pace = paceNeededPerHour
+            return when {
+                current >= stepsTarget -> "Goal completed · Excellent work"
+                pace <= 350 -> "Cruising pace · ~%,d steps/hr needed".format(pace)
+                pace <= 700 -> "Moderate pace · ~%,d steps/hr needed".format(pace)
+                else -> "Surge pace · ~%,d steps/hr needed".format(pace)
+            }
+        }
+
     companion object {
         fun cold() = DeviceMetrics(
             steps = null,
@@ -927,6 +986,17 @@ data class DeviceMetrics(
         )
     }
 }
+
+/** Complete multi-timescale history bundle for Steps analytics. */
+data class StepsHistoryBundle(
+    val yesterday: StepsDayDetail?,
+    val past7Days: List<StepsDaySummary>,
+    val past30Days: List<StepsDaySummary>,
+    val streakDays: Int,
+    val monthlyConsistencyPct: Int,
+    val monthlyAverage: Long,
+    val bestDaySteps: Long,
+)
 
 /** Cluster step ticks into bouts. No invented seed bouts from a lone total. */
 internal fun deriveWalks(ticks: List<StepTick>, totalSteps: Long): List<WalkBout> {

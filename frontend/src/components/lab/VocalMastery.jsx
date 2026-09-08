@@ -435,9 +435,9 @@ export default function VocalMastery({ onComplete, onClose }) {
                 {mode === 'monologue' && phase === 'ready' && (
                     <motion.div key="mono-ready" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <h1 style={{ fontSize: '56px', fontWeight: 900, color: text1, marginBottom: '16px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
+                            <h2 style={{ fontSize: '56px', fontWeight: 900, color: text1, marginBottom: '16px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
                                 Vocal Mastery
-                            </h1>
+                            </h2>
                             <p style={{ color: text3, fontSize: '18px', maxWidth: '600px', margin: '0 auto', lineHeight: 1.5 }}>
                                 Refine your delivery and articulation. Spin for a prompt, speak for 60 seconds, and reflect.
                             </p>
@@ -539,9 +539,9 @@ export default function VocalMastery({ onComplete, onClose }) {
                 {mode === 'debate' && debatePhase === 'setup' && (
                     <motion.div key="deb-setup" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <h1 style={{ fontSize: '56px', fontWeight: 900, color: text1, marginBottom: '16px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
+                            <h2 style={{ fontSize: '56px', fontWeight: 900, color: text1, marginBottom: '16px', fontFamily: 'var(--font-serif)', letterSpacing: '-0.02em' }}>
                                 Sparring Partner
-                            </h1>
+                            </h2>
                             <p style={{ color: text3, fontSize: '18px', maxWidth: '600px', margin: '0 auto', lineHeight: 1.5 }}>
                                 Engage in a real-time vocal debate. Practice responding to counters and maintaining your composure.
                             </p>

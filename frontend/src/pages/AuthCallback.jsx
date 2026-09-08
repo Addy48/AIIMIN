@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/useAuth';
 import { getPostAuthPath } from '../utils/mobileEntry';
 import ThemedMark from '../components/brand/ThemedMark';
 import Wordmark from '../components/brand/Wordmark';
+import SEO from '../components/common/SEO';
 
 const SESSION_TIMEOUT_MS = 15_000;
 
@@ -167,6 +168,8 @@ const AuthCallback = () => {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: 'var(--font-sans)',
             }}>
+                <SEO title="Authentication Failed" description="Authentication failed during sign-in." path="/auth/callback" noIndex={true} />
+                <h1 className="sr-only">Authentication Failed</h1>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                     style={{
@@ -203,6 +206,8 @@ const AuthCallback = () => {
             alignItems: 'center', justifyContent: 'center',
             fontFamily: 'var(--font-sans)',
         }}>
+            <SEO title="Authenticating" description="Establishing secure connection to AIIMIN." path="/auth/callback" noIndex={true} />
+            <h1 className="sr-only">AIIMIN Authentication</h1>
             <motion.div
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}

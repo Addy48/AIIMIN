@@ -5,6 +5,7 @@ import MobileOfflineBanner from './MobileOfflineBanner';
 import { installOfflineSyncListener } from '../../utils/offlineLogQueue';
 import { setCapacitorBackNavigate } from '../../utils/capacitorEnv';
 import toast from '../../utils/toast';
+import SEO from '../common/SEO';
 import '../../styles/mobileBottomNav.css';
 import '../../styles/mobileTouchTargets.css';
 
@@ -28,6 +29,12 @@ export default function MobileShell() {
 
   return (
     <div className="mobile-shell">
+      <SEO
+        title="Mobile Quick Capture"
+        description="AIIMIN mobile telemetry capture shell."
+        canonicalPath="/m"
+        noIndex={true}
+      />
       <MobileOfflineBanner />
       <Outlet />
       <MobileBottomNav />

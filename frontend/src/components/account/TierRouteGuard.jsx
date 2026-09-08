@@ -54,9 +54,9 @@ export default function TierRouteGuard({ children, minTier, label }) {
       >
         <Lock size={22} style={{ color: 'var(--color-accent)' }} />
       </div>
-      <h1 className="text-h2" style={{ marginBottom: 8 }}>
+      <h2 className="text-h2" style={{ marginBottom: 8 }}>
         {featureLabel} is on {TIER_LABELS[required]}
-      </h1>
+      </h2>
       <p className="text-body" style={{ color: 'var(--color-text-2)', marginBottom: 20, lineHeight: 1.55 }}>
         You&apos;re on <strong>{TIER_LABELS[tier] || 'Explore'}</strong>. Upgrade to unlock this module — billing
         isn&apos;t live yet; pick a plan in Subscription and it applies instantly.

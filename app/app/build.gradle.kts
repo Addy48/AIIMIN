@@ -23,6 +23,10 @@ android {
         applicationId = "in.aiimin.app"
         versionCode = 1
         versionName = "3.0.0-alpha01"
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
     }
 
     buildFeatures {
@@ -36,6 +40,7 @@ android {
             buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")
         }
         release {
+            applicationIdSuffix = ".v3"
             isMinifyEnabled = true
             isShrinkResources = true
             buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")

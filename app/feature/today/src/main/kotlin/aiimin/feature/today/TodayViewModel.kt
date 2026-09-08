@@ -48,6 +48,7 @@ class TodayViewModel @Inject constructor(
     val notes: StateFlow<NoteState> = noteStore.state
     val publishedScore: StateFlow<PublishedLifeScoreState> = publishedLifeScore.state
     val focusMinimums: StateFlow<Boolean> = store.focusMinimums
+    val stepsHistory = device.stepsHistory
 
     private val _refreshing = MutableStateFlow(false)
     val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
