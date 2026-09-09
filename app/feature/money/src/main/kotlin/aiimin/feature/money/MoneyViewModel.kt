@@ -174,6 +174,70 @@ class MoneyViewModel @Inject constructor(
         refreshSmsFlags()
     }
 
+    fun onCopyAllTransactionMessages(context: android.content.Context) {
+        viewModelScope.launch {
+            val sb = StringBuilder()
+            var count = 0
+            val zone = java.time.ZoneId.systemDefault()
+            val dtf = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+
+            sb.appendLine("=== AIIMIN TRANSACTION MESSAGES DUMP ===")
+            sb.appendLine("Generated: ${java.time.LocalDateTime.now(zone).format(dtf)}")
+            sb.appendLine()
+
+            // 1. Recent transactional SMS messages
+            val smsList = smsScanner.exportTransactionalMessages(lookbackDays = 30)
+            if (smsList.isNotEmpty()) {
+                sb.appendLine("--- SMS INBOX (${smsList.size} alerts) ---")
+                smsList.forEachIndexed { _, item ->
+                    count++
+                    val timeStr = java.time.Instant.ofEpochMilli(item.dateEpochMs)
+                        .atZone(zone)
+                        .format(dtf)
+                    sb.appendLine("[$count] SENDER: ${item.sender} | DATE: $timeStr")
+                    sb.appendLine(item.body)
+                    sb.appendLine()
+                }
+            }
+
+            // 2. Pending inbox drafts
+            val drafts = inbox.state.value.drafts
+            if (drafts.isNotEmpty()) {
+                sb.appendLine("--- PENDING INBOX DRAFTS (${drafts.size}) ---")
+                drafts.forEach { draft ->
+                    count++
+                    sb.appendLine("[$count] DRAFT: ₹${draft.amountInr} ${draft.direction} | ${draft.channel} | ${draft.merchant ?: draft.accountHint}")
+                    sb.appendLine(draft.preview)
+                    sb.appendLine()
+                }
+            }
+
+            // 3. Local ledger entries if no raw SMS available
+            if (count == 0) {
+                val ledger = store.state.value.ledger
+                if (ledger.isNotEmpty()) {
+                    sb.appendLine("--- RECENT LEDGER ENTRIES (${ledger.size}) ---")
+                    ledger.take(30).forEach { item ->
+                        count++
+                        sb.appendLine("[$count] ₹${item.amount} | ${item.name} | ${item.meta} | ${item.category}")
+                    }
+                    sb.appendLine()
+                }
+            }
+
+            val textToCopy = sb.toString()
+            val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val clip = android.content.ClipData.newPlainText("AIIMIN Transactions", textToCopy)
+            clipboard.setPrimaryClip(clip)
+
+            _pasteNotice.value = if (count > 0) {
+                "Copied $count transaction messages to clipboard!"
+            } else {
+                "No transaction messages found to copy."
+            }
+        }
+    }
+
     fun onRunAiImport() {
         val text = _pasteDraft.value
         if (text.isBlank()) {

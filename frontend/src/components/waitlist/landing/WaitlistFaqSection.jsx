@@ -16,14 +16,21 @@ const WaitlistFaqSection = forwardRef(function WaitlistFaqSection(_props, ref) {
               type="button"
               className="waitlist-faq-trigger"
               onClick={() => setOpenFaq((prev) => (prev === index ? -1 : index))}
+              aria-expanded={openFaq === index}
+              aria-controls={`waitlist-faq-ans-${index}`}
             >
               <span>{faq.q}</span>
               <ChevronDown
                 size={16}
                 className={`waitlist-faq-icon ${openFaq === index ? 'waitlist-faq-icon-open' : ''}`}
+                aria-hidden="true"
               />
             </button>
-            {openFaq === index && <p className="waitlist-faq-answer">{faq.a}</p>}
+            {openFaq === index && (
+              <p id={`waitlist-faq-ans-${index}`} className="waitlist-faq-answer">
+                {faq.a}
+              </p>
+            )}
           </article>
         ))}
       </div>

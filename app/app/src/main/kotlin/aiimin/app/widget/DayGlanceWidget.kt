@@ -53,11 +53,11 @@ class DayGlanceWidget : GlanceAppWidget() {
 
 @Composable
 private fun DayPlate(snap: WidgetSnapshot) {
-    val bg = glanceColor(day = Color(0xFF15171A), night = Color(0xFF15171A))
+    val bg = glanceColor(day = Color(0xFF141414), night = Color(0xFF141414))
     val steel = glanceColor(day = Color(0xFF749DC4), night = Color(0xFF749DC4))
-    val ink = glanceColor(day = Color(0xFFE8EAED), night = Color(0xFFE8EAED))
-    val mute = glanceColor(day = Color(0xFF8B919A), night = Color(0xFF8B919A))
-    val hair = glanceColor(day = Color(0xFF2A2E33), night = Color(0xFF2A2E33))
+    val ink = glanceColor(day = Color(0xFFEDEDED), night = Color(0xFFEDEDED))
+    val mute = glanceColor(day = Color(0xFF888888), night = Color(0xFF888888))
+    val hair = glanceColor(day = Color(0xFF262626), night = Color(0xFF262626))
     Column(
         modifier = GlanceModifier
             .fillMaxSize()

@@ -32,7 +32,7 @@ import Wordmark from '../components/brand/Wordmark';
 import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
 import '../styles/appPage.css';
 
-const SHA256_HASH = 'b53e0426d0fabc0169464e0747b678e91608025a2dc4523a7ae97ba8dfb8770e';
+const SHA256_HASH = '31bc678704b872684faa794fffe2ccc6d793051b5b2cf5034d18b2309a589c56';
 const ADB_COMMAND = 'adb install -r aiimin-v2-debug.apk';
 
 const CORE_CAPABILITIES = [

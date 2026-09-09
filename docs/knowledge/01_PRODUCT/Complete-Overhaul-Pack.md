@@ -116,15 +116,16 @@ Related deep notes (do not duplicate):
 
 ### Intent
 
-Status page, not APK store. Clear Now / Next / Public path; less muddy grey cards.
+Rich interactive software console and transparent closed-beta APK distribution. Direct verification, zero Play Store gate delays.
 
-### Fixes
+### Shipped State (2026-09-14)
 
-- Tester copy → **31 Oct 2026**
-- Cards: stronger border, green “Now” emphasis, elevated split panels
-- CTAs remain waitlist + `/m` capture-only (no APK)
+- **Live APK Download:** Hosted at `/aiimin-v2-debug.apk` (~27.3 MB, Android 8.0+) with live SHA-256 checksum verification metadata (`31bc6787...09a589c56`).
+- **Interactive Companion Software Console:** Live simulation of Today loop, Focus Shield app interception, Money runway calculation, and Hardware Vault biometric initialization.
+- **Architectural Honesty:** 3-column split (Desktop Command vs Native Companion vs What We Don't Do), detailed "Why not Play Store yet" rationale, and step-by-step sideload instructions.
+- **Local Engine:** 100% offline-first SQLCipher SQLite (<10ms writes), native Accessibility Focus Shield (no VPN battery drain), and StrongBox TEE hardware encryption.
 
-**Files:** `AndroidApp.jsx` · `appPage.css`
+**Files:** `frontend/src/pages/AndroidApp.jsx` · `frontend/src/styles/appPage.css` · `frontend/public/aiimin-v2-debug.apk`
 
 ---
 

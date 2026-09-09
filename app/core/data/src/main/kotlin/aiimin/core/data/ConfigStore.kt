@@ -107,20 +107,40 @@ class ConfigStore @Inject constructor(
         }
     }
 
-    fun applyRemoteIdentity(name: String?, email: String?, username: String? = null) {
+    fun applyRemoteIdentity(
+        name: String?,
+        email: String?,
+        username: String? = null,
+        arc: String? = null,
+        tier: String? = null,
+    ) {
+        val cleanArc = arc?.trim()?.takeIf { it.isNotBlank() }
+        val cleanTier = tier?.trim()?.takeIf { it.isNotBlank() }
         _state.update { current ->
             val cleanEmail = email?.takeIf { it.isNotBlank() }
+            val nextArc = cleanArc ?: current.identity.arc
+            val nextTierLabel = cleanTier ?: current.identity.tierLabel
             current.copy(
                 identity = current.identity.copy(
                     name = name?.takeIf { it.isNotBlank() } ?: current.identity.name,
                     email = cleanEmail ?: current.identity.email,
-                    // Never invent an OS-ID from the email prefix — Google on web
-                    // already bound Gmail to the real plate.
+                    arc = nextArc,
+                    tierLabel = nextTierLabel,
+                    tier = aiimin.core.model.SubscriptionTier.fromId(nextTierLabel),
                 ),
                 isSeed = false,
             )
         }
         username?.let { rememberOsId(it) }
+        cleanArc?.let { newArc ->
+            persist {
+                writeCalibration(
+                    osId = _state.value.identity.osId,
+                    arc = newArc,
+                    minimumsLabel = _state.value.minimumsLabel,
+                )
+            }
+        }
     }
 
     /** Persist the plate the human signed in with. */

@@ -120,6 +120,7 @@ fun MoneyRoute(
             viewModel.clearPasteNotice()
         }
     }
+    val context = androidx.compose.ui.platform.LocalContext.current
     MoneyScreen(
         state = state,
         inbox = inbox,
@@ -147,6 +148,7 @@ fun MoneyRoute(
         },
         onDisableSms = viewModel::onDisableSms,
         onScanSms = viewModel::onScanSms,
+        onCopyAllSms = { viewModel.onCopyAllTransactionMessages(context) },
         onPickImportFile = {
             pickFile.launch(
                 arrayOf(
@@ -200,6 +202,7 @@ fun MoneyScreen(
     onRequestSms: () -> Unit = {},
     onDisableSms: () -> Unit = {},
     onScanSms: () -> Unit = {},
+    onCopyAllSms: () -> Unit = {},
     onPickImportFile: () -> Unit = {},
     onApproveDraft: (String) -> Unit = {},
     onDismissDraft: (String) -> Unit = {},
@@ -228,9 +231,29 @@ fun MoneyScreen(
             SyncBanner(state)
 
             if (inbox.drafts.isNotEmpty()) {
-                SectionRule(
-                    label = "Review",
-                    value = "${inbox.pendingCount} WAITING",
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = AiiminTheme.space.s4),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "REVIEW · ${inbox.pendingCount} WAITING",
+                        style = AiiminTheme.type.mono(10.0, FontWeight.Medium),
+                        color = AiiminTheme.colors.muted,
+                    )
+                    GhostButton(
+                        label = "Copy all",
+                        onClick = onCopyAllSms,
+                    )
+                }
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = AiiminTheme.space.s1)
+                        .height(Hairline)
+                        .background(AiiminTheme.colors.rule),
                 )
                 inbox.drafts.forEach { draft ->
                     PaymentDraftRow(
@@ -278,6 +301,7 @@ fun MoneyScreen(
                 onRequestSms = onRequestSms,
                 onDisableSms = onDisableSms,
                 onScanSms = onScanSms,
+                onCopyAllSms = onCopyAllSms,
                 onPickImportFile = onPickImportFile,
             )
         }
@@ -306,6 +330,7 @@ private fun PaymentIngest(
     onRequestSms: () -> Unit,
     onDisableSms: () -> Unit,
     onScanSms: () -> Unit,
+    onCopyAllSms: () -> Unit,
     onPickImportFile: () -> Unit,
 ) {
     var open by remember { mutableStateOf(false) }
@@ -488,9 +513,11 @@ private fun PaymentIngest(
             ) {
                 if (smsEnabled && smsHasPermission) {
                     GhostButton(label = "Scan now", onClick = onScanSms)
+                    GhostButton(label = "Copy all SMS", onClick = onCopyAllSms)
                     GhostButton(label = "Turn off", onClick = onDisableSms)
                 } else {
                     GhostButton(label = "Enable SMS", onClick = onRequestSms)
+                    GhostButton(label = "Copy all SMS", onClick = onCopyAllSms)
                 }
             }
         }
@@ -1134,13 +1161,13 @@ private fun LedgerRow(entry: LedgerEntry) {
 
 // --- Previews ----------------------------------------------------------------
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A)
+@Preview(showBackground = true, backgroundColor = 0xFF141414)
 @Composable
 private fun MoneySeedPreview() {
     AiiminTheme { MoneyScreen(state = MoneyState.seed(), onSelectTab = {}, onAddTransaction = {}) }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A, heightDp = 900)
+@Preview(showBackground = true, backgroundColor = 0xFF141414, heightDp = 900)
 @Composable
 private fun MoneyEmptyPreview() {
     AiiminTheme { MoneyScreen(state = MoneyState.empty(), onSelectTab = {}, onAddTransaction = {}) }

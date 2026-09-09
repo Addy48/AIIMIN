@@ -1112,7 +1112,7 @@ private fun trajectoryLabel(direction: Direction, days: Int): String = when {
 private fun format(value: Double): String =
     if (value >= 1000) "%,d".format(value.roundToInt()) else value.toString().removeSuffix(".0")
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A, heightDp = 1200)
+@Preview(showBackground = true, backgroundColor = 0xFF141414, heightDp = 1200)
 @Composable
 private fun TodayPreview() {
     AiiminTheme {

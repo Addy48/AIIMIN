@@ -158,7 +158,7 @@ fun DisciplineScreen(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A)
+@Preview(showBackground = true, backgroundColor = 0xFF141414)
 @Composable
 private fun DisciplinePreview() {
     AiiminTheme { DisciplineScreen(state = DisciplineUiState(), onBack = {}, onCategory = {}, onIntensity = {}, onNote = {}, onOutcome = {}, onDismissNotice = {}, onToggleBlocked = {}, onOpenBlockingSettings = {}, modifier = Modifier) }

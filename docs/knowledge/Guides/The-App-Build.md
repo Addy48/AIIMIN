@@ -70,11 +70,15 @@ The contract:
 
 ## Where it stands
 
-Three commits exist on `feat/native-android-v3`: foundation (project, Drafting Table theme,
-5-tab shell), Capture — the trust surface, and a Capture craft pass. 42 Kotlin files, ~97 MB
-including build output.
+Consolidated into `app/` with unified root Gradle tooling. The native build is optimized down to **~27.4 MB** (`aiimin-v2-full-debug.apk`), served directly at `/aiimin-v2-debug.apk` for closed-beta testers.
 
-Live tracker: [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
+- **Verified on Physical Device:** AIN065 (`9597fdea`) via ADB.
+- **Offline Engine:** 100% offline-first SQLCipher SQLite database (<10ms writes, conflict-free delta outbox sync).
+- **Security:** AndroidKeyStore TEE / StrongBox hardware biometric keystore (AES-256-GCM encryption).
+- **Focus Shield:** Native Accessibility + WindowManager interception (zero VPN battery drain, no data harvesting).
+- **Core Loop:** 5-tab shell (DAY · MONEY · CAPTURE · LAB · CONFIG), Capture trust surface, Today surface, Discipline Engine, 30-day steps intelligence (Health Connect), and notification sonification.
+
+Live tracker: [[15_MEMORY/Current-Context]] · [[17_NATIVE_APP_V2/WORKFLOW-PLAN]]
 
 ## Constraints that shape it
 

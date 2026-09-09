@@ -253,7 +253,7 @@ fun correlationStrength(rho: Float): String = when {
 fun correlationSense(rho: Float): String =
     if (rho < 0f) "INVERSE" else "DIRECT"
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A)
+@Preview(showBackground = true, backgroundColor = 0xFF141414)
 @Composable
 private fun ChartsPreview() {
     AiiminTheme {

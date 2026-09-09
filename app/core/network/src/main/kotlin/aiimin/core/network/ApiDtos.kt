@@ -56,6 +56,8 @@ data class BootstrapUser(
     val email: String? = null,
     val name: String? = null,
     val username: String? = null,
+    val arc: String? = null,
+    val tier: String? = null,
 )
 
 @Serializable

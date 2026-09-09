@@ -45,11 +45,15 @@ When `REACT_APP_WAITLIST_MODE=true`:
 
 - `/` shows modular waitlist landing (`WaitlistLanding.jsx` + `components/waitlist/landing/*`)
 - **LOCKED:** Navbar logo → `/brand` (always-light Human Momentum manifesto + storage/privacy/terms; cursor ember spotlight); text → `/overview`.
-- Pricing: Pro founding ₹49/mo; Elite founding ₹79/mo; complimentary Core at launch; Core standard ₹29/mo
-- Primary CTA: **Reserve my spot**
-- Signup returns position + referral code; `localStorage` key `aiimin_waitlist`
-- Social proof only when signup count ≥ 100
-- Go-live target: end of November 2026. Founding / tester registration closes **31 October 2026**.
+- **23 Subsystems Command Drawer:** Marquee ticker opens full 23-module Command Drawer modal (`01`–`23`) portaled to `document.body` (zero container clipping).
+- **Design & Layout:** Strictly locked Drafting Table palette (`#000000` / `#EDE4D3` / `#ff6b35`). Widened max-width to 1380px. Zero neon green gradients.
+- **Privacy Hardening:** Telephone numbers completely purged from public `/contact` and footer.
+- **Android Companion:** Direct APK download hosted at `/aiimin-v2-debug.apk` (~27 MB, Android 8.0+) with live SHA-256 metadata.
+- **Pricing:** Pro founding ₹49/mo; Elite founding ₹79/mo; complimentary Core at launch; Core standard ₹29/mo; Explore free forever.
+- **Primary CTA:** **Reserve my spot**
+- **Signup:** returns position + referral code; `localStorage` key `aiimin_waitlist`
+- **Grounded FAQs:** Grounded in 100% offline-first SQLCipher SQLite (<10ms writes), 27MB APK, 23 modules vs companion, 1-click JSON/CSV migration, and hardware TEE keystore encryption.
+- **Go-live target:** end of November 2026. Founding / tester registration closes **31 October 2026**.
 - Dev/tester emails get elite tier + full app access
 - Public sign-in without allowlist → pending screen
 

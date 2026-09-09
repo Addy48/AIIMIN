@@ -167,12 +167,29 @@ app.get('/bootstrap', requireAuth, async (c) => {
       // Older deployments may not have the urge_events table yet.
     }
 
+    let userArc = null;
+    let userTier = 'free';
+    try {
+      const { rows: profileRows } = await pool.query(
+        `SELECT tagline, subscription_tier FROM user_profiles WHERE user_id = $1 LIMIT 1`,
+        [userId],
+      );
+      if (profileRows.length) {
+        userArc = profileRows[0].tagline || null;
+        userTier = profileRows[0].subscription_tier || 'free';
+      }
+    } catch {
+      // Ignore if user_profiles table is unavailable
+    }
+
     return c.json({
       user: {
         id: userId,
         email: user?.email,
         name: user?.name || user?.full_name || null,
         username: user?.username || null,
+        arc: userArc,
+        tier: userTier,
       },
       habits: habits.rows,
       habitCompletedToday: todayDone,
@@ -378,6 +395,17 @@ app.post('/sync/batch', requireAuth, async (c) => {
             [id, userId],
           );
           results.push({ id: m.id, ok: true, entity_id: id });
+        } else if (type === 'profile.arc.update' || type === 'profile.tagline.update') {
+          const arc = String(payload.arc || payload.tagline || '').slice(0, 500);
+          await pool.query(
+            `INSERT INTO user_profiles (user_id, tagline, updated_at)
+             VALUES ($1, $2, NOW())
+             ON CONFLICT (user_id) DO UPDATE SET
+               tagline = EXCLUDED.tagline,
+               updated_at = NOW()`,
+            [userId, arc],
+          );
+          results.push({ id: m.id, ok: true });
         } else {
           results.push({ id: m.id, ok: false, error: `unknown type ${type}` });
         }

@@ -164,6 +164,20 @@ The V2 debug APK (`aiimin-v2-full-debug.apk`, 62 MB, SHA-256 `4dd36a8e…387245f
 
 ### Pending
 
-- [ ] Commit + push to main (await founder "ship")
+- [x] Waitlist design overhaul & subsystems modal revamp (shipped)
+- [x] Ground FAQs in offline SQLite, 27MB APK, hardware keystore, and data sovereignty (shipped)
 - [ ] Physical device smoke test: Discipline, Notes, app blocker on device `9597fdea`
 - [ ] Vercel deploy to serve APK from `aiimin.in/aiimin-v2-debug.apk`
+
+## 2026-09-14 — Waitlist Design Overhaul, 23 Subsystems Drawer, and FAQ Grounding
+
+**Status:** Shipped and verified on main.
+
+### What happened
+
+1. **Subsystems Modal Revamp**: Portaled to `document.body` (resolved `.waitlist-marquee-section` `contain: paint` clipping bug). Added 23 Modules Command Drawer (`01`–`23`), quick-rail selector strip, physical hardware tiles, live green diode (`SYS // 01`), and 4 clean spec blocks.
+2. **Neon Gradients Removed**: Stripped `.pricing-tier-glow` radial green bloom. Drafting Table palette enforced (`#000000` / `#EDE4D3` / `#ff6b35`).
+3. **Phone Numbers Purged**: Filtered telephone row out of `/contact` and waitlist footer for user privacy.
+4. **Horizontal Layout Aligned**: Set `.waitlist-main` and `.waitlist-marquee-header` to `max-width: 1380px;`, removing empty side gaps while retaining balanced margins.
+5. **Theme Transitions**: Added `0.25s ease` transitions between dark and light themes without flashes or contrast mismatches.
+6. **Waitlist FAQs Grounded**: Updated `FAQS` in `waitlistLandingData.js` and `WaitlistFaqSection.jsx` to reflect current system reality: 100% offline-first SQLCipher SQLite store (<10ms writes, delta outbox sync), hardware TEE StrongBox AES-256-GCM encryption, ~27 MB optimized native APK, clear distinction between 23-subsystem desktop command and high-cadence Android companion, 1-click JSON/CSV migration from Notion/spreadsheets, October 31 cutoff, and November 2026 go-live target.

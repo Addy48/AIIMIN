@@ -60,6 +60,16 @@ empty state instead of a misleading `₹0`.
 
 ## Fixed — don't re-fix
 
+**Waitlist 23 Subsystems Modal clipping.** The `.waitlist-marquee-section` had CSS `contain: paint` which clipped fixed modal overlays inside the viewport. Portaled the 23 Modules Command Drawer to `document.body`. Fully resolved.
+
+**Waitlist neon bloom & palette mismatch.** Stripped `.pricing-tier-glow` green radial blooms. Locked strictly to Drafting Table palette (`#000000` / `#EDE4D3` / `#ff6b35`).
+
+**Public phone number exposure.** Purged telephone number rows from `/contact` and waitlist footer for user privacy.
+
+**Overview `useCallback` error.** Restored missing `useCallback` import in `Overview.jsx` preventing application error on local authed views.
+
+**Cross-theme flash / transition glitches.** Re-normalized tokens and added clean `0.25s ease` transition across dark and light themes without contrast flashes.
+
 **The reminders remount loop.** `frontend/src/utils/supabase.js` is an API-backed shim, not a
 real Supabase client, and it was missing `.abortSignal()`. The `family_reminders` fetch threw
 on **every authed page load**; the ErrorBoundary caught it, remounted, re-ran the effect and

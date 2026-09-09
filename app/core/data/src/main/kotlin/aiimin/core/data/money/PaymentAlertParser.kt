@@ -65,11 +65,26 @@ object PaymentAlertParser {
     )
 
     private val merchantPatterns = listOf(
-        Regex("""(?:at|to|towards)\s+([A-Za-z0-9 &._-]{2,40})""", RegexOption.IGNORE_CASE),
-        Regex("""UPI[- /]([A-Za-z0-9.@-]{3,40})""", RegexOption.IGNORE_CASE),
+        Regex("""(?:at|towards)\s+(?:VPA\s+)?([A-Za-z0-9 &._-]{2,40})""", RegexOption.IGNORE_CASE),
+        Regex("""to\s+(?:VPA\s+)?([A-Za-z0-9 &._-]{2,40})""", RegexOption.IGNORE_CASE),
         Regex("""(?:VPA|UPI ID|Info)[:\s]+([A-Za-z0-9.@-]{3,40})""", RegexOption.IGNORE_CASE),
         Regex("""from\s+([A-Za-z0-9 &._-]{2,40})""", RegexOption.IGNORE_CASE),
+        Regex("""^([A-Za-z0-9&._-]{2,30})\s+(?:has\s+)?paid""", RegexOption.IGNORE_CASE),
+        Regex("""UPI[- /](?!ref\b|txn\b|p2[ap]\b)([A-Za-z0-9.@-]{3,40})""", RegexOption.IGNORE_CASE),
     )
+
+    private fun isAccountOrMask(str: String): Boolean {
+        val s = str.trim()
+        val lower = s.lowercase()
+        if (lower.startsWith("your ") || lower.startsWith("ur ") ||
+            lower.startsWith("a/c") || lower.startsWith("acct") ||
+            lower.startsWith("account") || lower.contains("ending") ||
+            lower.startsWith("ref ") || lower.startsWith("ref:") ||
+            lower.startsWith("txn ") || lower.startsWith("reference ")
+        ) return true
+        if (s.matches(Regex("""^[\s*xX0-9._-]+$"""))) return true
+        return false
+    }
 
     private val knownBankNames = setOf(
         "hdfc", "sbi", "icici", "axis", "kotak", "yes bank", "idfc", "bob", "pnb",
@@ -113,7 +128,19 @@ object PaymentAlertParser {
         val amount = extractAmount(text) ?: return null
         if (amount <= 0 || amount > 10_000_000) return null
 
+        val isPaidToUserAccount = Regex(
+            """paid\s+(?:INR|Rs\.?|₹)?\s*[0-9,.]+\s+to\s+(?:your|ur)?\s*(?:a/c|account|bank|wallet|upi|vpa|[xX*0-9]{3,})""",
+            RegexOption.IGNORE_CASE,
+        ).containsMatchIn(text) || Regex(
+            """(?:has|have)\s+paid\s+(?:you|to\s+(?:your|ur))""",
+            RegexOption.IGNORE_CASE,
+        ).containsMatchIn(text) || Regex(
+            """paid\s+to\s+(?:your|ur)\s+(?:a/c|account|bank|wallet)""",
+            RegexOption.IGNORE_CASE,
+        ).containsMatchIn(text)
+
         val direction = when {
+            isPaidToUserAccount -> Direction.CREDIT
             creditWords.containsMatchIn(text) && !debitWords.containsMatchIn(text) -> Direction.CREDIT
             debitWords.containsMatchIn(text) -> Direction.DEBIT
             creditWords.containsMatchIn(text) -> Direction.CREDIT
@@ -124,12 +151,13 @@ object PaymentAlertParser {
             re.find(text)?.groupValues?.getOrNull(1)?.trim()?.takeIf { it.length in 2..40 }
         }?.let { cleanMerchant(it) }?.takeIf { candidate ->
             val lower = candidate.lowercase()
-            knownBankNames.none { lower == it || lower.startsWith("$it ") }
+            !isAccountOrMask(candidate) && knownBankNames.none { lower == it || lower.startsWith("$it ") }
         }
 
         val accountHint = accountHints.firstNotNullOfOrNull { re ->
             re.find(text)?.groupValues?.getOrNull(1)?.trim()?.takeIf { it.isNotBlank() }
-        }
+        } ?: Regex("""(?:to|in|a/c|account)\s+([*xX0-9]{4,})""", RegexOption.IGNORE_CASE)
+            .find(text)?.groupValues?.getOrNull(1)?.trim()
 
         val channel = when {
             text.contains("UPI", ignoreCase = true) ||

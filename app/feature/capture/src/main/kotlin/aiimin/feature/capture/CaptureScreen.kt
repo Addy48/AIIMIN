@@ -766,7 +766,7 @@ private fun SettledRow(settled: SettledCapture) {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A, heightDp = 900)
+@Preview(showBackground = true, backgroundColor = 0xFF141414, heightDp = 900)
 @Composable
 private fun CapturePreview() {
     val parser = CaptureParser()

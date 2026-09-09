@@ -881,7 +881,7 @@ private fun FirstCaptureStep(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A, widthDp = 390, heightDp = 844)
+@Preview(showBackground = true, backgroundColor = 0xFF141414, widthDp = 390, heightDp = 844)
 @Composable
 private fun WelcomePreview() {
     AiiminTheme {

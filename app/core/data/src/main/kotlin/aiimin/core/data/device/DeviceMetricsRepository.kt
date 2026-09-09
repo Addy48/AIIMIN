@@ -241,13 +241,15 @@ class DeviceMetricsRepository @Inject constructor(
                 rangeStartMs = start,
                 rangeEndMs = end,
             )
+            val maxPossibleMs = (end - start).coerceAtLeast(0L)
             val authoritativeTotalMs = UsageDayParser.queryAuthoritativeTotalMs(usage, start, end)
             val screenMs = ScreenTime.digitalWellbeingTotalMs(
                 appForegroundByPackage = parsed.appFgMs,
                 eventInteractiveMs = parsed.interactiveMs,
                 unlockedMs = parsed.unlockedMs,
                 exclusiveAppUnionMs = parsed.appUnionMs,
-                authoritativeTotalMs = authoritativeTotalMs,
+                authoritativeTotalMs = if (authoritativeTotalMs <= maxPossibleMs) authoritativeTotalMs else 0L,
+                maxPossibleMs = maxPossibleMs,
             )
             val historicalFg = ScreenTime.scaleAppForegroundToTotal(
                 parsed.appFgMs.filterKeys { isUsefulApp(it) },
@@ -369,7 +371,7 @@ class DeviceMetricsRepository @Inject constructor(
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
 
     private suspend fun onCounter(cumulative: Float) = mutex.withLock {
-        val today = LocalDate.now().toString()
+        val today = LocalDate.now(ZoneId.systemDefault()).toString()
         val prefs = dataStore.data.first()
         val storedDay = prefs[KEY_STEP_DAY]
         val existingBaseline = prefs[KEY_STEP_BASELINE]
@@ -435,7 +437,7 @@ class DeviceMetricsRepository @Inject constructor(
     }
 
     private suspend fun onDetectorTick() = mutex.withLock {
-        val today = LocalDate.now().toString()
+        val today = LocalDate.now(ZoneId.systemDefault()).toString()
         val prefs = dataStore.data.first()
         if (prefs[KEY_STEP_DAY] != today) {
             dataStore.edit {
@@ -612,7 +614,7 @@ class DeviceMetricsRepository @Inject constructor(
             return
         }
         try {
-            val yesterdayDate = LocalDate.now().minusDays(1)
+            val yesterdayDate = LocalDate.now(ZoneId.systemDefault()).minusDays(1)
             val yesterdayDetail = HealthConnectSteps.readDayDetailed(context, yesterdayDate)
             val past30 = HealthConnectSteps.readHistoricalDays(context, 30)
             val past7 = past30.take(7)
@@ -682,8 +684,9 @@ class DeviceMetricsRepository @Inject constructor(
         }
 
         val zone = ZoneId.systemDefault()
-        val start = LocalDate.now().atStartOfDay(zone).toInstant().toEpochMilli()
+        val start = LocalDate.now(zone).atStartOfDay(zone).toInstant().toEpochMilli()
         val end = System.currentTimeMillis()
+        val maxPossibleMs = (end - start).coerceAtLeast(0L)
         val usage = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         // Chunked exclusive app-union = DW donut. Never INTERVAL_BEST / visible.
         val parsed = UsageDayParser.parseDay(
@@ -718,7 +721,8 @@ class DeviceMetricsRepository @Inject constructor(
             unlockedMs = parsed.unlockedMs,
             exclusiveAppUnionMs = parsed.appUnionMs,
             dailyForegroundByPackage = dailyFg,
-            authoritativeTotalMs = authoritativeTotalMs,
+            authoritativeTotalMs = if (authoritativeTotalMs <= maxPossibleMs) authoritativeTotalMs else 0L,
+            maxPossibleMs = maxPossibleMs,
         )
         val scaledFg = ScreenTime.scaleAppForegroundToTotal(dailyFg, screenMs)
         android.util.Log.i(

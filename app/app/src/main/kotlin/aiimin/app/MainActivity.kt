@@ -80,7 +80,7 @@ class MainActivity : FragmentActivity() {
             val cal by onboarding.state.collectAsStateWithLifecycle()
             val sessionState by session.state.collectAsStateWithLifecycle()
             LaunchedEffect(prefs.darkTheme) {
-                val bg = if (prefs.darkTheme) 0xFF15171A.toInt() else 0xFFF2F2F3.toInt()
+                val bg = if (prefs.darkTheme) 0xFF141414.toInt() else 0xFFF2F2F3.toInt()
                 window.decorView.setBackgroundColor(bg)
                 WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars =
                     !prefs.darkTheme

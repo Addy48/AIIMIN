@@ -59,6 +59,19 @@ class ConfigStoreTest {
     }
 
     @Test
+    fun `remote identity updates arc and tier`() {
+        store.applyRemoteIdentity(
+            name = "Aaditya",
+            email = "aaditya@gmail.com",
+            username = "adit2k04",
+            arc = "Build the personal operating system for ambitious people",
+            tier = "supporter",
+        )
+        assertThat(store.state.value.identity.arc).isEqualTo("Build the personal operating system for ambitious people")
+        assertThat(store.state.value.identity.tierLabel).isEqualTo("supporter")
+    }
+
+    @Test
     fun `biometric off by default then toggles`() {
         assertThat(store.state.value.biometricEnabled).isFalse()
         store.toggleBiometric()
