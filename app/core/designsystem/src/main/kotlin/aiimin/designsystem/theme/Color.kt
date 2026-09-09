@@ -38,16 +38,16 @@ data class AiiminColors(
     val onAccent: Color get() = if (isDark) bg else Color.White
 }
 
-/** Dark — "Drafting Table" (default). */
+/** Dark — "Drafting Table" (default). Pure neutral architectural charcoal. */
 val DraftingTableDark = AiiminColors(
-    bg = Color(0xFF15171A),
-    surface = Color(0xFF1C1F23),
-    text = Color(0xFFE4E5E7),
+    bg = Color(0xFF141414),
+    surface = Color(0xFF1E1E1E),
+    text = Color(0xFFEDEDED),
     accent = Color(0xFF749DC4),
-    hair = Color(0xFF26292E),
-    rule = Color(0xFF353A41),
-    muted = Color(0xFF8B9098),
-    tint = Color(0xFF1B232C),
+    hair = Color(0xFF262626),
+    rule = Color(0xFF333333),
+    muted = Color(0xFF888888),
+    tint = Color(0xFF262626),
     danger = Color(0xFFE8735C),
     isDark = true,
 )

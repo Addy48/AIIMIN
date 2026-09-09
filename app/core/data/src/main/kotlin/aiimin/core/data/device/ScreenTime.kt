@@ -37,8 +37,11 @@ object ScreenTime {
         exclusiveAppUnionMs: Long = 0L,
         dailyForegroundByPackage: Map<String, Long> = emptyMap(),
         authoritativeTotalMs: Long = 0L,
+        maxPossibleMs: Long = Long.MAX_VALUE,
     ): Long {
-        if (authoritativeTotalMs > 0L) return authoritativeTotalMs
+        if (authoritativeTotalMs > 0L && authoritativeTotalMs <= maxPossibleMs) {
+            return authoritativeTotalMs
+        }
 
         val interactive = when {
             eventInteractiveMs > 0L -> eventInteractiveMs
@@ -126,7 +129,7 @@ object ScreenTime {
         } catch (_: Throwable) {
             // Unit tests run on JVM — android.util.Log is a stub that throws.
         }
-        return result
+        return result.coerceAtMost(maxPossibleMs)
     }
 
     fun scaleAppForegroundToTotal(

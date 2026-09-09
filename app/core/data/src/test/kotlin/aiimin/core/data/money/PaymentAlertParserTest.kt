@@ -109,4 +109,37 @@ class PaymentAlertParserTest {
         assertThat(p.dateIso).isEqualTo("2026-08-05")
         assertThat(p.amountInr).isEqualTo(89)
     }
+
+    @Test
+    fun parses_payout_to_user_account() {
+        val p = PaymentAlertParser.parse(
+            "Paid Rs 124 to your A/c ending 1234 on 13-09-26. Payout successful.",
+        )
+        requireNotNull(p)
+        assertThat(p.amountInr).isEqualTo(124)
+        assertThat(p.direction).isEqualTo(PaymentAlertParser.Direction.CREDIT)
+        assertThat(p.merchant).isNull()
+    }
+
+    @Test
+    fun parses_company_payout_with_account_mask() {
+        val p = PaymentAlertParser.parse(
+            "Swiggy paid Rs 124 to ********1234. Ref 987654321.",
+        )
+        requireNotNull(p)
+        assertThat(p.amountInr).isEqualTo(124)
+        assertThat(p.direction).isEqualTo(PaymentAlertParser.Direction.CREDIT)
+        assertThat(p.merchant).isEqualTo("Swiggy")
+    }
+
+    @Test
+    fun rejects_account_mask_as_merchant() {
+        val p = PaymentAlertParser.parse(
+            "Paid Rs 124 to ***** on 13-09-26.",
+        )
+        requireNotNull(p)
+        assertThat(p.amountInr).isEqualTo(124)
+        assertThat(p.direction).isEqualTo(PaymentAlertParser.Direction.CREDIT)
+        assertThat(p.merchant).isNull()
+    }
 }

@@ -47,7 +47,7 @@ fun SurfaceScaffold(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A)
+@Preview(showBackground = true, backgroundColor = 0xFF141414)
 @Composable
 private fun SurfaceScaffoldPreview() {
     AiiminTheme {

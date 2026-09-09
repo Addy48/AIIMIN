@@ -123,9 +123,9 @@ object KnockNotifier {
             val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
 
-            // Circular dark backdrop matching Drafting Table #15171A
+            // Circular dark backdrop matching Drafting Table #141414
             val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = 0xFF15171A.toInt()
+                color = 0xFF141414.toInt()
                 style = Paint.Style.FILL
             }
             val radius = size / 2f

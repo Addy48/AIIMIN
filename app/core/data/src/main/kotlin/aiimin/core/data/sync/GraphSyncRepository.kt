@@ -324,6 +324,17 @@ class GraphSyncRepository @Inject constructor(
         )
     }
 
+    fun enqueueArcUpdate(arc: String) {
+        enqueueMutation(
+            SyncMutationDto(
+                id = UUID.randomUUID().toString(),
+                type = "profile.arc.update",
+                payload = mapOf("arc" to arc),
+                clientMutatedAt = Instant.now().toString(),
+            ),
+        )
+    }
+
     fun pendingNoteDeleteIds(): Set<String> =
         outbox.mapNotNull { m ->
             if (m.type == "note.delete") m.payload["id"] else null
@@ -502,6 +513,8 @@ class GraphSyncRepository @Inject constructor(
                 name = user.name,
                 email = user.email,
                 username = user.username,
+                arc = user.arc,
+                tier = user.tier,
             )
         }
     }

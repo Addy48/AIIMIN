@@ -103,6 +103,49 @@ class TransactionalSmsScanner @Inject constructor(
         ).any { it in lower }
     }
 
+    data class SmsExportItem(
+        val sender: String,
+        val dateEpochMs: Long,
+        val body: String,
+    )
+
+    /**
+     * Read and return recent transactional messages from the user's SMS inbox
+     * so they can be exported/copied for debugging, inspection, or model training.
+     */
+    suspend fun exportTransactionalMessages(lookbackDays: Int = 30): List<SmsExportItem> =
+        withContext(Dispatchers.IO) {
+            if (!hasReadPermission()) return@withContext emptyList()
+            val list = mutableListOf<SmsExportItem>()
+            val now = System.currentTimeMillis()
+            val since = now - (lookbackDays.toLong() * 24L * 60L * 60L * 1000L)
+            val uri: Uri = Telephony.Sms.Inbox.CONTENT_URI
+            val projection = arrayOf(
+                Telephony.Sms.BODY,
+                Telephony.Sms.DATE,
+                Telephony.Sms.ADDRESS,
+            )
+            val selection = "${Telephony.Sms.DATE} > ?"
+            val args = arrayOf(since.toString())
+            val sort = "${Telephony.Sms.DATE} DESC"
+            context.contentResolver.query(uri, projection, selection, args, sort)?.use { c ->
+                val bodyIdx = c.getColumnIndex(Telephony.Sms.BODY)
+                val dateIdx = c.getColumnIndex(Telephony.Sms.DATE)
+                val addressIdx = c.getColumnIndex(Telephony.Sms.ADDRESS)
+                if (bodyIdx < 0 || dateIdx < 0) return@withContext emptyList()
+                while (c.moveToNext() && list.size < 200) {
+                    val body = c.getString(bodyIdx)?.trim().orEmpty()
+                    val sender = if (addressIdx >= 0) c.getString(addressIdx)?.trim().orEmpty() else "UNKNOWN"
+                    val dateMs = c.getLong(dateIdx)
+                    if (body.length < 12) continue
+                    if (looksTransactional(body)) {
+                        list.add(SmsExportItem(sender = sender, dateEpochMs = dateMs, body = body))
+                    }
+                }
+            }
+            list
+        }
+
     data class ScanResult(
         val scanned: Int = 0,
         val queued: Int = 0,

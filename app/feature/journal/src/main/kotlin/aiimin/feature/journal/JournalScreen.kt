@@ -408,7 +408,7 @@ private fun HistoryRow(entry: JournalEntry) {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A, widthDp = 390, heightDp = 900)
+@Preview(showBackground = true, backgroundColor = 0xFF141414, widthDp = 390, heightDp = 900)
 @Composable
 private fun JournalPreview() {
     AiiminTheme {

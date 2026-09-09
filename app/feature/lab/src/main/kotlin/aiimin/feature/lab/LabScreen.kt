@@ -601,7 +601,7 @@ private fun SurvivorRow(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A, widthDp = 390, heightDp = 1100)
+@Preview(showBackground = true, backgroundColor = 0xFF141414, widthDp = 390, heightDp = 1100)
 @Composable
 private fun LabPreview() {
     AiiminTheme {

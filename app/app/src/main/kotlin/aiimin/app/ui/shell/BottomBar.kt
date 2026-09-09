@@ -87,7 +87,7 @@ fun BottomBar(
 private val BarHeight = 68.dp
 private const val INACTIVE_ALPHA = 0.5f
 
-@Preview(showBackground = true, backgroundColor = 0xFF15171A)
+@Preview(showBackground = true, backgroundColor = 0xFF141414)
 @Composable
 private fun BottomBarPreview() {
     AiiminTheme {

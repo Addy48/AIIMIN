@@ -716,7 +716,8 @@ private fun Past30DaysStepsSection(
 
         ChartReadout(
             title = "Momentum Engine",
-            detail = "${history.monthlyConsistencyPct}% goal achievement over the last 30 days. Average of %,d steps/day with a 30-day high of %,d.".format(
+            detail = "%d%% goal achievement over the last 30 days. Average of %,d steps/day with a 30-day high of %,d.".format(
+                history.monthlyConsistencyPct,
                 history.monthlyAverage,
                 history.bestDaySteps,
             ),

@@ -39,7 +39,7 @@ export const ANDROID_APP_STATUS = {
   ],
   apkUrl: '/aiimin-v2-debug.apk',
   apkVersion: 'V3 · optimized · Sep 2026',
-  apkSha: 'b53e0426...fb8770e',
+  apkSha: '31bc6787...09a589c56',
 };
 
 export const fadeUp = {
@@ -332,51 +332,51 @@ export const TESTIMONIALS = [
 export const FAQS = [
   {
     q: 'What is AIIMIN?',
-    a: 'AIIMIN is a Personal Life OS — journal, habits, money, calendar, focus, family vault, and practice on one unified graph. Desktop is the command surface; Android is the rich companion for capture, health, and on-the-go loops. Built for ambitious people who refuse to juggle five separate apps.',
+    a: 'AIIMIN is a Personal Life OS — journal, habits, money, calendar, focus, family vault, and practice on one unified graph. Desktop is the command surface with 23 modular systems; Android is the rich native companion for capture, health telemetry, and offline loops. Built for ambitious operators who refuse to duct-tape five fragmented apps together.',
   },
   {
-    q: 'Website vs Android app?',
-    a: 'Same account, same data. The website (aiimin.in) is the full desktop Life OS — reports, budgets, vault admin, deep editing. The native Android app is a rich companion (Today, Capture, Money, Lab, Config) — not a crippled phone website. It is in closed device testing now; Play Store listing comes later. Status: /app. iOS is not in the current plan. Phone web (/m) stays capture-only.',
+    q: 'How is AIIMIN different from Notion, Obsidian, or generic habit trackers?',
+    a: 'Notion and Obsidian are blank note canvases requiring manual formulas and fragile templates. Standalone trackers isolate habits from your money and schedule. In AIIMIN, everything lives on one interconnected life graph: your workout minimums feed your 5D Life Score (Body, Mind, Discipline, Money, Mood), your daily expenses calculate live runway, and your evening debrief closes your entire operating loop — with zero configuration required.',
   },
   {
-    q: 'Can I download the Android APK?',
-    a: 'Yes — if you are a registered tester. The V2 debug build (~62 MB, Android 8.0+) is available directly from the Android section on this page. It is not on the Play Store yet — that is intentional. We are shipping a real build to real testers and using their feedback before a public listing. If you are not yet a tester, join the waitlist to get into the queue. Waitlist members get the Play Store drop announcement first.',
+    q: 'Does AIIMIN work offline without an internet connection?',
+    a: 'Yes, 100% offline-first. The native Android companion writes every habit check-in, journal reflection, focus block, and expense directly to an encrypted local SQLCipher SQLite database in under 10 milliseconds. When connectivity restores, an asynchronous delta outbox synchronizes your records to your personal cloud graph conflict-free.',
   },
   {
-    q: 'Why desktop + Android, not phone-web analytics?',
-    a: 'Dense analytics need a large screen. Phone web is intentionally capture-only so we never ship a cramped fake dashboard. Android gets the companion experience with sensors, offline queue, and widgets. Open the website on a laptop for command; open Android for the day when your build is ready.',
+    q: 'Website vs Android app — what is the difference?',
+    a: 'Same account, single unified graph. The desktop website (aiimin.in) is your command center for deep weekly planning, 23 subsystem controls, detailed financial analytics, and dossier reviews. The native Android companion is built for high-cadence execution on the go: lockscreen capture, Focus Shield app blocking (without battery-draining VPNs), biometric lock, and Health Connect sensors. Phone web (/m) stays strictly rapid capture. iOS is not in the current phase as we prioritize mastering Android and desktop first.',
   },
   {
-    q: 'When does AIIMIN launch?',
-    a: 'We are targeting end of November 2026. That is a public go-live window, not a hard SLA — the exact date may shift slightly.',
+    q: 'Can I download the Android APK right now?',
+    a: 'Yes — if you are an invited tester or waitlist member. The optimized native build (~27 MB, Android 8.0+) is available directly from the Android section on this page or via /app. We distribute directly during closed device testing to ship rapid improvements without 5-day app store review delays. Google Play Store release will follow after closed testing.',
   },
   {
-    q: 'What do invited testers get?',
-    a: 'The VIP package: Elite free for 12 months (₹1,188 value), first beta access to every module, priority OS-ID, prototype features, and direct founder feedback channel. Register by 31 October.',
+    q: 'How is my privacy and personal data protected?',
+    a: 'Non-negotiable data sovereignty: zero ad tracking, zero telemetry harvesting, and we never sell user data. Master cryptographic keys are generated inside your smartphone hardware keystore (AndroidKeyStore TEE / StrongBox with AES-256-GCM encryption). On the web, data is protected by Postgres Row-Level Security (RLS) with strict per-user isolation. Your private journal reflections are completely excluded from analytics and are never sent to external LLMs. You can export all your data in JSON / CSV or delete your account at any time.',
   },
   {
-    q: 'What do waitlist members get?',
-    a: 'The founding member package: launch starter kit, complimentary Core subscription at go-live, Pro at ₹49/mo founding price (~17% off ₹59) for 12 months, Elite at ₹79/mo founding price (~20% off ₹99) for 12 months, OS-ID reservation, and priority onboarding. Core stays at standard ₹29/mo.',
+    q: 'How do I migrate my existing data from Notion, spreadsheets, or other trackers?',
+    a: 'AIIMIN provides clean, structured 1-click import utilities for past journal entries, habit streaks, and financial transaction sheets (CSV and JSON). You do not have to start from scratch or manually re-enter your historical logs.',
   },
   {
-    q: 'Is Explore free?',
-    a: 'Yes. Explore stays free forever — including Journal, Depth, and basic Android capture. Waitlist perks apply to complimentary Core and founding Pro/Elite prices.',
+    q: 'When does AIIMIN launch publicly?',
+    a: 'We are targeting end of November 2026 for public go-live. Founding tester registration and discount lock-ins close on 31 October 2026.',
   },
   {
-    q: 'How do you handle privacy?',
-    a: 'We do not sell your life data. Journal is private reflection and stays out of analytics. Export and delete are always available. Optional connections (Calendar, Health, payment alerts) are off until you turn them on, with a plain-language purpose for each. Full details: /privacy and /security.',
+    q: 'What do waitlist members get vs invited testers?',
+    a: 'Waitlist members get the Founding Package: complimentary Core subscription at go-live, Pro locked at ₹49/mo (standard ₹59/mo) for 12 months, Elite locked at ₹79/mo (standard ₹99/mo) for 12 months, reserved OS-ID handle, and priority queue onboarding. Invited closed beta testers receive the VIP Package: 12 months of Elite free (₹1,188 value), direct APK drops, experimental lab features, and a direct line to the founder. Registration closes 31 October 2026.',
   },
   {
-    q: 'What is an OS-ID?',
-    a: 'OS-ID is your unique AIIMIN handle. You can reserve it on the waitlist form or claim it during invite onboarding.',
+    q: 'Is the Explore tier free forever?',
+    a: 'Yes. Explore is free forever — zero credit card required. Includes private Journal, Daily Minimums, Depth focus timer, and basic mobile capture.',
   },
   {
-    q: 'Can I invite friends?',
-    a: 'Yes. Share your referral link after signup — every friend who joins moves you up 5 spots.',
+    q: 'What is an OS-ID handle?',
+    a: 'OS-ID is your unique, cryptographically-scoped AIIMIN identifier (e.g., OS-ID: AADI0837). Reserving it on the waitlist form locks your preferred handle to your account before public launch.',
   },
   {
-    q: 'How is my data handled?',
-    a: 'Only details needed for waitlist and launch communication are stored. No spam, and unsubscribe options are available.',
+    q: 'How does the referral queue work?',
+    a: 'When you join the waitlist, you get a personal referral link. Each peer or teammate who signs up using your link moves you up 5 spots in the onboarding queue.',
   },
 ];
 
