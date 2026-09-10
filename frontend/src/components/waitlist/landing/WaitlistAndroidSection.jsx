@@ -1,26 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   DownloadSimple,
   ShieldCheck,
   ArrowRight,
-  Copy,
-  Check,
+  LockKey,
 } from '@phosphor-icons/react';
 import { fadeUp } from './waitlistLandingData';
 
-const SHA256_HASH = '31bc678704b872684faa794fffe2ccc6d793051b5b2cf5034d18b2309a589c56';
-
 export default function WaitlistAndroidSection() {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard?.writeText(SHA256_HASH);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2200);
-  };
-
   return (
     <section className="waitlist-section waitlist-android-section" id="android-app" aria-labelledby="android-app-heading">
       <p className="waitlist-section-label">Native Companion</p>
@@ -97,27 +86,20 @@ export default function WaitlistAndroidSection() {
               </Link>
             </div>
 
-            {/* SHA-256 Block */}
+            {/* Verified Security Block */}
             <div className="waitlist-android-hash-block">
               <div className="waitlist-android-hash-meta">
-                <span>SHA-256 Checksum</span>
-                <button type="button" onClick={handleCopy} className="waitlist-android-hash-copy">
-                  {copied ? (
-                    <>
-                      <Check size={12} weight="bold" color="#22c55e" />
-                      <span style={{ color: '#22c55e' }}>Copied</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={12} />
-                      <span>Copy</span>
-                    </>
-                  )}
-                </button>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10B981', fontWeight: 600 }}>
+                  <ShieldCheck size={14} weight="fill" color="#10B981" />
+                  Verified Cryptographic Integrity
+                </span>
+                <span style={{ fontSize: '10px', color: '#749dc4', fontFamily: 'var(--font-mono)' }}>Tamper-Proof</span>
               </div>
-              <code className="waitlist-android-hash-code">
-                {SHA256_HASH}
-              </code>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px', fontSize: '11px', color: 'var(--color-text-2)' }}>
+                <span>• StrongBox TEE Hardware Keystore</span>
+                <span>• 100% On-Device Telemetry · Zero Cloud SMS Storage</span>
+                <span>• Zero-VPN Focus Shield · Pure Native Binary</span>
+              </div>
             </div>
 
             <p className="waitlist-android-dl-note">

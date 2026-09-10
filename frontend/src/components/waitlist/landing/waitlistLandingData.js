@@ -39,7 +39,7 @@ export const ANDROID_APP_STATUS = {
   ],
   apkUrl: '/aiimin-v2-debug.apk',
   apkVersion: 'V3 · optimized · Sep 2026',
-  apkSha: '31bc6787...09a589c56',
+  security: 'Hardware Keystore · Zero-VPN · 100% On-Device Telemetry',
 };
 
 export const fadeUp = {

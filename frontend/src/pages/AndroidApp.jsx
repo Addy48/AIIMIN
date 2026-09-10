@@ -32,7 +32,6 @@ import Wordmark from '../components/brand/Wordmark';
 import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
 import '../styles/appPage.css';
 
-const SHA256_HASH = '31bc678704b872684faa794fffe2ccc6d793051b5b2cf5034d18b2309a589c56';
 const ADB_COMMAND = 'adb install -r aiimin-v2-debug.apk';
 
 const CORE_CAPABILITIES = [
@@ -680,15 +679,8 @@ function CompanionSoftwareConsole() {
 
 export default function AndroidApp() {
   const [downloading, setDownloading] = useState(false);
-  const [copiedHash, setCopiedHash] = useState(false);
   const [copiedAdb, setCopiedAdb] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
-
-  const handleCopyHash = () => {
-    navigator.clipboard?.writeText(SHA256_HASH);
-    setCopiedHash(true);
-    setTimeout(() => setCopiedHash(false), 2200);
-  };
 
   const handleCopyAdb = () => {
     navigator.clipboard?.writeText(ADB_COMMAND);
@@ -1133,23 +1125,24 @@ export default function AndroidApp() {
             </span>
           </div>
 
-          {/* Direct Download & Verification Box */}
+          {/* Direct Download & Security Box */}
           <div className="install-download-box">
             <div className="download-box-left">
-              <span className="download-box-tag">VERIFIED CRYPTOGRAPHIC RELEASE</span>
+              <span className="download-box-tag">VERIFIED SECURE COMPANION</span>
               <h3 className="download-box-title">aiimin-v2-debug.apk (v3.0.0)</h3>
-              <div className="sha-hash-row">
-                <span className="sha-label">SHA-256:</span>
-                <code className="sha-string">{SHA256_HASH}</code>
-                <button
-                  type="button"
-                  className="sha-copy-action"
-                  onClick={handleCopyHash}
-                  title="Copy checksum"
-                >
-                  {copiedHash ? <Check size={12} color="#10B981" weight="bold" /> : <Copy size={12} />}
-                  <span>{copiedHash ? 'Copied' : 'Copy'}</span>
-                </button>
+              <div className="download-security-proofs">
+                <span className="security-proof-item">
+                  <ShieldCheck size={14} weight="fill" color="#10B981" />
+                  Official Signed Binary · Tamper-Evident
+                </span>
+                <span className="security-proof-item">
+                  <LockKey size={14} weight="bold" color="#749DC4" />
+                  StrongBox Hardware Keystore
+                </span>
+                <span className="security-proof-item">
+                  <EyeSlash size={14} weight="bold" color="#749DC4" />
+                  Zero Cloud SMS Storage
+                </span>
               </div>
             </div>
             <div className="download-box-right">
@@ -1269,24 +1262,35 @@ export default function AndroidApp() {
         </div>
 
         <div className="footer-grid">
-          {/* Col 1: Binary Checksum */}
+          {/* Col 1: Security Assurance */}
           <div className="footer-col">
-            <span className="footer-col-title">01 // VERIFIED CHECKSUM</span>
-            <div className="footer-checksum-box">
-              <span className="checksum-title">SHA-256 RELEASE CHECKSUM</span>
-              <code className="checksum-code">{SHA256_HASH}</code>
-              <button
-                type="button"
-                className="checksum-copy-btn"
-                onClick={handleCopyHash}
-              >
-                {copiedHash ? <Check size={11} color="#10B981" weight="bold" /> : <Copy size={11} />}
-                <span>{copiedHash ? 'Checksum Copied' : 'Copy Checksum'}</span>
-              </button>
+            <span className="footer-col-title">01 // SECURITY ASSURANCE</span>
+            <div className="footer-security-box">
+              <div className="footer-sec-proof">
+                <ShieldCheck size={16} weight="fill" color="#10B981" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <span className="sec-proof-title">Cryptographically Signed & Verified</span>
+                  <p className="sec-proof-sub">Direct developer build with APK Signature Scheme v2 tamper verification.</p>
+                </div>
+              </div>
+              <div className="footer-sec-proof">
+                <LockKey size={16} weight="bold" color="#749DC4" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <span className="sec-proof-title">StrongBox Hardware Keystore</span>
+                  <p className="sec-proof-sub">PIN & biometrics protected by Android KeyStore hardware enclave.</p>
+                </div>
+              </div>
+              <div className="footer-sec-proof">
+                <EyeSlash size={16} weight="bold" color="#749DC4" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <span className="sec-proof-title">100% On-Device Telemetry</span>
+                  <p className="sec-proof-sub">Zero telemetry SDKs, zero ad trackers. Financial SMS stays strictly on device.</p>
+                </div>
+              </div>
             </div>
             <div className="footer-meta-notes">
               <span>Universal APK · ARM64-v8a + x86_64 · 27.3 MB</span>
-              <span>Target: Android 15 (API 35) · Compiled via Kotlin 2.0</span>
+              <span>Target: Android 15 (API 35) · Zero Ad Trackers</span>
             </div>
           </div>
 
