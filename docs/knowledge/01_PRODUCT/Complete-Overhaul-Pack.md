@@ -120,7 +120,7 @@ Rich interactive software console and transparent closed-beta APK distribution. 
 
 ### Shipped State (2026-09-14)
 
-- **Live APK Download:** Hosted at `/aiimin-v2-debug.apk` (~27.3 MB, Android 8.0+) with live SHA-256 checksum verification metadata (`31bc6787...09a589c56`).
+- **Live APK Download:** Hosted at `/aiimin-v2-debug.apk` (~27.3 MB, Android 8.0+) with cryptographic developer signature and StrongBox TEE integrity verification.
 - **Interactive Companion Software Console:** Live simulation of Today loop, Focus Shield app interception, Money runway calculation, and Hardware Vault biometric initialization.
 - **Architectural Honesty:** 3-column split (Desktop Command vs Native Companion vs What We Don't Do), detailed "Why not Play Store yet" rationale, and step-by-step sideload instructions.
 - **Local Engine:** 100% offline-first SQLCipher SQLite (<10ms writes), native Accessibility Focus Shield (no VPN battery drain), and StrongBox TEE hardware encryption.

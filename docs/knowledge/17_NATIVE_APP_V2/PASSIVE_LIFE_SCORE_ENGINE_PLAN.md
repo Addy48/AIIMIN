@@ -113,3 +113,38 @@ CREATE INDEX idx_life_score_date ON life_score_snapshots(date);
   - New transactional SMS received.
 - Midnight rollover: At 00:00:01, seals the day's final score and seeds the new day with a baseline score of 100 (which decays or earns as the day unfolds).
 
+---
+
+## 5. Critical Missing Dimensions & Latent Failure Modes (Architectural Safeguards)
+
+### A. The "Blank Slate" Paradox (Circadian Pacing Curves)
+* **The Pitfall:** If a user wakes up at 07:30 AM with 300 steps, evaluating them against the daily target of 10,000 steps would plunge their morning score to 35/100, inducing demotivating cognitive fatigue before their day begins.
+* **The Missing Architecture:** **Time-Decayed Expected Pacing $E(t)$**:
+  Instead of static cumulative denominators, all metrics compare current actual telemetry against the expected circadian progression for that specific hour $t$:
+  $$\text{Expected Steps}(t) = \text{Target} \times \Phi\left(\frac{t - \mu}{\sigma}\right)$$
+  Where $\Phi$ is the cumulative circadian activity curve (low between 23:00–07:00, ramping between 08:00–12:00 and 17:00–20:00).
+  At 08:30 AM, if expected steps is 600 and the user has 550, their Physical Vigor score remains at **92%**, reflecting accurate real-time momentum.
+
+### B. OEM Background Service Eviction ("The Dead Companion" Syndrome)
+* **The Pitfall:** Aggressive Android OEM battery killers (MIUI/HyperOS, Samsung OneUI, OnePlus OxygenOS) silently freeze background workers and sensor listeners after 45–90 minutes of screen-off deep sleep. When evicted, steps stop recording, screen time sessions lose end-markers, and the user's score stagnates.
+* **The Missing Architecture:**
+  1. **Telemetry Confidence Gauge:** Every score snapshot computes an internal confidence rating:
+     $$\text{Confidence} = 1.0 - \min\left(0.5, \frac{\Delta t_{\text{last\_sensor\_tick}}}{120\text{ mins}}\right)$$
+     If confidence drops below 70%, the UI displays an ambient `[ TELEMETRY STALE · SENSOR ASLEEP ]` indicator rather than pretending the user was sedentary.
+  2. **WorkManager Expedited Foreground Pulse:** Lightweight periodic `OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST` with auto-whitelisting intent deep links to `ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS`.
+
+### C. Sensor False-Positives (Vehicle & Incline Ingestion Filter)
+* **The Pitfall:** Commuting on bumpy public transit or two-wheelers triggers rapid accelerometer oscillations that register 1,500 "steps" in 15 minutes of zero physical exertion.
+* **The Missing Architecture:**
+  - **Cadence Velocity Sanity Filter:** Hard step frequency limit ($< 3.8\text{ Hz}$). Sustained oscillations $> 4.0\text{ Hz}$ with zero cadence variance trigger an automated vehicle suspension flag.
+  - Cross-validation against Google Play `ActivityRecognitionClient` (`IN_VEHICLE` vs `ON_FOOT`).
+
+### D. Actionable Agency vs Dashboard Guilt (The "Single Daily Lever")
+* **The Pitfall:** Showing endless charts of missed targets produces anxiety without empowerment.
+* **The Missing Architecture:**
+  - **The Next Highest-Leverage Action:** Instead of just reporting a score of 68, the engine computes:
+    $$\Delta \text{Score}^* = \max_{a \in \text{Actions}} \left( \frac{\partial \text{LifeScore}}{\partial a} \right)$$
+  - UI displays one crisp, high-agency directive:
+    `"HIGHEST LEVER: 1,400 steps before 18:30 recovers +9 pts and secures today's streak."`
+
+

@@ -73,3 +73,32 @@ The Mobile Lab interface adheres strictly to the **Drafting Table Dark** design 
 2. **Phase B (Fragmentation & Sensor Telemetry):** Wire Android `UsageEvents` listener to calculate App Switch Frequency and display live ambient telemetry.
 3. **Phase C (Protocols & Interventions):** Add local SQLite storage for experiment runs (`experiment_runs` table), tracking baseline vs intervention metrics over 48-hour periods.
 
+---
+
+## 5. Critical Missing Dimensions & Strategic Blind Spots
+
+### A. The Google Play SMS Policy Trap & Dual-Channel Ingest
+* **The Pitfall:** Relying solely on `READ_SMS` / `RECEIVE_SMS` creates a catastrophic roadblock for app distribution. Google Play strictly bans SMS permissions for any app that is not the device's Default SMS Handler.
+* **The Missing Architecture:** **Dual-Channel Financial Ingestion Pipeline**:
+  1. **Notification Interception Channel (Primary, Play-Compliant):**
+     Using `NotificationListenerService`, the app captures rich push notifications directly from UPI payment apps (PhonePe, Google Pay, Paytm, CRED, BHIM, Navi).
+     - *Advantages:* Instant receipt (< 50ms latency), completely immune to telecom carrier SMS filtering/DND blocks, and 100% compliant with Google Play Store policies.
+  2. **SMS Scanner Channel (Secondary, Sideload-Only):**
+     Retained as a background fallback reconciler for legacy credit card / debit card / ATM bank messages that do not fire UPI notifications.
+
+### B. Client-Side Zero-Knowledge Sanitization & Privacy Shield
+* **The Pitfall:** Syncing raw financial text or account identifiers to backend databases creates massive compliance (RBI/GDPR), privacy, and security liabilities.
+* **The Missing Architecture:**
+  - **Local PII Redaction Pipeline:** Raw SMS strings **never leave the device**.
+  - On-device extraction discards bank account balances, full names, and card fragments.
+  - Payees and merchants are salted and cryptographically hashed locally before synchronization:
+    $$\text{Synced Entity} = \text{HMAC-SHA256}(\text{MerchantName}, \text{DeviceSalt})$$
+  - Only normalized categorizations (`FOOD`, `COMMUTE`, `UTILITY`) and anonymized amounts are synced to PostgreSQL.
+
+### C. Offline Vector Clocks & Outbox Reconciliation
+* **The Pitfall:** If a user edits their Life Arc or goals on the web dashboard while the mobile companion was offline, naive synchronization can cause the mobile app's queued outbox to overwrite the web's newer state.
+* **The Missing Architecture:**
+  - Enforce field-level **Last-Write-Wins (LWW) with Lamport Timestamps** in `server/routes/mobile.js` and `GraphSyncRepository.kt`.
+  - Stale mobile outbox mutations are rejected with HTTP 409 and reconciled against the server's authoritative version.
+
+
