@@ -5592,7 +5592,7 @@ html {
 .feature-inspector-dialog {
   position: relative;
   width: 100%;
-  max-width: 660px;
+  max-width: 750px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -5616,13 +5616,17 @@ html {
   background: color-mix(in srgb, var(--color-surface, #0f131a) 75%, var(--color-base, #000000));
   gap: 10px;
   flex-shrink: 0;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
 .feature-inspector-chrome-left {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .feature-inspector-chrome-right {
@@ -5630,6 +5634,7 @@ html {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .feature-inspector-diode {
@@ -5647,6 +5652,8 @@ html {
   font-weight: 700;
   letter-spacing: 0.07em;
   color: var(--color-text-2, #94a3b8);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .feature-inspector-subsystem-badge {
@@ -5658,6 +5665,11 @@ html {
   border-radius: 4px;
   border: 1px solid;
   background: rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .feature-inspector-browse-btn {
@@ -5675,6 +5687,8 @@ html {
   color: var(--color-text-1, #f1f5f9);
   cursor: pointer;
   transition: all 160ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .feature-inspector-browse-btn:hover {
@@ -5699,6 +5713,8 @@ html {
   border: 1px solid var(--color-border, #1f2633);
   padding: 3px 8px;
   border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .feature-inspector-close-btn {
@@ -5714,6 +5730,8 @@ html {
   font-size: 10.5px;
   font-family: 'JetBrains Mono', monospace;
   transition: all 160ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .feature-inspector-close-btn:hover {
@@ -6048,6 +6066,12 @@ html {
 .feature-inspector-cta-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 18px color-mix(in srgb, #ff6b35 35%, transparent);
+}
+
+@media (max-width: 720px) {
+  .feature-inspector-tier-badge {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
