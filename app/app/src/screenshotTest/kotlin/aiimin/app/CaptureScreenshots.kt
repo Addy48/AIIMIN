@@ -166,6 +166,5 @@ private fun Today(state: DayState) {
         state = state,
         onOpenCapture = {},
         onToggle = {},
-        onMicroTaskChange = {},
     )
 }

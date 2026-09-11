@@ -3,6 +3,7 @@ package aiimin.app
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.tools.screenshot.PreviewTest
+import aiimin.core.model.SubscriptionTier
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.feature.osid.OsIdScreen
 import aiimin.feature.osid.OsIdUiState
@@ -29,7 +30,8 @@ private fun seed() = OsIdUiState(
     holder = "A. UPADHYAY",
     issued = "14.03.25",
     memberNo = "#1204",
-    tierLabel = "CORE",
+    tier = SubscriptionTier.CORE,
+    periodEndIso = null,
     revisionsLeft = 1,
     isValid = true,
     isSeed = true,

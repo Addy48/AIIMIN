@@ -74,7 +74,6 @@ private fun Shell() {
             state = DayState.seed(),
             onOpenCapture = {},
             onToggle = {},
-            onMicroTaskChange = {},
         )
     }
 }
