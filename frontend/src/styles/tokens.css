@@ -26,32 +26,42 @@
   --color-text-3:      #52525B;
   --color-text-inverse: #000000;
 
-  /* ── Accent — Forest Green ──────────────────────── */
-  --color-accent:       #22C55E;
-  --color-accent-dark:  #16A34A;
-  --color-accent-dim:   rgba(34, 197, 94, 0.08);
-  --color-accent-glow:  rgba(34, 197, 94, 0.15);
-  --color-hero: #FFFFFF;
+  /* ── Accent & Drafting Table Steel ──────────────── */
+  --color-accent:       #749DC4;
+  --color-accent-dark:  #416180;
+  --color-accent-dim:   rgba(116, 157, 196, 0.10);
+  --color-accent-glow:  rgba(116, 157, 196, 0.20);
+  --color-steel:        #749DC4;
+  --color-steel-dark:   #416180;
+  --color-spark:        #FF6B35;
+  --color-hero:         #FFFFFF;
+
+  /* ── Semantic Z-Index Scale ─────────────────────── */
+  --z-toast:   9000;
+  --z-modal:   8000;
+  --z-drawer:  7000;
+  --z-overlay: 6000;
+  --z-nav:     5000;
 
   /* ── Brand ──────────────────────────────────────── */
-  --color-logo-bg:   #23503B;
+  --color-logo-bg:   #1E1E1E;
   --color-rust:      #E2725B;
 
   /* ── Status ─────────────────────────────────────── */
   --color-success:  #22C55E;
   --color-warning:  #FACC15;
   --color-danger:   #EF4444;
-  --color-info:     #3B82F6;
+  --color-info:     #749DC4;
 
   --color-success-dim: rgba(34, 197, 94, 0.08);
   --color-danger-dim:  rgba(239, 68, 68, 0.08);
   --color-warning-dim: rgba(250, 204, 21, 0.08);
 
-  --color-info-dim:    rgba(59, 130, 246, 0.08);
+  --color-info-dim:    rgba(116, 157, 196, 0.10);
   --color-alert-red: #EF4444;
   --color-gym:       #E2725B;
-  --color-steps:     #22C55E;
-  --color-water:     #3B82F6;
+  --color-steps:     #749DC4;
+  --color-water:     #749DC4;
   --color-sleep:     #FACC15;
 
   --gold:             #c2841a;

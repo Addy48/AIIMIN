@@ -87,10 +87,12 @@ export default function MobileScorePage() {
                 strokeWidth="2"
               />
               <path
+                className="mobile-score__ring-progress"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 fill="none"
-                stroke="#ff6b35"
-                strokeWidth="2"
+                stroke="#749dc4"
+                strokeWidth="2.5"
+                strokeLinecap="round"
                 strokeDasharray={`${score == null ? 0 : score}, 100`}
               />
             </svg>
