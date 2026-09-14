@@ -30,6 +30,42 @@ export default function MobileCaptureApp() {
           </p>
         </section>
 
+        <div className="mobile-capture__chips" role="group" aria-label="Quick capture presets">
+          <span className="mobile-capture__chip-label">QUICK:</span>
+          <button type="button" className="mobile-capture__chip" onClick={() => {
+            const input = document.querySelector('.mobile-capture textarea, .mobile-capture input[type="text"]');
+            if (input) {
+              input.focus();
+              input.value = (input.value ? input.value + ' ' : '') + 'Paid ';
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }}>+ Expense</button>
+          <button type="button" className="mobile-capture__chip" onClick={() => {
+            const input = document.querySelector('.mobile-capture textarea, .mobile-capture input[type="text"]');
+            if (input) {
+              input.focus();
+              input.value = (input.value ? input.value + ' ' : '') + 'Done: ';
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }}>+ Habit</button>
+          <button type="button" className="mobile-capture__chip" onClick={() => {
+            const input = document.querySelector('.mobile-capture textarea, .mobile-capture input[type="text"]');
+            if (input) {
+              input.focus();
+              input.value = (input.value ? input.value + ' ' : '') + 'Note: ';
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }}>+ Note</button>
+          <button type="button" className="mobile-capture__chip" onClick={() => {
+            const input = document.querySelector('.mobile-capture textarea, .mobile-capture input[type="text"]');
+            if (input) {
+              input.focus();
+              input.value = (input.value ? input.value + ' ' : '') + 'Felt ';
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }}>+ Mood</button>
+        </div>
+
         <section className="mobile-capture__card" aria-label="Daily log">
           {user ? (
             <DailyLogForm user={user} enableOfflineQueue onSuccess={() => setShowNudge(true)} />

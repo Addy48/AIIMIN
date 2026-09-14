@@ -138,14 +138,14 @@ fun BiometricLockGate(
                 .padding(horizontal = AiiminTheme.space.page)
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s4),
         ) {
             // Header: Brand & Identity
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = AiiminTheme.space.s8),
+                    .padding(top = AiiminTheme.space.s4),
             ) {
                 BrandMark(size = 64.dp)
                 Text(

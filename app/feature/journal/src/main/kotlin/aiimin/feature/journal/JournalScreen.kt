@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -167,6 +169,9 @@ fun JournalScreen(
         // Mood first — capture the state before it evaporates.
         SectionRule(label = "Mood", value = "REQUIRED")
         MoodGrid(selected = state.mood, onSelect = onMood)
+
+        SectionRule(label = "Context tags", value = "OPTIONAL")
+        ActivityTagRow(currentDraft = state.draft, onDraftChange = onDraft)
 
         // Reflection canvas.
         SectionRule(label = "Today", value = "OPEN")
@@ -332,6 +337,7 @@ private fun PromptChips(
 
 @Composable
 private fun MoodGrid(selected: Int, onSelect: (Int) -> Unit) {
+    val glyphs = listOf("▼", "▽", "◇", "△", "▲")
     Row(
         Modifier
             .fillMaxWidth()
@@ -341,6 +347,7 @@ private fun MoodGrid(selected: Int, onSelect: (Int) -> Unit) {
         JournalState.MOOD_LABELS.forEachIndexed { i, label ->
             val mood = i + 1
             val on = mood == selected
+            val glyph = glyphs.getOrElse(i) { "·" }
             TapSurface(
                 onClick = { onSelect(mood) },
                 minTouchTarget = false,
@@ -355,12 +362,17 @@ private fun MoodGrid(selected: Int, onSelect: (Int) -> Unit) {
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
+                        text = glyph,
+                        style = AiiminTheme.type.mono(14.0, FontWeight.Bold),
+                        color = if (on) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
+                    )
+                    Text(
                         text = mood.toString(),
-                        style = AiiminTheme.type.mono(13.0, FontWeight.Bold),
+                        style = AiiminTheme.type.mono(11.0, FontWeight.Bold),
                         color = if (on) AiiminTheme.colors.accent else AiiminTheme.colors.text,
                     )
                     Text(
@@ -372,6 +384,50 @@ private fun MoodGrid(selected: Int, onSelect: (Int) -> Unit) {
                         color = if (on) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
                     )
                 }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ActivityTagRow(
+    currentDraft: String,
+    onDraftChange: (String) -> Unit,
+) {
+    val tags = listOf("Deep Work", "Workout", "Outdoor", "Reading", "Rest", "Family")
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s2),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        tags.forEach { tag ->
+            val tagSnippet = "#$tag"
+            val active = currentDraft.contains(tagSnippet, ignoreCase = true)
+            TapSurface(
+                onClick = {
+                    if (active) {
+                        onDraftChange(currentDraft.replace(tagSnippet, "").trim())
+                    } else {
+                        onDraftChange(if (currentDraft.isBlank()) tagSnippet else "$currentDraft $tagSnippet")
+                    }
+                },
+                minTouchTarget = false,
+                modifier = Modifier
+                    .border(
+                        Hairline,
+                        if (active) AiiminTheme.colors.accent else AiiminTheme.colors.hair,
+                    )
+                    .background(if (active) AiiminTheme.colors.tint else AiiminTheme.colors.surface)
+                    .padding(horizontal = 8.dp, vertical = 5.dp),
+            ) {
+                Text(
+                    text = tag.uppercase(),
+                    style = AiiminTheme.type.chrome.copy(fontSize = 8.5.sp, letterSpacing = 0.8.sp),
+                    color = if (active) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
+                )
             }
         }
     }
