@@ -770,19 +770,47 @@ private fun OverviewTab(state: MoneyState) {
 
 @Composable
 private fun SpendTrack(pct: Float) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = AiiminTheme.space.s4)
-            .height(8.dp)
-            .border(Hairline, AiiminTheme.colors.rule),
-    ) {
+    val isOver = pct >= 1f
+    val isWarning = pct in 0.85f..0.999f
+    val barColor = when {
+        isOver -> AiiminTheme.colors.danger
+        isWarning -> AiiminTheme.colors.danger.copy(alpha = 0.7f)
+        else -> AiiminTheme.colors.accent
+    }
+    Column(Modifier.fillMaxWidth().padding(top = AiiminTheme.space.s4)) {
         Box(
             Modifier
-                .fillMaxHeight()
-                .fillMaxWidth(pct.coerceIn(0f, 1f))
-                .background(AiiminTheme.colors.accent),
-        )
+                .fillMaxWidth()
+                .height(8.dp)
+                .background(AiiminTheme.colors.surface)
+                .border(Hairline, if (isOver) AiiminTheme.colors.danger else AiiminTheme.colors.rule),
+        ) {
+            Box(
+                Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(pct.coerceIn(0.01f, 1f))
+                    .background(barColor),
+            )
+        }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = "${(pct * 100).roundToInt()}% OF PERIOD ALLOCATION CONSUMED",
+                style = AiiminTheme.type.mono(9.5),
+                color = if (isOver) AiiminTheme.colors.danger else AiiminTheme.colors.muted,
+            )
+            if (isOver) {
+                Text(
+                    text = "OVER BUDGET",
+                    style = AiiminTheme.type.mono(9.5, FontWeight.Bold),
+                    color = AiiminTheme.colors.danger,
+                )
+            }
+        }
     }
 }
 

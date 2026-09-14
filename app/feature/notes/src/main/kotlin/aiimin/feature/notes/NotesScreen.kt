@@ -1,7 +1,10 @@
 package aiimin.feature.notes
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -18,9 +22,13 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,9 +46,6 @@ import aiimin.designsystem.component.TapSurface
 import aiimin.designsystem.component.Text
 import aiimin.designsystem.theme.AiiminTheme
 import aiimin.designsystem.theme.Hairline
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -258,12 +263,103 @@ private fun NoteCard(
     val whenLabel = if (note.updatedAt <= 0L) {
         "—"
     } else {
-        Instant.ofEpochMilli(note.updatedAt)
-            .atZone(ZoneId.systemDefault())
-            .format(DateTimeFormatter.ofPattern("EEE d · HH:mm", Locale.US))
+        java.time.Instant.ofEpochMilli(note.updatedAt)
+            .atZone(java.time.ZoneId.systemDefault())
+            .format(java.time.format.DateTimeFormatter.ofPattern("EEE d · HH:mm", Locale.US))
     }
-    Column(Modifier.padding(top = AiiminTheme.space.s3)) {
-        TapSurface(onClick = onOpen, modifier = Modifier.fillMaxWidth()) {
+
+    // Swipe state: 0f = resting, >0 = pin revealed (right), <0 = delete revealed (left).
+    var swipeOffsetPx by remember { mutableStateOf(0f) }
+    val revealThreshold = 120f // px to fully reveal an action
+    val animatedOffset by animateFloatAsState(
+        targetValue = swipeOffsetPx,
+        animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f),
+        label = "note-swipe-${note.id}",
+    )
+
+    val isPinRevealed = animatedOffset > revealThreshold * 0.6f
+    val isDeleteRevealed = animatedOffset < -(revealThreshold * 0.6f)
+
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s3),
+    ) {
+        // Pin background (left side — swipe right).
+        if (animatedOffset > 0f) {
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .background(AiiminTheme.colors.tint)
+                    .border(Hairline, AiiminTheme.colors.accent),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                Text(
+                    text = if (note.pinned) "UNPIN" else "PIN",
+                    style = AiiminTheme.type.chrome.copy(fontSize = 10.sp, letterSpacing = 1.5.sp),
+                    color = AiiminTheme.colors.accent,
+                    modifier = Modifier.padding(start = AiiminTheme.space.s4),
+                )
+            }
+        }
+        // Delete background (right side — swipe left).
+        if (animatedOffset < 0f) {
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .background(AiiminTheme.colors.danger.copy(alpha = 0.12f))
+                    .border(Hairline, AiiminTheme.colors.danger),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                Text(
+                    text = "DELETE",
+                    style = AiiminTheme.type.chrome.copy(fontSize = 10.sp, letterSpacing = 1.5.sp),
+                    color = AiiminTheme.colors.danger,
+                    modifier = Modifier.padding(end = AiiminTheme.space.s4),
+                )
+            }
+        }
+
+        // Card face — clean: title + excerpt + timestamp.
+        TapSurface(
+            onClick = {
+                if (kotlin.math.abs(animatedOffset) < 8f) {
+                    onOpen()
+                } else {
+                    // Confirm swipe action.
+                    when {
+                        isPinRevealed -> { onPin(); swipeOffsetPx = 0f }
+                        isDeleteRevealed -> { onDelete(); swipeOffsetPx = 0f }
+                        else -> swipeOffsetPx = 0f
+                    }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset(x = with(androidx.compose.ui.platform.LocalDensity.current) { animatedOffset.toDp() })
+                .pointerInput(note.id) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            when {
+                                swipeOffsetPx > revealThreshold * 0.6f -> {
+                                    onPin()
+                                    swipeOffsetPx = 0f
+                                }
+                                swipeOffsetPx < -(revealThreshold * 0.6f) -> {
+                                    onDelete()
+                                    swipeOffsetPx = 0f
+                                }
+                                else -> swipeOffsetPx = 0f
+                            }
+                        },
+                        onDragCancel = { swipeOffsetPx = 0f },
+                        onHorizontalDrag = { _, dragAmount ->
+                            swipeOffsetPx = (swipeOffsetPx + dragAmount)
+                                .coerceIn(-revealThreshold, revealThreshold)
+                        },
+                    )
+                },
+        ) {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -283,16 +379,26 @@ private fun NoteCard(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f),
                     )
-                    Text(
-                        text = when {
-                            note.pending -> "QUEUE"
-                            note.pinned -> "PIN"
-                            else -> whenLabel.uppercase(Locale.US)
-                        },
-                        style = AiiminTheme.type.mono(10.0),
-                        color = AiiminTheme.colors.accent,
-                        modifier = Modifier.padding(start = AiiminTheme.space.s2),
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (note.pinned) {
+                            Text(
+                                text = "◈",
+                                style = AiiminTheme.type.mono(10.0),
+                                color = AiiminTheme.colors.accent,
+                            )
+                        }
+                        Text(
+                            text = when {
+                                note.pending -> "QUEUE"
+                                else -> whenLabel.uppercase(Locale.US)
+                            },
+                            style = AiiminTheme.type.mono(10.0),
+                            color = AiiminTheme.colors.muted,
+                        )
+                    }
                 }
                 if (note.excerpt.isNotBlank() && note.excerpt != note.title) {
                     Text(
@@ -304,24 +410,17 @@ private fun NoteCard(
                         modifier = Modifier.padding(top = AiiminTheme.space.s2),
                     )
                 }
+                // Swipe hint — only on first render until user swipes once.
+                if (swipeOffsetPx == 0f) {
+                    Text(
+                        text = "← swipe to delete · swipe → to pin",
+                        style = AiiminTheme.type.mono(8.5),
+                        color = AiiminTheme.colors.muted.copy(alpha = 0.35f),
+                        modifier = Modifier.padding(top = AiiminTheme.space.s2),
+                    )
+                }
             }
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(top = AiiminTheme.space.s2),
-            horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
-        ) {
-            GhostButton(
-                label = if (note.pinned) "UNPIN" else "PIN",
-                onClick = onPin,
-                modifier = Modifier.weight(1f),
-            )
-            GhostButton(
-                label = "DELETE",
-                onClick = onDelete,
-                modifier = Modifier.weight(1f),
-            )
         }
     }
 }
+

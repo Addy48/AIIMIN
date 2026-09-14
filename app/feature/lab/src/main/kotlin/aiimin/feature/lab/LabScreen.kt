@@ -187,20 +187,60 @@ fun LabScreen(
                 HairRule()
             }
         } else {
-            BlueprintBox(
-                accent = false,
-                modifier = Modifier.padding(top = AiiminTheme.space.s3),
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = AiiminTheme.space.s3)
+                    .border(Hairline, AiiminTheme.colors.rule)
+                    .background(AiiminTheme.colors.surface)
+                    .padding(AiiminTheme.space.s4),
             ) {
                 Text(
                     text = "ACCUMULATING SIGNAL",
                     style = AiiminTheme.type.cellLabel,
-                    color = AiiminTheme.colors.muted,
+                    color = AiiminTheme.colors.accent,
                 )
                 Text(
                     text = "AIIMIN needs 7+ unique logged days to compute verified correlation survivors with Benjamini–Hochberg FDR 0.10.",
                     style = AiiminTheme.type.bodySmall,
                     color = AiiminTheme.colors.muted,
                     modifier = Modifier.padding(top = AiiminTheme.space.s2),
+                )
+                // Progress indicator — how many days until correlations unlock.
+                val daysLogged = state.pairs.size.coerceIn(0, 7) // proxy for progress
+                val fraction = daysLogged / 7f
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = AiiminTheme.space.s3),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "LOG DAILY TO QUALIFY",
+                        style = AiiminTheme.type.chrome.copy(fontSize = 9.sp, letterSpacing = 1.sp),
+                        color = AiiminTheme.colors.muted,
+                    )
+                }
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = AiiminTheme.space.s2)
+                        .height(2.dp)
+                        .background(AiiminTheme.colors.hair),
+                ) {
+                    Box(
+                        Modifier
+                            .fillMaxWidth(fraction.coerceIn(0.02f, 1f))
+                            .height(2.dp)
+                            .background(AiiminTheme.colors.accent),
+                    )
+                }
+                Text(
+                    text = "What to log: Day captures · Habits · Mood · Sleep · Finance · Focus sessions.",
+                    style = AiiminTheme.type.mono(10.0),
+                    color = AiiminTheme.colors.muted,
+                    modifier = Modifier.padding(top = AiiminTheme.space.s3),
                 )
             }
         }

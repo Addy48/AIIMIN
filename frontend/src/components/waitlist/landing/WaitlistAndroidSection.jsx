@@ -66,8 +66,8 @@ export default function WaitlistAndroidSection() {
         <div className="waitlist-android-dl-col">
           <div className="waitlist-android-dl-card">
             <div className="waitlist-android-dl-head">
-              <span className="waitlist-android-build-tag">BUILD: v2.0.4-rc</span>
-              <span className="waitlist-android-size-tag">~27.3 MB (ARM64/x86)</span>
+              <span className="waitlist-android-build-tag">BUILD: v3.2-release</span>
+              <span className="waitlist-android-size-tag">~44.2 MB (ARM64/x86)</span>
             </div>
 
             <div className="waitlist-android-dl-actions">
@@ -77,7 +77,7 @@ export default function WaitlistAndroidSection() {
                 className="waitlist-android-primary-btn"
               >
                 <DownloadSimple size={16} weight="bold" />
-                Download V2 APK (~27 MB)
+                Download Latest APK (~44 MB)
               </a>
 
               <Link to="/app" className="waitlist-android-secondary-btn">

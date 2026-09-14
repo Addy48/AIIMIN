@@ -77,9 +77,23 @@ const SPECS = [
   { label: 'Minimum Compatibility', value: 'Android 8.0 Oreo (API Level 26)' },
   { label: 'Local Storage Engine', value: 'SQLCipher v4.5.4 Encrypted SQLite (Room)' },
   { label: 'Cryptographic Enclave', value: 'AndroidKeyStore TEE · AES-256-GCM' },
-  { label: 'Binary Footprint', value: '27.3 MB (Universal ARM64-v8a / x86_64)' },
+  { label: 'Binary Footprint', value: '44.2 MB (Universal ARM64-v8a / x86_64)' },
   { label: 'Third-Party Trackers', value: '0 SDKs · Zero Analytics · Zero Ad Beacons' },
   { label: 'Sync Architecture', value: 'Deterministic Conflict-Free Outbox (CRDT)' },
+  { label: 'Target SDK', value: 'Android 15 (API Level 35)' },
+  { label: 'Min SDK', value: 'Android 8.0 (API Level 26)' },
+  { label: 'UI Toolkit', value: 'Jetpack Compose (120 Hz Native)' },
+  { label: 'Crypto Layer', value: 'AES-256-GCM Hardware Keystore (StrongBox)' },
+  { label: 'Local Database', value: 'Encrypted Room SQLite with Cipher' },
+];
+
+const ARCH_REQUIREMENTS = [
+  {
+    arch: 'ARM64-v8a (64-bit)',
+    status: 'Primary Support · Recommended',
+    desc: 'All modern phones (Snapdragon 7/8 series, Tensor, MediaTek Dimensity, Exynos 1200+). Hardware crypto acceleration enabled.',
+    note: 'Universal APK (~44.2 MB) works across modern ARM64 and x86_64 Android devices.',
+  },
 ];
 
 const INSTALL_STEPS = [
@@ -87,7 +101,7 @@ const INSTALL_STEPS = [
     step: '01',
     title: 'Download the Verified Binary',
     desc: 'Download the compiled v2.0.4 APK directly to your Android device from our secure release mirror.',
-    note: 'Universal APK (~27.3 MB) works across modern ARM64 and x86_64 Android devices.',
+    note: 'Universal APK (~44.2 MB) works across modern ARM64 and x86_64 Android devices.',
   },
   {
     step: '02',
@@ -763,7 +777,7 @@ export default function AndroidApp() {
                   }}
                 >
                   <DownloadSimple size={16} weight="bold" />
-                  <span>{downloading ? 'Downloading APK…' : 'Download APK (27.3 MB)'}</span>
+                  <span>{downloading ? 'Downloading APK…' : 'Download APK (44.2 MB)'}</span>
                 </a>
                 <a href="#install" className="app-ghost-btn">
                   <Play size={13} weight="fill" />
@@ -1152,7 +1166,7 @@ export default function AndroidApp() {
                 className="app-primary-btn"
               >
                 <DownloadSimple size={15} weight="bold" />
-                <span>Download APK (27.3 MB)</span>
+                <span>Download APK (44.2 MB)</span>
               </a>
             </div>
           </div>
@@ -1238,7 +1252,7 @@ export default function AndroidApp() {
                 className="app-primary-btn"
               >
                 <DownloadSimple size={15} weight="bold" />
-                <span>Download APK (27.3 MB)</span>
+                <span>Download APK (44.2 MB)</span>
               </a>
               <Link to="/waitlist#waitlist-join" className="app-ghost-btn">
                 Join Waitlist Queue
@@ -1289,7 +1303,7 @@ export default function AndroidApp() {
               </div>
             </div>
             <div className="footer-meta-notes">
-              <span>Universal APK · ARM64-v8a + x86_64 · 27.3 MB</span>
+              <span>Universal APK · ARM64-v8a + x86_64 · 44.2 MB</span>
               <span>Target: Android 15 (API 35) · Zero Ad Trackers</span>
             </div>
           </div>

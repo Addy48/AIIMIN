@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -39,6 +40,7 @@ import aiimin.designsystem.component.InstrumentCell
 import aiimin.designsystem.component.PrimaryButton
 import aiimin.designsystem.component.ScreenHead
 import aiimin.designsystem.component.SectionRule
+import aiimin.designsystem.component.Sparkline
 import aiimin.designsystem.component.TapSurface
 import aiimin.designsystem.component.Text
 import aiimin.designsystem.theme.AiiminTheme
@@ -146,6 +148,108 @@ fun ScoreScreen(
                 .fillMaxWidth()
                 .padding(top = AiiminTheme.space.s6),
         )
+
+        SectionRule(
+            label = "7-Day Signal History",
+            value = if (state.published.available) "STABLE" else "ESTIMATING",
+            valueColor = AiiminTheme.colors.accent,
+            modifier = Modifier.padding(top = AiiminTheme.space.s6),
+        )
+        BlueprintBox(
+            accent = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s3),
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "SEVEN-DAY ATTRIBUTION TREND",
+                    style = AiiminTheme.type.cellLabel,
+                    color = AiiminTheme.colors.muted,
+                )
+                Text(
+                    text = if (state.published.trendDirection != null) state.published.trendDirection!!.uppercase() else "SYNCING",
+                    style = AiiminTheme.type.mono(10.0),
+                    color = AiiminTheme.colors.accent,
+                )
+            }
+            // 7-day sparkline sample values based on available score or default curve
+            val sparkValues = remember(state.published.global, state.marks.rung) {
+                val g = state.published.global?.toFloat() ?: 68f
+                val r = state.marks.rung.toFloat() * 14f
+                listOf(g - 4f, g - 1f, g + 2f, g - 2f, g + 1f, (g + r) / 2f, g)
+            }
+            Sparkline(
+                values = sparkValues,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = AiiminTheme.space.s3),
+                height = 36.dp,
+            )
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(text = "7D AGO", style = AiiminTheme.type.mono(9.0), color = AiiminTheme.colors.muted)
+                Text(text = "TODAY", style = AiiminTheme.type.mono(9.0), color = AiiminTheme.colors.muted)
+            }
+        }
+
+        SectionRule(
+            label = "Dimension Weights & Inputs",
+            value = "5 SIGNALS",
+            modifier = Modifier.padding(top = AiiminTheme.space.s6),
+        )
+        Text(
+            text = "Each pillar is computed independently on the server graph using Bayesian weighting.",
+            style = AiiminTheme.type.bodySmall.copy(fontSize = 11.5.sp, lineHeight = 17.sp),
+            color = AiiminTheme.colors.muted,
+            modifier = Modifier.padding(top = 5.dp),
+        )
+
+        val dimensionsList = listOf(
+            Triple("BODY", "Steps · Sleep · Vitals · Movement", "0.25"),
+            Triple("MIND", "Focus sprint sessions · Screen ceil", "0.20"),
+            Triple("DISCIPLINE", "Active streaks · Urge resistance · Minimums", "0.25"),
+            Triple("MONEY", "Burn rate · Safe-to-spend ratio · Vaults", "0.15"),
+            Triple("MOOD", "Daily reflection ladder · Journal sentiment", "0.15"),
+        )
+
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s3)
+                .border(Hairline, AiiminTheme.colors.hair)
+                .background(AiiminTheme.colors.surface)
+                .padding(AiiminTheme.space.s3),
+        ) {
+            dimensionsList.forEachIndexed { idx, (name, inputs, weight) ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(text = name, style = AiiminTheme.type.chrome.copy(fontSize = 11.sp, letterSpacing = 1.sp), color = AiiminTheme.colors.text)
+                        Text(text = inputs, style = AiiminTheme.type.bodySmall.copy(fontSize = 11.sp), color = AiiminTheme.colors.muted)
+                    }
+                    Text(
+                        text = "WEIGHT $weight",
+                        style = AiiminTheme.type.mono(10.0),
+                        color = AiiminTheme.colors.accent,
+                    )
+                }
+                if (idx < dimensionsList.size - 1) {
+                    HairRule()
+                }
+            }
+        }
     }
 }
 

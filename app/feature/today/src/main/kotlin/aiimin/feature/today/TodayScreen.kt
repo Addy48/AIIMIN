@@ -644,11 +644,19 @@ private fun DaySignal(quote: String, modifier: Modifier = Modifier) {
         Text(
             text = "SIGNAL",
             style = AiiminTheme.type.cellLabel,
-            color = AiiminTheme.colors.muted,
+            color = AiiminTheme.colors.accent,
+        )
+        Text(
+            text = "“",
+            style = AiiminTheme.type.mono.copy(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+            ),
+            color = AiiminTheme.colors.accent.copy(alpha = 0.6f),
         )
         Text(
             text = quote.ifBlank { "Show up before you feel ready." },
-            style = AiiminTheme.type.bodySmall,
+            style = AiiminTheme.type.body.copy(fontSize = 13.5.sp, lineHeight = 19.sp),
             color = AiiminTheme.colors.text,
             modifier = Modifier.weight(1f),
             maxLines = 2,
@@ -856,24 +864,39 @@ private fun PrivateTool(
 ) {
     TapSurface(
         onClick = onClick,
-        modifier = modifier.border(Hairline, AiiminTheme.colors.rule),
-        contentPadding = AiiminTheme.space.s3,
+        modifier = modifier
+            .border(Hairline, AiiminTheme.colors.rule)
+            .background(AiiminTheme.colors.surface),
+        contentPadding = 0.dp,
     ) {
-        Column(
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = label,
-                style = AiiminTheme.type.cellLabel,
-                color = AiiminTheme.colors.text,
+            Box(
+                Modifier
+                    .width(3.dp)
+                    .height(48.dp)
+                    .background(AiiminTheme.colors.accent),
             )
-            Text(
-                text = meta,
-                style = AiiminTheme.type.mono(10.5),
-                color = AiiminTheme.colors.accent,
-                modifier = Modifier.padding(top = 4.dp),
-            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(vertical = AiiminTheme.space.s3, horizontal = AiiminTheme.space.s2),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = label,
+                    style = AiiminTheme.type.cellLabel,
+                    color = AiiminTheme.colors.text,
+                )
+                Text(
+                    text = meta,
+                    style = AiiminTheme.type.mono(10.0),
+                    color = AiiminTheme.colors.accent,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
         }
     }
 }

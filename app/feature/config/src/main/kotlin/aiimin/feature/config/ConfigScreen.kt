@@ -1090,44 +1090,58 @@ private fun LifeArc(arc: String) {
 
 @Composable
 private fun ModeStrip(selected: LifeMode, onSelect: (LifeMode) -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = AiiminTheme.space.s3)
-            .height(IntrinsicSize.Min)
-            .border(Hairline, AiiminTheme.colors.hair),
-    ) {
-        LifeMode.entries.forEachIndexed { i, mode ->
-            val on = mode == selected
-            if (i > 0) {
-                Box(
-                    Modifier
-                        .width(Hairline)
-                        .fillMaxHeight()
-                        .background(AiiminTheme.colors.hair),
-                )
-            }
-            TapSurface(
-                onClick = { onSelect(mode) },
-                minTouchTarget = false,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(if (on) AiiminTheme.colors.tint else AiiminTheme.colors.surface),
-            ) {
-                Text(
-                    text = mode.label,
-                    style = AiiminTheme.type.chrome.copy(fontSize = 9.5.sp, letterSpacing = 1.sp),
-                    color = if (on) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+    Column(Modifier.fillMaxWidth()) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = AiiminTheme.space.s3)
+                .height(IntrinsicSize.Min)
+                .border(Hairline, AiiminTheme.colors.hair),
+        ) {
+            LifeMode.entries.forEachIndexed { i, mode ->
+                val on = mode == selected
+                if (i > 0) {
+                    Box(
+                        Modifier
+                            .width(Hairline)
+                            .fillMaxHeight()
+                            .background(AiiminTheme.colors.hair),
+                    )
+                }
+                TapSurface(
+                    onClick = { onSelect(mode) },
+                    minTouchTarget = false,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp, horizontal = 2.dp),
-                )
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(if (on) AiiminTheme.colors.tint else AiiminTheme.colors.surface),
+                ) {
+                    Text(
+                        text = mode.label,
+                        style = AiiminTheme.type.chrome.copy(fontSize = 9.5.sp, letterSpacing = 1.sp),
+                        color = if (on) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp, horizontal = 2.dp),
+                    )
+                }
             }
         }
+        val modeBlurb = when (selected) {
+            LifeMode.BUILD -> "BUILD: Deep work & craft output weighted high. Routine grind accepted."
+            LifeMode.RECOVER -> "RECOVER: Sleep & recovery priority. Reduces grind penalties, elevates restoration."
+            LifeMode.EXAM -> "EXAM: Learning & study focus. Maximum cognitive intensity, low distraction allowance."
+            LifeMode.TRAVEL -> "TRAVEL: Flexible cadence. Minimums maintained, routine commute variance permitted."
+        }
+        Text(
+            text = modeBlurb,
+            style = AiiminTheme.type.bodySmall.copy(fontSize = 11.sp, lineHeight = 15.sp),
+            color = AiiminTheme.colors.muted,
+            modifier = Modifier.padding(top = AiiminTheme.space.s2),
+        )
     }
 }
 

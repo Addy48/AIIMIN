@@ -29,7 +29,7 @@ export const ANDROID_APP_STATUS = {
   subhead:
     'Native Kotlin companion with Discipline Engine, encrypted local vault, app blocking, and the full V2 Today surface. Same account as the web Life OS. Not on Play Store yet — that is by design.',
   detail:
-    'Tester build (~27 MB, Android 8.0+). Requires Android 8.0+. Join the queue for access — founding testers ship before the Play listing.',
+    'Tester build (~44 MB, Android 8.0+). Requires Android 8.0+. Join the queue for access — founding testers ship before the Play listing.',
   points: [
     'Discipline Engine — screen, food, urge logging with AES-GCM encrypted local vault',
     'App blocking via Accessibility service — no VPN, no data harvesting',
@@ -38,7 +38,7 @@ export const ANDROID_APP_STATUS = {
     'Not on Play Store yet — tester queue ships builds directly',
   ],
   apkUrl: '/aiimin-v2-debug.apk',
-  apkVersion: 'V3 · optimized · Sep 2026',
+  apkVersion: 'V3.2 · Native Companion · Sep 2026',
   security: 'Hardware Keystore · Zero-VPN · 100% On-Device Telemetry',
 };
 
