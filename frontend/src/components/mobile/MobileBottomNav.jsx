@@ -45,10 +45,8 @@ export default function MobileBottomNav() {
       setHideAppTab(true);
       return;
     }
-    window.open(PLAY_STORE_URL, '_blank', 'noopener,noreferrer');
-    localStorage.setItem(APP_CTA_KEY, '1');
-    setHideAppTab(true);
-  }, [installPrompt]);
+    navigate('/app');
+  }, [installPrompt, navigate]);
 
   const tabs = [
     {
@@ -82,8 +80,8 @@ export default function MobileBottomNav() {
       id: 'app',
       label: 'Get App',
       icon: Smartphone,
-      to: null,
-      active: false,
+      to: '/app',
+      active: location.pathname === '/app',
       action: handleAppTab,
     });
   }
