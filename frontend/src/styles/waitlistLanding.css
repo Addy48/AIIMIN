@@ -5593,6 +5593,7 @@ html {
   position: relative;
   width: 100%;
   max-width: 750px;
+  min-height: min(565px, 90vh);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -5882,6 +5883,8 @@ html {
   padding: 20px 20px 18px;
   overflow-y: auto;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .feature-inspector-hero {
@@ -5975,7 +5978,7 @@ html {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .feature-inspector-spec-card {
@@ -6010,6 +6013,8 @@ html {
   border-top: 1px solid var(--color-border, #1f2633);
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .feature-inspector-nav-group {
@@ -6091,6 +6096,7 @@ html {
     white-space: nowrap;
   }
   .feature-inspector-dialog {
+    min-height: auto;
     max-height: calc(100vh - 20px);
   }
   .feature-inspector-hero {
