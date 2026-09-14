@@ -257,77 +257,68 @@ fun BiometricLockGate(
                         color = AiiminTheme.colors.muted,
                     )
 
-                    // 6 Square Digit Display Boxes
-                    Box(
+                    // 6 Square Digit Display Boxes hosted directly in BasicTextField decorationBox
+                    BasicTextField(
+                        value = pinText,
+                        onValueChange = { input ->
+                            val filtered = input.filter { it.isDigit() }.take(6)
+                            pinText = filtered
+                            if (filtered.length == 6) {
+                                submitPin(filtered)
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.NumberPassword,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (pinText.length == 6) submitPin(pinText)
+                                focusManager.clearFocus()
+                            },
+                        ),
+                        singleLine = true,
+                        cursorBrush = SolidColor(androidx.compose.ui.graphics.Color.Transparent),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = AiiminTheme.space.s4)
-                            .clickable {
-                                focusRequester.requestFocus()
-                            },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            repeat(6) { idx ->
-                                val isFilled = idx < pinText.length
-                                val isCurrent = idx == pinText.length
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .aspectRatio(0.85f)
-                                        .border(
-                                            width = if (isCurrent) 1.5.dp else Hairline,
-                                            color = when {
-                                                isCurrent -> AiiminTheme.colors.accent
-                                                isFilled -> BrandSpark
-                                                else -> AiiminTheme.colors.rule
-                                            },
+                            .focusRequester(focusRequester),
+                        decorationBox = {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                repeat(6) { idx ->
+                                    val isFilled = idx < pinText.length
+                                    val isCurrent = idx == pinText.length
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .aspectRatio(0.85f)
+                                            .border(
+                                                width = if (isCurrent) 1.5.dp else Hairline,
+                                                color = when {
+                                                    isCurrent -> AiiminTheme.colors.accent
+                                                    isFilled -> BrandSpark
+                                                    else -> AiiminTheme.colors.rule
+                                                },
+                                            )
+                                            .background(
+                                                if (isFilled) AiiminTheme.colors.surface else AiiminTheme.colors.bg,
+                                            ),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Text(
+                                            text = if (isFilled) "●" else if (isCurrent) "—" else "",
+                                            style = AiiminTheme.type.mono(18.0, FontWeight.Bold),
+                                            color = if (isFilled) BrandSpark else AiiminTheme.colors.muted,
                                         )
-                                        .background(
-                                            if (isFilled) AiiminTheme.colors.surface else AiiminTheme.colors.bg,
-                                        ),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Text(
-                                        text = if (isFilled) "●" else if (isCurrent) "—" else "",
-                                        style = AiiminTheme.type.mono(18.0, FontWeight.Bold),
-                                        color = if (isFilled) BrandSpark else AiiminTheme.colors.muted,
-                                    )
+                                    }
                                 }
                             }
-                        }
-
-                        // Invisible text field capturing keyboard input
-                        BasicTextField(
-                            value = pinText,
-                            onValueChange = { input ->
-                                val filtered = input.filter { it.isDigit() }.take(6)
-                                pinText = filtered
-                                if (filtered.length == 6) {
-                                    submitPin(filtered)
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.NumberPassword,
-                                imeAction = ImeAction.Done,
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = {
-                                    if (pinText.length == 6) submitPin(pinText)
-                                    focusManager.clearFocus()
-                                },
-                            ),
-                            singleLine = true,
-                            cursorBrush = SolidColor(BrandSpark),
-                            modifier = Modifier
-                                .focusRequester(focusRequester)
-                                .size(1.dp)
-                                .background(AiiminTheme.colors.bg),
-                        )
-                    }
+                        },
+                    )
 
                     if (verifyingPin) {
                         Text(

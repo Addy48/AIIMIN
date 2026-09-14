@@ -2,6 +2,8 @@ package aiimin.feature.money
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -777,6 +779,11 @@ private fun SpendTrack(pct: Float) {
         isWarning -> AiiminTheme.colors.danger.copy(alpha = 0.7f)
         else -> AiiminTheme.colors.accent
     }
+    val animatedPct by animateFloatAsState(
+        targetValue = pct.coerceIn(0f, 1f),
+        animationSpec = tween(durationMillis = 400),
+        label = "spend-track",
+    )
     Column(Modifier.fillMaxWidth().padding(top = AiiminTheme.space.s4)) {
         Box(
             Modifier
@@ -785,12 +792,14 @@ private fun SpendTrack(pct: Float) {
                 .background(AiiminTheme.colors.surface)
                 .border(Hairline, if (isOver) AiiminTheme.colors.danger else AiiminTheme.colors.rule),
         ) {
-            Box(
-                Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(pct.coerceIn(0.01f, 1f))
-                    .background(barColor),
-            )
+            if (animatedPct > 0.001f) {
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(animatedPct)
+                        .background(barColor),
+                )
+            }
         }
         Row(
             Modifier

@@ -177,11 +177,11 @@ fun ScoreScreen(
                     color = AiiminTheme.colors.accent,
                 )
             }
-            // 7-day sparkline sample values based on available score or default curve
+            // 7-day sparkline sample values based on available score or smooth trend curve
             val sparkValues = remember(state.published.global, state.marks.rung) {
                 val g = state.published.global?.toFloat() ?: 68f
-                val r = state.marks.rung.toFloat() * 14f
-                listOf(g - 4f, g - 1f, g + 2f, g - 2f, g + 1f, (g + r) / 2f, g)
+                val rungOffset = if (state.marks.rung > 0) (state.marks.rung - 3) * 1.5f else 0.5f
+                listOf(g - 3f, g - 1f, g + 2f, g - 1.5f, g + 1f, g + rungOffset, g)
             }
             Sparkline(
                 values = sparkValues,

@@ -11,7 +11,7 @@ import FloatingSaveButton from './dailylog/FloatingSaveButton';
 
 
 /* ─── DailyLogForm ─── */
-const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = false }) => {
+const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = false, appendJournalSnippet = null }) => {
     const [formData, setFormData] = useState({
         sleepStart: '',
         sleepEnd: '',
@@ -71,6 +71,17 @@ const DailyLogForm = ({ user, externalMood, onSuccess, enableOfflineQueue = fals
             setIsDirty(true);
         }
     }, [externalMood]);
+
+    // Append quick-capture snippet from parent shell
+    useEffect(() => {
+        if (appendJournalSnippet?.text) {
+            setFormData(prev => ({
+                ...prev,
+                journalEntry: (prev.journalEntry ? prev.journalEntry.trimEnd() + '\n' : '') + appendJournalSnippet.text,
+            }));
+            setIsDirty(true);
+        }
+    }, [appendJournalSnippet]);
 
     const [loading, setLoading] = useState(false);
 

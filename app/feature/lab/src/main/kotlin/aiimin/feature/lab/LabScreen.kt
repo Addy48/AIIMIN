@@ -207,7 +207,7 @@ fun LabScreen(
                     modifier = Modifier.padding(top = AiiminTheme.space.s2),
                 )
                 // Progress indicator — how many days until correlations unlock.
-                val daysLogged = state.pairs.size.coerceIn(0, 7) // proxy for progress
+                val daysLogged = state.daysLogged.coerceIn(0, 7)
                 val fraction = daysLogged / 7f
                 Row(
                     Modifier
@@ -220,6 +220,11 @@ fun LabScreen(
                         text = "LOG DAILY TO QUALIFY",
                         style = AiiminTheme.type.chrome.copy(fontSize = 9.sp, letterSpacing = 1.sp),
                         color = AiiminTheme.colors.muted,
+                    )
+                    Text(
+                        text = "$daysLogged / 7 DAYS",
+                        style = AiiminTheme.type.mono(10.0, FontWeight.Bold),
+                        color = if (daysLogged >= 7) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
                     )
                 }
                 Box(

@@ -409,7 +409,11 @@ private fun ActivityTagRow(
             TapSurface(
                 onClick = {
                     if (active) {
-                        onDraftChange(currentDraft.replace(tagSnippet, "").trim())
+                        val cleaned = currentDraft
+                            .replace(Regex("(?i)${Regex.escape(tagSnippet)}"), "")
+                            .replace(Regex("\\s{2,}"), " ")
+                            .trim()
+                        onDraftChange(cleaned)
                     } else {
                         onDraftChange(if (currentDraft.isBlank()) tagSnippet else "$currentDraft $tagSnippet")
                     }

@@ -183,7 +183,16 @@ private fun LockedState(
     modifier: Modifier = Modifier,
 ) {
     val colors = AiiminTheme.colors
-    val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
+    val recentDays = remember(streakDays) {
+        val today = java.time.LocalDate.now()
+        (6 downTo 0).map { offset ->
+            val date = today.minusDays(offset.toLong())
+            val label = date.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.US)
+            val isClean = offset < streakDays
+            val isToday = offset == 0
+            Triple(label, isClean, isToday)
+        }
+    }
 
     Column(
         modifier
@@ -237,26 +246,22 @@ private fun LockedState(
         Spacer(Modifier.height(AiiminTheme.space.s8))
 
         // 7-day mini calendar strip.
-        SectionRule(label = "This week", value = "LOCAL")
+        SectionRule(label = "Last 7 days", value = "LOCAL")
         Row(
             Modifier
                 .fillMaxWidth()
                 .padding(top = AiiminTheme.space.s3),
             horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            // Show last 7 days — placeholder dots (real data wired via streakDays context).
-            dayLabels.forEachIndexed { i, label ->
-                val dayOffset = 6 - i // 0 = today
-                val isClean = dayOffset < streakDays
-                val isToday = dayOffset == 0
+            recentDays.forEach { (label, isClean, isToday) ->
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Text(
                         text = label,
-                        style = AiiminTheme.type.mono(9.0),
-                        color = colors.muted,
+                        style = AiiminTheme.type.mono(9.0, if (isToday) FontWeight.Bold else FontWeight.Normal),
+                        color = if (isToday) colors.accent else colors.muted,
                     )
                     Box(
                         Modifier
@@ -275,7 +280,16 @@ private fun LockedState(
                                     else -> colors.bg
                                 },
                             ),
-                    )
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (isToday && isClean) {
+                            Text(
+                                text = "✓",
+                                style = AiiminTheme.type.mono(9.0, FontWeight.Bold),
+                                color = colors.accent,
+                            )
+                        }
+                    }
                 }
             }
         }
