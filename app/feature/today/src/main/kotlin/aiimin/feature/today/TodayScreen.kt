@@ -1067,7 +1067,16 @@ private fun MinimumRow(entry: DayEntry, onToggle: (Long) -> Unit) {
                             .size(16.dp)
                             .background(if (done) AiiminTheme.colors.accent else AiiminTheme.colors.surface)
                             .border(Hairline, if (done) AiiminTheme.colors.accent else AiiminTheme.colors.rule),
-                    )
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (done) {
+                            Text(
+                                text = "✓",
+                                style = AiiminTheme.type.mono(10.0, FontWeight.Bold),
+                                color = AiiminTheme.colors.bg,
+                            )
+                        }
+                    }
                 } else {
                     ProgressMark(entry.attainment)
                 }

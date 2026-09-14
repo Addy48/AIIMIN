@@ -28,10 +28,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import aiimin.core.data.NoteItem
@@ -268,157 +269,129 @@ private fun NoteCard(
             .format(java.time.format.DateTimeFormatter.ofPattern("EEE d · HH:mm", Locale.US))
     }
 
-    // Swipe state: 0f = resting, >0 = pin revealed (right), <0 = delete revealed (left).
-    var swipeOffsetPx by remember { mutableStateOf(0f) }
-    val revealThreshold = 120f // px to fully reveal an action
-    val animatedOffset by animateFloatAsState(
-        targetValue = swipeOffsetPx,
-        animationSpec = spring(dampingRatio = 0.7f, stiffness = 400f),
-        label = "note-swipe-${note.id}",
-    )
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
-    val isPinRevealed = animatedOffset > revealThreshold * 0.6f
-    val isDeleteRevealed = animatedOffset < -(revealThreshold * 0.6f)
-
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = AiiminTheme.space.s3),
-    ) {
-        // Pin background (left side — swipe right).
-        if (animatedOffset > 0f) {
-            Box(
-                Modifier
-                    .matchParentSize()
-                    .background(AiiminTheme.colors.tint)
-                    .border(Hairline, AiiminTheme.colors.accent),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Text(
-                    text = if (note.pinned) "UNPIN" else "PIN",
-                    style = AiiminTheme.type.chrome.copy(fontSize = 10.sp, letterSpacing = 1.5.sp),
-                    color = AiiminTheme.colors.accent,
-                    modifier = Modifier.padding(start = AiiminTheme.space.s4),
-                )
-            }
-        }
-        // Delete background (right side — swipe left).
-        if (animatedOffset < 0f) {
-            Box(
-                Modifier
-                    .matchParentSize()
-                    .background(AiiminTheme.colors.danger.copy(alpha = 0.12f))
-                    .border(Hairline, AiiminTheme.colors.danger),
-                contentAlignment = Alignment.CenterEnd,
-            ) {
-                Text(
-                    text = "DELETE",
-                    style = AiiminTheme.type.chrome.copy(fontSize = 10.sp, letterSpacing = 1.5.sp),
-                    color = AiiminTheme.colors.danger,
-                    modifier = Modifier.padding(end = AiiminTheme.space.s4),
-                )
-            }
-        }
-
-        // Card face — clean: title + excerpt + timestamp.
-        TapSurface(
-            onClick = {
-                if (kotlin.math.abs(animatedOffset) < 8f) {
-                    onOpen()
-                } else {
-                    // Confirm swipe action.
-                    when {
-                        isPinRevealed -> { onPin(); swipeOffsetPx = 0f }
-                        isDeleteRevealed -> { onDelete(); swipeOffsetPx = 0f }
-                        else -> swipeOffsetPx = 0f
-                    }
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .offset(x = with(androidx.compose.ui.platform.LocalDensity.current) { animatedOffset.toDp() })
-                .pointerInput(note.id) {
-                    detectHorizontalDragGestures(
-                        onDragEnd = {
-                            when {
-                                swipeOffsetPx > revealThreshold * 0.6f -> {
-                                    onPin()
-                                    swipeOffsetPx = 0f
-                                }
-                                swipeOffsetPx < -(revealThreshold * 0.6f) -> {
-                                    onDelete()
-                                    swipeOffsetPx = 0f
-                                }
-                                else -> swipeOffsetPx = 0f
-                            }
-                        },
-                        onDragCancel = { swipeOffsetPx = 0f },
-                        onHorizontalDrag = { _, dragAmount ->
-                            swipeOffsetPx = (swipeOffsetPx + dragAmount)
-                                .coerceIn(-revealThreshold, revealThreshold)
-                        },
-                    )
-                },
-        ) {
+    if (showDeleteConfirm) {
+        Dialog(onDismissRequest = { showDeleteConfirm = false }) {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .border(Hairline, if (note.pinned) AiiminTheme.colors.accent else AiiminTheme.colors.hair)
-                    .background(if (note.pinned) AiiminTheme.colors.tint else AiiminTheme.colors.surface)
-                    .padding(AiiminTheme.space.s3),
+                    .background(AiiminTheme.colors.surface)
+                    .border(Hairline, AiiminTheme.colors.rule)
+                    .padding(AiiminTheme.space.s4),
+                verticalArrangement = Arrangement.spacedBy(AiiminTheme.space.s3),
             ) {
+                Text(
+                    text = "DELETE NOTE?",
+                    style = AiiminTheme.type.cellLabel,
+                    color = AiiminTheme.colors.danger,
+                )
+                Text(
+                    text = "Permanently remove \"${note.title.ifBlank { "Untitled" }}\" from your local vault and server?",
+                    style = AiiminTheme.type.bodySmall,
+                    color = AiiminTheme.colors.text,
+                )
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
                 ) {
-                    Text(
-                        text = note.title,
-                        style = AiiminTheme.type.body.copy(fontSize = 15.sp),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                    GhostButton(
+                        label = "CANCEL",
+                        onClick = { showDeleteConfirm = false },
                         modifier = Modifier.weight(1f),
                     )
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
-                        verticalAlignment = Alignment.CenterVertically,
+                    GhostButton(
+                        label = "DELETE",
+                        onClick = {
+                            showDeleteConfirm = false
+                            onDelete()
+                        },
+                        color = AiiminTheme.colors.danger,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+    }
+
+    TapSurface(
+        onClick = onOpen,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = AiiminTheme.space.s3),
+    ) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .border(Hairline, if (note.pinned) AiiminTheme.colors.accent else AiiminTheme.colors.hair)
+                .background(if (note.pinned) AiiminTheme.colors.tint else AiiminTheme.colors.surface)
+                .padding(AiiminTheme.space.s3),
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = note.title.ifBlank { "Untitled" },
+                    style = AiiminTheme.type.body.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(AiiminTheme.space.s2),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    TapSurface(
+                        onClick = onPin,
+                        minTouchTarget = false,
+                        modifier = Modifier.padding(2.dp),
                     ) {
-                        if (note.pinned) {
-                            Text(
-                                text = "◈",
-                                style = AiiminTheme.type.mono(10.0),
-                                color = AiiminTheme.colors.accent,
-                            )
-                        }
                         Text(
-                            text = when {
-                                note.pending -> "QUEUE"
-                                else -> whenLabel.uppercase(Locale.US)
-                            },
-                            style = AiiminTheme.type.mono(10.0),
+                            text = if (note.pinned) "◈ PINNED" else "◇ PIN",
+                            style = AiiminTheme.type.mono(9.5, if (note.pinned) FontWeight.Bold else FontWeight.Normal),
+                            color = if (note.pinned) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
+                        )
+                    }
+                    TapSurface(
+                        onClick = { showDeleteConfirm = true },
+                        minTouchTarget = false,
+                        modifier = Modifier.padding(2.dp),
+                    ) {
+                        Text(
+                            text = "×",
+                            style = AiiminTheme.type.mono(14.0, FontWeight.Bold),
                             color = AiiminTheme.colors.muted,
                         )
                     }
                 }
-                if (note.excerpt.isNotBlank() && note.excerpt != note.title) {
-                    Text(
-                        text = note.excerpt,
-                        style = AiiminTheme.type.bodySmall,
-                        color = AiiminTheme.colors.muted,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = AiiminTheme.space.s2),
-                    )
-                }
-                // Swipe hint — only on first render until user swipes once.
-                if (swipeOffsetPx == 0f) {
-                    Text(
-                        text = "← swipe to delete · swipe → to pin",
-                        style = AiiminTheme.type.mono(8.5),
-                        color = AiiminTheme.colors.muted.copy(alpha = 0.35f),
-                        modifier = Modifier.padding(top = AiiminTheme.space.s2),
-                    )
-                }
+            }
+            if (note.excerpt.isNotBlank() && note.excerpt != note.title) {
+                Text(
+                    text = note.excerpt,
+                    style = AiiminTheme.type.bodySmall,
+                    color = AiiminTheme.colors.muted,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = AiiminTheme.space.s2),
+                )
+            }
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = AiiminTheme.space.s2),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = when {
+                        note.pending -> "QUEUE · SYNCING"
+                        else -> whenLabel.uppercase(Locale.US)
+                    },
+                    style = AiiminTheme.type.mono(9.0),
+                    color = if (note.pending) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
+                )
             }
         }
     }

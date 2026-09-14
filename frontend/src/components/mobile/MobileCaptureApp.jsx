@@ -14,6 +14,7 @@ import '../../styles/mobileCapture.css';
 export default function MobileCaptureApp() {
   const { user } = useAuth();
   const [showNudge, setShowNudge] = useState(false);
+  const [appendSnippet, setAppendSnippet] = useState(null);
 
   return (
     <div className="mobile-capture">
@@ -32,43 +33,44 @@ export default function MobileCaptureApp() {
 
         <div className="mobile-capture__chips" role="group" aria-label="Quick capture presets">
           <span className="mobile-capture__chip-label">QUICK:</span>
-          <button type="button" className="mobile-capture__chip" onClick={() => {
-            const input = document.querySelector('.mobile-capture textarea, .mobile-capture input[type="text"]');
-            if (input) {
-              input.focus();
-              input.value = (input.value ? input.value + ' ' : '') + 'Paid ';
-              input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-          }}>+ Expense</button>
-          <button type="button" className="mobile-capture__chip" onClick={() => {
-            const input = document.querySelector('.mobile-capture textarea, .mobile-capture input[type="text"]');
-            if (input) {
-              input.focus();
-              input.value = (input.value ? input.value + ' ' : '') + 'Done: ';
-              input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-          }}>+ Habit</button>
-          <button type="button" className="mobile-capture__chip" onClick={() => {
-            const input = document.querySelector('.mobile-capture textarea, .mobile-capture input[type="text"]');
-            if (input) {
-              input.focus();
-              input.value = (input.value ? input.value + ' ' : '') + 'Note: ';
-              input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-          }}>+ Note</button>
-          <button type="button" className="mobile-capture__chip" onClick={() => {
-            const input = document.querySelector('.mobile-capture textarea, .mobile-capture input[type="text"]');
-            if (input) {
-              input.focus();
-              input.value = (input.value ? input.value + ' ' : '') + 'Felt ';
-              input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-          }}>+ Mood</button>
+          <button
+            type="button"
+            className="mobile-capture__chip"
+            onClick={() => setAppendSnippet({ text: 'Paid ', id: Date.now() })}
+          >
+            + Expense
+          </button>
+          <button
+            type="button"
+            className="mobile-capture__chip"
+            onClick={() => setAppendSnippet({ text: 'Done: ', id: Date.now() })}
+          >
+            + Habit
+          </button>
+          <button
+            type="button"
+            className="mobile-capture__chip"
+            onClick={() => setAppendSnippet({ text: 'Note: ', id: Date.now() })}
+          >
+            + Note
+          </button>
+          <button
+            type="button"
+            className="mobile-capture__chip"
+            onClick={() => setAppendSnippet({ text: 'Felt ', id: Date.now() })}
+          >
+            + Mood
+          </button>
         </div>
 
         <section className="mobile-capture__card" aria-label="Daily log">
           {user ? (
-            <DailyLogForm user={user} enableOfflineQueue onSuccess={() => setShowNudge(true)} />
+            <DailyLogForm
+              user={user}
+              enableOfflineQueue
+              appendJournalSnippet={appendSnippet}
+              onSuccess={() => setShowNudge(true)}
+            />
           ) : (
             <p className="mobile-capture__sub">
               <Link to="/login">Sign in</Link> to save today’s log.
