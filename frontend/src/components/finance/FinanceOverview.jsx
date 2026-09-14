@@ -129,8 +129,8 @@ const FinanceOverview = ({
                   <span style={{ fontSize: '14px' }}>⚠</span>
                   <span style={{ fontSize: '12px', color: 'var(--color-warning)', fontWeight: 500 }}>
                     {aiSummary.aiStatus === 'limit_reached'
-                      ? 'AI limit reached. Showing statistical fallback summary.'
-                      : 'API key expired. Showing statistical fallback summary.'}
+                      ? 'AI daily limit reached. Showing statistical fallback summary.'
+                      : 'AI service temporarily unavailable. Showing statistical fallback summary.'}
                   </span>
                 </div>
               )}

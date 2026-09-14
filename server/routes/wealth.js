@@ -594,17 +594,20 @@ Do not include markdown formatting like \`\`\`json.`;
             if (chat.ok && chat.text) {
                 const rawText = chat.text.replace(/```json/g, '').replace(/```/g, '').trim();
                 aiSummary = JSON.parse(rawText.match(/\{[\s\S]*\}/)?.[0] || rawText);
+                aiStatus = 'success';
             } else {
-                aiStatus = 'limit_reached';
+                aiStatus = 'unavailable';
             }
         } catch (aiErr) {
             if (aiErr.code === 'USER_AI_BUDGET_EXCEEDED' || aiErr.code === 'BUDGET_EXCEEDED') {
                 aiStatus = 'limit_reached';
+            } else {
+                aiStatus = 'unavailable';
             }
             console.warn('[wealth/ai-summary] AI call failed:', aiErr.message);
         }
 
-        // Fallback summary if no NVIDIA key, API call failed, or limit reached
+        // Fallback summary if no NVIDIA/Groq response, API error, or limit reached
         if (!aiSummary) {
             aiSummary = {
                 // This endpoint reads a rolling 30-day window, not the calendar
@@ -620,7 +623,9 @@ Do not include markdown formatting like \`\`\`json.`;
                     `You have ${categoryBreakdown.length} active spending categories.`,
                 ],
                 recommendations: [
-                    'AI-powered insights are currently unavailable due to API limits.',
+                    aiStatus === 'limit_reached'
+                        ? 'Daily AI analysis quota reached for today.'
+                        : 'AI-powered summary temporarily unavailable; displaying statistical baseline.',
                     'Set budget limits for your top categories.',
                     'Track daily expenses to stay within your targets.',
                 ],
