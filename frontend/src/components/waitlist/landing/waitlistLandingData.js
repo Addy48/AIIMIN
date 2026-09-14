@@ -38,7 +38,7 @@ export const ANDROID_APP_STATUS = {
     'Not on Play Store yet — tester queue ships builds directly',
   ],
   apkUrl: '/aiimin-v2-debug.apk',
-  apkVersion: 'V3.2 · Native Companion · Sep 2026',
+  apkVersion: 'V2.0.4 · Native Companion · Sep 2026',
   security: 'Hardware Keystore · Zero-VPN · 100% On-Device Telemetry',
 };
 
@@ -348,7 +348,7 @@ export const FAQS = [
   },
   {
     q: 'Can I download the Android APK right now?',
-    a: 'Yes — if you are an invited tester or waitlist member. The optimized native build (~27 MB, Android 8.0+) is available directly from the Android section on this page or via /app. We distribute directly during closed device testing to ship rapid improvements without 5-day app store review delays. Google Play Store release will follow after closed testing.',
+    a: 'Yes — if you are an invited tester or waitlist member. The optimized native build (~44.2 MB, Android 8.0+) is available directly from the Android section on this page or via /app. We distribute directly during closed device testing to ship rapid improvements without 5-day app store review delays. Google Play Store release will follow after closed testing.',
   },
   {
     q: 'How is my privacy and personal data protected?',

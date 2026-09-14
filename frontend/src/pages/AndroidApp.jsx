@@ -1143,7 +1143,7 @@ export default function AndroidApp() {
           <div className="install-download-box">
             <div className="download-box-left">
               <span className="download-box-tag">VERIFIED SECURE COMPANION</span>
-              <h3 className="download-box-title">aiimin-v2-debug.apk (v3.0.0)</h3>
+              <h3 className="download-box-title">aiimin-v2-debug.apk (v2.0.4)</h3>
               <div className="download-security-proofs">
                 <span className="security-proof-item">
                   <ShieldCheck size={14} weight="fill" color="#10B981" />

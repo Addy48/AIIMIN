@@ -66,7 +66,7 @@ export default function WaitlistAndroidSection() {
         <div className="waitlist-android-dl-col">
           <div className="waitlist-android-dl-card">
             <div className="waitlist-android-dl-head">
-              <span className="waitlist-android-build-tag">BUILD: v3.2-release</span>
+              <span className="waitlist-android-build-tag">BUILD: v2.0.4-release</span>
               <span className="waitlist-android-size-tag">~44.2 MB (ARM64/x86)</span>
             </div>
 
