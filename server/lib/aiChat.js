@@ -4,6 +4,8 @@
  * - Heavy: Groq primary; OpenRouter only as weak last-ditch (free models are limited)
  */
 
+import { getOrderedGroqKeys, recordKeyFailure, recordKeySuccess, maskKey } from './groqRotator.js';
+
 export function getGeminiKey() {
   return (
     process.env.GEMINI_LITE_API_KEY
@@ -13,8 +15,10 @@ export function getGeminiKey() {
 }
 
 export function getGroqKey() {
-  return (process.env.GROQ_API_KEY || '').replace(/^"|"$/g, '').trim() || null;
+  const keys = getOrderedGroqKeys();
+  return keys[0] || null;
 }
+
 
 export function getOpenRouterKey() {
   return (process.env.OPENROUTER_API_KEY || '').replace(/^"|"$/g, '').trim() || null;
@@ -28,27 +32,34 @@ export function getNvidiaKey() {
   ).replace(/^"|"$/g, '').trim() || null;
 }
 
-/** Prefer available free models; llama:free often 429. Override via env CSV. */
+/** Prefer available free models; override via env CSV. */
 export function getOpenRouterLiteModels() {
   const raw = process.env.OPENROUTER_LITE_MODELS
     || process.env.OPENROUTER_LITE_MODEL
     || process.env.OPENROUTER_MODEL
-    || 'openai/gpt-oss-20b:free,nvidia/nemotron-nano-9b-v2:free';
-  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+    || '';
+  const configured = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  return [...new Set([...configured, 'nex-agi/nex-n2.5-mini:free', 'nvidia/nemotron-3.5-lightning:free'])];
 }
 
 /** Heavy OpenRouter tries (usually rate-limited). Keep off critical path. */
 export function getOpenRouterHeavyModels() {
   const raw = process.env.OPENROUTER_HEAVY_MODELS
     || process.env.OPENROUTER_HEAVY_MODEL
-    || 'meta-llama/llama-3.3-70b-instruct:free,openai/gpt-oss-20b:free';
-  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+    || '';
+  const configured = raw.split(',').map((s) => s.trim()).filter(Boolean);
+  return [...new Set([...configured, 'nex-agi/nex-n2.5-mini:free', 'nvidia/nemotron-3.5-lightning:free'])];
 }
 
 function extractChatText(data) {
   const msg = data?.choices?.[0]?.message || {};
-  const content = (msg.content || '').trim();
-  if (content) return content;
+  let content = (msg.content || '').trim();
+  if (content) {
+    if (content.includes('</think>')) {
+      content = content.split('</think>').pop().trim();
+    }
+    return content;
+  }
   // Some free models dump answer into reasoning when max_tokens too low
   const reasoning = (msg.reasoning || '').trim();
   if (!reasoning) return '';
@@ -61,46 +72,81 @@ function extractChatText(data) {
 }
 
 /**
- * Heavy text generation via Groq.
- * @returns {{ ok: boolean, text?: string, error?: string, provider: string }}
+ * Heavy text generation via Groq with automatic model fallback.
+ * @returns {{ ok: boolean, text?: string, error?: string, provider: string, model?: string }}
  */
 export async function groqChat({
   messages,
   maxTokens = 512,
   temperature = 0.7,
-  model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+  model = null,
 }) {
-  const apiKey = getGroqKey();
-  if (!apiKey) return { ok: false, error: 'GROQ_API_KEY missing', provider: 'groq' };
+  const candidateKeys = getOrderedGroqKeys();
+  if (candidateKeys.length === 0) return { ok: false, error: 'GROQ_API_KEY missing', provider: 'groq' };
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: maxTokens,
-      temperature,
-    }),
-  });
+  const preferredModel = (model || process.env.GROQ_MODEL || 'qwen/qwen3.8-27b').trim();
+  const modelsToTry = [preferredModel, 'qwen/qwen3.8-27b', 'groq/compound-mini'];
+  const uniqueModels = [...new Set(modelsToTry.filter(Boolean))];
 
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    return {
-      ok: false,
-      error: data.error?.message || `Groq HTTP ${res.status}`,
-      provider: 'groq',
-    };
+  let lastError = 'Groq failed';
+
+  for (const apiKey of candidateKeys) {
+    let keyRateLimited = false;
+
+    for (const m of uniqueModels) {
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: m,
+            messages,
+            max_tokens: maxTokens,
+            temperature,
+          }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.status === 429 || res.status === 401 || res.status === 403) {
+          lastError = data.error?.message || `Groq HTTP ${res.status} (${maskKey(apiKey)})`;
+          recordKeyFailure(apiKey, res.status);
+          keyRateLimited = true;
+          break; // Immediately try next rotated key in pool
+        }
+
+        if (!res.ok) {
+          lastError = data.error?.message || `Groq HTTP ${res.status} (${m})`;
+          console.warn(`[groqChat] model ${m} failed (${res.status}):`, lastError);
+          continue; // Try next model on same key (e.g. if 404)
+        }
+
+        const text = data.choices?.[0]?.message?.content || '';
+        recordKeySuccess(apiKey);
+        return {
+          ok: true,
+          text,
+          provider: 'groq',
+          model: m,
+        };
+      } catch (err) {
+        lastError = err.message || String(err);
+        console.warn(`[groqChat] model ${m} exception:`, lastError);
+      }
+    }
+
+    if (keyRateLimited) {
+      continue;
+    }
   }
 
   return {
-    ok: true,
-    text: data.choices?.[0]?.message?.content || '',
+    ok: false,
+    error: lastError,
     provider: 'groq',
-    model,
   };
 }
 
@@ -233,11 +279,11 @@ export async function heavyChat(opts) {
   };
 }
 
-/** Default: Nemotron Nano — free NIM, fast. Llama 3.3-70B often cold-starts / times out. */
+/** Default: Llama 3.2 11B Vision — active NVIDIA NIM. */
 export function getNvidiaChatModel() {
   return (
     process.env.NVIDIA_CHAT_MODEL
-    || 'nvidia/nemotron-3-nano-30b-a3b'
+    || 'meta/llama-3.2-11b-vision-instruct'
   ).trim();
 }
 
@@ -246,34 +292,39 @@ export function getNvidiaChatModel() {
  */
 export async function nvidiaOrGroqChat(opts) {
   const nvidiaKey = getNvidiaKey();
-  const model = opts.nvidiaModel || getNvidiaChatModel();
+  const configuredModel = opts.nvidiaModel || getNvidiaChatModel();
+  const modelsToTry = [configuredModel, 'meta/llama-3.2-11b-vision-instruct'];
+  const uniqueModels = [...new Set(modelsToTry.filter(Boolean))];
+
   if (nvidiaKey) {
-    try {
-      const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${nvidiaKey}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          model,
-          messages: opts.messages,
-          max_tokens: opts.maxTokens || 512,
-          temperature: opts.temperature ?? 0.7,
-          top_p: opts.topP ?? 0.7,
-          stream: false,
-        }),
-        signal: AbortSignal.timeout(opts.timeoutMs || 45000),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const text = data.choices?.[0]?.message?.content || '';
-        if (text) return { ok: true, text, provider: 'nvidia', model };
+    for (const model of uniqueModels) {
+      try {
+        const res = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${nvidiaKey}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            model,
+            messages: opts.messages,
+            max_tokens: opts.maxTokens || 512,
+            temperature: opts.temperature ?? 0.7,
+            top_p: opts.topP ?? 0.7,
+            stream: false,
+          }),
+          signal: AbortSignal.timeout(opts.timeoutMs || 45000),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const text = data.choices?.[0]?.message?.content || '';
+          if (text) return { ok: true, text, provider: 'nvidia', model };
+        }
+        console.warn('[aiChat] NVIDIA failed:', res.status, model);
+      } catch (err) {
+        console.warn('[aiChat] NVIDIA error:', err.message, model);
       }
-      console.warn('[aiChat] NVIDIA failed:', res.status, model);
-    } catch (err) {
-      console.warn('[aiChat] NVIDIA error:', err.message, model);
     }
   }
   return heavyChat(opts);

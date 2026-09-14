@@ -576,7 +576,7 @@ export default function ATSAnalyzer({ onClose }) {
       {/* ── Results ── */}
       {loading && <ResultSkeleton />}
 
-      {result && result.aiStatus && result.aiStatus !== 'success' && !loading && (
+      {result && result.aiStatus && result.aiStatus !== 'success' && result.aiStatus !== 'guest_demo' && !loading && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '12px 16px', borderRadius: 8,
@@ -587,8 +587,10 @@ export default function ATSAnalyzer({ onClose }) {
           <AlertCircle size={16} color="var(--color-warning)" />
           <span style={{ fontSize: 13, color: 'var(--color-warning)', fontFamily: 'var(--font-sans)', fontWeight: 500 }}>
             {result.aiStatus === 'limit_reached'
-              ? 'AI limit reached. The system is showing standard fallback analysis. Please check your API usage limits.'
-              : 'AI API key expired or unauthorized. Showing standard fallback analysis. Please update your API key.'}
+              ? 'AI limit reached. The system is showing standard fallback analysis. Please check your daily usage.'
+              : result.aiStatus === 'unauthorized'
+              ? 'AI service unauthorized. Showing standard fallback analysis.'
+              : 'AI analysis temporarily in fallback mode. Showing keyword-based gap analysis.'}
           </span>
         </div>
       )}

@@ -1,5 +1,8 @@
-const KIMI_MODEL = 'moonshotai/kimi-k2.6';
+import { heavyChat } from '../lib/aiChat.js';
+
+const NVIDIA_MODEL = process.env.NVIDIA_CHAT_MODEL || 'meta/llama-3.2-11b-vision-instruct';
 const NVIDIA_COMPLETIONS_URL = 'https://integrate.api.nvidia.com/v1/chat/completions';
+
 
 const trimString = (value, maxLength) => (
     typeof value === 'string' ? value.trim().slice(0, maxLength) : ''
@@ -119,6 +122,7 @@ export async function generateKimiAtsAnalysis({
     isGuest = false,
     fetchImpl = fetch,
     apiKey = process.env.NVIDIA_API_KEY,
+    chatImpl = heavyChat,
 }) {
     if (isGuest) {
         return {
@@ -127,81 +131,83 @@ export async function generateKimiAtsAnalysis({
         };
     }
 
-    if (!apiKey) {
-        return {
-            aiAnalysis: buildFallbackAnalysis(sortedMissing, matchScore, false),
-            aiStatus: 'missing_key',
-        };
+    const prompt = buildPrompt({ jdText, resumeText, sortedMissing });
+
+    // 1. Try NVIDIA NIM primary
+    if (apiKey) {
+        try {
+            const response = await fetchImpl(NVIDIA_COMPLETIONS_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: NVIDIA_MODEL,
+                    messages: [{ role: 'user', content: prompt }],
+                    max_tokens: 4096,
+                    temperature: 0.35,
+                    top_p: 0.9,
+                    stream: false,
+                }),
+                signal: AbortSignal.timeout(12_000),
+            });
+
+            if (response.ok) {
+                const payload = await response.json();
+                const rawText = payload.choices?.[0]?.message?.content;
+                const parsed = extractJsonObject(rawText);
+                const normalized = normalizeAtsAnalysis(parsed);
+
+                if (
+                    normalized.missingSkills.length > 0 &&
+                    normalized.bulletPoints.length > 0 &&
+                    normalized.overallFeedback
+                ) {
+                    return {
+                        aiAnalysis: normalized,
+                        aiStatus: 'success',
+                    };
+                }
+            } else {
+                console.warn(`[ats] NVIDIA HTTP ${response.status}, failing over to heavyChat`);
+            }
+        } catch (err) {
+            console.warn('[ats] NVIDIA exception, failing over to heavyChat:', err.message);
+        }
     }
 
+    // 2. Failover to heavyChat (Groq / OpenRouter)
     try {
-        const response = await fetchImpl(NVIDIA_COMPLETIONS_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-                model: KIMI_MODEL,
-                messages: [{ role: 'user', content: buildPrompt({ jdText, resumeText, sortedMissing }) }],
-                max_tokens: 4096,
-                temperature: 0.35,
-                top_p: 0.9,
-                stream: false,
-                chat_template_kwargs: { thinking: true },
-            }),
-            signal: AbortSignal.timeout(30_000),
+        const fallbackChat = await chatImpl({
+            messages: [{ role: 'user', content: prompt }],
+            maxTokens: 1024,
+            temperature: 0.35,
         });
 
-        if (response.status === 401 || response.status === 403) {
-            return {
-                aiAnalysis: buildFallbackAnalysis(sortedMissing, matchScore, false),
-                aiStatus: 'unauthorized',
-            };
+        if (fallbackChat.ok && fallbackChat.text) {
+            const parsed = extractJsonObject(fallbackChat.text);
+            const normalized = normalizeAtsAnalysis(parsed);
+
+            if (
+                normalized.missingSkills.length > 0 &&
+                normalized.bulletPoints.length > 0 &&
+                normalized.overallFeedback
+            ) {
+                return {
+                    aiAnalysis: normalized,
+                    aiStatus: 'success',
+                };
+            }
         }
-
-        if (response.status === 429) {
-            return {
-                aiAnalysis: buildFallbackAnalysis(sortedMissing, matchScore, false),
-                aiStatus: 'limit_reached',
-            };
-        }
-
-        if (!response.ok) {
-            return {
-                aiAnalysis: buildFallbackAnalysis(sortedMissing, matchScore, false),
-                aiStatus: 'provider_error',
-            };
-        }
-
-        const payload = await response.json();
-        const rawText = payload.choices?.[0]?.message?.content;
-        const parsed = extractJsonObject(rawText);
-        const normalized = normalizeAtsAnalysis(parsed);
-
-        if (
-            normalized.missingSkills.length === 0 ||
-            normalized.bulletPoints.length === 0 ||
-            !normalized.overallFeedback
-        ) {
-            return {
-                aiAnalysis: buildFallbackAnalysis(sortedMissing, matchScore, false),
-                aiStatus: 'invalid_response',
-            };
-        }
-
-        return {
-            aiAnalysis: normalized,
-            aiStatus: 'success',
-        };
-    } catch (err) {
-        const status = err?.name === 'TimeoutError' || err?.name === 'AbortError'
-            ? 'timeout'
-            : 'provider_error';
-        return {
-            aiAnalysis: buildFallbackAnalysis(sortedMissing, matchScore, false),
-            aiStatus: status,
-        };
+    } catch (chatErr) {
+        console.warn('[ats] fallback chat failed:', chatErr.message);
     }
+
+    // 3. Graceful fallback if all providers fail
+    return {
+        aiAnalysis: buildFallbackAnalysis(sortedMissing, matchScore, false),
+        aiStatus: 'provider_error',
+    };
 }
