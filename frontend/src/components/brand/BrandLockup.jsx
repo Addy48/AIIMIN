@@ -57,6 +57,7 @@ export default function BrandLockup({
           <Wordmark
             size={wordmarkSize}
             weight={700}
+            color={isLight ? '#14171A' : '#EDEDEF'}
             className="brand-lockup__wordmark"
           />
         </>
@@ -87,6 +88,7 @@ export default function BrandLockup({
             <Wordmark
               size={wordmarkSize}
               weight={700}
+              color={isLight ? '#14171A' : '#EDEDEF'}
               className="brand-lockup__wordmark"
             />
           </Link>

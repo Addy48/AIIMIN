@@ -597,8 +597,8 @@ fun ConfigScreen(
             .padding(bottom = AiiminTheme.space.s8 + AiiminTheme.space.s6),
     ) {
         ScreenHead(
-            title = "Configuration",
-            meta = if (prefs.isSeed) "SEED" else null,
+            title = "Settings",
+            meta = if (prefs.isSeed) "SEED" else "SYSTEM",
         )
         Text(
             text = "Identity, sync, this phone, and the levers that shape the OS.",

@@ -286,7 +286,7 @@ fun TodayScreen(
                 .padding(horizontal = AiiminTheme.space.page)
                 .padding(bottom = AiiminTheme.space.s8 + AiiminTheme.space.s6),
         ) {
-            ScreenHead(title = "AIIMIN · Day sheet", meta = "TODAY", modifier = Modifier.riseIn(0))
+            ScreenHead(title = "Today", meta = "DAY SHEET", modifier = Modifier.riseIn(0))
 
             CaptureLead(
                 onOpenCapture = onOpenCapture,
