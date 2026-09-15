@@ -1,8 +1,12 @@
 import { Hono } from 'hono';
 import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
+import { requireAuth } from '../middleware/auth.js';
+import { validateUploadBuffer, safeUploadFilename } from '../lib/uploadValidate.js';
 
 const blobService = new Hono();
+
+// Enforce authentication on all blob storage routes
+blobService.use('*', requireAuth);
 
 // Initialize Supabase Client with Service Role Key for full admin control
 const supabase = createClient(
@@ -12,6 +16,7 @@ const supabase = createClient(
 
 blobService.post('/upload', async (c) => {
     try {
+        const userId = c.get('userId');
         const body = await c.req.parseBody();
         const file = body['file'];
         
@@ -19,22 +24,26 @@ blobService.post('/upload', async (c) => {
             return c.json({ error: 'No file provided' }, 400);
         }
 
-        // Generate unique filename to avoid collisions
-        const uniqueId = crypto.randomUUID();
-        const originalName = file.name || 'file';
-        const ext = originalName.includes('.') ? originalName.split('.').pop() : '';
-        const filePath = ext ? `${uniqueId}.${ext}` : uniqueId;
-
         // Convert the File object to a Buffer
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
+
+        // Validate buffer size, allowed MIME types, and magic bytes
+        const validation = validateUploadBuffer(buffer, file.type);
+        if (!validation.ok) {
+            return c.json({ error: validation.error }, 400);
+        }
+
+        // Generate safe unique filename partitioned by authenticated user ID
+        const safeName = safeUploadFilename(file.name || 'upload');
+        const filePath = `${userId}/${safeName}`;
 
         // Upload to Supabase Storage
         const { data, error } = await supabase
             .storage
             .from('dashboard-uploads')
             .upload(filePath, buffer, {
-                contentType: file.type || 'application/octet-stream',
+                contentType: validation.mime,
                 upsert: true
             });
 
@@ -48,7 +57,7 @@ blobService.post('/upload', async (c) => {
             .from('dashboard-uploads')
             .getPublicUrl(filePath);
 
-        console.log(`[Storage] Uploaded: ${filePath} -> ${publicUrl}`);
+        console.log(`[Storage] Uploaded for user ${userId}: ${filePath} -> ${publicUrl}`);
 
         return c.json({
             url: publicUrl,
@@ -62,16 +71,22 @@ blobService.post('/upload', async (c) => {
 
 blobService.delete('/delete', async (c) => {
     try {
+        const userId = c.get('userId');
         const { url } = await c.req.json();
         if (!url) {
             return c.json({ error: 'URL is required' }, 400);
         }
 
-        // Robustly parse the unique filename from the Supabase public URL
-        // Example: https://yubxgftugxbwtywyhcsv.supabase.co/storage/v1/object/public/dashboard-uploads/filename.ext
-        let filePath = url;
-        if (url.includes('/dashboard-uploads/')) {
-            filePath = url.split('/dashboard-uploads/').pop();
+        // Parse the filename/path from the URL or pathname
+        let filePath = String(url).trim();
+        if (filePath.includes('/dashboard-uploads/')) {
+            filePath = filePath.split('/dashboard-uploads/').pop();
+        }
+        filePath = filePath.replace(/^\/+/, '');
+
+        // Security check: ensure user cannot delete files belonging to other users or root bucket files
+        if (!filePath.startsWith(`${userId}/`)) {
+            return c.json({ error: 'Forbidden: cannot delete files belonging to another user' }, 403);
         }
 
         const { data, error } = await supabase
@@ -83,7 +98,7 @@ blobService.delete('/delete', async (c) => {
             throw error;
         }
 
-        console.log(`[Storage] Deleted: ${filePath}`);
+        console.log(`[Storage] Deleted by user ${userId}: ${filePath}`);
 
         return c.json({ success: true });
     } catch (err) {
