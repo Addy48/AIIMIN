@@ -5,10 +5,17 @@
 
 .mobile-lite-account {
   min-height: 100vh;
-  background: var(--color-base, #1a1a1a);
+  background: var(--color-base, #121214);
   color: var(--color-text-1, #f4f4f4);
   display: flex;
   flex-direction: column;
+}
+
+@media (min-width: 640px) {
+  .mobile-lite-account {
+    background: radial-gradient(ellipse at 50% 10%, rgba(116, 157, 196, 0.09) 0%, transparent 65%), #0a0a0c;
+    background-attachment: fixed;
+  }
 }
 
 /* ── HEADER TELEMETRY ── */
@@ -20,11 +27,24 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
-  background: color-mix(in srgb, var(--color-base, #1a1a1a) 94%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-border, #3a3a3a) 60%, transparent);
+  padding: 12px 18px;
+  background: color-mix(in srgb, var(--color-base, #121214) 94%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .mobile-lite-account__header {
+    max-width: 480px;
+    margin: 0 auto;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
 }
 
 .mobile-lite-account__status-pill {
@@ -66,10 +86,19 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-width: 540px;
+  max-width: 480px;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .mobile-lite-account__main {
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(16, 16, 20, 0.65);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.6);
+  }
 }
 
 /* ── TACTILE CARDS ── */
