@@ -631,6 +631,12 @@
       "skillPath": "skills/sdk-docs-auditor/SKILL.md",
       "computedHash": "0d74d19b2d82e3ec9918cbf2c99d9480a544eb066d90d559ae4b07b4ee513c0f"
     },
+    "security-audit": {
+      "source": "cloudflare/security-audit-skill",
+      "sourceType": "github",
+      "skillPath": "skills/security-audit/SKILL.md",
+      "computedHash": "98b97aad2873b3b9a8e064007c25e7827b493ba27fda8bfbdb41dab586767973"
+    },
     "seo": {
       "source": "Infrasity-Labs/dev-gtm-claude-skills",
       "sourceType": "github",

@@ -38,12 +38,6 @@ function isSyntheticEmail(email) {
 }
 
 export const requireAuth = async (c, next) => {
-    if (process.env.NODE_ENV !== 'production' && c.req.header('authorization') === 'Bearer mock-test-token') {
-        c.set('user', { id: '88888888-8888-4888-8888-888888888888', email: 'dev@aiimin.in', role: 'user', onboarding_stage: 1, username: 'DEVUSER' });
-        c.set('userId', '88888888-8888-4888-8888-888888888888');
-        return await next();
-    }
-
     let sessionResult;
     try {
         sessionResult = await resolveAuthSession(c);

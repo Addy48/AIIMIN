@@ -25,14 +25,20 @@ const CORS_ALLOWED = new Set([
     'https://api.aiimin.in',
 ]);
 if (process.env.FRONTEND_URL) CORS_ALLOWED.add(process.env.FRONTEND_URL.replace(/\/$/, ''));
+if (process.env.ALLOWED_ORIGINS) {
+    process.env.ALLOWED_ORIGINS.split(',').forEach((o) => {
+        const trimmed = o.trim().replace(/\/$/, '');
+        if (trimmed) CORS_ALLOWED.add(trimmed);
+    });
+}
 
 app.use('*', cors({
     origin: (origin) => {
         if (!origin) return ''; // same-origin / curl
         if (CORS_ALLOWED.has(origin)) return origin;
-        // Vercel preview deploys for this project only
-        if (/^https:\/\/[\w-]+-aaditya[\w.-]*\.vercel\.app$/i.test(origin)) return origin;
-        if (/^https:\/\/aiimin[\w.-]*\.vercel\.app$/i.test(origin)) return origin;
+        // Pinned Vercel preview deploys for this project and team only
+        if (/^https:\/\/aiimin(?:-[a-z0-9-]+)?-aadityas-projects-[a-z0-9]+\.vercel\.app$/i.test(origin)) return origin;
+        if (/^https:\/\/aiimin\.vercel\.app$/i.test(origin)) return origin;
         return null;
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],

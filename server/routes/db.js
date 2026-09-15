@@ -33,6 +33,25 @@ const SELF_ID_TABLES = new Set(['users', 'profiles', 'user_profiles']);
 /** Core life entities — writes must use dedicated /api routes (validation + soft-delete). */
 const WRITE_BLOCKED_TABLES = new Set(['goals', 'habits', 'habit_logs', 'daily_logs', 'journal_entries']);
 
+const IDENTIFIER_REGEX = /^[a-z_][a-z0-9_]*$/i;
+
+function assertValidIdentifier(name, type = 'column') {
+    if (!name || typeof name !== 'string' || !IDENTIFIER_REGEX.test(name.trim())) {
+        throw new Error(`Invalid ${type} identifier: ${name}`);
+    }
+    return name.trim();
+}
+
+function parseConflictTargets(conflict) {
+    if (!conflict || typeof conflict !== 'string') return ['id'];
+    const parts = conflict.split(',').map((p) => p.trim()).filter(Boolean);
+    if (!parts.length) return ['id'];
+    for (const part of parts) {
+        assertValidIdentifier(part, 'conflict target');
+    }
+    return parts;
+}
+
 function assertWritable(table) {
     if (WRITE_BLOCKED_TABLES.has(table)) {
         throw new Error(`Writes to ${table} use dedicated API routes (/api/${table.replace('_', '-')})`);
@@ -183,6 +202,9 @@ app.post('/:table', requireAuth, async (c) => {
             }
 
             const cols = Object.keys(payload);
+            for (const col of cols) {
+                assertValidIdentifier(col, 'column');
+            }
             const vals = Object.values(payload);
             const placeholders = cols.map((_, i) => `$${i + 1}`).join(', ');
             const { rows: res } = await pool.query(
@@ -212,7 +234,8 @@ app.post('/:table/upsert', requireAuth, async (c) => {
         const userId = c.get('userId');
         const { payload, onConflict } = await c.req.json();
         const rows = Array.isArray(payload) ? payload : [payload];
-        const conflict = onConflict || 'id';
+        const conflictCols = parseConflictTargets(onConflict);
+        const safeConflict = conflictCols.join(', ');
 
         const upserted = [];
         for (const row of rows) {
@@ -220,15 +243,18 @@ app.post('/:table/upsert', requireAuth, async (c) => {
             if (USER_SCOPED_TABLES.has(table)) data.user_id = userId;
 
             const cols = Object.keys(data);
+            for (const col of cols) {
+                assertValidIdentifier(col, 'column');
+            }
             const vals = Object.values(data);
             const placeholders = cols.map((_, i) => `$${i + 1}`).join(', ');
-            const updates = cols.filter((c) => c !== conflict.split(',')[0].trim())
+            const updates = cols.filter((c) => !conflictCols.includes(c))
                 .map((col) => `${col} = EXCLUDED.${col}`)
                 .join(', ');
 
             const { rows: res } = await pool.query(
                 `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})
-                 ON CONFLICT (${conflict}) DO UPDATE SET ${updates || `${cols[0]} = EXCLUDED.${cols[0]}`}
+                 ON CONFLICT (${safeConflict}) DO UPDATE SET ${updates || `${cols[0]} = EXCLUDED.${cols[0]}`}
                  RETURNING *`,
                 vals
             );
@@ -257,6 +283,7 @@ app.patch('/:table', requireAuth, async (c) => {
         const sets = [];
         const params = [];
         Object.entries(payload).forEach(([col, val]) => {
+            assertValidIdentifier(col, 'payload column');
             params.push(val);
             sets.push(`${col} = $${params.length}`);
         });
@@ -272,6 +299,7 @@ app.patch('/:table', requireAuth, async (c) => {
         Object.entries(where).forEach(([col, val]) => {
             if (col === 'user_id' && USER_SCOPED_TABLES.has(table)) return;
             if (col === 'id' && SELF_ID_TABLES.has(table)) return;
+            assertValidIdentifier(col, 'where filter column');
             params.push(val);
             filters.push(`${col} = $${params.length}`);
         });
@@ -309,6 +337,7 @@ app.delete('/:table', requireAuth, async (c) => {
         }
         Object.entries(where).forEach(([col, val]) => {
             if (col === 'user_id' && USER_SCOPED_TABLES.has(table)) return;
+            assertValidIdentifier(col, 'where filter column');
             params.push(val);
             filters.push(`${col} = $${params.length}`);
         });

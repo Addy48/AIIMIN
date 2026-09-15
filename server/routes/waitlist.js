@@ -291,6 +291,12 @@ app.post('/feedback', feedbackLimiter, async (c) => {
 app.post('/', waitlistLimiter, async (c) => {
   try {
     const body = await c.req.json();
+
+    // Anti-spam honeypot: silently drop bot submissions without sending email
+    if (body.website || body.company || body.hp || body.bot_field) {
+      return c.json({ success: true, message: 'Welcome to the waitlist' }, 200);
+    }
+
     const emailCheck = validateEmail(body.email);
     if (!emailCheck.ok) {
       return c.json({ error: emailCheck.error }, 400);
