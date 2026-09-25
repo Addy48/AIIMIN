@@ -583,7 +583,7 @@ export default function AndroidApp() {
             <div className="contrast-card contrast-card--trap">
               <div className="contrast-card-header">
                 <div className="contrast-icon-wrap trap-icon">
-                  <Prohibit size={20} weight="bold" />
+                  <Prohibit size={22} weight="bold" />
                 </div>
                 <div>
                   <span className="contrast-eyebrow">THE ATTENTION TRAP</span>
@@ -596,7 +596,7 @@ export default function AndroidApp() {
               <ul className="contrast-list">
                 <li>
                   <span className="contrast-bullet trap-bullet" aria-hidden="true">
-                    <XCircle size={18} weight="fill" color="#F43F5E" />
+                    <X size={13} weight="bold" />
                   </span>
                   <div>
                     <strong>4h 38m average daily screen time</strong>
@@ -605,7 +605,7 @@ export default function AndroidApp() {
                 </li>
                 <li>
                   <span className="contrast-bullet trap-bullet" aria-hidden="true">
-                    <XCircle size={18} weight="fill" color="#F43F5E" />
+                    <X size={13} weight="bold" />
                   </span>
                   <div>
                     <strong>96 reflexive unlocks per day</strong>
@@ -614,7 +614,7 @@ export default function AndroidApp() {
                 </li>
                 <li>
                   <span className="contrast-bullet trap-bullet" aria-hidden="true">
-                    <XCircle size={18} weight="fill" color="#F43F5E" />
+                    <X size={13} weight="bold" />
                   </span>
                   <div>
                     <strong>Constant cloud surveillance</strong>
@@ -628,7 +628,7 @@ export default function AndroidApp() {
             <div className="contrast-card contrast-card--antidote">
               <div className="contrast-card-header">
                 <div className="contrast-icon-wrap antidote-icon">
-                  <ShieldCheck size={20} weight="bold" />
+                  <ShieldCheck size={22} weight="bold" />
                 </div>
                 <div>
                   <span className="contrast-eyebrow">THE SOVEREIGN ANTIDOTE</span>
@@ -641,7 +641,7 @@ export default function AndroidApp() {
               <ul className="contrast-list">
                 <li>
                   <span className="contrast-bullet antidote-bullet" aria-hidden="true">
-                    <CheckCircle size={18} weight="fill" color="#10B981" />
+                    <Check size={13} weight="bold" />
                   </span>
                   <div>
                     <strong>Under 3 minutes total daily usage</strong>
@@ -650,7 +650,7 @@ export default function AndroidApp() {
                 </li>
                 <li>
                   <span className="contrast-bullet antidote-bullet" aria-hidden="true">
-                    <CheckCircle size={18} weight="fill" color="#10B981" />
+                    <Check size={13} weight="bold" />
                   </span>
                   <div>
                     <strong>Native Focus Shield barrier</strong>
@@ -659,7 +659,7 @@ export default function AndroidApp() {
                 </li>
                 <li>
                   <span className="contrast-bullet antidote-bullet" aria-hidden="true">
-                    <CheckCircle size={18} weight="fill" color="#10B981" />
+                    <Check size={13} weight="bold" />
                   </span>
                   <div>
                     <strong>100% offline-first silicon enclave</strong>
