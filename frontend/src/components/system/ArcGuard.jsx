@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useUserProfile } from '../../hooks/useUserProfile';
+import { useAuth } from '../../hooks/useAuth';
 import { hasLifeArc } from '../../constants/arc';
 
 const EXEMPT_PREFIXES = [
@@ -22,18 +23,20 @@ const EXEMPT_PREFIXES = [
 export default function ArcGuard({ children }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { profile, loading } = useUserProfile();
+  const { user, session } = useAuth();
+  const isAuthenticatedUser = Boolean(session && user && !user.isGuest);
+  const { profile, loading } = useUserProfile({ enabled: isAuthenticatedUser });
 
   const exempt = EXEMPT_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   useEffect(() => {
-    if (loading || exempt) return;
+    if (!isAuthenticatedUser || loading || exempt) return;
     if (!hasLifeArc(profile?.tagline)) {
       navigate('/onboarding?arc=1', { replace: true });
     }
-  }, [loading, exempt, profile?.tagline, navigate]);
+  }, [isAuthenticatedUser, loading, exempt, profile?.tagline, navigate]);
 
-  if (!exempt && !loading && !hasLifeArc(profile?.tagline)) {
+  if (isAuthenticatedUser && !exempt && !loading && !hasLifeArc(profile?.tagline)) {
     return null;
   }
 

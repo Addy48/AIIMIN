@@ -22,7 +22,7 @@ constitutional_reference: Genesis/P8 Master Specification/00_INDEX.md
 
 **One repo, three clients** — web Life OS, Capacitor `/m` shell, native Android V2. Shared API and auth; **separate UI code and commits**.
 
-→ Full diagram and rules: [[Monorepo]] · root `CONTRIBUTING.md`
+→ Full diagram and rules: [[Monorepo]] · [[02_ARCHITECTURE/System-Workflows-And-Interactions|System Workflows & Interactions]] · root `CONTRIBUTING.md`
 
 ## Current state
 

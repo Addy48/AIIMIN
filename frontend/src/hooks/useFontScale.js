@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 export const FONT_SCALE_PRESETS = {
   small: { px: '13px', ratio: '0.93' },
-  normal: { px: '15px', ratio: '1' },
-  large: { px: '17px', ratio: '1.12' },
+  normal: { px: '14px', ratio: '1' },
+  large: { px: '16px', ratio: '1.14' },
 };
 
 export const normalizeFontScale = (value) => (FONT_SCALE_PRESETS[value] ? value : 'normal');

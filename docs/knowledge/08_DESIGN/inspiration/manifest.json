@@ -1,0 +1,1092 @@
+[
+  {
+    "key": "linear",
+    "name": "Linear",
+    "category": "dashboards",
+    "description": "Best-in-class dark mode design system, near-black #08090A, command palette, muted borders",
+    "accent": "#5E6AD2",
+    "takeaways": [
+      "Command Palette (Cmd+K)",
+      "Near-black elevation system",
+      "Muted borders",
+      "Subtle status pills"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/linear/screenshot_01.png",
+        "size_kb": 452
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/linear/screenshot_02.png",
+        "size_kb": 636
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/linear/screenshot_03.png",
+        "size_kb": 391
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/linear/screenshot_04.png",
+        "size_kb": 1077
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/linear/screenshot_05.png",
+        "size_kb": 581
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/linear/screenshot_06.png",
+        "size_kb": 659
+      },
+      {
+        "type": "web",
+        "path": "inspiration/apps/linear/web_ui.png",
+        "size_kb": 18
+      }
+    ]
+  },
+  {
+    "key": "raycast",
+    "name": "Raycast",
+    "category": "dashboards",
+    "description": "Dark chrome #161618 with vibrant violet/cyan gradient accents and keyboard-first navigation",
+    "accent": "#FF6363",
+    "takeaways": [
+      "Vibrant gradient CTAs",
+      "Extension store cards",
+      "Keyboard-first navigation",
+      "Deep obsidian surfaces"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/raycast/screenshot_01.png",
+        "size_kb": 2551
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/raycast/screenshot_02.png",
+        "size_kb": 2647
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/raycast/screenshot_03.png",
+        "size_kb": 2354
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/raycast/screenshot_04.png",
+        "size_kb": 3095
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/raycast/screenshot_05.png",
+        "size_kb": 2753
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/raycast/screenshot_06.png",
+        "size_kb": 3041
+      },
+      {
+        "type": "web",
+        "path": "inspiration/apps/raycast/web_ui.png",
+        "size_kb": 75
+      }
+    ]
+  },
+  {
+    "key": "vercel",
+    "name": "Vercel",
+    "category": "dashboards",
+    "description": "High-contrast dark mode, deployment status badges, and clean analytics charts",
+    "accent": "#000000",
+    "takeaways": [
+      "Deployment status badges",
+      "Analytics telemetry cards",
+      "Clean sparklines",
+      "High contrast monochrome"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/vercel/screenshot_01.png",
+        "size_kb": 1278
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/vercel/screenshot_02.png",
+        "size_kb": 1303
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/vercel/screenshot_03.png",
+        "size_kb": 1293
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/vercel/screenshot_04.png",
+        "size_kb": 1474
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/vercel/screenshot_05.png",
+        "size_kb": 1142
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/vercel/screenshot_06.png",
+        "size_kb": 1215
+      },
+      {
+        "type": "web",
+        "path": "inspiration/apps/vercel/web_ui.png",
+        "size_kb": 145
+      }
+    ]
+  },
+  {
+    "key": "revolut",
+    "name": "Revolut",
+    "category": "finance",
+    "description": "Dark finance UI, gradient account cards, transaction grouping by date, category colors",
+    "accent": "#0075EB",
+    "takeaways": [
+      "Gradient card designs",
+      "Transaction grouping by date",
+      "Vibrant category pills",
+      "Clean spending analytics"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/revolut/screenshot_01.png",
+        "size_kb": 4232
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/revolut/screenshot_02.png",
+        "size_kb": 1589
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/revolut/screenshot_03.png",
+        "size_kb": 549
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/revolut/screenshot_04.png",
+        "size_kb": 1019
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/revolut/screenshot_05.png",
+        "size_kb": 1428
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/revolut/screenshot_06.png",
+        "size_kb": 4072
+      }
+    ]
+  },
+  {
+    "key": "monarch",
+    "name": "Monarch Money",
+    "category": "finance",
+    "description": "Interactive Sankey diagrams for cash flow, net worth progress, and clean dark budget tracking",
+    "accent": "#FF5A36",
+    "takeaways": [
+      "Sankey cash flow diagrams",
+      "Budget progress bars",
+      "Net worth graphs",
+      "Category breakdown"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/monarch/screenshot_01.png",
+        "size_kb": 997
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/monarch/screenshot_02.png",
+        "size_kb": 1137
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/monarch/screenshot_03.png",
+        "size_kb": 857
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/monarch/screenshot_04.png",
+        "size_kb": 2716
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/monarch/screenshot_05.png",
+        "size_kb": 1535
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/monarch/screenshot_06.png",
+        "size_kb": 836
+      },
+      {
+        "type": "web",
+        "path": "inspiration/apps/monarch/web_ui.png",
+        "size_kb": 132
+      }
+    ]
+  },
+  {
+    "key": "robinhood",
+    "name": "Robinhood",
+    "category": "finance",
+    "description": "Sparkline charts in ledger rows, green/red market sentiment coding, minimal dark portfolio",
+    "accent": "#00C805",
+    "takeaways": [
+      "Sparkline mini-charts in list rows",
+      "Color coding for deltas",
+      "Clean number typography",
+      "Bold asset balance"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/robinhood/screenshot_01.png",
+        "size_kb": 440
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/robinhood/screenshot_02.png",
+        "size_kb": 483
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/robinhood/screenshot_03.png",
+        "size_kb": 390
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/robinhood/screenshot_04.png",
+        "size_kb": 351
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/robinhood/screenshot_05.png",
+        "size_kb": 406
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/robinhood/screenshot_06.png",
+        "size_kb": 750
+      }
+    ]
+  },
+  {
+    "key": "daylio",
+    "name": "Daylio",
+    "category": "journal",
+    "description": "Two-tap mood entry (icon + activity), 365-day year-in-pixels heatmap, mood correlation stats",
+    "accent": "#27AE60",
+    "takeaways": [
+      "Single-tap mood icon grid",
+      "Year-in-pixels 365 heatmap",
+      "Activity tagging chips",
+      "Weekly mood report"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/daylio/screenshot_01.png",
+        "size_kb": 824
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/daylio/screenshot_02.png",
+        "size_kb": 586
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/daylio/screenshot_03.png",
+        "size_kb": 812
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/daylio/screenshot_04.png",
+        "size_kb": 1309
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/daylio/screenshot_05.png",
+        "size_kb": 914
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/daylio/screenshot_06.png",
+        "size_kb": 1425
+      },
+      {
+        "type": "web",
+        "path": "inspiration/apps/daylio/web_ui.png",
+        "size_kb": 85
+      }
+    ]
+  },
+  {
+    "key": "bear",
+    "name": "Bear Notes",
+    "category": "notes",
+    "description": "Curated typography-first design, 28+ themes, syntax highlighting, elegant markdown vault",
+    "accent": "#E04A3F",
+    "takeaways": [
+      "Warm paper & dark themes",
+      "Typography-first notes layout",
+      "Markdown rendering",
+      "Tag tree organization"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/bear/screenshot_01.png",
+        "size_kb": 606
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/bear/screenshot_02.png",
+        "size_kb": 442
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/bear/screenshot_03.png",
+        "size_kb": 269
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/bear/screenshot_04.png",
+        "size_kb": 570
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/bear/screenshot_05.png",
+        "size_kb": 380
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/bear/screenshot_06.png",
+        "size_kb": 577
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/bear/mac_desktop_01.png",
+        "size_kb": 428
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/bear/mac_desktop_02.png",
+        "size_kb": 446
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/bear/mac_desktop_03.png",
+        "size_kb": 164
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/bear/mac_desktop_04.png",
+        "size_kb": 473
+      }
+    ]
+  },
+  {
+    "key": "obsidian",
+    "name": "Obsidian",
+    "category": "notes",
+    "description": "Knowledge graph visualization, bi-directional backlinks, dark CSS variables architecture",
+    "accent": "#7C3AED",
+    "takeaways": [
+      "Interactive knowledge graph",
+      "Bi-directional note backlinks (@)",
+      "Deep theme customizability",
+      "Split canvas views"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/obsidian/screenshot_01.png",
+        "size_kb": 248
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/obsidian/screenshot_02.png",
+        "size_kb": 246
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/obsidian/screenshot_03.png",
+        "size_kb": 196
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/obsidian/screenshot_04.png",
+        "size_kb": 356
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/obsidian/screenshot_05.png",
+        "size_kb": 189
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/obsidian/screenshot_06.png",
+        "size_kb": 186
+      },
+      {
+        "type": "web",
+        "path": "inspiration/apps/obsidian/web_ui.png",
+        "size_kb": 289
+      }
+    ]
+  },
+  {
+    "key": "craft",
+    "name": "Craft Docs",
+    "category": "notes",
+    "description": "App Styles, document colors bleeding into UI, block-level styling cards and canvas",
+    "accent": "#0066FF",
+    "takeaways": [
+      "Document card styles",
+      "Block coloring and highlights",
+      "Multi-column layouts",
+      "Clean typography"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/craft/screenshot_01.png",
+        "size_kb": 3380
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/craft/screenshot_02.png",
+        "size_kb": 2313
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/craft/screenshot_03.png",
+        "size_kb": 2075
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/craft/screenshot_04.png",
+        "size_kb": 2096
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/craft/screenshot_05.png",
+        "size_kb": 1948
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/craft/screenshot_06.png",
+        "size_kb": 2538
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/craft/mac_desktop_01.png",
+        "size_kb": 3380
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/craft/mac_desktop_02.png",
+        "size_kb": 2313
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/craft/mac_desktop_03.png",
+        "size_kb": 2075
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/craft/mac_desktop_04.png",
+        "size_kb": 2096
+      }
+    ]
+  },
+  {
+    "key": "notion",
+    "name": "Notion",
+    "category": "notes",
+    "description": "Slash command menu (/), multi-view databases (table/board/timeline/calendar), clean documentation",
+    "accent": "#000000",
+    "takeaways": [
+      "Slash command menu (/)",
+      "Multi-view databases",
+      "Inline entity chips",
+      "Block-based progressive disclosure"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/notion/screenshot_01.png",
+        "size_kb": 306
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/notion/screenshot_02.png",
+        "size_kb": 496
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/notion/screenshot_03.png",
+        "size_kb": 467
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/notion/screenshot_04.png",
+        "size_kb": 523
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/notion/screenshot_05.png",
+        "size_kb": 557
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/notion/screenshot_06.png",
+        "size_kb": 561
+      },
+      {
+        "type": "web",
+        "path": "inspiration/apps/notion/web_ui.png",
+        "size_kb": 175
+      }
+    ]
+  },
+  {
+    "key": "duolingo",
+    "name": "Duolingo",
+    "category": "habits",
+    "description": "Animated streak flame counter, XP gain notifications, weekly league leaderboards, gamified micro-steps",
+    "accent": "#58CC02",
+    "takeaways": [
+      "Animated streak flame counter",
+      "Floating +XP gain popups",
+      "League ranking tiers",
+      "Daily goal celebration"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/duolingo/screenshot_01.png",
+        "size_kb": 247
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/duolingo/screenshot_02.png",
+        "size_kb": 270
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/duolingo/screenshot_03.png",
+        "size_kb": 425
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/duolingo/screenshot_04.png",
+        "size_kb": 324
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/duolingo/screenshot_05.png",
+        "size_kb": 710
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/duolingo/screenshot_06.png",
+        "size_kb": 352
+      }
+    ]
+  },
+  {
+    "key": "habitica",
+    "name": "Habitica",
+    "category": "habits",
+    "description": "Pixel RPG avatar, Health Points (HP) damage on missed habits, habit +/- completion buttons",
+    "accent": "#8756A8",
+    "takeaways": [
+      "Visual consequences for missed minimums",
+      "Character stats (HP / Mana / XP)",
+      "Positive & negative habit buttons",
+      "Quest progression"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/habitica/screenshot_01.png",
+        "size_kb": 1670
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/habitica/screenshot_02.png",
+        "size_kb": 1481
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/habitica/screenshot_03.png",
+        "size_kb": 1004
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/habitica/screenshot_04.png",
+        "size_kb": 1723
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/habitica/screenshot_05.png",
+        "size_kb": 794
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/habitica/screenshot_06.png",
+        "size_kb": 925
+      },
+      {
+        "type": "web",
+        "path": "inspiration/apps/habitica/web_ui.png",
+        "size_kb": 140
+      }
+    ]
+  },
+  {
+    "key": "things3",
+    "name": "Things 3",
+    "category": "habits",
+    "description": "Best-in-class task hierarchy (Areas \u2192 Projects \u2192 Tasks), clean \"When\" date picker, Today view",
+    "accent": "#2D7FF9",
+    "takeaways": [
+      "Areas \u2192 Projects \u2192 Tasks hierarchy",
+      "Clean \"When\" date picker",
+      "Today / Upcoming views",
+      "Subtle checkmark animations"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/things3/screenshot_01.png",
+        "size_kb": 529
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/things3/screenshot_02.png",
+        "size_kb": 681
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/things3/screenshot_03.png",
+        "size_kb": 629
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/things3/screenshot_04.png",
+        "size_kb": 518
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/things3/screenshot_05.png",
+        "size_kb": 734
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/things3/screenshot_06.png",
+        "size_kb": 767
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/things3/mac_desktop_01.png",
+        "size_kb": 549
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/things3/mac_desktop_02.png",
+        "size_kb": 468
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/things3/mac_desktop_03.png",
+        "size_kb": 522
+      },
+      {
+        "type": "desktop",
+        "path": "inspiration/apps/things3/mac_desktop_04.png",
+        "size_kb": 518
+      }
+    ]
+  },
+  {
+    "key": "todoist",
+    "name": "Todoist",
+    "category": "habits",
+    "description": "Natural language quick task capture, priority flags P1-P4, Karma productivity trends",
+    "accent": "#E44332",
+    "takeaways": [
+      "NLP date chips during capture",
+      "Productivity Karma chart",
+      "Priority flag system",
+      "Section groupings"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/todoist/screenshot_01.png",
+        "size_kb": 2068
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/todoist/screenshot_02.png",
+        "size_kb": 1361
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/todoist/screenshot_03.png",
+        "size_kb": 1104
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/todoist/screenshot_04.png",
+        "size_kb": 1302
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/todoist/screenshot_05.png",
+        "size_kb": 1089
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/todoist/screenshot_06.png",
+        "size_kb": 1354
+      }
+    ]
+  },
+  {
+    "key": "forest",
+    "name": "Forest",
+    "category": "focus",
+    "description": "Circular focus timer with growing tree, distraction consequence (dying tree), focus forest accumulation",
+    "accent": "#449551",
+    "takeaways": [
+      "Circular progress focus timer",
+      "Visual growth during sessions",
+      "Accumulated forest visualization",
+      "Tag categories"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/forest/screenshot_01.png",
+        "size_kb": 1409
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/forest/screenshot_02.png",
+        "size_kb": 2125
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/forest/screenshot_03.png",
+        "size_kb": 791
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/forest/screenshot_04.png",
+        "size_kb": 1846
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/forest/screenshot_05.png",
+        "size_kb": 1109
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/forest/screenshot_06.png",
+        "size_kb": 890
+      }
+    ]
+  },
+  {
+    "key": "toggl",
+    "name": "Toggl Track",
+    "category": "focus",
+    "description": "One-click timer start, project/client color assignment, weekly bar chart reports",
+    "accent": "#E57CD8",
+    "takeaways": [
+      "1-click session timer start",
+      "Color-coded project badges",
+      "Weekly time distribution charts",
+      "Timeline view"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/toggl/screenshot_01.png",
+        "size_kb": 913
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/toggl/screenshot_02.png",
+        "size_kb": 596
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/toggl/screenshot_03.png",
+        "size_kb": 654
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/toggl/screenshot_04.png",
+        "size_kb": 515
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/toggl/screenshot_05.png",
+        "size_kb": 598
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/toggl/screenshot_06.png",
+        "size_kb": 625
+      }
+    ]
+  },
+  {
+    "key": "apple_health",
+    "name": "Apple Health",
+    "category": "health",
+    "description": "Concentric activity rings (Move, Exercise, Stand), step counter animations, health trends",
+    "accent": "#FA114F",
+    "takeaways": [
+      "Concentric progress rings for Life Score",
+      "Animated step counter fill",
+      "Heart rate zones",
+      "Longitudinal trend indicators"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_health/screenshot_01.png",
+        "size_kb": 1074
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_health/screenshot_02.png",
+        "size_kb": 698
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_health/screenshot_03.png",
+        "size_kb": 552
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_health/screenshot_04.png",
+        "size_kb": 524
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_health/screenshot_05.png",
+        "size_kb": 1208
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_health/screenshot_06.png",
+        "size_kb": 316
+      }
+    ]
+  },
+  {
+    "key": "apple_fitness",
+    "name": "Apple Fitness",
+    "category": "health",
+    "description": "Activity rings telemetry, weekly summary cards, workout tracking metrics",
+    "accent": "#A6E22E",
+    "takeaways": [
+      "Three-ring daily closure",
+      "Weekly telemetry recap",
+      "Award badges",
+      "Metric cards"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_fitness/screenshot_01.png",
+        "size_kb": 1350
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_fitness/screenshot_02.png",
+        "size_kb": 818
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_fitness/screenshot_03.png",
+        "size_kb": 1862
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_fitness/screenshot_04.png",
+        "size_kb": 2016
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_fitness/screenshot_05.png",
+        "size_kb": 1653
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/apple_fitness/screenshot_06.png",
+        "size_kb": 340
+      }
+    ]
+  },
+  {
+    "key": "headspace",
+    "name": "Headspace",
+    "category": "onboarding",
+    "description": "Calming mindfulness illustrations, breathing exercises, welcoming onboarding flows",
+    "accent": "#FF7C43",
+    "takeaways": [
+      "Gentle welcoming onboarding",
+      "Breathing guide animations",
+      "Sleep soundscapes",
+      "Calm palette"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/headspace/screenshot_01.png",
+        "size_kb": 149
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/headspace/screenshot_02.png",
+        "size_kb": 406
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/headspace/screenshot_03.png",
+        "size_kb": 314
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/headspace/screenshot_04.png",
+        "size_kb": 257
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/headspace/screenshot_05.png",
+        "size_kb": 282
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/headspace/screenshot_06.png",
+        "size_kb": 291
+      }
+    ]
+  },
+  {
+    "key": "spotify",
+    "name": "Spotify",
+    "category": "dashboards",
+    "description": "Pure black #000000 background, dynamic content cards, Spotify Wrapped year-end statistics",
+    "accent": "#1DB954",
+    "takeaways": [
+      "Deep black #000000 immersion",
+      "Wrapped-style annual recap cards",
+      "Dynamic background blur",
+      "Vibrant green accent"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/spotify/screenshot_01.png",
+        "size_kb": 2335
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/spotify/screenshot_02.png",
+        "size_kb": 2648
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/spotify/screenshot_03.png",
+        "size_kb": 2643
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/spotify/screenshot_04.png",
+        "size_kb": 1853
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/spotify/screenshot_05.png",
+        "size_kb": 1759
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/spotify/screenshot_06.png",
+        "size_kb": 2062
+      }
+    ]
+  },
+  {
+    "key": "onepassword",
+    "name": "1Password",
+    "category": "security",
+    "description": "Biometric unlock gate, vault category cards, Watchtower security health score",
+    "accent": "#0A85EA",
+    "takeaways": [
+      "Biometric gate feedback",
+      "Security audit health score",
+      "Vault item categorization",
+      "Emergency kit design"
+    ],
+    "screenshots": [
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/onepassword/screenshot_01.png",
+        "size_kb": 396
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/onepassword/screenshot_02.png",
+        "size_kb": 678
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/onepassword/screenshot_03.png",
+        "size_kb": 769
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/onepassword/screenshot_04.png",
+        "size_kb": 455
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/onepassword/screenshot_05.png",
+        "size_kb": 368
+      },
+      {
+        "type": "mobile",
+        "path": "inspiration/apps/onepassword/screenshot_06.png",
+        "size_kb": 395
+      }
+    ]
+  }
+]

@@ -8,16 +8,16 @@ export default function WaitlistAccessTiersSection() {
   return (
     <section className="waitlist-section waitlist-access-tiers">
       <p className="waitlist-section-label">Early access</p>
-      <h2>Two paths in — testers get the VIP package</h2>
+      <h2>Two tracks — founding members & closed beta testers</h2>
       <p className="waitlist-section-copy">
-        Invited testers and waitlist members get different packages. Pick the path that matches how you arrived.
+        Closed beta testing is limited to early technical builders for direct APK and web testing. Waitlist members unlock the complete founding discount package at public launch.
       </p>
       <div className="path-timeline">
-        <div className="timeline-step active"><span className="step-number">1</span><span className="step-label">Now: Sign up</span></div>
+        <div className="timeline-step active"><span className="step-number">1</span><span className="step-label">Now: Register Spot</span></div>
         <div className="timeline-connector" />
-        <div className="timeline-step"><span className="step-number">2</span><span className="step-label">Launch: Onboard</span></div>
+        <div className="timeline-step"><span className="step-number">2</span><span className="step-label">Launch: Onboard Wave</span></div>
         <div className="timeline-connector" />
-        <div className="timeline-step"><span className="step-number">3</span><span className="step-label">Day 1: Your OS</span></div>
+        <div className="timeline-step"><span className="step-number">3</span><span className="step-label">Day 1: Full Life OS</span></div>
       </div>
       <div className="waitlist-tier-compare">
         {ACCESS_PACKAGES.map((pkg, index) => (

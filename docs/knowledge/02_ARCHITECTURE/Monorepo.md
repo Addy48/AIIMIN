@@ -126,7 +126,7 @@ flowchart TB
   end
 ```
 
-See also: [[02_ARCHITECTURE/Device-Tiers]] · [[16_DOCUMENTATION/Vault-And-Repo-Simplification-Plan]] · [[Guides/Where-Everything-Lives]]
+See also: [[02_ARCHITECTURE/System-Workflows-And-Interactions|System Workflows & Interactions]] · [[02_ARCHITECTURE/Device-Tiers]] · [[16_DOCUMENTATION/Vault-And-Repo-Simplification-Plan]] · [[Guides/Where-Everything-Lives]]
 
 ---
 

@@ -1,0 +1,211 @@
+<svg viewBox="0 0 1400 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="uni-grad-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14171A" />
+      <stop offset="100%" stop-color="#0D0F12" />
+    </linearGradient>
+    <marker id="u-arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10B981" />
+    </marker>
+    <marker id="u-arrow-steel" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#749DC4" />
+    </marker>
+    <marker id="u-arrow-spark" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#FF6B35" />
+    </marker>
+    <marker id="u-arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#F5A623" />
+    </marker>
+    <pattern id="u-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#22272E" stroke-width="1" stroke-opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <rect width="1400" height="860" fill="url(#uni-grad-bg)" rx="16" />
+  <rect width="1400" height="860" fill="url(#u-grid)" rx="16" />
+
+  <!-- LEFT COLUMN: NATIVE ANDROID COMPANION (Mobile Telemetry & Capture) -->
+  <g transform="translate(40, 40)">
+    <rect width="380" height="780" rx="16" fill="#1A1E24" stroke="#10B981" stroke-width="1.5" />
+    <text x="20" y="36" fill="#10B981" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" letter-spacing="0.1em">📱 NATIVE ANDROID COMPANION</text>
+    <text x="20" y="56" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="11">Always-With-You Capture &amp; Sensor Hub</text>
+
+    <!-- Component 1 -->
+    <g transform="translate(16, 76)">
+      <rect width="348" height="110" rx="10" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🛡️ StrongBox TEE &amp; Biometrics</text>
+      <text x="14" y="50" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="10">Hardware-level OS-ID Token Protection</text>
+      <text x="14" y="70" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">BiometricPrompt · EncryptedSharedPreferences</text>
+      <text x="14" y="90" fill="#6B7280" font-family="'Inter', sans-serif" font-size="9">Auto-login with verified biometric token</text>
+    </g>
+
+    <!-- Component 2 -->
+    <g transform="translate(16, 202)">
+      <rect width="348" height="120" rx="10" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🏃 Health Connect &amp; Step Sensors</text>
+      <text x="14" y="50" fill="#FF6B35" font-family="'Inter', sans-serif" font-size="10">Continuous Background Step Counter</text>
+      <text x="14" y="68" fill="#FF6B35" font-family="'Inter', sans-serif" font-size="10">Sleep Stages &amp; Active Calorie Telemetry</text>
+      <rect x="14" y="80" width="320" height="28" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="98" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">Aggregates into DailyLogEntity</text>
+    </g>
+
+    <!-- Component 3 -->
+    <g transform="translate(16, 338)">
+      <rect width="348" height="120" rx="10" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">⚡ Glance Widgets &amp; Quick Capture</text>
+      <text x="14" y="50" fill="#F5A623" font-family="'Inter', sans-serif" font-size="10">Home Screen 1-Tap Habit Log</text>
+      <text x="14" y="68" fill="#F5A623" font-family="'Inter', sans-serif" font-size="10">Urge Delay Surfing Timer Overlay</text>
+      <rect x="14" y="80" width="320" height="28" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="98" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">Writes directly to Room SQLite Outbox</text>
+    </g>
+
+    <!-- Component 4 -->
+    <g transform="translate(16, 474)">
+      <rect width="348" height="130" rx="10" fill="#1E2228" stroke="#10B981" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🔄 WorkManager Sync Engine</text>
+      <text x="14" y="50" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="10">Retrofit 2 · POST /api/mobile/sync</text>
+      <text x="14" y="70" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Sends batch mutations with Vector Clock</text>
+      <rect x="14" y="84" width="320" height="34" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="104" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700">Syncs: Habits · Urges · Sensor Steps</text>
+    </g>
+
+    <!-- Native App Role -->
+    <g transform="translate(16, 620)">
+      <rect width="348" height="136" rx="10" fill="#14171A" stroke="#333942" />
+      <text x="14" y="26" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11">APP CORE RESPONSIBILITY</text>
+      <text x="14" y="50" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">1. Frictionless, sub-second daily data capture</text>
+      <text x="14" y="70" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">2. Hardware-backed security &amp; local encryption</text>
+      <text x="14" y="90" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">3. Offline-first resilience without network dependence</text>
+      <text x="14" y="110" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">4. Passive continuous Health Connect sync</text>
+    </g>
+  </g>
+
+  <!-- MIDDLE COLUMN: AIIMIN CLOUD CORE & DATA HUB -->
+  <g transform="translate(490, 40)">
+    <rect width="420" height="780" rx="16" fill="#1A1E24" stroke="#FF6B35" stroke-width="1.5" />
+    <text x="20" y="36" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" letter-spacing="0.1em">⚡ SHARED CORE &amp; SYNC GATEWAY</text>
+    <text x="20" y="56" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="11">Express API · Redis Caching · Supabase Postgres</text>
+
+    <!-- Hub 1: Better Auth Gateway -->
+    <g transform="translate(16, 76)">
+      <rect width="388" height="130" rx="10" fill="#1E2228" stroke="#F5A623" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🛡️ Better Auth Identity Anchor</text>
+      <text x="14" y="50" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-size="10">Single OS-ID Identifier (AADI0837)</text>
+      <text x="14" y="70" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Unified across Web, Android, and /m Capacitor</text>
+      <rect x="14" y="82" width="360" height="34" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="104" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">Instant revocation &amp; PIN synchronization</text>
+    </g>
+
+    <!-- Hub 2: Sync Engine & API -->
+    <g transform="translate(16, 222)">
+      <rect width="388" height="150" rx="10" fill="#1E2228" stroke="#749DC4" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">⚡ Express Core (api.aiimin.in)</text>
+      <text x="14" y="50" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="10">Routes: /api/mobile/* &amp; /api/*</text>
+      
+      <rect x="14" y="62" width="360" height="74" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="82" fill="#F0EDE8" font-family="'JetBrains Mono', monospace" font-size="9">Resolves conflicts via updated_at timestamps</text>
+      <text x="20" y="100" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-size="9">Batches mutations to PostgreSQL</text>
+      <text x="20" y="118" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">Broadcasts cache invalidation</text>
+    </g>
+
+    <!-- Hub 3: Redis In-Memory Layer -->
+    <g transform="translate(16, 388)">
+      <rect width="388" height="150" rx="10" fill="#1E2228" stroke="#FF6B35" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">💾 Redis Cache &amp; Invalidation Hub</text>
+      <text x="14" y="50" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-size="10">Sub-5ms Query Cache Layer</text>
+
+      <rect x="14" y="62" width="360" height="74" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="82" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">When Mobile Sync commits:</text>
+      <text x="20" y="100" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="9">DEL user:AADI0837:habits</text>
+      <text x="20" y="118" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">Web UI gets fresh data on next render</text>
+    </g>
+
+    <!-- Hub 4: Supabase PostgreSQL Storage -->
+    <g transform="translate(16, 554)">
+      <rect width="388" height="202" rx="10" fill="#1E2228" stroke="#10B981" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🗄️ Supabase PostgreSQL (Master Source)</text>
+      <text x="14" y="50" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="10">Row Level Security &amp; Tenant Scoped Tables</text>
+
+      <rect x="14" y="62" width="360" height="126" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="82" fill="#F0EDE8" font-family="'JetBrains Mono', monospace" font-size="9">habits (user_id, name, cadence, meta)</text>
+      <text x="20" y="100" fill="#F0EDE8" font-family="'JetBrains Mono', monospace" font-size="9">daily_logs (user_id, date, metrics, steps)</text>
+      <text x="20" y="118" fill="#F0EDE8" font-family="'JetBrains Mono', monospace" font-size="9">discipline_events (user_id, trigger, delay_sec)</text>
+      <text x="20" y="136" fill="#F0EDE8" font-family="'JetBrains Mono', monospace" font-size="9">transactions (user_id, amount, category, date)</text>
+      <text x="20" y="154" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-size="9">journal_entries (encrypted_payload, iv, tag)</text>
+      <text x="20" y="172" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">RLS: auth.uid() = user_id</text>
+    </g>
+  </g>
+
+  <!-- RIGHT COLUMN: WEB LIFE OS (Deep Telemetry & Analysis Hub) -->
+  <g transform="translate(980, 40)">
+    <rect width="380" height="780" rx="16" fill="#1A1E24" stroke="#749DC4" stroke-width="1.5" />
+    <text x="20" y="36" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" letter-spacing="0.1em">🖥️ WEB LIFE OS (DESKTOP &amp; IPAD)</text>
+    <text x="20" y="56" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="11">Deep Telemetry, Planning &amp; Reflection Hub</text>
+
+    <!-- Web 1 -->
+    <g transform="translate(16, 76)">
+      <rect width="348" height="110" rx="10" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">📈 Full Life Score Radar &amp; Trajectory</text>
+      <text x="14" y="50" fill="#749DC4" font-family="'Inter', sans-serif" font-size="10">Multi-Dimensional Life Score (0-100)</text>
+      <text x="14" y="68" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Trajectory Execution Projection Model</text>
+      <text x="14" y="88" fill="#6B7280" font-family="'Inter', sans-serif" font-size="9">Reflects steps synced from mobile in real time</text>
+    </g>
+
+    <!-- Web 2 -->
+    <g transform="translate(16, 202)">
+      <rect width="348" height="120" rx="10" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">💰 Wealth &amp; Strategic Goal Roadmaps</text>
+      <text x="14" y="50" fill="#F5A623" font-family="'Inter', sans-serif" font-size="10">Net Worth Ledger &amp; Monthly Burn Velocity</text>
+      <text x="14" y="68" fill="#F5A623" font-family="'Inter', sans-serif" font-size="10">Milestone Roadmaps &amp; Career Kanban</text>
+      <rect x="14" y="80" width="320" height="28" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="98" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">Deep planning workspace</text>
+    </g>
+
+    <!-- Web 3 -->
+    <g transform="translate(16, 338)">
+      <rect width="348" height="120" rx="10" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🔬 Behavioral Lab &amp; Soundscapes</text>
+      <text x="14" y="50" fill="#FF6B35" font-family="'Inter', sans-serif" font-size="10">Vocal Biomarker Analysis &amp; Typing Cadence</text>
+      <text x="14" y="68" fill="#FF6B35" font-family="'Inter', sans-serif" font-size="10">Deep Focus Room with Pomodoro Soundscapes</text>
+      <rect x="14" y="80" width="320" height="28" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="98" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">High-cognitive immersion surfaces</text>
+    </g>
+
+    <!-- Web 4 -->
+    <g transform="translate(16, 474)">
+      <rect width="348" height="130" rx="10" fill="#1E2228" stroke="#749DC4" />
+      <text x="14" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">📊 Weekly Life Telemetry Reports</text>
+      <text x="14" y="50" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="10">Comprehensive 7-Day Life Audits</text>
+      <text x="14" y="70" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Correlates sleep, mood, habits, and spending</text>
+      <rect x="14" y="84" width="320" height="34" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="104" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700">PDF Report Export Engine</text>
+    </g>
+
+    <!-- Web Role -->
+    <g transform="translate(16, 620)">
+      <rect width="348" height="136" rx="10" fill="#14171A" stroke="#333942" />
+      <text x="14" y="26" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11">WEB CORE RESPONSIBILITY</text>
+      <text x="14" y="50" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">1. Deep life trajectory analysis &amp; multi-radar</text>
+      <text x="14" y="70" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">2. Financial budgeting, ledgers &amp; career pipelines</text>
+      <text x="14" y="90" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">3. Long-form journaling &amp; second brain notes</text>
+      <text x="14" y="110" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">4. Generating weekly &amp; monthly review reports</text>
+    </g>
+  </g>
+
+  <!-- INTER-COLUMN SYNC FLOW ARROWS -->
+  <!-- Android -> Cloud (Push Data) -->
+  <path d="M 420 280 L 490 280" stroke="#10B981" stroke-width="3" marker-end="url(#u-arrow-green)" />
+  <text x="432" y="270" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">Push Sync</text>
+
+  <!-- Cloud -> Android (Receive Config/Auth) -->
+  <path d="M 490 320 L 420 320" stroke="#749DC4" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#u-arrow-steel)" />
+  <text x="432" y="340" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">Bootstrap</text>
+
+  <!-- Cloud -> Web (Serve Data / Invalidate) -->
+  <path d="M 910 280 L 980 280" stroke="#749DC4" stroke-width="3" marker-end="url(#u-arrow-steel)" />
+  <text x="922" y="270" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="10" font-weight="700">Serve Data</text>
+
+  <!-- Web -> Cloud (User Edits & Config) -->
+  <path d="M 980 320 L 910 320" stroke="#FF6B35" stroke-width="2.5" marker-end="url(#u-arrow-spark)" />
+  <text x="922" y="340" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-size="9" font-weight="700">Mutations</text>
+</svg>

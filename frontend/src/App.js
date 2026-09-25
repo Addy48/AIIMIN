@@ -77,14 +77,46 @@ const FamilyPage    = React.lazy(() => import('./pages/Family'));
 const AccountPage   = React.lazy(() => import('./pages/account/AccountPage'));
 const ReportsPage   = React.lazy(() => import('./pages/Reports'));
 const SeedData      = React.lazy(() => import('./pages/SeedData'));
+const WaitlistScreenshotStudio = React.lazy(() => import('./components/waitlist/WaitlistScreenshotStudio'));
 const DraftingTablePrototype = React.lazy(() => import('./prototypes/drafting-table'));
-/* ── Suspense fallback ────────────────────────────────────────────────── */
-const Fallback = () => (
-  <div style={{ minHeight: '100vh', background: 'var(--color-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+/* ── Suspense fallbacks (Zero Layout Shift) ─────────────────────────── */
+const PageFallback = () => (
+  <div style={{
+    minHeight: '100vh',
+    width: '100%',
+    background: 'var(--color-base)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '16px',
+    boxSizing: 'border-box',
+  }}>
     <div className="spinner" />
   </div>
 );
-const Lazy = ({ children }) => <React.Suspense fallback={<Fallback />}>{children}</React.Suspense>;
+
+const RouteFallback = () => (
+  <div style={{
+    minHeight: 'calc(100vh - var(--nav-height, 68px) - 160px)',
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '16px',
+    boxSizing: 'border-box',
+  }}>
+    <div className="spinner" />
+  </div>
+);
+
+const Fallback = PageFallback;
+const Lazy = ({ children, fallback }) => (
+  <React.Suspense fallback={fallback || <RouteFallback />}>
+    {children}
+  </React.Suspense>
+);
 
 /* Public surfaces that stay reachable while an account waits for waitlist approval. */
 const PUBLIC_PATH_PREFIXES = [
@@ -260,6 +292,7 @@ function AppContent({ user, session }) {
         <Route path="/empty" element={<Lazy><EmptyStatePage /></Lazy>} />
         {/* Parked: Drafting Table craft lock — not product */}
         <Route path="/proto/draft" element={<Lazy><DraftingTablePrototype /></Lazy>} />
+        <Route path="/dev/waitlist-studio" element={<Lazy><WaitlistScreenshotStudio /></Lazy>} />
         {/* Killed surface: old design-lab URL */}
         <Route path="/design-lab" element={<Navigate to="/account?section=design" replace />} />
 

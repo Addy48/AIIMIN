@@ -17,39 +17,42 @@ const InsightEngine = ({ user, logs: logsProp }) => {
         enabled: Boolean(user),
     });
 
-    const logs = logsProp || logsAsc;
+    const logs = logsProp || logsAsc || [];
     const loading = logsProp ? false : logsLoading;
 
     const insights = useMemo(() => {
-        if (!logs || logs.length < 3) return [];
+        if (!Array.isArray(logs) || logs.length < 3) return [];
 
         const results = [];
 
-        corrInsights.slice(0, 3).forEach((item) => {
-            results.push({
-                icon: '🔗',
-                title: 'Signal correlation',
-                body: item.headline,
-                type: 'positive',
-            });
+        (Array.isArray(corrInsights) ? corrInsights : []).slice(0, 3).forEach((item) => {
+            if (item?.headline) {
+                results.push({
+                    icon: '🔗',
+                    title: 'Signal correlation',
+                    body: item.headline,
+                    type: 'positive',
+                });
+            }
         });
 
-        correlations.slice(0, 2).forEach((c) => {
-            if (results.some((r) => r.body === c.headline)) return;
+        (Array.isArray(correlations) ? correlations : []).slice(0, 2).forEach((c) => {
+            if (!c || results.some((r) => r.body === c.headline)) return;
+            const rhoVal = Number(c.rho ?? 0);
             results.push({
                 icon: '📊',
-                title: `${c.signalALabel || c.signalA} ↔ ${c.signalBLabel || c.signalB}`,
-                body: c.headline || `ρ=${c.rho?.toFixed(2)} over ${c.n} days.`,
-                type: Math.abs(c.rho) >= 0.5 ? 'positive' : 'neutral',
+                title: `${c.signalALabel || c.signalA || 'Signal A'} ↔ ${c.signalBLabel || c.signalB || 'Signal B'}`,
+                body: c.headline || `ρ=${Number.isFinite(rhoVal) ? rhoVal.toFixed(2) : '0.00'} over ${c.n || 0} days.`,
+                type: Math.abs(rhoVal) >= 0.5 ? 'positive' : 'neutral',
             });
         });
 
-        const withBoth = logs.filter((l) => l.sleep_hours && l.mood);
+        const withBoth = logs.filter((l) => l && l.sleep_hours && l.mood);
         if (withBoth.length >= 5) {
-            const highSleep = withBoth.filter((l) => l.sleep_hours >= 7);
-            const lowSleep = withBoth.filter((l) => l.sleep_hours < 6);
-            const avgHigh = highSleep.length > 0 ? highSleep.reduce((s, l) => s + l.mood, 0) / highSleep.length : 0;
-            const avgLow = lowSleep.length > 0 ? lowSleep.reduce((s, l) => s + l.mood, 0) / lowSleep.length : 0;
+            const highSleep = withBoth.filter((l) => Number(l.sleep_hours) >= 7);
+            const lowSleep = withBoth.filter((l) => Number(l.sleep_hours) < 6);
+            const avgHigh = highSleep.length > 0 ? highSleep.reduce((s, l) => s + Number(l.mood || 0), 0) / highSleep.length : 0;
+            const avgLow = lowSleep.length > 0 ? lowSleep.reduce((s, l) => s + Number(l.mood || 0), 0) / lowSleep.length : 0;
             if (avgHigh - avgLow > 0.5) {
                 results.push({
                     icon: '😴',
@@ -60,11 +63,11 @@ const InsightEngine = ({ user, logs: logsProp }) => {
             }
         }
 
-        const gymDays = logs.filter((l) => l.gym_done && l.mood);
-        const noGymDays = logs.filter((l) => !l.gym_done && l.mood);
+        const gymDays = logs.filter((l) => l && l.gym_done && l.mood);
+        const noGymDays = logs.filter((l) => l && !l.gym_done && l.mood);
         if (gymDays.length >= 3 && noGymDays.length >= 3) {
-            const gymMood = gymDays.reduce((s, l) => s + l.mood, 0) / gymDays.length;
-            const noGymMood = noGymDays.reduce((s, l) => s + l.mood, 0) / noGymDays.length;
+            const gymMood = gymDays.reduce((s, l) => s + Number(l.mood || 0), 0) / gymDays.length;
+            const noGymMood = noGymDays.reduce((s, l) => s + Number(l.mood || 0), 0) / noGymDays.length;
             if (gymMood - noGymMood > 0.3) {
                 results.push({
                     icon: <DumbbellIcon size={16} color="var(--text-2)" />,
@@ -78,13 +81,15 @@ const InsightEngine = ({ user, logs: logsProp }) => {
         const dayMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
         const dayScores = {};
         logs.forEach((l) => {
+            if (!l?.date) return;
             const d = new Date(l.date).getDay();
+            if (isNaN(d)) return;
             if (!dayScores[d]) dayScores[d] = { total: 0, count: 0 };
             let s = 0;
-            if (l.sleep_hours >= 7) s += 1;
+            if (Number(l.sleep_hours) >= 7) s += 1;
             if (l.gym_done) s += 1;
             if (l.learning_done) s += 1;
-            if (l.mood && l.mood >= 4) s += 1;
+            if (Number(l.mood) >= 4) s += 1;
             dayScores[d].total += s;
             dayScores[d].count += 1;
         });
@@ -94,12 +99,13 @@ const InsightEngine = ({ user, logs: logsProp }) => {
         let worstDay = null;
         let worstAvg = Infinity;
         Object.entries(dayScores).forEach(([d, v]) => {
+            if (!v.count) return;
             const avg = v.total / v.count;
             if (avg > bestAvg) { bestAvg = avg; bestDay = d; }
             if (avg < worstAvg) { worstAvg = avg; worstDay = d; }
         });
 
-        if (bestDay !== null) {
+        if (bestDay !== null && worstDay !== null) {
             results.push({
                 icon: '📅',
                 title: `${dayMap[bestDay]} is your power day`,

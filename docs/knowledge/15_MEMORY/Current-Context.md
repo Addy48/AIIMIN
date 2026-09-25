@@ -181,3 +181,45 @@ The V2 debug APK (`aiimin-v2-full-debug.apk`, 62 MB, SHA-256 `4dd36a8e…387245f
 4. **Horizontal Layout Aligned**: Set `.waitlist-main` and `.waitlist-marquee-header` to `max-width: 1380px;`, removing empty side gaps while retaining balanced margins.
 5. **Theme Transitions**: Added `0.25s ease` transitions between dark and light themes without flashes or contrast mismatches.
 6. **Waitlist FAQs Grounded**: Updated `FAQS` in `waitlistLandingData.js` and `WaitlistFaqSection.jsx` to reflect current system reality: 100% offline-first SQLCipher SQLite store (<10ms writes, delta outbox sync), hardware TEE StrongBox AES-256-GCM encryption, ~27 MB optimized native APK, clear distinction between 23-subsystem desktop command and high-cadence Android companion, 1-click JSON/CSV migration from Notion/spreadsheets, October 31 cutoff, and November 2026 go-live target.
+
+## 2026-09-26 — Waitlist Audit, Positioning, Security & High-Res Hero Image Overhaul
+
+**Status:** Working-tree implementation complete, verified with full test suite (7/7 suites, 69/69 tests pass) and production build.
+
+### What happened
+
+1. **Security & Cryptographic Precision**:
+   - Replaced all unqualified "tamper-proof" claims with "tamper-resistant" across copy, FAQs, Android section, and feature marquees.
+   - Fixed hardware key storage phrasing: clarified keys never leave the secure silicon hardware boundary (StrongBox TEE / Secure Element), eliminating inaccurate "RAM-only" assertions.
+   - Refactored privacy claims: replaced contradictory "zero cloud telemetry" claims with precise guarantees ("Zero analytics or ad tracking", "Zero third-party data broker sales") while accurately explaining server score computation and opt-in AI features.
+2. **Pricing Coherence & Honest Stack Framing**:
+   - Grounded the stack comparison: framed against the fragmented 4-app stack (Todoist + YNAB/Wallet + Focus Keeper + DayOne ≈ ₹1,500/mo) vs AIIMIN unified graph from ₹0.
+   - Clean pricing footer preserved: `*Waitlist founding rates · web + mobile · India ≈ Nov 2026 · Americas $0 / $3 / $7 / $16`.
+   - Replaced "forever free ceiling" with "Always free, zero credit card required" and turned feature noun lists into active benefits.
+3. **Hero Visual & Tier Gating Alignment**:
+   - Rebuilt `HeroPreviewMock.jsx` with an honest **PRO TIER PREVIEW** badge and footer clarification explaining that Explore covers daily habits, budget, and journal for ₹0, while 5D multi-dimensional correlations and AI reports unlock on Pro/Elite.
+   - Added view mode toggle between **High-Res View** (with 4 interactive micro-feature badges) and **Live Interactive Deck**.
+4. **Hero Image Replacement**:
+   - Generated an ultra-sharp, high-definition dark-mode dashboard interface image using the Drafting Table palette (`aiimin_dashboard_hero.jpg`) featuring the 5D breakdown, live LHS radar, biometric cards, and spark accents. Placed in `frontend/public/images/aiimin_dashboard_hero.jpg`.
+5. **Friction Reduction & Accessibility**:
+   - Marked OS-ID handle as optional with auto-suggestion and clear helper text explaining it can be claimed post-signup.
+   - Fixed ticker marquee loop duplication for screen readers by adding `aria-hidden="true"` to duplicate items.
+
+## 2026-09-26 — Comprehensive Archify Diagrams & Full Website/App UX Stabilization
+
+**Status:** Complete, verified with full test suite (7/7 test suites, 69/69 tests pass, exit 0) and live visual QA across zoom viewports (100%, 125%, 150%).
+
+### 1. Comprehensive System Architecture & Inter-Client Workflow Diagrams
+- **Full Web Life OS Pipeline (`docs/diagrams/web-life-os-workflow.svg` / `.png`):** Complete request-to-persistence trace from Public Landing / Waitlist through OS-ID uppercase resolver (`AADI0837`), PIN Keypad gate, TierRouteGuard, 12+ dashboard workspaces, TanStack Query cache, Node/Express API core (`api.aiimin.in`), sub-5ms Redis caching, and Supabase PostgreSQL with RLS.
+- **Native Android App Flow (`docs/diagrams/native-android-companion-workflow.svg` / `.png`):** Complete trace of Android Keystore StrongBox TEE cold boot security, BiometricPrompt unlock, Jetpack Compose UI, Glance interactive home screen widgets, Android Health Connect step/sleep sensors, encrypted local Room SQLite database, WorkManager background batch sync, and Retrofit 2 Bearer auth interceptor.
+- **Unified Cross-Platform Interaction Matrix (`docs/diagrams/unified-app-web-sync-workflow.svg` / `.png`):** Dual-way real-time data sync linking Mobile Capture/Sensors with Desktop Analytical Hub through the shared Better Auth OS-ID anchor, Redis cache invalidation, and master Supabase Postgres storage.
+- **Standalone Interactive Visualizer:** [`docs/diagrams/interactive-system-visualizer.html`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/interactive-system-visualizer.html) with instant Dark / Light theme toggle.
+- **Authoritative Architecture Doc:** Created [`docs/knowledge/02_ARCHITECTURE/System-Workflows-And-Interactions.md`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/knowledge/02_ARCHITECTURE/System-Workflows-And-Interactions.md) and cross-linked from `Overview.md` and `Monorepo.md`.
+
+### 2. Website UX Stabilization & Zero-CLS Layout Fixes
+- **Background Refresh Loops Eliminated:** Configured `refetchOnWindowFocus: false` and `refetchOnReconnect: false` in `QueryProvider.jsx` with `staleTime: 60_000` to prevent background UI flashing upon tab switching.
+- **Unconditional Polling Relaxed:** Added `document.visibilityState === 'visible'` checks and relaxed intervals in `Sports.jsx` (5m) and `SystemHealth.jsx` (60s).
+- **Route Height Jitter & Loading Jumps Fixed:** Replaced full-page `100vh` fallback with layout-preserving `RouteFallback` (`calc(100vh - navHeight - 160px)`) and upgraded `.spinner` styling with cubic-bezier smoothing and Drafting Table tokens.
+- **Hydration Font Scale Shift Resolved:** Normalized base preset from `15px` to `14px` in `useFontScale.js` to match `index.css` default font size (`14px`).
+- **Zoom Overflow Protection:** Added `overflow-x: clip`, `box-sizing: border-box`, `max-width: 100vw`, and smooth touch scroll bounds to `.nav-masthead`, `.dashboard-layout`, and `.page-container`.
+

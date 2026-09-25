@@ -85,7 +85,7 @@ export const ALL_FEATURES = [
     deepDive: 'When you are stuck or hesitating, the engine breaks large goals into tiny next actions with an immediate countdown timer to get you back in flow.',
     specs: {
       runtime: 'Activity Gap Detection',
-      privacy: 'Zero Telemetry Leaks',
+      privacy: 'Zero Ad Tracking / Local First',
       sync: 'Immediate Reactive Bus',
       status: 'Realtime Trigger',
     },
@@ -315,8 +315,8 @@ export const ALL_FEATURES = [
     accent: '#10b981',
     platform: 'Android Companion V2',
     tier: 'Included in Core & Pro',
-    summary: 'Hardware-anchored security binding master authentication credentials to your physical smartphone Secure Enclave / TEE chip.',
-    deepDive: 'Uses AndroidKeyStore to generate and isolate asymmetric cryptographic keys within hardware-backed security coprocessors. Encryption keys never enter application RAM and cannot be exported or scraped even on rooted devices.',
+    summary: 'Hardware-anchored security binding master authentication credentials to your physical smartphone Secure Enclave / StrongBox TEE chip.',
+    deepDive: 'Uses AndroidKeyStore and StrongBox TEE to generate and isolate cryptographic keys within dedicated hardware security modules. Key material never leaves the secure hardware boundary, preventing extraction even on rooted operating systems.',
     specs: {
       runtime: 'AndroidKeyStore / TEE Hardware',
       privacy: 'Silicon Hardware Isolation',
@@ -758,8 +758,8 @@ export default function WaitlistFeatureMarquee() {
       <div className="waitlist-marquee-header">
         <div className="waitlist-marquee-header-left">
           <span className="waitlist-marquee-live-dot" />
-          <span className="waitlist-marquee-title">SYSTEM ARCHITECTURE MATRIX</span>
-          <span className="waitlist-marquee-count">23 NATIVE SUBSYSTEMS</span>
+          <span className="waitlist-marquee-title">MODULAR PRODUCT ARCHITECTURE</span>
+          <span className="waitlist-marquee-count">23 SPECIALIZED MODULES</span>
         </div>
         <div className="waitlist-marquee-header-right">
           <span className="waitlist-marquee-interactive-hint">

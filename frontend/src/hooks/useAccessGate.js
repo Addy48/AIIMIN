@@ -56,12 +56,6 @@ export function useAccessGate() {
       return;
     }
 
-    const email = user?.email;
-    if (!email) {
-      setState((prev) => ({ ...prev, loading: true }));
-      return;
-    }
-
     let cancelled = false;
 
     (async () => {
@@ -76,7 +70,7 @@ export function useAccessGate() {
         });
       } catch (err) {
         if (cancelled) return;
-        const fallback = envFallbackAccess(email);
+        const fallback = envFallbackAccess(user?.email);
         setState({ loading: false, ...fallback });
       }
     })();

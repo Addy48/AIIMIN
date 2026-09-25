@@ -398,7 +398,7 @@ export default function WaitlistForm({
 
       <div className="waitlist-field waitlist-field-osid">
         <label htmlFor={osIdId} className="waitlist-label waitlist-label-osid">
-          OS-ID <span className="waitlist-label-optional">optional · exclusive</span>
+          OS-ID handle <span className="waitlist-label-optional">optional · auto-suggested</span>
         </label>
         <div className="waitlist-osid-row">
           <span className="waitlist-osid-prefix" aria-hidden="true">@</span>
@@ -410,7 +410,7 @@ export default function WaitlistForm({
               setOsId(e.target.value.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '').slice(0, 8));
               if (status) setStatus(null);
             }}
-            placeholder={osIdSuggestion || '8-char handle'}
+            placeholder={osIdSuggestion || 'Optional handle'}
             maxLength={8}
             className="waitlist-input waitlist-input-id waitlist-input-osid"
             aria-label="OS-ID handle (optional)"
@@ -418,14 +418,14 @@ export default function WaitlistForm({
             spellCheck={false}
           />
         </div>
-        {osIdPreview ? (
+        {osId ? (
           <p className="waitlist-osid-preview">
-            Preview: <strong>@{osIdPreview}</strong>
+            Selected: <strong>@{osIdPreview}</strong>
             <span className="waitlist-osid-preview-meta"> · 8 chars · max 4 digits</span>
           </p>
         ) : (
           <p className="waitlist-osid-preview">
-            <span className="waitlist-osid-preview-meta">Optional handle · 8 chars · max 4 digits (e.g. your handle or initials)</span>
+            <span className="waitlist-osid-preview-meta">Leave blank to auto-generate from name, or claim post-signup</span>
           </p>
         )}
       </div>

@@ -114,7 +114,7 @@ export default function PatternsPanel({ report }) {
                 currentWeek: {
                   avgSleep: lhs?.baseMetrics?.sleepScore ? (lhs.baseMetrics.sleepScore / 20) : 0,
                   avgFocus: lhs?.baseMetrics?.focusScore ? (lhs.baseMetrics.focusScore / 25) : 0,
-                  avgSteps: recentLogs.length
+                  avgSteps: (Array.isArray(recentLogs) && recentLogs.length)
                     ? recentLogs.reduce((sum, log) => sum + Number(log.steps || 0), 0) / recentLogs.length
                     : 0,
                 },
@@ -127,7 +127,7 @@ export default function PatternsPanel({ report }) {
 
       <section>
         <ErrorBoundary label="Side Quests">
-          <SideQuests recentLogs={recentLogs} />
+          <SideQuests recentLogs={recentLogs || []} />
         </ErrorBoundary>
       </section>
     </div>

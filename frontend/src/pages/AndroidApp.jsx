@@ -11,10 +11,11 @@ import {
   ArrowRight,
   DeviceMobile,
   CheckCircle,
+  XCircle,
+  Circle,
+  SealCheck,
   Info,
   Desktop,
-  Play,
-  WifiSlash,
   Lightning,
   Terminal,
   Flame,
@@ -23,10 +24,14 @@ import {
   Cpu,
   ArrowsLeftRight,
   Prohibit,
-  Clock,
-  Fingerprint,
   HardDrives,
   EyeSlash,
+  X,
+  Diamond,
+  User,
+  Plus,
+  Fingerprint,
+  Sparkle,
 } from '@phosphor-icons/react';
 import Wordmark from '../components/brand/Wordmark';
 import { ArchBracketMark, DARK_PICK } from '../components/brand/archBracketMark';
@@ -36,64 +41,42 @@ const ADB_COMMAND = 'adb install -r aiimin-v2-debug.apk';
 
 const CORE_CAPABILITIES = [
   {
-    icon: ShieldCheck,
-    title: 'Focus Shield Window Interceptor',
-    desc: 'Blocks infinite feed algorithms at the Android window manager level. Opening Instagram, X, or YouTube Shorts instantly routes you to a calm, tactile breathing wall.',
-    tag: 'BARRIER // 01',
-    metric: 'Zero-VPN · No Background Tunnel',
-    spec: 'WindowManager Hook',
-  },
-  {
     icon: Lightning,
-    title: 'Sub-2-Second Lock-Screen Capture',
-    desc: 'Log habits, record cash outlays, or capture thoughts in two physical taps from your lock screen, then put your phone face down. Total daily app usage stays under 3 minutes.',
-    tag: 'VELOCITY // 02',
-    metric: '120Hz Jetpack Compose UI',
-    spec: 'Native V-Sync Rendering',
-  },
-  {
-    icon: WifiSlash,
-    title: '100% Offline-First SQLCipher',
-    desc: 'Operates completely in airplane mode, flights, or zero-connectivity dead zones. Every transaction commits instantly to an encrypted local database and syncs conflict-free upon reconnection.',
-    tag: 'SOVEREIGN // 03',
-    metric: 'Encrypted SQLite Room v2.6',
-    spec: 'CRDT Outbox Sync',
+    title: 'Instant Capture',
+    desc: 'Lockscreen logging in <2s · zero launch lag',
+    color: '#FF6B35',
   },
   {
     icon: LockKey,
-    title: 'Hardware Silicon Keystore (TEE)',
-    desc: 'Master encryption keys are generated and sealed in smartphone physical silicon (AndroidKeyStore StrongBox). Zero third-party analytics, zero ad SDKs, zero cloud telemetry.',
-    tag: 'ENCLAVE // 04',
-    metric: 'AES-256-GCM Cryptography',
-    spec: 'Zero Key Escrow',
+    title: 'Biometric Vault',
+    desc: 'AES-256-GCM hardware keystore · keys stay in TEE',
+    color: '#10B981',
+  },
+  {
+    icon: HardDrives,
+    title: 'Autonomous Engine',
+    desc: '100% offline-first SQLite · zero-loss auto-sync',
+    color: '#749DC4',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Zero Telemetry',
+    desc: 'No analytics SDKs · no ad trackers · pure native binary',
+    color: '#749DC4',
   },
 ];
 
 const SPECS = [
   { label: 'Package Identifier', value: 'in.aiimin.app.v3' },
   { label: 'Release Version', value: '2.0.4-rc (Build 108)' },
-  { label: 'UI Architecture', value: 'Native Kotlin · Jetpack Compose (120Hz V-Sync)' },
-  { label: 'Target Platform', value: 'Android 15 (API Level 35 Vanilla Ice Cream)' },
+  { label: 'Target Platform', value: 'Android 15 (API Level 35 · Vanilla Ice Cream)' },
   { label: 'Minimum Compatibility', value: 'Android 8.0 Oreo (API Level 26)' },
-  { label: 'Local Storage Engine', value: 'SQLCipher v4.5.4 Encrypted SQLite (Room)' },
-  { label: 'Cryptographic Enclave', value: 'AndroidKeyStore TEE · AES-256-GCM' },
+  { label: 'UI Architecture', value: 'Native Kotlin · Jetpack Compose (120Hz V-Sync)' },
+  { label: 'Local Storage Engine', value: 'SQLCipher v4.5.4 Encrypted SQLite (Room v2.6)' },
+  { label: 'Cryptographic Enclave', value: 'AndroidKeyStore StrongBox · AES-256-GCM' },
   { label: 'Binary Footprint', value: '44.2 MB (Universal ARM64-v8a / x86_64)' },
-  { label: 'Third-Party Trackers', value: '0 SDKs · Zero Analytics · Zero Ad Beacons' },
   { label: 'Sync Architecture', value: 'Deterministic Conflict-Free Outbox (CRDT)' },
-  { label: 'Target SDK', value: 'Android 15 (API Level 35)' },
-  { label: 'Min SDK', value: 'Android 8.0 (API Level 26)' },
-  { label: 'UI Toolkit', value: 'Jetpack Compose (120 Hz Native)' },
-  { label: 'Crypto Layer', value: 'AES-256-GCM Hardware Keystore (StrongBox)' },
-  { label: 'Local Database', value: 'Encrypted Room SQLite with Cipher' },
-];
-
-const ARCH_REQUIREMENTS = [
-  {
-    arch: 'ARM64-v8a (64-bit)',
-    status: 'Primary Support · Recommended',
-    desc: 'All modern phones (Snapdragon 7/8 series, Tensor, MediaTek Dimensity, Exynos 1200+). Hardware crypto acceleration enabled.',
-    note: 'Universal APK (~44.2 MB) works across modern ARM64 and x86_64 Android devices.',
-  },
+  { label: 'Third-Party Trackers', value: '0 SDKs · Zero Analytics · Zero Ad Beacons' },
 ];
 
 const INSTALL_STEPS = [
@@ -140,552 +123,258 @@ const FAQS = [
   },
 ];
 
-/* ── INTERACTIVE COMPANION SOFTWARE CONSOLE ── */
-function CompanionSoftwareConsole() {
-  const [activeTab, setActiveTab] = useState('loop');
-  const [habitsDone, setHabitsDone] = useState({ 0: true, 1: true, 2: false });
-  // captureState: 'idle' → 'capturing' (150–250 ms framer-motion transitional) → 'captured' (2.4 s) → 'idle'
-  const [captureState, setCaptureState] = useState('idle');
+/* ── PHONE MOCKUP COMPONENT ── */
+function PhoneDeviceMockup() {
+  const [habits, setHabits] = useState({
+    gym: true,
+    deepWork: true,
+    upi: true,
+    debrief: true,
+  });
+  const [activeFilter, setActiveFilter] = useState('minimum');
+  const [settling, setSettling] = useState(false);
+  const [settledToast, setSettledToast] = useState(null);
 
-  // Focus Shield Interactive State
-  const [killsCount, setKillsCount] = useState(18);
-  const [recentKills, setRecentKills] = useState([]);
-  const [shieldToast, setShieldToast] = useState(null);
+  const [enclaveView, setEnclaveView] = useState(false);
 
-  // Money OS Interactive State
-  const [runwayBalance, setRunwayBalance] = useState(214500);
-  const [dailyBurn, setDailyBurn] = useState(380);
-  const [quickSpent, setQuickSpent] = useState(null);
-
-  // Hardware Vault Interactive State
-  const [auditStep, setAuditStep] = useState('idle');
-
-  // Dynamic 5D Score Calculation
-  const checkedCount = (habitsDone[0] ? 1 : 0) + (habitsDone[1] ? 1 : 0) + (habitsDone[2] ? 1 : 0);
-  const currentScore = 76 + checkedCount * 4;
-  const arcCircumference = 163.36;
-  const strokeDashoffset = (arcCircumference * (1 - currentScore / 100)).toFixed(1);
-  const scoreTrend = currentScore >= 84 ? `+${((currentScore - 70) / 4).toFixed(1)}` : `-${((84 - currentScore) / 4).toFixed(1)}`;
-
-  const toggleHabit = (idx) => {
-    setHabitsDone((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  const toggleHabit = (key) => {
+    setHabits((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleQuickCapture = () => {
-    if (captureState !== 'idle') return;
-    // Transitional 'capturing' state: 200 ms matches fadeInToast curve used across this file
-    setCaptureState('capturing');
+  const toggleEnclaveView = () => {
+    setEnclaveView((prev) => !prev);
+    setSettledToast(!enclaveView ? 'Unlocked StrongBox Hardware Key View 🔐' : 'Switched to Sovereign Telemetry View ⚡');
+    setTimeout(() => setSettledToast(null), 2500);
+  };
+
+  const handleSettle = () => {
+    if (settling) return;
+    setSettling(true);
     setTimeout(() => {
-      setCaptureState('captured');
-      setTimeout(() => setCaptureState('idle'), 2400);
-    }, 200);
+      setSettling(false);
+      setSettledToast('Committed 4 items to SQLite outbox ✓');
+      setTimeout(() => setSettledToast(null), 3000);
+    }, 450);
   };
-
-  const triggerTestIntercept = () => {
-    const apps = [
-      { pkg: 'com.instagram.android', name: 'Instagram', reason: 'Infinite Feed Intercepted' },
-      { pkg: 'com.twitter.android', name: 'X / Twitter', reason: 'Algorithmic Feed Blocked' },
-      { pkg: 'com.google.android.youtube', name: 'YouTube Shorts', reason: 'Dopamine Stream Halted' },
-      { pkg: 'com.zhiliaoapp.musically', name: 'TikTok', reason: 'Short-Form Video Intercepted' },
-    ];
-    const picked = apps[Math.floor(Math.random() * apps.length)];
-    setKillsCount((prev) => prev + 1);
-    setRecentKills((prev) => [{ ...picked, time: 'Just now', id: Date.now() }, ...prev.slice(0, 1)]);
-    setShieldToast(`Focus Shield intercepted ${picked.name} launch intent`);
-    setTimeout(() => setShieldToast(null), 3200);
-  };
-
-  const handleQuickExpense = (item, amount) => {
-    setRunwayBalance((prev) => Math.max(0, prev - amount));
-    setDailyBurn((prev) => prev + amount);
-    setQuickSpent({ label: item, amount });
-    setTimeout(() => setQuickSpent(null), 2400);
-  };
-
-  const resetMoney = () => {
-    setRunwayBalance(214500);
-    setDailyBurn(380);
-    setQuickSpent(null);
-  };
-
-  const handleVaultAudit = () => {
-    setAuditStep('running');
-    setTimeout(() => {
-      setAuditStep('verified');
-      setTimeout(() => setAuditStep('idle'), 4000);
-    }, 1300);
-  };
-
-  const burnPacePct = Math.min(100, Math.round((dailyBurn / 1200) * 100));
-  const runwayDays = Math.round(runwayBalance / (dailyBurn > 0 ? dailyBurn : 1200));
 
   return (
-    <div className="companion-console-card" aria-label="Interactive Companion App Interface">
-      {/* Console Mode Selector */}
-      <div className="console-nav-bar" role="tablist" aria-label="App mode tabs">
-        <button
-          type="button"
-          role="tab"
-          id="tab-loop"
-          aria-selected={activeTab === 'loop'}
-          aria-controls="panel-loop"
-          className={`console-tab-btn ${activeTab === 'loop' ? 'active' : ''}`}
-          onClick={() => setActiveTab('loop')}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('loop')}
-        >
-          <span>Daily Loop</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-shield"
-          aria-selected={activeTab === 'shield'}
-          aria-controls="panel-shield"
-          className={`console-tab-btn ${activeTab === 'shield' ? 'active' : ''}`}
-          onClick={() => setActiveTab('shield')}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('shield')}
-        >
-          <span>Focus Shield</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-money"
-          aria-selected={activeTab === 'money'}
-          aria-controls="panel-money"
-          className={`console-tab-btn ${activeTab === 'money' ? 'active' : ''}`}
-          onClick={() => setActiveTab('money')}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('money')}
-        >
-          <span>Money OS</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          id="tab-vault"
-          aria-selected={activeTab === 'vault'}
-          aria-controls="panel-vault"
-          className={`console-tab-btn ${activeTab === 'vault' ? 'active' : ''}`}
-          onClick={() => setActiveTab('vault')}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setActiveTab('vault')}
-        >
-          <span>Hardware Vault</span>
-        </button>
-      </div>
+    <div className="phone-mockup-wrap">
+      {/* Titanium Hardware Frame */}
+      <div className="phone-chassis">
+        {/* Subtle Screen Bezel & Glare */}
+        <div className="phone-glare-effect" />
+        
+        <div className="phone-screen">
+          {/* Status Bar */}
+          <div className="phone-status-bar">
+            <span className="phone-clock">09:41</span>
+            <div className="phone-notch-pill" />
+            <div className="phone-security-pill">
+              <ShieldCheck size={11} weight="fill" color="#10B981" />
+              <span>AES-256</span>
+            </div>
+          </div>
 
-      {/* Screen View Container */}
-      <div className="console-screen-body">
-        {/* TAB 01: DAILY LOOP */}
-        {activeTab === 'loop' && (
+          {/* Interactive Sovereign OS-ID Passport / Enclave Card */}
           <div
-            className="console-view console-view--loop"
-            role="tabpanel"
-            id="panel-loop"
-            aria-labelledby="tab-loop"
+            className="phone-os-id-card"
+            onClick={toggleEnclaveView}
+            role="button"
+            tabIndex={0}
+            title="Click to toggle between Telemetry and Enclave views"
+            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleEnclaveView()}
           >
-            <div className="console-screen-header">
-              <div>
-                <span className="console-screen-kicker">TELEMETRY // EXECUTION</span>
-                <h4 className="console-screen-title">Daily Execution Loop</h4>
+            {/* Card Header */}
+            <div className="os-id-topbar">
+              <div className="os-id-pill">
+                <span className="os-id-beacon" />
+                <span className="os-id-code">OPERATOR // ADTY·SYS·01</span>
               </div>
-              <div className="console-screen-brand">
-                <ArchBracketMark size={18} pick={DARK_PICK} />
-              </div>
-            </div>
-
-            {/* 5D Score Cockpit Card */}
-            <div className="console-score-card">
-              <div className="score-card-meta">
-                <span className="score-card-label">5D EQUILIBRIUM COCKPIT</span>
-                <div className="score-card-number-row">
-                  <strong className="score-card-number">{currentScore}</strong>
-                  <span className="score-card-total">/100</span>
-                  <span className={`score-card-trend ${currentScore >= 84 ? 'trend-positive' : 'trend-neutral'}`}>
-                    {scoreTrend}
-                  </span>
-                </div>
-                <span className="score-card-helper">
-                  {checkedCount === 3
-                    ? 'All daily targets logged & synchronized'
-                    : checkedCount === 2
-                    ? '2 of 3 targets completed'
-                    : 'Tap checkboxes below to test live calculation'}
-                </span>
-              </div>
-
-              <div className="score-card-meter">
-                <svg className="score-svg-arc" width="56" height="56" viewBox="0 0 64 64">
-                  <circle cx="32" cy="32" r="26" fill="none" stroke="#23272F" strokeWidth="5" />
-                  <circle
-                    cx="32"
-                    cy="32"
-                    r="26"
-                    fill="none"
-                    stroke="#749DC4"
-                    strokeWidth="5"
-                    strokeDasharray={arcCircumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    transform="rotate(-90 32 32)"
-                    style={{ transition: 'stroke-dashoffset 350ms cubic-bezier(0.22, 1, 0.36, 1)' }}
-                  />
-                </svg>
-                <span className="score-meter-text">{currentScore}%</span>
+              <div className="os-id-enclave-badge">
+                <Fingerprint size={10} weight="bold" color="#10B981" />
+                <span>{enclaveView ? 'STRONGBOX TEE' : 'TEE SEALED'}</span>
               </div>
             </div>
 
-            {/* Dimension Chips */}
-            <div className="console-dimension-strip">
-              <span className="dim-chip"><span className="dim-axis">FOCUS</span> <span className="dim-val">{habitsDone[0] ? '94%' : '82%'}</span></span>
-              <span className="dim-chip"><span className="dim-axis">HEALTH</span> <span className="dim-val">{habitsDone[1] ? '84%' : '72%'}</span></span>
-              <span className="dim-chip"><span className="dim-axis">HABITS</span> <span className="dim-val">{habitsDone[2] ? '90%' : '78%'}</span></span>
-            </div>
-
-            {/* Habits Checklist */}
-            <div className="console-agenda-list">
-              <div
-                className={`agenda-row ${habitsDone[0] ? 'is-done' : ''}`}
-                onClick={() => toggleHabit(0)}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleHabit(0)}
-                role="button"
-                tabIndex={0}
-                aria-pressed={habitsDone[0]}
-                aria-label={`Deep Work: Core Engineering — ${habitsDone[0] ? 'completed' : 'pending'}`}
-              >
-                <span className="agenda-checkbox">{habitsDone[0] ? '✓' : ''}</span>
-                <div className="agenda-details">
-                  <strong>Deep Work: Core Engineering</strong>
-                  <span>90m session {habitsDone[0] ? 'completed' : 'pending'}</span>
-                </div>
-                <span className="agenda-badge"><Flame size={12} weight="fill" color="#F59E0B" /> 14d</span>
+            {/* Main Identity Row */}
+            <div className="os-id-main-row">
+              <div className="os-id-crest">
+                <ArchBracketMark size={14} pick={DARK_PICK} />
+                <span className="os-id-chip-notch" />
               </div>
 
-              <div
-                className={`agenda-row ${habitsDone[1] ? 'is-done' : ''}`}
-                onClick={() => toggleHabit(1)}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleHabit(1)}
-                role="button"
-                tabIndex={0}
-                aria-pressed={habitsDone[1]}
-                aria-label={`Zone 2 Aerobic Conditioning — ${habitsDone[1] ? 'completed' : 'pending'}`}
-              >
-                <span className="agenda-checkbox">{habitsDone[1] ? '✓' : ''}</span>
-                <div className="agenda-details">
-                  <strong>Zone 2 Aerobic Conditioning</strong>
-                  <span>45m cardio {habitsDone[1] ? 'completed' : 'pending'}</span>
+              <div className="os-id-meta">
+                <div className="os-id-name-row">
+                  <strong className="os-id-name">{enclaveView ? 'Hardware Enclave' : 'Aaditya Upadhyay'}</strong>
+                  <span className="os-id-tier">{enclaveView ? 'ROOT KEY' : 'FOUNDER'}</span>
                 </div>
-                <span className="agenda-badge"><Flame size={12} weight="fill" color="#F59E0B" /> 9d</span>
+                <div className="os-id-subline">
+                  <span className="os-id-hash">{enclaveView ? 'AES-256-GCM' : '0x8F3D…41C7'}</span>
+                  <span className="os-id-dot">·</span>
+                  <span className="os-id-mode">{enclaveView ? 'TEE Keystore' : 'SQLCipher 2.6'}</span>
+                </div>
               </div>
 
-              <div
-                className={`agenda-row ${habitsDone[2] ? 'is-done' : ''}`}
-                onClick={() => toggleHabit(2)}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleHabit(2)}
-                role="button"
-                tabIndex={0}
-                aria-pressed={habitsDone[2]}
-                aria-label={`Evening Runway & Habit Audit — ${habitsDone[2] ? 'verified' : 'pending'}`}
-              >
-                <span className="agenda-checkbox">{habitsDone[2] ? '✓' : ''}</span>
-                <div className="agenda-details">
-                  <strong>Evening Runway &amp; Habit Audit</strong>
-                  <span>Sunday check-in {habitsDone[2] ? 'verified' : 'pending'}</span>
+              {/* Dynamic Life Score / Momentum */}
+              <div className="os-id-score-block">
+                <div className="os-id-score-val">
+                  <span className="os-id-score-num">{enclaveView ? '120' : '84'}</span>
+                  <span className="os-id-score-label">{enclaveView ? 'Hz' : 'LHS'}</span>
                 </div>
-                <span className="agenda-badge-status">{habitsDone[2] ? 'DONE' : 'DUE'}</span>
+                <div className="os-id-momentum-tag">
+                  <Sparkle size={8} weight="fill" />
+                  <span>{enclaveView ? 'VSYNC' : '+14%'}</span>
+                </div>
               </div>
             </div>
 
-            {/* Quick Capture Button — framer-motion three-state: idle → capturing → captured */}
-            <div className="console-quick-fab-wrap">
-              <button
-                type="button"
-                className={`console-quick-fab ${captureState === 'captured' ? 'triggered' : ''} ${captureState === 'capturing' ? 'is-capturing' : ''}`}
-                onClick={handleQuickCapture}
-                disabled={captureState !== 'idle'}
-                aria-busy={captureState === 'capturing'}
-                aria-label="Quick log entry to local SQLite database"
-              >
-                <AnimatePresence mode="wait">
-                  {captureState === 'idle' && (
-                    <motion.span
-                      key="idle"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                      + Quick Log Entry
-                    </motion.span>
-                  )}
-                  {captureState === 'capturing' && (
-                    <motion.span
-                      key="capturing"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                      Writing to SQLite…
-                    </motion.span>
-                  )}
-                  {captureState === 'captured' && (
-                    <motion.span
-                      key="captured"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.12, ease: [0.22, 1, 0.36, 1] }}
-                    >
-                      Committed to SQLite ✓
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 02: FOCUS SHIELD */}
-        {activeTab === 'shield' && (
-          <div className="console-view console-view--shield" role="tabpanel" id="panel-shield" aria-labelledby="tab-shield">
-            <div className="shield-status-card">
-              <div className="shield-status-head">
-                <span className="shield-active-led" />
-                <span className="shield-active-text">SYSTEM ACCESSIBILITY INTERCEPTOR</span>
+            {/* Micro Telemetry Bar */}
+            <div className="os-id-telemetry-bar">
+              <div className="os-id-stat">
+                <span className="os-id-stat-k">{enclaveView ? 'STORAGE' : 'DEPTH'}</span>
+                <strong className="os-id-stat-v">{enclaveView ? 'Encrypted SQLite' : '88%'}</strong>
               </div>
-              <h4 className="shield-title">Focus Shield Armed</h4>
-              <p className="shield-desc">Zero-VPN algorithmic app blocker. Intercepts infinite feeds at the window manager level.</p>
-            </div>
-
-            {/* Telemetry Numbers */}
-            <div className="shield-metrics-grid">
-              <div className="shield-metric-box">
-                <strong className="shield-number">{killsCount}</strong>
-                <span className="shield-label">Apps Blocked Today</span>
+              <div className="os-id-stat-div" />
+              <div className="os-id-stat">
+                <span className="os-id-stat-k">{enclaveView ? 'LEAK' : 'LATENCY'}</span>
+                <strong className="os-id-stat-v text-emerald">{enclaveView ? '0.0 ms' : '0.8ms'}</strong>
               </div>
-              <div className="shield-metric-box">
-                <strong className="shield-number">0 ms</strong>
-                <span className="shield-label">Network Latency</span>
-              </div>
-              <div className="shield-metric-box">
-                <strong className="shield-number">0</strong>
-                <span className="shield-label">Background VPN Tunnels</span>
-              </div>
-            </div>
-
-            {/* Test Button */}
-            <div className="shield-action-row">
-              <button
-                type="button"
-                className="shield-simulate-btn"
-                onClick={triggerTestIntercept}
-              >
-                <Lightning size={13} weight="fill" />
-                <span>Simulate App Intercept</span>
-              </button>
-            </div>
-
-            {shieldToast && (
-              <div className="shield-notification">
-                <ShieldCheck size={14} weight="bold" color="#10B981" />
-                <span>{shieldToast}</span>
-              </div>
-            )}
-
-            {/* Kill Feed */}
-            <div className="shield-feed-list">
-              {recentKills.map((kill) => (
-                <div key={kill.id} className="feed-item feed-item--blocked feed-item--simulated">
-                  <span className="feed-tag">BLOCKED</span>
-                  <div className="feed-text">
-                    <strong>{kill.name}</strong>
-                    <span>{kill.reason} · {kill.time}</span>
-                  </div>
-                </div>
-              ))}
-              <div className="feed-item feed-item--blocked">
-                <span className="feed-tag">BLOCKED</span>
-                <div className="feed-text">
-                  <strong>Instagram</strong>
-                  <span>8 launch attempts blocked instantly</span>
-                </div>
-              </div>
-              <div className="feed-item feed-item--blocked">
-                <span className="feed-tag">BLOCKED</span>
-                <div className="feed-text">
-                  <strong>X / Twitter</strong>
-                  <span>7 launch attempts blocked instantly</span>
-                </div>
-              </div>
-              <div className="feed-item feed-item--allowed">
-                <span className="feed-tag-allow">ALLOWED</span>
-                <div className="feed-text">
-                  <strong>AIIMIN Life OS</strong>
-                  <span>Native companion execution terminal</span>
-                </div>
+              <div className="os-id-stat-div" />
+              <div className="os-id-stat">
+                <span className="os-id-stat-k">{enclaveView ? 'NETWORK' : 'OUTBOX'}</span>
+                <strong className="os-id-stat-v text-accent">{enclaveView ? 'OFFLINE 100%' : '4 COMMITTED'}</strong>
               </div>
             </div>
           </div>
-        )}
 
-        {/* TAB 03: MONEY OS */}
-        {activeTab === 'money' && (
-          <div className="console-view console-view--money" role="tabpanel" id="panel-money" aria-labelledby="tab-money">
-            <div className="money-status-card">
-              <div className="money-head-row">
-                <span className="money-label">LIQUID RUNWAY</span>
-                {dailyBurn !== 380 && (
-                  <button type="button" className="money-reset-link" onClick={resetMoney}>
-                    ↺ Reset Balance
-                  </button>
+          {/* Quick Action Chips */}
+          <div className="phone-actions-strip">
+            <button
+              type="button"
+              className={`phone-action-chip phone-action-chip--expense ${activeFilter === 'expense' ? 'is-active' : ''}`}
+              onClick={() => setActiveFilter('expense')}
+            >
+              <Plus size={10} weight="bold" />
+              <span>EXPENSE</span>
+            </button>
+            <button
+              type="button"
+              className={`phone-action-chip phone-action-chip--focus ${activeFilter === 'focus' ? 'is-active' : ''}`}
+              onClick={() => setActiveFilter('focus')}
+            >
+              <Lightning size={10} weight="fill" />
+              <span>FOCUS</span>
+            </button>
+            <button
+              type="button"
+              className={`phone-action-chip phone-action-chip--minimum ${activeFilter === 'minimum' ? 'is-active' : ''}`}
+              onClick={() => setActiveFilter('minimum')}
+            >
+              <Check size={10} weight="bold" />
+              <span>MINIMUM</span>
+            </button>
+          </div>
+
+          {/* Habit / Action Items */}
+          <div className="phone-items-list">
+            <div
+              className={`phone-item-card ${habits.gym ? 'is-done' : ''}`}
+              onClick={() => toggleHabit('gym')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleHabit('gym')}
+            >
+              <div className="phone-item-info">
+                <strong>Morning Gym Minimum</strong>
+                <span>45m Workout · Logged 06:30</span>
+              </div>
+              <span className="phone-item-check" aria-label={habits.gym ? 'Completed' : 'Pending'}>
+                {habits.gym ? (
+                  <CheckCircle size={18} weight="fill" color="#10B981" />
+                ) : (
+                  <Circle size={18} weight="bold" color="#334155" />
                 )}
-              </div>
-              <div className="money-value-row">
-                <strong className="money-value">₹{runwayBalance.toLocaleString('en-IN')}</strong>
-                <span className="money-days-badge">{runwayDays} Days Runway</span>
-              </div>
-            </div>
-
-            {/* Burn Pace Bar */}
-            <div className="money-burn-card">
-              <div className="burn-label-row">
-                <span className="burn-title">Daily Spending Pace</span>
-                <strong className="burn-stat">₹{dailyBurn} / ₹1,200</strong>
-              </div>
-              <div className="burn-track">
-                <div
-                  className="burn-fill"
-                  style={{
-                    width: `${burnPacePct}%`,
-                    background: burnPacePct > 80 ? '#F59E0B' : '#749DC4',
-                  }}
-                />
-              </div>
-              <span className="burn-helper">
-                {100 - burnPacePct > 0
-                  ? `${100 - burnPacePct}% daily spending buffer intact`
-                  : 'Daily budget limit reached'}
               </span>
             </div>
 
-            {/* Quick Logging Buttons */}
-            <div className="money-actions-block">
-              <span className="money-action-title">ONE-TAP EXPENSE LOGGING</span>
-              <div className="money-buttons-grid">
-                <button
-                  type="button"
-                  className="money-tap-btn"
-                  onClick={() => handleQuickExpense('Espresso', 80)}
-                >
-                  <span>☕ Espresso</span>
-                  <strong>₹80</strong>
-                </button>
-                <button
-                  type="button"
-                  className="money-tap-btn"
-                  onClick={() => handleQuickExpense('Fuel / Metro', 240)}
-                >
-                  <span>⛽ Fuel / Metro</span>
-                  <strong>₹240</strong>
-                </button>
-                <button
-                  type="button"
-                  className="money-tap-btn"
-                  onClick={() => handleQuickExpense('Groceries', 450)}
-                >
-                  <span>🥗 Nutrition</span>
-                  <strong>₹450</strong>
-                </button>
+            <div
+              className={`phone-item-card ${habits.deepWork ? 'is-done' : ''}`}
+              onClick={() => toggleHabit('deepWork')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleHabit('deepWork')}
+            >
+              <div className="phone-item-info">
+                <strong>Deep Work Sprint</strong>
+                <span>3h 15m Code · Logged 10:15</span>
               </div>
+              <span className="phone-item-check" aria-label={habits.deepWork ? 'Completed' : 'Pending'}>
+                {habits.deepWork ? (
+                  <CheckCircle size={18} weight="fill" color="#10B981" />
+                ) : (
+                  <Circle size={18} weight="bold" color="#334155" />
+                )}
+              </span>
+            </div>
 
-              {quickSpent && (
-                <div className="money-receipt-toast">
-                  <CheckCircle size={13} color="#10B981" weight="bold" />
-                  <span>Logged {quickSpent.label} (₹{quickSpent.amount}) to local database</span>
-                </div>
-              )}
+            <div
+              className={`phone-item-card ${habits.upi ? 'is-done' : ''}`}
+              onClick={() => toggleHabit('upi')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleHabit('upi')}
+            >
+              <div className="phone-item-info">
+                <strong>UPI Reimbursement</strong>
+                <span>Lent Rahul ₹500 (Linked)</span>
+              </div>
+              <span className="phone-item-check" aria-label={habits.upi ? 'Completed' : 'Pending'}>
+                {habits.upi ? (
+                  <CheckCircle size={18} weight="fill" color="#10B981" />
+                ) : (
+                  <Circle size={18} weight="bold" color="#334155" />
+                )}
+              </span>
+            </div>
+
+            <div
+              className={`phone-item-card ${habits.debrief ? 'is-done' : ''}`}
+              onClick={() => toggleHabit('debrief')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleHabit('debrief')}
+            >
+              <div className="phone-item-info">
+                <strong>Evening Debrief</strong>
+                <span>Journal &amp; Ledger Synced</span>
+              </div>
+              <span className="phone-item-check" aria-label={habits.debrief ? 'Completed' : 'Pending'}>
+                {habits.debrief ? (
+                  <CheckCircle size={18} weight="fill" color="#10B981" />
+                ) : (
+                  <Circle size={18} weight="bold" color="#334155" />
+                )}
+              </span>
             </div>
           </div>
-        )}
 
-        {/* TAB 04: HARDWARE VAULT */}
-        {activeTab === 'vault' && (
-          <div className="console-view console-view--vault" role="tabpanel" id="panel-vault" aria-labelledby="tab-vault">
-            <div className="vault-status-header">
-              <span className="vault-kicker">ON-DEVICE CRYPTOGRAPHY</span>
-              <h4 className="vault-title">Hardware Vault</h4>
-              <p className="vault-desc">Your database is encrypted with keys sealed in physical smartphone silicon.</p>
-            </div>
-
-            <div className="vault-details-grid">
-              <div className="vault-info-box">
-                <span className="vault-info-lbl">Key Storage</span>
-                <strong className="vault-info-val">AndroidKeyStore TEE</strong>
-              </div>
-              <div className="vault-info-box">
-                <span className="vault-info-lbl">Cipher Suite</span>
-                <strong className="vault-info-val">AES-256-GCM</strong>
-              </div>
-              <div className="vault-info-box">
-                <span className="vault-info-lbl">Local Database</span>
-                <strong className="vault-info-val">SQLCipher v4.5.4</strong>
-              </div>
-              <div className="vault-info-box">
-                <span className="vault-info-lbl">Pending Outbox</span>
-                <strong className="vault-info-val val-green">0 (Synced)</strong>
-              </div>
-            </div>
-
-            {/* Audit history disclosure — honest state: no real device audit has run in this demo */}
-            {auditStep === 'idle' && (
-              <div className="vault-audit-history-note">
-                <Info size={12} color="#64748B" />
-                <span>First audit runs on next app launch</span>
+          {/* Settle to SQLite Action Button */}
+          <div className="phone-bottom-bar">
+            {settledToast && (
+              <div className="phone-toast-msg">
+                <ShieldCheck size={12} weight="bold" color="#10B981" />
+                <span>{settledToast}</span>
               </div>
             )}
-
-            {/* Audit Trigger */}
-            <div className="vault-audit-wrap">
-              <button
-                type="button"
-                className={`vault-audit-trigger ${auditStep !== 'idle' ? 'is-active' : ''}`}
-                onClick={handleVaultAudit}
-                disabled={auditStep !== 'idle'}
-                aria-label="Verify Hardware Keystore integrity"
-              >
-                <LockKey size={13} weight="bold" />
-                <span>
-                  {auditStep === 'idle' && 'Verify Hardware Keystore'}
-                  {auditStep === 'running' && 'Probing Secure Element…'}
-                  {auditStep === 'verified' && 'Hardware Keystore Sealed ✓'}
-                </span>
-              </button>
-            </div>
-
-            {auditStep === 'verified' && (
-              <div className="vault-audit-receipt-card">
-                <strong className="receipt-status">HARDWARE ENCLAVE VERIFIED</strong>
-                <span className="receipt-text">Keystore: AndroidKeyStore Hardware StrongBox</span>
-                <span className="receipt-text">Socket Audit: 0 open third-party connections</span>
-              </div>
-            )}
-
-            <div className="vault-checklist">
-              <div className="vault-check-item">
-                <CheckCircle size={13} color="#10B981" weight="bold" />
-                <span>Zero analytics SDKs or remote trackers</span>
-              </div>
-              <div className="vault-check-item">
-                <CheckCircle size={13} color="#10B981" weight="bold" />
-                <span>Encrypted-at-rest SQLite database</span>
-              </div>
-              <div className="vault-check-item">
-                <CheckCircle size={13} color="#10B981" weight="bold" />
-                <span>Biometric authentication on device</span>
-              </div>
-            </div>
+            <button
+              type="button"
+              className={`phone-settle-btn ${settling ? 'is-settling' : ''}`}
+              onClick={handleSettle}
+            >
+              <span>{settling ? 'Committing to SQLite…' : 'Settle to Offline SQLite Graph'}</span>
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -740,89 +429,140 @@ export default function AndroidApp() {
               className="app-nav-btn"
             >
               <DownloadSimple size={13} weight="bold" />
-              <span>Get APK (v2.0.4)</span>
+              <span className="app-nav-btn-long">Get APK (v2.0.4)</span>
+              <span className="app-nav-btn-short">Get APK</span>
             </a>
           </div>
         </div>
       </header>
 
       <main className="app-main-content">
-        {/* ── SECTION 1: HERO ── */}
+        {/* ── SECTION 1: MASTER HERO WORKBENCH ── */}
         <section className="app-hero-section">
-          <div className="app-hero-grid">
-            {/* Left: Copy & Actions */}
-            <div className="app-hero-copy">
-              <div className="app-status-badge">
-                <span className="status-dot" />
-                <span>BUILD // COMPANION V2.0.4 · ANDROID 15 COMPILED</span>
+          {/* Header Typography */}
+          <div className="app-hero-header-block">
+            <h1 className="app-hero-headline">
+              Fast mobile capture. Zero bloated web wrappers.
+            </h1>
+            <p className="app-hero-subline">
+              Desktop is your command center for deep planning and weekly reviews. The Android companion logs habits, expenses, and quick notes in under two seconds — built with 100% native Kotlin and Jetpack Compose, offline SQLite sync, and AES-256 hardware keystore encryption.
+            </p>
+          </div>
+
+          {/* 3-Column Hero Workbench Frame */}
+          <div className="hero-cockpit-container">
+            {/* Column 1: Capabilities & Architecture */}
+            <div className="cockpit-card cockpit-card--left">
+              <div className="cockpit-tag-row">
+                <div className="cockpit-status-pill">
+                  <span className="cockpit-status-dot" />
+                  <span>Native Android V2 · Closed Beta</span>
+                </div>
+              </div>
+              <div className="cockpit-spec-meta">
+                <span>v2.0.4 · API 35 · 120Hz</span>
               </div>
 
-              <h1 className="app-hero-title">
-                Capture in seconds.<br />
-                <span className="hero-title-accent">Back to the physical world.</span>
-              </h1>
+              {/* 4 Feature Items */}
+              <div className="cockpit-features-list">
+                {CORE_CAPABILITIES.map((cap) => {
+                  const Icon = cap.icon;
+                  return (
+                    <div key={cap.title} className="cockpit-feature-item">
+                      <div className="cockpit-feat-icon" style={{ color: cap.color }}>
+                        <Icon size={16} weight="bold" />
+                      </div>
+                      <div className="cockpit-feat-content">
+                        <strong className="cockpit-feat-title">{cap.title}</strong>
+                        <span className="cockpit-feat-desc">{cap.desc}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-              <p className="app-hero-sub">
-                Desktop is your command center for macro planning and weekly reviews. The Android companion is built for speed: log a habit, record an expense, arm your focus shield, and put your phone face down in under two seconds.
-              </p>
+              {/* Tech Stack Pills */}
+              <div className="cockpit-tech-strip">
+                <span className="cockpit-tech-badge">Jetpack Compose 1.7</span>
+                <span className="cockpit-tech-badge">Room SQLite 2.6</span>
+                <span className="cockpit-tech-badge">Android Keystore TEE</span>
+                <span className="cockpit-tech-badge">Coroutines Flow</span>
+              </div>
+            </div>
 
-              <div className="app-hero-actions">
+            {/* Column 2: Ultra-Realistic Interactive Titanium Smartphone */}
+            <div className="cockpit-card cockpit-card--center">
+              <PhoneDeviceMockup />
+            </div>
+
+            {/* Column 3: Build & Cryptographic Release */}
+            <div className="cockpit-card cockpit-card--right">
+              <div className="cockpit-build-row">
+                <span className="cockpit-build-tag">BUILD: v2.0.4-release</span>
+                <span className="cockpit-build-size">~44.2 MB (ARM64)</span>
+              </div>
+
+              {/* Primary Download CTA */}
+              <div className="cockpit-action-group">
                 <a
                   href="/aiimin-v2-debug.apk"
                   download="aiimin-v2-debug.apk"
-                  className={`app-primary-btn ${downloading ? 'is-loading' : ''}`}
+                  className={`cockpit-download-btn ${downloading ? 'is-loading' : ''}`}
                   onClick={() => {
                     setDownloading(true);
                     setTimeout(() => setDownloading(false), 3000);
                   }}
                 >
-                  <DownloadSimple size={16} weight="bold" />
-                  <span>{downloading ? 'Downloading APK…' : 'Download APK (44.2 MB)'}</span>
+                  <DownloadSimple size={18} weight="bold" />
+                  <span>{downloading ? 'Downloading APK…' : 'Download Latest APK (~44 MB)'}</span>
                 </a>
-                <a href="#install" className="app-ghost-btn">
-                  <Play size={13} weight="fill" />
-                  <span>Install Guide</span>
+
+                <a href="#specs" className="cockpit-specs-link">
+                  <span>Full Architecture &amp; Specs</span>
+                  <ArrowRight size={14} weight="bold" />
                 </a>
               </div>
 
-              {/* Trust Bar */}
-              <div className="app-trust-strip">
-                <span>100% Offline-First</span>
-                <span className="trust-sep">·</span>
-                <span>Zero Ads or Trackers</span>
-                <span className="trust-sep">·</span>
-                <span>Local AES-256 Vault</span>
-                <span className="trust-sep">·</span>
-                <span>Native Jetpack Compose</span>
+              {/* Cryptographic Integrity Card */}
+              <div className="verified-integrity-card">
+                <div className="integrity-head">
+                  <SealCheck size={16} weight="fill" color="#10B981" />
+                  <strong className="integrity-title">Verified Cryptographic Integrity</strong>
+                </div>
+                <ul className="integrity-points">
+                  <li>
+                    <CheckCircle size={13} weight="fill" color="#10B981" />
+                    <span>StrongBox TEE Hardware Keystore</span>
+                  </li>
+                  <li>
+                    <CheckCircle size={13} weight="fill" color="#10B981" />
+                    <span>100% On-Device Telemetry · Zero Cloud SMS</span>
+                  </li>
+                  <li>
+                    <CheckCircle size={13} weight="fill" color="#10B981" />
+                    <span>Zero-VPN Focus Shield · Pure Native Binary</span>
+                  </li>
+                </ul>
               </div>
-            </div>
 
-            {/* Right: Interactive Companion Software Console */}
-            <div className="app-hero-console">
-              <CompanionSoftwareConsole />
+              {/* Sideload Footnote */}
+              <div className="cockpit-sideload-footnote">
+                <ShieldCheck size={14} color="#64748B" />
+                <span>Sideloadable release build for verified testers.</span>
+              </div>
 
-              {/* Sideload Quick-Command Box */}
-              <div className="adb-quick-card">
-                <div className="adb-card-head">
-                  <div className="adb-title-row">
-                    <Terminal size={14} color="#749DC4" weight="bold" />
-                    <span className="adb-title">Developer Fast Sideload</span>
-                  </div>
-                  <span className="adb-badge">ARM64 + x86_64</span>
-                </div>
-
-                <div className="adb-command-box">
-                  <code>{ADB_COMMAND}</code>
-                  <button
-                    type="button"
-                    className="adb-copy-btn"
-                    onClick={handleCopyAdb}
-                    title="Copy command"
-                  >
-                    {copiedAdb ? <Check size={12} color="#10B981" weight="bold" /> : <Copy size={12} />}
-                    <span>{copiedAdb ? 'Copied' : 'Copy'}</span>
-                  </button>
-                </div>
+              {/* ADB Command Quickbox */}
+              <div className="cockpit-adb-box">
+                <code>{ADB_COMMAND}</code>
+                <button
+                  type="button"
+                  className="cockpit-adb-copy"
+                  onClick={handleCopyAdb}
+                  title="Copy command"
+                >
+                  {copiedAdb ? <CheckCircle size={12} color="#10B981" weight="fill" /> : <Copy size={11} />}
+                  <span>{copiedAdb ? 'Copied' : 'Copy'}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -855,21 +595,27 @@ export default function AndroidApp() {
               </p>
               <ul className="contrast-list">
                 <li>
-                  <span className="contrast-bullet trap-bullet">✕</span>
+                  <span className="contrast-bullet trap-bullet" aria-hidden="true">
+                    <XCircle size={18} weight="fill" color="#F43F5E" />
+                  </span>
                   <div>
                     <strong>4h 38m average daily screen time</strong>
                     <span>Lost to variable-reward algorithmic feeds and autoplay loops</span>
                   </div>
                 </li>
                 <li>
-                  <span className="contrast-bullet trap-bullet">✕</span>
+                  <span className="contrast-bullet trap-bullet" aria-hidden="true">
+                    <XCircle size={18} weight="fill" color="#F43F5E" />
+                  </span>
                   <div>
                     <strong>96 reflexive unlocks per day</strong>
                     <span>Triggered by notification badges designed to exploit social anxiety</span>
                   </div>
                 </li>
                 <li>
-                  <span className="contrast-bullet trap-bullet">✕</span>
+                  <span className="contrast-bullet trap-bullet" aria-hidden="true">
+                    <XCircle size={18} weight="fill" color="#F43F5E" />
+                  </span>
                   <div>
                     <strong>Constant cloud surveillance</strong>
                     <span>Dozens of third-party telemetry beacons harvesting personal data</span>
@@ -894,21 +640,27 @@ export default function AndroidApp() {
               </p>
               <ul className="contrast-list">
                 <li>
-                  <span className="contrast-bullet antidote-bullet">✓</span>
+                  <span className="contrast-bullet antidote-bullet" aria-hidden="true">
+                    <CheckCircle size={18} weight="fill" color="#10B981" />
+                  </span>
                   <div>
                     <strong>Under 3 minutes total daily usage</strong>
                     <span>Get in, capture habit or expense, put phone face down</span>
                   </div>
                 </li>
                 <li>
-                  <span className="contrast-bullet antidote-bullet">✓</span>
+                  <span className="contrast-bullet antidote-bullet" aria-hidden="true">
+                    <CheckCircle size={18} weight="fill" color="#10B981" />
+                  </span>
                   <div>
                     <strong>Native Focus Shield barrier</strong>
                     <span>Blocks doomscrolling apps at the Android window manager level</span>
                   </div>
                 </li>
                 <li>
-                  <span className="contrast-bullet antidote-bullet">✓</span>
+                  <span className="contrast-bullet antidote-bullet" aria-hidden="true">
+                    <CheckCircle size={18} weight="fill" color="#10B981" />
+                  </span>
                   <div>
                     <strong>100% offline-first silicon enclave</strong>
                     <span>Hardware Keystore encryption with zero ad SDKs and zero tracking</span>
@@ -1084,7 +836,7 @@ export default function AndroidApp() {
               <div className="bento-card-core">
                 <div className="bento-card-top">
                   <div className="bento-icon-box">
-                    <WifiSlash size={20} weight="bold" />
+                    <HardDrives size={20} weight="bold" />
                   </div>
                   <span className="bento-badge">ENGINE 04 // PERSISTENCE</span>
                 </div>
@@ -1163,9 +915,9 @@ export default function AndroidApp() {
               <a
                 href="/aiimin-v2-debug.apk"
                 download="aiimin-v2-debug.apk"
-                className="app-primary-btn"
+                className="cockpit-download-btn"
               >
-                <DownloadSimple size={15} weight="bold" />
+                <DownloadSimple size={16} weight="bold" />
                 <span>Download APK (44.2 MB)</span>
               </a>
             </div>
@@ -1249,9 +1001,9 @@ export default function AndroidApp() {
               <a
                 href="/aiimin-v2-debug.apk"
                 download="aiimin-v2-debug.apk"
-                className="app-primary-btn"
+                className="cockpit-download-btn"
               >
-                <DownloadSimple size={15} weight="bold" />
+                <DownloadSimple size={16} weight="bold" />
                 <span>Download APK (44.2 MB)</span>
               </a>
               <Link to="/waitlist#waitlist-join" className="app-ghost-btn">
@@ -1283,7 +1035,7 @@ export default function AndroidApp() {
               <div className="footer-sec-proof">
                 <ShieldCheck size={16} weight="fill" color="#10B981" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
-                  <span className="sec-proof-title">Cryptographically Signed & Verified</span>
+                  <span className="sec-proof-title">Cryptographically Signed &amp; Verified</span>
                   <p className="sec-proof-sub">Direct developer build with APK Signature Scheme v2 tamper verification.</p>
                 </div>
               </div>
@@ -1291,7 +1043,7 @@ export default function AndroidApp() {
                 <LockKey size={16} weight="bold" color="#749DC4" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
                   <span className="sec-proof-title">StrongBox Hardware Keystore</span>
-                  <p className="sec-proof-sub">PIN & biometrics protected by Android KeyStore hardware enclave.</p>
+                  <p className="sec-proof-sub">PIN &amp; biometrics protected by Android KeyStore hardware enclave.</p>
                 </div>
               </div>
               <div className="footer-sec-proof">
