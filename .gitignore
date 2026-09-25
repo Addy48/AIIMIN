@@ -253,6 +253,11 @@ dev-gtm-claude-skills/**
 # Supabase temp & QA screenshots
 supabase/.temp/
 *.png
+!docs/diagrams/*.png
+!docs/diagrams/*.svg
+!frontend/public/images/**
 *.tar.gz
 *-E
+.freebuff/
+app/**/bin/
 

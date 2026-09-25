@@ -11,18 +11,15 @@ import SEO from '../components/common/SEO';
 
 const IS_WAITLIST_MODE = process.env.REACT_APP_WAITLIST_MODE === 'true';
 
-/* Email vs OS-ID share one field — classify carefully (OS-ID charset includes @). */
+/* Email vs OS-ID share one field — classify carefully (OS-ID is strictly 8-char uppercase alphanumeric). */
 function isEmailIdentifier(val) {
   const v = String(val || '').trim();
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return true;
-  if (/@[a-z0-9][a-z0-9.-]*\./i.test(v)) return true;
-  if (/@[a-z0-9.-]{3,}$/i.test(v)) return true;
-  return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 }
 
 function isCompleteOsId(val) {
   const v = String(val || '').trim().toUpperCase();
-  if (!v || isEmailIdentifier(v)) return false;
+  if (!v || v.includes('@')) return false;
   if (v.length !== 8) return false;
   if (!/^[A-Z0-9@,._\-=+*^$#!]+$/.test(v)) return false;
   if ((v.match(/[0-9]/g) || []).length > 4) return false;
@@ -30,11 +27,12 @@ function isCompleteOsId(val) {
 }
 
 function normalizeLoginIdentifier(raw) {
-  const v = String(raw || '');
-  if (isEmailIdentifier(v) || (v.includes('@') && v.length > 8)) {
+  const v = String(raw || '').trimStart();
+  if (v.includes('@')) {
     return v.trim().toLowerCase();
   }
-  return v.toUpperCase().replace(/[^A-Z0-9@,._\-=+*^$#!]/g, '').slice(0, 8);
+  // OS-ID is strictly uppercase alphanumeric + allowed symbols
+  return v.replace(/[^A-Za-z0-9@,._\-=+*^$#!]/g, '').toUpperCase();
 }
 
 function validateUsername(val) {
@@ -766,14 +764,14 @@ const Login = () => {
   // Auto-advance login when OS-ID hits 8 valid chars — only after resolve succeeds.
   useEffect(() => {
     if (mode !== 'login' || step !== 1 || loading) return undefined;
-    if (!isCompleteOsId(identifier)) {
+    if (identifier.includes('@') || !isCompleteOsId(identifier)) {
       loginResolveKeyRef.current = '';
       return undefined;
     }
     const key = identifier.trim().toUpperCase();
     if (loginResolveKeyRef.current === key) return undefined;
     const t = setTimeout(() => {
-      advanceLoginToPin(identifier);
+      advanceLoginToPin(key);
     }, 80);
     return () => clearTimeout(t);
   }, [identifier, mode, step, loading, advanceLoginToPin]);
@@ -974,19 +972,21 @@ const Login = () => {
                         spellCheck="false"
                         placeholder="8-char OS-ID or email"
                         aria-label="OS-ID or Email"
-                        maxLength={isEmailIdentifier(identifier) || identifier.includes('@') ? 254 : 8}
+                        maxLength={254}
                         style={{
-                          textTransform: isEmailIdentifier(identifier) || identifier.includes('@') ? 'none' : 'uppercase',
-                          letterSpacing: isCompleteOsId(identifier) ? '0.12em' : undefined,
+                          textTransform: identifier.includes('@') ? 'none' : 'uppercase',
+                          letterSpacing: !identifier.includes('@') && identifier.length > 0 ? '0.12em' : undefined,
                           fontVariantNumeric: 'tabular-nums',
                         }}
                       />
                       <p style={{ margin: '-8px 0 0', fontSize: '13px', color: 'var(--color-text-2)', fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
-                        {isEmailIdentifier(identifier)
-                          ? 'Email detected — press Continue when ready.'
-                          : identifier.length > 0
-                            ? `OS-ID ${identifier.length}/8 — auto-continues at 8 characters.`
-                            : 'OS-ID auto-continues at 8 characters. Email needs @ and domain.'}
+                        {isEmailIdentifier(identifier) || identifier.includes('@')
+                          ? 'Email detected — press Continue to proceed to PIN.'
+                          : identifier.length === 8 && isCompleteOsId(identifier)
+                            ? 'OS-ID detected (8 chars) — scanning...'
+                            : identifier.length > 0 && identifier.length < 8
+                              ? `OS-ID ${identifier.length}/8 (or enter full email).`
+                              : 'Enter your 8-character OS-ID or your email.'}
                       </p>
                       <ErrorMsg msg={error} />
                       <PrimaryBtn>Continue →</PrimaryBtn>

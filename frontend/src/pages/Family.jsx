@@ -41,7 +41,10 @@ const archiveStorageKey = (userId) => `aiimin_family_archived_${userId}`;
 const loadArchivedKeys = (userId) => {
   if (!userId) return new Set();
   try {
-    return new Set(JSON.parse(localStorage.getItem(archiveStorageKey(userId)) || '[]'));
+    const raw = localStorage.getItem(archiveStorageKey(userId));
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return new Set(Array.isArray(parsed) ? parsed : []);
   } catch {
     return new Set();
   }

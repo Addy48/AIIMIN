@@ -4762,6 +4762,9 @@ html {
 }
 
 .launch-phase-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   margin-bottom: 14px;
   padding: 18px 16px 16px;
   border-radius: var(--r-lg);
@@ -4889,6 +4892,12 @@ html {
   gap: 16px;
   padding-top: 14px;
   border-top: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  flex: 1;
+}
+
+.launch-phase-col {
+  display: flex;
+  flex-direction: column;
 }
 
 .launch-phase-kicker {
@@ -4911,7 +4920,8 @@ html {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 10px 0 0;
+  margin-top: auto;
+  padding-top: 10px;
 }
 
 .launch-phase-cta {
@@ -4974,7 +4984,8 @@ html {
 }
 
 .launch-phase-approval {
-  margin: 12px 0 0;
+  margin: 14px 0 0;
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px dashed color-mix(in srgb, var(--color-border) 75%, transparent);
   font-size: 12px;
@@ -6361,6 +6372,18 @@ html {
   border: 1px solid color-mix(in srgb, #a78bfa 25%, transparent);
 }
 
+.waitlist-quote-avatar-v2.avatar-gold {
+  background: color-mix(in srgb, #f59e0b 15%, var(--color-surface));
+  color: #f59e0b;
+  border: 1px solid color-mix(in srgb, #f59e0b 25%, transparent);
+}
+
+.waitlist-quote-avatar-v2.avatar-cyan {
+  background: color-mix(in srgb, #06b6d4 15%, var(--color-surface));
+  color: #06b6d4;
+  border: 1px solid color-mix(in srgb, #06b6d4 25%, transparent);
+}
+
 .waitlist-quote-meta {
   display: flex;
   flex-direction: column;
@@ -6478,18 +6501,21 @@ html {
 }
 
 .waitlist-page .waitlist-hero-panels {
-  grid-template-columns: minmax(0, 1.06fr) minmax(360px, 0.94fr);
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
   gap: clamp(24px, 4vw, 56px);
-  align-items: center;
+  align-items: start;
 }
 
 .waitlist-page .waitlist-hero-copy {
-  padding: clamp(26px, 4vw, 48px);
+  height: auto;
+  min-height: unset;
+  padding: clamp(26px, 4vw, 40px);
   border-radius: 24px;
   background: color-mix(in srgb, var(--color-surface) 70%, transparent);
   border-color: color-mix(in srgb, var(--color-border) 84%, transparent);
   box-shadow: 0 26px 80px -56px color-mix(in srgb, var(--color-text-1) 75%, transparent);
   backdrop-filter: blur(12px);
+  overflow: visible;
 }
 
 .waitlist-page .hero-headline {

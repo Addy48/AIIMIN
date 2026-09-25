@@ -50,7 +50,11 @@ const SystemHealth = () => {
     };
     
     runChecks();
-    const int = setInterval(runChecks, 15000);
+    const int = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        runChecks();
+      }
+    }, 60000);
     
     const handleOnline = () => { if (mounted) setNetworkStatus({ label: 'Network Uplink', status: 'Connected', color: '#10B981' }) };
     const handleOffline = () => { if (mounted) setNetworkStatus({ label: 'Network Uplink', status: 'Offline', color: '#EF4444' }) };

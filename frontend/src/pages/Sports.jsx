@@ -61,18 +61,18 @@ const MatchCard = ({ match, isF1 = false }) => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {match.home.logo ? <img src={match.home.logo} alt={match.home.name ? `${match.home.name} logo` : 'Home team logo'} style={{ width: '28px', height: '28px', objectFit: 'contain' }} onError={(e) => e.target.style.display='none'} /> : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />}
-          <div style={{ fontSize: '15px', fontWeight: match.home.winner ? 900 : 700, color: match.home.winner ? 'var(--color-text-1)' : 'var(--color-text-2)' }}>{match.home.name}</div>
+          {match?.home?.logo ? <img src={match.home.logo} alt={match?.home?.name ? `${match.home.name} logo` : 'Home team logo'} style={{ width: '28px', height: '28px', objectFit: 'contain' }} onError={(e) => e.target.style.display='none'} /> : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />}
+          <div style={{ fontSize: '15px', fontWeight: match?.home?.winner ? 900 : 700, color: match?.home?.winner ? 'var(--color-text-1)' : 'var(--color-text-2)' }}>{match?.home?.name || 'Home'}</div>
         </div>
-        <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-text-1)' }}>{match.home.score}</div>
+        <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-text-1)' }}>{match?.home?.score ?? '—'}</div>
       </div>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {match.away.logo ? <img src={match.away.logo} alt={match.away.name ? `${match.away.name} logo` : 'Away team logo'} style={{ width: '28px', height: '28px', objectFit: 'contain' }} onError={(e) => e.target.style.display='none'} /> : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />}
-          <div style={{ fontSize: '15px', fontWeight: match.away.winner ? 900 : 700, color: match.away.winner ? 'var(--color-text-1)' : 'var(--color-text-2)' }}>{match.away.name}</div>
+          {match?.away?.logo ? <img src={match.away.logo} alt={match?.away?.name ? `${match.away.name} logo` : 'Away team logo'} style={{ width: '28px', height: '28px', objectFit: 'contain' }} onError={(e) => e.target.style.display='none'} /> : <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />}
+          <div style={{ fontSize: '15px', fontWeight: match?.away?.winner ? 900 : 700, color: match?.away?.winner ? 'var(--color-text-1)' : 'var(--color-text-2)' }}>{match?.away?.name || 'Away'}</div>
         </div>
-        <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-text-1)' }}>{match.away.score}</div>
+        <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--color-text-1)' }}>{match?.away?.score ?? '—'}</div>
       </div>
 
       <AnimatePresence>
@@ -146,8 +146,10 @@ const Sports = () => {
   useEffect(() => {
     fetchScores();
     const interval = setInterval(() => {
-      fetchScores();
-    }, 2 * 60 * 1000); // Poll every 2 minutes
+      if (document.visibilityState === 'visible') {
+        fetchScores();
+      }
+    }, 5 * 60 * 1000); // Poll every 5 minutes only when tab is visible
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, navigate]);

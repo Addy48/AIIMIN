@@ -1,0 +1,259 @@
+<svg viewBox="0 0 1400 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="web-grad-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14171A" />
+      <stop offset="100%" stop-color="#0E1012" />
+    </linearGradient>
+    <linearGradient id="web-grad-card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2228" />
+      <stop offset="100%" stop-color="#16191E" />
+    </linearGradient>
+    <filter id="web-glow-spark" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <marker id="w-arrow-steel" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#749DC4" />
+    </marker>
+    <marker id="w-arrow-spark" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#FF6B35" />
+    </marker>
+    <marker id="w-arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10B981" />
+    </marker>
+    <marker id="w-arrow-gold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#F5A623" />
+    </marker>
+    <pattern id="w-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#22272E" stroke-width="1" stroke-opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <rect width="1400" height="860" fill="url(#web-grad-bg)" rx="16" />
+  <rect width="1400" height="860" fill="url(#w-grid)" rx="16" />
+
+  <!-- SECTION 1: PUBLIC & ENTRY SURFACES (Top Left) -->
+  <g transform="translate(40, 40)">
+    <rect width="360" height="240" rx="14" fill="#1A1E24" stroke="#333942" stroke-width="1.5" />
+    <text x="20" y="32" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">1. PUBLIC SURFACES & ONBOARDING</text>
+    
+    <g transform="translate(16, 48)">
+      <rect width="156" height="76" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">Landing & Waitlist</text>
+      <text x="12" y="42" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="10">/ · /waitlist</text>
+      <text x="12" y="60" fill="#749DC4" font-family="'Inter', sans-serif" font-size="9">Hero · Spec Matrix · QA</text>
+    </g>
+
+    <g transform="translate(188, 48)">
+      <rect width="156" height="76" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">Brand & Companion</text>
+      <text x="12" y="42" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="10">/brand · /app</text>
+      <text x="12" y="60" fill="#749DC4" font-family="'Inter', sans-serif" font-size="9">Brand DNA · APK Link</text>
+    </g>
+
+    <g transform="translate(16, 136)">
+      <rect width="328" height="88" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">Legal & Governance Hub</text>
+      <text x="12" y="42" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="10">/privacy · /terms · /security · /data-deletion · /legal</text>
+      <text x="12" y="64" fill="#6B7280" font-family="'Inter', sans-serif" font-size="10">Immutable Genesis governance · Consent Banner · Cookie compliance</text>
+    </g>
+  </g>
+
+  <!-- SECTION 2: AUTHENTICATION & ACCESS GATE (Top Middle) -->
+  <g transform="translate(440, 40)">
+    <rect width="460" height="240" rx="14" fill="#1A1E24" stroke="#F5A623" stroke-width="1.5" />
+    <text x="20" y="32" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">2. AUTHENTICATION & ACCESS GATEWAY</text>
+
+    <!-- OS-ID Resolver -->
+    <g transform="translate(16, 48)">
+      <rect width="206" height="80" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">OS-ID Input & Resolver</text>
+      <text x="12" y="44" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11">AADI0837 (Always Upper)</text>
+      <text x="12" y="64" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">&lt;80ms auto-scan debounced</text>
+    </g>
+
+    <!-- PIN Keypad & Biometrics -->
+    <g transform="translate(238, 48)">
+      <rect width="206" height="80" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">Numpad PIN Keypad</text>
+      <text x="12" y="44" fill="#10B981" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11">● ● ● ● (6-Digit PIN)</text>
+      <text x="12" y="64" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Argon2id Hash verification</text>
+    </g>
+
+    <!-- Guards Strip -->
+    <g transform="translate(16, 140)">
+      <rect width="428" height="84" rx="8" fill="#14171A" stroke="#262B33" />
+      <text x="14" y="24" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11">Security & Device Route Guards</text>
+      <text x="14" y="46" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">TierRouteGuard: Explore / Pro / Sovereign Access Enforcement</text>
+      <text x="14" y="66" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="11">DeviceGate: Phone redirected to /m capture · iPad / Desktop to full Life OS</text>
+    </g>
+  </g>
+
+  <!-- SECTION 3: SESSION & TOKENS (Top Right) -->
+  <g transform="translate(940, 40)">
+    <rect width="420" height="240" rx="14" fill="#1A1E24" stroke="#10B981" stroke-width="1.5" />
+    <text x="20" y="32" fill="#10B981" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">3. BETTER AUTH SESSION TOKEN</text>
+
+    <g transform="translate(16, 48)">
+      <rect width="388" height="176" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="16" y="28" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">aiimin.session_token</text>
+      <text x="16" y="48" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="11">HttpOnly · Secure · SameSite=Lax</text>
+      
+      <rect x="16" y="60" width="356" height="50" rx="6" fill="#14171A" stroke="#262B33" />
+      <text x="24" y="80" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="10">Bearer &lt;JWT_ACCESS_TOKEN&gt;</text>
+      <text x="24" y="96" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="9">Claims: { sub: UUID, os_id: "AADI0837", tier: "pro" }</text>
+
+      <text x="16" y="130" fill="#F0EDE8" font-family="'Inter', sans-serif" font-size="11">TanStack Query Provider (QueryClient)</text>
+      <text x="16" y="148" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="10">refetchOnWindowFocus: false · staleTime: 60s</text>
+    </g>
+  </g>
+
+  <!-- CONNECTING ARROWS (Top Tier) -->
+  <path d="M 400 160 L 440 160" stroke="#749DC4" stroke-width="2.5" marker-end="url(#w-arrow-steel)" />
+  <path d="M 900 160 L 940 160" stroke="#10B981" stroke-width="2.5" marker-end="url(#w-arrow-green)" />
+
+  <!-- SECTION 4: WEB DASHBOARD MODULES & APP ROUTING (Middle Tier) -->
+  <g transform="translate(40, 310)">
+    <rect width="1320" height="260" rx="14" fill="#1A1E24" stroke="#333942" stroke-width="1.5" />
+    <text x="20" y="30" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">4. AUTHENTICATED LIFE OS SHELL (DashboardLayout · Navbar · Masthead · CommandPalette)</text>
+
+    <!-- Module 1: Overview -->
+    <g transform="translate(16, 44)">
+      <rect width="200" height="96" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">📈 Overview (/overview)</text>
+      <text x="12" y="44" fill="#749DC4" font-family="'Inter', sans-serif" font-size="10">Life Score Radar (0-100)</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Trajectory Projection Engine</text>
+      <text x="12" y="76" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="9">Daily quick log & ticker</text>
+    </g>
+
+    <!-- Module 2: Habits -->
+    <g transform="translate(232, 44)">
+      <rect width="200" height="96" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">⚡ Atomic Habits (/habits)</text>
+      <text x="12" y="44" fill="#10B981" font-family="'Inter', sans-serif" font-size="10">7-Day Completion Matrix</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Streak Momentum Counter</text>
+      <text x="12" y="76" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="9">Optimistic cache update</text>
+    </g>
+
+    <!-- Module 3: Finance -->
+    <g transform="translate(448, 44)">
+      <rect width="200" height="96" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">💰 Finance (/finance)</text>
+      <text x="12" y="44" fill="#F5A623" font-family="'Inter', sans-serif" font-size="10">Net Worth Telemetry</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Monthly Burn Velocity</text>
+      <text x="12" y="76" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="9">Encrypted Ledger Rows</text>
+    </g>
+
+    <!-- Module 4: Sports -->
+    <g transform="translate(664, 44)">
+      <rect width="200" height="96" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">🏆 Sports (/sports)</text>
+      <text x="12" y="44" fill="#749DC4" font-family="'Inter', sans-serif" font-size="10">Cricket · Football · F1</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Live Fixtures & Scores</text>
+      <text x="12" y="76" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="9">Cached Sports API Feed</text>
+    </g>
+
+    <!-- Module 5: Mindset / Journal -->
+    <g transform="translate(880, 44)">
+      <rect width="200" height="96" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">🧠 Journal (/journal)</text>
+      <text x="12" y="44" fill="#FF6B35" font-family="'Inter', sans-serif" font-size="10">Multi-Mode Reflection</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Voice Note Transcription</text>
+      <text x="12" y="76" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="9">AES-GCM Encrypted</text>
+    </g>
+
+    <!-- Module 6: Discipline -->
+    <g transform="translate(1096, 44)">
+      <rect width="208" height="96" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">🛡️ Discipline (/discipline)</text>
+      <text x="12" y="44" fill="#EF4444" font-family="'Inter', sans-serif" font-size="10">Urge Surfing Timer</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Friction Tracker & Triggers</text>
+      <text x="12" y="76" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="9">Delay Urge Modal</text>
+    </g>
+
+    <!-- Lower Row Modules -->
+    <g transform="translate(16, 150)">
+      <rect width="254" height="94" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">🔬 Behavioral Lab (/lab)</text>
+      <text x="12" y="44" fill="#749DC4" font-family="'Inter', sans-serif" font-size="10">Vocal biomarkers · Typing speed</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Cognitive hypothesis sandbox</text>
+    </g>
+
+    <g transform="translate(286, 150)">
+      <rect width="254" height="94" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">🎯 Goals & Identity</text>
+      <text x="12" y="44" fill="#F5A623" font-family="'Inter', sans-serif" font-size="10">Milestone velocity · Non-negotiables</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Identity operating principles</text>
+    </g>
+
+    <g transform="translate(556, 150)">
+      <rect width="254" height="94" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">📝 Notes & Second Brain</text>
+      <text x="12" y="44" fill="#10B981" font-family="'Inter', sans-serif" font-size="10">Markdown notes & capture cards</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Encrypted personal knowledge</text>
+    </g>
+
+    <g transform="translate(826, 150)">
+      <rect width="254" height="94" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">👨‍👩‍👧 Family Vault (/family)</text>
+      <text x="12" y="44" fill="#749DC4" font-family="'Inter', sans-serif" font-size="10">Medical records · Insurance</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Emergency contacts & vehicles</text>
+    </g>
+
+    <g transform="translate(1096, 150)">
+      <rect width="208" height="94" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">📊 Reports & Account</text>
+      <text x="12" y="44" fill="#FF6B35" font-family="'Inter', sans-serif" font-size="10">Weekly life telemetry report</text>
+      <text x="12" y="60" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Theme engine & font scaling</text>
+    </g>
+  </g>
+
+  <!-- FLOW ARROW (Modules to API Gateway) -->
+  <path d="M 700 570 L 700 600" stroke="#749DC4" stroke-width="2.5" marker-end="url(#w-arrow-steel)" />
+
+  <!-- SECTION 5: BACKEND CORE & PERSISTENCE (Bottom Tier) -->
+  <g transform="translate(40, 600)">
+    <rect width="1320" height="220" rx="14" fill="#1A1E24" stroke="#333942" stroke-width="1.5" />
+    <text x="20" y="30" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">5. API GATEWAY, REDIS IN-MEMORY CACHING & SUPABASE POSTGRESQL</text>
+
+    <!-- Node/Express API Core -->
+    <g transform="translate(16, 44)">
+      <rect width="360" height="156" rx="8" fill="#1E2228" stroke="#749DC4" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">⚡ Express REST Core (api.aiimin.in)</text>
+      <text x="14" y="46" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="10">Port 3001 · Node.js v20+ ESM</text>
+      
+      <rect x="14" y="58" width="332" height="74" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">/api/habits · /api/finance · /api/sports</text>
+      <text x="20" y="94" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">/api/discipline · /api/journal · /api/lab</text>
+      <text x="20" y="112" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-size="9">Rate Limiter · Session Auth Middleware</text>
+    </g>
+
+    <!-- Redis Cache -->
+    <g transform="translate(400, 44)">
+      <rect width="320" height="156" rx="8" fill="#1E2228" stroke="#FF6B35" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">💾 Redis Cache Layer</text>
+      <text x="14" y="46" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Sub-5ms Query Returns</text>
+
+      <rect x="14" y="58" width="292" height="74" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">HIT: Return JSON payload (&lt;5ms)</text>
+      <text x="20" y="96" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="9">MISS: Query Postgres &amp; Fill Cache</text>
+      <text x="20" y="114" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="9">Key: user:{os_id}:{resource}</text>
+    </g>
+
+    <!-- Supabase PostgreSQL -->
+    <g transform="translate(744, 44)">
+      <rect width="560" height="156" rx="8" fill="#1E2228" stroke="#10B981" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🗄️ Supabase PostgreSQL (USER_SCOPED_TABLES &amp; RLS)</text>
+      <text x="14" y="46" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Multi-tenant isolation · Row Level Security</text>
+
+      <rect x="14" y="58" width="532" height="74" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">user_profiles · daily_logs · habits · transactions · goals</text>
+      <text x="20" y="96" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">journal_entries · discipline_events · family_vault · sports_feed</text>
+      <text x="20" y="114" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-size="9">AES-256-GCM encrypted notes &amp; secrets · Database backups</text>
+    </g>
+  </g>
+
+  <!-- Flow between Backend nodes -->
+  <path d="M 376 720 L 400 720" stroke="#749DC4" stroke-width="2.5" marker-end="url(#w-arrow-steel)" />
+  <path d="M 720 720 L 744 720" stroke="#FF6B35" stroke-width="2.5" marker-end="url(#w-arrow-spark)" />
+</svg>

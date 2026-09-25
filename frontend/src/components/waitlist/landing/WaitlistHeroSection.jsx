@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Laptop, Menu, X } from 'lucide-react';
 import WaitlistForm from '../WaitlistForm';
 import WaitlistHeroAside from '../WaitlistHeroAside';
@@ -9,7 +8,7 @@ import HeroBrandLockup from './HeroBrandLockup';
 import HeroPreviewMock from './HeroPreviewMock';
 import MobilePreviewMock from './MobilePreviewMock';
 import WaitlistThemeToggle from './WaitlistThemeToggle';
-import { fadeUp, HERO_TRUST_LINE } from './waitlistLandingData';
+import { HERO_TRUST_LINE } from './waitlistLandingData';
 
 export default function WaitlistHeroSection({
   count,
@@ -101,40 +100,27 @@ export default function WaitlistHeroSection({
 
         {/* Form stays outside desktop-only so mobile can join. Copy column is desktop-only. */}
         <div className="waitlist-hero-panels">
-          <motion.div
-            className="waitlist-hero-copy waitlist-desktop-only"
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-          >
-            <motion.h1 className="hero-headline" custom={0} variants={fadeUp}>
+          <div className="waitlist-hero-copy waitlist-desktop-only">
+            <h1 className="hero-headline">
               <span className="line-two hero-headline-hook"><strong>One screen.</strong> Every day.</span>
               <span className="hero-headline-lead">
                 Your habits, <span className="hero-accent-word">money</span>, focus, and mood.
               </span>
-            </motion.h1>
-            <motion.p className="hero-subhead hero-subhead--compact" custom={1} variants={fadeUp}>
-              Stop juggling separate apps for habits, expenses, focus, and notes. AIIMIN brings your daily execution into one command screen — web command center live now, native Android companion in closed testing.
-            </motion.p>
-            <motion.p className="hero-trust-line" custom={2} variants={fadeUp}>
-              {HERO_TRUST_LINE}
-            </motion.p>
-            <motion.div className="hero-signal-grid" custom={3} variants={fadeUp} aria-label="AIIMIN product signals">
+            </h1>
+            <p className="hero-subhead hero-subhead--compact">
+              Stop juggling disconnected apps for habits, expenses, focus, and notes. AIIMIN unifies your daily execution into one high-density command screen with native Android companion sync.
+            </p>
+            <div className="hero-signal-grid" aria-label="AIIMIN product signals">
               <span><i aria-hidden="true" />Web command center</span>
               <span><i aria-hidden="true" />Android companion</span>
               <span><i aria-hidden="true" />Private by design</span>
-            </motion.div>
-            <motion.div className="waitlist-hero-copy-preview" custom={4} variants={fadeUp}>
+            </div>
+            <div className="waitlist-hero-copy-preview">
               <HeroPreviewMock />
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div
-            className="waitlist-hero-side"
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12, duration: 0.55 }}
-          >
+          <div className="waitlist-hero-side">
             <div className="waitlist-hero-form-wrap" id="waitlist-join">
               <div className="waitlist-hero-form">
                 <WaitlistFoundingPerks className="waitlist-founding-perks-block--above-form" />
@@ -150,7 +136,7 @@ export default function WaitlistHeroSection({
                 <WaitlistSocialProof count={count} />
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </header>
     </>

@@ -1,0 +1,189 @@
+<svg viewBox="0 0 1400 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="and-grad-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#12161A" />
+      <stop offset="100%" stop-color="#0A0D10" />
+    </linearGradient>
+    <marker id="a-arrow-green" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#10B981" />
+    </marker>
+    <marker id="a-arrow-steel" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#749DC4" />
+    </marker>
+    <marker id="a-arrow-spark" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#FF6B35" />
+    </marker>
+    <pattern id="a-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#22272E" stroke-width="1" stroke-opacity="0.5"/>
+    </pattern>
+  </defs>
+
+  <rect width="1400" height="860" fill="url(#and-grad-bg)" rx="16" />
+  <rect width="1400" height="860" fill="url(#a-grid)" rx="16" />
+
+  <!-- SECTION 1: HARDWARE BOOT & SECURITY (Top Left) -->
+  <g transform="translate(40, 40)">
+    <rect width="400" height="250" rx="14" fill="#1A1E24" stroke="#10B981" stroke-width="1.5" />
+    <text x="20" y="32" fill="#10B981" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">1. HARDWARE TEE &amp; COLD BOOT GATE</text>
+
+    <!-- StrongBox Keystore -->
+    <g transform="translate(16, 48)">
+      <rect width="368" height="86" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🛡️ Android Keystore StrongBox TEE</text>
+      <text x="14" y="44" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="10">Hardware-Isolated Private Key Storage</text>
+      <text x="14" y="64" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">OS-ID Cryptographic Attestation &amp; Token Signing</text>
+    </g>
+
+    <!-- Biometrics Prompt -->
+    <g transform="translate(16, 146)">
+      <rect width="368" height="86" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🔒 BiometricPrompt &amp; Master PIN</text>
+      <text x="14" y="44" fill="#749DC4" font-family="'Inter', sans-serif" font-size="10">Fingerprint / Class 3 Biometric Unlock</text>
+      <text x="14" y="64" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="10">Fallback to 6-Digit Sovereign PIN</text>
+    </g>
+  </g>
+
+  <!-- SECTION 2: JETPACK COMPOSE UI SURFACES (Top Middle) -->
+  <g transform="translate(480, 40)">
+    <rect width="440" height="250" rx="14" fill="#1A1E24" stroke="#749DC4" stroke-width="1.5" />
+    <text x="20" y="32" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">2. JETPACK COMPOSE NATIVE SURFACES</text>
+
+    <!-- Surface 1: Daily Focus -->
+    <g transform="translate(16, 48)">
+      <rect width="196" height="86" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">⚡ Quick Capture</text>
+      <text x="12" y="44" fill="#749DC4" font-family="'Inter', sans-serif" font-size="10">1-Tap Habit Log</text>
+      <text x="12" y="62" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Urge Delay Modal</text>
+    </g>
+
+    <!-- Surface 2: Life Score & Telemetry -->
+    <g transform="translate(228, 48)">
+      <rect width="196" height="86" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="12" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="12">📊 Score Telemetry</text>
+      <text x="12" y="44" fill="#10B981" font-family="'Inter', sans-serif" font-size="10">Daily Trajectory Ring</text>
+      <text x="12" y="62" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Momentum Metrics</text>
+    </g>
+
+    <!-- Surface 3: Glance Widgets -->
+    <g transform="translate(16, 146)">
+      <rect width="408" height="86" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">📱 Glance Android App Widgets</text>
+      <text x="14" y="44" fill="#F5A623" font-family="'Inter', sans-serif" font-size="10">Home Screen Interactive Habit Ring &amp; Urge Surfer Widget</text>
+      <text x="14" y="64" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="10">Zero startup latency · Updates via GlanceStateDefinition</text>
+    </g>
+  </g>
+
+  <!-- SECTION 3: SENSORS & HEALTH CONNECT (Top Right) -->
+  <g transform="translate(960, 40)">
+    <rect width="400" height="250" rx="14" fill="#1A1E24" stroke="#FF6B35" stroke-width="1.5" />
+    <text x="20" y="32" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">3. HARDWARE SENSORS &amp; TELEMETRY</text>
+
+    <g transform="translate(16, 48)">
+      <rect width="368" height="86" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🏃 Android Health Connect API</text>
+      <text x="14" y="44" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-size="10">Steps · Sleep Stages · Heart Rate · Calories</text>
+      <text x="14" y="64" fill="#9CA3AF" font-family="'Inter', sans-serif" font-size="10">Privacy-governed local sensor aggregation</text>
+    </g>
+
+    <g transform="translate(16, 146)">
+      <rect width="368" height="86" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="24" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🎙️ Audio Engine &amp; Push Alerts</text>
+      <text x="14" y="44" fill="#749DC4" font-family="'Inter', sans-serif" font-size="10">Low-latency vocal capture for voice reflection</text>
+      <text x="14" y="64" fill="#6B7280" font-family="'JetBrains Mono', monospace" font-size="10">FCM high-priority commitment miss alarms</text>
+    </g>
+  </g>
+
+  <!-- FLOW ARROWS (Top Tier) -->
+  <path d="M 440 160 L 480 160" stroke="#10B981" stroke-width="2.5" marker-end="url(#a-arrow-green)" />
+  <path d="M 920 160 L 960 160" stroke="#749DC4" stroke-width="2.5" marker-end="url(#a-arrow-steel)" />
+
+  <!-- SECTION 4: OFFLINE ROOM DATABASE & REPOSITORIES (Middle Tier) -->
+  <g transform="translate(40, 320)">
+    <rect width="1320" height="240" rx="14" fill="#1A1E24" stroke="#10B981" stroke-width="1.5" />
+    <text x="20" y="30" fill="#10B981" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">4. OFFLINE-FIRST ARCHITECTURE (Room SQLite · Coroutines Flow · Domain Repositories)</text>
+
+    <!-- Room SQLite -->
+    <g transform="translate(16, 46)">
+      <rect width="400" height="170" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🗄️ Room Local SQLite Database</text>
+      <text x="14" y="46" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="10">Offline-First Source of Truth</text>
+
+      <rect x="14" y="58" width="372" height="96" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">HabitEntity · DailyLogEntity · UrgeEventEntity</text>
+      <text x="20" y="96" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">SyncQueueEntity (Pending Outbox mutations)</text>
+      <text x="20" y="114" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-size="9">SQLCipher AES-256 local database encryption</text>
+      <text x="20" y="132" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="9">Room TypeConverters for JSON metadata</text>
+    </g>
+
+    <!-- Kotlin Flow & Coroutines -->
+    <g transform="translate(432, 46)">
+      <rect width="430" height="170" rx="8" fill="#1E2228" stroke="#333942" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🌊 Reactive StateFlow &amp; Coroutines</text>
+      <text x="14" y="46" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="10">Kotlin Structured Concurrency</text>
+
+      <rect x="14" y="58" width="402" height="96" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#F0EDE8" font-family="'JetBrains Mono', monospace" font-size="9">HabitsRepository: Flow&lt;List&lt;Habit&gt;&gt;</text>
+      <text x="20" y="96" fill="#F0EDE8" font-family="'JetBrains Mono', monospace" font-size="9">LifeScoreRepository: StateFlow&lt;LifeScoreState&gt;</text>
+      <text x="20" y="114" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">Instant UI feedback · Zero UI blocking</text>
+      <text x="20" y="132" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="9">Dispatchers.IO for background disk &amp; network operations</text>
+    </g>
+
+    <!-- WorkManager Sync Engine -->
+    <g transform="translate(878, 46)">
+      <rect width="426" height="170" rx="8" fill="#1E2228" stroke="#FF6B35" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🔄 Android WorkManager Sync Engine</text>
+      <text x="14" y="46" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-size="10">Reliable Background Synchronization</text>
+
+      <rect x="14" y="58" width="398" height="96" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-size="9">SyncCompanionWorker: /api/mobile/sync batch</text>
+      <text x="20" y="96" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">Network constraint: Connected &amp; BatteryNotLow</text>
+      <text x="20" y="114" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">Exponential Backoff Retry Strategy</text>
+      <text x="20" y="132" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="9">Periodic sync every 15m + Instant sync on write</text>
+    </g>
+  </g>
+
+  <!-- FLOW (Middle to Network Layer) -->
+  <path d="M 700 560 L 700 600" stroke="#10B981" stroke-width="2.5" marker-end="url(#a-arrow-green)" />
+
+  <!-- SECTION 5: NETWORKING & BACKEND SYNCHRONIZATION (Bottom Tier) -->
+  <g transform="translate(40, 600)">
+    <rect width="1320" height="220" rx="14" fill="#1A1E24" stroke="#333942" stroke-width="1.5" />
+    <text x="20" y="30" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="11" letter-spacing="0.1em">5. NETWORK TELEMETRY BRIDGE (Retrofit 2 · OkHttp 4 · Bearer Auth Interceptor)</text>
+
+    <!-- Retrofit 2 -->
+    <g transform="translate(16, 44)">
+      <rect width="400" height="156" rx="8" fill="#1E2228" stroke="#749DC4" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🌐 Retrofit 2 &amp; Moshi JSON</text>
+      <text x="14" y="46" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="10">Type-Safe Kotlin Network Client</text>
+
+      <rect x="14" y="58" width="372" height="74" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">@POST("api/mobile/sync") suspend fun syncBatch()</text>
+      <text x="20" y="96" fill="#749DC4" font-family="'JetBrains Mono', monospace" font-size="9">@GET("api/mobile/bootstrap") suspend fun bootstrap()</text>
+      <text x="20" y="114" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">Kotlin Result&lt;T&gt; error handling wrapper</text>
+    </g>
+
+    <!-- OkHttp 4 & Interceptor -->
+    <g transform="translate(432, 44)">
+      <rect width="430" height="156" rx="8" fill="#1E2228" stroke="#F5A623" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">🛡️ AuthInterceptor &amp; Authenticator</text>
+      <text x="14" y="46" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-size="10">Automatic Bearer Token Injection</text>
+
+      <rect x="14" y="58" width="402" height="74" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#F0EDE8" font-family="'JetBrains Mono', monospace" font-size="9">Header: Authorization: Bearer &lt;session_token&gt;</text>
+      <text x="20" y="96" fill="#F5A623" font-family="'JetBrains Mono', monospace" font-size="9">HTTP 401: Automatic refresh with Better Auth</text>
+      <text x="20" y="114" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="9">TLS 1.3 Strict Certificate Pinning</text>
+    </g>
+
+    <!-- Cloud Gateway Destination -->
+    <g transform="translate(878, 44)">
+      <rect width="426" height="156" rx="8" fill="#1E2228" stroke="#10B981" />
+      <text x="14" y="26" fill="#F0EDE8" font-family="'Inter', sans-serif" font-weight="700" font-size="13">☁️ AIIMIN Cloud Core (api.aiimin.in)</text>
+      <text x="14" y="46" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="10">PostgreSQL + Redis Sync Endpoint</text>
+
+      <rect x="14" y="58" width="398" height="74" rx="4" fill="#14171A" stroke="#262B33" />
+      <text x="20" y="78" fill="#10B981" font-family="'JetBrains Mono', monospace" font-size="9">Processes Mobile Batch Mutations into DB</text>
+      <text x="20" y="96" fill="#FF6B35" font-family="'JetBrains Mono', monospace" font-size="9">Invalidates Redis Cache for Web Client</text>
+      <text x="20" y="114" fill="#9CA3AF" font-family="'JetBrains Mono', monospace" font-size="9">Returns 200 OK + Updated Server Vector Clock</text>
+    </g>
+  </g>
+</svg>

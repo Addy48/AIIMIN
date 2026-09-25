@@ -36,18 +36,22 @@ function TierPriceBlock({ item }) {
 
 function CompactValueComparison() {
   const aiiminMax = 79;
+  const stackMonthly = 1500;
   const stackPct = 100;
-  const aiiminPct = Math.round((aiiminMax / STACK_MONTHLY_INR) * 100);
+  const aiiminPct = Math.max(8, Math.round((aiiminMax / stackMonthly) * 100));
 
   return (
-    <div className="value-compare-compact" aria-label="AIIMIN cost vs typical productivity app stack in India">
+    <div className="value-compare-compact" aria-label="AIIMIN unified Life OS vs fragmented multi-app stack">
       <div className="value-compare-col value-compare-col--stack">
-        <p className="value-compare-kicker">Typical stack</p>
-        <p className="value-compare-price value-compare-price--muted">₹1,600<span>/mo</span></p>
+        <p className="value-compare-kicker">Fragmented 4-app stack</p>
+        <p className="value-compare-price value-compare-price--muted">~₹1,500<span>/mo</span></p>
         <div className="value-compare-meter" aria-hidden="true">
           <div className="value-compare-meter-fill value-compare-meter-fill--stack" style={{ width: `${stackPct}%` }} />
         </div>
-        <p className="value-compare-apps">Notion · Todoist · Headspace</p>
+        <p className="value-compare-apps">Habit app (~₹350) + Expense tracker (~₹400) + Focus timer (~₹300) + Journal (~₹450)</p>
+        <p className="value-compare-subnote" style={{ fontSize: '11px', color: 'var(--color-text-3)', marginTop: '4px' }}>
+          4 separate subscriptions · siloed data · constant app-hopping
+        </p>
       </div>
 
       <div className="value-compare-vs" aria-hidden="true">
@@ -57,8 +61,8 @@ function CompactValueComparison() {
       </div>
 
       <div className="value-compare-col value-compare-col--aiimin">
-        <p className="value-compare-kicker">AIIMIN Life OS</p>
-        <p className="value-compare-price">from ₹0<span> · one system</span></p>
+        <p className="value-compare-kicker">AIIMIN Unified Life OS</p>
+        <p className="value-compare-price">from ₹0<span> · one interconnected graph</span></p>
         <div className="value-compare-meter" aria-hidden="true">
           <div className="value-compare-meter-fill value-compare-meter-fill--aiimin" style={{ width: `${aiiminPct}%` }} />
         </div>
@@ -83,8 +87,8 @@ export default function WaitlistPricingSection() {
       <p className="waitlist-section-label">Pricing</p>
       <h2>Four tiers — each built for a different level of control</h2>
       <p className="waitlist-section-copy">
-        Typical productivity stacks run ₹500–₹1,600/mo across separate apps.
-        AIIMIN bundles your entire Life OS from ₹0 — Pro at ₹49/mo founding for waitlist members.
+        Running habits, expenses, focus timers, and journals across separate apps costs ₹1,200–₹1,800/mo and scatters your data.
+        AIIMIN unifies your entire daily rhythm from ₹0 — with Pro locked at ₹49/mo founding rate for waitlist members.
       </p>
 
       <div className="waitlist-pricing-grid">

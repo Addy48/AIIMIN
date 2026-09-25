@@ -25,7 +25,10 @@ const MAYBE_OK = new Set([
 
 export function getDesignVotes() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
   } catch {
     return {};
   }
