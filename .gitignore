@@ -255,6 +255,7 @@ supabase/.temp/
 *.png
 !docs/diagrams/*.png
 !docs/diagrams/*.svg
+!docs/architecture/*.png
 !frontend/public/images/**
 *.tar.gz
 *-E

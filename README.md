@@ -29,63 +29,33 @@ AIIMIN is structured as a single unified monorepo hosting **three dedicated clie
 
 ---
 
-## Interactive Architecture Visualizer
+## System Architecture & Topology
 
-We provide a standalone, high-performance interactive system visualizer with Dark and Light mode toggles located at:
+<p align="center">
+  <a href="./docs/architecture/aiimin_architecture.html">
+    <img src="./docs/architecture/aiimin_architecture.png" alt="AIIMIN Personal Life OS — Unified Architecture" width="100%" />
+  </a>
+</p>
 
-**[`docs/diagrams/interactive-system-visualizer.html`](docs/diagrams/interactive-system-visualizer.html)**
+### Interactive Architecture Visualizer
 
-> Open this HTML file in any modern browser to explore the interactive, high-fidelity system diagrams, component breakdowns, and live data traces.
+We provide a standalone, high-performance interactive system visualizer with light/dark theme controls, guided component inspections, and real-time data traces:
+
+**[`docs/architecture/aiimin_architecture.html`](docs/architecture/aiimin_architecture.html)**
+
+> Open this standalone HTML file in any modern browser to explore interactive system diagrams, component breakdowns, guided architectural tours, and live data traces.
 
 ---
 
-## Comprehensive Architecture & Workflow Diagrams
+## Architecture Subsystems & Interaction Workflows
 
 ### 1. Unified Cross-Platform Interaction & Sync Matrix
 
 Trace of the bidirectional real-time data synchronization between the Native Android physical sensor and the Desktop Web analytical hub via the unified Better Auth OS-ID anchor, Redis caching layer, and Supabase Postgres.
 
-![Unified Cross-Platform Sync Workflow](docs/diagrams/unified-app-web-sync-workflow.png)
-
-```mermaid
-flowchart TD
-  subgraph ANDROID["Native Android App (app/)"]
-    direction TB
-    A_SENSOR["Physical Capture & Sensors<br/>• Sub-2s Quick Check-ins<br/>• Health Connect Sleep/Steps<br/>• Focus Shield App Blocker"]
-    A_DB[("Local SQLCipher Room DB<br/>AES-256-GCM Hardware Encrypted")]
-    A_SYNC["WorkManager Delta Outbox<br/>Deterministic Sync Engine"]
-    A_SENSOR -->|Write <10ms| A_DB
-    A_DB -->|Read dirty outbox| A_SYNC
-  end
-
-  subgraph CLOUD["AIIMIN Neural Backbone (server/ & api.aiimin.in)"]
-    direction TB
-    API_GATE["Node / Express API Gateway<br/>OS-ID Resolver • Better Auth Bearer"]
-    REDIS[("Redis Cache Cluster<br/>Sub-5ms Query Caching")]
-    POSTGRES[("Supabase PostgreSQL<br/>Row Level Security (RLS)")]
-    API_GATE --> REDIS
-    API_GATE --> POSTGRES
-  end
-
-  subgraph WEB["Web Life OS (frontend/)"]
-    direction TB
-    W_STATE["TanStack Query Cache<br/>Client-Side Stale-While-Revalidate"]
-    W_WORK["Desktop Command Center<br/>• 5D Life Score Lab<br/>• Money OS & Runway<br/>• Weekly Intelligence Dossier"]
-    W_STATE --> W_WORK
-  end
-
-  A_SYNC -->|POST /api/mobile/sync| API_GATE
-  API_GATE -->|200 OK + Delta Acks| A_SYNC
-  W_STATE -->|GET /api/daily-logs| API_GATE
-  API_GATE -->|Hydrated 5D Graph| W_STATE
-
-  classDef android fill:#1e293b,stroke:#ff6b35,stroke-width:2px,color:#f8fafc;
-  classDef cloud fill:#0f172a,stroke:#749dc4,stroke-width:2px,color:#f8fafc;
-  classDef web fill:#1e293b,stroke:#10b981,stroke-width:2px,color:#f8fafc;
-  class ANDROID android;
-  class CLOUD cloud;
-  class WEB web;
-```
+<p align="center">
+  <img src="./docs/diagrams/unified-app-web-sync-workflow.png" alt="Unified Cross-Platform Sync Workflow" width="100%" />
+</p>
 
 ---
 
@@ -93,27 +63,9 @@ flowchart TD
 
 Trace of a browser request from the public landing / waitlist through OS-ID uppercase resolution (`AADI0837`), PIN Keypad authentication, TierRouteGuard, the 12+ dashboard workspaces, TanStack Query cache, Node/Express API core (`api.aiimin.in`), and Supabase PostgreSQL with RLS.
 
-![Web Life OS Request Pipeline](docs/diagrams/web-life-os-workflow.png)
-
-```mermaid
-flowchart LR
-  subgraph CLIENT["Web Client (React 19)"]
-    L["Public / Waitlist Landing"] --> G["OS-ID Gate & PIN Keypad"]
-    G --> R["TierRouteGuard"]
-    R --> W["12+ Dashboard Workspaces<br/>(Today, Score, Money, Lab, Sports...)"]
-    W --> Q["TanStack Query Cache"]
-  end
-
-  subgraph SERVER["Backend API (api.aiimin.in)"]
-    Q -->|HTTPS REST| API["Express Gateway"]
-    API --> AUTH["Better Auth & Session Guard"]
-    AUTH --> CACHE[("Redis Cache")]
-    AUTH --> DB[("Supabase PostgreSQL (RLS)")]
-  end
-
-  classDef box fill:#1a1a1a,stroke:#ff6b35,stroke-width:1.5px,color:#fff;
-  class L,G,R,W,Q,API,AUTH,CACHE,DB box;
-```
+<p align="center">
+  <img src="./docs/diagrams/web-life-os-workflow.png" alt="Web Life OS Request Pipeline" width="100%" />
+</p>
 
 ---
 
@@ -121,34 +73,9 @@ flowchart LR
 
 Deep architecture trace of the Android Kotlin client from AndroidKeyStore StrongBox TEE cold boot security, BiometricPrompt unlock, Jetpack Compose UI (120Hz V-Sync), Glance interactive widgets, Android Health Connect sensors, encrypted local Room SQLite database, and WorkManager background batch sync.
 
-![Native Android Companion Workflow](docs/diagrams/native-android-companion-workflow.png)
-
-```mermaid
-flowchart TD
-  subgraph HARDWARE["Hardware Silicon Boundary"]
-    TEE["AndroidKeyStore StrongBox TEE<br/>AES-256-GCM Master Key"]
-    BIO["Biometric Sensor (Fingerprint / Face)"]
-  end
-
-  subgraph ANDROID_APP["Native Android Companion (Kotlin + Compose)"]
-    UI["Jetpack Compose UI (120Hz)<br/>Glance Home & Lockscreen Widgets"]
-    INT["Focus Shield Window Interceptor"]
-    HC["Health Connect Ingestion (Steps / Sleep)"]
-    ROOM[("SQLCipher Encrypted Room SQLite<br/>Local 100% Offline Vault")]
-    WM["WorkManager Periodic Sync Worker"]
-  end
-
-  BIO -->|Unlock Master Key| TEE
-  TEE -->|Decrypt Database Passphrase| ROOM
-  UI -->|Instant <10ms Log| ROOM
-  INT -->|Block Doomscrolling| UI
-  HC -->|Background Ingest| ROOM
-  ROOM -->|Dirty Sync Queue| WM
-  WM -->|CRDT Delta Sync| CLOUD_API["api.aiimin.in"]
-
-  classDef darkBox fill:#2d2d2d,stroke:#749dc4,stroke-width:1.5px,color:#fff;
-  class TEE,BIO,UI,INT,HC,ROOM,WM,CLOUD_API darkBox;
-```
+<p align="center">
+  <img src="./docs/diagrams/native-android-companion-workflow.png" alt="Native Android Companion Workflow" width="100%" />
+</p>
 
 ---
 
