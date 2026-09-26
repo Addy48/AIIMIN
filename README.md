@@ -49,32 +49,38 @@ We provide a standalone, high-performance interactive system visualizer with lig
 
 ## Architecture Subsystems & Interaction Workflows
 
-### 1. Unified Cross-Platform Interaction & Sync Matrix
+### 1. Unified Cross-Platform Interaction & Sync Metrics
 
-Trace of the bidirectional real-time data synchronization between the Native Android physical sensor and the Desktop Web analytical hub via the unified Better Auth OS-ID anchor, Redis caching layer, and Supabase Postgres.
+Production telemetry and bidirectional synchronization protocol between the Native Android companion and Desktop Web client. Details the SQLite `sync_outbox` queue (monotonic UUIDv7, Lamport vector clocks), WorkManager batch network dispatch, Express idempotency gate (Redis `SETNX`), deterministic Last-Write-Wins (LWW) conflict resolver, and reactive TanStack Query invalidation via Redis Pub/Sub (<120ms P95 latency SLA, 0.00% conflict error rate, <0.7% daily battery drain).
 
 <p align="center">
-  <img src="./docs/diagrams/unified-app-web-sync-workflow.png" alt="Unified Cross-Platform Sync Workflow" width="100%" />
+  <a href="./docs/diagrams/interactive-system-visualizer.html">
+    <img src="./docs/diagrams/unified-app-web-sync-workflow.png" alt="Unified Cross-Platform Sync Workflow" width="100%" />
+  </a>
 </p>
 
 ---
 
 ### 2. Web Life OS Request & Workspace Execution Flow
 
-Trace of a browser request from the public landing / waitlist through OS-ID uppercase resolution (`AADI0837`), PIN Keypad authentication, TierRouteGuard, the 12+ dashboard workspaces, TanStack Query cache, Node/Express API core (`api.aiimin.in`), and Supabase PostgreSQL with RLS.
+End-to-end request lifecycle and workspace execution across the Web SPA. Traces browser vanity routing (`/`, `/waitlist`), mobile/desktop viewport detection, debounced OS-ID uppercase resolution (`AADI0837`, <80ms), 6-digit PIN Argon2id authentication, `TierRouteGuard` access control (Explore / Pro / Sovereign), concurrent execution of the 12 dashboard workspaces, TanStack Query optimistic mutation rollback, and Express API middleware on `api.aiimin.in`.
 
 <p align="center">
-  <img src="./docs/diagrams/web-life-os-workflow.png" alt="Web Life OS Request Pipeline" width="100%" />
+  <a href="./docs/diagrams/interactive-system-visualizer.html">
+    <img src="./docs/diagrams/web-life-os-workflow.png" alt="Web Life OS Request Pipeline" width="100%" />
+  </a>
 </p>
 
 ---
 
 ### 3. Native Android Companion Architecture & Local Security Enclave
 
-Deep architecture trace of the Android Kotlin client from AndroidKeyStore StrongBox TEE cold boot security, BiometricPrompt unlock, Jetpack Compose UI (120Hz V-Sync), Glance interactive widgets, Android Health Connect sensors, encrypted local Room SQLite database, and WorkManager background batch sync.
+Hardware-isolated security architecture and sensor ingestion pipeline for the Android Kotlin companion. Documents the AndroidKeyStore StrongBox TEE hardware enclave (AES-256-GCM silicon keys), Class 3 `BiometricPrompt` with `CryptoObject` cipher binding, 256-bit AES-CBC SQLCipher Room SQLite offline database, 120Hz V-Sync Jetpack Compose UI, Glance interactive Home Screen Widgets, Google Health Connect passive sensor aggregation, and WorkManager background batch synchronization.
 
 <p align="center">
-  <img src="./docs/diagrams/native-android-companion-workflow.png" alt="Native Android Companion Workflow" width="100%" />
+  <a href="./docs/diagrams/interactive-system-visualizer.html">
+    <img src="./docs/diagrams/native-android-companion-workflow.png" alt="Native Android Companion Workflow" width="100%" />
+  </a>
 </p>
 
 ---
