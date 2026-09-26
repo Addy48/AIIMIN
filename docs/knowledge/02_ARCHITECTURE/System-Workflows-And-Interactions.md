@@ -23,14 +23,22 @@ This authoritative architectural reference defines the complete end-to-end data 
 
 ---
 
-## Interactive Visualizer & High-Resolution Vector Assets
+## Unified Architecture Diagram & Interactive Visualizer
+
+<p align="center">
+  <a href="../../architecture/aiimin_architecture.html">
+    <img src="../../architecture/aiimin_architecture.png" alt="AIIMIN Personal Life OS — Unified Architecture" width="100%" />
+  </a>
+</p>
 
 All system architecture diagrams are available as standalone SVGs, 2× retina PNGs, and a theme-toggleable interactive visualizer inside the repository:
 
-- **Interactive HTML Visualizer:** [`docs/diagrams/interactive-system-visualizer.html`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/interactive-system-visualizer.html)
-- **Web Life OS Flow Diagram:** [`docs/diagrams/web-life-os-workflow.svg`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/web-life-os-workflow.svg) · [`web-life-os-workflow.png`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/web-life-os-workflow.png)
-- **Native Android Flow Diagram:** [`docs/diagrams/native-android-companion-workflow.svg`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/native-android-companion-workflow.svg) · [`native-android-companion-workflow.png`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/native-android-companion-workflow.png)
-- **Unified Cross-Platform Sync Diagram:** [`docs/diagrams/unified-app-web-sync-workflow.svg`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/unified-app-web-sync-workflow.svg) · [`unified-app-web-sync-workflow.png`](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/unified-app-web-sync-workflow.png)
+- **Interactive Architecture Visualizer:** [`docs/architecture/aiimin_architecture.html`](../../architecture/aiimin_architecture.html)
+- **High-Resolution Architecture Vector Asset:** [`docs/architecture/aiimin_architecture.png`](../../architecture/aiimin_architecture.png)
+- **Multi-Workflow Interactive Viewer:** [`docs/diagrams/interactive-system-visualizer.html`](../diagrams/interactive-system-visualizer.html)
+- **Web Life OS Flow Diagram:** [`docs/diagrams/web-life-os-workflow.svg`](../diagrams/web-life-os-workflow.svg) · [`web-life-os-workflow.png`](../diagrams/web-life-os-workflow.png)
+- **Native Android Flow Diagram:** [`docs/diagrams/native-android-companion-workflow.svg`](../diagrams/native-android-companion-workflow.svg) · [`native-android-companion-workflow.png`](../diagrams/native-android-companion-workflow.png)
+- **Unified Cross-Platform Sync Diagram:** [`docs/diagrams/unified-app-web-sync-workflow.svg`](../diagrams/unified-app-web-sync-workflow.svg) · [`unified-app-web-sync-workflow.png`](../diagrams/unified-app-web-sync-workflow.png)
 
 ---
 
@@ -38,51 +46,15 @@ All system architecture diagrams are available as standalone SVGs, 2× retina PN
 
 The Web Life OS (`frontend/`) is the desktop and tablet analytical command center built with React 19, Tailwind CSS, and the Drafting Table design tokens (`#1a1a1a`, `#2d2d2d`, `#749dc4`, `#ff6b35`, `#10b981`).
 
-![Web Life OS Full Flowchart](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/web-life-os-workflow.png)
+![Web Life OS Full Flowchart](../diagrams/web-life-os-workflow.png)
 
 ### Pipeline Stages
 
-```mermaid
-flowchart LR
-  subgraph Public["1. Public Surfaces"]
-    L["Landing / Waitlist<br/>/ · /waitlist"]
-    B["Brand & App Hub<br/>/brand · /app"]
-    LEG["Legal Hub<br/>/privacy · /terms"]
-  end
-
-  subgraph AuthGate["2. Security & Gate"]
-    OSID["OS-ID Resolver<br/>AADI0837 (<80ms)"]
-    PIN["Numpad PIN Keypad<br/>Argon2id Hash"]
-    GUARDS["TierRouteGuard<br/>DeviceGate"]
-  end
-
-  subgraph Session["3. State & Cache"]
-    TOK["Better Auth Token<br/>HttpOnly Session"]
-    TQ["TanStack Query<br/>stale: 60s · no-refocus"]
-  end
-
-  subgraph Modules["4. Life OS Modules"]
-    OV["Overview & Radar"]
-    HB["Atomic Habits"]
-    FN["Financial Ledger"]
-    SP["Active Sports"]
-    JN["Mindset Journal"]
-    DC["Discipline Urges"]
-    LB["Behavioral Lab"]
-    FM["Family Vault"]
-  end
-
-  subgraph Backend["5. Core Hub"]
-    API["Express API<br/>api.aiimin.in"]
-    RED["Redis Cache<br/>sub-5ms"]
-    PG[("Supabase Postgres<br/>RLS + Tenant Isolation")]
-  end
-
-  Public --> AuthGate --> Session --> Modules --> API
-  API --> RED
-  RED -.->|Cache Miss| PG
-  PG -.->|Fill Cache| RED
-```
+1. **Public Surfaces (`/`, `/waitlist`, `/brand`, `/privacy`):** Public landing, waitlist management, brand guidelines, and immutable Genesis legal hub.
+2. **Security & Gate (`AADI0837`, Argon2id PIN):** Uppercase OS-ID real-time scanner (`<80ms`), Argon2id 6-digit PIN keypad, device routing (`TierRouteGuard` / `DeviceGate`).
+3. **State & Cache (Better Auth, TanStack Query):** HttpOnly stateless session tokens, TanStack Query v5 with `staleTime: 60s` and window-focus protection.
+4. **Life OS Workspaces (12+ Modules):** Overview (8-axis Life Score), Habits, Finance, Sports, Mindset Journal, Discipline Urges, Behavioral Lab, Family Vault.
+5. **Core Hub & Persistence (Express API, Redis, Supabase):** Express API gateway (`api.aiimin.in`), sub-5ms Redis cache, Supabase PostgreSQL with tenant RLS isolation.
 
 ### Module Responsibilities
 1. **Public & Onboarding:** Public landing, waitlist management, brand guidelines, and immutable Genesis legal hub.
@@ -104,45 +76,15 @@ flowchart LR
 
 The Native Android App (`native-android-v3/` / `app/`) is an offline-first companion built in Kotlin with Jetpack Compose, targeting sub-second data capture and hardware-grade security.
 
-![Native Android Companion Flowchart](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/native-android-companion-workflow.png)
+![Native Android Companion Flowchart](../diagrams/native-android-companion-workflow.png)
 
-### Native Pipeline
+### Native Pipeline Stages
 
-```mermaid
-flowchart TD
-  subgraph HW["1. Hardware Security Gate"]
-    TEE["Android Keystore StrongBox TEE<br/>Hardware Private Key Isolation"]
-    BIO["BiometricPrompt (Fingerprint / Face)<br/>Fallback to 6-Digit PIN"]
-  end
-
-  subgraph UI["2. Jetpack Compose UI & Widgets"]
-    QC["1-Tap Quick Capture & Urge Surfer"]
-    GL["Glance Interactive Home Screen Widgets"]
-    TEL["Life Score Ring & Momentum Telemetry"]
-  end
-
-  subgraph Sensors["3. Sensor Telemetry"]
-    HC["Android Health Connect API<br/>Steps · Sleep Stages · Heart Rate"]
-    MIC["Low-Latency Vocal Biomarker Engine"]
-    FCM["FCM High-Priority Urgent Alarms"]
-  end
-
-  subgraph LocalDB["4. Offline-First Database"]
-    ROOM[("Room SQLite DB (SQLCipher AES-256)<br/>HabitEntity · DailyLogEntity · Outbox")]
-    FLOW["Reactive StateFlow & Coroutines<br/>Dispatchers.IO · Zero Main-Thread Jitter"]
-  end
-
-  subgraph Sync["5. Background WorkManager & Network"]
-    WM["SyncCompanionWorker<br/>Periodic (15m) + Immediate Expedited"]
-    RET["Retrofit 2 + OkHttp 4<br/>Bearer Auth Interceptor + TLS 1.3 Pinning"]
-  end
-
-  HW --> UI
-  Sensors --> LocalDB
-  UI --> LocalDB
-  LocalDB --> FLOW
-  LocalDB --> WM --> RET
-```
+1. **Hardware Security Gate:** Android Keystore StrongBox TEE with AES-256-GCM hardware master key isolation; BiometricPrompt (Fingerprint / Face unlock with fallback to 6-digit PIN).
+2. **Jetpack Compose UI & Widgets:** 120Hz V-Sync native interface; Glance interactive home screen and lockscreen widgets; sub-10ms instant habit logging.
+3. **Sensor Telemetry:** Android Health Connect background ingestion (steps, active calories, sleep stages, resting heart rate); low-latency vocal biomarker engine.
+4. **Offline-First Database:** SQLCipher Room SQLite database (`HabitEntity`, `DailyLogEntity`, `SyncQueueEntity`); reactive StateFlow on `Dispatchers.IO` with zero main-thread jitter.
+5. **WorkManager & Network:** `SyncCompanionWorker` periodic (15m) + immediate expedited sync; Retrofit 2 + OkHttp 4 with Bearer auth and TLS 1.3 certificate pinning.
 
 ### Hardware & Offline Invariants
 - **StrongBox TEE:** All cryptographic keys and session credentials reside in the hardware-isolated Trusted Execution Environment.
@@ -156,7 +98,7 @@ flowchart TD
 
 The Web Life OS and Native Android Companion operate as two synchronized halves of a unified Life OS.
 
-![Unified Cross-Platform Interaction Matrix](file:///Users/aaditya/Desktop/DASHBOARD%20PROJECT/docs/diagrams/unified-app-web-sync-workflow.png)
+![Unified Cross-Platform Interaction Matrix](../diagrams/unified-app-web-sync-workflow.png)
 
 ### Synchronization Architecture
 

@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "AIIMIN Personal Life OS — Unified Architecture",
+    "output": "aiimin_architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "cross-platform-sync",
+        "label": "Cross-Platform Sync",
+        "focus": ["android_companion", "room_db", "cloudflare_cdn", "api_gateway", "redis_cache", "supabase_postgres", "web_life_os"],
+        "note": "Deterministic CRDT delta synchronization between Kotlin Android sensors and React Web analytical hub."
+      },
+      {
+        "id": "hardware-security",
+        "label": "Hardware Security",
+        "focus": ["strongbox_tee", "android_companion", "room_db", "better_auth"],
+        "note": "Hardware-backed StrongBox TEE isolation, biometric authentication, and encrypted Room SQLCipher local vault."
+      },
+      {
+        "id": "behavioral-intelligence",
+        "label": "5D Behavioral Engine",
+        "focus": ["health_connect", "api_gateway", "intelligence_engine", "redis_cache", "supabase_postgres", "web_life_os"],
+        "note": "Continuous biometric sensor ingestion driving Spearman rank correlations and 5D Life Score trajectory forecasting."
+      }
+    ]
+  },
+  "components": [
+    { "id": "health_connect", "type": "external", "label": "Health Connect", "sublabel": "Steps & Sleep Telemetry", "pos": [30, 45], "size": [120, 48] },
+    { "id": "strongbox_tee", "type": "security", "label": "StrongBox TEE", "sublabel": "AES-256-GCM Hardware", "pos": [30, 120], "size": [120, 48], "tag": "TEE Enclave" },
+    { "id": "room_db", "type": "database", "label": "Room SQLCipher", "sublabel": "Encrypted Offline DB", "pos": [30, 195], "size": [120, 48], "tag": "Local Vault" },
+    { "id": "android_companion", "type": "frontend", "label": "Native Android", "sublabel": "Kotlin · Compose 120Hz", "pos": [220, 118], "size": [130, 52] },
+    { "id": "web_life_os", "type": "frontend", "label": "Web Life OS", "sublabel": "React 19 · TanStack v5", "pos": [30, 280], "size": [120, 52] },
+    { "id": "mobile_shell", "type": "frontend", "label": "Capacitor /m", "sublabel": "Capture-Only Fallback", "pos": [30, 360], "size": [120, 48] },
+    { "id": "osid_gate", "type": "security", "label": "OS-ID Gate", "sublabel": "AADI0837 · Argon2id", "pos": [220, 310], "size": [130, 48] },
+    { "id": "cloudflare_cdn", "type": "cloud", "label": "Cloudflare Edge", "sublabel": "SSL · DDoS · DNS", "pos": [420, 118], "size": [130, 48] },
+    { "id": "better_auth", "type": "security", "label": "Better Auth", "sublabel": "Bearer Tokens & Guard", "pos": [420, 310], "size": [130, 48] },
+    { "id": "api_gateway", "type": "backend", "label": "Hono / Express API", "sublabel": "api.aiimin.in Core", "pos": [620, 190], "size": [140, 56] },
+    { "id": "redis_cache", "type": "database", "label": "Redis Cache", "sublabel": "Sub-5ms SWR Cache", "pos": [620, 305], "size": [140, 48] },
+    { "id": "supabase_postgres", "type": "database", "label": "Supabase Postgres", "sublabel": "Row Level Security", "pos": [830, 110], "size": [140, 54], "tag": "Tenant RLS" },
+    { "id": "intelligence_engine", "type": "backend", "label": "5D Life Engine", "sublabel": "Spearman ρ & FDR", "pos": [830, 200], "size": [140, 50] },
+    { "id": "resend_mail", "type": "messagebus", "label": "Resend Email", "sublabel": "Waitlist & Alerts", "pos": [830, 290], "size": [140, 48] }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Physical Sensor & Edge Enclave",
+      "wraps": ["health_connect", "strongbox_tee", "room_db", "android_companion"]
+    },
+    {
+      "kind": "region",
+      "label": "Client Access Tier",
+      "wraps": ["web_life_os", "mobile_shell", "osid_gate"]
+    },
+    {
+      "kind": "security-group",
+      "label": "Edge Routing & Session Guards",
+      "wraps": ["cloudflare_cdn", "better_auth"]
+    },
+    {
+      "kind": "region",
+      "label": "Cloud Neural Core",
+      "wraps": ["api_gateway", "redis_cache"]
+    },
+    {
+      "kind": "region",
+      "label": "Persistence & Intelligence Tier",
+      "wraps": ["supabase_postgres", "intelligence_engine", "resend_mail"]
+    }
+  ],
+  "connections": [
+    { "from": "health_connect", "to": "android_companion", "fromSide": "right", "toSide": "left" },
+    { "from": "strongbox_tee", "to": "android_companion", "variant": "security", "fromSide": "right", "toSide": "left" },
+    { "from": "room_db", "to": "android_companion", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "from": "web_life_os", "to": "osid_gate", "fromSide": "right", "toSide": "left" },
+    { "from": "mobile_shell", "to": "osid_gate", "fromSide": "right", "toSide": "left" },
+    { "from": "android_companion", "to": "cloudflare_cdn", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "from": "osid_gate", "to": "better_auth", "variant": "security", "fromSide": "right", "toSide": "left" },
+    { "from": "cloudflare_cdn", "to": "api_gateway", "fromSide": "right", "toSide": "left" },
+    { "from": "better_auth", "to": "api_gateway", "variant": "security", "fromSide": "right", "toSide": "left" },
+    { "from": "api_gateway", "to": "redis_cache", "fromSide": "bottom", "toSide": "top" },
+    { "from": "api_gateway", "to": "supabase_postgres", "variant": "emphasis", "fromSide": "right", "toSide": "left" },
+    { "from": "api_gateway", "to": "intelligence_engine", "fromSide": "right", "toSide": "left" },
+    { "from": "api_gateway", "to": "resend_mail", "fromSide": "right", "toSide": "left" }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Native Android Sensor & Security",
+      "items": [
+        "AndroidKeyStore StrongBox TEE hardware isolation with AES-256-GCM encryption",
+        "SQLCipher encrypted Room database for 100% offline-first local state",
+        "Health Connect background ingestion for continuous biometrics & sleep tracking",
+        "WorkManager deterministic outbox queue syncing to /api/mobile/sync"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Web Life OS & Macro Cockpit",
+      "items": [
+        "React 19 + TanStack Query v5 with stale-while-revalidate and focus protection",
+        "12 Dedicated workspaces: Overview, Habits, Finance, Sports, Lab, Journal",
+        "Strict OS-ID uppercase resolver (<80ms) and Argon2id PIN authentication",
+        "Drafting Table design system tokens locked across all desktop views"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Cloud Neural Backbone & Intelligence",
+      "items": [
+        "Hono & Express API gateway deployed with sub-5ms Redis caching",
+        "Better Auth bearer session resolution with strict tenant RLS isolation",
+        "Spearman rank correlation engine with Benjamini-Hochberg FDR correction",
+        "Supabase PostgreSQL with multi-tier route guards and tenant isolation"
+      ]
+    }
+  ]
+}
