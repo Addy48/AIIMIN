@@ -5,7 +5,3 @@ plugins {
 android {
     namespace = "aiimin.feature.money"
 }
-
-dependencies {
-    testImplementation(libs.bundles.unit.test)
-}

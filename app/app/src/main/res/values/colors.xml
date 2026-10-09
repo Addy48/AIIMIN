@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Drafting Table ground. Mirrors AiiminColors.bg (dark) — the window
-         background before Compose takes over, so launch never flashes white. -->
-    <color name="drafting_bg">#141414</color>
-    <color name="industry_bg">#F2F2F3</color>
+    <!-- Window ground before Compose draws: Warm Paper / Warm Obsidian L0. -->
+    <color name="drafting_bg">#0A0A0B</color>
+    <color name="industry_bg">#F8F7F4</color>
     <color name="launcher_bg">#1E1E1E</color>
 </resources>

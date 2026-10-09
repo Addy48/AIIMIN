@@ -8,10 +8,7 @@ android {
 }
 
 dependencies {
-    api(platform(libs.androidx.compose.bom))
     api(libs.bundles.compose)
     implementation(libs.androidx.core.ktx)
-    implementation(project(":core:model"))
-
-    testImplementation(libs.bundles.unit.test)
+    api(libs.androidx.activity.compose)
 }
