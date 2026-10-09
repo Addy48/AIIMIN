@@ -1,0 +1,1958 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "8c199fb3642f35916343b4e20e3b47ea",
+    "entities": [
+      {
+        "tableName": "events",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`seq` INTEGER NOT NULL, `at` INTEGER NOT NULL, `day` TEXT NOT NULL, `type` TEXT NOT NULL, `refType` TEXT, `refId` TEXT, `data` TEXT NOT NULL, `tier` TEXT NOT NULL, `source` TEXT NOT NULL, `tz` TEXT NOT NULL, `rules` TEXT NOT NULL, `device` TEXT NOT NULL, `prev` TEXT NOT NULL, `hash` TEXT NOT NULL, PRIMARY KEY(`seq`))",
+        "fields": [
+          {
+            "fieldPath": "seq",
+            "columnName": "seq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "at",
+            "columnName": "at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "refType",
+            "columnName": "refType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "refId",
+            "columnName": "refId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "data",
+            "columnName": "data",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tier",
+            "columnName": "tier",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tz",
+            "columnName": "tz",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rules",
+            "columnName": "rules",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "device",
+            "columnName": "device",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "prev",
+            "columnName": "prev",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hash",
+            "columnName": "hash",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "seq"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_events_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_events_day` ON `${TABLE_NAME}` (`day`)"
+          },
+          {
+            "name": "index_events_type",
+            "unique": false,
+            "columnNames": [
+              "type"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_events_type` ON `${TABLE_NAME}` (`type`)"
+          }
+        ]
+      },
+      {
+        "tableName": "event_uploads",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`seq` INTEGER NOT NULL, `uploadedAt` INTEGER NOT NULL, PRIMARY KEY(`seq`))",
+        "fields": [
+          {
+            "fieldPath": "seq",
+            "columnName": "seq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uploadedAt",
+            "columnName": "uploadedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "seq"
+          ]
+        }
+      },
+      {
+        "tableName": "tasks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `notes` TEXT NOT NULL, `day` TEXT, `time` TEXT, `part` TEXT, `priority` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `scheduledAt` INTEGER NOT NULL, `done` INTEGER NOT NULL, `doneAt` INTEGER, `doneDay` TEXT, `carried` INTEGER NOT NULL, `recurrence` TEXT, `seriesId` TEXT, `subtasks` TEXT NOT NULL, `assignee` TEXT, `remoteId` TEXT, `deleted` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "part",
+            "columnName": "part",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduledAt",
+            "columnName": "scheduledAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "done",
+            "columnName": "done",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "doneAt",
+            "columnName": "doneAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "doneDay",
+            "columnName": "doneDay",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "carried",
+            "columnName": "carried",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recurrence",
+            "columnName": "recurrence",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "seriesId",
+            "columnName": "seriesId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "subtasks",
+            "columnName": "subtasks",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignee",
+            "columnName": "assignee",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "remoteId",
+            "columnName": "remoteId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_tasks_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tasks_day` ON `${TABLE_NAME}` (`day`)"
+          },
+          {
+            "name": "index_tasks_done",
+            "unique": false,
+            "columnNames": [
+              "done"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_tasks_done` ON `${TABLE_NAME}` (`done`)"
+          }
+        ]
+      },
+      {
+        "tableName": "calendar_events",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `startAt` INTEGER NOT NULL, `endAt` INTEGER NOT NULL, `allDay` INTEGER NOT NULL, `location` TEXT NOT NULL, `source` TEXT NOT NULL, `docId` TEXT, `taskId` TEXT, `recurrence` TEXT, `remindMin` INTEGER, `deleted` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startAt",
+            "columnName": "startAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endAt",
+            "columnName": "endAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allDay",
+            "columnName": "allDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "location",
+            "columnName": "location",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "docId",
+            "columnName": "docId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "taskId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recurrence",
+            "columnName": "recurrence",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "remindMin",
+            "columnName": "remindMin",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_calendar_events_startAt",
+            "unique": false,
+            "columnNames": [
+              "startAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_calendar_events_startAt` ON `${TABLE_NAME}` (`startAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "minimums",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `tiny` TEXT NOT NULL, `domain` TEXT NOT NULL, `addedOn` TEXT NOT NULL, `archived` INTEGER NOT NULL, `sort` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tiny",
+            "columnName": "tiny",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "domain",
+            "columnName": "domain",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "addedOn",
+            "columnName": "addedOn",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "archived",
+            "columnName": "archived",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sort",
+            "columnName": "sort",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "minimum_ticks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`minimumId` TEXT NOT NULL, `day` TEXT NOT NULL, `done` INTEGER NOT NULL, `proofDocId` TEXT, `toggles` INTEGER NOT NULL, `backfilled` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`minimumId`, `day`))",
+        "fields": [
+          {
+            "fieldPath": "minimumId",
+            "columnName": "minimumId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "done",
+            "columnName": "done",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proofDocId",
+            "columnName": "proofDocId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "toggles",
+            "columnName": "toggles",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "backfilled",
+            "columnName": "backfilled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "minimumId",
+            "day"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_minimum_ticks_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_minimum_ticks_day` ON `${TABLE_NAME}` (`day`)"
+          }
+        ]
+      },
+      {
+        "tableName": "txns",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `at` INTEGER NOT NULL, `day` TEXT NOT NULL, `amountPaise` INTEGER NOT NULL, `direction` TEXT NOT NULL, `title` TEXT NOT NULL, `category` TEXT NOT NULL, `ledger` TEXT NOT NULL, `method` TEXT NOT NULL, `source` TEXT NOT NULL, `reference` TEXT, `account4` TEXT, `upiId` TEXT, `note` TEXT NOT NULL, `giftHideFrom` TEXT, `giftRevealOn` TEXT, `receiptDocId` TEXT, `splits` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `remoteId` TEXT, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "at",
+            "columnName": "at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amountPaise",
+            "columnName": "amountPaise",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ledger",
+            "columnName": "ledger",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "method",
+            "columnName": "method",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reference",
+            "columnName": "reference",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "account4",
+            "columnName": "account4",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "upiId",
+            "columnName": "upiId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "giftHideFrom",
+            "columnName": "giftHideFrom",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "giftRevealOn",
+            "columnName": "giftRevealOn",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiptDocId",
+            "columnName": "receiptDocId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "splits",
+            "columnName": "splits",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteId",
+            "columnName": "remoteId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_txns_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_txns_day` ON `${TABLE_NAME}` (`day`)"
+          },
+          {
+            "name": "index_txns_reference",
+            "unique": false,
+            "columnNames": [
+              "reference"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_txns_reference` ON `${TABLE_NAME}` (`reference`)"
+          }
+        ]
+      },
+      {
+        "tableName": "txn_drafts",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `detectedAt` INTEGER NOT NULL, `amountPaise` INTEGER NOT NULL, `direction` TEXT NOT NULL, `title` TEXT NOT NULL, `category` TEXT NOT NULL, `reference` TEXT, `account4` TEXT, `upiId` TEXT, `raw` TEXT NOT NULL, `source` TEXT NOT NULL, `confidence` REAL NOT NULL, `status` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "detectedAt",
+            "columnName": "detectedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amountPaise",
+            "columnName": "amountPaise",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reference",
+            "columnName": "reference",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "account4",
+            "columnName": "account4",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "upiId",
+            "columnName": "upiId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "raw",
+            "columnName": "raw",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "confidence",
+            "columnName": "confidence",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_txn_drafts_status",
+            "unique": false,
+            "columnNames": [
+              "status"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_txn_drafts_status` ON `${TABLE_NAME}` (`status`)"
+          }
+        ]
+      },
+      {
+        "tableName": "payee_rules",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `category` TEXT NOT NULL, `ledger` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`key`))",
+        "fields": [
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ledger",
+            "columnName": "ledger",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "key"
+          ]
+        }
+      },
+      {
+        "tableName": "budgets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`month` TEXT NOT NULL, `totalPaise` INTEGER NOT NULL, `fixedPaise` INTEGER NOT NULL, `caps` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`month`))",
+        "fields": [
+          {
+            "fieldPath": "month",
+            "columnName": "month",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalPaise",
+            "columnName": "totalPaise",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fixedPaise",
+            "columnName": "fixedPaise",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "caps",
+            "columnName": "caps",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "month"
+          ]
+        }
+      },
+      {
+        "tableName": "notes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `body` TEXT NOT NULL, `tags` TEXT NOT NULL, `pinned` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `remoteId` TEXT, `dirty` INTEGER NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "body",
+            "columnName": "body",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pinned",
+            "columnName": "pinned",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remoteId",
+            "columnName": "remoteId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "dirty",
+            "columnName": "dirty",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_notes_updatedAt",
+            "unique": false,
+            "columnNames": [
+              "updatedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_notes_updatedAt` ON `${TABLE_NAME}` (`updatedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "journal",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `day` TEXT NOT NULL, `cipher` TEXT NOT NULL, `iv` TEXT NOT NULL, `mood` INTEGER, `tags` TEXT NOT NULL, `words` INTEGER NOT NULL, `qualityOk` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `dirty` INTEGER NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cipher",
+            "columnName": "cipher",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "iv",
+            "columnName": "iv",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mood",
+            "columnName": "mood",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "tags",
+            "columnName": "tags",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "words",
+            "columnName": "words",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "qualityOk",
+            "columnName": "qualityOk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dirty",
+            "columnName": "dirty",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_journal_day",
+            "unique": false,
+            "columnNames": [
+              "day"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_journal_day` ON `${TABLE_NAME}` (`day`)"
+          }
+        ]
+      },
+      {
+        "tableName": "focus_sessions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `startAt` INTEGER NOT NULL, `endAt` INTEGER NOT NULL, `minutes` INTEGER NOT NULL, `label` TEXT NOT NULL, `taskId` TEXT, `status` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startAt",
+            "columnName": "startAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endAt",
+            "columnName": "endAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "minutes",
+            "columnName": "minutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskId",
+            "columnName": "taskId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_focus_sessions_startAt",
+            "unique": false,
+            "columnNames": [
+              "startAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_focus_sessions_startAt` ON `${TABLE_NAME}` (`startAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "docs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `owner` TEXT NOT NULL, `sha256` TEXT NOT NULL, `title` TEXT NOT NULL, `category` TEXT NOT NULL, `mime` TEXT NOT NULL, `ext` TEXT NOT NULL, `sizeBytes` INTEGER NOT NULL, `path` TEXT NOT NULL, `encrypted` INTEGER NOT NULL, `sensitive` INTEGER NOT NULL, `text` TEXT NOT NULL, `expires` TEXT, `number` TEXT, `vehicle` TEXT, `pages` INTEGER NOT NULL, `version` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `openedAt` INTEGER, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "owner",
+            "columnName": "owner",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mime",
+            "columnName": "mime",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ext",
+            "columnName": "ext",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sizeBytes",
+            "columnName": "sizeBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "path",
+            "columnName": "path",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "encrypted",
+            "columnName": "encrypted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sensitive",
+            "columnName": "sensitive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expires",
+            "columnName": "expires",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "number",
+            "columnName": "number",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "vehicle",
+            "columnName": "vehicle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pages",
+            "columnName": "pages",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "version",
+            "columnName": "version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "openedAt",
+            "columnName": "openedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_docs_owner",
+            "unique": false,
+            "columnNames": [
+              "owner"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_docs_owner` ON `${TABLE_NAME}` (`owner`)"
+          },
+          {
+            "name": "index_docs_expires",
+            "unique": false,
+            "columnNames": [
+              "expires"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_docs_expires` ON `${TABLE_NAME}` (`expires`)"
+          }
+        ]
+      },
+      {
+        "tableName": "doc_shares",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`docId` TEXT NOT NULL, `who` TEXT NOT NULL, `level` TEXT NOT NULL, `whenKind` TEXT NOT NULL, `until` TEXT, PRIMARY KEY(`docId`, `who`))",
+        "fields": [
+          {
+            "fieldPath": "docId",
+            "columnName": "docId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "who",
+            "columnName": "who",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "whenKind",
+            "columnName": "whenKind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "until",
+            "columnName": "until",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "docId",
+            "who"
+          ]
+        }
+      },
+      {
+        "tableName": "people",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `relation` TEXT NOT NULL, `role` TEXT NOT NULL, `pending` INTEGER NOT NULL, `linked` INTEGER NOT NULL, `hue` INTEGER NOT NULL, `blood` TEXT NOT NULL, `allergies` TEXT NOT NULL, `meds` TEXT NOT NULL, `doctor` TEXT NOT NULL, `contacts` TEXT NOT NULL, `delegateTo` TEXT, `delegateCats` TEXT NOT NULL, `delegateConsentOn` TEXT, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relation",
+            "columnName": "relation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pending",
+            "columnName": "pending",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "linked",
+            "columnName": "linked",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hue",
+            "columnName": "hue",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blood",
+            "columnName": "blood",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allergies",
+            "columnName": "allergies",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "meds",
+            "columnName": "meds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "doctor",
+            "columnName": "doctor",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contacts",
+            "columnName": "contacts",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "delegateTo",
+            "columnName": "delegateTo",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "delegateCats",
+            "columnName": "delegateCats",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "delegateConsentOn",
+            "columnName": "delegateConsentOn",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "emergency_requests",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fromId` TEXT NOT NULL, `ownerId` TEXT NOT NULL, `cats` TEXT NOT NULL, `requestedAt` INTEGER NOT NULL, `waitHours` INTEGER NOT NULL, `status` TEXT NOT NULL, `grantedAt` INTEGER, `expiresOn` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromId",
+            "columnName": "fromId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cats",
+            "columnName": "cats",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "requestedAt",
+            "columnName": "requestedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "waitHours",
+            "columnName": "waitHours",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "grantedAt",
+            "columnName": "grantedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "expiresOn",
+            "columnName": "expiresOn",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "access_log",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `docId` TEXT NOT NULL, `title` TEXT NOT NULL, `owner` TEXT NOT NULL, `by` TEXT NOT NULL, `action` TEXT NOT NULL, `at` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "docId",
+            "columnName": "docId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "owner",
+            "columnName": "owner",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "by",
+            "columnName": "by",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "action",
+            "columnName": "action",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "at",
+            "columnName": "at",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_access_log_docId",
+            "unique": false,
+            "columnNames": [
+              "docId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_access_log_docId` ON `${TABLE_NAME}` (`docId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "links",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fromType` TEXT NOT NULL, `fromId` TEXT NOT NULL, `toType` TEXT NOT NULL, `toId` TEXT NOT NULL, `kind` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`fromType`, `fromId`, `toType`, `toId`))",
+        "fields": [
+          {
+            "fieldPath": "fromType",
+            "columnName": "fromType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromId",
+            "columnName": "fromId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "toType",
+            "columnName": "toType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "toId",
+            "columnName": "toId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "fromType",
+            "fromId",
+            "toType",
+            "toId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_links_toType_toId",
+            "unique": false,
+            "columnNames": [
+              "toType",
+              "toId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_links_toType_toId` ON `${TABLE_NAME}` (`toType`, `toId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "notifications",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `ruleKey` TEXT NOT NULL, `title` TEXT NOT NULL, `body` TEXT NOT NULL, `at` INTEGER NOT NULL, `route` TEXT NOT NULL, `routeArg` TEXT, `priority` INTEGER NOT NULL, `read` INTEGER NOT NULL, `dismissed` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ruleKey",
+            "columnName": "ruleKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "body",
+            "columnName": "body",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "at",
+            "columnName": "at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "route",
+            "columnName": "route",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeArg",
+            "columnName": "routeArg",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "priority",
+            "columnName": "priority",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "read",
+            "columnName": "read",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dismissed",
+            "columnName": "dismissed",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_notifications_ruleKey",
+            "unique": true,
+            "columnNames": [
+              "ruleKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_notifications_ruleKey` ON `${TABLE_NAME}` (`ruleKey`)"
+          }
+        ]
+      },
+      {
+        "tableName": "device_days",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`day` TEXT NOT NULL, `steps` INTEGER, `stepsSource` TEXT, `stepsHourly` TEXT NOT NULL, `screenMs` INTEGER, `screenPersonalMs` INTEGER, `screenWorkMs` INTEGER, `lateScreenMs` INTEGER, `unlocks` INTEGER, `notifications` INTEGER, `firstUnlockAt` INTEGER, `apps` TEXT NOT NULL, `screenHourly` TEXT NOT NULL, `sleepMin` INTEGER, `sleepStart` INTEGER, `sleepEnd` INTEGER, `restingHr` INTEGER, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`day`))",
+        "fields": [
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "steps",
+            "columnName": "steps",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "stepsSource",
+            "columnName": "stepsSource",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "stepsHourly",
+            "columnName": "stepsHourly",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "screenMs",
+            "columnName": "screenMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "screenPersonalMs",
+            "columnName": "screenPersonalMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "screenWorkMs",
+            "columnName": "screenWorkMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lateScreenMs",
+            "columnName": "lateScreenMs",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "unlocks",
+            "columnName": "unlocks",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notifications",
+            "columnName": "notifications",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "firstUnlockAt",
+            "columnName": "firstUnlockAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "apps",
+            "columnName": "apps",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "screenHourly",
+            "columnName": "screenHourly",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sleepMin",
+            "columnName": "sleepMin",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sleepStart",
+            "columnName": "sleepStart",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sleepEnd",
+            "columnName": "sleepEnd",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "restingHr",
+            "columnName": "restingHr",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "day"
+          ]
+        }
+      },
+      {
+        "tableName": "day_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`day` TEXT NOT NULL, `plannedTasks` TEXT NOT NULL, `plannedMins` TEXT NOT NULL, `light` INTEGER NOT NULL, `paused` INTEGER NOT NULL, `pauseReason` TEXT, `startedAt` INTEGER NOT NULL, `closedAt` INTEGER, `settled` INTEGER NOT NULL, `settledAt` INTEGER, `snapshot` TEXT, `backfills` INTEGER NOT NULL, PRIMARY KEY(`day`))",
+        "fields": [
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plannedTasks",
+            "columnName": "plannedTasks",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plannedMins",
+            "columnName": "plannedMins",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "light",
+            "columnName": "light",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "paused",
+            "columnName": "paused",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pauseReason",
+            "columnName": "pauseReason",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "startedAt",
+            "columnName": "startedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "closedAt",
+            "columnName": "closedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "settled",
+            "columnName": "settled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "settledAt",
+            "columnName": "settledAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "snapshot",
+            "columnName": "snapshot",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "backfills",
+            "columnName": "backfills",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "day"
+          ]
+        }
+      },
+      {
+        "tableName": "chat_threads",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "chat_messages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `threadId` TEXT NOT NULL, `role` TEXT NOT NULL, `text` TEXT NOT NULL, `proposals` TEXT NOT NULL, `proposalState` TEXT, `saw` TEXT NOT NULL, `sources` TEXT NOT NULL, `followups` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "threadId",
+            "columnName": "threadId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proposals",
+            "columnName": "proposals",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "proposalState",
+            "columnName": "proposalState",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "saw",
+            "columnName": "saw",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sources",
+            "columnName": "sources",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "followups",
+            "columnName": "followups",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_chat_messages_threadId",
+            "unique": false,
+            "columnNames": [
+              "threadId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_chat_messages_threadId` ON `${TABLE_NAME}` (`threadId`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8c199fb3642f35916343b4e20e3b47ea')"
+    ]
+  }
+}

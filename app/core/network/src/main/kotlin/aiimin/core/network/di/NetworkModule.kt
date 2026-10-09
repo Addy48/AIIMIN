@@ -45,8 +45,8 @@ object NetworkModule {
             .readTimeout(90, TimeUnit.SECONDS)
             .addInterceptor { chain ->
                 val builder = chain.request().newBuilder()
-                    .header("X-App-Version", "3.0.0-alpha01")
-                    .header("X-Platform", "android-v3")
+                    .header("X-App-Version", "4.0.0-alpha01")
+                    .header("X-Platform", "android-v4")
                     // Better Auth rejects auth calls without a trusted Origin.
                     .header("Origin", "https://aiimin.in")
                     .header("Referer", "https://aiimin.in/")

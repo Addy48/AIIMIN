@@ -1,277 +1,206 @@
 package aiimin.designsystem.component
 
+import aiimin.designsystem.theme.Aiimin
+import aiimin.designsystem.theme.Motion
+import aiimin.designsystem.theme.Shapes
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import aiimin.designsystem.theme.AiiminTheme
-import aiimin.designsystem.theme.Hairline
-import kotlin.math.abs
-import kotlin.math.roundToInt
+import kotlin.math.max
 
-/** Small mono plate under a chart — tap a bar/point, read the figure. */
+@Immutable
+data class RingSpec(val progress: Float, val color: Color, val label: String)
+
+/**
+ * Concentric progress rings (Apple Fitness): readable from arm's length.
+ * Progress above 1 keeps sweeping in a second, darker lap.
+ */
 @Composable
-fun ChartReadout(
-    title: String,
-    detail: String,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier
-            .fillMaxWidth()
-            .border(Hairline, AiiminTheme.colors.accent.copy(alpha = 0.55f))
-            .background(AiiminTheme.colors.tint)
-            .padding(horizontal = AiiminTheme.space.s3, vertical = AiiminTheme.space.s2),
+fun Rings(rings: List<RingSpec>, modifier: Modifier = Modifier, size: Dp = 132.dp, stroke: Dp = 12.dp, gap: Dp = 4.dp) {
+    val track = Aiimin.colors.raised
+    val anim = rings.map { r ->
+        val a = remember { Animatable(0f) }
+        LaunchedEffect(r.progress) { a.animateTo(r.progress.coerceIn(0f, 2f), tween(900, easing = Motion.enter)) }
+        a.value
+    }
+    Canvas(
+        modifier.size(size).semantics {
+            contentDescription = rings.joinToString { "${it.label} ${(it.progress * 100).toInt()} percent" }
+        },
     ) {
-        Text(
-            text = title.uppercase(),
-            style = AiiminTheme.type.cellLabel,
-            color = AiiminTheme.colors.accent,
-        )
-        Text(
-            text = detail,
-            style = AiiminTheme.type.mono(12.0, FontWeight.Medium),
-            color = AiiminTheme.colors.text,
-            modifier = Modifier.padding(top = 2.dp),
-        )
+        val sw = stroke.toPx()
+        rings.forEachIndexed { i, r ->
+            val inset = i * (sw + gap.toPx()) + sw / 2
+            val arcSize = Size(this.size.width - inset * 2, this.size.height - inset * 2)
+            val tl = Offset(inset, inset)
+            drawArc(track, 0f, 360f, false, tl, arcSize, style = Stroke(sw))
+            val p = anim[i]
+            drawArc(r.color, -90f, 360f * p.coerceAtMost(1f), false, tl, arcSize, style = Stroke(sw, cap = StrokeCap.Round))
+            if (p > 1f) {
+                drawArc(r.color.copy(alpha = 0.55f), -90f, 360f * (p - 1f), false, tl, arcSize, style = Stroke(sw, cap = StrokeCap.Round))
+            }
+        }
     }
 }
 
-data class BarDatum(
-    val label: String,
-    val value: Float,
-    val highlight: Boolean = false,
-    val detail: String? = null,
-)
-
-/**
- * Vertical column bars with tap readout. Phone has no hover — tap is the
- * hoverable. Empty selection shows the hint; picking a bar shows its figure.
- */
+/** Single arc gauge for the Life Score (270° sweep, opens at the bottom). */
 @Composable
-fun TapColumnBars(
-    bars: List<BarDatum>,
-    modifier: Modifier = Modifier,
-    valueFormat: (Float) -> String = { "%,d".format(it.roundToInt()) },
-    hint: String = "TAP A BAR · READ THE FIGURE",
-) {
-    if (bars.isEmpty()) return
-    var selected by remember { mutableIntStateOf(-1) }
-    val max = bars.maxOf { it.value }.coerceAtLeast(1f)
-
-    Column(modifier.fillMaxWidth()) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .height(88.dp)
-                .padding(top = AiiminTheme.space.s2),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            bars.forEachIndexed { i, bar ->
-                val h = ((bar.value / max) * 56f).coerceAtLeast(4f).dp
-                val active = selected == i || (selected < 0 && bar.highlight)
-                TapSurface(
-                    onClick = { selected = if (selected == i) -1 else i },
-                    minTouchTarget = false,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                ) {
-                    Column(
-                        Modifier.fillMaxWidth().fillMaxHeight(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Bottom,
-                    ) {
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(h)
-                                .background(
-                                    when {
-                                        selected == i -> AiiminTheme.colors.accent
-                                        bar.highlight -> AiiminTheme.colors.accent.copy(alpha = 0.85f)
-                                        active -> AiiminTheme.colors.muted
-                                        else -> AiiminTheme.colors.hair
-                                    },
-                                ),
-                        )
-                        Text(
-                            text = bar.label,
-                            style = AiiminTheme.type.mono(8.5),
-                            color = if (active) AiiminTheme.colors.accent else AiiminTheme.colors.muted,
-                            maxLines = 1,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 6.dp),
-                        )
-                    }
-                }
-            }
-        }
-
-        val pick = bars.getOrNull(selected)
-        if (pick != null) {
-            ChartReadout(
-                title = pick.label,
-                detail = pick.detail ?: valueFormat(pick.value),
-                modifier = Modifier.padding(top = AiiminTheme.space.s2),
-            )
-        } else {
-            Text(
-                text = hint,
-                style = AiiminTheme.type.cellLabel,
-                color = AiiminTheme.colors.muted,
-                modifier = Modifier.padding(top = AiiminTheme.space.s2),
-            )
-        }
+fun ScoreArc(value: Float?, modifier: Modifier = Modifier, size: Dp = 200.dp, color: Color = Aiimin.colors.accent) {
+    val track = Aiimin.colors.raised
+    val p by animateFloatAsState(((value ?: 0f) / 100f).coerceIn(0f, 1f), tween(1100, easing = Motion.enter), label = "arc")
+    Canvas(modifier.size(size)) {
+        val sw = 14.dp.toPx()
+        val inset = sw / 2
+        val s = Size(this.size.width - sw, this.size.height - sw)
+        drawArc(track, 135f, 270f, false, Offset(inset, inset), s, style = Stroke(sw, cap = StrokeCap.Round))
+        if (value != null) drawArc(color, 135f, 270f * p, false, Offset(inset, inset), s, style = Stroke(sw, cap = StrokeCap.Round))
     }
 }
 
 /**
- * Trajectory with optional tap-to-read. Endpoint always marked; tapped day
- * gets a second ring + readout.
+ * Vertical bars (Apple Health 24 h histogram). [highlight] marks "now";
+ * values are relative to the max in view.
  */
 @Composable
-fun TapTrajectoryLine(
-    series: List<Double>,
+fun Bars(
+    values: List<Float>,
     modifier: Modifier = Modifier,
-    color: Color = AiiminTheme.colors.accent,
-    dayLabels: List<String>? = null,
+    color: Color = Aiimin.colors.accent,
+    highlight: Int? = null,
+    height: Dp = 72.dp,
+    labels: List<String>? = null,
+    description: String = "Bar chart",
 ) {
-    if (series.size < 2) {
-        TrajectoryLine(series = series, modifier = modifier, color = color)
-        return
-    }
-    var selected by remember { mutableIntStateOf(-1) }
-    val hair = AiiminTheme.colors.hair
-    val fill = color.copy(alpha = 0.14f)
-
-    Column(modifier.fillMaxWidth()) {
-        Canvas(
-            Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .pointerInput(series) {
-                    detectTapGestures { pos ->
-                        val step = size.width / (series.size - 1).coerceAtLeast(1)
-                        val i = (pos.x / step).roundToInt().coerceIn(0, series.lastIndex)
-                        selected = if (selected == i) -1 else i
-                    }
-                },
-        ) {
-            drawLine(hair, Offset(0f, size.height), Offset(size.width, size.height), 1f)
-            val min = series.min()
-            val max = series.max()
-            val span = (max - min).takeIf { it > 0.5 } ?: 1.0
-            val stepX = size.width / (series.size - 1)
-
-            val strokePath = Path()
-            val areaPath = Path()
-            series.forEachIndexed { index, value ->
-                val x = index * stepX
-                val y = size.height - ((value - min) / span * size.height).toFloat()
-                if (index == 0) {
-                    strokePath.moveTo(x, y)
-                    areaPath.moveTo(x, size.height)
-                    areaPath.lineTo(x, y)
-                } else {
-                    strokePath.lineTo(x, y)
-                    areaPath.lineTo(x, y)
+    val c = Aiimin.colors
+    val peak = max(values.maxOrNull() ?: 0f, 0.0001f)
+    val grow by animateFloatAsState(1f, tween(700, easing = Motion.enter), label = "grow")
+    Column(modifier.semantics { contentDescription = description }) {
+        Canvas(Modifier.fillMaxWidth().height(height)) {
+            val n = values.size.coerceAtLeast(1)
+            val slot = this.size.width / n
+            val bw = (slot * 0.62f).coerceAtLeast(2f)
+            values.forEachIndexed { i, v ->
+                val h = (v / peak) * this.size.height * grow
+                val x = i * slot + (slot - bw) / 2
+                val col = when {
+                    highlight == null -> color
+                    i == highlight -> color
+                    else -> color.copy(alpha = 0.45f)
                 }
-            }
-            areaPath.lineTo((series.size - 1) * stepX, size.height)
-            areaPath.close()
-            drawPath(areaPath, fill)
-            drawPath(strokePath, color, style = Stroke(width = 2f, cap = StrokeCap.Round))
-
-            val last = series.last()
-            val lx = (series.size - 1) * stepX
-            val ly = size.height - ((last - min) / span * size.height).toFloat()
-            drawCircle(color = color, radius = 3.5f, center = Offset(lx, ly))
-
-            if (selected in series.indices) {
-                val sx = selected * stepX
-                val sy = size.height - ((series[selected] - min) / span * size.height).toFloat()
-                drawCircle(color = color.copy(alpha = 0.25f), radius = 8f, center = Offset(sx, sy))
-                drawCircle(color = color, radius = 4f, center = Offset(sx, sy))
+                drawRoundRect(c.raised, Offset(x, 0f), Size(bw, this.size.height), CornerRadius(bw / 2))
+                if (v > 0f) drawRoundRect(col, Offset(x, this.size.height - h), Size(bw, max(h, bw)), CornerRadius(bw / 2))
             }
         }
-
-        if (selected in series.indices) {
-            val label = dayLabels?.getOrNull(selected) ?: "DAY ${selected + 1}"
-            ChartReadout(
-                title = label,
-                detail = series[selected].roundToInt().toString(),
-                modifier = Modifier.padding(top = AiiminTheme.space.s2),
-            )
-        } else {
-            Text(
-                text = "TAP THE LINE · READ A DAY",
-                style = AiiminTheme.type.cellLabel,
-                color = AiiminTheme.colors.muted,
-                modifier = Modifier.padding(top = 4.dp),
-            )
+        if (labels != null) {
+            Row(Modifier.fillMaxWidth().padding(top = 6.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                labels.forEach { Text(it, style = Aiimin.type.caption.copy(fontFeatureSettings = "tnum")) }
+            }
         }
     }
 }
 
-/** Correlation strength badge copy — shared by Lab. */
-fun correlationStrength(rho: Float): String = when {
-    abs(rho) >= 0.5f -> "STRONG"
-    abs(rho) >= 0.3f -> "MODERATE"
-    else -> "WEAK"
-}
-
-fun correlationSense(rho: Float): String =
-    if (rho < 0f) "INVERSE" else "DIRECT"
-
-@Preview(showBackground = true, backgroundColor = 0xFF141414)
+/** A trend line with a soft fill, optional dashed baseline (your normal). */
 @Composable
-private fun ChartsPreview() {
-    AiiminTheme {
-        Column(
-            Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            TapColumnBars(
-                bars = listOf(
-                    BarDatum("W27", 12_000f),
-                    BarDatum("W28", 14_200f),
-                    BarDatum("W29", 11_100f),
-                    BarDatum("W30", 13_400f),
-                    BarDatum("W31", 10_800f, highlight = true),
-                ),
-                valueFormat = { "₹%,d".format(it.roundToInt()) },
-            )
-            TapTrajectoryLine(series = listOf(62.0, 65.0, 61.0, 68.0, 70.0, 69.0, 74.0, 78.0))
+fun Sparkline(
+    values: List<Float?>,
+    modifier: Modifier = Modifier,
+    color: Color = Aiimin.colors.accent,
+    baseline: Float? = null,
+    height: Dp = 64.dp,
+) {
+    val faint = Aiimin.colors.textFaint
+    Canvas(modifier.fillMaxWidth().height(height)) {
+        val pts = values.withIndex().filter { it.value != null }
+        if (pts.size < 2) return@Canvas
+        val lo = (pts.minOf { it.value!! }).coerceAtMost(baseline ?: Float.MAX_VALUE)
+        val hi = (pts.maxOf { it.value!! }).coerceAtLeast(baseline ?: -Float.MAX_VALUE)
+        val span = (hi - lo).takeIf { it > 0f } ?: 1f
+        fun x(i: Int) = i / (values.size - 1).toFloat() * size.width
+        fun y(v: Float) = size.height - (v - lo) / span * (size.height * 0.85f) - size.height * 0.075f
+        val line = Path()
+        pts.forEachIndexed { k, p -> if (k == 0) line.moveTo(x(p.index), y(p.value!!)) else line.lineTo(x(p.index), y(p.value!!)) }
+        val fill = Path().apply {
+            addPath(line)
+            lineTo(x(pts.last().index), size.height)
+            lineTo(x(pts.first().index), size.height)
+            close()
         }
+        drawPath(fill, color.copy(alpha = 0.12f))
+        drawPath(line, color, style = Stroke(2.dp.toPx(), cap = StrokeCap.Round))
+        if (baseline != null) {
+            val by = y(baseline)
+            var cx = 0f
+            while (cx < size.width) {
+                drawLine(faint, Offset(cx, by), Offset(cx + 6f, by), 1.dp.toPx())
+                cx += 12f
+            }
+        }
+        val last = pts.last()
+        drawCircle(color, 3.5.dp.toPx(), Offset(x(last.index), y(last.value!!)))
     }
 }
+
+/** Thin progress bar with a rounded fill. */
+@Composable
+fun Meter(progress: Float, modifier: Modifier = Modifier, color: Color = Aiimin.colors.accent, height: Dp = 6.dp, overColor: Color = Aiimin.colors.danger) {
+    val p by animateFloatAsState(progress.coerceIn(0f, 1f), tween(600, easing = Motion.enter), label = "meter")
+    Box(modifier.fillMaxWidth().height(height).clip(Shapes.pill).background(Aiimin.colors.raised)) {
+        Box(Modifier.fillMaxHeight().fillMaxWidth(p).clip(Shapes.pill).background(if (progress > 1f) overColor else color))
+    }
+}
+
+/** Number that counts to its new value (score, totals, XP). */
+@Composable
+fun CountingNumber(value: Int, style: TextStyle, modifier: Modifier = Modifier, format: (Int) -> String = { it.toString() }) {
+    val v by animateIntAsState(value, tween(700, easing = Motion.enter), label = "count")
+    Text(format(v), style = style, modifier = modifier)
+}
+
+/** A labelled stat used in compact rows: big number, small unit, caption. */
+@Composable
+fun Stat(value: String, caption: String, modifier: Modifier = Modifier, unit: String? = null, color: Color = Aiimin.colors.text) {
+    Column(modifier) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(value, style = Aiimin.type.numberMedium.copy(color = color))
+            if (unit != null) Text(" $unit", style = Aiimin.type.caption, modifier = Modifier.padding(bottom = 2.dp))
+        }
+        Text(caption, style = Aiimin.type.caption)
+    }
+}
+
+@Composable
+fun FillBox(modifier: Modifier = Modifier) = Box(modifier.fillMaxSize())
