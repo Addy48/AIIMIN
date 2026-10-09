@@ -5,8 +5,3 @@ plugins {
 android {
     namespace = "aiimin.feature.onboarding"
 }
-
-dependencies {
-    testImplementation(libs.bundles.unit.test)
-    implementation(projects.core.network)
-}

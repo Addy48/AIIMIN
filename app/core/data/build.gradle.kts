@@ -12,13 +12,19 @@ android {
 }
 
 dependencies {
-    api(projects.core.model)
+    api(projects.core.engine)
+    api(projects.core.privacy)
+    api(projects.core.nlp)
+    api(projects.core.database)
+    api(projects.core.sensing)
     api(projects.core.network)
-    api(libs.health.connect.client)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.mlkit.text.recognition)
+    implementation(libs.mlkit.text.recognition.devanagari)
 
     testImplementation(libs.bundles.unit.test)
     testImplementation(libs.kotlinx.coroutines.test)

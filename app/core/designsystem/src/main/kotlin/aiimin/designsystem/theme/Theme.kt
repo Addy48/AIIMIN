@@ -1,123 +1,94 @@
 package aiimin.designsystem.theme
 
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
-/**
- * The Drafting Table theme.
- *
- * Material3 is the substrate — it supplies ripples, text selection and the
- * accessibility plumbing — but the visual language is AIIMIN's. Read colour,
- * type and spacing from [AiiminTheme], never from `MaterialTheme` directly.
- * Dynamic colour is deliberately **off**: the palette is locked.
- */
-object AiiminTheme {
-    val colors: AiiminColors
-        @Composable @ReadOnlyComposable get() = LocalAiiminColors.current
+enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
-    val type: AiiminTypography
-        @Composable @ReadOnlyComposable get() = LocalAiiminTypography.current
-
-    val space: AiiminSpacing
-        @Composable @ReadOnlyComposable get() = LocalAiiminSpacing.current
-
-    val radii: AiiminRadii
-        @Composable @ReadOnlyComposable get() = LocalAiiminRadii.current
-
-    /** Config toggle + system animator scale — screens read this for motion. */
-    val reduceMotion: Boolean
-        @Composable @ReadOnlyComposable get() = LocalReduceMotion.current
-}
-
-val LocalAiiminColors = staticCompositionLocalOf { DraftingTableDark }
-val LocalAiiminTypography = staticCompositionLocalOf { AiiminTypography() }
-val LocalAiiminSpacing = staticCompositionLocalOf { AiiminSpacing() }
-val LocalAiiminRadii = staticCompositionLocalOf { AiiminRadii() }
-val LocalReduceMotion = staticCompositionLocalOf { false }
-
-@Composable
-fun AiiminTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    reduceMotion: Boolean = false,
-    content: @Composable () -> Unit,
-) {
-    val colors = if (darkTheme) DraftingTableDark else IndustrySheetLight
-    val typography = AiiminTypography()
-
-    CompositionLocalProvider(
-        LocalAiiminColors provides colors,
-        LocalAiiminTypography provides typography,
-        LocalAiiminSpacing provides AiiminSpacing(),
-        LocalAiiminRadii provides AiiminRadii(),
-        LocalReduceMotion provides reduceMotion,
-    ) {
-        MaterialTheme(
-            colorScheme = colors.toMaterialScheme(),
-            typography = MaterialTheme.typography.mappedTo(typography),
-            content = content,
-        )
-    }
-}
-
-/**
- * Material roles pointed at our tokens, so any M3 component that slips into a
- * screen still draws in the Drafting Table palette instead of purple.
- */
-private fun AiiminColors.toMaterialScheme() = if (isDark) {
-    darkColorScheme(
-        primary = accent,
-        onPrimary = onAccent,
-        secondary = accent,
-        onSecondary = onAccent,
-        background = bg,
-        onBackground = text,
-        surface = surface,
-        onSurface = text,
-        surfaceVariant = tint,
-        onSurfaceVariant = muted,
-        outline = rule,
-        outlineVariant = hair,
-        error = danger,
-        onError = Color.White,
-    )
-} else {
-    lightColorScheme(
-        primary = accent,
-        onPrimary = onAccent,
-        secondary = accent,
-        onSecondary = onAccent,
-        background = bg,
-        onBackground = text,
-        surface = surface,
-        onSurface = text,
-        surfaceVariant = tint,
-        onSurfaceVariant = muted,
-        outline = rule,
-        outlineVariant = hair,
-        error = danger,
-        onError = Color.White,
-    )
-}
-
-private fun androidx.compose.material3.Typography.mappedTo(
-    type: AiiminTypography,
-): androidx.compose.material3.Typography = copy(
-    displayLarge = type.figure,
-    headlineSmall = type.chrome.asHeading(),
-    titleMedium = type.chrome,
-    titleSmall = type.sectionLabel,
-    bodyLarge = type.body,
-    bodyMedium = type.bodySmall,
-    labelLarge = type.button,
-    labelSmall = type.cellLabel,
+@Immutable
+data class Spacing(
+    val xxs: Dp = 2.dp,
+    val xs: Dp = 4.dp,
+    val sm: Dp = 8.dp,
+    val md: Dp = 12.dp,
+    val lg: Dp = 16.dp,
+    val xl: Dp = 20.dp,
+    val xxl: Dp = 24.dp,
+    val xxxl: Dp = 32.dp,
+    /** Side gutter of every screen. */
+    val gutter: Dp = 20.dp,
 )
 
-private fun TextStyle.asHeading() = copy(fontSize = fontSize * 1.4f, lineHeight = fontSize * 1.7f)
+object Shapes {
+    val card = RoundedCornerShape(16.dp)
+    val row = RoundedCornerShape(12.dp)
+    val small = RoundedCornerShape(8.dp)
+    val pill = RoundedCornerShape(percent = 50)
+    /** Buttons, chips, segments: squared-off, not pills. */
+    val control = RoundedCornerShape(10.dp)
+    val tag = RoundedCornerShape(5.dp)
+    val sheet = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+}
+
+/** Motion: short, ease-out on enter, ease-in on exit (plan Part 2 §9). */
+object Motion {
+    val enter = CubicBezierEasing(0.16f, 1f, 0.3f, 1f)
+    val exit = CubicBezierEasing(0.7f, 0f, 0.84f, 0f)
+    val standard = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+    const val FAST = 150
+    const val BASE = 220
+    const val SLOW = 300
+}
+
+val LocalSpacing = staticCompositionLocalOf { Spacing() }
+
+object Aiimin {
+    val colors: Palette
+        @Composable @ReadOnlyComposable get() = LocalPalette.current
+    val type: AppType
+        @Composable @ReadOnlyComposable get() = LocalType.current
+    val space: Spacing
+        @Composable @ReadOnlyComposable get() = LocalSpacing.current
+}
+
+@Composable
+fun AiiminTheme(mode: ThemeMode = ThemeMode.SYSTEM, content: @Composable () -> Unit) {
+    val dark = when (mode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    val p = if (dark) DarkPalette else LightPalette
+    val scheme = if (dark) {
+        darkColorScheme(
+            primary = p.accent, onPrimary = p.onAccent, background = p.base, onBackground = p.text,
+            surface = p.surface, onSurface = p.text, surfaceVariant = p.raised, onSurfaceVariant = p.textMuted,
+            surfaceContainer = p.surface, surfaceContainerHigh = p.raised, surfaceContainerHighest = p.overlay,
+            surfaceContainerLow = p.surface, outline = p.borderStrong, outlineVariant = p.border, error = p.danger,
+            secondary = p.violet, tertiary = p.done, scrim = p.scrim,
+        )
+    } else {
+        lightColorScheme(
+            primary = p.accent, onPrimary = p.onAccent, background = p.base, onBackground = p.text,
+            surface = p.surface, onSurface = p.text, surfaceVariant = p.raised, onSurfaceVariant = p.textMuted,
+            surfaceContainer = p.surface, surfaceContainerHigh = p.raised, surfaceContainerHighest = p.overlay,
+            surfaceContainerLow = p.surface, outline = p.borderStrong, outlineVariant = p.border, error = p.danger,
+            secondary = p.violet, tertiary = p.done, scrim = p.scrim,
+        )
+    }
+    val type = appType(p)
+    CompositionLocalProvider(LocalPalette provides p, LocalType provides type, LocalSpacing provides Spacing()) {
+        MaterialTheme(colorScheme = scheme, typography = type.material, content = content)
+    }
+}

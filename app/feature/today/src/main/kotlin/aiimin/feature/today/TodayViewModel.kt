@@ -1,136 +1,199 @@
 package aiimin.feature.today
 
-import android.content.Intent
+import aiimin.core.data.app.ActivityLine
+import aiimin.core.data.app.ActivityRepository
+import aiimin.core.data.core.DayClock
+import aiimin.core.data.day.DayRepository
+import aiimin.core.data.device.DeviceRepository
+import aiimin.core.data.life.LifeRepository
+import aiimin.core.data.life.LifeView
+import aiimin.core.data.notify.NotificationRepository
+import aiimin.core.data.plan.ActiveFocus
+import aiimin.core.data.plan.CalendarRepository
+import aiimin.core.data.plan.DayPart
+import aiimin.core.data.plan.FocusRepository
+import aiimin.core.data.plan.MinimumRepository
+import aiimin.core.data.plan.MinimumToday
+import aiimin.core.data.plan.TaskRepository
+import aiimin.core.data.settings.SettingsStore
+import aiimin.core.data.vault.VaultRepository
+import aiimin.core.database.CalendarEventEntity
+import aiimin.core.database.DayStateEntity
+import aiimin.core.database.DeviceDayEntity
+import aiimin.core.database.TaskEntity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import aiimin.core.data.AgendaState
-import aiimin.core.data.AgendaStore
-import aiimin.core.data.DayQuoteRepository
-import aiimin.core.data.DayStore
-import aiimin.core.data.NoteState
-import aiimin.core.data.NoteStore
-import aiimin.core.data.PublishedLifeScoreState
-import aiimin.core.data.PublishedLifeScoreStore
-import aiimin.core.data.device.DeviceMetrics
-import aiimin.core.data.device.DeviceMetricsRepository
-import aiimin.core.data.device.StepsStatus
-import aiimin.core.data.sync.GraphSyncRepository
-import aiimin.core.model.CommitmentShape
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * Today's one job: **act on this day.**
- *
- * Device metrics + API graph pull. Habit ticks enqueue for `/mobile/sync/batch`.
- * Agenda / notes / published Life Score are read-only strips from GraphSync.
- */
+enum class FlowKind { TASK, EVENT, EXPIRY }
+
+data class FlowItem(
+    val kind: FlowKind,
+    val id: String,
+    val title: String,
+    val time: LocalTime?,
+    val end: LocalTime?,
+    val done: Boolean,
+    val part: DayPart,
+    val priority: Int = 1,
+    val carried: Int = 0,
+    val subtitle: String? = null,
+    val assignee: String? = null,
+)
+
+data class NowCard(val item: FlowItem, val isNow: Boolean, val moreToday: Int)
+
+data class TodayUi(
+    val date: LocalDate,
+    val name: String,
+    val flow: Map<DayPart, List<FlowItem>>,
+    val now: NowCard?,
+    val minimums: List<MinimumToday>,
+    val dayState: DayStateEntity?,
+    val life: LifeView?,
+    val device: DeviceDayEntity?,
+    val unread: Int,
+    val focus: ActiveFocus?,
+    val activity: List<ActivityLine>,
+    val expiringTitle: String?,
+    val expiringId: String?,
+    val yesterdayOpen: Boolean,
+    val hideScore: Boolean,
+    val hideXp: Boolean,
+) {
+    val tasksOpen get() = flow.values.flatten().count { it.kind == FlowKind.TASK && !it.done }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TodayViewModel @Inject constructor(
-    private val store: DayStore,
-    private val device: DeviceMetricsRepository,
-    private val sync: GraphSyncRepository,
-    private val quotes: DayQuoteRepository,
-    agendaStore: AgendaStore,
-    noteStore: NoteStore,
-    publishedLifeScore: PublishedLifeScoreStore,
+    private val clock: DayClock,
+    private val tasks: TaskRepository,
+    private val calendar: CalendarRepository,
+    private val minimums: MinimumRepository,
+    private val focus: FocusRepository,
+    private val days: DayRepository,
+    life: LifeRepository,
+    device: DeviceRepository,
+    notifications: NotificationRepository,
+    activity: ActivityRepository,
+    vault: VaultRepository,
+    settings: SettingsStore,
 ) : ViewModel() {
 
-    val state: StateFlow<aiimin.core.data.DayState> = store.state
-    val deviceMetrics: StateFlow<DeviceMetrics> = device.state
-    val dayQuote: StateFlow<String> = quotes.quote
-    val agenda: StateFlow<AgendaState> = agendaStore.state
-    val notes: StateFlow<NoteState> = noteStore.state
-    val publishedScore: StateFlow<PublishedLifeScoreState> = publishedLifeScore.state
-    val focusMinimums: StateFlow<Boolean> = store.focusMinimums
-    val stepsHistory = device.stepsHistory
+    private val zone: ZoneId get() = clock.zone
+    private val _part = MutableStateFlow(DayPart.now())
+    val part: StateFlow<DayPart> = _part
+    fun selectPart(p: DayPart) { _part.value = p }
 
-    private val _refreshing = MutableStateFlow(false)
-    val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
+    private val yesterdayOpen = MutableStateFlow(false)
+
+    val ui: StateFlow<TodayUi?> = clock.todayFlow.distinctUntilChanged().flatMapLatest { day ->
+        val plan = combine(
+            tasks.forDay(day),
+            flow { emitAll(calendar.forDay(day)) },
+            minimums.today(day),
+            days.observe(day),
+            flow { emit(vault.expiring(30)) },
+        ) { t, e, m, st, exp -> Plan(t, e, m, st, exp.firstOrNull()) }
+        val ambient = combine(life.view, device.observe(day), notifications.unread, focus.active, activity.recent(4)) { l, d, u, f, a -> Ambient(l, d, u, f, a) }
+        combine(plan, ambient, settings.settings, yesterdayOpen) { p, a, s, y ->
+            val items = buildFlow(day, p.tasks, p.events)
+            TodayUi(
+                date = day, name = s.name, flow = items, now = nowCard(items.values.flatten()),
+                minimums = p.mins.filter { it.planned || it.done }, dayState = p.state, life = a.life, device = a.device,
+                unread = a.unread, focus = a.focus, activity = a.activity,
+                expiringTitle = p.expiring?.title, expiringId = p.expiring?.id, yesterdayOpen = y,
+                hideScore = s.hideScore, hideXp = s.hideXp,
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    private data class Plan(
+        val tasks: List<TaskEntity>,
+        val events: List<CalendarEventEntity>,
+        val mins: List<MinimumToday>,
+        val state: DayStateEntity?,
+        val expiring: aiimin.core.database.DocEntity?,
+    )
+
+    private data class Ambient(val life: LifeView?, val device: DeviceDayEntity?, val unread: Int, val focus: ActiveFocus?, val activity: List<ActivityLine>)
 
     init {
-        device.start()
-        store.clearIdentityMicroTask()
-        viewModelScope.launch { quotes.ensureToday() }
         viewModelScope.launch {
-            device.state.collectLatest { metrics ->
-                if (metrics.stepsStatus != StepsStatus.LIVE) return@collectLatest
-                val steps = metrics.steps ?: return@collectLatest
-                if (steps <= 0L) return@collectLatest
-                val walk = store.state.value.today.firstOrNull {
-                    it.commitment.label.equals("Walk", ignoreCase = true) ||
-                        it.commitment.unit.equals("steps", ignoreCase = true)
-                } ?: return@collectLatest
-                if (walk.commitment.shape == CommitmentShape.SHOW_UP) return@collectLatest
-                store.setProgress(walk.commitment.id, steps.toDouble())
+            days.ensureToday()
+            yesterdayOpen.value = days.yesterdayOpen()
+        }
+    }
+
+    private fun buildFlow(day: LocalDate, tasks: List<TaskEntity>, events: List<CalendarEventEntity>): Map<DayPart, List<FlowItem>> {
+        val items = mutableListOf<FlowItem>()
+        tasks.filter { it.assignee == null || it.assignee == "me" }.forEach { t ->
+            val time = t.time?.let { runCatching { LocalTime.parse(it) }.getOrNull() }
+            items += FlowItem(
+                FlowKind.TASK, t.id, t.title, time, null, t.done, DayPart.of(t.time, t.part), t.priority, t.carried,
+                subtitle = if (t.carried > 0 && !t.done) "Carried ${t.carried}×" else null, assignee = t.assignee,
+            )
+        }
+        events.forEach { e ->
+            val start = Instant.ofEpochMilli(e.startAt).atZone(zone)
+            val end = Instant.ofEpochMilli(e.endAt).atZone(zone)
+            if (e.allDay || e.source == "vault") {
+                items += FlowItem(if (e.source == "vault") FlowKind.EXPIRY else FlowKind.EVENT, e.docId ?: e.id, e.title, null, null, false, DayPart.MORNING, subtitle = "All day")
+            } else {
+                val st = if (start.toLocalDate() < day) LocalTime.MIDNIGHT else start.toLocalTime()
+                items += FlowItem(
+                    FlowKind.EVENT, e.id, e.title, st, end.toLocalTime(), false, DayPart.of(st.toString().take(5), null),
+                    subtitle = e.location.ifBlank { null },
+                )
             }
         }
+        val order = compareBy<FlowItem>({ it.kind != FlowKind.EXPIRY }, { it.time == null }, { it.time }, { -it.priority })
+        return DayPart.entries.associateWith { p -> items.filter { it.part == p }.sortedWith(order) }
     }
 
-    override fun onCleared() {
-        device.stop()
-        super.onCleared()
+    /** The one thing that matters now: a running event, else the next timed item, else the top open task. */
+    private fun nowCard(all: List<FlowItem>): NowCard? {
+        val now = LocalTime.now(zone)
+        val open = all.filter { !it.done && it.kind != FlowKind.EXPIRY }
+        val running = open.firstOrNull { it.kind == FlowKind.EVENT && it.time != null && it.end != null && now >= it.time && now < it.end }
+        val next = open.filter { it.time != null && it.time >= now }.minByOrNull { it.time!! }
+        val top = open.filter { it.kind == FlowKind.TASK && it.time == null }.maxByOrNull { it.priority }
+        val pick = running ?: next ?: top ?: return null
+        val rest = open.count { it.id != pick.id && it.kind == FlowKind.TASK }
+        return NowCard(pick, running != null, rest)
     }
 
-    fun onToggle(commitmentId: Long) {
-        val entry = store.state.value.today.firstOrNull { it.commitment.id == commitmentId } ?: return
-        if (entry.commitment.shape != CommitmentShape.SHOW_UP) return
-        val next = if (entry.observation.value == null || entry.observation.value == 0.0) 1.0 else null
-        store.setProgress(commitmentId, next)
-        val serverId = entry.commitment.serverId
-        if (serverId != null) {
-            if (next == 1.0) sync.enqueueHabitTick(serverId)
-            else sync.enqueueHabitUntick(serverId)
-            // Flush only — never refreshAll here (bootstrap lag resets the tick).
-            viewModelScope.launch { sync.flushPendingMutations() }
-        }
+    fun minutesUntil(t: LocalTime): Long = ChronoUnit.MINUTES.between(LocalTime.now(zone), t)
+
+    suspend fun toggleTask(id: String) = tasks.toggle(id)
+    suspend fun toggleMinimum(id: String) = minimums.toggle(id)
+    suspend fun backfillMinimum(id: String) = minimums.backfillYesterday(id).also { yesterdayOpen.value = days.yesterdayOpen() }
+
+    fun addTask(title: String, part: DayPart, day: LocalDate) {
+        if (title.isBlank()) return
+        viewModelScope.launch { tasks.create(title, day, part = part) }
     }
 
-    fun onRecordValue(commitmentId: Long, value: Double?) = store.setProgress(commitmentId, value)
-
-    fun adjustStepsGoal(delta: Long) {
-        val next = device.adjustStepsTarget(delta)
-        store.setWalkStepsTarget(next)
-    }
-
-    fun adjustScreenGoal(delta: Long) {
-        device.adjustScreenTarget(delta)
-    }
-
-    fun refreshDevice() = device.refresh()
-
-    fun onScrollToMinimumsConsumed() = store.consumeFocusMinimums()
-
-    fun onPullRefresh() {
-        viewModelScope.launch {
-            _refreshing.value = true
-            device.refresh()
-            sync.refreshAll()
-            quotes.ensureToday()
-            _refreshing.value = false
-        }
-    }
-
-    fun needsActivityPermission(): Boolean = device.activityPermissionIntentNeeded()
-
-    suspend fun needsHealthConnectPermission(): Boolean = device.needsHealthConnectPermission()
-
-    fun healthConnectNeedsUpdate(): Boolean = device.healthConnectNeedsUpdate()
-
-    fun healthConnectInstallIntent(): Intent = device.healthConnectInstallIntent()
-
-    fun healthConnectSettingsIntent(): Intent? = device.healthConnectSettingsIntent()
-
-    fun healthConnectManagePermissionsIntent(): Intent = device.healthConnectManagePermissionsIntent()
-
-    fun healthConnectPermissionContract() = device.healthConnectPermissionContract()
-
-    fun healthConnectPermissions() = device.healthConnectPermissions()
-
-    fun usageAccessIntent(): Intent = device.usageAccessIntent()
+    suspend fun deleteTask(id: String) = tasks.delete(id)
+    fun restoreTask(t: TaskEntity) = viewModelScope.launch { tasks.restore(t) }
+    fun moveTomorrow(id: String) = viewModelScope.launch { tasks.moveTo(id, clock.today().plusDays(1)) }
+    suspend fun setLight(on: Boolean) = days.setLight(on)
 }
