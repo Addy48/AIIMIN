@@ -210,7 +210,7 @@ data class DriveStatusDto(
 data class DeviceRequest(
     @SerialName("device_id") val deviceId: String,
     val platform: String = "android",
-    @SerialName("app_version") val appVersion: String = "3.0.0-alpha01",
+    @SerialName("app_version") val appVersion: String = "4.0.0-alpha01",
     @SerialName("push_token") val pushToken: String? = null,
 )
 
@@ -376,3 +376,46 @@ data class DailyLogDto(
     val mood: Int? = null,
     val error: String? = null,
 )
+
+
+@Serializable
+data class TaskDto(
+    val id: String? = null,
+    val title: String? = null,
+    @SerialName("due_date") val dueDate: String? = null,
+    @SerialName("due_time") val dueTime: String? = null,
+    val completed: Boolean? = null,
+    val source: String? = null,
+)
+
+@Serializable
+data class TaskListResponse(val success: Boolean? = null, val data: List<TaskDto> = emptyList())
+
+@Serializable
+data class TaskItemResponse(val success: Boolean? = null, val data: TaskDto? = null)
+
+@Serializable
+data class CreateTaskRequest(
+    val title: String,
+    @SerialName("due_date") val dueDate: String?,
+    @SerialName("due_time") val dueTime: String?,
+    val source: String = "android",
+)
+
+@Serializable
+data class UpdateTaskRequest(val completed: Boolean? = null, val title: String? = null)
+
+@Serializable
+data class ChatMessageDto(val role: String, val content: String)
+
+@Serializable
+data class ChatRequest(
+    val messages: List<ChatMessageDto>,
+    val systemPrompt: String? = null,
+    val provider: String = "heavy",
+    val maxTokens: Int = 700,
+    val temperature: Double = 0.4,
+)
+
+@Serializable
+data class ChatResponse(val text: String? = null, val provider: String? = null, val model: String? = null, val error: String? = null)

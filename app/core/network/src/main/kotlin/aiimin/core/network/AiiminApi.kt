@@ -11,6 +11,22 @@ import retrofit2.http.Part
 import retrofit2.http.Query
 
 interface AiiminApi {
+    @GET("tasks")
+    suspend fun tasks(@Query("date") date: String? = null): TaskListResponse
+
+    @POST("tasks")
+    suspend fun createTask(@Body body: CreateTaskRequest): TaskItemResponse
+
+    @retrofit2.http.PATCH("tasks/{id}")
+    suspend fun updateTask(@retrofit2.http.Path("id") id: String, @Body body: UpdateTaskRequest): TaskItemResponse
+
+    @retrofit2.http.DELETE("tasks/{id}")
+    suspend fun deleteTask(@retrofit2.http.Path("id") id: String): Response<ResponseBody>
+
+    /** Server-side model call; the app sends only what the person allowed (AI scope). */
+    @POST("intelligence/chat")
+    suspend fun chat(@Body body: ChatRequest): ChatResponse
+
     @GET("auth/osid-available")
     suspend fun osIdAvailable(@Query("id") id: String): OsIdAvailableResponse
 

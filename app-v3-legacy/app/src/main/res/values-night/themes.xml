@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Aiimin" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/drafting_bg</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Theme.Aiimin.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/drafting_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_silent</item>
+        <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.Aiimin</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

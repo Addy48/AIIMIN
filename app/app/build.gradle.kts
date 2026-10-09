@@ -21,8 +21,8 @@ android {
         // `aiimin.*` because `in` is a Kotlin keyword and backticking every file
         // is not craft.
         applicationId = "in.aiimin.app"
-        versionCode = 1
-        versionName = "3.0.0-alpha01"
+        versionCode = 4
+        versionName = "4.0.0-alpha01"
 
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
@@ -36,11 +36,11 @@ android {
     buildTypes {
         debug {
             // Installs alongside the V2 build while V3 is being brought to parity.
-            applicationIdSuffix = ".v3"
+            applicationIdSuffix = ".v4"
             buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")
         }
         release {
-            applicationIdSuffix = ".v3"
+            applicationIdSuffix = ".v4"
             isMinifyEnabled = true
             isShrinkResources = true
             buildConfigField("String", "API_BASE_URL", "\"https://api.aiimin.in/api\"")
@@ -60,21 +60,18 @@ android {
 
 dependencies {
     implementation(projects.core.designsystem)
-    implementation(projects.core.model)
     implementation(projects.core.data)
+    implementation(projects.core.engine)
+    implementation(projects.core.nlp)
     implementation(projects.core.network)
-    implementation(projects.feature.capture)
     implementation(projects.feature.today)
     implementation(projects.feature.money)
-    implementation(projects.feature.config)
-    implementation(projects.feature.osid)
-    implementation(projects.feature.onboarding)
-    implementation(projects.feature.score)
-    implementation(projects.feature.journal)
-    implementation(projects.feature.lab)
-    implementation(projects.feature.english)
+    implementation(projects.feature.vault)
+    implementation(projects.feature.me)
+    implementation(projects.feature.assistant)
     implementation(projects.feature.notes)
-    implementation(projects.feature.discipline)
+    implementation(projects.feature.onboarding)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
@@ -88,7 +85,6 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.biometric)
-    implementation(libs.androidx.glance.appwidget)
 
     testImplementation(libs.bundles.unit.test)
     androidTestImplementation(libs.bundles.android.test)
