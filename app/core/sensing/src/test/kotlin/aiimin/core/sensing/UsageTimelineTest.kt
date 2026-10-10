@@ -24,7 +24,6 @@ class UsageTimelineTest {
         isHome = { it == "launcher" },
         isWork = { it in work },
         lateFrom = lateFrom,
-        hourOf = { ((it.coerceAtLeast(0) / 3_600_000L) % 24).toInt() },
         hourStart = { it - Math.floorMod(it, 3_600_000L) },
     )
 
@@ -152,5 +151,17 @@ class UsageTimelineTest {
         ))
         assertThat(r.unlocks).isEqualTo(0)
         assertThat(r.screenOns).isEqualTo(2)
+    }
+
+    @Test
+    fun `hourly slots follow the window, so a window starting at 4am puts 4am in slot 0`() {
+        val start = t(4 * 60)
+        val r = UsageTimeline.compute(
+            events = listOf(Event(start + t(10), Kind.RESUMED, "yt", "M"), Event(start + t(40), Kind.PAUSED, "yt", "M")),
+            windowStart = start, windowEnd = start + day,
+            counted = { true }, hourStart = { it - Math.floorMod(it, 3_600_000L) },
+        )
+        assertThat(r.hourlyMs[0]).isEqualTo(t(30))
+        assertThat(r.hourlyMs.size).isEqualTo(24)
     }
 }
