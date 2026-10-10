@@ -142,4 +142,15 @@ class UsageTimelineTest {
         assertThat(SleepMath.regularity(listOf(780, 960, 870, 1020))!!).isLessThan(30)
         assertThat(SleepMath.regularity(listOf(900, 905))).isNull()
     }
+
+    @Test
+    fun `screen-on events are counted so phones without a lock still show pickups`() {
+        val r = run(listOf(
+            Event(t(60), Kind.SCREEN_ON), Event(t(61), Kind.RESUMED, "yt", "Main"), Event(t(70), Kind.SCREEN_OFF),
+            Event(t(120), Kind.SCREEN_ON), Event(t(120) + 400, Kind.SCREEN_ON), // debounced duplicate
+            Event(t(130), Kind.SCREEN_OFF),
+        ))
+        assertThat(r.unlocks).isEqualTo(0)
+        assertThat(r.screenOns).isEqualTo(2)
+    }
 }
