@@ -34,7 +34,7 @@ data class AppSettings(
     val name: String = "",
     val role: String = "default",
     val priorities: List<String> = emptyList(),
-    val theme: AppTheme = AppTheme.SYSTEM,
+    val theme: AppTheme = AppTheme.LIGHT,
     val batteryMode: BatteryMode = BatteryMode.GENTLE,
     val batteryModeChangedOn: LocalDate? = null,
     val dayMode: DayMode = DayMode.Midnight,
@@ -51,13 +51,50 @@ data class AppSettings(
     val quiet: QuietHours = QuietHours(true, 22 * 60, 7 * 60),
     val reduceMotion: Boolean = false,
     val appLock: Boolean = false,
+    val hideInRecents: Boolean = false,
     val journalSync: Boolean = false,
+    /** What may leave the phone when signed in (see [SyncKinds]). Journal has its own switch. */
+    val syncScope: Set<String> = SyncKinds.DEFAULT,
+    /** Background sync only on Wi-Fi or other unmetered networks. */
+    val syncWifiOnly: Boolean = false,
+    val dob: String? = null,
+    val primaryBank: String? = null,
+    val banks: List<String> = emptyList(),
+    val cashWallet: Boolean = true,
     val lifeScoreSharedWith: Set<String> = emptySet(),
     val stepCounterState: String? = null,
     val focusActive: String? = null,
     val lastSyncAt: Long? = null,
     val deviceId: String = "",
+    /** Your UPI ID, for "Ask for ₹…" pay links when settling splits (P2). Never a collect request. */
+    val myUpiId: String = "",
+    val city: String = "",
+    /** Display language for dates and numbers; "en-IN" only for now (SE12). */
+    val language: String = "en-IN",
+    /** First-run "what's new" seen for this version (SE14). */
+    val seenVersion: Int = 0,
+    /** Extra ledgers shown on Money (SE7). Personal is always on. */
+    val ledgersOn: Set<String> = setOf("HOUSEHOLD", "BUSINESS"),
+    /** Payments below this many rupees roll up per payee per week (SE7). */
+    val rollupBelow: Int = 200,
+    /** In-app text size on top of the system's (SE11), 0.9–1.3. */
+    val textScale: Float = 1f,
+    val haptics: Boolean = true,
+    /** Speech language for capture: en-IN, hi-IN, or "auto" (SE12). */
+    val voiceLanguage: String = "en-IN",
 )
+
+/** The kinds of data the Sync settings page can switch. */
+object SyncKinds {
+    const val TASKS = "tasks"
+    const val NOTES = "notes"
+    const val MONEY = "money"
+    const val CALENDAR = "calendar"
+    const val GOALS = "goals"
+    const val MINIMUMS = "minimums"
+    val ADDED_V2 = setOf(CALENDAR, GOALS, MINIMUMS)
+    val DEFAULT = setOf(TASKS, NOTES, MONEY) + ADDED_V2
+}
 
 @Singleton
 class SettingsStore @Inject constructor(@ApplicationContext private val context: Context) {
@@ -83,12 +120,29 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val quiet = stringPreferencesKey("quiet")
         val reduceMotion = booleanPreferencesKey("reduce_motion")
         val appLock = booleanPreferencesKey("app_lock")
+        val hideRecents = booleanPreferencesKey("hide_recents")
         val journalSync = booleanPreferencesKey("journal_sync")
+        val syncScope = stringSetPreferencesKey("sync_scope")
+        val syncScopeV2 = booleanPreferencesKey("sync_scope_v2")
+        val syncWifiOnly = booleanPreferencesKey("sync_wifi_only")
+        val dob = stringPreferencesKey("dob")
+        val primaryBank = stringPreferencesKey("primary_bank")
+        val banks = stringPreferencesKey("banks")
+        val cashWallet = booleanPreferencesKey("cash_wallet")
         val scoreShare = stringSetPreferencesKey("score_share")
         val stepCounter = stringPreferencesKey("step_counter")
         val focus = stringPreferencesKey("focus_active")
         val lastSync = stringPreferencesKey("last_sync")
         val device = stringPreferencesKey("device_id")
+        val myUpi = stringPreferencesKey("my_upi")
+        val city = stringPreferencesKey("city")
+        val language = stringPreferencesKey("language")
+        val seenVersion = intPreferencesKey("seen_version")
+        val ledgersOn = stringSetPreferencesKey("ledgers_on")
+        val rollupBelow = intPreferencesKey("rollup_below")
+        val textScale = stringPreferencesKey("text_scale")
+        val haptics = booleanPreferencesKey("haptics")
+        val voiceLang = stringPreferencesKey("voice_lang")
     }
 
     val settings: Flow<AppSettings> = context.store.data.map(::read)
@@ -100,7 +154,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         name = p[K.name].orEmpty(),
         role = p[K.role] ?: "default",
         priorities = p[K.priorities]?.split('|')?.filter { it.isNotBlank() }.orEmpty(),
-        theme = p[K.theme]?.let { runCatching { AppTheme.valueOf(it) }.getOrNull() } ?: AppTheme.SYSTEM,
+        theme = p[K.theme]?.let { runCatching { AppTheme.valueOf(it) }.getOrNull() } ?: AppTheme.LIGHT,
         batteryMode = p[K.battery]?.let { runCatching { BatteryMode.valueOf(it) }.getOrNull() } ?: BatteryMode.GENTLE,
         batteryModeChangedOn = p[K.batteryOn]?.let(LocalDate::parse),
         dayMode = p[K.dayMode]?.let(Codecs::decodeDayMode) ?: DayMode.Midnight,
@@ -117,12 +171,29 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         quiet = p[K.quiet]?.split(',')?.let { QuietHours(it[0] == "1", it[1].toInt(), it[2].toInt()) } ?: QuietHours(true, 22 * 60, 7 * 60),
         reduceMotion = p[K.reduceMotion] ?: false,
         appLock = p[K.appLock] ?: false,
+        hideInRecents = p[K.hideRecents] ?: false,
         journalSync = p[K.journalSync] ?: false,
+        // Scopes saved before v2 only knew tasks/notes/money; the kinds added later start on.
+        syncScope = p[K.syncScope]?.let { if (p[K.syncScopeV2] == true) it else it + SyncKinds.ADDED_V2 } ?: SyncKinds.DEFAULT,
+        syncWifiOnly = p[K.syncWifiOnly] ?: false,
+        dob = p[K.dob],
+        primaryBank = p[K.primaryBank],
+        banks = p[K.banks]?.split("|")?.filter { it.isNotBlank() }.orEmpty(),
+        cashWallet = p[K.cashWallet] ?: true,
         lifeScoreSharedWith = p[K.scoreShare] ?: emptySet(),
         stepCounterState = p[K.stepCounter],
         focusActive = p[K.focus],
         lastSyncAt = p[K.lastSync]?.toLongOrNull(),
         deviceId = p[K.device].orEmpty(),
+        myUpiId = p[K.myUpi].orEmpty(),
+        city = p[K.city].orEmpty(),
+        language = p[K.language] ?: "en-IN",
+        seenVersion = p[K.seenVersion] ?: 0,
+        ledgersOn = p[K.ledgersOn] ?: setOf("HOUSEHOLD", "BUSINESS"),
+        rollupBelow = p[K.rollupBelow] ?: 200,
+        textScale = p[K.textScale]?.toFloatOrNull()?.coerceIn(0.9f, 1.3f) ?: 1f,
+        haptics = p[K.haptics] ?: true,
+        voiceLanguage = p[K.voiceLang] ?: "en-IN",
     )
 
     suspend fun update(change: (AppSettings) -> AppSettings) {
@@ -148,13 +219,36 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.quiet] = "${if (s.quiet.enabled) 1 else 0},${s.quiet.fromMin},${s.quiet.toMin}"
             p[K.reduceMotion] = s.reduceMotion
             p[K.appLock] = s.appLock
+            p[K.hideRecents] = s.hideInRecents
             p[K.journalSync] = s.journalSync
+            p[K.syncScope] = s.syncScope
+            p[K.syncScopeV2] = true
+            p[K.syncWifiOnly] = s.syncWifiOnly
+            s.dob?.let { p[K.dob] = it } ?: p.remove(K.dob)
+            s.primaryBank?.let { p[K.primaryBank] = it } ?: p.remove(K.primaryBank)
+            p[K.banks] = s.banks.joinToString("|")
+            p[K.cashWallet] = s.cashWallet
             p[K.scoreShare] = s.lifeScoreSharedWith
             s.stepCounterState?.let { p[K.stepCounter] = it } ?: p.remove(K.stepCounter)
             s.focusActive?.let { p[K.focus] = it } ?: p.remove(K.focus)
             s.lastSyncAt?.let { p[K.lastSync] = it.toString() } ?: p.remove(K.lastSync)
             p[K.device] = s.deviceId
+            p[K.myUpi] = s.myUpiId
+            p[K.city] = s.city
+            p[K.language] = s.language
+            p[K.seenVersion] = s.seenVersion
+            p[K.ledgersOn] = s.ledgersOn
+            p[K.rollupBelow] = s.rollupBelow
+            p[K.textScale] = s.textScale.toString()
+            p[K.haptics] = s.haptics
+            p[K.voiceLang] = s.voiceLanguage
         }
+    }
+
+    /** Wipes every setting; the device id stays so this install remains one device on the server. */
+    suspend fun clearAll() {
+        val id = current().deviceId
+        context.store.edit { it.clear(); if (id.isNotEmpty()) it[K.device] = id }
     }
 
     suspend fun deviceId(): String {

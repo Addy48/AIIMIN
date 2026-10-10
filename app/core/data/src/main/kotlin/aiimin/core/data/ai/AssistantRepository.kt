@@ -304,18 +304,42 @@ class AssistantRepository @Inject constructor(
      * lines split; anything else falls back to the single best guess.
      * Journal and mood lines return empty — the caller opens the journal.
      */
+    /** One spoken line can hold several things: "meeting at 3, buy milk and eggs, spent 200 on auto". */
     suspend fun preview(text: String): List<Action> {
         val t = text.trim()
         if (t.isEmpty()) return emptyList()
+        val parts = clauses(t)
+        if (parts.size <= 1) return previewOne(t)
+        return parts.flatMap { previewOne(it) }.distinctBy { it.label + it.headline }
+    }
+
+    private fun clauses(t: String): List<String> = Clauses.split(t)
+
+    private suspend fun previewOne(t: String): List<Action> {
         val today = clock.today()
+        Regex("^(?:note|jot down|remember)(?:\\s+that)?\\s+(.+)$", RegexOption.IGNORE_CASE).find(t)?.let { m ->
+            val body = m.groupValues[1].trim().replaceFirstChar { it.uppercase() }
+            return listOf(Action.Note(body.take(60), body))
+        }
         val proposed = enrich(Assistant.proposalsFrom(t, today).mapNotNull { toAction(it, today) } + extraActions(t))
         if (proposed.isNotEmpty()) return proposed.distinctBy { it.label + it.headline }
         val c = aiimin.core.nlp.CaptureParser.parse(t)
-        val day = (if (c.dayWord == "tomorrow") today.plusDays(1) else today).toString()
+        val day = (if (c.dayWord == "tomorrow") today.plusDays(1) else today)
+        // "meeting at 3 with Arjun" is an event, not a task.
+        val at = Regex("\\bat\\s+(\\d{1,2})(?::(\\d{2}))?\\s*(am|pm)?\\b", RegexOption.IGNORE_CASE).find(t)
+        val eventWord = Regex("\\b(meeting|meet|lunch|dinner|appointment|interview|stand-?up|catch ?up|review|sync)\\b", RegexOption.IGNORE_CASE).containsMatchIn(t)
+        if (eventWord && at != null && c.type != aiimin.core.nlp.CaptureType.EXPENSE) {
+            var h = at.groupValues[1].toInt().coerceIn(0, 23)
+            val m = at.groupValues[2].ifBlank { "0" }.toInt().coerceIn(0, 59)
+            when (at.groupValues[3].lowercase()) { "pm" -> if (h < 12) h += 12; "am" -> if (h == 12) h = 0; else -> if (h in 1..6) h += 12 }
+            val title = t.replace(at.value, "").replace(Regex("\\s+"), " ").trim().replaceFirstChar { it.uppercase() }
+            return listOf(Action.Event(title, day.toString(), "%02d:%02d".format(h, m), 30))
+        }
+        val today0 = today.toString()
         return when (c.type) {
-            aiimin.core.nlp.CaptureType.EXPENSE -> listOf(Action.Expense(c.label, c.amount * 100, c.category ?: "Other", today.toString()))
-            aiimin.core.nlp.CaptureType.INCOME -> listOf(Action.Income(c.label, c.amount * 100, c.category ?: "Other income", today.toString()))
-            aiimin.core.nlp.CaptureType.TASK, aiimin.core.nlp.CaptureType.HABIT -> listOf(Action.Task(c.label.ifBlank { t }, day, c.time24))
+            aiimin.core.nlp.CaptureType.EXPENSE -> listOf(Action.Expense(c.label, c.amount * 100, c.category ?: "Other", today0))
+            aiimin.core.nlp.CaptureType.INCOME -> listOf(Action.Income(c.label, c.amount * 100, c.category ?: "Other income", today0))
+            aiimin.core.nlp.CaptureType.TASK, aiimin.core.nlp.CaptureType.HABIT -> listOf(Action.Task(c.label.ifBlank { t }.replaceFirstChar { it.uppercase() }, day.toString(), c.time24))
             aiimin.core.nlp.CaptureType.JOURNAL -> emptyList()
             else -> listOf(Action.Note(c.label.ifBlank { t.take(60) }, t))
         }
@@ -505,4 +529,12 @@ class AssistantRepository @Inject constructor(
     private companion object {
         val STOP = setOf("when", "does", "what", "the", "my", "is", "for", "and", "dad", "mom", "expire", "expires", "about", "show", "find", "notes", "note", "where")
     }
+}
+
+/** One spoken line → its clauses: commas, semicolons, new lines, and "and/then/also" before a verb. */
+object Clauses {
+    private const val VERBS = "buy|bought|call|spent|spend|paid|pay|note|remind|meet|meeting|book|send|email|text|received|got|ordered|start|started|did|walked|read"
+    private val SPLIT = Regex("\\s*[;\\n]\\s*|,\\s+|\\s+(?:and|then|also)\\s+(?=(?:$VERBS)\\b)", RegexOption.IGNORE_CASE)
+
+    fun split(t: String): List<String> = t.split(SPLIT).map { it.trim().trimEnd('.', ',') }.filter { it.isNotBlank() }
 }

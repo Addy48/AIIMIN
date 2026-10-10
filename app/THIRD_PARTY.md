@@ -2,19 +2,24 @@
 
 ## Fonts
 
-`core/designsystem/src/main/res/font/` holds three families, all under the
-**SIL Open Font License 1.1**, taken from the Google Fonts repository
-(`github.com/google/fonts`) on 2026-08-03:
+`core/designsystem/src/main/res/font/` holds two variable font families, both under the
+**SIL Open Font License 1.1**, taken from the Google Fonts repository (`github.com/google/fonts`):
 
-| Files | Family | Upstream |
-|---|---|---|
-| `core_designsystem_barlow_*.ttf` | Barlow (Regular · Medium · SemiBold) | `ofl/barlow` |
-| `core_designsystem_barlow_condensed_*.ttf` | Barlow Condensed (Medium · SemiBold · Bold) | `ofl/barlowcondensed` |
-| `core_designsystem_jetbrains_mono_variable.ttf` | JetBrains Mono (variable `wght`) | `ofl/jetbrainsmono` |
+| File | Family | Used for | Upstream |
+|---|---|---|---|
+| `funnel_display.ttf` | Funnel Display (variable `wght`) | Display, headlines, numbers | `ofl/funneldisplay` |
+| `golos_text.ttf` | Golos Text (variable `wght`) | Body text and controls | `ofl/golostext` |
 
-They are bundled rather than fetched so the type is identical offline, on first
-run, and on a phone with no Google Play services. The OFL requires the licence
-to travel with the fonts: full text at <https://openfontlicense.org>.
+They are bundled rather than fetched so the type is identical offline, on first run, and on a
+phone with no Google Play services. The OFL requires the licence to travel with the fonts: full
+text at <https://openfontlicense.org>.
 
-Barlow © 2017 The Barlow Project Authors. JetBrains Mono © 2020 The JetBrains
-Mono Project Authors.
+## Icons
+
+Phosphor Icons (MIT licence), drawn as Compose vectors in `core/designsystem/.../icon/AppIcons.kt`.
+
+## Libraries
+
+AndroidX (Compose, Room, Navigation, DataStore, WorkManager, Biometric), Hilt / Dagger, Retrofit and
+OkHttp, kotlinx.serialization and coroutines, Vico, Google ML Kit (text recognition, document
+scanner) and Google Play Billing: Apache License 2.0 or the Android SDK licence.

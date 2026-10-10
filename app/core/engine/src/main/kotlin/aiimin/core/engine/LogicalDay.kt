@@ -31,7 +31,7 @@ sealed interface DayMode {
 class LogicalDay(
     private val mode: DayMode,
     private val zone: ZoneId,
-    private val rules: RulesConfig = RulesConfig.V2,
+    private val rules: RulesConfig = RulesConfig.V3,
 ) {
 
     fun rosterKind(date: LocalDate): Char {
@@ -101,7 +101,7 @@ class LogicalDay(
 
     companion object {
         /** Day-mode changes apply tomorrow and at most once every 14 days. */
-        fun canChangeMode(lastChangedOn: LocalDate?, today: LocalDate, rules: RulesConfig = RulesConfig.V2): Boolean =
+        fun canChangeMode(lastChangedOn: LocalDate?, today: LocalDate, rules: RulesConfig = RulesConfig.V3): Boolean =
             lastChangedOn == null || !lastChangedOn.plusDays(rules.day.modeChangeCooldownDays.toLong()).isAfter(today)
     }
 }

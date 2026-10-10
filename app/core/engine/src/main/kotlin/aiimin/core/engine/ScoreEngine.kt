@@ -2,6 +2,7 @@ package aiimin.core.engine
 
 import kotlin.math.abs
 import kotlin.math.exp
+import kotlin.math.ln
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -38,8 +39,14 @@ data class ScoredDay(
     val verifiedShare: Double,
     /** True when an unverified spike was clipped to your personal ceiling. */
     val clipped: Boolean,
-    /** Smoothed, rate-limited Life Score after this day. */
+    /** The Life Score shown after this day (conservative while the range is wide, §9.2.7). */
     val score: Double?,
+    /** Raw level before the conservative display adjustment. */
+    val level: Double? = score,
+    /** Form (≈7-day) minus base (≈42-day): Rising ≥ +3, Slipping ≤ −3. */
+    val momentum: Double = 0.0,
+    /** Range (uncertainty) in points; shown as ± while above 3. */
+    val range: Double = 15.0,
 )
 
 data class Contributor(val signal: String, val points: Double)
@@ -131,10 +138,16 @@ class ScoreEngine(
 
     // ---------------------------------------------------------------- signal score
 
+    /** Every non-paused value of a signal before [uptoIdx] (all of history when null), oldest first. */
+    private fun allBefore(key: String, history: List<DaySnapshot>, uptoIdx: Int?): List<Double> {
+        val end = uptoIdx ?: history.size
+        return (0 until end).mapNotNull { i -> history[i].takeUnless { it.paused }?.value(key) }
+    }
+
     /**
-     * Half adherence (did you meet YOUR target), half trend (are you better than
-     * your own normal). The trend half never sees the target, so easy targets
-     * can't inflate it. [histIdx] null means "today, against all history".
+     * Score Engine 3 (plan §9.2): points anchored at YOUR target (meeting it = 70), a personal
+     * stretch anchor above it, then credit — good news shrinks toward 50 with weaker evidence and
+     * easier targets; bad news is believed as it is. [histIdx] null means "today, against all history".
      */
     fun signalScore(
         key: String,
@@ -146,44 +159,33 @@ class ScoreEngine(
     ): SignalScore? {
         val c = intentions.card(key) ?: return null
         if (value == null || !c.isScored) return null
-        val vals = historyValues(key, history, histIdx)
-        val med = Stats.median(vals)
-        val m = (Stats.mad(vals) * 1.4826).takeIf { it != 0.0 } ?: max(1.0, abs(med) * 0.15)
-        val z = ((value - med) / m).coerceIn(-baseline.zClip, baseline.zClip)
+        val hist = allBefore(key, history, histIdx)
         val t = c.targetFor(type)
-
+        val pts: Double
+        val ch: Double
         val adherence: Double
-        var trend: Double
         when (c.direction) {
-            Direction.MORE -> {
-                adherence = if (t > 0) min(1.0, value / t) else 1.0
-                trend = 50 + 20 * z
-            }
-            Direction.LESS -> {
-                adherence = min(1.0, t / max(value, 0.0001))
-                trend = 50 - 20 * z
-            }
-            else -> { // BAND: two-sided, like resting heart rate
+            Direction.BAND -> {
                 val lo = c.band?.start ?: (t * 0.8)
                 val hi = c.band?.endInclusive ?: (t * 1.2)
-                val w = max(1e-6, (hi - lo) / 2)
-                adherence = if (value in lo..hi) 1.0 else max(0.0, 1 - (if (value < lo) lo - value else value - hi) / (2 * w))
-                val mid = (lo + hi) / 2
-                trend = 100 * exp(-((value - mid) / max(m, w)).pow(2) / 2)
+                pts = Score3.bandPoints(value, lo, hi)
+                ch = 1.0
+                adherence = if (value in lo..hi) 1.0 else pts / 80.0
             }
+            Direction.MORE, Direction.LESS -> {
+                val more = c.direction == Direction.MORE
+                pts = Score3.points(more, value, t, hist)
+                ch = Score3.challenge(Score3.targetRank(more, t, hist))
+                adherence = if (more) (if (t > 0) min(1.0, value / t) else 1.0) else min(1.0, t / max(value, 1e-6))
+            }
+            else -> return null
         }
-        val challengeFactor = if (histIdx == null) challenge(key, history).factor else 1.0
-        var adhScore = adherence * rules.tiers.multiplier(tier) * challengeFactor
-        if (!tier.isVerified) adhScore = min(adhScore, rules.tiers.unverifiedCeiling)
-        val calibrated = vals.size >= baseline.calibDays
-        trend = if (calibrated) trend.coerceIn(0.0, 100.0) else 50.0
-        return SignalScore(
-            score = (50 * min(1.0, adhScore) + 0.5 * trend).coerceIn(0.0, 100.0),
-            adherence = adherence,
-            z = if (calibrated) z else 0.0,
-            tier = tier,
-            calibrated = calibrated,
-        )
+        val credited = Score3.credit(pts, rules.tiers.multiplier(tier), ch)
+        val calibrated = hist.size >= baseline.calibDays
+        val med = Stats.median(hist.takeLast(baseline.longWindow))
+        val m = (Stats.mad(hist.takeLast(baseline.longWindow)) * 1.4826).takeIf { it != 0.0 } ?: max(1.0, abs(med) * 0.15)
+        val z = if (calibrated) ((value - med) / m).coerceIn(-baseline.zClip, baseline.zClip) else 0.0
+        return SignalScore(score = credited.coerceIn(0.0, 100.0), adherence = adherence, z = z, tier = tier, calibrated = calibrated)
     }
 
     // ---------------------------------------------------------------- daily index
@@ -215,63 +217,23 @@ class ScoreEngine(
     // ---------------------------------------------------------------- Life Score series
 
     /**
-     * Outlier-safe, uncertainty-aware smoothing (plan §5.2–§5.4):
-     * unverified spikes are clipped to your personal ceiling; the score is an
-     * EWMA (half-life 7) that rises no faster than your own variability and
-     * evidence justify, and falls faster than it rises.
+     * Level, momentum and range (plan §9.2.5–7): level moves a seventh of the way to each day's
+     * index (half-life 7 days), at most 3 points a day (5 while uncertain); exceptional unverified
+     * days count as your ceiling; falls are halved when far below your 90-day high. Paused or
+     * insufficient days don't move the level; the range grows a little.
      */
     fun series(history: List<DaySnapshot>): List<ScoredDay> {
         val out = ArrayList<ScoredDay>(history.size)
-        val dis = ArrayList<Double>()
-        var s: Double? = null
-        val lambda = 0.5.pow(1.0 / score.halfLife)
+        val lv = Score3.Level()
         history.forEachIndexed { i, h ->
             val r = dailyIndex(h, history, i)
-            val shownDi = r.value?.let { Stats.round1(it) }
             if (r.value == null) {
-                out += ScoredDay(h, null, r.verifiedShare, false, s?.let { Stats.round1(it) })
+                lv.settle(null, 0.0)
+                out += ScoredDay(h, null, r.verifiedShare, false, lv.shown()?.let(Stats::round1), lv.level?.let(Stats::round1), lv.momentum(), lv.phi)
                 return@forEachIndexed
             }
-            var di: Double = r.value
-            var clipped = false
-            val last = dis.takeLast(score.outlierWindow)
-            if (last.size >= score.outlierMinDays) {
-                val q1 = Stats.percentile(last, 25.0)
-                val q3 = Stats.percentile(last, 75.0)
-                val hi = Stats.percentile(last, 90.0) + score.outlierIQR * (q3 - q1)
-                if (di > hi && r.verifiedShare < score.verifiedForOutlier) {
-                    clipped = true
-                    di = hi
-                }
-            }
-            dis += di
-
-            val win = dis.takeLast(score.ewmaWindow)
-            var num = 0.0
-            var den = 0.0
-            win.forEachIndexed { j, x ->
-                val wt = lambda.pow(win.size - 1 - j)
-                num += x * wt
-                den += wt
-            }
-            var raw = num / den
-            val n = dis.size
-            if (n < score.warmupDays) raw = (n * raw + (score.warmupDays - n) * 50) / score.warmupDays
-
-            val prev = s
-            s = if (prev == null) {
-                raw
-            } else {
-                val sigma = Stats.mad(dis.takeLast(score.outlierWindow)) * 1.4826
-                val from = max(0, i - (score.confidenceDays - 1))
-                val vsSum = (from..i).sumOf { idx -> if (idx == i) r.verifiedShare else out[idx].verifiedShare }
-                val vs = vsSum / min(score.confidenceDays, i + 1)
-                val conf = min(1.0, n.toDouble() / score.confidenceDays) * sqrt(max(0.05, vs))
-                val maxRise = max(score.riseMin, score.riseSigma * sigma) * conf
-                val maxFall = max(score.fallMin, score.fallSigma * sigma)
-                raw.coerceIn(prev - maxFall, prev + maxRise)
-            }
-            out += ScoredDay(h, shownDi, r.verifiedShare, clipped, Stats.round1(s!!))
+            val clipped = lv.settle(r.value, r.verifiedShare)
+            out += ScoredDay(h, Stats.round1(r.value), r.verifiedShare, clipped, lv.shown()?.let(Stats::round1), lv.level?.let(Stats::round1), lv.momentum(), lv.phi)
         }
         return out
     }
@@ -285,11 +247,11 @@ class ScoreEngine(
         return if (last.isEmpty()) 0.0 else last.sumOf { it.verifiedShare } / last.size
     }
 
-    /** Words, not judgement. Elite needs a mostly verified month. */
+    /** Words, not judgement (§9.8 bands). Peak needs a mostly verified month. */
     fun band(lifeScore: Int?, verifiedShare28: Double): Band = when {
         lifeScore == null -> Band.CALIBRATING
-        lifeScore >= 90 -> if (verifiedShare28 >= score.eliteVerified) Band.ELITE else Band.STRONG
-        lifeScore >= 75 -> Band.STRONG
+        lifeScore >= 80 -> if (verifiedShare28 >= score.eliteVerified) Band.PEAK else Band.STRONG
+        lifeScore >= 72 -> Band.STRONG
         lifeScore >= 60 -> Band.GOOD
         lifeScore >= 40 -> Band.STEADY
         else -> Band.REBUILDING
@@ -322,5 +284,111 @@ enum class Band(val label: String) {
     STEADY("Steady"),
     GOOD("Good"),
     STRONG("Strong"),
-    ELITE("Elite"),
+    PEAK("Peak"),
+}
+
+/** Score Engine 3 math, kept pure and separate so the EV1–EV12 vectors can test it directly. */
+object Score3 {
+    const val AT_TARGET = 70.0
+    private const val GAMMA = 0.8
+    private val K = ln(4.0)
+
+    /** Stretch anchor: halfway from 1.25·T to your own P90 (or 1.10·T) at 14 days, mostly yours by 60. */
+    fun stretch(more: Boolean, t: Double, hist: List<Double>): Double {
+        val n = hist.size.toDouble()
+        val w = n / (n + 14.0)
+        val last = hist.takeLast(90)
+        return if (more) {
+            val d = 1.25 * t
+            val p = max(if (last.isEmpty()) d else Stats.percentile(last, 90.0), 1.10 * t)
+            d * (1 - w) + p * w
+        } else {
+            val d = 0.75 * t
+            val p = min(if (last.isEmpty()) d else Stats.percentile(last, 10.0), 0.90 * t)
+            d * (1 - w) + p * w
+        }
+    }
+
+    fun points(more: Boolean, x: Double, t: Double, hist: List<Double>): Double {
+        if (t <= 0) return if (more) AT_TARGET else 100.0
+        val h = stretch(more, t, hist)
+        return if (more) {
+            if (x <= t) AT_TARGET * (max(x, 0.0) / t).pow(GAMMA)
+            else AT_TARGET + 30 * (1 - exp(-K * (x - t) / max(1e-6, h - t)))
+        } else {
+            if (x >= t) AT_TARGET * (t / max(x, 1e-6)).pow(GAMMA)
+            else AT_TARGET + 30 * (1 - exp(-K * (t - x) / max(1e-6, t - h)))
+        }
+    }
+
+    fun bandPoints(x: Double, lo: Double, hi: Double): Double {
+        val mid = (lo + hi) / 2
+        val hw = max(1e-6, (hi - lo) / 2)
+        if (x in lo..hi) return 80 + 20 * (1 - abs(x - mid) / hw)
+        val d = if (x < lo) lo - x else x - hi
+        return 80 * exp(-0.5 * (d / hw).pow(2))
+    }
+
+    /** Where the target sits in your last 28 values (0..1, higher = harder). */
+    fun targetRank(more: Boolean, t: Double, hist: List<Double>): Double {
+        if (hist.size < 7) return 0.6
+        val h = hist.takeLast(28)
+        val r = (h.count { it < t } + 0.5 * h.count { it == t }) / h.size
+        return if (more) r else 1 - r
+    }
+
+    fun challenge(r: Double): Double = when {
+        r <= 0.4 -> 0.6
+        r <= 0.6 -> 0.6 + (r - 0.4) / 0.2 * 0.4
+        else -> min(1.1, 1.0 + (r - 0.6) / 0.3 * 0.1)
+    }
+
+    fun credit(p: Double, tier: Double, challenge: Double): Double = if (p <= 50) p else min(100.0, 50 + (p - 50) * tier * challenge)
+
+    /** The level state machine of the reference implementation. */
+    class Level {
+        var base: Double? = null; private set
+        var form: Double? = null; private set
+        var level: Double? = null; private set
+        var n = 0; private set
+        var phi = 15.0; private set
+        private val hist = ArrayList<Double>()
+        private val highs = ArrayList<Double>()
+
+        /** Returns true when the day was clipped as an exceptional unverified spike. */
+        fun settle(diIn: Double?, verified: Double): Boolean {
+            if (diIn == null) { phi = min(15.0, sqrt(phi * phi + 1.0)); return false }
+            var di = diIn
+            var clipped = false
+            if (hist.size >= 14) {
+                val w = hist.takeLast(60)
+                val hi = Stats.percentile(w, 90.0) + 1.5 * (Stats.percentile(w, 75.0) - Stats.percentile(w, 25.0))
+                if (di > hi && verified < 0.6) { di = hi; clipped = true }
+            }
+            hist += di
+            n++
+            val l = level
+            if (l == null) {
+                base = di; form = di; level = di
+            } else {
+                base = base!! + (2.0 / 43) * (di - base!!)
+                form = form!! + (2.0 / 8) * (di - form!!)
+                val target = l + (1 - 2.0.pow(-1.0 / 7)) * (di - l)
+                val cap = if (phi > 8) 5.0 else 3.0
+                var move = (target - l).coerceIn(-cap, cap)
+                val high = if (highs.isEmpty()) l else highs.takeLast(90).max()
+                if (move < 0 && l < high - 6) move *= 0.5
+                level = l + move
+            }
+            highs += level!!
+            val w = 0.4 + 0.6 * verified
+            phi = sqrt(1 / (1 / (phi * phi + 0.25) + w / 144.0))
+            return clipped
+        }
+
+        fun momentum(): Double = form?.let { it - base!! } ?: 0.0
+
+        /** Conservative for the first 30 scored days, so the number rises as it learns. */
+        fun shown(): Double? = level?.let { it - if (n < 30) 1.5 * phi else 0.0 }
+    }
 }
