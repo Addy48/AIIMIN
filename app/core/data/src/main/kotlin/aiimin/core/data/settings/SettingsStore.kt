@@ -47,6 +47,8 @@ data class AppSettings(
     val hideScore: Boolean = false,
     val hideXp: Boolean = false,
     val workApps: Set<String> = emptySet(),
+    /** Apps that don't count as distraction during focus (a music player, a reference app). */
+    val focusAllowedApps: Set<String> = emptySet(),
     val lateHour: Int = 23,
     val quiet: QuietHours = QuietHours(true, 22 * 60, 7 * 60),
     val reduceMotion: Boolean = false,
@@ -116,6 +118,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val hideScore = booleanPreferencesKey("hide_score")
         val hideXp = booleanPreferencesKey("hide_xp")
         val workApps = stringSetPreferencesKey("work_apps")
+        val focusAllowedApps = stringSetPreferencesKey("focus_allowed_apps")
         val lateHour = intPreferencesKey("late_hour")
         val quiet = stringPreferencesKey("quiet")
         val reduceMotion = booleanPreferencesKey("reduce_motion")
@@ -167,6 +170,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         hideScore = p[K.hideScore] ?: false,
         hideXp = p[K.hideXp] ?: false,
         workApps = p[K.workApps] ?: emptySet(),
+        focusAllowedApps = p[K.focusAllowedApps] ?: emptySet(),
         lateHour = p[K.lateHour] ?: 23,
         quiet = p[K.quiet]?.split(',')?.let { QuietHours(it[0] == "1", it[1].toInt(), it[2].toInt()) } ?: QuietHours(true, 22 * 60, 7 * 60),
         reduceMotion = p[K.reduceMotion] ?: false,
@@ -215,6 +219,7 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.hideScore] = s.hideScore
             p[K.hideXp] = s.hideXp
             p[K.workApps] = s.workApps
+            p[K.focusAllowedApps] = s.focusAllowedApps
             p[K.lateHour] = s.lateHour
             p[K.quiet] = "${if (s.quiet.enabled) 1 else 0},${s.quiet.fromMin},${s.quiet.toMin}"
             p[K.reduceMotion] = s.reduceMotion
