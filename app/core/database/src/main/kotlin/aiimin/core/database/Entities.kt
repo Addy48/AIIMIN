@@ -419,6 +419,10 @@ data class DeviceDayEntity(
     val screenWorkMs: Long? = null,
     val lateScreenMs: Long? = null,
     val unlocks: Int? = null,
+    /** Unlocks on a secure phone, screen-ons otherwise; [pickupsLabel] says which. */
+    val pickups: Int? = null,
+    /** unlocks · pickups */
+    val pickupsLabel: String? = null,
     val notifications: Int? = null,
     val firstUnlockAt: Long? = null,
     /** JSON [{pkg, label, ms, opens}] top apps. */

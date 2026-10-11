@@ -27,6 +27,8 @@ data class ScreenDay(
     val workMs: Long,
     val lateMs: Long,
     val unlocks: Int,
+    /** Debounced screen-on count: pickups on phones without a secure lock. */
+    val screenOns: Int,
     val notifications: Int,
     val firstUnlockAt: Long?,
     val hourlyMs: List<Long>,
@@ -54,10 +56,15 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         return mode == AppOpsManager.MODE_ALLOWED
     }
 
+    /** True with a PIN, pattern or password. Without one the keyguard never hides, so unlocks read 0. */
+    fun isSecure(): Boolean = (context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager).isDeviceSecure
+
     fun settingsIntent(): Intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
     /**
      * @param lateHour local hour after which screen time counts as "late" (default 23:00).
+     * @param lateUntil end of the person's day (e.g. 04:00 next morning). Use between [windowEnd]
+     *   and this instant is added to [ScreenDay.lateMs], so a 01:00 scroll is late for the night it belongs to.
      */
     suspend fun read(
         windowStart: Instant,
@@ -65,17 +72,20 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         zone: ZoneId,
         workPackages: Set<String>,
         lateHour: Int = 23,
+        lateUntil: Instant = windowEnd,
     ): ScreenDay? = withContext(Dispatchers.IO) {
         if (!hasAccess()) return@withContext null
         val start = windowStart.toEpochMilli()
-        val end = minOf(windowEnd.toEpochMilli(), System.currentTimeMillis())
+        val now = System.currentTimeMillis()
+        val end = minOf(windowEnd.toEpochMilli(), now)
+        val readTo = maxOf(end, minOf(lateUntil.toEpochMilli(), now))
         val lookback = start - LOOKBACK_MS
         val events = ArrayList<UsageTimeline.Event>(4096)
         // Walk in 2 h slices: a single long query can come back truncated on
         // busy OEM builds. Half-open slices, so boundary events are read once.
         var cursor = lookback
-        while (cursor < end) {
-            val sliceEnd = minOf(cursor + SLICE_MS, end)
+        while (cursor < readTo) {
+            val sliceEnd = minOf(cursor + SLICE_MS, readTo)
             val it = usm.queryEvents(cursor, sliceEnd)
             val ev = UsageEvents.Event()
             while (it.hasNextEvent()) {
@@ -99,16 +109,25 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             lateFrom = lateFrom,
             hourStart = { Instant.ofEpochMilli(it).atZone(zone).truncatedTo(ChronoUnit.HOURS).toInstant().toEpochMilli() },
         )
+        val afterMidnight = if (readTo <= end) 0L else UsageTimeline.compute(
+            events = events,
+            windowStart = end,
+            windowEnd = readTo,
+            counted = { pkg -> counts(pkg, homes) },
+            isHome = { it in homes },
+            hourStart = { Instant.ofEpochMilli(it).atZone(zone).truncatedTo(ChronoUnit.HOURS).toInstant().toEpochMilli() },
+        ).totalMs
         ScreenDay(
             totalMs = r.totalMs,
             personalMs = r.personalMs,
             workMs = r.workMs,
-            lateMs = r.lateMs,
+            lateMs = r.lateMs + afterMidnight,
             unlocks = r.unlocks,
+            screenOns = r.screenOns,
             notifications = r.notifications,
             firstUnlockAt = r.firstUnlockAt,
             hourlyMs = r.hourlyMs.toList(),
-            apps = r.apps.take(40).map { AppLine(it.pkg, label(it.pkg), it.ms, it.opens, it.notifications) },
+            apps = r.apps.take(60).map { AppLine(it.pkg, label(it.pkg), it.ms, it.opens, it.notifications) },
         )
     }
 

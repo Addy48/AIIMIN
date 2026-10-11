@@ -25,6 +25,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import aiimin.core.model.ScreenSummary
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -100,7 +101,12 @@ class DeviceRepository @Inject constructor(
         val existing = dao.get(day.toString())
         val isToday = day == clock.today()
 
-        val screen = runCatching { usage.read(start, end, clock.zone, s.workApps, s.lateHour) }.getOrNull()
+        // Screen time always uses the calendar day, the same window as Android's Digital Wellbeing.
+        // Use after midnight but before the logical day ends still counts as late for this night.
+        val calStart = day.atStartOfDay(clock.zone).toInstant()
+        val calEnd = day.plusDays(1).atStartOfDay(clock.zone).toInstant()
+        val screen = runCatching { usage.read(calStart, calEnd, clock.zone, s.workApps, s.lateHour, lateUntil = maxOf(end, calEnd)) }.getOrNull()
+        val pick = screen?.let { ScreenSummary.pickups(usage.isSecure(), it.unlocks, it.screenOns) }
         val hc = health.steps(start, end)
         var steps = hc?.total
         var source = if (hc != null) "health_connect" else null
@@ -131,6 +137,8 @@ class DeviceRepository @Inject constructor(
                 screenWorkMs = screen?.workMs ?: existing?.screenWorkMs,
                 lateScreenMs = screen?.lateMs ?: existing?.lateScreenMs,
                 unlocks = screen?.unlocks ?: existing?.unlocks,
+                pickups = pick?.first ?: existing?.pickups,
+                pickupsLabel = pick?.second ?: existing?.pickupsLabel,
                 notifications = screen?.notifications ?: existing?.notifications,
                 firstUnlockAt = screen?.firstUnlockAt ?: existing?.firstUnlockAt,
                 apps = screen?.apps?.let { list -> AppJson.encodeToString(kotlinx.serialization.serializer<List<AppUse>>(), list.map(AppLine::toUse)) } ?: existing?.apps ?: "[]",
