@@ -3,6 +3,7 @@ package aiimin.feature.today
 import aiimin.core.data.day.DayRepository
 import aiimin.core.data.plan.MinimumToday
 import aiimin.core.data.util.Dates
+import aiimin.core.model.ScreenSummary
 import aiimin.core.engine.BatteryState
 import aiimin.core.engine.Signals
 import aiimin.designsystem.component.AppButton
@@ -91,6 +92,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
     val ui by vm.ui.collectAsStateWithLifecycle()
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { vm.onResume() }
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
@@ -627,9 +629,14 @@ private fun PhoneBody(u: TodayUi, modifier: Modifier) {
     val c = Aiimin.colors
     Row(modifier.fillMaxWidth().padding(top = 4.dp)) {
         Column(Modifier.weight(1f).clickable { nav.open(Route.PhoneDay) }.padding(vertical = 12.dp)) {
+            // Total matches Android's Digital Wellbeing (calendar day); the caption says what the score counts.
+            val sum = d?.screenMs?.let { ScreenSummary.of(it, d.screenPersonalMs ?: it, emptyList(), 0) }
             Text("Screen time", style = Aiimin.type.caption)
-            Text(d?.screenMs?.let { Dates.minutes(it / 60_000) } ?: "—", style = Aiimin.type.numberSmall, modifier = Modifier.padding(top = 3.dp))
-            Text(d?.unlocks?.let { "$it unlocks" } ?: "Turn on screen time", style = Aiimin.type.caption)
+            Text(sum?.let { ScreenSummary.fmt(it.totalMs) } ?: "—", style = Aiimin.type.numberSmall, modifier = Modifier.padding(top = 3.dp))
+            Text(
+                sum?.countedLine ?: d?.pickups?.let { "$it ${d.pickupsLabel ?: "unlocks"}" } ?: d?.unlocks?.let { "$it unlocks" } ?: "Turn on screen time",
+                style = Aiimin.type.caption,
+            )
         }
         Box(Modifier.width(1.dp).height(72.dp).background(c.border))
         Column(Modifier.weight(1f).clickable { nav.open(Route.Body) }.padding(vertical = 12.dp, horizontal = 16.dp)) {
