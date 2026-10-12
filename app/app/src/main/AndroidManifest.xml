@@ -8,6 +8,7 @@
     <!-- In-app speech capture (no system dialog). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- Steps: TYPE_STEP_COUNTER (API 29+ needs runtime grant). -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <!-- Day-total steps via Health Connect (Android Fitness / Settings parity). -->
@@ -120,6 +121,15 @@
         </activity-alias>
 
         <!-- Opt-in payment alerts via notification access (works without SMS). -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".payments.BankAlertListener"
             android:exported="true"

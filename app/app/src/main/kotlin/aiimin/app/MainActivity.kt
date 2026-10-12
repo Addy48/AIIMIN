@@ -163,7 +163,7 @@ class MainActivity : FragmentActivity() {
                     "debrief" -> Route.Debrief; "goals" -> Route.Goals; "weekly" -> Route.WeeklyReview; "why" -> Route.WhyScore; "patterns" -> Route.Patterns
                     "payments" -> Route.Payments; "category" -> Route.Category("Transport"); "emergency" -> Route.EmergencyCard("me")
                     "profile" -> Route.EditProfile; "plans" -> Route.Plans; "subscription" -> Route.Subscription; "devices" -> Route.LinkedDevices
-                    "moneysettings" -> Route.MoneySettings; "appearance" -> Route.Appearance; "language" -> Route.Language; "help" -> Route.Help; "about" -> Route.About
+                    "moneysettings" -> Route.MoneySettings; "appearance" -> Route.Appearance; "language" -> Route.Language; "help" -> Route.Help; "about" -> Route.About; "running" -> Route.Running
                     "captures" -> Route.RecentCaptures; "moodyear" -> Route.MoodYear; "backups" -> Route.VaultBackup; "kits" -> Route.EmergencyKits
                     "accounts" -> Route.Accounts; "splits" -> Route.Splits; "recurring" -> Route.Recurring; "payees" -> Route.PayeeMemory
                     "sync" -> Route.SyncSettings; "conflicts" -> Route.Conflicts; "trash" -> Route.Trash; "account" -> Route.Account; "privacy" -> Route.Privacy

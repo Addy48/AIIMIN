@@ -586,6 +586,7 @@ fun AboutScreen() {
                 }
             }
             Text("No ads, no lending, no selling data.", style = Aiimin.type.body, modifier = Modifier.padding(top = 16.dp))
+            ListRow("How AIIMIN is running", subtitle = "Background jobs and when each last ran", leading = { IconTile(AppIcons.Pulse) }, trailing = { Chevron() }, onClick = { nav.open(Route.Running) }, modifier = Modifier.padding(top = 12.dp))
             SectionHeader("Legal")
             ListRow("Privacy Policy", leading = { IconTile(AppIcons.ShieldCheck) }, trailing = { Chevron() }, onClick = { open(context, AppContact.PRIVACY) })
             ListRow("Terms", leading = { IconTile(AppIcons.Scroll) }, trailing = { Chevron() }, onClick = { open(context, AppContact.TERMS) })

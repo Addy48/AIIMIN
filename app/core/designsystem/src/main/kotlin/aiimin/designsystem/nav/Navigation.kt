@@ -54,6 +54,8 @@ sealed interface Route {
     data object Language : Route
     data object Help : Route
     data object About : Route
+    /** How AIIMIN is running: Pulse jobs and their last runs. */
+    data object Running : Route
     data object Conflicts : Route
     data object Trash : Route
     data class SignIn(val createAccount: Boolean = false) : Route

@@ -435,6 +435,18 @@ data class DeviceDayEntity(
     val updatedAt: Long,
 )
 
+/** Heartbeat of one Pulse job: when it last ran, whether it worked, and how often it fails. */
+@Entity(tableName = "pulse_runs")
+data class PulseRunEntity(
+    @PrimaryKey val job: String,
+    val lastRunAt: Long,
+    val lastOkAt: Long? = null,
+    val lastError: String? = null,
+    val lastMs: Long = 0,
+    val runs: Int = 0,
+    val fails: Int = 0,
+)
+
 /** The day's frozen plan and, once settled, its frozen snapshot. */
 @Entity(tableName = "day_state")
 data class DayStateEntity(

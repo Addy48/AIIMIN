@@ -625,3 +625,14 @@ interface LedgerDao {
     @Query("SELECT DISTINCT account4 FROM txns WHERE account4 IS NOT NULL UNION SELECT DISTINCT account4 FROM txn_drafts WHERE account4 IS NOT NULL")
     suspend fun knownLast4(): List<String>
 }
+
+@Dao
+interface PulseDao {
+    @Upsert suspend fun upsert(r: PulseRunEntity)
+
+    @Query("SELECT * FROM pulse_runs")
+    suspend fun all(): List<PulseRunEntity>
+
+    @Query("SELECT * FROM pulse_runs ORDER BY job")
+    fun observe(): Flow<List<PulseRunEntity>>
+}

@@ -2,7 +2,9 @@ package aiimin.feature.me
 
 import aiimin.core.data.app.ActivityRepository
 import aiimin.core.data.app.ExportRepository
-import aiimin.core.data.app.Maintenance
+import aiimin.core.data.pulse.Pulse
+import aiimin.core.data.pulse.Reason
+import aiimin.core.engine.pulse.Job
 import aiimin.core.data.app.PreferencesRepository
 import aiimin.core.data.app.SearchHit
 import aiimin.core.data.app.SearchRepository
@@ -97,7 +99,7 @@ class MeViewModel @Inject constructor(
 class SensorsViewModel @Inject constructor(
     private val device: DeviceRepository,
     private val prefs: PreferencesRepository,
-    private val maintenance: Maintenance,
+    private val pulse: Pulse,
 ) : ViewModel() {
     val access = MutableStateFlow<SensorAccess?>(null)
     val apps = MutableStateFlow<List<Pair<String, String>>>(emptyList())
@@ -105,7 +107,7 @@ class SensorsViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         access.value = device.access()
-        maintenance.run()
+        pulse.beat(Reason.MANUAL, force = setOf(Job.DEVICE))
     }
 
     fun loadApps() = viewModelScope.launch { if (apps.value.isEmpty()) apps.value = device.launchableApps() }
@@ -120,7 +122,7 @@ class SensorsViewModel @Inject constructor(
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class PhoneDayViewModel @Inject constructor(private val device: DeviceRepository, private val clock: DayClock, life: LifeRepository, private val settings: aiimin.core.data.settings.SettingsStore) : ViewModel() {
+class PhoneDayViewModel @Inject constructor(private val device: DeviceRepository, private val clock: DayClock, life: LifeRepository, private val settings: aiimin.core.data.settings.SettingsStore, private val pulse: Pulse) : ViewModel() {
     val prefs = settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, null)
     /** S9: tag an app as work (its time stops counting as personal screen time). */
     fun tagWork(pkg: String, work: Boolean) = viewModelScope.launch { settings.update { it.copy(workApps = if (work) it.workApps + pkg else it.workApps - pkg) } }
@@ -131,29 +133,18 @@ class PhoneDayViewModel @Inject constructor(private val device: DeviceRepository
     val refreshing = MutableStateFlow(false)
 
     init {
-        viewModelScope.launch {
-            day.value = clock.today()
-            refresh()
-        }
+        viewModelScope.launch { day.value = clock.today() }
     }
 
+    /** Today goes through Pulse so every surface updates together; an earlier day is re-read directly. */
     fun refresh() = viewModelScope.launch {
         refreshing.value = true
-        runCatching { device.refresh(day.value) }
+        if (day.value == clock.today()) pulse.beat(Reason.MANUAL, force = setOf(Job.DEVICE)) else runCatching { device.refresh(day.value) }
         refreshing.value = false
     }
 
     fun usageSettingsIntent() = device.usageSettingsIntent()
 
-    private var lastResumeRefresh = 0L
-
-    /** Coming back re-measures, at most once a minute. */
-    fun onResume() {
-        val now = System.currentTimeMillis()
-        if (now - lastResumeRefresh < 60_000L) return
-        lastResumeRefresh = now
-        refresh()
-    }
 
     fun shift(by: Long) = viewModelScope.launch {
         val t = clock.today()

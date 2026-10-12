@@ -92,7 +92,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
     val ui by vm.ui.collectAsStateWithLifecycle()
-    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { vm.onResume() }
     val nav = LocalNavigator.current
     val toaster = LocalToaster.current
     val scope = rememberCoroutineScope()
