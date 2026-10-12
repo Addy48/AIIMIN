@@ -107,22 +107,36 @@ fun ScrubBarChart(
     maxValue: Double? = null,
     onPage: ((Int) -> Unit)? = null,
     description: String = "Bar chart",
+    /** With nothing selected, this bar (today) stays ink and the rest step back. */
+    emphasis: Int? = null,
+    /** Bars that went over plan: drawn in a muted accent. */
+    alert: Set<Int> = emptySet(),
+    /** A dashed plan line with a "plan" label at the right end. */
+    planLine: Double? = null,
+    planLabel: String? = null,
+    /** Colour family for the bars (e.g. Money's gold); drawn as a soft top-to-bottom gradient. */
+    tint: Color? = null,
 ) {
     val c = Aiimin.colors
     val haptics = LocalHapticFeedback.current
     val n = points.size.coerceAtLeast(1)
-    val vmax = (maxValue ?: max(points.filter { !it.stub }.maxOfOrNull { it.value } ?: 1.0, max(bandHigh ?: 0.0, usual ?: 0.0)) * 1.12).coerceAtLeast(1.0)
+    val vmax = (maxValue ?: max(points.filter { !it.stub }.maxOfOrNull { it.value } ?: 1.0, max(max(bandHigh ?: 0.0, usual ?: 0.0), planLine ?: 0.0)) * 1.12).coerceAtLeast(1.0)
 
-    // Chart colours: one calm ink for the period, the accent for the bar you are reading, soft taupe for the rest.
-    val ink = Color(0xFF3B362F)
-    val dim = Color(0xFFCDC5B6)
-    val future = Color(0xFFE6E0D3)
-    val colW = when { n > 20 -> 5.dp; n > 10 -> 11.dp; else -> 22.dp }
-    val rounded = RoundedCornerShape(topStart = colW / 2.5f, topEnd = colW / 2.5f, bottomStart = 1.dp, bottomEnd = 1.dp)
-    val normal = rememberLineComponent(Fill(ink), colW, rounded)
+    // Warm taupe bars; ink marks today, the accent marks the bar you are reading or a period over plan.
+    val ink = if (emphasis != null) c.bandLine else Color(0xFF8C8273)
+    val dim = Color(0xFFD9D2C5)
+    val future = c.futureBar
+    val colW = when { n > 20 -> 6.dp; n > 10 -> 12.dp; else -> 24.dp }
+    val rounded = RoundedCornerShape(topStart = colW / 2f, topEnd = colW / 2f, bottomStart = 2.dp, bottomEnd = 2.dp)
+    val normalFill = remember(tint, ink) {
+        if (tint != null) Fill(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(tint, tint.copy(alpha = 0.55f)))) else Fill(ink)
+    }
+    val normal = rememberLineComponent(normalFill, colW, rounded)
     val chosen = rememberLineComponent(Fill(c.accent), colW, rounded)
+    val today = rememberLineComponent(Fill(c.text), colW, rounded)
     val faded = rememberLineComponent(Fill(dim), colW, rounded)
     val stub = rememberLineComponent(Fill(future), colW, rounded)
+    val over = rememberLineComponent(Fill(c.accent.copy(alpha = 0.6f)), colW, rounded)
 
     val producer = remember { CartesianChartModelProducer() }
     LaunchedEffect(points, vmax) {
@@ -133,13 +147,15 @@ fun ScrubBarChart(
 
     val pts = rememberUpdatedState(points)
     val sel = rememberUpdatedState(selected)
-    val provider = remember(normal, chosen, faded, stub, points, selected) {
+    val provider = remember(normal, chosen, faded, stub, over, today, points, selected, emphasis, alert) {
         BarColumns({ i ->
             val p = points.getOrNull(i)
             when {
                 p?.stub == true -> stub
                 selected == i -> chosen
                 selected != null -> faded
+                i in alert -> over
+                i == emphasis -> today
                 else -> normal
             }
         }, normal)
@@ -154,8 +170,17 @@ fun ScrubBarChart(
         padding = Insets(4.dp, 1.dp),
         background = rememberShapeComponent(Fill(c.base)),
     )
-    val decorations = remember(bandLow, bandHigh, usual, usualLabel, bandBox, usualLine, usualText) {
+    val planStroke = rememberLineComponent(Fill(c.textFaint), 1.2.dp, DashedShape(dashLength = 4.dp, gapLength = 4.dp))
+    val decorations = remember(bandLow, bandHigh, usual, usualLabel, bandBox, usualLine, usualText, planLine, planLabel, planStroke) {
         buildList {
+            if (planLine != null) add(
+                HorizontalLine(
+                    y = { planLine }, line = planStroke, labelComponent = if (planLabel != null) usualText else null,
+                    label = { planLabel.orEmpty() },
+                    horizontalLabelPosition = com.patrykandpatrick.vico.compose.common.Position.Horizontal.End,
+                    verticalLabelPosition = com.patrykandpatrick.vico.compose.common.Position.Vertical.Top,
+                ),
+            )
             if (bandLow != null && bandHigh != null) add(BehindBars(HorizontalBox(y = { bandLow..bandHigh }, box = bandBox)))
             if (usual != null) add(
                 HorizontalLine(
@@ -174,7 +199,7 @@ fun ScrubBarChart(
             rangeProvider = remember(vmax) { CartesianLayerRangeProvider.fixed(minY = 0.0, maxY = vmax) },
         ),
         bottomAxis = HorizontalAxis.rememberBottom(
-            line = rememberLineComponent(Fill(ink), 1.dp),
+            line = rememberLineComponent(Fill(c.border), 1.dp),
             tick = null, guideline = null,
             label = axisLabel.takeIf { labels.isNotEmpty() },
             valueFormatter = remember(labelText) { CartesianValueFormatter { _, x, _ -> labelText[x] ?: "·" } },
