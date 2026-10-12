@@ -331,13 +331,21 @@ fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifie
     }
 }
 
-/** Content-shaped shimmer block. */
+/**
+ * Content-shaped shimmer block. Invisible for the first 300 ms, then fades in: most loads finish
+ * sooner, and a grey flash before real content reads as slower than a blank moment.
+ */
 @Composable
 fun Skeleton(modifier: Modifier) {
     val c = Aiimin.colors
     val t = rememberInfiniteTransition(label = "sk")
     val a by t.animateFloat(0.55f, 1f, infiniteRepeatable(tween(1200), RepeatMode.Reverse), label = "skA")
-    Box(modifier.graphicsLayer { alpha = a }.clip(Shapes.small).background(c.raised))
+    val shown = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        delay(300)
+        shown.animateTo(1f, tween(200))
+    }
+    Box(modifier.graphicsLayer { alpha = a * shown.value }.clip(Shapes.small).background(c.raised))
 }
 
 /** Three dots that breathe while the assistant works. */
