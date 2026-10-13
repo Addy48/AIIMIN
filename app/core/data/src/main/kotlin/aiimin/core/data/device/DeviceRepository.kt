@@ -171,6 +171,26 @@ class DeviceRepository @Inject constructor(
     @Serializable
     private data class CounterW(val day: String, val bootAt: Long, val baseline: Long, val last: Long, val carried: Long)
 
+    /**
+     * "Check against your phone": the person typed what Digital Wellbeing shows for today. Measure
+     * today both ways, keep the closer one (plain events unless they're off by more than 10 %),
+     * store the ratio, and re-measure. Raw events are never altered; only the method changes.
+     */
+    suspend fun calibrate(userMs: Long): Calibration? {
+        val day = clock.today()
+        val s = settings.current()
+        val from = day.atStartOfDay(clock.zone).toInstant()
+        val to = day.plusDays(1).atStartOfDay(clock.zone).toInstant()
+        val plain = usage.read(from, to, clock.zone, s.workApps, s.lateHour, gapFill = false)?.totalMs ?: return null
+        val capped = usage.read(from, to, clock.zone, s.workApps, s.lateHour, gapFill = true)?.totalMs ?: plain
+        val pick = DeviceProfile.chooseByCalibration(plain, capped, userMs)
+        val measured = if (pick == ScreenStrategy.EVENTS_WITH_GAP_FILL) capped else plain
+        val ratio = if (measured > 0) userMs.toDouble() / measured else 1.0
+        settings.update { it.copy(screenStrategy = pick.name, screenCalibration = ratio) }
+        refresh(day)
+        return Calibration(measured, userMs, pick == ScreenStrategy.EVENTS_WITH_GAP_FILL)
+    }
+
     private fun originName(pkg: String): String = when (pkg) {
         "com.sec.android.app.shealth" -> "Samsung Health"
         "com.google.android.apps.fitness" -> "Google Fit"
@@ -186,6 +206,11 @@ class DeviceRepository @Inject constructor(
 
         fun longs(s: String?): List<Long> = s?.let { runCatching { AppJson.decodeFromString<List<Long>>(it) }.getOrNull() }.orEmpty()
     }
+}
+
+/** Result of a self-check: what AIIMIN now measures against what the phone said. */
+data class Calibration(val measuredMs: Long, val phoneMs: Long, val capped: Boolean) {
+    val offPercent: Int get() = if (phoneMs <= 0) 0 else (kotlin.math.abs(measuredMs - phoneMs) * 100 / phoneMs).toInt()
 }
 
 private fun AppLine.toUse() = AppUse(pkg, label, ms, opens, notifications)

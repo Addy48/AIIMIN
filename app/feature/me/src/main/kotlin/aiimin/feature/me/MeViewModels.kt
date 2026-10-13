@@ -145,6 +145,17 @@ class PhoneDayViewModel @Inject constructor(private val device: DeviceRepository
 
     fun usageSettingsIntent() = device.usageSettingsIntent()
 
+    /** Self-check against Digital Wellbeing; returns a sentence for the toast, or null if it couldn't measure. */
+    suspend fun calibrate(text: String): String? {
+        val ms = aiimin.core.model.DurationText.parseMs(text) ?: return "Type it like 1h 31m"
+        val r = device.calibrate(ms) ?: return null
+        return when {
+            r.offPercent <= 3 -> "Matches your phone"
+            r.capped -> "Adjusted for this phone; now within ${r.offPercent}%"
+            else -> "Saved. AIIMIN is within ${r.offPercent}% of your phone"
+        }
+    }
+
 
     fun shift(by: Long) = viewModelScope.launch {
         val t = clock.today()

@@ -1,5 +1,12 @@
 package aiimin.feature.me
 
+import kotlinx.coroutines.launch
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import aiimin.designsystem.theme.Shapes
+import aiimin.designsystem.component.pressable
 import aiimin.core.model.ScreenSummary
 import aiimin.designsystem.component.Segmented
 import aiimin.designsystem.component.AppSheet
@@ -167,6 +174,7 @@ fun SearchScreen(vm: SearchViewModel = hiltViewModel()) {
 @Composable
 fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
     var appSheet by remember { mutableStateOf<aiimin.core.data.device.AppUse?>(null) }
+    var checkSheet by remember { mutableStateOf(false) }
     val prefs by vm.prefs.collectAsStateWithLifecycle()
     val nav = LocalNavigator.current
     val d by vm.data.collectAsStateWithLifecycle()
@@ -243,6 +251,23 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                         Bars(hourly.map { it.toFloat() }, color = c.text, labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Screen time by hour")
                     }
                     Text("Updated ${Dates.ago(data.updatedAt)} · midnight to midnight, like Android's Digital Wellbeing", style = Aiimin.type.caption.copy(color = c.textFaint), modifier = Modifier.padding(top = 8.dp))
+                    if (day == LocalDate.now()) {
+                        // Confidence: checked against the phone's own number, or an offer to check.
+                        val cal = prefs?.screenCalibration
+                        val checked = cal != null && kotlin.math.abs(cal - 1.0) <= 0.10
+                        Row(Modifier.padding(top = 6.dp).clip(Shapes.small).pressable({ checkSheet = true }).heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(if (checked) AppIcons.SealCheck else AppIcons.Scales, null, tint = if (checked) c.done else c.accentText, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                when {
+                                    checked -> "Measured · checked against your phone"
+                                    cal != null -> "Estimated · off by ${(kotlin.math.abs(cal - 1.0) * 100).toInt()}% last check · check again"
+                                    else -> "Check against your phone (20 seconds)"
+                                },
+                                style = Aiimin.type.caption.copy(color = if (checked) c.textMuted else c.accentText),
+                            )
+                        }
+                    }
                 }
             }
             appSheet?.let { a ->
@@ -303,6 +328,30 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                     AppButton(if (refreshing) "Measuring…" else "Re-measure", { vm.refresh() }, kind = ButtonKind.GHOST, compact = true)
                 }
             }
+        }
+    }
+    if (checkSheet) {
+        var typed by remember { mutableStateOf("") }
+        var busy by remember { mutableStateOf(false) }
+        val toaster = aiimin.designsystem.nav.LocalToaster.current
+        val scope = androidx.compose.runtime.rememberCoroutineScope()
+        AppSheet({ checkSheet = false }, title = "Check against your phone") {
+            Text("Open Digital Wellbeing, read today's screen time, and type it here. AIIMIN keeps whichever way of measuring matches this phone best.", style = Aiimin.type.body)
+            AppButton("Open Digital Wellbeing", {
+                runCatching {
+                    context.startActivity(android.content.Intent().setClassName("com.google.android.apps.wellbeing", "com.google.android.apps.wellbeing.settings.TopLevelSettingsActivity").addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+                }.recoverCatching { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_SETTINGS).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)) }
+            }, kind = ButtonKind.SECONDARY, compact = true, modifier = Modifier.padding(top = 12.dp))
+            AppTextField(typed, { typed = it }, label = "Your phone says", placeholder = "1h 31m", modifier = Modifier.padding(top = 14.dp))
+            AppButton(if (busy) "Checking…" else "Save", {
+                busy = true
+                scope.launch {
+                    val msg = vm.calibrate(typed)
+                    busy = false
+                    toaster.show(msg ?: "Couldn't read screen time. Is usage access on?")
+                    if (msg != null && msg != "Type it like 1h 31m") checkSheet = false
+                }
+            }, enabled = typed.isNotBlank() && !busy, modifier = Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 8.dp))
         }
     }
 }

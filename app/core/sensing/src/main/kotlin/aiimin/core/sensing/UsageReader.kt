@@ -166,7 +166,9 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         if (pkg.startsWith("com.android.systemui") || pkg.startsWith("com.android.permissioncontroller") ||
             pkg.startsWith("com.google.android.permissioncontroller") || pkg.startsWith("com.android.packageinstaller") ||
             pkg.startsWith("com.google.android.packageinstaller") || pkg.startsWith("com.android.providers.") ||
-            pkg.startsWith("com.google.android.gms") || pkg == "com.android.settings.intelligence"
+            pkg.startsWith("com.google.android.gms") || pkg == "com.android.settings.intelligence" ||
+            // Digital Wellbeing leaves its own screens out of its total; so do we, or a self-check never matches.
+            pkg == "com.google.android.apps.wellbeing"
         ) {
             return false
         }
