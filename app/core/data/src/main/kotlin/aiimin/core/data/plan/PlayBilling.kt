@@ -69,6 +69,13 @@ enum class Plan(val label: String, val productId: String?, val promise: String, 
     ),
     ;
 
+    /** Plan §13.2 prices in whole rupees, shown whenever Google Play has no product (beta). */
+    val plannedMonthlyInr: Int get() = when (this) { FREE -> 0; PLUS -> 49; PRO -> 99; FAMILY -> 179 }
+    val plannedYearlyInr: Int get() = when (this) { FREE -> 0; PLUS -> 449; PRO -> 899; FAMILY -> 1599 }
+
+    /** True when every hero feature is built. Drives the "some features coming" note; never hides a plan. */
+    val complete: Boolean get() = this == FREE || Feature.entries.filter { this in it.heroFor }.let { h -> h.isNotEmpty() && h.all { it.shipped } }
+
     companion object {
         fun ofProduct(id: String?) = entries.firstOrNull { it.productId == id } ?: FREE
     }
