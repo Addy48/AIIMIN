@@ -78,7 +78,9 @@ class PulseWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
     override suspend fun doWork(): Result {
         val deps = EntryPointAccessors.fromApplication(applicationContext, AppDeps::class.java)
         val reason = runCatching { Reason.valueOf(inputData.getString("reason") ?: "") }.getOrDefault(Reason.WORKER)
-        return runCatching { deps.pulse().beat(reason) }.fold({ Result.success() }, { Result.retry() })
+        // After a reboot or an update, measure and re-arm reminders at once instead of waiting for freshness.
+        val force = if (reason == Reason.BOOT) setOf(aiimin.core.engine.pulse.Job.DEVICE, aiimin.core.engine.pulse.Job.DAY, aiimin.core.engine.pulse.Job.NOTIFY) else emptySet()
+        return runCatching { deps.pulse().beat(reason, force = force) }.fold({ Result.success() }, { Result.retry() })
     }
 
     companion object {
