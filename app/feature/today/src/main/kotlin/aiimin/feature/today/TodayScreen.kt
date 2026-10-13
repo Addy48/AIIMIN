@@ -160,6 +160,7 @@ fun TodayScreen(vm: TodayViewModel = hiltViewModel()) {
         item { NowCard(u, vm, hour, light, onDone = { toggleTask(it) }, modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 22.dp)) }
         item { StatLine(u, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 14.dp, bottom = 4.dp)) }
         item { PhoneDataCard(vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
+        item { KeepAliveCard(vm, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 12.dp)) }
 
         // ---- Later today
         item {
@@ -673,6 +674,27 @@ private fun PhoneDataCard(vm: TodayViewModel, modifier: Modifier) {
                 aiimin.core.sensing.HealthAvailability.AVAILABLE -> health.launch(vm.healthPermissions)
                 else -> if (android.os.Build.VERSION.SDK_INT >= 29) perm.launch(android.Manifest.permission.ACTIVITY_RECOGNITION) else runCatching { context.startActivity(vm.healthInstall()) }
             }
+        }
+    }
+}
+
+/** Shown when Pulse sees a stalled job on a phone known to pause apps (or with battery limits on). */
+@Composable
+private fun KeepAliveCard(vm: TodayViewModel, modifier: Modifier) {
+    val steps by vm.keepAlive.collectAsStateWithLifecycle()
+    val text = steps ?: return
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val nav = LocalNavigator.current
+    val c = Aiimin.colors
+    val shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp)
+    Column(modifier.fillMaxWidth().clip(shape).background(c.surface).border(1.dp, c.border, shape).padding(16.dp)) {
+        Text("Your phone is pausing AIIMIN in the background", style = Aiimin.type.headline)
+        Text("So screen time, steps and reminders fall behind until you open the app. $text", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp))
+        Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            AppButton("Open App info", { runCatching { context.startActivity(vm.appDetails()) } }, compact = true)
+            AppButton("What's running", { nav.open(aiimin.designsystem.nav.Route.Running) }, kind = ButtonKind.GHOST, compact = true)
+            Spacer(Modifier.weight(1f))
+            Text("Later", style = Aiimin.type.label.copy(color = c.textMuted), modifier = Modifier.clip(Shapes.small).clickable { vm.dismissKeepAlive() }.padding(8.dp))
         }
     }
 }
