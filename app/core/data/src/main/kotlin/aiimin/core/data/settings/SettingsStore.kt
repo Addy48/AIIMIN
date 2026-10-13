@@ -11,6 +11,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -49,6 +50,10 @@ data class AppSettings(
     val workApps: Set<String> = emptySet(),
     /** Apps that don't count as distraction during focus (a music player, a reference app). */
     val focusAllowedApps: Set<String> = emptySet(),
+    /** Set by "Check against your phone": EVENTS or EVENTS_WITH_GAP_FILL; null = the phone's profile decides. */
+    val screenStrategy: String? = null,
+    /** What Digital Wellbeing said divided by what AIIMIN measured, from the last self-check. */
+    val screenCalibration: Double? = null,
     val lateHour: Int = 23,
     val quiet: QuietHours = QuietHours(true, 22 * 60, 7 * 60),
     val reduceMotion: Boolean = false,
@@ -119,6 +124,8 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         val hideXp = booleanPreferencesKey("hide_xp")
         val workApps = stringSetPreferencesKey("work_apps")
         val focusAllowedApps = stringSetPreferencesKey("focus_allowed_apps")
+        val screenStrategy = stringPreferencesKey("screen_strategy")
+        val screenCalibration = doublePreferencesKey("screen_calibration")
         val lateHour = intPreferencesKey("late_hour")
         val quiet = stringPreferencesKey("quiet")
         val reduceMotion = booleanPreferencesKey("reduce_motion")
@@ -171,6 +178,8 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
         hideXp = p[K.hideXp] ?: false,
         workApps = p[K.workApps] ?: emptySet(),
         focusAllowedApps = p[K.focusAllowedApps] ?: emptySet(),
+        screenStrategy = p[K.screenStrategy],
+        screenCalibration = p[K.screenCalibration],
         lateHour = p[K.lateHour] ?: 23,
         quiet = p[K.quiet]?.split(',')?.let { QuietHours(it[0] == "1", it[1].toInt(), it[2].toInt()) } ?: QuietHours(true, 22 * 60, 7 * 60),
         reduceMotion = p[K.reduceMotion] ?: false,
@@ -220,6 +229,8 @@ class SettingsStore @Inject constructor(@ApplicationContext private val context:
             p[K.hideXp] = s.hideXp
             p[K.workApps] = s.workApps
             p[K.focusAllowedApps] = s.focusAllowedApps
+            s.screenStrategy?.let { p[K.screenStrategy] = it } ?: p.remove(K.screenStrategy)
+            s.screenCalibration?.let { p[K.screenCalibration] = it } ?: p.remove(K.screenCalibration)
             p[K.lateHour] = s.lateHour
             p[K.quiet] = "${if (s.quiet.enabled) 1 else 0},${s.quiet.fromMin},${s.quiet.toMin}"
             p[K.reduceMotion] = s.reduceMotion
