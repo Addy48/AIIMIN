@@ -188,16 +188,19 @@ T10 Focus finished · T12 Minimum detail · T13 File to yesterday · S5 today-on
 | 17 | Sky timed to the real sun (zone + country) | Personal, seasonal light; arc visible at night | 1.5 days |
 | 18 | Raahi companion | Character and warmth in the assistant, widget, empty states | 5 days |
 | 19 | Plan emblems + plan-change emails | Plans feel real; confirmation by email | 1.5 days |
+| 20 | Money chart redesign (owner, 15 Oct: "I don't like it") | The first thing on Money; it should answer "am I on track?" at a glance | 1.5–2 days |
 
-**Execution order (final):** 0 → 1 → 15 → 16 → 13 (APK 1) → 2 → 19 → 14 → 3 → 4 → 17 → 18 → 12 → 13 (APK 2) → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 13 (release). Phase 7's and Phase 14's "additions" sections are part of those phases.
+**Execution order (final):** 0 → 1 → 15 → 20 → 16 → 13 (APK 1) → 2 → 19 → 14 → 3 → 4 → 17 → 18 → 12 → 13 (APK 2) → 5 → 6 → 7 → 8 → 9 → 10 → 11 → 13 (release). Phase 7's and Phase 14's "additions" sections are part of those phases.
 
 ### Progress weights (overall app %, honest method)
 
 Baseline = **55%** (built surfaces and engines that already work; screens with the bugs in §1 aren't counted as finished). The remaining 45% is split by estimated effort:
 
-| Phase | 0 | 1 | 15 | 16 | 13 | 2+19 | 14 | 3 | 4+17 | 18 | 12 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Weight % | 0.5 | 1.5 | 2.5 | 2.5 | 1 | 3 | 5 | 1.5 | 2.5 | 5 | 1.5 | 2.5 | 3.5 | 2.5 | 1.5 | 6 | 1 | 1.5 |
+| Phase | 0 | 1 | 15 | 20 | 16 | 13 | 2+19 | 14 | 3 | 4+17 | 18 | 12 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Weight % | 0.5 | 1.5 | 2.5 | 1.5 | 2.5 | 1 | 3 | 5 | 1.5 | 2.5 | 5 | 1.5 | 2.5 | 3.5 | 2 | 1 | 6 | 1 | 1.5 |
+
+(15 Oct: Phase 20 added at the owner's request. Its 1.5 comes from Phase 7, 2.5 → 2, and Phase 8, 1.5 → 1, because the chart's motion and polish were part of those phases. The total is still 45.)
 
 A phase's weight is earned task by task (equal share per task inside the phase). It is credited only when that task's tests pass, it's checked on the emulator, and it's committed. Each chat update reports: overall %, the phase, the task, and what was verified.
 
@@ -2413,6 +2416,13 @@ object Freshness {
 - [ ] **Step 3:** Measure: for each route, `am start -W -S ... --es aiimin_go <route>` then `screencap` at 1.0 s. **Expected: real content (not splash, not skeleton) at 1.0 s for today, money, phoneday, score, plans, notifications.** Save as `screenshots/critique-2026-10-14/after-*.png`.
 - [ ] **Step 4: Commit** `perf: first paint from the last live snapshot; no grey screens on cold start`
 
+**Result (15 Oct, emulator):**
+- **The 5-second splash was the debug build**, not the app. Debug took 1.7–2.5 s to the first frame, about 1 s of it before `Application.onCreate`, because the code is unoptimised and has no startup profile.
+- **The release build (R8 + library profiles)** reaches the first frame in 0.43–0.58 s warm, and all six routes show real content at 1.0 s (`screenshots/critique-2026-10-14/after-*-1s.png`; before: `before-*-1s.png`, splash on all six).
+- **Placeholder boxes** now stay hidden for 300 ms, then fade in (`Skeleton`).
+- **The `liveday.json` snapshot is deferred** because the target is met without it. Revisit it if a slower phone misses 1.0 s in Phase 11.
+- **Note:** `assembleRelease` with lintVital pushed the 8 GB Mac's swap to 7.6 GB. Build release locally with `-x lintVitalAnalyzeRelease -x lintVitalReportRelease -x lintVitalRelease` and let CI run lint.
+
 ---
 
 ## Phase 16: Screen time and steps that work on every phone
@@ -2871,6 +2881,70 @@ test('upgrade email names the plan, says no payment, never says Core', () => {
 - [ ] `PlanEmblem` on every plan surface listed above. **Commit** `feat(plans): emblems everywhere; switching confirms by email when signed in`
 
 **Phase 19 acceptance:** switching Free → Pro → Free on a signed-in test account produces exactly one email ("You're on Free", because of the 10-minute debounce, the last state wins), and Free → Pro alone produces "You're on Pro" with the Pro emblem. No email mentions Core, Elite or Explore. The website's plan names match the app.
+
+---
+
+## Phase 20: Money chart redesign (owner request, 15 Oct)
+
+**Owner's words:** "the money graph, I don't like it, we need to improve it."
+
+**What's wrong today (screenshot `cold/before-money-3s.png`, MoneyHome.kt:130-145):**
+1. **It needs instructions.** A caption under it says "Shaded is your usual. Hover or tap a bar; the number above follows you". A chart that needs a manual has failed.
+2. **It answers the wrong question.** 30 black daily bars show "which day was big". The question people bring to Money is "am I on track this month?", and that answer is in a *separate* card below ("Likely to land on plan").
+3. **Visual noise.** A beige percentile band, a dashed "usual" line with an inline label, heavy ink bars at full strength, grey future stubs and sparse axis labels (1, 8, 15, 22, 31) all compete. Nothing is emphasised because everything is.
+4. **Spikes are mysteries.** The tallest bar (rent? a trip?) has no label; you have to tap it to learn anything.
+5. **Ranges feel like the same chart.** D/W/M/3M/6M/1Y all draw bars with the same treatment, so switching range teaches nothing.
+
+**Design (one idea per range):**
+- **M (default): a cumulative "where the month is heading" line.**
+  - A filled ink line climbs day by day: money spent so far.
+  - A thin dashed **pace line** runs from ₹0 on day 1 to the plan on the last day.
+  - From today to month end, a soft **projected cone** (low to high, the existing LikelyToLand maths) ends at a small plan marker on the right edge. The separate "Likely to land" card goes away, folded into the chart.
+  - Above the pace line, the line and fill turn the accent colour (the one orange thing on the screen). Below it, they stay ink. The colour *is* the answer.
+  - Today is a dot with a soft halo.
+  - Thin, light daily bars (20% ink) sit along the bottom as context, not the hero.
+- **W:** 7 bars labelled Mon–Sun. The selected or today bar is ink, the rest 25% ink, with the amount printed above the tallest bar only.
+- **3M / 6M / 1Y:** monthly bars, each with a short plan tick across it. Months over plan get an accent cap, and the average sits in the headline sub-line, not on the chart.
+- **D:** hourly bars from midnight (same axis as Phone day), with no band.
+- **Spike labels:** the single biggest day in view gets a quiet annotation: "₹4,180 · Rent". This uses the top category or payee of that day, with a hairline leader. At most one, never overlapping the line.
+- **Scrubbing:** dragging shows a vertical crosshair plus the existing headline readout. A light haptic tick fires when it crosses each day; releasing snaps back to the total after 1.5 s. Remove the caption.
+- **Motion:** on first show, the line draws left to right in 450 ms (emphasised decelerate) while the cone fades in. Range switches crossfade at 200 ms, with no layout jump: the chart height is fixed at 200 dp. With Reduce motion on, it appears with no animation.
+- **Accessibility:** contentDescription "Spent ₹18,420 of ₹40,000. On pace. Likely ₹33,500 to ₹41,000 by 31 Oct." Each day is reachable by TalkBack swipe through a custom semantics node per day.
+
+**File map**
+| File | Change |
+|---|---|
+| `core/data/.../money/SpendSeries` (MoneyRepository) | Add `cumulative: List<Long>`, `pace: List<Long>?`, `projection: Pair<Long, Long>?`, `spike: Spike(index, paise, label)?` |
+| `core/data/src/main/kotlin/aiimin/core/data/money/MoneyChartMath.kt` | **Create.** Pure: cumulative, pace, projection cone, spike pick, over-pace segments |
+| `core/designsystem/.../component/PaceChart.kt` | **Create.** Canvas chart for M (line, fill, cone, pace, spike label, crosshair) |
+| `core/designsystem/.../component/Charts.kt` | `ScrubBarChart` gains `emphasis` (selected/today ink, rest 25%), `topLabel`, and per-bar plan ticks |
+| `feature/money/.../MoneyHome.kt` | Range-specific chart; drop the caption and the separate LikelyToLand card for M |
+| Test: `core/data/src/test/kotlin/aiimin/core/data/MoneyChartMathTest.kt` | |
+
+**Tasks**
+- **20.1 MoneyChartMath (pure, TDD).** Tests:
+  - the cumulative series ends at the month total;
+  - pace is linear from 0 to the plan over the month's days;
+  - the projection cone equals LikelyToLand's low/high for the same inputs, so the numbers can't drift from the old card;
+  - the spike is the max day only when it's at least 2.5 times the median day, otherwise there's no label;
+  - the over-pace segments are exactly the days where cumulative > pace.
+- **20.2 PaceChart composable** with a Compose preview at three states (under plan, over plan, no plan set; with no plan, the pace line and cone are hidden and the headline says "Set a monthly plan to see your pace"). Draw with one `Canvas`; the path is built once per data change (`remember(points)`), so scrubbing only redraws the crosshair.
+- **20.3 W / 3M / 6M / 1Y / D treatments** in `ScrubBarChart` (emphasis, top label, plan ticks).
+- **20.4 Wire into MoneyHome:**
+  - remove the caption and the M-range LikelyToLand card;
+  - keep the headline readout and the 100 dp min height;
+  - add the haptic tick with `LocalHapticFeedback` `SegmentFrequentTick`.
+- **20.5 Verify on the emulator with Meera's demo data:**
+  - screenshots for each range and for scrubbing go in `screenshots/money-chart/`;
+  - TalkBack reads the summary;
+  - a 60 fps check while scrubbing (`adb shell dumpsys gfxinfo in.aiimin.app.v4 framestats`, janky frames under 5%).
+- **Commit per task.**
+
+**Acceptance:**
+- Someone who has never seen the app can say, from the chart alone in 3 seconds, whether this month is on track. Check this with the owner.
+- No explanatory caption.
+- One accent-coloured element at most.
+- The biggest day is labelled.
 
 ---
 
