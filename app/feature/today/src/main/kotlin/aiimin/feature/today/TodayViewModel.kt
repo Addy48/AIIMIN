@@ -109,6 +109,15 @@ class TodayViewModel @Inject constructor(
         access.value = runCatching { device.access() }.getOrNull()
         runCatching { device.refreshRecent() }
     }
+    private var lastResumeRefresh = 0L
+
+    /** Coming back to Today re-reads screen time and steps, at most once a minute. */
+    fun onResume() {
+        val now = System.currentTimeMillis()
+        if (now - lastResumeRefresh < 60_000L) return
+        lastResumeRefresh = now
+        refreshAccess()
+    }
     val healthPermissions get() = device.healthPermissions
     fun healthContract() = device.healthContract()
     fun usageSettings() = device.usageSettingsIntent()
