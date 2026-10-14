@@ -18,7 +18,7 @@ package aiimin.core.sensing.logic
  */
 object UsageTimeline {
 
-    enum class Kind { RESUMED, PAUSED, STOPPED, SCREEN_ON, SCREEN_OFF, KEYGUARD_SHOWN, KEYGUARD_HIDDEN, SHUTDOWN, STARTUP, NOTIFICATION }
+    enum class Kind { RESUMED, PAUSED, STOPPED, SCREEN_ON, SCREEN_OFF, KEYGUARD_SHOWN, KEYGUARD_HIDDEN, SHUTDOWN, STARTUP, NOTIFICATION, INTERACTION }
 
     data class Event(val at: Long, val kind: Kind, val pkg: String = "", val cls: String = "")
 
@@ -58,6 +58,8 @@ object UsageTimeline {
         isWork: (String) -> Boolean = { false },
         lateFrom: Long = Long.MAX_VALUE,
         hourStart: (Long) -> Long,
+        /** Phones that drop pause events: cap a session this long after the last sign of use. */
+        gapFillMs: Long? = null,
     ): Result {
         val sorted = events.sortedWith(compareBy<Event> { it.at }.thenBy { it.kind.ordinal })
         val open = LinkedHashMap<String, Pair<String, Long>>() // key → (pkg, start)
@@ -71,9 +73,13 @@ object UsageTimeline {
         var firstUnlock: Long? = null
         var lastForegroundPkg: String? = null
 
+        // Signs of use (touches, screen on, any app resuming) for gap fill.
+        val signs = if (gapFillMs == null) emptyList() else sorted.filter { it.kind == Kind.INTERACTION || it.kind == Kind.SCREEN_ON || it.kind == Kind.RESUMED }.map { it.at }
+
         fun close(key: String, at: Long) {
             val (pkg, start) = open.remove(key) ?: return
-            if (at > start) intervals.getOrPut(pkg) { mutableListOf() } += longArrayOf(start, at)
+            val end = if (gapFillMs == null) at else GapFill.cap(start, at, signs.filter { it in start..at }, gapFillMs)
+            if (end > start) intervals.getOrPut(pkg) { mutableListOf() } += longArrayOf(start, end)
         }
 
         fun closeAll(at: Long) = open.keys.toList().forEach { close(it, at) }
@@ -119,6 +125,7 @@ object UsageTimeline {
                     screenOns++
                     lastScreenOn = e.at
                 }
+                Kind.INTERACTION -> Unit
                 Kind.NOTIFICATION -> if (e.at in windowStart until windowEnd && counted(e.pkg)) {
                     notifs[e.pkg] = (notifs[e.pkg] ?: 0) + 1
                 }

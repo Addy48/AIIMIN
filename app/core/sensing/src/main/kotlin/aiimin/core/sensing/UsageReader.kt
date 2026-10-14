@@ -65,6 +65,7 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
      * @param lateHour local hour after which screen time counts as "late" (default 23:00).
      * @param lateUntil end of the person's day (e.g. 04:00 next morning). Use between [windowEnd]
      *   and this instant is added to [ScreenDay.lateMs], so a 01:00 scroll is late for the night it belongs to.
+     * @param gapFill for phones that drop pause events (see DeviceProfile): sessions end 30 min after the last sign of use.
      */
     suspend fun read(
         windowStart: Instant,
@@ -73,6 +74,7 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         workPackages: Set<String>,
         lateHour: Int = 23,
         lateUntil: Instant = windowEnd,
+        gapFill: Boolean = false,
     ): ScreenDay? = withContext(Dispatchers.IO) {
         if (!hasAccess()) return@withContext null
         val start = windowStart.toEpochMilli()
@@ -108,6 +110,7 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             isWork = { it in workPackages },
             lateFrom = lateFrom,
             hourStart = { Instant.ofEpochMilli(it).atZone(zone).truncatedTo(ChronoUnit.HOURS).toInstant().toEpochMilli() },
+            gapFillMs = if (gapFill) GAP_FILL_MS else null,
         )
         val afterMidnight = if (readTo <= end) 0L else UsageTimeline.compute(
             events = events,
@@ -116,6 +119,7 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             counted = { pkg -> counts(pkg, homes) },
             isHome = { it in homes },
             hourStart = { Instant.ofEpochMilli(it).atZone(zone).truncatedTo(ChronoUnit.HOURS).toInstant().toEpochMilli() },
+            gapFillMs = if (gapFill) GAP_FILL_MS else null,
         ).totalMs
         ScreenDay(
             totalMs = r.totalMs,
@@ -180,12 +184,14 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
         UsageEvents.Event.DEVICE_SHUTDOWN -> UsageTimeline.Kind.SHUTDOWN
         UsageEvents.Event.DEVICE_STARTUP -> UsageTimeline.Kind.STARTUP
         NOTIFICATION_INTERRUPTION -> UsageTimeline.Kind.NOTIFICATION
+        UsageEvents.Event.USER_INTERACTION -> UsageTimeline.Kind.INTERACTION
         else -> null
     }
 
     private companion object {
         const val LOOKBACK_MS = 6L * 3_600_000L
         const val SLICE_MS = 2L * 3_600_000L
+        const val GAP_FILL_MS = 30L * 60_000L
         /** UsageEvents.Event.NOTIFICATION_INTERRUPTION is hidden API; value 12 since API 28. */
         const val NOTIFICATION_INTERRUPTION = 12
     }

@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import aiimin.core.model.ScreenSummary
+import aiimin.core.sensing.DeviceProfiler
+import aiimin.core.sensing.logic.ScreenStrategy
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -59,6 +61,7 @@ class DeviceRepository @Inject constructor(
     private val sensor: StepSensor,
     private val settings: SettingsStore,
     private val clock: DayClock,
+    private val profiler: DeviceProfiler,
 ) {
     private val mutex = Mutex()
 
@@ -105,7 +108,15 @@ class DeviceRepository @Inject constructor(
         // Use after midnight but before the logical day ends still counts as late for this night.
         val calStart = day.atStartOfDay(clock.zone).toInstant()
         val calEnd = day.plusDays(1).atStartOfDay(clock.zone).toInstant()
-        val screen = runCatching { usage.read(calStart, calEnd, clock.zone, s.workApps, s.lateHour, lateUntil = maxOf(end, calEnd)) }.getOrNull()
+        // The phone's profile decides whether sessions need a cap (makers that drop pause events);
+        // a calibration against Digital Wellbeing (Phone day > Check against your phone) overrides it.
+        val profile = runCatching { profiler.current().second }.getOrNull()
+        val gapFill = when (s.screenStrategy) {
+            ScreenStrategy.EVENTS.name -> false
+            ScreenStrategy.EVENTS_WITH_GAP_FILL.name -> true
+            else -> profile?.screen == ScreenStrategy.EVENTS_WITH_GAP_FILL
+        }
+        val screen = runCatching { usage.read(calStart, calEnd, clock.zone, s.workApps, s.lateHour, lateUntil = maxOf(end, calEnd), gapFill = gapFill) }.getOrNull()
         val pick = screen?.let { ScreenSummary.pickups(usage.isSecure(), it.unlocks, it.screenOns) }
         val hc = health.steps(start, end)
         var steps = hc?.total
