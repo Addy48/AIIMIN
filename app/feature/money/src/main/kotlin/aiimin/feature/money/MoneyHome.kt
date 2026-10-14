@@ -1,5 +1,8 @@
 package aiimin.feature.money
 
+import aiimin.designsystem.component.PaceChartData
+import aiimin.designsystem.component.PaceChart
+import aiimin.core.data.money.MoneyChartMath
 import aiimin.core.data.money.Ledger
 import aiimin.core.data.money.MoneyRange
 import aiimin.core.data.money.MoneyRepository
@@ -58,6 +61,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import kotlinx.coroutines.flow.debounce
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,6 +88,7 @@ import kotlinx.coroutines.launch
  * range switch, the scrubbable bar chart, "likely to land", the payments for the selection,
  * what is floating above (not booked yet), where it went. Summary first, no raw grid on top.
  */
+@OptIn(kotlinx.coroutines.FlowPreview::class)
 @Composable
 fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     val nav = LocalNavigator.current
@@ -95,7 +102,8 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     val offset by vm.offset.collectAsStateWithLifecycle()
     val today by vm.today.collectAsStateWithLifecycle()
     val unread by vm.unread.collectAsStateWithLifecycle()
-    var selected by remember { mutableStateOf<Int?>(null) }
+    // Read only inside the items that show it, so scrubbing doesn't rebuild the whole list.
+    val selection = remember { mutableStateOf<Int?>(null) }
     var adding by remember { mutableStateOf(false) }
     var pasting by remember { mutableStateOf(false) }
     var exporting by remember { mutableStateOf(false) }
@@ -104,7 +112,7 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
     val accountFilter by vm.accountFilter.collectAsStateWithLifecycle()
     val quiet by vm.quietAccounts.collectAsStateWithLifecycle()
     val c = Aiimin.colors
-    LaunchedEffect(range, ledger, offset) { selected = null }
+    LaunchedEffect(range, ledger, offset) { selection.value = null }
 
     LazyColumn(Modifier.fillMaxSize().background(c.base), contentPadding = PaddingValues(bottom = 32.dp)) {
         item { LargeHeader("Money") { RootActions(unread) } }
@@ -120,33 +128,48 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
             item { Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(220.dp)) }
             return@LazyColumn
         }
-        val bar = selected?.let { s.bars.getOrNull(it) }
         val monthIsCurrent = s.range == MoneyRange.M && s.isCurrent
         item {
+            val selected = selection.value
+            val bar = selected?.let { s.bars.getOrNull(it) }
             Column(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 22.dp)) {
                 Headline(s, bar, d.budget?.totalPaise, d.remaining, ledger, monthIsCurrent, d.paceLine, today)
                 Spacer(Modifier.height(16.dp))
                 Segmented(MoneyRange.entries.map { it.label }, MoneyRange.entries.indexOf(range), { vm.setRange(MoneyRange.entries[it]) })
                 Spacer(Modifier.height(14.dp))
                 if (!(s.range == MoneyRange.D) && s.range != MoneyRange.Y || true) PeriodNav(s, offset, onPage = { vm.page(it) })
-                ScrubBarChart(
-                    points = s.bars.map { BarPoint(it.paise / 100.0, stub = it.future) },
-                    selected = selected,
-                    onSelect = { selected = it },
-                    usual = s.usualPaise / 100.0,
-                    usualLabel = "usual ${Money.whole(s.usualPaise)}/${s.unit}",
-                    bandLow = if (s.bars.count { !it.future } > 3) s.p25 / 100.0 else null,
-                    bandHigh = if (s.bars.count { !it.future } > 3) s.p75 / 100.0 else null,
-                    labels = s.xLabels.map { AxisLabel(it.first, it.second) },
-                    onPage = { vm.page(it) },
-                    description = "${s.title}: ${Money.format(s.totalPaise)}",
-                )
-                Spacer(Modifier.height(6.dp))
-                Text("Shaded is your usual. Hover or tap a bar; the number above follows you.", style = Aiimin.type.caption)
+                val plan = d.budget?.totalPaise?.takeIf { it > 0 && ledger == Ledger.PERSONAL }
+                if (s.range == MoneyRange.M) {
+                    // The month as one climbing line against the even pace to plan (plan Phase 20).
+                    val pc = remember(s, plan, today) { paceData(s, plan, today) }
+                    PaceChart(
+                        data = pc.chart, selected = selected, onSelect = { selection.value = it },
+                        barTint = MoneyGold,
+                        description = pc.summary,
+                    )
+                    pc.footnote?.let {
+                        Row(Modifier.padding(top = 4.dp).fillMaxWidth().clip(Shapes.small).pressable({ nav.open(Route.Budget) }).heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(it, style = Aiimin.type.caption, modifier = Modifier.weight(1f))
+                            Icon(AppIcons.CaretRight, "Open budget", tint = c.textFaint, modifier = Modifier.size(14.dp))
+                        }
+                    }
+                } else {
+                    val n = s.bars.size
+                    ScrubBarChart(
+                        points = s.bars.map { BarPoint(it.paise / 100.0, stub = it.future) },
+                        selected = selected,
+                        onSelect = { selection.value = it },
+                        labels = if (s.range == MoneyRange.W) s.bars.mapIndexed { i, b -> AxisLabel(i, b.label.take(3)) } else s.xLabels.map { AxisLabel(it.first, it.second) },
+                        onPage = { vm.page(it) },
+                        description = "${s.title}: ${Money.format(s.totalPaise)}",
+                        emphasis = if (s.isCurrent && s.range == MoneyRange.W && (s.bars.lastOrNull()?.paise ?: 0) > 0) n - 1 else null,
+                        alert = if (s.range == MoneyRange.Y && plan != null) s.bars.indices.filter { s.bars[it].paise > plan }.toSet() else emptySet(),
+                        planLine = if (s.range == MoneyRange.Y && plan != null) plan / 100.0 else null,
+                        planLabel = if (s.range == MoneyRange.Y && plan != null) "Plan ${shortRupees(plan)}" else null,
+                        tint = MoneyGold,
+                    )
+                }
             }
-        }
-        if (monthIsCurrent && selected == null && d.budget != null && ledger == Ledger.PERSONAL) {
-            item { LikelyToLand(d.budget!!.totalPaise, d.spent, s.bars.filter { !it.future }.map { it.paise }.sorted().let { if (it.isEmpty()) 0L else it[it.size / 2] }, today, Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 18.dp)) { nav.open(Route.Budget) } }
         }
         // accounts (M1 item 6): wrapping chips; tap filters the payments below
         val accts = extras?.accounts.orEmpty().filter { it.ledger == ledger.name || it.type == "CASH" }
@@ -164,8 +187,10 @@ fun MoneyScreen(vm: MoneyViewModel = hiltViewModel()) {
                 }
             }
         }
-        // payments for the selection
+        // payments for the selection; follows the finger once it rests, not on every bar it crosses
         item {
+            val settled by remember(s) { snapshotFlow { selection.value }.debounce(140) }.collectAsState(selection.value)
+            val bar = settled?.let { s.bars.getOrNull(it) }
             val all = when {
                 bar != null -> bar.txns
                 s.range == MoneyRange.D -> s.bars.flatMap { it.txns }.sortedByDescending { it.at }
@@ -385,48 +410,6 @@ private fun PeriodNav(s: aiimin.core.data.money.SpendSeries, offset: Int, onPage
     }
 }
 
-/** A sunk block: where this month is likely to land, as a range against the plan marker. */
-@Composable
-private fun LikelyToLand(plan: Long, spent: Long, typicalDay: Long, today: LocalDate, modifier: Modifier, onClick: () -> Unit) {
-    val c = Aiimin.colors
-    val ym = YearMonth.from(today)
-    val daysLeft = (ym.lengthOfMonth() - today.dayOfMonth).coerceAtLeast(0)
-    val elapsed = today.dayOfMonth.coerceAtLeast(1)
-    val rate = typicalDay.takeIf { it > 0 } ?: (spent / elapsed)
-    val low = spent + (rate * 0.8 * daysLeft).toLong()
-    val high = spent + (rate * 1.2 * daysLeft).toLong()
-    val scale = maxOf(plan, high).toFloat() * 1.08f
-    val perDay = if (daysLeft > 0) ((plan - spent) / daysLeft).coerceAtLeast(0) else 0
-    Column(modifier.fillMaxWidth().clip(Shapes.card).background(c.raised).pressable(onClick).padding(16.dp)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-            Text("Likely to land on plan", style = Aiimin.type.headline, modifier = Modifier.weight(1f))
-            Text("plan ${Money.format(plan)}", style = Aiimin.type.caption)
-        }
-        Spacer(Modifier.height(14.dp))
-        Box(Modifier.fillMaxWidth().height(22.dp)) {
-            Box(Modifier.align(Alignment.CenterStart).fillMaxWidth().height(10.dp).clip(RoundedCornerShape(3.dp)).background(if (c.isDark) c.overlay else androidx.compose.ui.graphics.Color(0xFFDAD4C9)))
-            Box(
-                Modifier.align(Alignment.CenterStart).padding(start = 0.dp).fillMaxWidth(high / scale).height(10.dp),
-            ) {
-                Box(Modifier.fillMaxWidth(1f).height(10.dp).clip(RoundedCornerShape(3.dp)).background(androidx.compose.ui.graphics.Color.Transparent))
-            }
-            val startFrac = low / scale
-            val endFrac = high / scale
-            Box(Modifier.fillMaxWidth().height(10.dp).align(Alignment.CenterStart)) {
-                androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
-                    Box(Modifier.padding(start = maxWidth * startFrac).width(maxWidth * (endFrac - startFrac).coerceAtLeast(0.02f)).height(10.dp).clip(RoundedCornerShape(3.dp)).background(c.text))
-                    Box(Modifier.padding(start = maxWidth * (plan / scale)).size(width = 2.dp, height = 22.dp).background(c.accent))
-                }
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("By ${ym.atEndOfMonth().dayOfMonth} ${ym.month.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)}: ${Money.whole(roundTo(low))}–${Money.whole(roundTo(high))}", style = Aiimin.type.caption.copy(fontSize = 13.sp), modifier = Modifier.weight(1f))
-            Text("${Money.whole(perDay)} a day keeps it clear", style = Aiimin.type.caption.copy(fontSize = 13.sp), modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
-        }
-    }
-}
-
 private fun roundTo(p: Long) = (p / 10_000) * 10_000
 
 @Composable
@@ -457,4 +440,75 @@ internal fun PaymentRow(t: aiimin.core.database.TxnEntity, biggest: Boolean, onC
             }
         }
     }
+}
+
+/** Money's colour family on charts: the "money" domain gold, warm against the cream base. */
+private val MoneyGold = androidx.compose.ui.graphics.Color(0xFFB8893A)
+
+/** "₹20k", "₹1.2L": short enough to sit on a chart. */
+private fun shortRupees(paise: Long): String {
+    val r = paise / 100.0
+    return when {
+        r >= 1_00_000 -> "₹" + "%.1f".format(r / 1_00_000).removeSuffix(".0") + "L"
+        r >= 1_000 -> "₹" + "%.1f".format(r / 1_000).removeSuffix(".0") + "k"
+        else -> "₹" + r.toLong()
+    }
+}
+
+private fun roundTo(paise: Long, step: Long) = (paise + step / 2) / step * step
+
+private data class PaceView(val chart: PaceChartData, val summary: String, val footnote: String?)
+
+/** Builds the month chart from the day bars: running total, pace to plan, likely landing, the one big day. */
+private fun paceData(s: aiimin.core.data.money.SpendSeries, plan: Long?, today: LocalDate): PaceView {
+    val days = s.bars.map { it.paise }
+    val elapsed = s.bars.count { !it.future }.coerceAtLeast(if (s.isCurrent) 1 else s.bars.size)
+    val past = days.take(elapsed)
+    val cum = MoneyChartMath.cumulative(past)
+    val spent = cum.lastOrNull() ?: 0L
+    val pace = plan?.let { MoneyChartMath.pace(it, days.size) }
+    val daysLeft = days.size - elapsed
+    val typical = past.sorted().let { if (it.isEmpty()) 0L else it[it.size / 2] }
+    // A projection is a guess; round it to ₹100 so it doesn't read as exact.
+    val proj = if (s.isCurrent && daysLeft > 0) MoneyChartMath.projection(spent, typical, elapsed, daysLeft).let { (lo, hi) -> roundTo(lo, 10_000) to roundTo(hi, 10_000) } else null
+    val spike = MoneyChartMath.spike(past)
+    val spikeLabel = spike?.let { i ->
+        val top = s.bars[i].txns.filter { it.direction == "out" && !it.deleted }.maxByOrNull { it.amountPaise }
+        Money.whole(days[i]) + (top?.let { " · " + (it.title.ifBlank { it.category }).take(18) } ?: "")
+    }
+    val over = pace?.let { MoneyChartMath.overPace(cum, it) } ?: List(cum.size) { false }
+    val monthEnd = s.bars.lastOrNull()?.to ?: today
+    val summary = buildString {
+        append("${s.title}: ${Money.format(spent)}")
+        if (plan != null) append(" of ${Money.whole(plan)}")
+        if (pace != null && cum.isNotEmpty()) append(if (over.last()) ". Ahead of pace" else ". On pace")
+        if (proj != null) append(". Likely ${Money.whole(proj.first)} to ${Money.whole(proj.second)} by ${Dates.shortDm(monthEnd)}")
+        append('.')
+    }
+    val footnote = when {
+        proj == null -> null
+        plan == null -> "Likely ${Money.whole(proj.first)} – ${Money.whole(proj.second)} by ${Dates.shortDm(monthEnd)}"
+        else -> {
+            val perDay = ((plan - spent) / daysLeft.coerceAtLeast(1)).coerceAtLeast(0)
+            "Likely ${Money.whole(proj.first)} – ${Money.whole(proj.second)} by ${Dates.shortDm(monthEnd)} · " +
+                if (perDay > 0) "${Money.whole(perDay)} a day keeps it on plan" else "Over plan; every rupee from here is extra"
+        }
+    }
+    return PaceView(
+        PaceChartData(
+            daily = days.mapIndexed { i, v -> if (i < elapsed) v / 100.0 else 0.0 },
+            cumulative = cum.map { it / 100.0 },
+            pace = pace?.map { it / 100.0 },
+            plan = plan?.div(100.0),
+            low = proj?.first?.div(100.0),
+            high = proj?.second?.div(100.0),
+            over = over,
+            spikeIndex = spike,
+            spikeLabel = spikeLabel,
+            planLabel = plan?.let { "Plan ${shortRupees(it)}" },
+            labels = s.xLabels.map { AxisLabel(it.first, it.second) },
+            guides = (plan ?: proj?.second ?: spent).let { top -> listOf(top / 2 / 100.0 to shortRupees(top / 2)) },
+        ),
+        summary, footnote,
+    )
 }
