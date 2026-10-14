@@ -27,7 +27,8 @@ import kotlinx.coroutines.withContext
 
 enum class HealthAvailability { AVAILABLE, NEEDS_UPDATE, UNAVAILABLE }
 
-data class StepsDay(val total: Long, val hourly: List<Long>)
+/** [origins] are the apps whose records made up the total (Health Connect removes overlaps). */
+data class StepsDay(val total: Long, val hourly: List<Long>, val origins: Set<String> = emptySet())
 
 data class SleepNight(val minutes: Int, val start: Instant, val end: Instant)
 
@@ -73,15 +74,17 @@ class HealthReader @Inject constructor(@ApplicationContext private val context: 
         if (!hasSteps()) return@withContext null
         runCatching {
             val range = TimeRangeFilter.between(start, end)
-            val total = c.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), range))[StepsRecord.COUNT_TOTAL] ?: 0L
-            val hourly = LongArray(24)
-            val zone = ZoneId.systemDefault()
+            val agg = c.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), range))
+            val total = agg[StepsRecord.COUNT_TOTAL] ?: 0L
+            // Slot 0 is the hour containing [start] (midnight for a calendar day), never wrapped by clock hour.
+            val slots = (Duration.between(start, end).toHours().toInt()).coerceIn(1, 26)
+            val hourly = LongArray(slots)
             c.aggregateGroupByDuration(AggregateGroupByDurationRequest(setOf(StepsRecord.COUNT_TOTAL), range, Duration.ofHours(1)))
                 .forEach { g ->
-                    val h = g.startTime.atZone(zone).hour
-                    hourly[h] += g.result[StepsRecord.COUNT_TOTAL] ?: 0L
+                    val slot = Duration.between(start, g.startTime).toHours().toInt().coerceIn(0, slots - 1)
+                    hourly[slot] += g.result[StepsRecord.COUNT_TOTAL] ?: 0L
                 }
-            StepsDay(total, hourly.toList())
+            StepsDay(total, hourly.toList(), agg.dataOrigins.map { it.packageName }.toSet())
         }.getOrNull()
     }
 

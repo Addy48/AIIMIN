@@ -27,6 +27,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import aiimin.core.model.ScreenSummary
 import aiimin.core.sensing.DeviceProfiler
+import aiimin.core.sensing.logic.DeviceProfile
 import aiimin.core.sensing.logic.ScreenStrategy
 import kotlinx.serialization.Serializable
 
@@ -118,7 +119,9 @@ class DeviceRepository @Inject constructor(
         }
         val screen = runCatching { usage.read(calStart, calEnd, clock.zone, s.workApps, s.lateHour, lateUntil = maxOf(end, calEnd), gapFill = gapFill) }.getOrNull()
         val pick = screen?.let { ScreenSummary.pickups(usage.isSecure(), it.unlocks, it.screenOns) }
-        val hc = health.steps(start, end)
+        // Steps use the calendar day too, the same day Samsung Health, Google Fit and Mi Fitness show.
+        val hc = health.steps(calStart, calEnd)
+        val origin = hc?.origins?.let { o -> DeviceProfile.originPriority.firstOrNull { it in o } ?: o.firstOrNull() }?.let { originName(it) }
         var steps = hc?.total
         var source = if (hc != null) "health_connect" else null
         var hourly = hc?.hourly
@@ -142,6 +145,8 @@ class DeviceRepository @Inject constructor(
                 day = day.toString(),
                 steps = steps ?: existing?.steps,
                 stepsSource = source ?: existing?.stepsSource,
+                stepsOrigin = if (source == "health_connect") origin else if (source != null) null else existing?.stepsOrigin,
+                screenStrategy = if (screen != null) (if (gapFill) ScreenStrategy.EVENTS_WITH_GAP_FILL else ScreenStrategy.EVENTS).name else existing?.screenStrategy,
                 stepsHourly = AppJson.encodeToString(kotlinx.serialization.serializer<List<Long>>(), hourly ?: emptyList()),
                 screenMs = screen?.totalMs ?: existing?.screenMs,
                 screenPersonalMs = screen?.personalMs ?: existing?.screenPersonalMs,
@@ -165,6 +170,15 @@ class DeviceRepository @Inject constructor(
 
     @Serializable
     private data class CounterW(val day: String, val bootAt: Long, val baseline: Long, val last: Long, val carried: Long)
+
+    private fun originName(pkg: String): String = when (pkg) {
+        "com.sec.android.app.shealth" -> "Samsung Health"
+        "com.google.android.apps.fitness" -> "Google Fit"
+        "com.xiaomi.wearable", "com.mi.health" -> "Mi Fitness"
+        "com.google.android.apps.healthdata" -> "Health Connect"
+        // Some origins are opaque ids, not packages; only name an app we can actually resolve.
+        else -> if (runCatching { context.packageManager.getApplicationInfo(pkg, 0) }.isSuccess) usage.label(pkg) else "Health Connect"
+    }
 
     companion object {
         fun apps(d: DeviceDayEntity?): List<AppUse> =

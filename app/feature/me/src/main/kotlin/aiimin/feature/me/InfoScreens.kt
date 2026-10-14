@@ -193,7 +193,11 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                 SectionHeader("Movement")
                 Panel {
                     Row(verticalAlignment = Alignment.Bottom) {
-                        Stat(data.steps?.let { "%,d".format(it) } ?: "—", "steps · ${if (data.stepsSource == "health_connect") "Health Connect" else if (data.stepsSource == "sensor") "phone step counter" else "not measured"}", Modifier.weight(1f))
+                        Stat(data.steps?.let { "%,d".format(it) } ?: "—", "steps · " + when (data.stepsSource) {
+                            "health_connect" -> data.stepsOrigin?.takeIf { it != "Health Connect" }?.let { "from $it via Health Connect" } ?: "Health Connect"
+                            "sensor" -> "phone step counter"
+                            else -> "not measured"
+                        }, Modifier.weight(1f))
                         Text("of %,d".format(stepsTarget.toLong()), style = Aiimin.type.caption)
                     }
                     Spacer(Modifier.height(8.dp))

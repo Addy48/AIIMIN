@@ -413,6 +413,10 @@ data class DeviceDayEntity(
     val steps: Long? = null,
     /** health_connect · sensor */
     val stepsSource: String? = null,
+    /** The app the steps came from, as a name ("Google Fit"); null when unknown or from the phone sensor. */
+    val stepsOrigin: String? = null,
+    /** EVENTS · EVENTS_WITH_GAP_FILL: how screen time was measured this day. */
+    val screenStrategy: String? = null,
     val stepsHourly: String = "[]",
     val screenMs: Long? = null,
     val screenPersonalMs: Long? = null,
