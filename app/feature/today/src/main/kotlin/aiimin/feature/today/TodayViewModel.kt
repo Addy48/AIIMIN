@@ -10,6 +10,7 @@ import aiimin.core.data.pulse.Reason
 import aiimin.core.engine.pulse.Job
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.mapLatest
 import aiimin.core.data.life.LifeRepository
 import aiimin.core.data.life.LifeView
 import aiimin.core.data.notes.NoteRepository
@@ -102,7 +103,7 @@ class TodayViewModel @Inject constructor(
     private val pulse: Pulse,
     activity: ActivityRepository,
     vault: VaultRepository,
-    settings: SettingsStore,
+    private val settingsStore: SettingsStore,
     notes: NoteRepository,
 ) : ViewModel() {
 
@@ -115,6 +116,16 @@ class TodayViewModel @Inject constructor(
         // A sensor was just granted: measure now instead of waiting for the next minute's beat.
         if (before != null && before != access.value) pulse.beat(Reason.MANUAL, force = setOf(Job.DEVICE))
     }
+    /** Steps for the "phone is pausing AIIMIN" card, or null when it shouldn't show (plan Phase 16). */
+    val keepAlive: StateFlow<String?> = combine(settingsStore.settings, clock.tick) { s, now -> Triple(s.stallDetectedAt, s.keepAliveDismissedAt, now) }
+        .distinctUntilChanged()
+        .mapLatest { (stalled, dismissed, now) ->
+            if (stalled == null) return@mapLatest null
+            val (facts, profile) = runCatching { device.profile() }.getOrNull() ?: return@mapLatest null
+            if (aiimin.core.sensing.logic.KeepAlive.show(stalled, profile.needsKeepAlive, device.backgroundUnrestricted(), dismissed, now)) aiimin.core.sensing.logic.KeepAlive.steps(facts.maker) else null
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    fun dismissKeepAlive() = viewModelScope.launch { settingsStore.update { it.copy(keepAliveDismissedAt = System.currentTimeMillis()) } }
+    fun appDetails() = device.appDetailsIntent()
     val healthPermissions get() = device.healthPermissions
     fun healthContract() = device.healthContract()
     fun usageSettings() = device.usageSettingsIntent()
@@ -138,7 +149,7 @@ class TodayViewModel @Inject constructor(
         // Score, phone numbers and unread come from Pulse's one snapshot, the same one the widget and reminders read.
         val live = pulse.liveDay.filterNotNull().filter { it.date == day }
         val ambient = combine(live, focus.active, activity.recent(4)) { l, f, a -> Ambient(l.life, l.device, l.unread, f, a) }
-        combine(plan, ambient, settings.settings, yesterdayOpen, notes.all()) { p, a, s, y, ns ->
+        combine(plan, ambient, settingsStore.settings, yesterdayOpen, notes.all()) { p, a, s, y, ns ->
             val items = buildFlow(day, p.tasks, p.events)
             TodayUi(
                 date = day, name = s.name, flow = items, now = nowCard(items.values.flatten()),

@@ -134,6 +134,8 @@ class Pulse @Inject constructor(
                 val prev = dao.all().associateBy { it.job }
                 val lastOk = prev.mapNotNull { (k, v) -> v.lastOkAt?.let { t -> runCatching { Job.valueOf(k) }.getOrNull()?.to(t) } }.toMap()
                 val plan = Freshness.plan(lastOk, now, _foreground.value, force).filter { only == null || it in only }
+                // A job that missed two background runs means the phone paused AIIMIN; remember when.
+                if (Freshness.order.any { Freshness.unhealthy(it, lastOk[it], now) }) settings.update { it.copy(stallDetectedAt = now) }
                 for (job in plan) {
                     val runner = runnerFor(job, job in force) ?: continue
                     val started = System.currentTimeMillis()

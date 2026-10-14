@@ -87,6 +87,17 @@ class DeviceRepository @Inject constructor(
         stepSensor = sensor.available(),
     )
 
+    /** This phone's facts and how AIIMIN measures on it. */
+    suspend fun profile() = profiler.current()
+
+    /** True when the phone lets AIIMIN run in the background without battery limits. */
+    fun backgroundUnrestricted(): Boolean =
+        (context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager).isIgnoringBatteryOptimizations(context.packageName)
+
+    /** AIIMIN's App info page, where every maker keeps its battery and autostart switches. */
+    fun appDetailsIntent() = android.content.Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.fromParts("package", context.packageName, null))
+        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+
     fun notificationListenerSettings() = android.content.Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
         .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
 
