@@ -34,6 +34,7 @@ object UsageTimeline {
         /** SCREEN_INTERACTIVE events in the window, debounced. Pickups on phones with no secure lock. */
         val screenOns: Int,
         val notifications: Int,
+        /** Foreground time per local hour; slot 0 is the hour containing windowStart. */
         val hourlyMs: LongArray,
         /** Foreground time at or after [lateFrom] inside the window. */
         val lateMs: Long,
@@ -46,7 +47,6 @@ object UsageTimeline {
      * @param events every event from (window start − lookback) to window end, any order.
      * @param counted false for launchers, System UI and other chrome that DW ignores.
  * @param isHome launcher packages: bringing home to the front ends the app session.
-     * @param hourOf maps an instant to its local hour 0–23.
      * @param hourStart maps an instant to the start of its local hour.
      */
     fun compute(
@@ -57,7 +57,6 @@ object UsageTimeline {
         isHome: (String) -> Boolean = { false },
         isWork: (String) -> Boolean = { false },
         lateFrom: Long = Long.MAX_VALUE,
-        hourOf: (Long) -> Int,
         hourStart: (Long) -> Long,
     ): Result {
         val sorted = events.sortedWith(compareBy<Event> { it.at }.thenBy { it.kind.ordinal })
@@ -138,12 +137,15 @@ object UsageTimeline {
         val work = merge(perApp.filterKeys(isWork).values.flatten())
         val personal = merge(perApp.filterKeys { !isWork(it) }.values.flatten())
 
-        val hourly = LongArray(24)
+        val slots = (((windowEnd - windowStart) + 3_599_999L) / 3_600_000L).toInt().coerceIn(1, 26) // 23/25 on DST days
+        val firstHour = hourStart(windowStart)
+        val hourly = LongArray(slots)
         for ((s, t) in all) {
             var c = s
             while (c < t) {
-                val next = minOf(t, hourStart(c) + 3_600_000L)
-                hourly[hourOf(c)] += next - c
+                val h = hourStart(c)
+                val next = minOf(t, h + 3_600_000L)
+                hourly[((h - firstHour) / 3_600_000L).toInt().coerceIn(0, slots - 1)] += next - c
                 c = if (next > c) next else t
             }
         }

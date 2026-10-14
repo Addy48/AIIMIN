@@ -97,7 +97,6 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             isHome = { it in homes },
             isWork = { it in workPackages },
             lateFrom = lateFrom,
-            hourOf = { Instant.ofEpochMilli(it).atZone(zone).hour },
             hourStart = { Instant.ofEpochMilli(it).atZone(zone).truncatedTo(ChronoUnit.HOURS).toInstant().toEpochMilli() },
         )
         ScreenDay(
