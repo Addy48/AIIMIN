@@ -5,6 +5,11 @@ import aiimin.core.data.app.ActivityRepository
 import aiimin.core.data.core.DayClock
 import aiimin.core.data.day.DayRepository
 import aiimin.core.data.device.DeviceRepository
+import aiimin.core.data.pulse.Pulse
+import aiimin.core.data.pulse.Reason
+import aiimin.core.engine.pulse.Job
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import aiimin.core.data.life.LifeRepository
 import aiimin.core.data.life.LifeView
 import aiimin.core.data.notes.NoteRepository
@@ -93,9 +98,8 @@ class TodayViewModel @Inject constructor(
     private val minimums: MinimumRepository,
     private val focus: FocusRepository,
     private val days: DayRepository,
-    life: LifeRepository,
     private val device: DeviceRepository,
-    notifications: NotificationRepository,
+    private val pulse: Pulse,
     activity: ActivityRepository,
     vault: VaultRepository,
     settings: SettingsStore,
@@ -106,17 +110,10 @@ class TodayViewModel @Inject constructor(
     val access = MutableStateFlow<aiimin.core.data.device.SensorAccess?>(null)
     private val setupPrefs = MutableStateFlow(0L)
     fun refreshAccess() = viewModelScope.launch {
+        val before = access.value
         access.value = runCatching { device.access() }.getOrNull()
-        runCatching { device.refreshRecent() }
-    }
-    private var lastResumeRefresh = 0L
-
-    /** Coming back to Today re-reads screen time and steps, at most once a minute. */
-    fun onResume() {
-        val now = System.currentTimeMillis()
-        if (now - lastResumeRefresh < 60_000L) return
-        lastResumeRefresh = now
-        refreshAccess()
+        // A sensor was just granted: measure now instead of waiting for the next minute's beat.
+        if (before != null && before != access.value) pulse.beat(Reason.MANUAL, force = setOf(Job.DEVICE))
     }
     val healthPermissions get() = device.healthPermissions
     fun healthContract() = device.healthContract()
@@ -138,7 +135,9 @@ class TodayViewModel @Inject constructor(
             days.observe(day),
             flow { emit(vault.expiring(30)) },
         ) { t, e, m, st, exp -> Plan(t, e, m, st, exp.firstOrNull()) }
-        val ambient = combine(life.view, device.observe(day), notifications.unread, focus.active, activity.recent(4)) { l, d, u, f, a -> Ambient(l, d, u, f, a) }
+        // Score, phone numbers and unread come from Pulse's one snapshot, the same one the widget and reminders read.
+        val live = pulse.liveDay.filterNotNull().filter { it.date == day }
+        val ambient = combine(live, focus.active, activity.recent(4)) { l, f, a -> Ambient(l.life, l.device, l.unread, f, a) }
         combine(plan, ambient, settings.settings, yesterdayOpen, notes.all()) { p, a, s, y, ns ->
             val items = buildFlow(day, p.tasks, p.events)
             TodayUi(

@@ -280,34 +280,6 @@ class ExportRepository @Inject constructor(
 
 // ------------------------------------------------------------------ maintenance
 
-/** The heartbeat: run on open, on resume, and from the periodic worker. */
-@Singleton
-class Maintenance @Inject constructor(
-    private val days: DayRepository,
-    private val money: MoneyRepository,
-    private val device: DeviceRepository,
-    private val family: FamilyRepository,
-    private val notifications: NotificationRepository,
-    private val sync: SyncRepository,
-    private val trash: aiimin.core.data.sync.TrashRepository,
-    private val settings: SettingsStore,
-    private val clock: DayClock,
-) {
-    suspend fun run(syncNow: Boolean = false) {
-        if (!settings.current().onboarded) return
-        runCatching { device.refreshRecent() }
-        days.ensureToday()
-        runCatching { money.ensureBudgetCarried() }
-        runCatching { family.tick() }
-        runCatching { notifications.run() }
-        val last = settings.current().lastSyncAt ?: 0
-        // Automatic runs respect the backoff window after a failure; an explicit request does not.
-        if (syncNow || System.currentTimeMillis() - last > 15 * 60_000L) runCatching { sync.sync(force = syncNow) }
-        runCatching { trash.purge() }
-        clock.pulse()
-    }
-}
-
 // ------------------------------------------------------------------ erase
 
 /**

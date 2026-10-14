@@ -1,8 +1,9 @@
 package aiimin.app
 
-import aiimin.core.data.app.Maintenance
 import aiimin.core.data.money.MoneyRepository
 import aiimin.core.data.notify.NotificationRepository
+import aiimin.core.data.pulse.Pulse
+import aiimin.core.data.pulse.Reason
 import aiimin.core.data.sync.AuthRepository
 import android.app.Application
 import android.content.Context
@@ -48,13 +49,13 @@ class AiiminApplication : Application() {
                 }
             })
         }
-        // Day rollover, noon settlement, sensors, notification rules and sync,
-        // every half hour even when the app is closed.
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "maintenance",
-            ExistingPeriodicWorkPolicy.KEEP,
-            PeriodicWorkRequestBuilder<MaintenanceWorker>(30, TimeUnit.MINUTES).build(),
-        )
+        // One heartbeat for every background job (plan Phase 15). In front: a beat on open and every
+        // minute. Closed: the 15-minute worker. A job the phone skipped runs first on the next beat.
+        androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+            override fun onStart(owner: androidx.lifecycle.LifecycleOwner) = deps.pulse().setForeground(true)
+            override fun onStop(owner: androidx.lifecycle.LifecycleOwner) = deps.pulse().setForeground(false)
+        })
+        PulseWorker.schedule(this)
         // Sync has its own job: network constraint (Wi-Fi only if asked) and exponential retry.
         appScope.launch {
             val wifiOnly = runCatching { deps.settings().current().syncWifiOnly }.getOrDefault(false)
@@ -66,16 +67,44 @@ class AiiminApplication : Application() {
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface AppDeps {
-    fun maintenance(): Maintenance
+    fun pulse(): Pulse
     fun money(): MoneyRepository
     fun auth(): AuthRepository
     fun settings(): aiimin.core.data.settings.SettingsStore
 }
 
-class MaintenanceWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+/** Runs a Pulse beat with the app closed: every 15 minutes, after boot, and on demand. */
+class PulseWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val deps = EntryPointAccessors.fromApplication(applicationContext, AppDeps::class.java)
-        return runCatching { deps.maintenance().run(syncNow = inputData.getBoolean("sync", false)) }.fold({ Result.success() }, { Result.retry() })
+        val reason = runCatching { Reason.valueOf(inputData.getString("reason") ?: "") }.getOrDefault(Reason.WORKER)
+        return runCatching { deps.pulse().beat(reason) }.fold({ Result.success() }, { Result.retry() })
+    }
+
+    companion object {
+        fun schedule(context: Context) {
+            val wm = WorkManager.getInstance(context)
+            wm.cancelUniqueWork("maintenance") // the 30-minute job Pulse replaced
+            wm.enqueueUniquePeriodicWork(
+                "pulse",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                PeriodicWorkRequestBuilder<PulseWorker>(15, TimeUnit.MINUTES, 5, TimeUnit.MINUTES).build(),
+            )
+        }
+
+        fun now(context: Context, reason: Reason) = WorkManager.getInstance(context).enqueueUniqueWork(
+            "pulse-now", ExistingWorkPolicy.KEEP,
+            OneTimeWorkRequestBuilder<PulseWorker>().setInputData(workDataOf("reason" to reason.name)).build(),
+        )
+    }
+}
+
+/** After a restart nothing of ours is running; one beat brings every job back. */
+class BootReceiver : android.content.BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: android.content.Intent) {
+        if (intent.action == android.content.Intent.ACTION_BOOT_COMPLETED || intent.action == android.content.Intent.ACTION_MY_PACKAGE_REPLACED) {
+            PulseWorker.now(context, Reason.BOOT)
+        }
     }
 }
 

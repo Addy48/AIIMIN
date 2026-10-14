@@ -178,7 +178,6 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
     val stepsTarget = life?.intentions?.card(Signals.STEPS)?.target ?: 8000.0
     val screenLimit = life?.intentions?.card(Signals.SCREEN_PERSONAL)?.target
     val context = androidx.compose.ui.platform.LocalContext.current
-    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_RESUME) { vm.onResume() }
     Column(Modifier.fillMaxSize().background(c.base)) {
         TopBar(Dates.relative(day, LocalDate.now()), onBack = { nav.back() }) {
             AppIconButton(AppIcons.CaretLeft, "Previous day", { vm.shift(-1) }, tint = c.textMuted)

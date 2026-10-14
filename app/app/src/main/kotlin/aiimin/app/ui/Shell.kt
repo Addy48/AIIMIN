@@ -3,7 +3,6 @@ package aiimin.app.ui
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
 import aiimin.app.FocusDoneWorker
-import aiimin.core.data.app.Maintenance
 import aiimin.core.data.notify.NotificationRepository
 import aiimin.core.data.plan.ActiveFocus
 import aiimin.core.data.plan.FocusRepository
@@ -125,7 +124,6 @@ class ShellViewModel @Inject constructor(
     notifications: NotificationRepository,
     money: aiimin.core.data.money.MoneyRepository,
     private val vault: aiimin.core.data.vault.VaultRepository,
-    private val maintenance: Maintenance,
     private val sync: aiimin.core.data.sync.SyncRepository,
     val auth: aiimin.core.data.sync.AuthRepository,
     val settings: aiimin.core.data.settings.SettingsStore,
@@ -154,7 +152,6 @@ class ShellViewModel @Inject constructor(
     val expiringSoon = kotlinx.coroutines.flow.MutableStateFlow(false)
     fun resume() = viewModelScope.launch {
         runCatching { sync.refreshState() }
-        runCatching { maintenance.run() }
         expiringSoon.value = runCatching { vault.expiring(7).isNotEmpty() }.getOrDefault(false)
     }
 }
@@ -315,6 +312,7 @@ fun Shell(request: LaunchRequest?, onRequestHandled: () -> Unit, vm: ShellViewMo
                         entry<Route.Language> { aiimin.feature.me.LanguageScreen() }
                         entry<Route.Help> { aiimin.feature.me.HelpScreen() }
                         entry<Route.About> { aiimin.feature.me.AboutScreen() }
+                        entry<Route.Running> { aiimin.feature.me.RunningScreen() }
                         entry<Route.Accounts> { aiimin.feature.money.AccountsScreen() }
                         entry<Route.MoodYear> { aiimin.feature.notes.MoodYearScreen() }
                         entry<Route.RecentCaptures> { aiimin.feature.assistant.RecentCapturesScreen() }
