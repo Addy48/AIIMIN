@@ -31,6 +31,8 @@ object UsageTimeline {
         val personalMs: Long,
         val apps: List<AppUsage>,
         val unlocks: Int,
+        /** SCREEN_INTERACTIVE events in the window, debounced. Pickups on phones with no secure lock. */
+        val screenOns: Int,
         val notifications: Int,
         val hourlyMs: LongArray,
         /** Foreground time at or after [lateFrom] inside the window. */
@@ -64,6 +66,8 @@ object UsageTimeline {
         val opens = HashMap<String, Int>()
         val notifs = HashMap<String, Int>()
         var unlocks = 0
+        var screenOns = 0
+        var lastScreenOn: Long? = null
         var lastUnlock: Long? = null
         var firstUnlock: Long? = null
         var lastForegroundPkg: String? = null
@@ -112,7 +116,10 @@ object UsageTimeline {
                     lastUnlock = e.at
                     if (firstUnlock == null) firstUnlock = e.at
                 }
-                Kind.SCREEN_ON -> Unit
+                Kind.SCREEN_ON -> if (e.at in windowStart until windowEnd && (lastScreenOn == null || e.at - lastScreenOn!! >= UNLOCK_DEBOUNCE_MS)) {
+                    screenOns++
+                    lastScreenOn = e.at
+                }
                 Kind.NOTIFICATION -> if (e.at in windowStart until windowEnd && counted(e.pkg)) {
                     notifs[e.pkg] = (notifs[e.pkg] ?: 0) + 1
                 }
@@ -154,6 +161,7 @@ object UsageTimeline {
             personalMs = personal.sumOf { it[1] - it[0] },
             apps = apps,
             unlocks = unlocks,
+            screenOns = screenOns,
             notifications = notifs.values.sum(),
             hourlyMs = hourly,
             lateMs = late,
