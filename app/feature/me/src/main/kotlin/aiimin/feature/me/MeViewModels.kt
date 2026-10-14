@@ -143,6 +143,18 @@ class PhoneDayViewModel @Inject constructor(private val device: DeviceRepository
         refreshing.value = false
     }
 
+    fun usageSettingsIntent() = device.usageSettingsIntent()
+
+    private var lastResumeRefresh = 0L
+
+    /** Coming back re-measures, at most once a minute. */
+    fun onResume() {
+        val now = System.currentTimeMillis()
+        if (now - lastResumeRefresh < 60_000L) return
+        lastResumeRefresh = now
+        refresh()
+    }
+
     fun shift(by: Long) = viewModelScope.launch {
         val t = clock.today()
         day.value = day.value.plusDays(by).let { if (it > t) t else it }

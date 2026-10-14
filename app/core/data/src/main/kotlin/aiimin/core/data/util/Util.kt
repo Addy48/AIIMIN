@@ -59,6 +59,16 @@ object Dates {
     private val time12 = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH)
 
     fun key(d: LocalDate): String = d.toString()
+
+    /** "just now", "12 min ago", "3 h ago": how fresh a measured number is. */
+    fun ago(epochMs: Long, now: Long = System.currentTimeMillis()): String {
+        val m = (now - epochMs) / 60_000
+        return when {
+            m < 1 -> "just now"
+            m < 60 -> "$m min ago"
+            else -> "${m / 60} h ago"
+        }
+    }
     fun parse(s: String): LocalDate = LocalDate.parse(s)
     fun short(d: LocalDate): String = dayLabel.format(d)
     /** "Mon, 12 Oct" (plan §2.13). */

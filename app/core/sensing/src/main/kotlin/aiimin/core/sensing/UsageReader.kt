@@ -126,7 +126,8 @@ class UsageReader @Inject constructor(@ApplicationContext private val context: C
             screenOns = r.screenOns,
             notifications = r.notifications,
             firstUnlockAt = r.firstUnlockAt,
-            hourlyMs = r.hourlyMs.toList(),
+            // Reading stops at "now"; pad to the whole window so 00:00 to 24:00 always has its 24 bars (23/25 on DST days).
+            hourlyMs = r.hourlyMs.toList() + List((((windowEnd.toEpochMilli() - start) + 3_599_999L) / 3_600_000L).toInt().coerceIn(1, 26).minus(r.hourlyMs.size).coerceAtLeast(0)) { 0L },
             apps = r.apps.take(60).map { AppLine(it.pkg, label(it.pkg), it.ms, it.opens, it.notifications) },
         )
     }
