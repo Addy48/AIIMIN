@@ -39,6 +39,38 @@ interface AiiminApi {
     @POST("auth/sign-in/email")
     suspend fun signInEmail(@Body body: SignInRequest): Response<ResponseBody>
 
+    @POST("auth/sign-up/email")
+    suspend fun signUpEmail(@Body body: SignUpRequest): Response<ResponseBody>
+
+    @POST("auth/send-verification-email")
+    suspend fun sendVerification(@Body body: VerifyEmailRequest): Response<ResponseBody>
+
+    @POST("auth/forget-password")
+    suspend fun forgetPassword(@Body body: ForgetPasswordRequest): Response<ResponseBody>
+
+    /** Better Auth: every signed-in browser and phone on this account (SE2). */
+    @GET("auth/list-sessions")
+    suspend fun listSessions(): Response<List<SessionInfoDto>>
+
+    @POST("auth/revoke-session")
+    suspend fun revokeSession(@Body body: RevokeSessionRequest): Response<ResponseBody>
+
+    @GET("auth/me")
+    suspend fun authMe(): Response<MeResponse>
+
+    @POST("auth/logout")
+    suspend fun logout(): Response<ResponseBody>
+
+    /** Better Auth's own delete-user; needs the PIN as the password. */
+    @POST("auth/delete-user")
+    suspend fun deleteUser(@Body body: DeleteUserRequest): Response<ResponseBody>
+
+    @GET("account/export")
+    suspend fun accountExport(): Response<ResponseBody>
+
+    @POST("account/wipe-life-data")
+    suspend fun wipeLifeData(@Body body: WipeRequest): Response<ResponseBody>
+
     @POST("auth/sign-in/username")
     suspend fun signInUsername(@Body body: SignInUsernameRequest): Response<ResponseBody>
 
@@ -70,6 +102,9 @@ interface AiiminApi {
         @Header("Idempotency-Key") idempotencyKey: String? = null,
     ): MoneyTransactionDto
 
+    @retrofit2.http.DELETE("wealth/transactions/{id}")
+    suspend fun deleteMoneyTransaction(@retrofit2.http.Path("id") id: String): Response<ResponseBody>
+
     @POST("wealth/import/ai")
     suspend fun importAiText(@Body body: AiImportRequest): WealthImportResponse
 
@@ -98,6 +133,44 @@ interface AiiminApi {
 
     @POST("lab/practice/speaking")
     suspend fun postSpeakingPractice(@Body body: SpeakingPracticeRequest): SpeakingPracticeResponse
+
+    // Calendar: phone-made events travel both ways. Google-imported rows are read-only here.
+    @GET("calendar/events")
+    suspend fun calendarEvents(@Query("start") start: String, @Query("end") end: String): List<CalendarEventDto>
+
+    @POST("calendar/events")
+    suspend fun createCalendarEvent(@Body body: CalendarEventRequest): CalendarEventDto
+
+    @retrofit2.http.PATCH("calendar/events/{id}")
+    suspend fun updateCalendarEvent(@retrofit2.http.Path("id") id: String, @Body body: CalendarEventRequest): CalendarEventDto
+
+    @retrofit2.http.DELETE("calendar/events/{id}")
+    suspend fun deleteCalendarEvent(@retrofit2.http.Path("id") id: String): Response<ResponseBody>
+
+    @GET("goals")
+    suspend fun goals(): List<RemoteGoalDto>
+
+    @POST("goals")
+    suspend fun createGoal(@Body body: GoalRequest): RemoteGoalDto
+
+    @retrofit2.http.PUT("goals/{id}")
+    suspend fun updateGoal(@retrofit2.http.Path("id") id: String, @Body body: GoalRequest): RemoteGoalDto
+
+    @retrofit2.http.DELETE("goals/{id}")
+    suspend fun deleteGoal(@retrofit2.http.Path("id") id: String): Response<ResponseBody>
+
+    /** Minimums are habits on the web. Ticks go through mobile/sync/batch (habit.tick / habit.untick). */
+    @GET("habits")
+    suspend fun habits(@Query("status") status: String = "active"): List<RemoteHabitDto>
+
+    @POST("habits")
+    suspend fun createHabit(@Body body: HabitRequest): RemoteHabitDto
+
+    @retrofit2.http.PUT("habits/{id}")
+    suspend fun updateHabit(@retrofit2.http.Path("id") id: String, @Body body: HabitRequest): RemoteHabitDto
+
+    @retrofit2.http.DELETE("journal/{id}")
+    suspend fun deleteJournal(@retrofit2.http.Path("id") id: String): Response<ResponseBody>
 
     @POST("daily-logs")
     suspend fun postDailyLog(@Body body: DailyLogRequest): DailyLogDto

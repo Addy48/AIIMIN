@@ -11,4 +11,5 @@ dependencies {
     api(libs.bundles.compose)
     implementation(libs.androidx.core.ktx)
     api(libs.androidx.activity.compose)
+    implementation(libs.vico.compose)
 }

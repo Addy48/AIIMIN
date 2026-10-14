@@ -22,7 +22,7 @@ data class LifeReadout(
  * number. Same order as the prototype's `recomputeLife`: pending intentions →
  * score series → streak → battery.
  */
-class LifeEngine(private val rules: RulesConfig = RulesConfig.V2) {
+class LifeEngine(private val rules: RulesConfig = RulesConfig.V3) {
 
     fun evaluate(
         intentions: IntentionSet,

@@ -198,6 +198,18 @@ fun CalendarScreen(vm: CalendarViewModel = hiltViewModel()) {
         TopBar(Dates.long(selected).substringAfter(", "), onBack = { nav.back() }) {
             AppIconButton(AppIcons.CalendarPlus, "New event", { adding = true })
         }
+        val mode by vm.mode.collectAsStateWithLifecycle()
+        val month by vm.month.collectAsStateWithLifecycle()
+        Segmented(listOf("Day", "Week", "Month"), mode, { vm.mode.value = it }, Modifier.padding(horizontal = Aiimin.space.gutter).padding(bottom = 8.dp))
+        if (mode == 2) {
+            MonthGrid(selected, month, onPick = { vm.select(it); vm.mode.value = 0 }, onShift = { vm.select(selected.plusMonths(it.toLong())) })
+            return@Column
+        }
+        if (mode == 1) {
+            WeekList(selected, month, vm, onPick = { vm.select(it); vm.mode.value = 0 }, onShift = { vm.select(selected.plusWeeks(it.toLong())) }, onOpen = { e -> if (e.source == "vault" && e.docId != null) nav.open(Route.Doc(e.docId!!)) else editing = e })
+            if (adding || editing != null) Unit
+            return@Column
+        }
         val start = selected.minusDays(selected.dayOfWeek.value.toLong() - 1)
         Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             AppIconButton(AppIcons.CaretLeft, "Previous week", { vm.select(selected.minusWeeks(1)) }, tint = c.textMuted, size = 36.dp)
@@ -547,6 +559,82 @@ fun UpcomingScreen(vm: UpcomingViewModel = hiltViewModel()) {
                             onClick = { nav.open(Route.Task(t.id)) },
                             trailing = { Text("Today", style = Aiimin.type.label.copy(color = c.accent), modifier = Modifier.clip(Shapes.small).clickable { vm.moveToday(t.id) }.padding(8.dp)) },
                         )
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+/** Calendar · Week: seven days, each with its events. */
+@Composable
+private fun WeekList(selected: LocalDate, byDay: Map<LocalDate, List<CalendarEventEntity>>, vm: CalendarViewModel, onPick: (LocalDate) -> Unit, onShift: (Int) -> Unit, onOpen: (CalendarEventEntity) -> Unit) {
+    val c = Aiimin.colors
+    val start = selected.minusDays(selected.dayOfWeek.value.toLong() - 1)
+    Column {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            AppIconButton(AppIcons.CaretLeft, "Previous week", { onShift(-1) }, tint = c.textMuted, size = 36.dp)
+            Text("${Dates.shortDm(start)} – ${Dates.shortDm(start.plusDays(6))}", style = Aiimin.type.headline, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            AppIconButton(AppIcons.CaretRight, "Next week", { onShift(1) }, tint = c.textMuted, size = 36.dp)
+        }
+        LazyColumn(contentPadding = PaddingValues(start = Aiimin.space.gutter, end = Aiimin.space.gutter, bottom = 32.dp)) {
+            (0..6).map { start.plusDays(it.toLong()) }.forEach { d ->
+                item(key = d.toString()) {
+                    val evs = byDay[d].orEmpty()
+                    Column(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
+                        Text(Dates.short(d), style = Aiimin.type.bodyStrong.copy(color = if (d == LocalDate.now()) c.accentText else c.text), modifier = Modifier.clickable { onPick(d) })
+                        if (evs.isEmpty()) Text("Free", style = Aiimin.type.caption)
+                        evs.forEach { e ->
+                            Row(Modifier.fillMaxWidth().clickable { onOpen(e) }.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text(if (e.allDay) "all day" else Dates.clock(vm.instant(e.startAt).toLocalTime()), style = Aiimin.type.caption, modifier = Modifier.width(64.dp))
+                                Text(e.title, style = Aiimin.type.body, maxLines = 1)
+                            }
+                        }
+                    }
+                    Hairline()
+                }
+            }
+        }
+    }
+}
+
+/** Calendar · Month: a grid with a dot per day that has events; tap a day to open it. */
+@Composable
+private fun MonthGrid(selected: LocalDate, byDay: Map<LocalDate, List<CalendarEventEntity>>, onPick: (LocalDate) -> Unit, onShift: (Int) -> Unit) {
+    val c = Aiimin.colors
+    val ym = java.time.YearMonth.from(selected)
+    val first = ym.atDay(1)
+    val lead = first.dayOfWeek.value - 1
+    Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AppIconButton(AppIcons.CaretLeft, "Previous month", { onShift(-1) }, tint = c.textMuted, size = 36.dp)
+            Text(ym.month.getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + ym.year, style = Aiimin.type.headline, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            AppIconButton(AppIcons.CaretRight, "Next month", { onShift(1) }, tint = c.textMuted, size = 36.dp)
+        }
+        Row(Modifier.fillMaxWidth().padding(top = 8.dp)) {
+            listOf("M", "T", "W", "T", "F", "S", "S").forEach { Text(it, style = Aiimin.type.caption, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center) }
+        }
+        val cells = lead + ym.lengthOfMonth()
+        (0 until (cells + 6) / 7).forEach { w ->
+            Row(Modifier.fillMaxWidth()) {
+                (0..6).forEach { i ->
+                    val n = w * 7 + i - lead + 1
+                    Box(Modifier.weight(1f).height(52.dp), contentAlignment = Alignment.Center) {
+                        if (n in 1..ym.lengthOfMonth()) {
+                            val d = ym.atDay(n)
+                            val sel = d == selected
+                            Column(
+                                Modifier.size(44.dp).clip(Shapes.row).background(if (sel) c.text else Color.Transparent).clickable { onPick(d) },
+                                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+                            ) {
+                                Text("$n", style = Aiimin.type.numberSmall.copy(color = if (sel) c.base else if (d == LocalDate.now()) c.accentText else c.text))
+                                val count = byDay[d].orEmpty().size
+                                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    repeat(count.coerceAtMost(3)) { Box(Modifier.size(4.dp).clip(androidx.compose.foundation.shape.CircleShape).background(if (sel) c.base else c.accent)) }
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -46,6 +46,7 @@ class NotificationRepository @Inject constructor(
     private val tasks: TaskDao,
     private val calendar: CalendarDao,
     private val money: MoneyDao,
+    private val ledger: aiimin.core.database.LedgerDao,
     private val life: LifeRepository,
     private val settings: SettingsStore,
     private val clock: DayClock,
@@ -70,6 +71,22 @@ class NotificationRepository @Inject constructor(
                 else -> "Expires in $left days, on ${LocalDate.parse(d.expires).let { "${it.dayOfMonth} ${it.month.name.lowercase().replaceFirstChar(Char::uppercase).take(3)}" }}."
             }
             emit("doc:${d.id}:$t", d.title, body, "doc", d.id, if (t <= 30) 2 else 1)
+        }
+
+        // NT23 · vault backup overdue: 14 days without one (and again at 30), only once there are documents.
+        val docsHeld = vault.allNow().count { !it.deleted }
+        if (docsHeld > 0) {
+            val last = context.getSharedPreferences(aiimin.core.data.vault.VaultBackupRepository.PREFS, Context.MODE_PRIVATE).getLong("last_at", 0L)
+            val days = if (last == 0L) null else ChronoUnit.DAYS.between(java.time.Instant.ofEpochMilli(last).atZone(clock.zone).toLocalDate(), today)
+            val step = when { days == null -> "never"; days >= 30 -> "30"; days >= 14 -> "14"; else -> null }
+            if (step != null) emit("backup:$step", "Back up your vault", if (days == null) "Your documents live only on this phone. Keep a backup somewhere you trust." else "Last backup $days days ago.", "backup", null, 1)
+        }
+
+        // NT2 · a confirmed bill due tomorrow (reminder on, not AutoPay).
+        for (b in ledger.billsNow().filter { it.status == "CONFIRMED" && it.remind && !it.autopay }) {
+            if (LocalDate.parse(b.nextDue) == today.plusDays(1)) {
+                emit("bill:${b.id}:${b.nextDue}", "${b.title} ${aiimin.core.data.util.Money.whole(b.amountPaise)} is due tomorrow", "Mark it paid in Bills once it's done.", "bills", b.id, 1)
+            }
         }
 
         // Events starting within 15 minutes.

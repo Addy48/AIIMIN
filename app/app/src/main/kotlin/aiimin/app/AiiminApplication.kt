@@ -39,6 +39,15 @@ class AiiminApplication : Application() {
         NotificationRepository.ensureChannels(this)
         val deps = EntryPointAccessors.fromApplication(this, AppDeps::class.java)
         appScope.launch { runCatching { deps.auth().restore() } }
+        // Offline edits go as soon as the network is back, without waiting for the half-hourly job.
+        runCatching {
+            val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as android.net.ConnectivityManager
+            cm.registerDefaultNetworkCallback(object : android.net.ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: android.net.Network) {
+                    appScope.launch { if (runCatching { deps.auth().current().signedIn }.getOrDefault(false)) requestSync(this@AiiminApplication) }
+                }
+            })
+        }
         // Day rollover, noon settlement, sensors, notification rules and sync,
         // every half hour even when the app is closed.
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
@@ -46,6 +55,11 @@ class AiiminApplication : Application() {
             ExistingPeriodicWorkPolicy.KEEP,
             PeriodicWorkRequestBuilder<MaintenanceWorker>(30, TimeUnit.MINUTES).build(),
         )
+        // Sync has its own job: network constraint (Wi-Fi only if asked) and exponential retry.
+        appScope.launch {
+            val wifiOnly = runCatching { deps.settings().current().syncWifiOnly }.getOrDefault(false)
+            aiimin.core.data.sync.SyncScheduler.schedulePeriodic(this@AiiminApplication, wifiOnly)
+        }
     }
 }
 
@@ -55,12 +69,13 @@ interface AppDeps {
     fun maintenance(): Maintenance
     fun money(): MoneyRepository
     fun auth(): AuthRepository
+    fun settings(): aiimin.core.data.settings.SettingsStore
 }
 
 class MaintenanceWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val deps = EntryPointAccessors.fromApplication(applicationContext, AppDeps::class.java)
-        return runCatching { deps.maintenance().run() }.fold({ Result.success() }, { Result.retry() })
+        return runCatching { deps.maintenance().run(syncNow = inputData.getBoolean("sync", false)) }.fold({ Result.success() }, { Result.retry() })
     }
 }
 
@@ -100,11 +115,4 @@ class FocusDoneWorker(context: Context, params: WorkerParameters) : CoroutineWor
 }
 
 /** One-off sync when the network comes back (e.g. after offline edits). */
-fun requestSync(context: Context) {
-    WorkManager.getInstance(context).enqueueUniqueWork(
-        "sync-now", ExistingWorkPolicy.KEEP,
-        OneTimeWorkRequestBuilder<MaintenanceWorker>()
-            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-            .build(),
-    )
-}
+fun requestSync(context: Context) = aiimin.core.data.sync.SyncScheduler.requestNow(context)

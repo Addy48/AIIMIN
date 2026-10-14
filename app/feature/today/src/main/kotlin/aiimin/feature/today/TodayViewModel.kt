@@ -7,6 +7,8 @@ import aiimin.core.data.day.DayRepository
 import aiimin.core.data.device.DeviceRepository
 import aiimin.core.data.life.LifeRepository
 import aiimin.core.data.life.LifeView
+import aiimin.core.data.notes.NoteRepository
+import aiimin.core.database.NoteEntity
 import aiimin.core.data.notify.NotificationRepository
 import aiimin.core.data.plan.ActiveFocus
 import aiimin.core.data.plan.CalendarRepository
@@ -77,6 +79,7 @@ data class TodayUi(
     val yesterdayOpen: Boolean,
     val hideScore: Boolean,
     val hideXp: Boolean,
+    val pinned: NoteEntity? = null,
 ) {
     val tasksOpen get() = flow.values.flatten().count { it.kind == FlowKind.TASK && !it.done }
 }
@@ -91,12 +94,25 @@ class TodayViewModel @Inject constructor(
     private val focus: FocusRepository,
     private val days: DayRepository,
     life: LifeRepository,
-    device: DeviceRepository,
+    private val device: DeviceRepository,
     notifications: NotificationRepository,
     activity: ActivityRepository,
     vault: VaultRepository,
     settings: SettingsStore,
+    notes: NoteRepository,
 ) : ViewModel() {
+
+    /** What the phone can measure right now; refreshed on every resume so a grant shows at once. */
+    val access = MutableStateFlow<aiimin.core.data.device.SensorAccess?>(null)
+    private val setupPrefs = MutableStateFlow(0L)
+    fun refreshAccess() = viewModelScope.launch {
+        access.value = runCatching { device.access() }.getOrNull()
+        runCatching { device.refreshRecent() }
+    }
+    val healthPermissions get() = device.healthPermissions
+    fun healthContract() = device.healthContract()
+    fun usageSettings() = device.usageSettingsIntent()
+    fun healthInstall() = device.healthInstallIntent()
 
     private val zone: ZoneId get() = clock.zone
     private val _part = MutableStateFlow(DayPart.now())
@@ -114,14 +130,14 @@ class TodayViewModel @Inject constructor(
             flow { emit(vault.expiring(30)) },
         ) { t, e, m, st, exp -> Plan(t, e, m, st, exp.firstOrNull()) }
         val ambient = combine(life.view, device.observe(day), notifications.unread, focus.active, activity.recent(4)) { l, d, u, f, a -> Ambient(l, d, u, f, a) }
-        combine(plan, ambient, settings.settings, yesterdayOpen) { p, a, s, y ->
+        combine(plan, ambient, settings.settings, yesterdayOpen, notes.all()) { p, a, s, y, ns ->
             val items = buildFlow(day, p.tasks, p.events)
             TodayUi(
                 date = day, name = s.name, flow = items, now = nowCard(items.values.flatten()),
                 minimums = p.mins.filter { it.planned || it.done }, dayState = p.state, life = a.life, device = a.device,
                 unread = a.unread, focus = a.focus, activity = a.activity,
                 expiringTitle = p.expiring?.title, expiringId = p.expiring?.id, yesterdayOpen = y,
-                hideScore = s.hideScore, hideXp = s.hideXp,
+                hideScore = s.hideScore, hideXp = s.hideXp, pinned = ns.firstOrNull { it.pinned && !it.deleted },
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)

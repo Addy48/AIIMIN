@@ -54,6 +54,8 @@ data class LifeView(
     val settings: AppSettings,
     /** History used, oldest first (settled + closed days). */
     val history: List<DaySnapshot>,
+    /** Domain key → mean signal score over the last 7 days and today (null when nothing measured). */
+    val areas: Map<String, Double?> = emptyMap(),
 ) {
     val battery: Battery get() = readout.battery
 }
@@ -123,7 +125,25 @@ class LifeRepository @Inject constructor(
             }
         }.sortedByDescending { it.gain }.take(3)
         val vcs = VerifiedConsistencyEngine(clock.rules).compute(readout.series, readout.streak.keptDays)
-        return LifeView(readout, today, base, nudges, vcs, s.intentions, s, history)
+        return LifeView(readout, today, base, nudges, vcs, s.intentions, s, history, areaScores(score, s, history, readout.today?.parts))
+    }
+
+    /**
+     * "By area": today alone is mostly empty in the morning (no steps, no sleep yet, no tasks done),
+     * so each area is the mean of its signal scores over the last 7 settled days plus today.
+     */
+    private fun areaScores(score: ScoreEngine, s: AppSettings, history: List<DaySnapshot>, todayParts: Map<String, aiimin.core.engine.SignalScore>?): Map<String, Double?> {
+        val from = (history.size - 7).coerceAtLeast(0)
+        val perSignal = HashMap<String, MutableList<Double>>()
+        for (i in from until history.size) {
+            score.dailyIndex(history[i], history, i).parts.forEach { (k, v) -> perSignal.getOrPut(k) { mutableListOf() } += v.score }
+        }
+        todayParts?.forEach { (k, v) -> perSignal.getOrPut(k) { mutableListOf() } += v.score }
+        return aiimin.core.engine.Domain.BUILT_IN.associate { d ->
+            val keys = s.intentions.cards.filter { (k, card) -> card.isScored && s.intentions.def(k)?.domain == d.key }.keys
+            val vals = keys.flatMap { perSignal[it].orEmpty() }
+            d.key to vals.takeIf { it.isNotEmpty() }?.average()
+        }
     }
 }
 

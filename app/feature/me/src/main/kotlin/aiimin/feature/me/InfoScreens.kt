@@ -1,5 +1,9 @@
 package aiimin.feature.me
 
+import aiimin.designsystem.component.Segmented
+import aiimin.designsystem.component.AppSheet
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import aiimin.core.data.app.ResultType
 import aiimin.core.data.device.DeviceRepository
 import aiimin.core.data.util.Dates
@@ -59,7 +63,7 @@ fun ActivityScreen(vm: ActivityViewModel = hiltViewModel()) {
     val lines by vm.lines.collectAsStateWithLifecycle()
     val zone = ZoneId.systemDefault()
     Column(Modifier.fillMaxSize().background(Aiimin.colors.base)) {
-        TopBar("Activity", onBack = { nav.back() })
+        TopBar("Activity", onBack = { nav.back() }) { AppIconButton(AppIcons.Waveform, "Recent captures", { nav.open(Route.RecentCaptures) }) }
         if (lines.isEmpty()) {
             EmptyState(AppIcons.ClockCounter, "Nothing yet", "Everything you do is written to a private, tamper-evident log. It shows up here.")
             return@Column
@@ -101,7 +105,7 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
                         n.title, subtitle = n.body, maxSubtitleLines = 3,
                         leading = {
                             IconTile(
-                                when (n.route) { "doc" -> AppIcons.ShieldCheck; "money" -> AppIcons.Money; "score" -> AppIcons.Pulse; else -> AppIcons.Bell },
+                                when (n.route) { "doc" -> AppIcons.ShieldCheck; "money", "bills" -> AppIcons.Money; "score" -> AppIcons.Pulse; else -> AppIcons.Bell },
                                 tint = if (n.priority >= 2) Aiimin.colors.accent else Aiimin.colors.textMuted,
                             )
                         },
@@ -110,6 +114,8 @@ fun NotificationsScreen(vm: NotificationsViewModel = hiltViewModel()) {
                             when (n.route) {
                                 "doc" -> n.routeArg?.let { nav.open(Route.Doc(it)) }
                                 "money" -> nav.open(Route.MoneyInbox)
+                                "bills" -> nav.open(Route.Recurring)
+                                "backup" -> nav.open(Route.VaultBackup)
                                 "score" -> nav.open(Route.Score)
                                 else -> nav.tab(Tab.TODAY)
                             }
@@ -159,6 +165,8 @@ fun SearchScreen(vm: SearchViewModel = hiltViewModel()) {
 
 @Composable
 fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
+    var appSheet by remember { mutableStateOf<aiimin.core.data.device.AppUse?>(null) }
+    val prefs by vm.prefs.collectAsStateWithLifecycle()
     val nav = LocalNavigator.current
     val d by vm.data.collectAsStateWithLifecycle()
     val week by vm.week.collectAsStateWithLifecycle()
@@ -191,38 +199,52 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                     val hourly = DeviceRepository.longs(data.stepsHourly)
                     if (hourly.any { it > 0 }) {
                         Spacer(Modifier.height(14.dp))
-                        Bars(hourly.map { it.toFloat() }, color = c.domains[0], labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Steps by hour")
+                        Bars(hourly.map { it.toFloat() }, color = c.text, labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Steps by hour")
                     }
                 }
             }
             item {
                 SectionHeader("Screen")
                 Panel {
-                    Row {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Stat(data.screenMs?.let { Dates.minutes(it / 60_000) } ?: "—", "screen time", Modifier.weight(1f))
                         Stat(data.unlocks?.toString() ?: "—", "unlocks", Modifier.weight(1f))
                         Stat(data.notifications?.toString() ?: "—", "notifications", Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(12.dp))
-                    Row {
-                        Stat(data.screenPersonalMs?.let { Dates.minutes(it / 60_000) } ?: "—", "personal" + (screenLimit?.let { " · limit ${Dates.minutes(it.toLong())}" } ?: ""), Modifier.weight(1f))
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Stat(data.screenPersonalMs?.let { Dates.minutes(it / 60_000) } ?: "—", "personal", Modifier.weight(1f))
                         Stat(data.screenWorkMs?.let { Dates.minutes(it / 60_000) } ?: "—", "work apps", Modifier.weight(1f))
                         Stat(data.lateScreenMs?.let { Dates.minutes(it / 60_000) } ?: "—", "late night", Modifier.weight(1f))
                     }
+                    screenLimit?.let { Text("Your personal limit: ${Dates.minutes(it.toLong())}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp)) }
                     data.firstUnlockAt?.let { Text("First unlock ${Dates.clock(Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime())}", style = Aiimin.type.caption, modifier = Modifier.padding(top = 10.dp)) }
                     val hourly = DeviceRepository.longs(data.screenHourly)
                     if (hourly.any { it > 0 }) {
                         Spacer(Modifier.height(14.dp))
-                        Bars(hourly.map { it.toFloat() }, color = c.accent, labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Screen time by hour")
+                        Bars(hourly.map { it.toFloat() }, color = c.text, labels = listOf("12a", "6a", "12p", "6p", "12a"), description = "Screen time by hour")
                     }
                 }
             }
             val apps = DeviceRepository.apps(data)
+            appSheet?.let { a ->
+                item {
+                    val work = a.pkg in (prefs?.workApps ?: emptySet())
+                    val weekAvg = week.mapNotNull { d -> DeviceRepository.apps(d).firstOrNull { it.pkg == a.pkg }?.ms }.let { if (it.isEmpty()) 0L else it.sum() / week.size.coerceAtLeast(1) }
+                    AppSheet({ appSheet = null }, title = a.label) {
+                        Text("Today ${Dates.minutes(a.ms / 60_000)} · 7-day average ${Dates.minutes(weekAvg / 60_000)}", style = Aiimin.type.body)
+                        SectionHeader("Counts as")
+                        Segmented(listOf("Personal", "Work"), if (work) 1 else 0, { i -> vm.tagWork(a.pkg, i == 1) })
+                        Text(if (work) "Work time isn't counted against your personal screen time." else "Counted in personal screen time.", style = Aiimin.type.caption, modifier = Modifier.padding(top = 6.dp, bottom = 12.dp))
+                    }
+                }
+            }
             if (apps.isNotEmpty()) {
                 item { SectionHeader("Apps") }
+                val dupes = apps.groupBy { it.label }.filterValues { it.size > 1 }.keys
                 items(apps.filter { it.ms > 0 }.take(12), key = { it.pkg }) { a ->
                     ListRow(
-                        a.label,
+                        a.label + (if (a.label in dupes) " · " + a.pkg.substringAfterLast('.') else "") + if (a.pkg in (prefs?.workApps ?: emptySet())) " · work" else "", onClick = { appSheet = a },
                         subtitle = listOfNotNull("opened ${a.opens}×".takeIf { a.opens > 0 }, "${a.notifications} notifications".takeIf { a.notifications > 0 }).joinToString(" · ").ifBlank { null },
                         trailing = { Text(if (a.ms < 60_000) "<1m" else Dates.minutes(a.ms / 60_000), style = Aiimin.type.numberSmall) },
                     )
@@ -249,7 +271,7 @@ fun PhoneDayScreen(vm: PhoneDayViewModel = hiltViewModel()) {
                         Bars(week.map { (it.steps ?: 0).toFloat() }, color = c.domains[0], height = 48.dp, highlight = week.size - 1, description = "Steps per day this week")
                         Spacer(Modifier.height(10.dp))
                         Text("Screen time", style = Aiimin.type.caption)
-                        Bars(week.map { ((it.screenMs ?: 0) / 60_000).toFloat() }, color = c.accent, height = 48.dp, highlight = week.size - 1, description = "Screen time per day this week")
+                        Bars(week.map { ((it.screenMs ?: 0) / 60_000).toFloat() }, color = c.text, height = 48.dp, highlight = week.size - 1, description = "Screen time per day this week")
                     }
                 }
             }

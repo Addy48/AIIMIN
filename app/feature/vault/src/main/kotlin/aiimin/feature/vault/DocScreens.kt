@@ -1,5 +1,9 @@
 package aiimin.feature.vault
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.heightIn
+import aiimin.designsystem.component.ExpiryVial
+import aiimin.designsystem.component.EvidenceDot
 import aiimin.core.data.settings.Codecs
 import aiimin.core.data.util.Dates
 import aiimin.core.data.vault.DOC_CATEGORIES
@@ -118,6 +122,7 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
     var sharing by remember { mutableStateOf(false) }
     var remind by remember { mutableStateOf(false) }
     var info by remember { mutableStateOf(false) }
+    var full by remember { mutableStateOf(false) }
     val c = Aiimin.colors
     val v = view
     Column(Modifier.fillMaxSize().background(c.base)) {
@@ -129,33 +134,65 @@ fun DocScreen(id: String, vm: DocViewModel = hiltViewModel()) {
             return@Column
         }
         val d = v.doc
-        Row(Modifier.fillMaxWidth().padding(horizontal = Aiimin.space.gutter, vertical = 4.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Tag(v.ownerName, icon = AppIcons.Me)
-            Tag(d.category, icon = categoryIcon(d.category))
-            d.expires?.let { Tag("Expires ${Dates.short(LocalDate.parse(it))}", icon = AppIcons.Hourglass, color = if ((v.daysToExpiry ?: 999) <= 30) c.warn else c.textMuted) }
-            d.number?.let { Tag(it, icon = AppIcons.Barcode) }
-            if (d.sensitive) Tag("Sensitive", icon = AppIcons.Lock)
-            if (d.pages > 1) Tag("${d.pages} pages")
+        val days = v.daysToExpiry
+        val unlockedF = file
+        if (full && unlockedF != null) {
+            Box(Modifier.weight(1f).fillMaxWidth()) { DocBody(d, unlockedF) }
+            Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(Aiimin.space.gutter)) { AppButton("Close preview", { full = false }, Modifier.fillMaxWidth(), kind = ButtonKind.SECONDARY) }
+            return@Column
         }
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            val f = file
-            if (f == null) Skeleton(Modifier.padding(Aiimin.space.gutter).fillMaxWidth().height(320.dp)) else DocBody(d, f)
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+            // linked items
+            Row(Modifier.fillMaxWidth().padding(horizontal = Aiimin.space.gutter).padding(top = 2.dp).horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                d.expires?.let { LinkChip("Expires ${Dates.short(LocalDate.parse(it))}", AppIcons.CalendarCheck, warn = (days ?: 999) <= 30) { remind = true } }
+                if (d.expires != null) LinkChip("Task: renew", AppIcons.CheckSquare) { nav.open(Route.Upcoming) }
+                d.number?.let { LinkChip(if (d.sensitive) "Number ••••${it.takeLast(4)}" else it, AppIcons.Hash) {} }
+                if (d.sensitive) LinkChip("Sensitive", AppIcons.LockSimple) {}
+            }
+            // page preview
+            Box(Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 16.dp).fillMaxWidth().height(360.dp).clip(RoundedCornerShape(6.dp)).background(androidx.compose.ui.graphics.Color.White).border(1.dp, c.borderStrong, RoundedCornerShape(6.dp)).clickable { full = true }) {
+                val f = file
+                if (f == null) Skeleton(Modifier.fillMaxSize()) else FirstPage(d, f)
+                if (d.pages > 1) Box(Modifier.align(Alignment.BottomEnd).padding(10.dp).clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 8.dp, vertical = 3.dp)) {
+                    Text("1 / ${d.pages}", style = Aiimin.type.caption.copy(color = if (c.isDark) c.base else androidx.compose.ui.graphics.Color.White, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
+                }
+            }
+            Text("Tap to open full size. Double-tap or pinch to zoom.", style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(horizontal = Aiimin.space.gutter).padding(top = 6.dp))
+            Column(Modifier.padding(horizontal = Aiimin.space.gutter)) {
+                SectionHeader("Found in the document")
+                FoundRow("Number", d.number?.let { if (d.sensitive) "••••••${it.takeLast(4)}" else it } ?: "Not found", found = d.number != null)
+                Hairline()
+                d.title.substringAfter(" · ", "").takeIf { it.isNotBlank() }?.let { FoundRow("Issued by", it, found = true); Hairline() }
+                FoundRow(
+                    "Expires", d.expires?.let { Dates.short(LocalDate.parse(it)) + " " + LocalDate.parse(it).year } ?: "No expiry found",
+                    note = d.expires?.let { "found on page 1 · reminders at 30 and 7 days" }, warnText = (days ?: 999) <= 30, found = d.expires != null,
+                    trailing = { ExpiryVial(days?.let { (it / 365f).coerceIn(0f, 1f) }) },
+                )
+                if (d.vehicle != null) { Hairline(); FoundRow("Vehicle", d.vehicle!!, found = true) }
+                Spacer(Modifier.height(16.dp))
+                Text("Stored only on this phone · ${if (d.sizeBytes < 1_048_576) "${maxOf(1, d.sizeBytes / 1024)} KB" else "%.1f MB".format(d.sizeBytes / 1_048_576.0)}", style = Aiimin.type.caption.copy(fontSize = 12.sp))
+                Spacer(Modifier.height(24.dp))
+            }
         }
         Hairline()
-        Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 8.dp, vertical = 6.dp), horizontalArrangement = Arrangement.SpaceAround) {
-            BarAction(AppIcons.Share, "Share") {
+        Row(Modifier.fillMaxWidth().navigationBarsPadding().height(72.dp).padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.CenterVertically) {
+            BarAction(AppIcons.Export, "Share") {
                 scope.launch {
                     val copy = vm.shareCopy(d)
                     val uri = FileProvider.getUriForFile(context, context.packageName + ".files", copy)
                     context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType(d.mime).putExtra(Intent.EXTRA_STREAM, uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "Share ${d.title}"))
                 }
             }
-            BarAction(AppIcons.Chat, "Ask AI") {
+            BarAction(AppIcons.EyeSlash, "Masked copy") {
+                val n = d.number
+                val text = "${d.title}${if (n != null) " · number ending ${n.takeLast(4)}" else ""}${d.expires?.let { " · valid until " + Dates.short(LocalDate.parse(it)) } ?: ""}"
+                context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text), "Share masked details"))
+            }
+            BarAction(AppIcons.ChatCircleText, "Ask") {
                 if (d.sensitive) toaster.show("Sensitive documents are never read by the assistant")
                 else nav.open(Route.Assistant(prompt = "About ${d.title}: ", context = "doc:${d.id}"))
             }
-            BarAction(AppIcons.Bell, "Remind") { remind = true }
-            BarAction(AppIcons.Users, "Access") { sharing = true }
+            BarAction(AppIcons.BellSimple, "Remind") { remind = true }
         }
     }
     val d = v?.doc ?: return
@@ -233,7 +270,8 @@ private fun whyText(a: Access): String = when (a) {
 private fun BarAction(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
     Column(Modifier.clip(Shapes.row).clickable(onClick = onClick).padding(horizontal = 14.dp, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(icon, null, tint = Aiimin.colors.text, modifier = Modifier.size(22.dp))
-        Text(label, style = Aiimin.type.caption.copy(color = Aiimin.colors.text))
+        Spacer(Modifier.height(4.dp))
+        Text(label, style = Aiimin.type.caption.copy(color = Aiimin.colors.text, fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Medium))
     }
 }
 
@@ -645,4 +683,57 @@ fun FamilyScreen(vm: FamilyViewModel = hiltViewModel()) {
             AppButton("Add", { vm.add(name, relation, role, invite); adding = false; toaster.show("$name added") }, Modifier.fillMaxWidth(), enabled = name.isNotBlank())
         }
     }
+}
+
+
+@Composable
+private fun LinkChip(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, warn: Boolean = false, onClick: () -> Unit) {
+    val c = Aiimin.colors
+    Row(
+        Modifier.clip(RoundedCornerShape(6.dp)).background(c.raised).clickable(onClick = onClick).heightIn(min = 36.dp).padding(horizontal = 11.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp),
+    ) {
+        Icon(icon, null, tint = if (warn) c.accentText else c.text, modifier = Modifier.size(16.dp))
+        Text(text, style = Aiimin.type.label.copy(fontSize = 13.5.sp, color = if (warn) c.accentText else c.text), maxLines = 1)
+    }
+}
+
+@Composable
+private fun FoundRow(label: String, value: String, note: String? = null, found: Boolean, warnText: Boolean = false, trailing: (@Composable () -> Unit)? = null) {
+    val c = Aiimin.colors
+    Row(Modifier.fillMaxWidth().heightIn(min = 64.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f).padding(vertical = 10.dp)) {
+            Text(label, style = Aiimin.type.caption)
+            Text(value, style = Aiimin.type.headline.copy(fontSize = 17.sp, color = if (warnText) c.accentText else c.text), modifier = Modifier.padding(top = 2.dp))
+            if (note != null) Text(note, style = Aiimin.type.caption.copy(fontSize = 12.sp), modifier = Modifier.padding(top = 2.dp))
+        }
+        if (trailing != null) trailing() else if (found) EvidenceDot('A')
+    }
+}
+
+/** First page only, for the preview card; the full viewer opens on tap. */
+@Composable
+private fun FirstPage(d: DocEntity, f: File) {
+    val kind = kindOf(d.ext, d.mime)
+    val bmp by produceState<Bitmap?>(null, f) {
+        value = withContext(Dispatchers.IO) {
+            runCatching {
+                when (kind) {
+                    DocKind.PDF -> ParcelFileDescriptor.open(f, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                        PdfRenderer(fd).use { r ->
+                            r.openPage(0).use { p ->
+                                val w = 1000
+                                Bitmap.createBitmap(w, (w.toFloat() * p.height / p.width).toInt(), Bitmap.Config.ARGB_8888).also { b -> b.eraseColor(android.graphics.Color.WHITE); p.render(b, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY) }
+                            }
+                        }
+                    }
+                    DocKind.IMAGE -> decodeSampled(f, 1400)
+                    else -> null
+                }
+            }.getOrNull()
+        }
+    }
+    val b = bmp
+    if (b != null) Image(b.asImageBitmap(), d.title, Modifier.fillMaxSize(), contentScale = ContentScale.Crop, alignment = Alignment.TopCenter)
+    else Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Icon(AppIcons.FileText, null, tint = Aiimin.colors.textFaint, modifier = Modifier.size(40.dp)) }
 }

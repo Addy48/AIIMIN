@@ -101,7 +101,7 @@ class EngineParityTest {
     }
 
     @Test
-    fun `T8 score rises slowly for new and unverified accounts`() {
+    fun `T8 score rises gradually and is shown conservatively while learning`() {
         val perfect = mapOf(
             Signals.TASKS to 100.0, Signals.FOCUS to 300.0, Signals.MINIMUMS to 100.0, Signals.STEPS to 12000.0,
             Signals.JOURNAL to 1.0, Signals.MONEY_PACE to 70.0, Signals.MONEY_LOGGING to 100.0, Signals.SCREEN_PERSONAL to 30.0,
@@ -111,7 +111,11 @@ class EngineParityTest {
         val jumps = s.zipWithNext { a, b -> b - a }
 
         assertThat(jumps).isNotEmpty()
-        assertThat(jumps.max()).isAtMost(2.01)
+        // Score Engine 3: at most 5 points a day while the range is wide (3 once it narrows).
+        assertThat(jumps.max()).isAtMost(5.01)
+        // Shown value sits below the level for the first 30 scored days.
+        val last = engine().series(hist).last()
+        assertThat(last.score!!).isLessThan(last.level!!)
     }
 
     @Test

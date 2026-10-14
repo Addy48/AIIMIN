@@ -244,12 +244,12 @@ class MinimumRepository @Inject constructor(
     }
 
     suspend fun edit(m: MinimumEntity) {
-        dao.upsert(m)
+        dao.upsert(m.copy(updatedAt = System.currentTimeMillis()))
         log.log("min.edit", "min", m.id)
     }
 
     suspend fun archive(id: String) {
-        dao.get(id)?.let { dao.upsert(it.copy(archived = true)) }
+        dao.get(id)?.let { dao.upsert(it.copy(archived = true, updatedAt = System.currentTimeMillis())) }
         log.log("min.archive", "min", id)
     }
 

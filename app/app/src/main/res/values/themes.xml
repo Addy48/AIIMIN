@@ -7,10 +7,10 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
-    <!-- Ground only — no logo. Compose AiiminSplash is the sole mark. -->
+    <!-- Light AIIMIN mark on the paper ground. -->
     <style name="Theme.Aiimin.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/industry_bg</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_silent</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
         <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
         <item name="postSplashScreenTheme">@style/Theme.Aiimin</item>
         <item name="android:windowLightStatusBar">true</item>

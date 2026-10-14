@@ -31,8 +31,10 @@ class StreakEngine(private val rules: RulesConfig) {
         if (day.light) 1 else max(1, ceil(day.minimums.planned * r.keptMinimumsShare).toInt())
 
     fun compute(scored: List<ScoredDay>, mode: BatteryMode): StreakState {
-        val dis = scored.mapNotNull { it.di }
-        val personalBar = if (dis.isEmpty()) 0.0 else Stats.percentile(dis.takeLast(60), r.keptDIPct)
+        // The bar is your own 20th percentile of the scored days BEFORE this one (last 60), so a day
+        // is never judged against days that came after it. During calibration (under 14 earlier
+        // scored days) there is no bar: the minimums floor and one A/B item decide (§9.3).
+        val priorDis = ArrayList<Double>()
 
         var cur = 0
         var best = 0
@@ -53,10 +55,11 @@ class StreakEngine(private val rules: RulesConfig) {
                 prevMissed = false
                 continue
             }
-            val isKept = d.di != null &&
-                d.di >= personalBar &&
-                h.minimums.kept >= minimumsFloor(h) &&
-                h.hasVerifiedSignal
+            val bar = if (priorDis.size >= 14) Stats.percentile(priorDis.takeLast(60), r.keptDIPct) else null
+            // One point of tolerance: as your stretch anchor learns, an identical day can score a hair lower.
+            val diOk = if (bar == null) true else d.di != null && d.di >= bar - 1.0
+            val isKept = diOk && h.minimums.kept >= minimumsFloor(h) && h.hasVerifiedSignal
+            d.di?.let { priorDis += it }
             kept += isKept
             if (isKept) {
                 cur++

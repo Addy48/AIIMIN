@@ -419,3 +419,126 @@ data class ChatRequest(
 
 @Serializable
 data class ChatResponse(val text: String? = null, val provider: String? = null, val model: String? = null, val error: String? = null)
+
+
+@Serializable
+data class SignUpRequest(val email: String, val password: String, val name: String, val username: String)
+
+@Serializable
+data class VerifyEmailRequest(val email: String, val callbackURL: String? = null)
+
+@Serializable
+data class ForgetPasswordRequest(val email: String, val redirectTo: String? = null)
+
+@Serializable
+data class DeleteUserRequest(val password: String)
+
+@Serializable
+data class WipeRequest(val confirm: String = "WIPE ALL DATA")
+
+@Serializable
+data class MeUser(
+    val id: String? = null,
+    val email: String? = null,
+    @SerialName("full_name") val fullName: String? = null,
+    val username: String? = null,
+    val emailVerified: Boolean? = null,
+    @SerialName("onboarding_stage") val onboardingStage: Int? = null,
+)
+
+@Serializable
+data class MeResponse(val user: MeUser? = null)
+
+// ------------------------------------------------------------------ calendar (api/calendar)
+
+@Serializable
+data class CalendarEventDto(
+    val id: String? = null,
+    val title: String? = null,
+    val description: String? = null,
+    @SerialName("start_time") val startTime: String? = null,
+    @SerialName("end_time") val endTime: String? = null,
+    @SerialName("all_day") val allDay: Boolean? = null,
+    val location: String? = null,
+    @SerialName("reminder_minutes") val reminderMinutes: Int? = null,
+    @SerialName("source_type") val sourceType: String? = null,
+    @SerialName("event_type") val eventType: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+@Serializable
+data class CalendarEventRequest(
+    val title: String? = null,
+    @SerialName("start_time") val startTime: String? = null,
+    @SerialName("end_time") val endTime: String? = null,
+    @SerialName("all_day") val allDay: Boolean? = null,
+    val location: String? = null,
+    @SerialName("reminder_minutes") val reminderMinutes: Int? = null,
+    @SerialName("event_type") val eventType: String? = null,
+)
+
+// ------------------------------------------------------------------ goals (api/goals)
+
+@Serializable
+data class RemoteGoalDto(
+    val id: String? = null,
+    val title: String? = null,
+    val metric: String? = null,
+    val status: String? = null,
+    val targetDate: String? = null,
+    val why: String? = null,
+    val milestones: JsonElement? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+)
+
+@Serializable
+data class GoalRequest(
+    val title: String,
+    val why: String? = null,
+    val targetDate: String? = null,
+    val status: String? = null,
+    val milestones: List<MilestoneDto>? = null,
+    val category: String? = null,
+)
+
+@Serializable
+data class MilestoneDto(val text: String, val done: Boolean = false)
+
+// ------------------------------------------------------------------ habits (api/habits) = minimums
+
+@Serializable
+data class RemoteHabitDto(
+    val id: String? = null,
+    val name: String? = null,
+    val category: String? = null,
+    val status: String? = null,
+    val meta: JsonElement? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+)
+
+@Serializable
+data class HabitRequest(
+    val name: String? = null,
+    val emoji: String? = null,
+    val category: String? = null,
+    val frequency: String? = null,
+    val status: String? = null,
+    val meta: Map<String, String>? = null,
+)
+
+@Serializable
+data class DeletedResponse(val deleted: Boolean? = null, val id: String? = null)
+
+@Serializable
+data class SessionInfoDto(
+    val id: String? = null,
+    val token: String? = null,
+    val userAgent: String? = null,
+    val ipAddress: String? = null,
+    val createdAt: String? = null,
+    val updatedAt: String? = null,
+    val expiresAt: String? = null,
+)
+
+@Serializable
+data class RevokeSessionRequest(val token: String)

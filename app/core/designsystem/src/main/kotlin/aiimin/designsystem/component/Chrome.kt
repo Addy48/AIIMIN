@@ -1,5 +1,10 @@
 package aiimin.designsystem.component
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import aiimin.designsystem.icon.AppIcons
 import aiimin.designsystem.theme.Aiimin
 import aiimin.designsystem.theme.Motion
@@ -70,38 +75,38 @@ import kotlinx.coroutines.delay
 
 // ------------------------------------------------------------------ top bars
 
-/** Pushed-screen bar: back, centred title, actions. */
+/** Pushed-screen bar (handoff §5.2): 44 dp back target, left-aligned pushTitle, up to two actions. */
 @Composable
 fun TopBar(title: String, onBack: (() -> Unit)?, modifier: Modifier = Modifier, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
-        modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(horizontal = 6.dp),
+        modifier.fillMaxWidth().statusBarsPadding().height(56.dp).padding(start = 4.dp, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.width(96.dp)) {
-            if (onBack != null) AppIconButton(AppIcons.CaretLeft, "Back", onBack)
-        }
+        if (onBack != null) AppIconButton(AppIcons.ArrowLeft, "Back", onBack) else Spacer(Modifier.width(16.dp))
         Text(
             title,
             style = Aiimin.type.headline,
-            textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f).semantics { heading() },
+            modifier = Modifier.weight(1f).padding(start = 4.dp).semantics { heading() },
         )
-        Row(Modifier.width(96.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically, content = actions)
+        Row(verticalAlignment = Alignment.CenterVertically, content = actions)
     }
 }
 
-/** Root-screen header: big title, optional overline, actions on the right. */
+/**
+ * Root-screen bar (handoff §5.1): screenTitle on the left (Today shows the date),
+ * then sync, search, assistant, bell. [overline] is the one-line status under the title.
+ */
 @Composable
 fun LargeHeader(title: String, modifier: Modifier = Modifier, overline: String? = null, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
-        modifier.fillMaxWidth().statusBarsPadding().padding(start = Aiimin.space.gutter, end = 8.dp, top = 12.dp, bottom = 8.dp),
+        modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 56.dp).padding(start = Aiimin.space.gutter, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.weight(1f)) {
-            if (overline != null) Text(overline, style = Aiimin.type.caption)
+        Column(Modifier.weight(1f).padding(vertical = 6.dp)) {
             Text(title, style = Aiimin.type.title, modifier = Modifier.semantics { heading() })
+            if (overline != null) Text(overline, style = Aiimin.type.caption)
         }
         Row(verticalAlignment = Alignment.CenterVertically, content = actions)
     }
@@ -110,35 +115,50 @@ fun LargeHeader(title: String, modifier: Modifier = Modifier, overline: String? 
 // ------------------------------------------------------------------ dock
 
 @Stable
-data class DockItem(val label: String, val icon: ImageVector, val selected: Boolean, val onClick: () -> Unit, val badge: Boolean = false)
+data class DockItem(
+    val label: String,
+    val icon: ImageVector,
+    val selected: Boolean,
+    val onClick: () -> Unit,
+    val badge: Boolean = false,
+    /** Fill variant used only when selected (handoff: fill only for the selected dock tab). */
+    val iconFill: ImageVector = icon,
+    /** Small count on the icon (Money review inbox). Takes precedence over [badge]. */
+    val count: Int = 0,
+)
 
 /**
- * Today · Money · ＋ · Vault · Me. The centre button is the front door to
- * capture: tap for the capture sheet, long-press for voice.
+ * Today · Money · ＋ · Vault · Me (handoff §5.3). 80 dp including the gesture inset,
+ * top hairline. Selected tab = Phosphor fill icon + accentText label.
+ * The centre button is a 56 dp square (radius 12), ink fill, white plus.
  */
 @Composable
 fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modifier: Modifier = Modifier) {
     val c = Aiimin.colors
+    val onInk = if (c.isDark) c.base else Color.White
     Column(modifier.fillMaxWidth().background(c.base)) {
         Hairline()
         Row(
-            Modifier.fillMaxWidth().navigationBarsPadding().height(64.dp).padding(horizontal = 8.dp),
+            Modifier.fillMaxWidth().navigationBarsPadding().height(72.dp).padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val half = items.size / 2
             items.take(half).forEach { DockButton(it) }
             Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                val source = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                val pressed by source.collectIsPressedAsState()
+                val sc by androidx.compose.animation.core.animateFloatAsState(if (pressed) 0.94f else 1f, tween(120), label = "plus")
                 Box(
                     Modifier
-                        .size(48.dp)
-                        .shadow(8.dp, CircleShape, ambientColor = c.accent, spotColor = c.accent)
-                        .clip(CircleShape)
-                        .background(c.accent)
-                        .plusClickable(onClick = onPlus, onLongClick = onPlusLong, label = "Capture. Long-press to speak")
+                        .size(56.dp)
+                        .graphicsLayer { scaleX = sc; scaleY = sc }
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(c.text)
+                        .plusClickable(source, onClick = onPlus, onLongClick = onPlusLong, label = "Capture. Long-press to speak")
                         .semantics { contentDescription = "Capture" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(AppIcons.Plus, null, tint = c.onAccent, modifier = Modifier.size(22.dp))
+                    Icon(AppIcons.Plus, null, tint = onInk, modifier = Modifier.size(26.dp))
                 }
             }
             items.drop(half).forEach { DockButton(it) }
@@ -149,30 +169,39 @@ fun Dock(items: List<DockItem>, onPlus: () -> Unit, onPlusLong: () -> Unit, modi
 @Composable
 private fun RowScope.DockButton(item: DockItem) {
     val c = Aiimin.colors
-    val color = if (item.selected) c.text else c.textFaint
+    val color = if (item.selected) c.accentText else c.textMuted
     Column(
         Modifier
             .weight(1f)
-            .clip(Shapes.row)
+            .clip(Shapes.small)
             .clickable(role = Role.Tab, onClick = item.onClick)
             .semantics { selected = item.selected }
-            .padding(vertical = 6.dp),
+            .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box {
-            Icon(item.icon, null, tint = color, modifier = Modifier.size(24.dp))
-            if (item.badge) Box(Modifier.align(Alignment.TopEnd).size(7.dp).clip(CircleShape).background(c.accent))
+            Icon(if (item.selected) item.iconFill else item.icon, null, tint = color, modifier = Modifier.size(25.dp))
+            if (item.count > 0) {
+                Box(
+                    Modifier.align(Alignment.TopEnd).offset(x = 9.dp, y = (-5).dp).heightIn(min = 16.dp).widthIn(min = 16.dp)
+                        .clip(RoundedCornerShape(4.dp)).background(c.text).padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center,
+                ) { Text(if (item.count > 9) "9+" else item.count.toString(), style = Aiimin.type.caption.copy(color = if (c.isDark) c.base else Color.White, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)) }
+            } else if (item.badge) {
+                Box(Modifier.align(Alignment.TopEnd).offset(x = 6.dp, y = (-3).dp).size(7.dp).clip(CircleShape).background(c.accent))
+            }
         }
         Spacer(Modifier.height(3.dp))
-        Text(item.label, style = Aiimin.type.caption.copy(color = color))
-        Box(Modifier.padding(top = 3.dp).size(width = 14.dp, height = 2.dp).clip(Shapes.pill).background(if (item.selected) c.accent else Color.Transparent))
+        Text(item.label, style = Aiimin.type.caption.copy(color = color, fontWeight = if (item.selected) FontWeight.SemiBold else FontWeight.Medium, fontSize = 11.5.sp))
     }
 }
 
 @OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
-private fun Modifier.plusClickable(onClick: () -> Unit, onLongClick: () -> Unit, label: String): Modifier =
+private fun Modifier.plusClickable(source: androidx.compose.foundation.interaction.MutableInteractionSource, onClick: () -> Unit, onLongClick: () -> Unit, label: String): Modifier =
     this.then(
         Modifier.combinedClickable(
+            interactionSource = source,
+            indication = null,
             onClick = onClick,
             onLongClick = onLongClick,
             onClickLabel = label,
@@ -204,12 +233,12 @@ fun AppSheet(
         shape = Shapes.sheet,
         contentWindowInsets = { WindowInsets(0) },
         dragHandle = {
-            Box(Modifier.padding(top = 10.dp, bottom = 6.dp).size(width = 36.dp, height = 4.dp).clip(Shapes.pill).background(c.borderStrong))
+            Box(Modifier.padding(top = 10.dp, bottom = 8.dp).size(width = 38.dp, height = 4.dp).clip(RoundedCornerShape(2.dp)).background(c.borderStrong))
         },
     ) {
         Column(Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(horizontal = 20.dp).padding(bottom = 16.dp)) {
             if (title != null) {
-                Text(title, style = Aiimin.type.headline.copy(fontSize = 20.sp), modifier = Modifier.padding(top = 4.dp).semantics { heading() })
+                Text(title, style = Aiimin.type.cardTitle, modifier = Modifier.padding(top = 4.dp).semantics { heading() })
             }
             if (subtitle != null) Text(subtitle, style = Aiimin.type.caption, modifier = Modifier.padding(top = 4.dp))
             if (title != null || subtitle != null) Spacer(Modifier.height(16.dp))
@@ -260,17 +289,16 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
             Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth()
-                .shadow(12.dp, Shapes.row)
-                .clip(Shapes.row)
-                .background(if (c.isDark) c.overlay else Color(0xFF1F1F22))
+                .clip(Shapes.control)
+                .background(if (c.isDark) c.overlay else c.text)
                 .semantics { contentDescription = toast.text },
         ) {
-            Row(Modifier.padding(start = 16.dp, end = 6.dp).heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(toast.text, style = Aiimin.type.body.copy(color = Color(0xFFF2F2F3)), modifier = Modifier.weight(1f), maxLines = 2)
+            Row(Modifier.padding(start = 16.dp, end = 6.dp).heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(toast.text, style = Aiimin.type.body.copy(color = if (c.isDark) c.text else Color.White), modifier = Modifier.weight(1f), maxLines = 2)
                 if (toast.actionLabel != null && toast.action != null) {
                     Text(
                         toast.actionLabel,
-                        style = Aiimin.type.bodyStrong.copy(color = c.accent),
+                        style = Aiimin.type.bodyStrong.copy(color = Color(0xFFFFB08A)),
                         modifier = Modifier.clip(Shapes.small).clickable {
                             toast.action.invoke()
                             toaster.dismiss(toast.id)
@@ -279,7 +307,7 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
                 }
             }
             if (toast.action != null) {
-                Box(Modifier.fillMaxWidth(progress.value).height(2.dp).background(c.accent))
+                Box(Modifier.fillMaxWidth(progress.value).height(2.dp).background(Color(0xFFFFB08A)))
             }
         }
     }
@@ -291,15 +319,13 @@ fun ToastHost(toaster: Toaster, modifier: Modifier = Modifier) {
 fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null) {
     val c = Aiimin.colors
     Column(modifier.fillMaxWidth().padding(vertical = 28.dp, horizontal = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(Modifier.size(52.dp).clip(CircleShape).background(c.raised).border(1.dp, c.border, CircleShape), contentAlignment = Alignment.Center) {
-            Icon(icon, null, tint = c.textMuted, modifier = Modifier.size(24.dp))
-        }
+        Icon(icon, null, tint = c.textFaint, modifier = Modifier.size(32.dp))
         Spacer(Modifier.height(14.dp))
-        Text(title, style = Aiimin.type.headline, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(4.dp))
-        Text(body, style = Aiimin.type.caption.copy(textAlign = TextAlign.Center), modifier = Modifier.padding(horizontal = 8.dp))
+        Text(title, style = Aiimin.type.cardTitle.copy(fontSize = 20.sp), textAlign = TextAlign.Center)
+        Spacer(Modifier.height(6.dp))
+        Text(body, style = Aiimin.type.caption.copy(textAlign = TextAlign.Center, fontSize = 14.sp, lineHeight = 20.sp), modifier = Modifier.padding(horizontal = 8.dp))
         if (action != null && onAction != null) {
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(18.dp))
             AppButton(action, onAction, kind = ButtonKind.SECONDARY, compact = true)
         }
     }
@@ -310,7 +336,7 @@ fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifie
 fun Skeleton(modifier: Modifier) {
     val c = Aiimin.colors
     val t = rememberInfiniteTransition(label = "sk")
-    val a by t.animateFloat(0.45f, 0.9f, infiniteRepeatable(tween(900), RepeatMode.Reverse), label = "skA")
+    val a by t.animateFloat(0.55f, 1f, infiniteRepeatable(tween(1200), RepeatMode.Reverse), label = "skA")
     Box(modifier.graphicsLayer { alpha = a }.clip(Shapes.small).background(c.raised))
 }
 
